@@ -302,6 +302,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			CommercialType: commercialType,
 			Zone:           zone,
 			ImageLabel:     imageLabel,
+			Type:           marketplace.LocalImageTypeInstanceLocal,
 		})
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageLabel), err))

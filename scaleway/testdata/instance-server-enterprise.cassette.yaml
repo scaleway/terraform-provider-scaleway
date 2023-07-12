@@ -8,19 +8,19 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=created_at_asc&zone=fr-par-2
+    url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=created_at_asc&type=instance_local&zone=fr-par-2
     method: GET
   response:
-    body: '{"local_images":[{"arch":"x86_64","compatible_commercial_types":["DEV1-L","DEV1-M","DEV1-S","DEV1-XL","GP1-L","GP1-M","GP1-S","GP1-XL","GP1-XS","START1-L","START1-M","START1-S","START1-XS","VC1L","VC1M","VC1S","X64-120GB","X64-15GB","X64-30GB","X64-60GB","ENT1-XXS","ENT1-XS","ENT1-S","ENT1-M","ENT1-L","ENT1-XL","ENT1-2XL","PRO2-XXS","PRO2-XS","PRO2-S","PRO2-M","PRO2-L","PLAY2-MICRO","PLAY2-NANO","PLAY2-PICO","POP2-2C-8G","POP2-4C-16G","POP2-8C-32G","POP2-16C-64G","POP2-32C-128G","POP2-64C-256G","POP2-HM-2C-16G","POP2-HM-4C-32G","POP2-HM-8C-64G","POP2-HM-16C-128G","POP2-HM-32C-256G","POP2-HM-64C-512G","POP2-HC-2C-4G","POP2-HC-4C-8G","POP2-HC-8C-16G","POP2-HC-16C-32G","POP2-HC-32C-64G","POP2-HC-64C-128G"],"id":"7c748e78-971e-40ab-83f6-461e20a56c68","label":"ubuntu_focal","zone":"fr-par-2"},{"arch":"arm64","compatible_commercial_types":["AMP2-C1","AMP2-C2","AMP2-C4","AMP2-C8","AMP2-C12","AMP2-C24","AMP2-C48","AMP2-C60"],"id":"57e89f65-ec39-4847-aed5-942629dff0ad","label":"ubuntu_focal","zone":"fr-par-2"}],"total_count":2}'
+    body: '{"local_images":[{"arch":"arm64","compatible_commercial_types":["AMP2-C1","AMP2-C2","AMP2-C4","AMP2-C8","AMP2-C12","AMP2-C24","AMP2-C48","AMP2-C60"],"id":"82a3876e-72b9-40bc-bc12-24e3f861d013","label":"ubuntu_focal","type":"unknown_type","zone":"fr-par-2"},{"arch":"x86_64","compatible_commercial_types":["DEV1-L","DEV1-M","DEV1-S","DEV1-XL","GP1-L","GP1-M","GP1-S","GP1-XL","GP1-XS","START1-L","START1-M","START1-S","START1-XS","VC1L","VC1M","VC1S","X64-120GB","X64-15GB","X64-30GB","X64-60GB","ENT1-XXS","ENT1-XS","ENT1-S","ENT1-M","ENT1-L","ENT1-XL","ENT1-2XL","PRO2-XXS","PRO2-XS","PRO2-S","PRO2-M","PRO2-L","PLAY2-MICRO","PLAY2-NANO","PLAY2-PICO","POP2-2C-8G","POP2-4C-16G","POP2-8C-32G","POP2-16C-64G","POP2-32C-128G","POP2-64C-256G","POP2-HM-2C-16G","POP2-HM-4C-32G","POP2-HM-8C-64G","POP2-HM-16C-128G","POP2-HM-32C-256G","POP2-HM-64C-512G","POP2-HC-2C-4G","POP2-HC-4C-8G","POP2-HC-8C-16G","POP2-HC-16C-32G","POP2-HC-32C-64G","POP2-HC-64C-128G"],"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","label":"ubuntu_focal","type":"unknown_type","zone":"fr-par-2"}],"total_count":2}'
     headers:
       Content-Length:
-      - "1034"
+      - "1149"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:44 GMT
+      - Mon, 10 Jul 2023 07:40:09 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -30,7 +30,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - a88a4d5c-a28e-45ce-8295-6954ab2c7f3b
+      - 7ad62a0b-a665-42bc-a5e2-473b30c28547
     status: 200 OK
     code: 200
     duration: ""
@@ -44,16 +44,16 @@ interactions:
     url: https://api.scaleway.com/instance/v1/zones/fr-par-2/products/servers?page=1
     method: GET
   response:
-    body: '{"servers":{"AMP2-C1":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.005007,"monthly_price":3.6,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":1879048192,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C12":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.039752,"monthly_price":28.62,"ncpus":12,"network":{"interfaces":[{"internal_bandwidth":1200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1200000000}],"ipv6_support":true,"sum_internal_bandwidth":1200000000,"sum_internet_bandwidth":1200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":25501368320,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C2":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.008165,"monthly_price":5.88,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4026531840,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C24":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.077657,"monthly_price":55.91,"ncpus":24,"network":{"interfaces":[{"internal_bandwidth":2400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":2400000000}],"ipv6_support":true,"sum_internal_bandwidth":2400000000,"sum_internet_bandwidth":2400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":51271172096,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C4":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.014483,"monthly_price":10.43,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8321499136,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C48":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.153466,"monthly_price":110.5,"ncpus":48,"network":{"interfaces":[{"internal_bandwidth":4800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":4800000000}],"ipv6_support":true,"sum_internal_bandwidth":4800000000,"sum_internet_bandwidth":4800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":102810779648,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C60":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.19137,"monthly_price":137.79,"ncpus":60,"network":{"interfaces":[{"internal_bandwidth":6000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6000000000}],"ipv6_support":true,"sum_internal_bandwidth":6000000000,"sum_internet_bandwidth":6000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":128580583424,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C8":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.027118,"monthly_price":19.52,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":16911433728,"volumes_constraint":{"max_size":0,"min_size":0}},"DEV1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.04952,"monthly_price":36.1496,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":8589934592,"volumes_constraint":{"max_size":80000000000,"min_size":0}},"DEV1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.02556,"monthly_price":18.6588,"ncpus":3,"network":{"interfaces":[{"internal_bandwidth":300000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":300000000}],"ipv6_support":true,"sum_internal_bandwidth":300000000,"sum_internet_bandwidth":300000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":4294967296,"volumes_constraint":{"max_size":40000000000,"min_size":0}},"DEV1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.01368,"monthly_price":9.9864,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":2147483648,"volumes_constraint":{"max_size":20000000000,"min_size":0}},"DEV1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.07308,"monthly_price":53.3484,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":12884901888,"volumes_constraint":{"max_size":120000000000,"min_size":0}},"ENT1-2XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":3.53,"monthly_price":2576.9,"ncpus":96,"network":{"interfaces":[{"internal_bandwidth":20000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":20000000000}],"ipv6_support":true,"sum_internal_bandwidth":20000000000,"sum_internet_bandwidth":20000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":412316860416,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.18,"monthly_price":861.4,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.59,"monthly_price":430.7,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.29,"monthly_price":211.7,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.35,"monthly_price":1715.5,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.147,"monthly_price":107.31,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XXS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0735,"monthly_price":53.655,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"GP1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.7894,"monthly_price":576.262,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":5000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":5000000000}],"ipv6_support":true,"sum_internal_bandwidth":5000000000,"sum_internet_bandwidth":5000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":137438953472,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.4064,"monthly_price":296.672,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":1500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1500000000}],"ipv6_support":true,"sum_internal_bandwidth":1500000000,"sum_internet_bandwidth":1500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":68719476736,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.2042,"monthly_price":149.066,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":34359738368,"volumes_constraint":{"max_size":300000000000,"min_size":0}},"GP1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.6714,"monthly_price":1220.122,"ncpus":48,"network":{"interfaces":[{"internal_bandwidth":10000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":10000000000}],"ipv6_support":true,"sum_internal_bandwidth":10000000000,"sum_internet_bandwidth":10000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":274877906944,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1016,"monthly_price":74.168,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":17179869184,"volumes_constraint":{"max_size":150000000000,"min_size":0}},"GPU-3070-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":1,"hourly_price":0.98,"monthly_price":715.4,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":2500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":2500000000}],"ipv6_support":true,"sum_internal_bandwidth":2500000000,"sum_internet_bandwidth":2500000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-MICRO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.054,"monthly_price":39.42,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-NANO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.027,"monthly_price":19.71,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4294967296,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-PICO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.014,"monthly_price":10.22,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":2147483648,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-16C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.59,"monthly_price":430.7,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-2C-8G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0735,"monthly_price":53.66,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-32C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.18,"monthly_price":861.4,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-4C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.147,"monthly_price":107.31,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-64C-256G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.35,"monthly_price":1715.5,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-8C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.29,"monthly_price":211.7,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-16C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.4256,"monthly_price":310.69,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-2C-4G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0532,"monthly_price":38.84,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4294967296,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-32C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.8512,"monthly_price":621.38,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-4C-8G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1064,"monthly_price":77.67,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-64C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.7024,"monthly_price":1242.75,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-8C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.2128,"monthly_price":155.34,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-16C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.824,"monthly_price":601.52,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-2C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.103,"monthly_price":75.19,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-32C-256G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.648,"monthly_price":1203.04,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-4C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.206,"monthly_price":150.38,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-64C-512G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":3.296,"monthly_price":2406.08,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":549755813888,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-8C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.412,"monthly_price":300.76,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.877,"monthly_price":640.21,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6000000000}],"ipv6_support":true,"sum_internal_bandwidth":6000000000,"sum_internet_bandwidth":6000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.438,"monthly_price":319.74,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3000000000}],"ipv6_support":true,"sum_internal_bandwidth":3000000000,"sum_internet_bandwidth":3000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.219,"monthly_price":159.87,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1500000000}],"ipv6_support":true,"sum_internal_bandwidth":1500000000,"sum_internet_bandwidth":1500000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.11,"monthly_price":80.3,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":700000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":700000000}],"ipv6_support":true,"sum_internal_bandwidth":700000000,"sum_internet_bandwidth":700000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}}}}'
+    body: '{"servers":{"AMP2-C1":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.005007,"mig_profile":null,"monthly_price":3.6,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":1879048192,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C12":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.039752,"mig_profile":null,"monthly_price":28.62,"ncpus":12,"network":{"interfaces":[{"internal_bandwidth":1200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1200000000}],"ipv6_support":true,"sum_internal_bandwidth":1200000000,"sum_internet_bandwidth":1200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":25501368320,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C2":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.008165,"mig_profile":null,"monthly_price":5.88,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4026531840,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C24":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.077657,"mig_profile":null,"monthly_price":55.91,"ncpus":24,"network":{"interfaces":[{"internal_bandwidth":2400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":2400000000}],"ipv6_support":true,"sum_internal_bandwidth":2400000000,"sum_internet_bandwidth":2400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":51271172096,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C4":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.014483,"mig_profile":null,"monthly_price":10.43,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8321499136,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C48":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.153466,"mig_profile":null,"monthly_price":110.5,"ncpus":48,"network":{"interfaces":[{"internal_bandwidth":4800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":4800000000}],"ipv6_support":true,"sum_internal_bandwidth":4800000000,"sum_internet_bandwidth":4800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":102810779648,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C60":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.19137,"mig_profile":null,"monthly_price":137.79,"ncpus":60,"network":{"interfaces":[{"internal_bandwidth":6000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6000000000}],"ipv6_support":true,"sum_internal_bandwidth":6000000000,"sum_internet_bandwidth":6000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":128580583424,"volumes_constraint":{"max_size":0,"min_size":0}},"AMP2-C8":{"alt_names":[],"arch":"arm64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.027118,"mig_profile":null,"monthly_price":19.52,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":16911433728,"volumes_constraint":{"max_size":0,"min_size":0}},"DEV1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.04952,"mig_profile":null,"monthly_price":36.1496,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":8589934592,"volumes_constraint":{"max_size":80000000000,"min_size":0}},"DEV1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.02556,"mig_profile":null,"monthly_price":18.6588,"ncpus":3,"network":{"interfaces":[{"internal_bandwidth":300000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":300000000}],"ipv6_support":true,"sum_internal_bandwidth":300000000,"sum_internet_bandwidth":300000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":4294967296,"volumes_constraint":{"max_size":40000000000,"min_size":0}},"DEV1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.01368,"mig_profile":null,"monthly_price":9.9864,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":2147483648,"volumes_constraint":{"max_size":20000000000,"min_size":0}},"DEV1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.07308,"mig_profile":null,"monthly_price":53.3484,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":12884901888,"volumes_constraint":{"max_size":120000000000,"min_size":0}},"ENT1-2XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":3.53,"mig_profile":null,"monthly_price":2576.9,"ncpus":96,"network":{"interfaces":[{"internal_bandwidth":20000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":20000000000}],"ipv6_support":true,"sum_internal_bandwidth":20000000000,"sum_internet_bandwidth":20000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":412316860416,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.18,"mig_profile":null,"monthly_price":861.4,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.59,"mig_profile":null,"monthly_price":430.7,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.29,"mig_profile":null,"monthly_price":211.7,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.35,"mig_profile":null,"monthly_price":1715.5,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.147,"mig_profile":null,"monthly_price":107.31,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XXS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0735,"mig_profile":null,"monthly_price":53.655,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"GP1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.7894,"mig_profile":null,"monthly_price":576.262,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":5000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":5000000000}],"ipv6_support":true,"sum_internal_bandwidth":5000000000,"sum_internet_bandwidth":5000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":137438953472,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.4064,"mig_profile":null,"monthly_price":296.672,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":1500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1500000000}],"ipv6_support":true,"sum_internal_bandwidth":1500000000,"sum_internet_bandwidth":1500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":68719476736,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.2042,"mig_profile":null,"monthly_price":149.066,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":34359738368,"volumes_constraint":{"max_size":300000000000,"min_size":0}},"GP1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.6714,"mig_profile":null,"monthly_price":1220.122,"ncpus":48,"network":{"interfaces":[{"internal_bandwidth":10000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":10000000000}],"ipv6_support":true,"sum_internal_bandwidth":10000000000,"sum_internet_bandwidth":10000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":274877906944,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1016,"mig_profile":null,"monthly_price":74.168,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":17179869184,"volumes_constraint":{"max_size":150000000000,"min_size":0}},"GPU-3070-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":1,"hourly_price":0.98,"mig_profile":null,"monthly_price":715.4,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":2500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":2500000000}],"ipv6_support":true,"sum_internal_bandwidth":2500000000,"sum_internet_bandwidth":2500000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-MICRO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.054,"mig_profile":null,"monthly_price":39.42,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-NANO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.027,"mig_profile":null,"monthly_price":19.71,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4294967296,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-PICO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.014,"mig_profile":null,"monthly_price":10.22,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":2147483648,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-16C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.59,"mig_profile":null,"monthly_price":430.7,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-2C-8G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0735,"mig_profile":null,"monthly_price":53.66,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-32C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.18,"mig_profile":null,"monthly_price":861.4,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-4C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.147,"mig_profile":null,"monthly_price":107.31,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-64C-256G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.35,"mig_profile":null,"monthly_price":1715.5,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-8C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.29,"mig_profile":null,"monthly_price":211.7,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-16C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.4256,"mig_profile":null,"monthly_price":310.69,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-2C-4G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0532,"mig_profile":null,"monthly_price":38.84,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4294967296,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-32C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.8512,"mig_profile":null,"monthly_price":621.38,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-4C-8G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1064,"mig_profile":null,"monthly_price":77.67,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-64C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.7024,"mig_profile":null,"monthly_price":1242.75,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-8C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.2128,"mig_profile":null,"monthly_price":155.34,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-16C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.824,"mig_profile":null,"monthly_price":601.52,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-2C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.103,"mig_profile":null,"monthly_price":75.19,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-32C-256G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.648,"mig_profile":null,"monthly_price":1203.04,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-4C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.206,"mig_profile":null,"monthly_price":150.38,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-64C-512G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":3.296,"mig_profile":null,"monthly_price":2406.08,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":549755813888,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-8C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.412,"mig_profile":null,"monthly_price":300.76,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.877,"mig_profile":null,"monthly_price":640.21,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6000000000}],"ipv6_support":true,"sum_internal_bandwidth":6000000000,"sum_internet_bandwidth":6000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.438,"mig_profile":null,"monthly_price":319.74,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3000000000}],"ipv6_support":true,"sum_internal_bandwidth":3000000000,"sum_internet_bandwidth":3000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.219,"mig_profile":null,"monthly_price":159.87,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1500000000}],"ipv6_support":true,"sum_internal_bandwidth":1500000000,"sum_internet_bandwidth":1500000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.11,"mig_profile":null,"monthly_price":80.3,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":700000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":700000000}],"ipv6_support":true,"sum_internal_bandwidth":700000000,"sum_internet_bandwidth":700000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}}}}'
     headers:
       Content-Length:
-      - "36797"
+      - "37847"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:45 GMT
+      - Mon, 10 Jul 2023 07:40:10 GMT
       Link:
       - </products/servers?page=2&per_page=50&>; rel="next",</products/servers?page=2&per_page=50&>;
         rel="last"
@@ -66,7 +66,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - c8ddcb5e-946a-4025-8687-cc18d9acaf56
+      - 0ca41de0-0905-4a4a-921e-24768ac7ee14
       X-Total-Count:
       - "52"
     status: 200 OK
@@ -82,16 +82,16 @@ interactions:
     url: https://api.scaleway.com/instance/v1/zones/fr-par-2/products/servers?page=2
     method: GET
   response:
-    body: '{"servers":{"PRO2-XXS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.055,"monthly_price":40.15,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":350000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":350000000}],"ipv6_support":true,"sum_internal_bandwidth":350000000,"sum_internet_bandwidth":350000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"RENDER-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":1,"hourly_price":1.2426,"monthly_price":907.098,"ncpus":10,"network":{"interfaces":[{"internal_bandwidth":1000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1000000000}],"ipv6_support":true,"sum_internal_bandwidth":1000000000,"sum_internet_bandwidth":1000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":45097156608,"volumes_constraint":{"max_size":400000000000,"min_size":0}}}}'
+    body: '{"servers":{"PRO2-XXS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.055,"mig_profile":null,"monthly_price":40.15,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":350000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":350000000}],"ipv6_support":true,"sum_internal_bandwidth":350000000,"sum_internet_bandwidth":350000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"RENDER-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":1,"hourly_price":1.2426,"mig_profile":null,"monthly_price":907.098,"ncpus":10,"network":{"interfaces":[{"internal_bandwidth":1000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1000000000}],"ipv6_support":true,"sum_internal_bandwidth":1000000000,"sum_internet_bandwidth":1000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":45097156608,"volumes_constraint":{"max_size":400000000000,"min_size":0}}}}'
     headers:
       Content-Length:
-      - "1494"
+      - "1536"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:45 GMT
+      - Mon, 10 Jul 2023 07:40:10 GMT
       Link:
       - </products/servers?page=1&per_page=50&>; rel="first",</products/servers?page=1&per_page=50&>;
         rel="previous",</products/servers?page=2&per_page=50&>; rel="last"
@@ -104,14 +104,14 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - b2431de3-5813-4d53-8ec2-46d4704d44e4
+      - 57812b06-6cc8-4644-988a-cdaee4c3a2b6
       X-Total-Count:
       - "52"
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"name":"tf-srv-vibrant-babbage","dynamic_ip_required":false,"commercial_type":"ENT1-S","image":"7c748e78-971e-40ab-83f6-461e20a56c68","volumes":{"0":{"volume_type":"b_ssd"}},"boot_type":"local","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b"}'
+    body: '{"name":"tf-srv-suspicious-blackburn","dynamic_ip_required":false,"commercial_type":"ENT1-S","image":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","volumes":{"0":{"boot":false,"volume_type":"b_ssd"}},"boot_type":"local","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b"}'
     form: {}
     headers:
       Content-Type:
@@ -124,22 +124,22 @@ interactions:
   response:
     body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"maintenances":[],"modification_date":"2023-05-29T12:12:45.210759+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:12.150416+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2546"
+      - "2643"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:45 GMT
+      - Mon, 10 Jul 2023 07:40:12 GMT
       Location:
-      - https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+      - https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -149,7 +149,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - bb0f40db-b415-4e01-b5e6-eb506c8376c5
+      - 78e47621-fdb0-4796-9276-89b5ae56b49e
     status: 201 Created
     code: 201
     duration: ""
@@ -160,25 +160,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"maintenances":[],"modification_date":"2023-05-29T12:12:45.210759+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:12.150416+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2546"
+      - "2643"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:45 GMT
+      - Mon, 10 Jul 2023 07:40:12 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -188,7 +188,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - d8e4d439-0aab-4f34-9ec3-aa93baf5fe8b
+      - 124a2555-7b38-481a-91b5-49bbcf6f439a
     status: 200 OK
     code: 200
     duration: ""
@@ -199,25 +199,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"maintenances":[],"modification_date":"2023-05-29T12:12:45.210759+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:12.150416+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2546"
+      - "2643"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:45 GMT
+      - Mon, 10 Jul 2023 07:40:13 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -227,7 +227,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 5913c6f9-b398-4bce-9a6f-527be4ea87c5
+      - 51587bb7-6821-48d1-8a01-7a829b765f30
     status: 200 OK
     code: 200
     duration: ""
@@ -240,10 +240,10 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016/action
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452/action
     method: POST
   response:
-    body: '{"task":{"description":"server_batch_poweron","href_from":"/servers/081aa010-1356-4602-9909-96b85b6dd016/action","href_result":"/servers/081aa010-1356-4602-9909-96b85b6dd016","id":"22af87e5-a0d3-42ba-b2cf-22e1635b9b83","started_at":"2023-05-29T12:12:45.957467+00:00","status":"pending","terminated_at":null}}'
+    body: '{"task":{"description":"server_batch_poweron","href_from":"/servers/2650e51d-d231-4f8c-90a8-120774a4c452/action","href_result":"/servers/2650e51d-d231-4f8c-90a8-120774a4c452","id":"4ec69bc0-9638-4731-80d1-b7efd8650677","started_at":"2023-07-10T07:40:13.801540+00:00","status":"pending","terminated_at":null}}'
     headers:
       Content-Length:
       - "322"
@@ -252,9 +252,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:45 GMT
+      - Mon, 10 Jul 2023 07:40:13 GMT
       Location:
-      - https://api.scaleway.com/instance/v1/zones/fr-par-2/tasks/22af87e5-a0d3-42ba-b2cf-22e1635b9b83
+      - https://api.scaleway.com/instance/v1/zones/fr-par-2/tasks/4ec69bc0-9638-4731-80d1-b7efd8650677
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -264,7 +264,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 5bca77ca-fdeb-46de-ab5d-28df5d7c4fa7
+      - 6246014a-ba2c-4a4a-833e-5771efaacbc6
     status: 202 Accepted
     code: 202
     duration: ""
@@ -275,25 +275,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"maintenances":[],"modification_date":"2023-05-29T12:12:45.663970+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"starting","state_detail":"allocating node","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:13.439641+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"starting","state_detail":"allocating node","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2568"
+      - "2665"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:46 GMT
+      - Mon, 10 Jul 2023 07:40:13 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -303,7 +303,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 09fed628-e57c-4143-8b26-b1265e79cf90
+      - e4868992-29a3-462f-88b2-afc160a1018f
     status: 200 OK
     code: 200
     duration: ""
@@ -314,25 +314,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:45.663970+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"starting","state_detail":"provisioning node","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:13.439641+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"starting","state_detail":"provisioning node","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2682"
+      - "2778"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:51 GMT
+      - Mon, 10 Jul 2023 07:40:19 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -342,7 +342,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - da16d187-00c3-4ecb-94ac-f2b72a12e38a
+      - 3630d8b9-e07c-41c6-af30-4f2e9f6153fb
     status: 200 OK
     code: 200
     duration: ""
@@ -353,25 +353,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:53.467078+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:20.682564+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2713"
+      - "2809"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:56 GMT
+      - Mon, 10 Jul 2023 07:40:25 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -381,7 +381,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ca3cabc3-f3cd-4d0d-9dcf-6fa73ab699e5
+      - fe7bfc02-e0be-4e78-87cf-7d0eaf446d38
     status: 200 OK
     code: 200
     duration: ""
@@ -392,25 +392,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:53.467078+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:20.682564+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2713"
+      - "2809"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:56 GMT
+      - Mon, 10 Jul 2023 07:40:26 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -420,7 +420,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 8f80028b-5951-45fe-b10a-a5bdc142e824
+      - ae52fc3b-c988-45e1-8777-f9e496969301
     status: 200 OK
     code: 200
     duration: ""
@@ -431,7 +431,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016/user_data
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452/user_data
     method: GET
   response:
     body: '{"user_data":[]}'
@@ -443,7 +443,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:56 GMT
+      - Mon, 10 Jul 2023 07:40:27 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -453,7 +453,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - d0b9704c-d186-45f4-894b-c6b3f3213e0a
+      - a039de31-bd0f-4452-a63d-603f4ecf648f
     status: 200 OK
     code: 200
     duration: ""
@@ -464,7 +464,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016/private_nics
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452/private_nics
     method: GET
   response:
     body: '{"private_nics":[]}'
@@ -476,9 +476,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:56 GMT
+      - Mon, 10 Jul 2023 07:40:27 GMT
       Link:
-      - </servers/081aa010-1356-4602-9909-96b85b6dd016/private_nics?page=0&per_page=50&>;
+      - </servers/2650e51d-d231-4f8c-90a8-120774a4c452/private_nics?page=0&per_page=50&>;
         rel="last"
       Server:
       - Scaleway API-Gateway
@@ -489,7 +489,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 48a2142e-2ea9-4b73-87e0-44e4ebd5ff95
+      - 09103292-96a7-4eaa-ab7d-cd6d38627839
       X-Total-Count:
       - "0"
     status: 200 OK
@@ -502,25 +502,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:53.467078+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:20.682564+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2713"
+      - "2809"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:57 GMT
+      - Mon, 10 Jul 2023 07:40:27 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -530,7 +530,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 3a0c5f1b-306a-4192-b15f-af7c86bf969d
+      - 86441068-01e2-4c6c-8bfe-f0ab86af0aea
     status: 200 OK
     code: 200
     duration: ""
@@ -541,25 +541,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:53.467078+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:20.682564+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2713"
+      - "2809"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:57 GMT
+      - Mon, 10 Jul 2023 07:40:27 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -569,7 +569,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 80f630dd-400b-4727-9ace-ab3750218af6
+      - 808984ba-cc03-4fb8-a2d1-83c28f69b4ae
     status: 200 OK
     code: 200
     duration: ""
@@ -580,7 +580,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016/user_data
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452/user_data
     method: GET
   response:
     body: '{"user_data":[]}'
@@ -592,7 +592,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:57 GMT
+      - Mon, 10 Jul 2023 07:40:28 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -602,7 +602,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fd675b95-10e6-49e0-bcc4-ed92224db9e4
+      - 694c4f6e-9124-4030-b31d-984e2d8db6b1
     status: 200 OK
     code: 200
     duration: ""
@@ -613,7 +613,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016/private_nics
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452/private_nics
     method: GET
   response:
     body: '{"private_nics":[]}'
@@ -625,9 +625,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:57 GMT
+      - Mon, 10 Jul 2023 07:40:28 GMT
       Link:
-      - </servers/081aa010-1356-4602-9909-96b85b6dd016/private_nics?page=0&per_page=50&>;
+      - </servers/2650e51d-d231-4f8c-90a8-120774a4c452/private_nics?page=0&per_page=50&>;
         rel="last"
       Server:
       - Scaleway API-Gateway
@@ -638,7 +638,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 307830ef-9d39-4511-9dd6-a45f0721a2c6
+      - 41390b07-592e-4e78-aefc-1597fb97b84b
       X-Total-Count:
       - "0"
     status: 200 OK
@@ -651,25 +651,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:53.467078+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:20.682564+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2713"
+      - "2809"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:58 GMT
+      - Mon, 10 Jul 2023 07:40:28 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -679,7 +679,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - b279fb29-5090-49c9-a1a1-dc8446e950ec
+      - d651de80-a074-40ed-97bc-24c44ee674c7
     status: 200 OK
     code: 200
     duration: ""
@@ -692,10 +692,10 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016/action
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452/action
     method: POST
   response:
-    body: '{"task":{"description":"server_poweroff","href_from":"/servers/081aa010-1356-4602-9909-96b85b6dd016/action","href_result":"/servers/081aa010-1356-4602-9909-96b85b6dd016","id":"ee94ae88-a636-4429-baeb-526559d2da6d","started_at":"2023-05-29T12:12:59.017681+00:00","status":"pending","terminated_at":null}}'
+    body: '{"task":{"description":"server_poweroff","href_from":"/servers/2650e51d-d231-4f8c-90a8-120774a4c452/action","href_result":"/servers/2650e51d-d231-4f8c-90a8-120774a4c452","id":"67f807cb-9832-4ae1-8981-039341534945","started_at":"2023-07-10T07:40:29.715978+00:00","status":"pending","terminated_at":null}}'
     headers:
       Content-Length:
       - "317"
@@ -704,9 +704,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:59 GMT
+      - Mon, 10 Jul 2023 07:40:29 GMT
       Location:
-      - https://api.scaleway.com/instance/v1/zones/fr-par-2/tasks/ee94ae88-a636-4429-baeb-526559d2da6d
+      - https://api.scaleway.com/instance/v1/zones/fr-par-2/tasks/67f807cb-9832-4ae1-8981-039341534945
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -716,7 +716,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - dfe1278a-fd27-4837-bc41-48f227e7b0cc
+      - 5b4fead1-2078-4717-9dca-d28e754023da
     status: 202 Accepted
     code: 202
     duration: ""
@@ -727,25 +727,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:58.750153+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:29.384090+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2673"
+      - "2769"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:12:59 GMT
+      - Mon, 10 Jul 2023 07:40:29 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -755,7 +755,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - f680e30e-e14a-46d3-bafd-d2b185abfc37
+      - 6c05126d-e36a-4b31-8096-3e66bd119977
     status: 200 OK
     code: 200
     duration: ""
@@ -766,25 +766,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:58.750153+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:29.384090+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2673"
+      - "2769"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:04 GMT
+      - Mon, 10 Jul 2023 07:40:35 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -794,7 +794,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ce9ff4cf-762a-4446-900b-c89550ef1512
+      - 97871b74-ecb6-48f3-86f5-9c56d6d58e48
     status: 200 OK
     code: 200
     duration: ""
@@ -805,25 +805,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:58.750153+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:29.384090+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2673"
+      - "2767"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:09 GMT
+      - Mon, 10 Jul 2023 07:40:42 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -833,7 +833,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fc4e53ff-dbc0-4fae-9817-1c6e0db93b15
+      - b068206e-4382-43d6-ac40-d6ebe1a6322f
     status: 200 OK
     code: 200
     duration: ""
@@ -844,25 +844,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:58.750153+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:29.384090+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2671"
+      - "2767"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:15 GMT
+      - Mon, 10 Jul 2023 07:40:47 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -872,7 +872,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fe58d6c7-0404-4ca8-b34f-e844c2ee15b2
+      - f337ced5-1bcf-4794-b08d-4bdf42bc8309
     status: 200 OK
     code: 200
     duration: ""
@@ -883,25 +883,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:58.750153+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:29.384090+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2671"
+      - "2767"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:20 GMT
+      - Mon, 10 Jul 2023 07:40:53 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -911,7 +911,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 755e85c7-3757-40ec-b7c6-16f03142e562
+      - 272a1589-eab7-4981-b17c-875bce812c73
     status: 200 OK
     code: 200
     duration: ""
@@ -922,25 +922,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"15","hypervisor_id":"201","node_id":"10","platform_id":"30","zone_id":"fr-par-2"},"maintenances":[],"modification_date":"2023-05-29T12:12:58.750153+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.197.182.19","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":{"cluster_id":"8","hypervisor_id":"1301","node_id":"3","platform_id":"30","zone_id":"fr-par-2"},"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:40:29.384090+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":"10.200.39.133","private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2671"
+      - "2767"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:26 GMT
+      - Mon, 10 Jul 2023 07:40:58 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -950,7 +950,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 63a76304-7928-40ac-a04f-9f72ff035ad1
+      - 926fdf31-c105-40de-979c-247a0ddd122f
     status: 200 OK
     code: 200
     duration: ""
@@ -961,25 +961,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"maintenances":[],"modification_date":"2023-05-29T12:13:30.049664+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:41:01.840759+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2546"
+      - "2643"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:31 GMT
+      - Mon, 10 Jul 2023 07:41:03 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -989,7 +989,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - d61e8f5c-0780-4dac-a467-6efeb48a3bd9
+      - cf1f5a86-2063-4666-b4a5-67fb5fe06d79
     status: 200 OK
     code: 200
     duration: ""
@@ -1000,25 +1000,25 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
     body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
       scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"e6a56379-9ef4-48d4-a1d2-12b475e0fed8","initrd":"http://10.197.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.197.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
-      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-05-29T12:12:45.210759+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-vibrant-babbage","id":"081aa010-1356-4602-9909-96b85b6dd016","image":{"arch":"x86_64","creation_date":"2023-04-13T12:32:01.859925+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"7c748e78-971e-40ab-83f6-461e20a56c68","modification_date":"2023-04-13T12:32:01.859925+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"2db868d6-47ac-43c8-b647-991fae883870","name":"Ubuntu
-      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"maintenances":[],"modification_date":"2023-05-29T12:13:30.049664+00:00","name":"tf-srv-vibrant-babbage","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
-      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-05-29T12:12:45.210759+00:00","export_uri":null,"id":"1f08c203-2c80-428f-beca-595b2bc8054b","modification_date":"2023-05-29T12:12:45.210759+00:00","name":"Ubuntu
-      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"081aa010-1356-4602-9909-96b85b6dd016","name":"tf-srv-vibrant-babbage"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
+      mainline 4.4.230 rev1","zone":"fr-par-2"},"commercial_type":"ENT1-S","creation_date":"2023-07-10T07:40:12.150416+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-suspicious-blackburn","id":"2650e51d-d231-4f8c-90a8-120774a4c452","image":{"arch":"x86_64","creation_date":"2023-06-28T12:44:53.327296+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"bb68d4a8-7f1e-49c5-bec9-cdc39baa0c42","modification_date":"2023-06-28T12:44:53.327296+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"d5b6641c-7086-4856-9cb5-1e72c4f0861a","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-2"},"ipv6":null,"location":null,"mac_address":"de:00:00:15:0f:51","maintenances":[],"modification_date":"2023-07-10T07:41:01.840759+00:00","name":"tf-srv-suspicious-blackburn","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"07a1e012-3e68-44ec-9b41-cbe87504b716","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-07-10T07:40:12.150416+00:00","export_uri":null,"id":"b19e0996-bfac-48d4-b432-222056ee1ef5","modification_date":"2023-07-10T07:40:12.150416+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","server":{"id":"2650e51d-d231-4f8c-90a8-120774a4c452","name":"tf-srv-suspicious-blackburn"},"size":10000000000,"state":"available","tags":[],"volume_type":"b_ssd","zone":"fr-par-2"}},"zone":"fr-par-2"}}'
     headers:
       Content-Length:
-      - "2546"
+      - "2643"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:31 GMT
+      - Mon, 10 Jul 2023 07:41:04 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1028,7 +1028,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0394c8bc-e8f7-4f4a-8273-ae02b278b41b
+      - 9acb5497-0852-46fb-bb9d-7788da582dd6
     status: 200 OK
     code: 200
     duration: ""
@@ -1039,7 +1039,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: DELETE
   response:
     body: ""
@@ -1047,7 +1047,7 @@ interactions:
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Date:
-      - Mon, 29 May 2023 12:13:31 GMT
+      - Mon, 10 Jul 2023 07:41:05 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1057,7 +1057,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - af6c4bac-1108-4308-8b4f-b54f7f5f311f
+      - 6491c308-5599-44f2-afa1-b939f42e02b4
     status: 204 No Content
     code: 204
     duration: ""
@@ -1068,10 +1068,10 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
-    body: '{"message":"\"081aa010-1356-4602-9909-96b85b6dd016\" not found","type":"unknown_resource"}'
+    body: '{"message":"\"2650e51d-d231-4f8c-90a8-120774a4c452\" not found","type":"unknown_resource"}'
     headers:
       Content-Length:
       - "93"
@@ -1080,7 +1080,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:31 GMT
+      - Mon, 10 Jul 2023 07:41:06 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1090,7 +1090,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 74637e9d-131c-4229-91d3-0336ecc8fc74
+      - 4ee02b23-dffc-4568-a58b-2b4467f6dad0
     status: 404 Not Found
     code: 404
     duration: ""
@@ -1101,7 +1101,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/volumes/1f08c203-2c80-428f-beca-595b2bc8054b
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/volumes/b19e0996-bfac-48d4-b432-222056ee1ef5
     method: DELETE
   response:
     body: ""
@@ -1109,7 +1109,7 @@ interactions:
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Date:
-      - Mon, 29 May 2023 12:13:31 GMT
+      - Mon, 10 Jul 2023 07:41:06 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1119,7 +1119,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - d8d8f52a-5c5f-4929-b43b-579382c6a881
+      - 8df2b1c6-322b-41f5-b6c4-6b9488caeecf
     status: 204 No Content
     code: 204
     duration: ""
@@ -1130,10 +1130,10 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.1; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/081aa010-1356-4602-9909-96b85b6dd016
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-2/servers/2650e51d-d231-4f8c-90a8-120774a4c452
     method: GET
   response:
-    body: '{"message":"\"081aa010-1356-4602-9909-96b85b6dd016\" not found","type":"unknown_resource"}'
+    body: '{"message":"\"2650e51d-d231-4f8c-90a8-120774a4c452\" not found","type":"unknown_resource"}'
     headers:
       Content-Length:
       - "93"
@@ -1142,7 +1142,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 29 May 2023 12:13:31 GMT
+      - Mon, 10 Jul 2023 07:41:06 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1152,7 +1152,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - cfaa3162-346c-44be-addf-f9c74d4db146
+      - 6f99044c-ce4e-45cc-b5f6-231e2f279530
     status: 404 Not Found
     code: 404
     duration: ""
