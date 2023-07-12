@@ -66,6 +66,19 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	return res
 }
 
+func expandInstanceLogsPolicy(i interface{}) *rdb.LogsPolicy {
+	policyConfigRaw := i.([]interface{})
+	for _, policyRaw := range policyConfigRaw {
+		policy := policyRaw.(map[string]interface{})
+		return &rdb.LogsPolicy{
+			MaxAgeRetention:    expandUint32Ptr(policy["max_age_retention"]),
+			TotalDiskRetention: expandSizePtr(policy["total_disk_retention"]),
+		}
+	}
+
+	return nil
+}
+
 func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
 	retryInterval := defaultWaitRDBRetryInterval
 	if DefaultWaitRetryInterval != nil {
@@ -247,6 +260,22 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) interface{} {
 	}
 
 	return flat
+}
+
+func flattenInstanceLogsPolicy(policy *rdb.LogsPolicy) interface{} {
+	p := []map[string]interface{}(nil)
+	if policy != nil {
+		p = append(p, map[string]interface{}{
+			"max_age_retention":    flattenUint32Ptr(policy.MaxAgeRetention),
+			"total_disk_retention": flattenSizePtr(policy.TotalDiskRetention),
+		})
+	}
+
+	defaultRetention := uint32(30)
+	return &rdb.LogsPolicy{
+		MaxAgeRetention:    &defaultRetention,
+		TotalDiskRetention: scw.SizePtr(0),
+	}
 }
 
 // expandTimePtr returns a time pointer for an RFC3339 time.

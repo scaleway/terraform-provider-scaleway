@@ -262,6 +262,28 @@ func resourceScalewayRdbInstance() *schema.Resource {
 					},
 				},
 			},
+			"logs_policy": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Logs policy configuration",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// Computed
+						"max_age_retention": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The max age (in days) of remote logs to keep on the Database Instance",
+						},
+						"total_disk_retention": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The max disk size of remote logs to keep on the Database Instance.",
+						},
+					},
+				},
+			},
 			// Common
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
@@ -323,14 +345,14 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
+	mustUpdate := false
+	updateReq := &rdb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: res.ID,
+	}
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
-		updateReq := &rdb.UpdateInstanceRequest{
-			Region:     region,
-			InstanceID: res.ID,
-		}
-
 		updateReq.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
 
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
@@ -340,7 +362,16 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
 			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
 		}
+		mustUpdate = true
+	}
 
+	policyRaw, exist := d.GetOk("logs_policy")
+	if exist {
+		updateReq.LogsPolicy = expandInstanceLogsPolicy(policyRaw)
+		mustUpdate = true
+	}
+
+	if mustUpdate {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -351,6 +382,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 	}
+
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
 		res, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -434,6 +466,8 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
 	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
 
+	// set logs policy
+	_ = d.Set("logs_policy", flattenInstanceLogsPolicy(res.LogsPolicy))
 	// set endpoints
 	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)
 	if pnExist {
@@ -473,6 +507,10 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 	if d.HasChange("tags") {
 		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	if d.HasChange("logs_policy") {
+		req.LogsPolicy = expandInstanceLogsPolicy(d.Get("logs_policy"))
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))

@@ -611,6 +611,13 @@ func flattenUint32Ptr(i *uint32) interface{} {
 	return *i
 }
 
+func flattenSizePtr(i *scw.Size) interface{} {
+	if i == nil {
+		return 0
+	}
+	return *i
+}
+
 func expandInt32Ptr(data interface{}) *int32 {
 	if data == nil || data == "" {
 		return nil
@@ -623,6 +630,15 @@ func expandUint32Ptr(data interface{}) *uint32 {
 		return nil
 	}
 	return scw.Uint32Ptr(uint32(data.(int)))
+}
+
+func expandSizePtr(data interface{}) *scw.Size {
+	if data == nil || data == "" {
+		return nil
+	}
+
+	size := scw.Size(data.(int))
+	return &size
 }
 
 func expandIPNet(raw string) (scw.IPNet, error) {
