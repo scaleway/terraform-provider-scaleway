@@ -141,7 +141,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 							Computed:    true,
 							Description: "UUID of the endpoint to be connected to the cluster",
 						},
-						"zone": zoneSchema(),
+						"zone": zoneComputedSchema(),
 					},
 				},
 			},
