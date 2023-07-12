@@ -336,6 +336,7 @@ func TestAccScalewayInstanceServer_Basic(t *testing.T) {
 					  name  = "test"
 					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
+					  replace_on_type_change  = true
 					
 					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
 					}`,
@@ -1399,6 +1400,7 @@ func TestAccScalewayInstanceServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-S"),
 				),
 				ExpectError: regexp.MustCompile("cannot change server type"),
+				PlanOnly:    true,
 			},
 		},
 	})

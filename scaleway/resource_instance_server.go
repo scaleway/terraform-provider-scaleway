@@ -58,6 +58,12 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
 				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
+			"replace_on_type_change": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Delete and re-create server if type change",
+			},
 			"tags": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
@@ -1061,6 +1067,10 @@ func instanceServerCanMigrate(api *instance.API, server *instance.Server, reques
 func customDiffInstanceServerType(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	if !diff.HasChange("type") || diff.Id() == "" {
 		return nil
+	}
+
+	if diff.Get("replace_on_type_change").(bool) == true {
+		return diff.ForceNew("type")
 	}
 
 	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, diff.Id())
