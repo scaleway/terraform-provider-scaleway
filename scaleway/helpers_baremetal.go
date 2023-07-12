@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"time"
@@ -374,4 +375,15 @@ func customDiffBaremetalPrivateNetworkOption() func(ctx context.Context, diff *s
 
 		return nil
 	}
+}
+
+func baremetalPrivateNetworkSetHash(v interface{}) int {
+	var buf bytes.Buffer
+
+	m := v.(map[string]interface{})
+	if pnID, ok := m["id"]; ok {
+		buf.WriteString(expandID(pnID))
+	}
+
+	return StringHashcode(buf.String())
 }

@@ -80,10 +80,11 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						// Private network specific
 						"private_network_id": {
-							Type:         schema.TypeString,
-							Description:  "UUID of the private network to be connected to the read replica (UUID format)",
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
-							Required:     true,
+							Type:             schema.TypeString,
+							Description:      "UUID of the private network to be connected to the read replica (UUID format)",
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: diffSuppressFuncLocality,
+							Required:         true,
 						},
 						"service_ip": {
 							Type:         schema.TypeString,

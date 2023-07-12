@@ -1,10 +1,12 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -601,4 +603,25 @@ func ipv4Match(cidr, ipStr string) bool {
 	ip := net.ParseIP(ipStr)
 
 	return cidrNet.Contains(ip)
+}
+
+func lbPrivateNetworkSetHash(v interface{}) int {
+	var buf bytes.Buffer
+
+	m := v.(map[string]interface{})
+	if pnID, ok := m["private_network_id"]; ok {
+		buf.WriteString(expandID(pnID))
+	}
+
+	if staticConfig, ok := m["static_config"]; ok {
+		for _, item := range staticConfig.([]interface{}) {
+			buf.WriteString(item.(string))
+		}
+	}
+
+	if dhcpConfig, ok := m["dhcp_config"]; ok {
+		buf.WriteString(strconv.FormatBool(dhcpConfig.(bool)))
+	}
+
+	return StringHashcode(buf.String())
 }

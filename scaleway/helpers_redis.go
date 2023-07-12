@@ -1,8 +1,10 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -184,4 +186,27 @@ func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 		break
 	}
 	return pnFlat
+}
+
+func redisPrivateNetworkSetHash(v interface{}) int {
+	var buf bytes.Buffer
+
+	m := v.(map[string]interface{})
+	if pnID, ok := m["id"]; ok {
+		buf.WriteString(expandID(pnID))
+	}
+
+	if serviceIPs, ok := m["service_ips"]; ok {
+		// Sort the service IPs before generating the hash.
+		ips := serviceIPs.([]interface{})
+		sort.Slice(ips, func(i, j int) bool {
+			return ips[i].(string) < ips[j].(string)
+		})
+
+		for i, item := range ips {
+			buf.WriteString(fmt.Sprintf("%d-%s-", i, item.(string)))
+		}
+	}
+
+	return StringHashcode(buf.String())
 }
