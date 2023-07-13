@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -211,6 +212,11 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork != nil {
 			pn := endpoint.PrivateNetwork
+			fetchRegion, err := pn.Zone.Region()
+			if err != nil {
+				return diag.FromErr(err), false
+			}
+			pnRegionalID := newRegionalIDString(fetchRegion, pn.PrivateNetworkID)
 			serviceIP, err := flattenIPNet(pn.ServiceIP)
 			if err != nil {
 				return pnI, false
@@ -221,7 +227,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				"port":        int(endpoint.Port),
 				"name":        endpoint.Name,
 				"ip_net":      serviceIP,
-				"pn_id":       pn.PrivateNetworkID,
+				"pn_id":       pnRegionalID,
 				"hostname":    flattenStringPtr(endpoint.Hostname),
 			})
 			return pnI, true
@@ -316,7 +322,12 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 			directAccess = rawEndpoint
 		}
 		if endpoint.PrivateNetwork != nil {
-			rawEndpoint["private_network_id"] = endpoint.PrivateNetwork.PrivateNetworkID
+			fetchRegion, err := endpoint.PrivateNetwork.Zone.Region()
+			if err != nil {
+				return diag.FromErr(err), false
+			}
+			pnRegionalID := newRegionalIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
+			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
 			privateNetwork = rawEndpoint

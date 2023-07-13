@@ -361,7 +361,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.12.1.0/20"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
-					testAccCheckRawIDsMatch("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
 			},
 			{
@@ -448,7 +448,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.13.1.0/20"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
-					testAccCheckRawIDsMatch("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.1.service_ips.0"),
 					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.1.id"),
 					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.1.endpoint_id"),
@@ -552,7 +552,7 @@ func TestAccScalewayRedisCluster_Endpoints_ClusterMode(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.2", "10.12.1.12/24"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
-					testAccCheckRawIDsMatch("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
 			},
 			{
@@ -737,7 +737,7 @@ func testAccCheckScalewayRedisPrivateNetworksIdsAreEither(name string, possibili
 		for i, possibility := range possibilities {
 			rs, ok := state.RootModule().Resources[possibility]
 			if ok {
-				possibilities[i] = expandID(rs.Primary.ID)
+				possibilities[i] = rs.Primary.ID
 			}
 		}
 		actualIDs := []string(nil)

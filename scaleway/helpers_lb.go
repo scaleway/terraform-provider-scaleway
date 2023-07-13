@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -203,8 +204,13 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) inter
 		if pn.DHCPConfig != nil {
 			dhcpConfigExist = true
 		}
+		pnRegion, err := pn.LB.Zone.Region()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		pnRegionalID := newRegionalIDString(pnRegion, pn.PrivateNetworkID)
 		pnI = append(pnI, map[string]interface{}{
-			"private_network_id": pn.PrivateNetworkID,
+			"private_network_id": pnRegionalID,
 			"dhcp_config":        dhcpConfigExist,
 			"status":             pn.Status.String(),
 			"zone":               pn.LB.Zone.String(),

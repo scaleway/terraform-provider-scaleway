@@ -212,11 +212,11 @@ func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) i
 	return flattenedOptions
 }
 
-func flattenBaremetalPrivateNetworks(privateNetworks []*baremetal.ServerPrivateNetwork) interface{} {
+func flattenBaremetalPrivateNetworks(region scw.Region, privateNetworks []*baremetal.ServerPrivateNetwork) interface{} {
 	flattenedPrivateNetworks := []map[string]interface{}(nil)
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
-			"id":         privateNetwork.PrivateNetworkID,
+			"id":         newRegionalIDString(region, privateNetwork.PrivateNetworkID),
 			"vlan":       flattenUint32Ptr(privateNetwork.Vlan),
 			"status":     privateNetwork.Status,
 			"created_at": flattenTime(privateNetwork.CreatedAt),
