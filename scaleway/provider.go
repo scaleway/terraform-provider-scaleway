@@ -165,6 +165,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip_reverse_dns":   resourceScalewayVPCPublicGatewayIPReverseDNS(),
 				"scaleway_vpc_public_gateway_pat_rule":         resourceScalewayVPCPublicGatewayPATRule(),
 				"scaleway_vpc_private_network":                 resourceScalewayVPCPrivateNetwork(),
+				"scaleway_webhosting":                          resourceScalewayWebhosting(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
