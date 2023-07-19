@@ -39,7 +39,7 @@ func dataSourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceDa
 		res, err := api.ListVolumes(&block.ListVolumesRequest{
 			Zone:      zone,
 			Name:      expandStringPtr(d.Get("name")),
-			ProjectID: d.Get("project_id").(string),
+			ProjectID: expandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)

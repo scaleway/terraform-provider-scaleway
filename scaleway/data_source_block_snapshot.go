@@ -39,7 +39,7 @@ func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.Resource
 		res, err := api.ListSnapshots(&block.ListSnapshotsRequest{
 			Zone:      zone,
 			Name:      expandStringPtr(d.Get("name")),
-			ProjectID: d.Get("project_id").(string),
+			ProjectID: expandStringPtr(d.Get("project_id")),
 			VolumeID:  expandStringPtr(d.Get("volume_id")),
 		})
 		if err != nil {

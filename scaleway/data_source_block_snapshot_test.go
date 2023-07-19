@@ -19,7 +19,7 @@ func TestAccScalewayDataSourceBlockSnapshot_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_block_volume main {
-						type = "b_ssd"
+						iops = 5000
 						size_in_gb = 10
 					}
 

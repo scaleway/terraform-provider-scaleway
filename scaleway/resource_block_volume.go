@@ -33,17 +33,18 @@ func resourceScalewayBlockVolume() *schema.Resource {
 				Optional:    true,
 				Description: "The volume name",
 			},
-			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The volume type",
+			"iops": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Optional:    true,
+				Description: "The maximum IO/s expected, must match available options",
 			},
 			"size_in_gb": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
 				Description:  "The volume size in GB",
-				ExactlyOneOf: []string{"snapshot_id"},
+				ExactlyOneOf: []string{"snapshot_id"}, // TODO: Allow size with snapshot to change created volume size
 			},
 			"snapshot_id": {
 				Type:             schema.TypeString,
@@ -52,13 +53,6 @@ func resourceScalewayBlockVolume() *schema.Resource {
 				Description:      "The snapshot to create the volume from",
 				ExactlyOneOf:     []string{"size_in_gb"},
 				DiffSuppressFunc: diffSuppressFuncLocality,
-			},
-			"snapshot_project_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Description:  "ID of the project where the snapshot is",
-				RequiredWith: []string{"snapshot_id"},
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -87,19 +81,23 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 		Zone:      zone,
 		Name:      expandOrGenerateString(d.Get("name").(string), "volume"),
 		ProjectID: d.Get("project_id").(string),
-		Type:      d.Get("type").(string),
 		Tags:      expandStrings(d.Get("tags")),
 	}
 
+	if iops, ok := d.GetOk("iops"); ok {
+		req.PerfIops = expandUint32Ptr(iops)
+	}
+
 	if size, ok := d.GetOk("size_in_gb"); ok {
-		volumeSizeInBytes := scw.Size(uint64(size.(int)) * gb)
-		req.Size = &volumeSizeInBytes
+		volumeSizeInBytes := scw.Size(size.(int)) * scw.GB
+		req.FromEmpty = &block.CreateVolumeRequestFromEmpty{
+			Size: volumeSizeInBytes,
+		}
 	}
 
 	if snapshotID, ok := d.GetOk("snapshot_id"); ok {
-		req.Snapshot = &block.SnapshotSpec{
+		req.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
 			SnapshotID: expandID(snapshotID.(string)),
-			ProjectID:  expandStringPtr(d.Get("snapshot_project_id")),
 		}
 	}
 

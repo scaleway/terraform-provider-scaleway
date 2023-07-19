@@ -58,7 +58,7 @@ func TestAccScalewayBlockVolume_Basic(t *testing.T) {
 				Config: `
 					resource scaleway_block_volume main {
 						name = "test-block-volume-basic"
-						type = "b_ssd"
+						iops = 5000
 						size_in_gb = 20
 					}
 				`,
@@ -86,7 +86,7 @@ func TestAccScalewayBlockVolume_FromSnapshot(t *testing.T) {
 				Config: `
 					resource scaleway_block_volume base {
 						name = "test-block-volume-from-snapshot-base"
-						type = "b_ssd"
+						iops = 5000
 						size_in_gb = 20
 					}
 
