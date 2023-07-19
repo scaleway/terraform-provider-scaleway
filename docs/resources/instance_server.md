@@ -169,7 +169,10 @@ The following arguments are supported:
 
 - `type` - (Required) The commercial type of the server.
 You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
-Updates to this field will recreate a new resource.
+Updates to this field will migrate the server, local storage constraint must be respected. [More info](https://www.scaleway.com/en/docs/compute/instances/api-cli/migrating-instances/).
+Use `replace_on_type_change` to trigger replacement instead of migration.
+
+~> **Important:** If `type` change and migration occurs, the server will be stopped and changed backed to its original state. It will be started again if it was running.
 
 - `image` - (Optional) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
 to find either the right `label` or the right local image `ID` for a given `type`. Optional when creating an instance with an existing root volume.
@@ -226,6 +229,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
    Use the `pn_id` key to attach a [private_network](https://developers.scaleway.com/en/products/instance/api/#private-nics-a42eea) on your instance.
 
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
+
+- `replace_on_type_change` - (Defaults to false) If true, the server will be replaced if `type` is changed. Otherwise, the server will migrate.
 
 - `bootscript_id` - The ID of the bootscript to use  (set boot_type to `bootscript`).
 

@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -335,6 +336,7 @@ func TestAccScalewayInstanceServer_Basic(t *testing.T) {
 					  name  = "test"
 					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
+					  replace_on_type_change  = true
 					
 					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
 					}`,
@@ -1312,6 +1314,92 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_Migrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XS"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "DEV1-L"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-L"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "DEV1-S"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-S"),
+				),
+				ExpectError: regexp.MustCompile("cannot change server type"),
+				PlanOnly:    true,
 			},
 		},
 	})
