@@ -14,7 +14,7 @@ import (
 const (
 	defaultDomainRecordTimeout     = 5 * time.Minute
 	defaultDomainZoneTimeout       = 5 * time.Minute
-	defaultDomainZoneRetryInterval = 5 * time.Minute
+	defaultDomainZoneRetryInterval = 5 * time.Second
 )
 
 // domainAPI returns a new domain API.
