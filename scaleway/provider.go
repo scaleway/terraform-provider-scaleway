@@ -237,6 +237,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip":               dataSourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":                 dataSourceScalewayVPCPrivateNetwork(),
 				"scaleway_vpc_public_gateway_pat_rule":         dataSourceScalewayVPCPublicGatewayPATRule(),
+				"scaleway_webhosting":                          dataSourceScalewayWebhosting(),
 				"scaleway_webhosting_offer":                    dataSourceScalewayWebhostingOffer(),
 			},
 		}
