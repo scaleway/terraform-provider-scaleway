@@ -181,12 +181,20 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	certificate, err := waitForLBCertificate(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
+	certificate, err := lbAPI.GetCertificate(&lbSDK.ZonedAPIGetCertificateRequest{
+		CertificateID: ID,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
