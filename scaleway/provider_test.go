@@ -21,7 +21,7 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
@@ -328,7 +328,7 @@ type FakeSideProjectTerminateFunc func() error
 // createFakeSideProject creates a temporary project with a temporary IAM application and policy.
 //
 // The returned function is a cleanup function that should be called when to delete the project.
-func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+func createFakeSideProject(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
 	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
 		for i := len(terminateFunctions) - 1; i >= 0; i-- {
@@ -345,8 +345,8 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, Fake
 	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
 	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
 
-	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
-	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+	projectAPI := accountV3.NewProjectAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
 		Name: projectName,
 	})
 	if err != nil {
@@ -357,7 +357,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, Fake
 		return nil, nil, nil, err
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
-		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+		return projectAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 			ProjectID: project.ID,
 		})
 	})
@@ -425,7 +425,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, Fake
 // createFakeIAMManager creates a temporary project with a temporary IAM application and policy manager.
 //
 // The returned function is a cleanup function that should be called when to delete the project.
-func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+func createFakeIAMManager(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
 	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
 		for i := len(terminateFunctions) - 1; i >= 0; i-- {
@@ -442,8 +442,8 @@ func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeS
 	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
 	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
 
-	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
-	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+	projectAPI := accountV3.NewProjectAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
 		Name: projectName,
 	})
 	if err != nil {
@@ -454,7 +454,7 @@ func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeS
 		return nil, nil, nil, err
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
-		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+		return projectAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 			ProjectID: project.ID,
 		})
 	})
@@ -523,7 +523,7 @@ func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeS
 // given project and API key as default profile configuration.
 //
 // This is useful to test resources that need to create resources in another project.
-func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV2.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
+func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV3.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
 	t := tt.T
 
 	metaSide, err := buildMeta(ctx, &metaConfig{

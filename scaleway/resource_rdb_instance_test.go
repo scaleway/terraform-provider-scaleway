@@ -273,7 +273,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -284,7 +284,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 
 					resource scaleway_rdb_instance main {
@@ -315,12 +315,12 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network_to_be_replaced"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_private_network"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 
 					resource scaleway_rdb_instance main {
@@ -351,12 +351,12 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network_to_be_replaced"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_private_network"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 
 					resource scaleway_vpc_public_gateway_dhcp main {
@@ -422,7 +422,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_private_network"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 
 					resource scaleway_rdb_instance main {
@@ -456,7 +456,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_private_network"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 
 					resource scaleway_vpc_public_gateway_dhcp main {
@@ -522,7 +522,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_private_network"
-						zone = "nl-ams-1"
+						region= "nl-ams"
 					}
 
 					resource scaleway_rdb_instance main {

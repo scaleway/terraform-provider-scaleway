@@ -1,28 +1,19 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	v1 "github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	validator "github.com/scaleway/scaleway-sdk-go/validation"
 )
-
-// vpcAPIWithZone returns a new VPC API and the zone for a Create request
-func vpcAPIWithZone(d *schema.ResourceData, m interface{}) (*v1.API, scw.Zone, error) {
-	meta := m.(*Meta)
-	vpcAPI := v1.NewAPI(meta.scwClient)
-
-	zone, err := extractZone(d, meta)
-	if err != nil {
-		return nil, "", err
-	}
-	return vpcAPI, zone, err
-}
 
 // vpcAPIWithZoneAndID
 func vpcAPIWithZoneAndID(m interface{}, id string) (*v1.API, scw.Zone, string, error) {
@@ -202,4 +193,44 @@ func maskHexToDottedDecimal(mask net.IPMask) string {
 func getPrefixLength(mask net.IPMask) int {
 	ones, _ := mask.Size()
 	return ones
+}
+
+func vpcPrivateNetworkUpgradeV1SchemaType() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id": cty.String,
+	})
+}
+
+func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
+	var err error
+
+	ID, exist := rawState["id"]
+	if !exist {
+		return nil, fmt.Errorf("upgrade: id not exist")
+	}
+	rawState["id"], err = vpcPrivateNetworkUpgradeV1ZonalToRegionalID(ID.(string))
+	if err != nil {
+		return nil, err
+	}
+
+	return rawState, nil
+}
+
+func vpcPrivateNetworkUpgradeV1ZonalToRegionalID(element string) (string, error) {
+	locality, id, err := parseLocalizedID(element)
+	// return error if can't parse
+	if err != nil {
+		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
+	}
+	// if locality is already regional return
+	if validator.IsRegion(locality) {
+		return element, nil
+	}
+
+	fetchRegion, err := scw.Zone(locality).Region()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s/%s", fetchRegion.String(), id), nil
 }

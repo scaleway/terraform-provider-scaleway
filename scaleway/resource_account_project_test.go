@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -19,11 +19,11 @@ func init() {
 
 func testSweepAccountProject(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
-		accountAPI := accountV2.NewAPI(scwClient)
+		accountAPI := accountV3.NewProjectAPI(scwClient)
 
 		l.Debugf("sweeper: destroying the project")
 
-		listProjects, err := accountAPI.ListProjects(&accountV2.ListProjectsRequest{}, scw.WithAllPages())
+		listProjects, err := accountAPI.ListProjects(&accountV3.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}
@@ -31,7 +31,7 @@ func testSweepAccountProject(_ string) error {
 			if project.Name == "default" || !isTestResource(project.Name) {
 				continue
 			}
-			err = accountAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+			err = accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 				ProjectID: project.ID,
 			})
 			if err != nil {
@@ -117,9 +117,9 @@ func testAccCheckScalewayAccountProjectExists(tt *TestTools, name string) resour
 			return fmt.Errorf("resource not found: %s", name)
 		}
 
-		accountAPI := accountV2API(tt.Meta)
+		accountAPI := accountV3ProjectAPI(tt.Meta)
 
-		_, err := accountAPI.GetProject(&accountV2.GetProjectRequest{
+		_, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 			ProjectID: rs.Primary.ID,
 		})
 		if err != nil {
@@ -137,9 +137,9 @@ func testAccCheckScalewayAccountProjectDestroy(tt *TestTools) resource.TestCheck
 				continue
 			}
 
-			accountAPI := accountV2API(tt.Meta)
+			accountAPI := accountV3ProjectAPI(tt.Meta)
 
-			_, err := accountAPI.GetProject(&accountV2.GetProjectRequest{
+			_, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 				ProjectID: rs.Primary.ID,
 			})
 

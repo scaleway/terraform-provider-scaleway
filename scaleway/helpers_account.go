@@ -1,11 +1,10 @@
 package scaleway
 
 import (
-	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 )
 
-// accountV2API supports projects.
-func accountV2API(m interface{}) *accountV2.API {
+func accountV3ProjectAPI(m interface{}) *accountV3.ProjectAPI {
 	meta := m.(*Meta)
-	return accountV2.NewAPI(meta.scwClient)
+	return accountV3.NewProjectAPI(meta.scwClient)
 }

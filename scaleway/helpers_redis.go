@@ -7,6 +7,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -148,6 +149,11 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 			continue
 		}
 		pn := endpoint.PrivateNetwork
+		fetchRegion, err := pn.Zone.Region()
+		if err != nil {
+			return diag.FromErr(err), false
+		}
+		pnRegionalID := newRegionalIDString(fetchRegion, pn.ID)
 		serviceIps := []interface{}(nil)
 		for _, ip := range pn.ServiceIPs {
 			serviceIps = append(serviceIps, ip.String())
@@ -155,7 +161,7 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 		pnFlat = append(pnFlat, map[string]interface{}{
 			"endpoint_id": endpoint.ID,
 			"zone":        pn.Zone,
-			"id":          pn.ID,
+			"id":          pnRegionalID,
 			"service_ips": serviceIps,
 		})
 	}
