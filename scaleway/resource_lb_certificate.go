@@ -193,11 +193,6 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_ = d.Set("lb_id", newZonedIDString(zone, certificate.LB.ID))
 	_ = d.Set("name", certificate.Name)
 	_ = d.Set("common_name", certificate.CommonName)
@@ -220,7 +215,6 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 			Detail:   errDetails,
 		})
 	}
-
 	return diags
 }
 
