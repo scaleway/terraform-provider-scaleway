@@ -29,7 +29,7 @@ The following arguments are supported:
 
 - `offer_id` - (Required) The ID of the selected offer for the hosting.
 - `email` - (Required) The contact email of the client for the hosting.
-- `domain` - (Required) TThe domain name of the hosting.
+- `domain` - (Required) The domain name of the hosting.
 - `option_ids` - (Optional) The IDs of the selected options for the hosting.
 - `tags` - (Optional) The tags associated with the hosting.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the Hosting.
