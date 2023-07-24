@@ -193,21 +193,6 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	// check if cert is on error state
-	if certificate.Status == lbSDK.CertificateStatusError {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  fmt.Sprintf("certificate %s with error state", certificate.ID),
-			},
-		}
-	}
-
-	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_ = d.Set("lb_id", newZonedIDString(zone, certificate.LB.ID))
 	_ = d.Set("name", certificate.Name)
 	_ = d.Set("common_name", certificate.CommonName)
@@ -217,7 +202,20 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("not_valid_after", flattenTime(certificate.NotValidAfter))
 	_ = d.Set("status", certificate.Status)
 
-	return nil
+	diags := diag.Diagnostics(nil)
+
+	if certificate.Status == lbSDK.CertificateStatusError {
+		errDetails := ""
+		if certificate.StatusDetails != nil {
+			errDetails = *certificate.StatusDetails
+		}
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("certificate %s with error state", certificate.ID),
+			Detail:   errDetails,
+		})
+	}
+	return diags
 }
 
 func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
