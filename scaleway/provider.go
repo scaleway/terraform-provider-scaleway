@@ -107,6 +107,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_iam_api_key":                         resourceScalewayIamAPIKey(),
 				"scaleway_iam_application":                     resourceScalewayIamApplication(),
 				"scaleway_iam_group":                           resourceScalewayIamGroup(),
+				"scaleway_iam_group_membership":                resourceScalewayIamGroupMembership(),
 				"scaleway_iam_policy":                          resourceScalewayIamPolicy(),
 				"scaleway_instance_user_data":                  resourceScalewayInstanceUserData(),
 				"scaleway_instance_image":                      resourceScalewayInstanceImage(),
