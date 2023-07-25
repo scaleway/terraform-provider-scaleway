@@ -25,14 +25,14 @@ func resourceScalewayIamGroupMembership() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The ID of the user",
-				AtLeastOneOf: []string{"application_id"},
+				ExactlyOneOf: []string{"application_id"},
 				ForceNew:     true,
 			},
 			"application_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The ID of the user",
-				AtLeastOneOf: []string{"user_id"},
+				ExactlyOneOf: []string{"user_id"},
 				ForceNew:     true,
 			},
 			"group_id": {
