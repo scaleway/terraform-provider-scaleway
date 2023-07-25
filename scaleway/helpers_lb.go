@@ -221,6 +221,10 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) inter
 }
 
 func flattenLbACLMatch(match *lbSDK.ACLMatch) interface{} {
+	if match == nil {
+		return nil
+	}
+
 	return []map[string]interface{}{
 		{
 			"ip_subnet":          flattenSliceStringPtr(match.IPSubnet),
