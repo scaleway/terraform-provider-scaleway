@@ -61,7 +61,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 			},
 			"os": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				Description:      "The base image of the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
@@ -77,7 +77,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
 				},
-				Required: true,
+				Optional: true,
 				Description: `Array of SSH key IDs allowed to SSH to the server
 
 **NOTE** : If you are attempting to update your SSH key IDs, it will induce the reinstall of your server. 
@@ -112,6 +112,12 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Optional:    true,
 				Default:     false,
 				Description: "If True, this boolean allows to reinstall the server on SSH key IDs, user or password changes",
+			},
+			"install_config_afterward": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If True, this boolean allows to create a server without the install config if you want to provide it later",
 			},
 			"description": {
 				Type:         schema.TypeString,
@@ -278,8 +284,11 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		}
 		offerID = newZonedID(zone, o.ID)
 	}
-	if diags := validateInstallConfig(ctx, d, meta); len(diags) > 0 {
-		return diags
+
+	if !d.Get("install_config_afterward").(bool) {
+		if diags := validateInstallConfig(ctx, d, meta); len(diags) > 0 {
+			return diags
+		}
 	}
 
 	server, err := baremetalAPI.CreateServer(&baremetal.CreateServerRequest{
@@ -301,19 +310,26 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = baremetalAPI.InstallServer(&baremetal.InstallServerRequest{
-		Zone:            server.Zone,
-		ServerID:        server.ID,
-		OsID:            expandZonedID(d.Get("os")).ID,
-		Hostname:        expandStringWithDefault(d.Get("hostname"), server.Name),
-		SSHKeyIDs:       expandStrings(d.Get("ssh_key_ids")),
-		User:            expandStringPtr(d.Get("user")),
-		Password:        expandStringPtr(d.Get("password")),
-		ServiceUser:     expandStringPtr(d.Get("service_user")),
-		ServicePassword: expandStringPtr(d.Get("service_password")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if !d.Get("install_config_afterward").(bool) {
+		_, err = baremetalAPI.InstallServer(&baremetal.InstallServerRequest{
+			Zone:            server.Zone,
+			ServerID:        server.ID,
+			OsID:            expandZonedID(d.Get("os")).ID,
+			Hostname:        expandStringWithDefault(d.Get("hostname"), server.Name),
+			SSHKeyIDs:       expandStrings(d.Get("ssh_key_ids")),
+			User:            expandStringPtr(d.Get("user")),
+			Password:        expandStringPtr(d.Get("password")),
+			ServiceUser:     expandStringPtr(d.Get("service_user")),
+			ServicePassword: expandStringPtr(d.Get("service_password")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zone, server.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	options, optionsExist := d.GetOk("options")
@@ -355,11 +371,6 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
-	}
-
-	_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zone, server.ID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
 	}
 
 	return resourceScalewayBaremetalServerRead(ctx, d, meta)

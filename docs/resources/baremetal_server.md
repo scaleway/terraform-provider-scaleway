@@ -111,6 +111,21 @@ resource "scaleway_baremetal_server" "base" {
 }
 ```
 
+### Without install config
+
+```hcl
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-B112X-SSD"
+}
+
+resource "scaleway_baremetal_server" "base" {
+  zone	                   = "fr-par-2"
+  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
+  install_config_afterward = true
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
@@ -130,6 +145,7 @@ The following arguments are supported:
 - `service_password` - (Optional) Password used for the service to install. May be required depending on used os.
 - `reinstall_on_config_changes` - (Optional) If True, this boolean allows to reinstall the server on install config changes.
   ~> **Important:** Updates to `ssh_key_ids`, `user`, `password`, `service_user` or `service_password` will not take effect on the server, it requires to reinstall it. To do so please set 'reinstall_on_config_changes' argument to true.
+- `install_config_afterward` - (Optional) If True, this boolean allows to create a server without the install config if you want to provide it later.
 - `name` - (Optional) The name of the server.
 - `hostname` - (Optional) The hostname of the server.
 - `description` - (Optional) A description for the server.
