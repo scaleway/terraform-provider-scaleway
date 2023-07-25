@@ -41,6 +41,60 @@ func TestAccScalewayIamGroupMembership_Basic(t *testing.T) {
 					testCheckResourceAttrUUID("scaleway_iam_group_membership.main", "id"),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_iam_group main {
+						name = "tf-tests-iam-group-membership-basic"
+						external_membership = true
+					}
+
+					resource scaleway_iam_application main {
+						name = "tf-tests-iam-group-membership-basic"
+					}
+
+					resource scaleway_iam_group_membership main {
+						group_id = scaleway_iam_group.main.id
+						application_id = scaleway_iam_application.main.id
+					}
+
+					resource scaleway_iam_group_membership import {
+						group_id = scaleway_iam_group.main.id
+						application_id = scaleway_iam_application.main.id
+					}
+				`,
+				ImportState:  true,
+				ResourceName: "scaleway_iam_group_membership.import",
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					groupID := state.RootModule().Resources["scaleway_iam_group.main"].Primary.ID
+					applicationID := state.RootModule().Resources["scaleway_iam_application.main"].Primary.ID
+
+					return groupMembershipID(groupID, nil, &applicationID), nil
+				},
+				ImportStatePersist: true,
+			},
+			{
+				Config: `
+					resource scaleway_iam_group main {
+						name = "tf-tests-iam-group-membership-basic"
+						external_membership = true
+					}
+
+					resource scaleway_iam_application main {
+						name = "tf-tests-iam-group-membership-basic"
+					}
+
+					resource scaleway_iam_group_membership main {
+						group_id = scaleway_iam_group.main.id
+						application_id = scaleway_iam_application.main.id
+					}
+
+					resource scaleway_iam_group_membership import {
+						group_id = scaleway_iam_group.main.id
+						application_id = scaleway_iam_application.main.id
+					}
+				`,
+				PlanOnly: true,
+			},
 		},
 	})
 }
@@ -76,77 +130,6 @@ func TestAccScalewayIamGroupMembership_User(t *testing.T) {
 					testAccCheckScalewayIamGroupMembershipUserInGroup(tt, "scaleway_iam_group_membership.main", "data.scaleway_iam_user.main"),
 					testCheckResourceAttrUUID("scaleway_iam_group_membership.main", "id"),
 				),
-			},
-		},
-	})
-}
-
-func TestAccScalewayIamGroupMembership_Import(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckScalewayIamGroupDestroy(tt),
-			testAccCheckScalewayIamApplicationDestroy(tt),
-		), Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_iam_group main {
-						name = "tf-tests-iam-group-membership-import"
-						external_membership = true
-						application_ids = [scaleway_iam_application.main.id]
-					}
-
-					resource scaleway_iam_application main {
-						name = "tf-tests-iam-group-membership-import"
-					}
-				`,
-			},
-			{
-				Config: `
-					resource scaleway_iam_group main {
-						name = "tf-tests-iam-group-membership-import"
-						external_membership = true
-					}
-
-					resource scaleway_iam_application main {
-						name = "tf-tests-iam-group-membership-import"
-					}
-
-					resource scaleway_iam_group_membership main {
-						group_id = scaleway_iam_group.main.id
-						application_id = scaleway_iam_application.main.id
-					}
-				`,
-				ResourceName: "scaleway_iam_group_membership.main",
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
-					groupID := state.RootModule().Resources["scaleway_iam_group.main"].Primary.ID
-					applicationID := state.RootModule().Resources["scaleway_iam_application.main"].Primary.ID
-
-					return groupMembershipID(groupID, nil, &applicationID), nil
-				},
-				ImportStatePersist: true,
-			},
-			{
-				Config: `
-					resource scaleway_iam_group main {
-						name = "tf-tests-iam-group-membership-import"
-						external_membership = true
-					}
-
-					resource scaleway_iam_application main {
-						name = "tf-tests-iam-group-membership-import"
-					}
-
-					resource scaleway_iam_group_membership main {
-						group_id = scaleway_iam_group.main.id
-						application_id = scaleway_iam_application.main.id
-					}
-				`,
-				PlanOnly: true,
 			},
 		},
 	})
