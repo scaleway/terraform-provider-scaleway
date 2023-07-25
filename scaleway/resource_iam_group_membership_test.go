@@ -81,6 +81,77 @@ func TestAccScalewayIamGroupMembership_User(t *testing.T) {
 	})
 }
 
+func TestAccScalewayIamGroupMembership_Import(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayIamGroupDestroy(tt),
+			testAccCheckScalewayIamApplicationDestroy(tt),
+		), Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_iam_group main {
+						name = "tf-tests-iam-group-membership-import"
+						external_membership = true
+						application_ids = [scaleway_iam_application.main.id]
+					}
+
+					resource scaleway_iam_application main {
+						name = "tf-tests-iam-group-membership-import"
+					}
+				`,
+			},
+			{
+				Config: `
+					resource scaleway_iam_group main {
+						name = "tf-tests-iam-group-membership-import"
+						external_membership = true
+					}
+
+					resource scaleway_iam_application main {
+						name = "tf-tests-iam-group-membership-import"
+					}
+
+					resource scaleway_iam_group_membership main {
+						group_id = scaleway_iam_group.main.id
+						application_id = scaleway_iam_application.main.id
+					}
+				`,
+				ResourceName: "scaleway_iam_group_membership.main",
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					groupID := state.RootModule().Resources["scaleway_iam_group.main"].Primary.ID
+					applicationID := state.RootModule().Resources["scaleway_iam_application.main"].Primary.ID
+
+					return groupMembershipID(groupID, nil, &applicationID), nil
+				},
+				ImportStatePersist: true,
+			},
+			{
+				Config: `
+					resource scaleway_iam_group main {
+						name = "tf-tests-iam-group-membership-import"
+						external_membership = true
+					}
+
+					resource scaleway_iam_application main {
+						name = "tf-tests-iam-group-membership-import"
+					}
+
+					resource scaleway_iam_group_membership main {
+						group_id = scaleway_iam_group.main.id
+						application_id = scaleway_iam_application.main.id
+					}
+				`,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayIamGroupMembershipApplicationInGroup(tt *TestTools, n string, appN string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
