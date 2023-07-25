@@ -45,7 +45,6 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "List of IDs of the users attached to the group",
 				Optional:    true,
-				Computed:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
@@ -55,7 +54,6 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "List of IDs of the applications attached to the group",
 				Optional:    true,
-				Computed:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
@@ -120,8 +118,11 @@ func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("created_at", flattenTime(group.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(group.UpdatedAt))
 	_ = d.Set("organization_id", group.OrganizationID)
-	_ = d.Set("user_ids", group.UserIDs)
-	_ = d.Set("application_ids", group.ApplicationIDs)
+
+	if !d.Get("external_membership").(bool) {
+		_ = d.Set("user_ids", group.UserIDs)
+		_ = d.Set("application_ids", group.ApplicationIDs)
+	}
 
 	return nil
 }
