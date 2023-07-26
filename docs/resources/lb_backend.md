@@ -90,6 +90,7 @@ You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (
     - `sni`                         - (Optional) The SNI to use for HC requests over SSL.
 - `on_marked_down_action`         - (Default: `none`) Modify what occurs when a backend server is marked down. Possible values are: `none` and `shutdown_sessions`.
 - `health_check_transient_delay`  - (Default: `0.5s`) The time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN).
+- `health_check_send_proxy`       - (Default: `false`) Defines whether proxy protocol should be activated for the health check.
 
 ## Attributes Reference
 
