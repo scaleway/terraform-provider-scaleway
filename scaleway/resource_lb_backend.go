@@ -257,6 +257,12 @@ func resourceScalewayLbBackend() *schema.Resource {
 				DiffSuppressFunc: diffSuppressFuncDuration,
 				Description:      "Time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN)",
 			},
+			"health_check_send_proxy": {
+				Type:        schema.TypeBool,
+				Description: "Defines whether proxy protocol should be activated for the health check",
+				Optional:    true,
+				Default:     false,
+			},
 			"on_marked_down_action": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
@@ -380,6 +386,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 			TCPConfig:       expandLbHCTCP(d.Get("health_check_tcp")),
 			HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 			HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
+			CheckSendProxy:  d.Get("health_check_send_proxy").(bool),
 		},
 		ServerIP:              expandStrings(d.Get("server_ips")),
 		ProxyProtocol:         expandLbProxyProtocol(d.Get("proxy_protocol")),
@@ -468,14 +475,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("timeout_server", flattenDuration(backend.TimeoutServer))
 	_ = d.Set("timeout_connect", flattenDuration(backend.TimeoutConnect))
 	_ = d.Set("timeout_tunnel", flattenDuration(backend.TimeoutTunnel))
-	_ = d.Set("health_check_port", backend.HealthCheck.Port)
-	_ = d.Set("health_check_max_retries", backend.HealthCheck.CheckMaxRetries)
-	_ = d.Set("health_check_timeout", flattenDuration(backend.HealthCheck.CheckTimeout))
-	_ = d.Set("health_check_delay", flattenDuration(backend.HealthCheck.CheckDelay))
 	_ = d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(backend.OnMarkedDownAction))
-	_ = d.Set("health_check_tcp", flattenLbHCTCP(backend.HealthCheck.TCPConfig))
-	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
-	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
 	_ = d.Set("send_proxy_v2", flattenBoolPtr(backend.SendProxyV2))
 	_ = d.Set("failover_host", backend.FailoverHost)
 	_ = d.Set("ssl_bridging", flattenBoolPtr(backend.SslBridging))
@@ -484,7 +484,17 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("redispatch_attempt_count", flattenInt32Ptr(backend.RedispatchAttemptCount))
 	_ = d.Set("max_retries", flattenInt32Ptr(backend.MaxRetries))
 	_ = d.Set("timeout_queue", flattenDuration(backend.TimeoutQueue.ToTimeDuration()))
+
+	// HealthCheck
+	_ = d.Set("health_check_port", backend.HealthCheck.Port)
+	_ = d.Set("health_check_max_retries", backend.HealthCheck.CheckMaxRetries)
+	_ = d.Set("health_check_timeout", flattenDuration(backend.HealthCheck.CheckTimeout))
+	_ = d.Set("health_check_delay", flattenDuration(backend.HealthCheck.CheckDelay))
+	_ = d.Set("health_check_tcp", flattenLbHCTCP(backend.HealthCheck.TCPConfig))
+	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
+	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
 	_ = d.Set("health_check_transient_delay", flattenDuration(backend.HealthCheck.TransientCheckDelay.ToTimeDuration()))
+	_ = d.Set("health_check_send_proxy", backend.HealthCheck.CheckSendProxy)
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -588,6 +598,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		CheckDelay:      healthCheckDelay,
 		HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 		HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
+		CheckSendProxy:  d.Get("health_check_send_proxy").(bool),
 	}
 	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
 		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
