@@ -16,7 +16,7 @@ require (
 	github.com/nats-io/jwt/v2 v2.4.1
 	github.com/nats-io/nats.go v1.27.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.19.0.20230717114303-9b6e07d6384b
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.20
 	github.com/stretchr/testify v1.8.4
 )
 
