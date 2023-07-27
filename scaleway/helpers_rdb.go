@@ -147,6 +147,41 @@ func expandLoadBalancer() []*rdb.EndpointSpec {
 	return res
 }
 
+func endpointsToRemove(endPoints []*rdb.Endpoint, updates interface{}) (map[string]bool, error) {
+	actions := make(map[string]bool)
+	endpoints := make(map[string]*rdb.Endpoint)
+	for _, e := range endPoints {
+		// skip load balancer
+		if e.PrivateNetwork != nil {
+			actions[e.ID] = true
+			endpoints[newZonedIDString(e.PrivateNetwork.Zone, e.PrivateNetwork.PrivateNetworkID)] = e
+		}
+	}
+
+	// compare if private networks are persisted
+	for _, raw := range updates.([]interface{}) {
+		r := raw.(map[string]interface{})
+		pnZonedID := r["pn_id"].(string)
+		locality, id, err := parseLocalizedID(pnZonedID)
+		if err != nil {
+			return nil, err
+		}
+
+		pnUpdated, err := newEndPointPrivateNetworkDetails(id, r["ip_net"].(string), locality)
+		if err != nil {
+			return nil, err
+		}
+		endpoint, exist := endpoints[pnZonedID]
+		if !exist {
+			continue
+		}
+		// match the endpoint id for a private network
+		actions[endpoint.ID] = !isEndPointEqual(endpoints[pnZonedID].PrivateNetwork, pnUpdated)
+	}
+
+	return actions, nil
+}
+
 func newEndPointPrivateNetworkDetails(id, ip, locality string) (*rdb.EndpointPrivateNetworkDetails, error) {
 	serviceIP, err := expandIPNet(ip)
 	if err != nil {
@@ -157,6 +192,18 @@ func newEndPointPrivateNetworkDetails(id, ip, locality string) (*rdb.EndpointPri
 		ServiceIP:        serviceIP,
 		Zone:             scw.Zone(locality),
 	}, nil
+}
+
+func isEndPointEqual(a, b interface{}) bool {
+	// Find out the diff Private Network or not
+	if _, ok := a.(*rdb.EndpointPrivateNetworkDetails); ok {
+		if _, ok := b.(*rdb.EndpointPrivateNetworkDetails); ok {
+			detailsA := a.(*rdb.EndpointPrivateNetworkDetails)
+			detailsB := b.(*rdb.EndpointPrivateNetworkDetails)
+			return reflect.DeepEqual(detailsA, detailsB)
+		}
+	}
+	return false
 }
 
 func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
