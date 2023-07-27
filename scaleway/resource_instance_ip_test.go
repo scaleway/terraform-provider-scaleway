@@ -125,6 +125,117 @@ func TestAccScalewayInstanceIP_Tags(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceIP_RoutedMigrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							zone = "fr-par-3"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							zone = "fr-par-3"
+						}
+						resource "scaleway_instance_ip" "copy" {
+							zone = "fr-par-3"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.copy"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.copy", "type", "nat"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
+				),
+				ResourceName: "scaleway_instance_ip.copy",
+				ImportState:  true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return state.RootModule().Resources["scaleway_instance_ip.main"].Primary.ID, nil
+				},
+				ImportStatePersist: true,
+			},
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							type = "routed_ipv4"
+							zone = "fr-par-3"
+						}
+						resource "scaleway_instance_ip" "copy" {
+							zone = "fr-par-3"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.copy"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
+				),
+			},
+			{
+				// After the main IP migrated, we check that there is no ForceNew on the copy
+				// This check that the ip is not deleted if the migration is done outside terraform
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.copy"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.copy", "type", "routed_ipv4"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceIP_RoutedDowngrade(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							zone = "fr-par-3"
+							type = "routed_ipv4"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							zone = "fr-par-3"
+							type = "nat"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]

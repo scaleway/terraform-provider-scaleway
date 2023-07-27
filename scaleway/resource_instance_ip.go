@@ -28,6 +28,12 @@ func resourceScalewayInstanceIP() *schema.Resource {
 				Computed:    true,
 				Description: "The IP address",
 			},
+			"type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The type of instance IP",
+			},
 			"reverse": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -50,6 +56,23 @@ func resourceScalewayInstanceIP() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			// The only allowed change is
+			// nat -> routed_ipv4
+			if diff.HasChange("type") {
+				before, after := diff.GetChange("type")
+				oldType := instance.IPType(before.(string))
+				newType := instance.IPType(after.(string))
+
+				if oldType == "nat" && newType == "routed_ipv4" {
+					return nil
+				}
+
+				return diff.ForceNew("type")
+			}
+
+			return nil
+		},
 	}
 }
 
@@ -61,6 +84,7 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 	iprequest := &instance.CreateIPRequest{
 		Zone:    zone,
 		Project: expandStringPtr(d.Get("project_id")),
+		Type:    instance.IPType(d.Get("type").(string)),
 	}
 	tags := expandStrings(d.Get("tags"))
 	if len(tags) > 0 {
@@ -103,6 +127,10 @@ func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceDat
 		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
+	if d.HasChange("type") {
+		req.Type = instance.IPType(d.Get("type").(string))
+	}
+
 	_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,6 +163,8 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("organization_id", res.IP.Organization)
 	_ = d.Set("project_id", res.IP.Project)
 	_ = d.Set("reverse", res.IP.Reverse)
+	_ = d.Set("type", res.IP.Type)
+
 	if len(res.IP.Tags) > 0 {
 		_ = d.Set("tags", flattenSliceString(res.IP.Tags))
 	}
