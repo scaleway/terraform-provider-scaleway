@@ -48,6 +48,15 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "ID or name of the server offer",
+				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
+					// remove the locality from the IDs when checking diff
+					if expandID(newValue) == expandID(oldValue) {
+						return true
+					}
+					// if the offer was provided by name
+					offerName, ok := d.GetOk("offer_name")
+					return ok && newValue == offerName
+				},
 			},
 			"offer_id": {
 				Type:        schema.TypeString,
