@@ -3,11 +3,11 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -160,70 +160,16 @@ func expandLoadBalancer() []*rdb.EndpointSpec {
 	return res
 }
 
-func endpointsToRemove(endPoints []*rdb.Endpoint, updates interface{}) (map[string]bool, error) {
-	actions := make(map[string]bool)
-	endpoints := make(map[string]*rdb.Endpoint)
-	for _, e := range endPoints {
-		// skip load balancer
-		if e.PrivateNetwork != nil {
-			actions[e.ID] = true
-			endpoints[newZonedIDString(e.PrivateNetwork.Zone, e.PrivateNetwork.PrivateNetworkID)] = e
-		}
-	}
-
-	// compare if private networks are persisted
-	for _, raw := range updates.([]interface{}) {
-		r := raw.(map[string]interface{})
-		pnZonedID := r["pn_id"].(string)
-		locality, id, err := parseLocalizedID(pnZonedID)
-		if err != nil {
-			return nil, err
-		}
-
-		pnUpdated, err := newEndPointPrivateNetworkDetails(id, r["ip_net"].(string), locality)
-		if err != nil {
-			return nil, err
-		}
-		endpoint, exist := endpoints[pnZonedID]
-		if !exist {
-			continue
-		}
-		// match the endpoint id for a private network
-		actions[endpoint.ID] = !isEndPointEqual(endpoints[pnZonedID].PrivateNetwork, pnUpdated)
-	}
-
-	return actions, nil
-}
-
-func newEndPointPrivateNetworkDetails(id, ip, locality string) (*rdb.EndpointPrivateNetworkDetails, error) {
-	serviceIP, err := expandIPNet(ip)
-	if err != nil {
-		return nil, err
-	}
-	return &rdb.EndpointPrivateNetworkDetails{
-		PrivateNetworkID: id,
-		ServiceIP:        serviceIP,
-		Zone:             scw.Zone(locality),
-	}, nil
-}
-
-func isEndPointEqual(a, b interface{}) bool {
-	// Find out the diff Private Network or not
-	if _, ok := a.(*rdb.EndpointPrivateNetworkDetails); ok {
-		if _, ok := b.(*rdb.EndpointPrivateNetworkDetails); ok {
-			detailsA := a.(*rdb.EndpointPrivateNetworkDetails)
-			detailsB := b.(*rdb.EndpointPrivateNetworkDetails)
-			return reflect.DeepEqual(detailsA, detailsB)
-		}
-	}
-	return false
-}
-
 func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	pnI := []map[string]interface{}(nil)
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork != nil {
 			pn := endpoint.PrivateNetwork
+			fetchRegion, err := pn.Zone.Region()
+			if err != nil {
+				return diag.FromErr(err), false
+			}
+			pnRegionalID := newRegionalIDString(fetchRegion, pn.PrivateNetworkID)
 			serviceIP, err := flattenIPNet(pn.ServiceIP)
 			if err != nil {
 				return pnI, false
@@ -234,7 +180,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				"port":        int(endpoint.Port),
 				"name":        endpoint.Name,
 				"ip_net":      serviceIP,
-				"pn_id":       pn.PrivateNetworkID,
+				"pn_id":       pnRegionalID,
 				"hostname":    flattenStringPtr(endpoint.Hostname),
 			})
 			return pnI, true
@@ -345,7 +291,12 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 			directAccess = rawEndpoint
 		}
 		if endpoint.PrivateNetwork != nil {
-			rawEndpoint["private_network_id"] = endpoint.PrivateNetwork.PrivateNetworkID
+			fetchRegion, err := endpoint.PrivateNetwork.Zone.Region()
+			if err != nil {
+				return diag.FromErr(err), false
+			}
+			pnRegionalID := newRegionalIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
+			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
 			privateNetwork = rawEndpoint

@@ -165,6 +165,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip_reverse_dns":   resourceScalewayVPCPublicGatewayIPReverseDNS(),
 				"scaleway_vpc_public_gateway_pat_rule":         resourceScalewayVPCPublicGatewayPATRule(),
 				"scaleway_vpc_private_network":                 resourceScalewayVPCPrivateNetwork(),
+				"scaleway_webhosting":                          resourceScalewayWebhosting(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
@@ -228,6 +229,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_secret_version":                      dataSourceScalewaySecretVersion(),
 				"scaleway_registry_image":                      dataSourceScalewayRegistryImage(),
 				"scaleway_vpc":                                 dataSourceScalewayVPC(),
+				"scaleway_vpcs":                                dataSourceScalewayVPCs(),
 				"scaleway_vpc_public_gateway":                  dataSourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_gateway_network":                 dataSourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":             dataSourceScalewayVPCPublicGatewayDHCP(),
@@ -235,6 +237,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip":               dataSourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":                 dataSourceScalewayVPCPrivateNetwork(),
 				"scaleway_vpc_public_gateway_pat_rule":         dataSourceScalewayVPCPublicGatewayPATRule(),
+				"scaleway_webhosting":                          dataSourceScalewayWebhosting(),
 				"scaleway_webhosting_offer":                    dataSourceScalewayWebhostingOffer(),
 			},
 		}

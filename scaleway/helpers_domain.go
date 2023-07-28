@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	defaultDomainRecordTimeout     = 30 * time.Second
-	defaultDomainZoneTimeout       = 30 * time.Second
+	defaultDomainRecordTimeout     = 5 * time.Minute
+	defaultDomainZoneTimeout       = 5 * time.Minute
 	defaultDomainZoneRetryInterval = 5 * time.Second
 )
 

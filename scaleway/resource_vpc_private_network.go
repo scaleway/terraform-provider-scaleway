@@ -2,16 +2,12 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	v1 "github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
-	v2 "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	validator "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 func resourceScalewayVPCPrivateNetwork() *schema.Resource {
@@ -21,46 +17,12 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 		UpdateContext: resourceScalewayVPCPrivateNetworkUpdate,
 		DeleteContext: resourceScalewayVPCPrivateNetworkDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-				id := d.Id()
-
-				location, _, err := parseLocalizedID(id)
-				if err != nil {
-					return nil, err
-				}
-
-				switch {
-				case validator.IsZone(location):
-					err := d.Set("zone", location)
-					if err != nil {
-						return nil, err
-					}
-					err = d.Set("is_regional", false)
-					if err != nil {
-						return nil, err
-					}
-				case validator.IsRegion(location):
-					err := d.Set("region", location)
-					if err != nil {
-						return nil, err
-					}
-					err = d.Set("is_regional", true)
-					if err != nil {
-						return nil, err
-					}
-				default:
-					return nil, fmt.Errorf("invalid location. Expected either a 'region' or 'zone'")
-				}
-
-				diags := resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
-				if diags.HasError() {
-					return nil, fmt.Errorf("failed to read resource: %v", diags)
-				}
-
-				return []*schema.ResourceData{d}, nil
-			},
+			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion: 0,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{Version: 0, Type: vpcPrivateNetworkUpgradeV1SchemaType(), Upgrade: vpcPrivateNetworkV1SUpgradeFunc},
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -179,7 +141,7 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
+				Deprecated:  "This field is deprecated and will be removed in the next major version",
 				Description: "Defines whether the private network is Regional. By default, it will be Zonal",
 			},
 			"vpc_id": {
@@ -189,8 +151,15 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Description: "The VPC in which to create the private network",
 			},
 			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
-			"region":     regionSchema(),
+			"zone": {
+				Type:             schema.TypeString,
+				Description:      "The zone you want to attach the resource to",
+				Optional:         true,
+				Computed:         true,
+				Deprecated:       "This field is deprecated and will be removed in the next major version, please use `region` instead",
+				ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
+			},
+			"region": regionSchema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -208,49 +177,6 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 }
 
 func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	if d.Get("is_regional").(bool) {
-		return resourceScalewayVPCPrivateNetworkRegionalCreate(ctx, d, meta)
-	}
-	return resourceScalewayVPCPrivateNetworkZonalCreate(ctx, d, meta)
-}
-
-func resourceScalewayVPCPrivateNetworkZonalCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, err := vpcAPIWithZone(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	ipv4Subnets, ipv6Subnets, err := expandSubnets(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	req := &v1.CreatePrivateNetworkRequest{
-		Name:      expandOrGenerateString(d.Get("name"), "pn"),
-		Tags:      expandStrings(d.Get("tags")),
-		ProjectID: d.Get("project_id").(string),
-		Zone:      zone,
-	}
-
-	if ipv4Subnets != nil {
-		req.Subnets = append(req.Subnets, ipv4Subnets...)
-	}
-
-	if ipv6Subnets != nil {
-		req.Subnets = append(req.Subnets, ipv6Subnets...)
-	}
-
-	pn, err := vpcAPI.CreatePrivateNetwork(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(newZonedIDString(zone, pn.ID))
-
-	return resourceScalewayVPCPrivateNetworkZonalRead(ctx, d, meta)
-}
-
-func resourceScalewayVPCPrivateNetworkRegionalCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -261,7 +187,7 @@ func resourceScalewayVPCPrivateNetworkRegionalCreate(ctx context.Context, d *sch
 		return diag.FromErr(err)
 	}
 
-	req := &v2.CreatePrivateNetworkRequest{
+	req := &vpc.CreatePrivateNetworkRequest{
 		Name:      expandOrGenerateString(d.Get("name"), "pn"),
 		Tags:      expandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
@@ -288,57 +214,16 @@ func resourceScalewayVPCPrivateNetworkRegionalCreate(ctx context.Context, d *sch
 
 	d.SetId(newRegionalIDString(region, pn.ID))
 
-	return resourceScalewayVPCPrivateNetworkRegionalRead(ctx, d, meta)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }
 
 func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	if d.Get("is_regional").(bool) {
-		return resourceScalewayVPCPrivateNetworkRegionalRead(ctx, d, meta)
-	}
-	return resourceScalewayVPCPrivateNetworkZonalRead(ctx, d, meta)
-}
-
-func resourceScalewayVPCPrivateNetworkZonalRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	pn, err := vpcAPI.GetPrivateNetwork(&v1.GetPrivateNetworkRequest{
-		PrivateNetworkID: ID,
-		Zone:             zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	_ = d.Set("name", pn.Name)
-	_ = d.Set("organization_id", pn.OrganizationID)
-	_ = d.Set("project_id", pn.ProjectID)
-	_ = d.Set("created_at", pn.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", pn.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("tags", pn.Tags)
-	_ = d.Set("zone", zone)
-	_ = d.Set("is_regional", false)
-
-	ipv4Subnet, ipv6Subnets := flattenAndSortSubnets(pn.Subnets)
-	_ = d.Set("ipv4_subnet", ipv4Subnet)
-	_ = d.Set("ipv6_subnets", ipv6Subnets)
-
-	return nil
-}
-
-func resourceScalewayVPCPrivateNetworkRegionalRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	pn, err := vpcAPI.GetPrivateNetwork(&v2.GetPrivateNetworkRequest{
+	pn, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
 		PrivateNetworkID: ID,
 		Region:           region,
 	}, scw.WithContext(ctx))
@@ -347,6 +232,11 @@ func resourceScalewayVPCPrivateNetworkRegionalRead(ctx context.Context, d *schem
 			d.SetId("")
 			return nil
 		}
+		return diag.FromErr(err)
+	}
+
+	zone, err := extractZone(d, meta.(*Meta))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -359,6 +249,7 @@ func resourceScalewayVPCPrivateNetworkRegionalRead(ctx context.Context, d *schem
 	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("region", region)
 	_ = d.Set("is_regional", true)
+	_ = d.Set("zone", zone)
 
 	ipv4Subnet, ipv6Subnets := flattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
@@ -368,44 +259,12 @@ func resourceScalewayVPCPrivateNetworkRegionalRead(ctx context.Context, d *schem
 }
 
 func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	if d.Get("is_regional").(bool) {
-		return resourceScalewayVPCPrivateNetworkRegionalUpdate(ctx, d, meta)
-	}
-	return resourceScalewayVPCPrivateNetworkZonalUpdate(ctx, d, meta)
-}
-
-func resourceScalewayVPCPrivateNetworkZonalUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if _, ok := d.GetOk("vpc_id"); ok {
-		if !d.Get("is_regional").(bool) {
-			return diag.Errorf("vpc_id can only be set if is_regional is set to true")
-		}
-	}
-
-	_, err = vpcAPI.UpdatePrivateNetwork(&v1.UpdatePrivateNetworkRequest{
-		PrivateNetworkID: ID,
-		Zone:             zone,
-		Name:             scw.StringPtr(d.Get("name").(string)),
-		Tags:             expandUpdatedStringsPtr(d.Get("tags")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return resourceScalewayVPCPrivateNetworkZonalRead(ctx, d, meta)
-}
-
-func resourceScalewayVPCPrivateNetworkRegionalUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcAPI.UpdatePrivateNetwork(&v2.UpdatePrivateNetworkRequest{
+	_, err = vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
 		PrivateNetworkID: ID,
 		Region:           region,
 		Name:             scw.StringPtr(d.Get("name").(string)),
@@ -415,48 +274,17 @@ func resourceScalewayVPCPrivateNetworkRegionalUpdate(ctx context.Context, d *sch
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPrivateNetworkRegionalRead(ctx, d, meta)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }
 
 func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	if d.Get("is_regional").(bool) {
-		return resourceScalewayVPCPrivateNetworkRegionalDelete(ctx, d, meta)
-	}
-	return resourceScalewayVPCPrivateNetworkZonalDelete(ctx, d, meta)
-}
-
-func resourceScalewayVPCPrivateNetworkZonalDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	var warnings diag.Diagnostics
-	err = vpcAPI.DeletePrivateNetwork(&v1.DeletePrivateNetworkRequest{
-		PrivateNetworkID: ID,
-		Zone:             zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is409Error(err) || is412Error(err) || is404Error(err) {
-			return append(warnings, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  err.Error(),
-			})
-		}
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
-
-func resourceScalewayVPCPrivateNetworkRegionalDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var warnings diag.Diagnostics
-	err = vpcAPI.DeletePrivateNetwork(&v2.DeletePrivateNetworkRequest{
+	err = vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
 		PrivateNetworkID: ID,
 		Region:           region,
 	}, scw.WithContext(ctx))

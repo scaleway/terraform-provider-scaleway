@@ -649,16 +649,11 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		// get endpoints to detach. It will handle only private networks
-		endPointsToRemove, err := endpointsToRemove(res.Endpoints, d.Get("private_network"))
-		if err != nil {
-			diag.FromErr(err)
-		}
-		for endPointID, remove := range endPointsToRemove {
-			if remove {
+		for _, e := range res.Endpoints {
+			if e.PrivateNetwork != nil {
 				err := rdbAPI.DeleteEndpoint(
 					&rdb.DeleteEndpointRequest{
-						EndpointID: endPointID, Region: region,
+						EndpointID: e.ID, Region: region,
 					},
 					scw.WithContext(ctx))
 				if err != nil {

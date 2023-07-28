@@ -161,6 +161,39 @@ func TestAccScalewayBaremetalServer_RequiredInstallConfig(t *testing.T) {
 	})
 }
 
+func TestAccScalewayBaremetalServer_WithoutInstallConfig(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_baremetal_offer" "my_offer" {
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+					  name 			             = "TestAccScalewayBaremetalServer_WithoutInstallConfig"
+                      zone     			         = "fr-par-2"
+					  offer     				 = data.scaleway_baremetal_offer.my_offer.offer_id
+					  install_config_afterward   = true
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", "TestAccScalewayBaremetalServer_WithoutInstallConfig"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/a5065ba4-dde2-45f3-adec-1ebbb27b766b"),
+					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "os"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -495,7 +528,6 @@ func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T)
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {
-						zone = "fr-par-2"
 						name = "baremetal_private_network"
 					} 
 
@@ -522,7 +554,7 @@ func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T)
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					testAccCheckRawIDsMatch("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
 			},
 		},
@@ -562,7 +594,6 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {
-						zone = "fr-par-2"
 						name = "baremetal_private_network"
 					} 
 
@@ -606,7 +637,6 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {
-						zone = "fr-par-2"
 						name = "baremetal_private_network"
 					} 
 
@@ -633,7 +663,7 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					testAccCheckRawIDsMatch("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
 			},
 		},
@@ -673,7 +703,6 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {
-						zone = "fr-par-2"
 						name = "baremetal_private_network"
 					}
 
@@ -700,7 +729,7 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					testAccCheckRawIDsMatch("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
 			},
 			{
@@ -722,12 +751,10 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {
-						zone = "fr-par-2"
 						name = "baremetal_private_network"
 					} 
 
 					resource "scaleway_vpc_private_network" "pn2" {
-						zone = "fr-par-2"
 						name = "baremetal_private_network2"
 					} 
 
@@ -757,8 +784,8 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					testAccCheckRawIDsMatch("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn", "id"),
-					testAccCheckRawIDsMatch("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn2", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn2", "id"),
 				),
 			},
 		},
