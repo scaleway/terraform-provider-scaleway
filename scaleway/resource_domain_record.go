@@ -482,7 +482,7 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
-		_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutUpdate))
+		record, err = waitForDNSRecordExist(ctx, domainAPI, d.Get("dns_zone").(string), record.Name, record.Type, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -511,14 +511,6 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	}
 	d.SetId("")
 
-	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
-		if is404Error(err) || is403Error(err) {
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
 	// for non-root zone, if the zone have only NS records, then delete the zone
 	if d.Get("keep_empty_zone").(bool) || d.Get("root_zone").(bool) {
 		return nil
@@ -544,10 +536,10 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 
 	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
+		if is404Error(err) || is403Error(err) {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("failed to wait for dns zone before deleting: %w", err))
+		return diag.FromErr(err)
 	}
 
 	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
