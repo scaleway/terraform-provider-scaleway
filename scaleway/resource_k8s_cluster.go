@@ -520,6 +520,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(cluster))
 
 	// private_network
+	_ = d.Set("private_network_id", "")
 	if cluster.PrivateNetworkID != nil {
 		_ = d.Set("private_network_id", cluster.PrivateNetworkID)
 	}

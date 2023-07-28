@@ -403,7 +403,7 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
-					resource.TestCheckNoResourceAttr("scaleway_k8s_cluster.private_network", "private_network_id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.private_network", "private_network_id", ""),
 				),
 			},
 			{
