@@ -444,6 +444,88 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", "my_private_network"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network"
+					}
+
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+						private_network {
+							pn_id = "${scaleway_vpc_private_network.pn01.id}"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network"
+					}
+
+					locals {
+						ip_address  = cidrhost(scaleway_vpc_private_network.pn01.ipv4_subnet.0.subnet, 4)
+						cidr_prefix = split("/", scaleway_vpc_private_network.pn01.ipv4_subnet.0.subnet)[1]
+					}
+
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+						private_network {
+							ip_net = format("%s/%s", local.ip_address, local.cidr_prefix)
+							pn_id  = scaleway_vpc_private_network.pn01.id
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

@@ -139,6 +139,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 						"service_ips": {
 							Type:     schema.TypeList,
 							Optional: true,
+							Computed: true,
 							Elem: &schema.Schema{
 								Type:         schema.TypeString,
 								ValidateFunc: validation.IsCIDR,
