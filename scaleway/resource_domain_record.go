@@ -275,15 +275,15 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	dnsZoneRes, err := waitForDNSZone(ctx, domainAPI, dnsZone, d.Timeout(schema.TimeoutCreate))
+	record, err = waitForDNSRecordExist(ctx, domainAPI, dnsZone, record.Name, record.Type, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("DNS ZONE domain: %s subdomain: %s, status: %s",
-		dnsZoneRes.Domain,
-		dnsZoneRes.Subdomain,
-		dnsZoneRes.Status))
+	tflog.Debug(ctx, fmt.Sprintf("DNS ZONE domain: %s record: %s, type: %s",
+		dnsZone,
+		record.Name,
+		record.Type))
 
 	dnsZoneData, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 		DNSZone: dnsZone,
@@ -312,6 +312,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	var record *domain.Record
 	var dnsZone string
 	var projectID string
+	var err error
 
 	currentData := d.Get("data")
 	// check if this is an inline import. Like: "terraform import scaleway_domain_record.www subdomain.domain.tld/11111111-1111-1111-1111-111111111111"
@@ -323,7 +324,6 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 		dnsZone = tab[0]
 		recordID := tab[1]
-
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			ID:      &recordID,
@@ -342,8 +342,8 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	} else {
 		dnsZone = d.Get("dns_zone").(string)
 
-		recordTypeRaw, recordtTypeExist := d.GetOk("type")
-		if !recordtTypeExist {
+		recordTypeRaw, recordTypeExist := d.GetOk("type")
+		if !recordTypeExist {
 			return diag.FromErr(fmt.Errorf("record type not found"))
 		}
 		recordType := domain.RecordType(recordTypeRaw.(string))
@@ -376,7 +376,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 
-	res, err := waitForDNSZone(ctx, domainAPI, dnsZone, d.Timeout(schema.TimeoutRead))
+	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZone: dnsZone}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) || is403Error(err) {
 			d.SetId("")
@@ -385,8 +385,9 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	projectID = res.ProjectID
-	_ = d.Set("root_zone", res.Subdomain == "")
+	// get the default first record
+	projectID = dnsZones.DNSZones[0].ProjectID
+	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
 
 	// retrieve data from record
 	if len(currentData.(string)) == 0 {
@@ -481,7 +482,7 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
-		_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForDNSRecordExist(ctx, domainAPI, d.Get("dns_zone").(string), record.Name, record.Type, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -510,14 +511,6 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	}
 	d.SetId("")
 
-	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
-		if is404Error(err) || is403Error(err) {
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
 	// for non-root zone, if the zone have only NS records, then delete the zone
 	if d.Get("keep_empty_zone").(bool) || d.Get("root_zone").(bool) {
 		return nil
@@ -543,10 +536,10 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 
 	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
+		if is404Error(err) || is403Error(err) {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("failed to wait for dns zone before deleting: %w", err))
+		return diag.FromErr(err)
 	}
 
 	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{

@@ -22,32 +22,33 @@ func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
 					
 					resource "scaleway_domain_record" "tf_A" {
 						dns_zone = %[1]q
-						name     = "tf-reverse-instance"
+						name     = ""
 						type     = "A"
 						data     = "${scaleway_instance_ip.main.address}"
 						ttl      = 3600
 						priority = 1
 					}
-				`, testDomain),
+				`, testDNSZone),
 			},
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_instance_ip" "main" {}
 					
 					resource "scaleway_domain_record" "tf_A" {
-						dns_zone = %[1]q
-						name     = "tf-reverse-instance"
-						type     = "A"
-						data     = "${scaleway_instance_ip.main.address}"
-						ttl      = 3600
-						priority = 1
+					  dns_zone = %[1]q
+					  name     = ""
+					  type     = "A"
+					  data     = "${scaleway_instance_ip.main.address}"
+					  ttl      = 3600
+					  priority = 1
 					}
 
 					resource "scaleway_instance_ip_reverse_dns" "base" {
-						ip_id = scaleway_instance_ip.main.id
-						reverse = %[2]q
+					  ip_id      = scaleway_instance_ip.main.id
+					  reverse    = %[1]q
+					  depends_on = [scaleway_domain_record.tf_A]
 					}
-				`, testDomain, testDNSZone),
+				`, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_ip_reverse_dns.base", "reverse", testDNSZone),
 				),

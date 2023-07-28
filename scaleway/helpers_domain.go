@@ -274,6 +274,21 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 	}, scw.WithContext(ctx))
 }
 
+func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, recordName string, recordType domain.RecordType, timeout time.Duration) (*domain.Record, error) {
+	retryInterval := defaultDomainZoneRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return domainAPI.WaitForDNSRecordExist(&domain.WaitForDNSRecordExistRequest{
+		DNSZone:       dnsZone,
+		RecordName:    recordName,
+		RecordType:    recordType,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: scw.TimeDurationPtr(retryInterval),
+	}, scw.WithContext(ctx))
+}
+
 func findDefaultReverse(address string) string {
 	parts := strings.Split(address, ".")
 	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {

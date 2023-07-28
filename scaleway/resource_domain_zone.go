@@ -181,7 +181,15 @@ func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceDat
 func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	domainAPI := newDomainAPI(meta)
 
-	_, err := domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
+	_, err := waitForDNSZone(ctx, domainAPI, d.Id(), d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
 		ProjectID: d.Get("project_id").(string),
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))
