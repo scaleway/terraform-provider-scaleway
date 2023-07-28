@@ -482,7 +482,7 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
-		record, err = waitForDNSRecordExist(ctx, domainAPI, d.Get("dns_zone").(string), record.Name, record.Type, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForDNSRecordExist(ctx, domainAPI, d.Get("dns_zone").(string), record.Name, record.Type, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
