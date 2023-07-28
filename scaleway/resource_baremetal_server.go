@@ -55,10 +55,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 					}
 					// if the offer was provided by name
 					offerName, ok := d.GetOk("offer_name")
-					if ok && newValue == offerName {
-						return true
-					}
-					return false
+					return ok && newValue == offerName
 				},
 			},
 			"offer_id": {
