@@ -18,11 +18,13 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 	addOptionalFieldsToSchema(dsSchema, "mac_address", "gateway_network_id")
 
 	dsSchema["mac_address"].ConflictsWith = []string{"reservation_id"}
+	dsSchema["gateway_network_id"].ConflictsWith = []string{"reservation_id"}
 	dsSchema["reservation_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of dhcp entry reservation",
-		ValidateFunc: validationUUIDorUUIDWithLocality(),
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "The ID of dhcp entry reservation",
+		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ConflictsWith: []string{"mac_address", "gateway_network_id"},
 	}
 	dsSchema["wait_for_dhcp"] = &schema.Schema{
 		Type:        schema.TypeBool,
@@ -49,7 +51,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, 
 	reservationIDRaw, ok := d.GetOk("reservation_id")
 	if !ok {
 		var res *vpcgw.ListDHCPEntriesResponse
-		gatewayNetworkID := d.Get("gateway_network_id").(string)
+		gatewayNetworkID := expandID(d.Get("gateway_network_id").(string))
 		macAddress := d.Get("mac_address").(string)
 
 		if d.Get("wait_for_dhcp").(bool) {

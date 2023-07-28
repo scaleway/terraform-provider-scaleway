@@ -94,15 +94,16 @@ func TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Basic(t *testing.T
 						depends_on = [scaleway_vpc_public_gateway_ip.main, scaleway_vpc_private_network.main]
 					}
 	
-					data "scaleway_vpc_public_gateway_dhcp_reservation" "by_mac_address" {
+					data "scaleway_vpc_public_gateway_dhcp_reservation" "by_mac_address_and_gw_network" {
 						mac_address = "${scaleway_instance_server.main.private_network.0.mac_address}"
+					    gateway_network_id = scaleway_vpc_gateway_network.main.id
 						wait_for_dhcp = true
 						depends_on = [scaleway_vpc_gateway_network.main, scaleway_vpc_public_gateway_dhcp.main, scaleway_vpc_private_network.main]
 					}
 				`, pnName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_vpc_public_gateway_dhcp_reservation.by_mac_address", "mac_address",
+						"data.scaleway_vpc_public_gateway_dhcp_reservation.by_mac_address_and_gw_network", "mac_address",
 						"scaleway_instance_server.main", "private_network.0.mac_address"),
 				),
 			},
