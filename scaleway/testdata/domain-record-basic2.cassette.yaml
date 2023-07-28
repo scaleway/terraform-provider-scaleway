@@ -608,9 +608,11 @@ interactions:
     code: 200
     duration: ""
 - request:
-    body: ""
+    body: '{"changes":[{"add":{"records":[{"data":"0 mail.scaleway.com.","name":"","priority":0,"ttl":300,"type":"MX","comment":null,"id":""}]}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
     form: {}
     headers:
+      Content-Type:
+      - application/json
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
@@ -949,7 +951,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-basic2.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-basic2.scaleway-terraform.com/records?id=fbf0e76f-e6eb-4087-9499-3c551ac0565f&name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
     body: '{"total_count":6,"records":[{"id":"40f61d64-15c6-4838-bf1a-5df7ad2e90b7","data":"127.0.0.1","name":"","priority":0,"ttl":3600,"type":"A","comment":null},{"id":"361f88cd-cdb3-4cbf-9152-57188c846c40","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"5df25931-fa8b-4ddd-bae6-a492f47148a3","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"8aa3e6f8-9802-48ea-ae03-09296b2a89d4","data":"10
@@ -1531,7 +1533,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-basic2.scaleway-terraform.com&domain=&order_by=domain_asc
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-basic2.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
     body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-basic2","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-06-15T14:18:28Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
