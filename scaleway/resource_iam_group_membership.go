@@ -76,6 +76,12 @@ func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.Resou
 		GroupID: groupID,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
@@ -97,10 +103,9 @@ func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.Resou
 	}
 
 	if !foundInGroup {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
+		d.SetId("")
+
+		return nil
 	}
 
 	_ = d.Set("group_id", groupID)
@@ -129,6 +134,11 @@ func resourceScalewayIamGroupMembershipDelete(ctx context.Context, d *schema.Res
 
 	_, err = api.RemoveGroupMember(req, scw.WithContext(ctx))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
