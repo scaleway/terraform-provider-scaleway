@@ -4,34 +4,40 @@ on:
   schedule:
     # Will run at 00:00 every day
     - cron: "0 0 * * *"
+  workflow_dispatch:
+
+env:
+  products: [
+    "Account",
+    "AppleSilicon",
+    "Baremetal",
+    "Cockpit",
+    "Domain",
+    "Function"
+    "Container",
+    "Iam",
+    "Instance",
+    "Iot",
+    "K8S",
+    "Lb",
+    "Marketplace",
+    "MNQ",
+    "Object",
+    "Rdb",
+    "Redis",
+    "Registry",
+    "Secret"
+    "Tem",
+    "VPC"
+  ]
 
 jobs:
   nightly:
     strategy:
       fail-fast: false
       matrix:
-        products:
-          - Account
-          - AppleSilicon
-          - Baremetal
-          - Cockpit
-          - Domain
-          - Function
-          - Container
-          - Iam
-          - Instance
-          - Iot
-          - K8S
-          - Lb
-          - Marketplace
-          - MNQ
-          - Object
-          - Rdb
-          - Redis
-          - Registry
-          - Secret
-          - Tem
-          - VPC
+        products: ${{ fromJSON(inputs.products || env.products) }}
+
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
