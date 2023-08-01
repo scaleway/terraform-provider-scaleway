@@ -32,7 +32,7 @@ const (
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
-	defaultInstanceIPReverseDNSTimeout      = 5 * time.Minute
+	defaultInstanceIPReverseDNSTimeout      = 10 * time.Minute
 	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
