@@ -72,7 +72,7 @@ func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.R
 			updateReverseReq.Reverse = &instance.NullableStringValue{Null: true}
 		}
 
-		err := retryUpdateReverseDNS(ctx, instanceAPI, updateReverseReq, d.Timeout(schema.TimeoutUpdate))
+		err := retryUpdateReverseDNS(ctx, instanceAPI, updateReverseReq, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
