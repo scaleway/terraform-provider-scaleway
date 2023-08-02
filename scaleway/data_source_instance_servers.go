@@ -108,6 +108,10 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeInt,
 						},
+						"routed_ip_enabled": {
+							Computed: true,
+							Type:     schema.TypeBool,
+						},
 						"zone":            zoneSchema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
@@ -165,6 +169,7 @@ func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.Resour
 		rawServer["security_group_id"] = newZonedID(zone, server.SecurityGroup.ID).String()
 		rawServer["enable_ipv6"] = server.EnableIPv6
 		rawServer["enable_dynamic_ip"] = server.DynamicIPRequired
+		rawServer["routed_ip_enabled"] = server.RoutedIPEnabled
 		rawServer["organization_id"] = server.Organization
 		rawServer["project_id"] = server.Project
 		if server.Image != nil {

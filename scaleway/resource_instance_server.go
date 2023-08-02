@@ -272,6 +272,12 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					},
 				},
 			},
+			"routed_ip_enabled": {
+				Type:        schema.TypeBool,
+				Description: "If server supports routed IPs",
+				Optional:    true,
+				Computed:    true,
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -328,6 +334,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
+		RoutedIPEnabled:   expandBoolPtr(d.Get("routed_ip_enabled")),
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
@@ -554,6 +561,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)
 		_ = d.Set("project_id", server.Project)
+		_ = d.Set("routed_ip_enabled", server.RoutedIPEnabled)
 
 		// Image could be empty in an import context.
 		image := expandRegionalID(d.Get("image").(string))
@@ -957,6 +965,13 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
+	if d.HasChanges("routed_ip_enabled") {
+		err := resourceScalewayInstanceServerEnableRoutedIP(ctx, d, instanceAPI, zone, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return append(warnings, resourceScalewayInstanceServerRead(ctx, d, meta)...)
 }
 
@@ -1168,6 +1183,29 @@ func resourceScalewayInstanceServerMigrate(ctx context.Context, d *schema.Resour
 	err = reachState(ctx, instanceAPI, zone, id, beginningState)
 	if err != nil {
 		return fmt.Errorf("failed to start server after changing server type: %w", err)
+	}
+
+	return nil
+}
+
+func resourceScalewayInstanceServerEnableRoutedIP(ctx context.Context, d *schema.ResourceData, instanceAPI *instance.API, zone scw.Zone, id string) error {
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	_, err = instanceAPI.ServerAction(&instance.ServerActionRequest{
+		Zone:     server.Zone,
+		ServerID: server.ID,
+		Action:   "enable_routed_ip",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to enable routed ip: %w", err)
+	}
+
+	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -61,7 +61,9 @@ attached to the server.
 
 - `enable_ipv6` - Determines if IPv6 is enabled for the server.
 
-- `enable_dynamic_ip` - True is dynamic IP in enable on the server.
+- `enable_dynamic_ip` - True if dynamic IP in enable on the server.
+
+- `routed_ip_enabled` - True if the server support routed ip only.
 
 - `state` - The state of the server. Possible values are: `started`, `stopped` or `standby`.
 
@@ -80,7 +82,9 @@ attached to the server.
 
 - `private_ip` - The Scaleway internal IP address of the server.
 
-- `public_ip` - The public IPv4 address of the server.
+- `public_ip` - The public IP address of the server.
+
+- `public_ips` - The list of public IPs of the server
 
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
 

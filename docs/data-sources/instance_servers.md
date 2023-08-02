@@ -44,8 +44,12 @@ In addition to all above arguments, the following attributes are exported:
         ~> **Important:** Instance servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
     - `tags` - The tags associated with the server.
-    - `public_ip` - The public IPv4 address of the server.
+    - `public_ip` - The public IP address of the server.
     - `private_ip` - The Scaleway internal IP address of the server.
+    - `public_ips` - The list of public IPs of the server
+      - `id` - The ID of the IP
+      - `address` - The address of the IP
+    - `prefix` - The public IP prefix of the server.
     - `state` - The state of the server. Possible values are: `started`, `stopped` or `standby`.
     - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the server is.
     - `name` - The name of the server.
@@ -57,6 +61,7 @@ In addition to all above arguments, the following attributes are exported:
     - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
     - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
     - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
+    - `routed_ip_enabled` - True if the server support routed ip only.
     - `enable_dynamic_ip` - If true a dynamic IP will be attached to the server.
     - `image` - The UUID or the label of the base image used by the server.
     - `placement_group_id` - The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the server is attached to.
