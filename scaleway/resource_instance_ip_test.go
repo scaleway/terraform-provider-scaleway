@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"net"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -218,6 +219,8 @@ func TestAccScalewayInstanceIP_RoutedDowngrade(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
+					testAccCheckScalewayInstanceIPValid("scaleway_instance_ip.main", "address"),
+					testAccCheckScalewayInstanceIPCIDRValid("scaleway_instance_ip.main", "prefix"),
 				),
 			},
 			{
@@ -230,10 +233,81 @@ func TestAccScalewayInstanceIP_RoutedDowngrade(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
+					testAccCheckScalewayInstanceIPValid("scaleway_instance_ip.main", "address"),
+					testAccCheckScalewayInstanceIPCIDRValid("scaleway_instance_ip.main", "prefix"),
 				),
 			},
 		},
 	})
+}
+
+func TestAccScalewayInstanceIP_RoutedIPV6(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							zone = "fr-par-3"
+							type = "routed_ipv6"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv6"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "prefix"),
+					testAccCheckScalewayInstanceIPValid("scaleway_instance_ip.main", "address"),
+					testAccCheckScalewayInstanceIPCIDRValid("scaleway_instance_ip.main", "prefix"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScalewayInstanceIPCIDRValid(name string, key string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+
+		cidr, exists := rs.Primary.Attributes[key]
+		if !exists {
+			return fmt.Errorf("requested attribute %s[%q] does not exist", name, key)
+		}
+		_, _, err := net.ParseCIDR(cidr)
+		if err != nil {
+			return fmt.Errorf("invalid cidr (%s) in %s[%q]", cidr, name, key)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayInstanceIPValid(name string, key string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+
+		ip, exists := rs.Primary.Attributes[key]
+		if !exists {
+			return fmt.Errorf("requested attribute %s[%q] does not exist", name, key)
+		}
+
+		parsedIP := net.ParseIP(ip)
+		if parsedIP == nil {
+			return fmt.Errorf("invalid ip (%s) in %s[%q]", ip, name, key)
+		}
+
+		return nil
+	}
 }
 
 func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.TestCheckFunc {

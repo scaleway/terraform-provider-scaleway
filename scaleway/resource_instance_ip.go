@@ -28,6 +28,11 @@ func resourceScalewayInstanceIP() *schema.Resource {
 				Computed:    true,
 				Description: "The IP address",
 			},
+			"prefix": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IP prefix",
+			},
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -158,7 +163,19 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("address", res.IP.Address.String())
+	address := res.IP.Address.String()
+	prefix := res.IP.Prefix.String()
+	if prefix == "<nil>" {
+		ipnet := scw.IPNet{}
+		_ = (&ipnet).UnmarshalJSON([]byte("\"" + res.IP.Address.String() + "\""))
+		prefix = ipnet.String()
+	}
+	if address == "<nil>" {
+		address = res.IP.Prefix.IP.String()
+	}
+
+	_ = d.Set("address", address)
+	_ = d.Set("prefix", prefix)
 	_ = d.Set("zone", zone)
 	_ = d.Set("organization_id", res.IP.Organization)
 	_ = d.Set("project_id", res.IP.Project)
