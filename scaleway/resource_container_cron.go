@@ -51,7 +51,7 @@ func resourceScalewayContainerCron() *schema.Resource {
 				Computed:    true,
 				Description: "Cron job status.",
 			},
-			"region": regionComputedSchema(),
+			"region": regionSchema(),
 		},
 	}
 }
