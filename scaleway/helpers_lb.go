@@ -438,7 +438,7 @@ func expandLbPrivateNetworkStaticConfig(raw interface{}) *lbSDK.PrivateNetworkSt
 		return nil
 	}
 	return &lbSDK.PrivateNetworkStaticConfig{
-		IPAddress: expandStrings(raw),
+		IPAddress: expandStringsPtr(raw),
 	}
 }
 
@@ -447,7 +447,7 @@ func flattenLbPrivateNetworkStaticConfig(cfg *lbSDK.PrivateNetworkStaticConfig) 
 		return nil
 	}
 
-	return cfg.IPAddress
+	return *cfg.IPAddress
 }
 
 func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lbSDK.PrivateNetworkDHCPConfig {

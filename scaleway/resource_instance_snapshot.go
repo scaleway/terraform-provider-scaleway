@@ -119,10 +119,8 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		volumeType := instance.SnapshotVolumeType(volumeType.(string))
 		req.VolumeType = volumeType
 	}
-	tags := expandStrings(d.Get("tags"))
-	if len(tags) > 0 {
-		req.Tags = tags
-	}
+
+	req.Tags = expandStringsPtr(d.Get("tags"))
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
 		req.VolumeID = scw.StringPtr(expandZonedID(volumeID).ID)
