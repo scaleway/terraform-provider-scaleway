@@ -47,8 +47,8 @@ In addition to all above arguments, the following attributes are exported:
     - `public_ip` - The public IP address of the server.
     - `private_ip` - The Scaleway internal IP address of the server.
     - `public_ips` - The list of public IPs of the server
-      - `id` - The ID of the IP
-      - `address` - The address of the IP
+        - `id` - The ID of the IP
+        - `address` - The address of the IP
     - `prefix` - The public IP prefix of the server.
     - `state` - The state of the server. Possible values are: `started`, `stopped` or `standby`.
     - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the server is.
