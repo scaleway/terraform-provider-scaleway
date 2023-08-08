@@ -371,6 +371,33 @@ func TestAccScalewayContainer_HTTPOption(t *testing.T) {
 	})
 }
 
+func TestAccScalewayContainer_Region(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+						region = "nl-ams"
+					}
+
+					resource scaleway_container main {
+						region = "nl-ams"
+						namespace_id = split("/", scaleway_container_namespace.main.id)[1]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

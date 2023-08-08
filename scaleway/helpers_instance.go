@@ -624,3 +624,26 @@ func retryUpdateReverseDNS(ctx context.Context, instanceAPI *instance.API, req *
 		}
 	}
 }
+
+func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []interface{} {
+	flattenedIPs := make([]interface{}, len(ips))
+
+	for i, ip := range ips {
+		flattenedIPs[i] = map[string]interface{}{
+			"id":      newZonedIDString(zone, ip.ID),
+			"address": ip.Address.String(),
+		}
+	}
+
+	return flattenedIPs
+}
+
+func flattenServerIPIDs(ips []*instance.ServerIP) []interface{} {
+	ipIDs := make([]interface{}, len(ips))
+
+	for i, ip := range ips {
+		ipIDs[i] = ip.ID
+	}
+
+	return ipIDs
+}

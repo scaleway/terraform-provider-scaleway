@@ -1622,3 +1622,89 @@ func TestAccScalewayInstanceServer_RoutedIPEnableWithIP(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayInstanceServer_IPs(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						zone = "fr-par-3"
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip1.id]
+						image = "ubuntu_jammy"
+						zone = "fr-par-3"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						zone = "fr-par-3"
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_ip" "ip2" {
+						zone = "fr-par-3"
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip1.id, scaleway_instance_ip.ip2.id]
+						image = "ubuntu_jammy"
+						zone = "fr-par-3"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "2"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.1.id", "scaleway_instance_ip.ip2", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						zone = "fr-par-3"
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_ip" "ip2" {
+						zone = "fr-par-3"
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip2.id]
+						image = "ubuntu_jammy"
+						zone = "fr-par-3"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip2", "id"),
+				),
+			},
+		},
+	})
+}

@@ -41,6 +41,22 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
+						"public_ips": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"address": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
 						"private_ip": {
 							Computed: true,
 							Type:     schema.TypeString,
@@ -148,6 +164,9 @@ func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.Resour
 		rawServer["id"] = newZonedID(server.Zone, server.ID).String()
 		if server.PublicIP != nil {
 			rawServer["public_ip"] = server.PublicIP.Address.String()
+		}
+		if server.PublicIPs != nil {
+			rawServer["public_ips"] = flattenServerPublicIPs(server.Zone, server.PublicIPs)
 		}
 		if server.PrivateIP != nil {
 			rawServer["private_ip"] = *server.PrivateIP

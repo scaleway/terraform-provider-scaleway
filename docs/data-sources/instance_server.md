@@ -85,6 +85,8 @@ attached to the server.
 - `public_ip` - The public IP address of the server.
 
 - `public_ips` - The list of public IPs of the server
+  - `id` - The ID of the IP
+  - `address` - The address of the IP
 
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
 

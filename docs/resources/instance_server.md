@@ -212,7 +212,9 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
 
-- `ip_id` = (Optional) The ID of the reserved IP that is attached to the server.
+- `ip_id` - (Optional) The ID of the reserved IP that is attached to the server.
+
+- `ip_ids` - (Optional) List of ID of reserved IPs that are attached to the server. Cannot be used with `ip_id`.
 
 - `enable_dynamic_ip` - (Defaults to `false`) If true a dynamic IP will be attached to the server.
 
@@ -271,6 +273,8 @@ In addition to all above arguments, the following attributes are exported:
 - `private_ip` - The Scaleway internal IP address of the server.
 - `public_ip` - The public IP address of the server.
 - `public_ips` - The list of public IPs of the server.
+    - `id` - The ID of the IP
+    - `address` - The address of the IP
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
 - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
 - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
