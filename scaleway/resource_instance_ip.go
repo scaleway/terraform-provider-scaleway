@@ -165,12 +165,12 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 
 	address := res.IP.Address.String()
 	prefix := res.IP.Prefix.String()
-	if prefix == "<nil>" {
+	if prefix == netIPNil {
 		ipnet := scw.IPNet{}
 		_ = (&ipnet).UnmarshalJSON([]byte("\"" + res.IP.Address.String() + "\""))
 		prefix = ipnet.String()
 	}
-	if address == "<nil>" {
+	if address == netIPNil {
 		address = res.IP.Prefix.IP.String()
 	}
 

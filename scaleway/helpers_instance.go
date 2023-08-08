@@ -38,6 +38,9 @@ const (
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 
 	defaultInstanceImageTimeout = 1 * time.Hour
+
+	// netIPNil define the nil string return by (*net.IP).String()
+	netIPNil = "<nil>"
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
