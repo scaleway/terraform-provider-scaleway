@@ -170,7 +170,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"ip_id": {
 				Type:             schema.TypeString,
-				Computed:         true,
 				Optional:         true,
 				Description:      "The ID of the reserved IP for the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
@@ -178,7 +177,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"ip_ids": {
 				Type:          schema.TypeList,
-				Computed:      true,
 				Optional:      true,
 				ConflictsWith: []string{"ip_id"},
 				Elem: &schema.Schema{
@@ -619,7 +617,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			_ = d.Set("private_ip", flattenStringPtr(server.PrivateIP))
 		}
 
-		if server.PublicIP != nil {
+		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID {
 			_ = d.Set("public_ip", server.PublicIP.Address.String())
 			d.SetConnInfo(map[string]string{
 				"type": "ssh",
@@ -638,9 +636,13 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 		if len(server.PublicIPs) > 0 {
 			_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
-			_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
 		} else {
 			_ = d.Set("public_ips", []interface{}{})
+		}
+
+		if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
+			_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
+		} else {
 			_ = d.Set("ip_ids", []interface{}{})
 		}
 
