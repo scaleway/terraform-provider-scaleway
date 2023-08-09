@@ -98,7 +98,7 @@ func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("zone", snapshot.Zone)
 	_ = d.Set("project_id", snapshot.ProjectID)
-	if snapshot.ParentVolume == nil {
+	if snapshot.ParentVolume != nil {
 		_ = d.Set("volume_id", snapshot.ParentVolume.ID)
 	} else {
 		_ = d.Set("volume_id", "")

@@ -97,7 +97,7 @@ func TestAccScalewayBlockVolume_FromSnapshot(t *testing.T) {
 
 					resource scaleway_block_volume main {
 						name = "test-block-volume-from-snapshot"
-						type = "b_ssd"
+						iops = 5000
 						snapshot_id = scaleway_block_snapshot.main.id
 					}
 				`,

@@ -38,6 +38,7 @@ func resourceScalewayBlockVolume() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 				Description: "The maximum IO/s expected, must match available options",
+				ForceNew:    true,
 			},
 			"size_in_gb": {
 				Type:         schema.TypeInt,
@@ -82,6 +83,7 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 		Name:      expandOrGenerateString(d.Get("name").(string), "volume"),
 		ProjectID: d.Get("project_id").(string),
 		Tags:      expandStrings(d.Get("tags")),
+		PerfIops:  expandUint32Ptr(d.Get("iops")),
 	}
 
 	if iops, ok := d.GetOk("iops"); ok {
@@ -132,7 +134,7 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	_ = d.Set("name", volume.Name)
-	_ = d.Set("type", volume.Type)
+	_ = d.Set("iops", volume.Specs.PerfIops)
 	_ = d.Set("size_in_gb", volume.Size/scw.GB)
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("project_id", volume.ProjectID)
