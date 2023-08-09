@@ -70,7 +70,7 @@ func resourceScalewayVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *
 			updateReverseReq.Reverse = expandStringPtr(reverse)
 		}
 
-		err := retryUpdateGatewayReverseDNS(ctx, vpcgwAPI, updateReverseReq, d.Timeout(schema.TimeoutUpdate))
+		err := retryUpdateGatewayReverseDNS(ctx, vpcgwAPI, updateReverseReq, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}

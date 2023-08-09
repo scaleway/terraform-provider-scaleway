@@ -13,7 +13,7 @@ import (
 const (
 	defaultVPCGatewayTimeout                   = 10 * time.Minute
 	defaultVPCGatewayRetry                     = 5 * time.Second
-	defaultVPCPublicGatewayIPReverseDNSTimeout = 5 * time.Minute
+	defaultVPCPublicGatewayIPReverseDNSTimeout = 10 * time.Minute
 )
 
 // vpcgwAPIWithZone returns a new VPC API and the zone for a Create request
