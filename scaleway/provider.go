@@ -268,7 +268,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 	}
 }
 
-// Meta sliceContainsString config and SDK clients used by resources.
+// Meta contains config and SDK clients used by resources.
 //
 // This meta value is passed into all resources.
 type Meta struct {
