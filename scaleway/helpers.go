@@ -1070,3 +1070,12 @@ func retryWhenAWSErrCodeNotEquals[T any](ctx context.Context, codes []string, co
 		return !tfawserr.ErrCodeEquals(err, codes...)
 	})
 }
+
+func sliceContainsString(slice []string, str string) bool {
+	for _, v := range slice {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}

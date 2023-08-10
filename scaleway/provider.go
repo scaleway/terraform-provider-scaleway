@@ -98,6 +98,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
 				"scaleway_flexible_ip":                         resourceScalewayFlexibleIP(),
+				"scaleway_flexible_ip_mac_address":             resourceScalewayFlexibleIPMACAddress(),
 				"scaleway_function":                            resourceScalewayFunction(),
 				"scaleway_function_cron":                       resourceScalewayFunctionCron(),
 				"scaleway_function_domain":                     resourceScalewayFunctionDomain(),
@@ -267,7 +268,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 	}
 }
 
-// Meta contains config and SDK clients used by resources.
+// Meta sliceContainsString config and SDK clients used by resources.
 //
 // This meta value is passed into all resources.
 type Meta struct {
