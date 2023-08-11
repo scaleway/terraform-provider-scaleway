@@ -46,9 +46,13 @@ func TestAccScalewayFlexibleIPMACAddress_MoveToAnotherFlexibleIP(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_flexible_ip" "ip01" {}
+						resource "scaleway_flexible_ip" "ip01" {
+						  description = "attached to ip01"
+						}
 
-						resource "scaleway_flexible_ip" "ip02" {}
+						resource "scaleway_flexible_ip" "ip02" {
+						  description = "not attached to ip02"
+						}
 
 						resource "scaleway_flexible_ip_mac_address" "main" {
 						  flexible_ip_id = scaleway_flexible_ip.ip01.id
@@ -64,9 +68,13 @@ func TestAccScalewayFlexibleIPMACAddress_MoveToAnotherFlexibleIP(t *testing.T) {
 			},
 			{
 				Config: `
-						resource "scaleway_flexible_ip" "ip01" {}
+						resource "scaleway_flexible_ip" "ip01" {
+						  description = "not attached to ip01"
+						}
 
-						resource "scaleway_flexible_ip" "ip02" {}
+						resource "scaleway_flexible_ip" "ip02" {
+						  description = "attached to ip02"
+						}
 
 						resource "scaleway_flexible_ip_mac_address" "main" {
 						  flexible_ip_id = scaleway_flexible_ip.ip02.id
@@ -108,14 +116,17 @@ func TestAccScalewayFlexibleIPMACAddress_DuplicateOnOtherFlexibleIPs(t *testing.
 			
 						resource "scaleway_flexible_ip" "ip01" {
                           server_id = scaleway_baremetal_server.base.id	
+						  description = "attached to ip01"
 						}
 
 						resource "scaleway_flexible_ip" "ip02" {
                           server_id = scaleway_baremetal_server.base.id
+						  description = "not attached to ip02"
 						}
 
 						resource "scaleway_flexible_ip" "ip03" {
                           server_id = scaleway_baremetal_server.base.id
+						  description = "not attached to ip03"
 						}
 
 						resource "scaleway_flexible_ip_mac_address" "main" {
@@ -144,14 +155,17 @@ func TestAccScalewayFlexibleIPMACAddress_DuplicateOnOtherFlexibleIPs(t *testing.
 			
 						resource "scaleway_flexible_ip" "ip01" {
                           server_id = scaleway_baremetal_server.base.id	
+						  description = "attached to ip01"
 						}
 
 						resource "scaleway_flexible_ip" "ip02" {
                           server_id = scaleway_baremetal_server.base.id
+						  description = "attached to ip02"
 						}
 
 						resource "scaleway_flexible_ip" "ip03" {
                           server_id = scaleway_baremetal_server.base.id
+						  description = "attached to ip03"
 						}
 
 						resource "scaleway_flexible_ip_mac_address" "main" {
