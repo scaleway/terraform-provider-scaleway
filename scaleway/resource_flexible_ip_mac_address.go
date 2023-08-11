@@ -34,6 +34,16 @@ func resourceScalewayFlexibleIPMACAddress() *schema.Resource {
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
 				Description:  "The ID of the flexible IP for which to generate a virtual MAC",
 			},
+			"type": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The type of the virtual MAC",
+				ValidateFunc: validation.StringInSlice([]string{
+					flexibleip.MACAddressTypeVmware.String(),
+					flexibleip.MACAddressTypeXen.String(),
+					flexibleip.MACAddressTypeKvm.String(),
+				}, false),
+			},
 			"flexible_ip_ids_to_duplicate": {
 				Type: schema.TypeSet,
 				Elem: &schema.Schema{
@@ -43,16 +53,6 @@ func resourceScalewayFlexibleIPMACAddress() *schema.Resource {
 				Description: `The IDs of the flexible IPs on which to duplicate the virtual MAC
 
 **NOTE** : The flexible IPs need to be attached to the same server for the operation to work.`,
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The type of virtual MAC",
-				ValidateFunc: validation.StringInSlice([]string{
-					flexibleip.MACAddressTypeVmware.String(),
-					flexibleip.MACAddressTypeXen.String(),
-					flexibleip.MACAddressTypeKvm.String(),
-				}, false),
 			},
 			// computed
 			"address": {
@@ -106,9 +106,28 @@ func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.Resource
 		d.SetId(newZonedIDString(zone, res.MacAddress.ID))
 	}
 
-	_, err = waitFlexibleIP(ctx, fipAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
+	fip, err := waitFlexibleIP(ctx, fipAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	duplicateIDs, duplicateIDsExist := d.GetOk("flexible_ip_ids_to_duplicate")
+	if duplicateIDsExist {
+		dupIDs := expandStrings(duplicateIDs.(*schema.Set).List())
+		for _, dupID := range dupIDs {
+			res, err := fipAPI.DuplicateMACAddr(&flexibleip.DuplicateMACAddrRequest{
+				Zone:               zone,
+				FipID:              expandID(dupID),
+				DuplicateFromFipID: fip.ID,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			_, err = waitFlexibleIP(ctx, fipAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	return resourceScalewayFlexibleIPMACRead(ctx, d, meta)

@@ -16,7 +16,7 @@ func TestAccScalewayVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
