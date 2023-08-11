@@ -115,7 +115,7 @@ func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.Resource
 	if duplicateIDsExist {
 		dupIDs := expandStrings(duplicateIDs.(*schema.Set).List())
 		for _, dupID := range dupIDs {
-			res, err := fipAPI.DuplicateMACAddr(&flexibleip.DuplicateMACAddrRequest{
+			_, err := fipAPI.DuplicateMACAddr(&flexibleip.DuplicateMACAddrRequest{
 				Zone:               zone,
 				FipID:              expandID(dupID),
 				DuplicateFromFipID: fip.ID,
@@ -123,7 +123,7 @@ func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.Resource
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			_, err = waitFlexibleIP(ctx, fipAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
+			_, err = waitFlexibleIP(ctx, fipAPI, zone, expandID(dupID), d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
