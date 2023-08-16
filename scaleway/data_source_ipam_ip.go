@@ -58,9 +58,8 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 		SubnetID:         nil,
 		Attached:         nil,
 		ResourceID:       expandStringPtr(d.Get("resource_id")),
-		ResourceType:     "",
+		ResourceType:     ipam.ResourceTypeUnknownType,
 		MacAddress:       expandStringPtr(d.Get("mac_address")),
-		IsIPv6:           nil,
 		ResourceName:     nil,
 		ResourceIDs:      nil,
 	}
