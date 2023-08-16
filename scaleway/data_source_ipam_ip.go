@@ -16,14 +16,6 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 		ReadContext: dataSourceScalewayIPAMIPRead,
 		Schema: map[string]*schema.Schema{
 			// Input
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "Servers with these exact tags are listed.",
-			},
 			"private_network_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -68,7 +60,6 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 		ResourceID:       expandStringPtr(d.Get("resource_id")),
 		ResourceType:     "",
 		MacAddress:       expandStringPtr(d.Get("mac_address")),
-		Tags:             nil,
 		IsIPv6:           nil,
 		ResourceName:     nil,
 		ResourceIDs:      nil,
