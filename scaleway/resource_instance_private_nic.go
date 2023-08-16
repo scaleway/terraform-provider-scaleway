@@ -52,6 +52,15 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the private-nic",
 			},
+			"ip_ids": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "IPAM ip list, should be for internal use only",
+				ForceNew:    true,
+			},
 			"zone": zoneSchema(),
 		},
 		CustomizeDiff: customizeDiffLocalityCheck("server_id", "private_network_id"),
@@ -74,6 +83,7 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 		ServerID:         expandZonedID(d.Get("server_id").(string)).ID,
 		PrivateNetworkID: expandRegionalID(d.Get("private_network_id").(string)).ID,
 		Tags:             expandStrings(d.Get("tags")),
+		IPIDs:            expandStrings(d.Get("ip_ids")),
 	}
 
 	privateNIC, err := instanceAPI.CreatePrivateNIC(
