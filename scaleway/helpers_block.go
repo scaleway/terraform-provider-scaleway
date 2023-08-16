@@ -7,12 +7,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
 	defaultBlockTimeout = 5 * time.Minute
+	blockVolumeType     = instance.VolumeServerVolumeType("sbs_volume")
 )
+
+func blockAPI(meta interface{}) *block.API {
+	return block.NewAPI(meta.(*Meta).scwClient)
+}
 
 // blockAPIWithZone returns a new block API and the zone for a Create request
 func blockAPIWithZone(d *schema.ResourceData, m interface{}) (*block.API, scw.Zone, error) {
@@ -66,6 +72,7 @@ func customDiffCannotShrink(key string) schema.CustomizeDiffFunc {
 		return oldValue < newValue
 	})
 }
+
 func waitForBlockSnapshot(ctx context.Context, blockAPI *block.API, zone scw.Zone, id string, timeout time.Duration) (*block.Snapshot, error) {
 	retryInterval := defaultFunctionRetryInterval
 	if DefaultWaitRetryInterval != nil {
