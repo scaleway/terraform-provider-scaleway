@@ -48,11 +48,6 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Optional:    true,
 				Description: "The baremetal server associated with this flexible IP",
 			},
-			"mac_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The MAC address of the server associated with this flexible IP",
-			},
 			"tags": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{

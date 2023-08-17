@@ -144,7 +144,7 @@ func resourceScalewayWebhosting() *schema.Resource {
 				oldTags := expandStrings(oldTagsInterface)
 				newTags := expandStrings(newTagsInterface)
 				// If the 'internal' tag has been added, remove it from the diff
-				if containsTag(oldTags, "internal") && !containsTag(newTags, "internal") {
+				if sliceContainsString(oldTags, "internal") && !sliceContainsString(newTags, "internal") {
 					err := diff.SetNew("tags", oldTags)
 					if err != nil {
 						return err
