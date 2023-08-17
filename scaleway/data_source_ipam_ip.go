@@ -33,8 +33,7 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Required:    true,
 				Description: "IP Type (ipv4, ipv6)",
 			},
-			"zone":            zoneSchema(),
-			"organization_id": organizationIDSchema(),
+			"region": regionSchema(),
 
 			// Computed
 			"address": {
@@ -92,7 +91,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	ip := resp.IPs[0]
 
 	d.SetId(ip.ID)
-	_ = d.Set("address", ip.Address.String())
+	_ = d.Set("address", ip.Address.IP.String())
 
 	return nil
 }
