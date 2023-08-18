@@ -123,16 +123,16 @@ func TestAccScalewayDataSourceFlexibleIPs_WithBaremetalIDs(t *testing.T) {
 						tags = [ "minimal", "second" ]
 					}
 
-					data "scaleway_flexible_ips" "fips_by_tags" {
+					data "scaleway_flexible_ips" "fips_by_server_id" {
 						server_ids = [scaleway_baremetal_server.base.id]
 						depends_on = [scaleway_flexible_ip.first, scaleway_flexible_ip.second]
 					}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ips.fips_by_tags", "ips.0.id"),
-					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ips.fips_by_tags", "ips.0.ip_address"),
-					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ips.fips_by_tags", "ips.1.id"),
-					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ips.fips_by_tags", "ips.1.ip_address"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ips.fips_by_server_id", "ips.0.id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ips.fips_by_server_id", "ips.0.ip_address"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ips.fips_by_server_id", "ips.1.id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ips.fips_by_server_id", "ips.1.ip_address"),
 				),
 			},
 		},

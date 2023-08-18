@@ -36,7 +36,7 @@ resource "scaleway_flexible_ip" "second" {
   tags = [ "foo", "second" ]
 }
 
-data "scaleway_flexible_ips" "fips_by_tags" {
+data "scaleway_flexible_ips" "fips_by_server_id" {
   server_ids = [scaleway_baremetal_server.base.id]
   depends_on = [scaleway_flexible_ip.first, scaleway_flexible_ip.second]
 }
