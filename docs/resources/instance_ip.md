@@ -17,7 +17,7 @@ resource "scaleway_instance_ip" "server_ip" {}
 
 The following arguments are supported:
 
-- `type` - (Defaults to `nat`) The type of the IP (`nat`, `routed_ipv4`, `routed_ipv6`), more information in [the documentation](https://www.scaleway.com/en/docs/compute/instances/api-cli/using-ip-mobility/)
+- `type` - (Defaults to `nat`) The type of the IP (`nat`, `routed_ipv4`, `routed_ipv6`), more information in [the documentation](https://www.scaleway.com/en/docs/compute/instances/api-cli/using-routed-ips/)
 
 ~> **Important:** An IP can migrate from `nat` to `routed_ipv4` but cannot be converted back
 
