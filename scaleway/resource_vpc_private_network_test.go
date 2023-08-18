@@ -237,7 +237,7 @@ func TestAccScalewayVPCPrivateNetwork_OneSubnet(t *testing.T) {
 			{
 				Config: `resource scaleway_vpc_private_network test {
    					 ipv4_subnet {
-						subnet = "172.16.32.0/22"
+						subnet = "172.16.64.0/22"
 					 }
 				}`,
 				Check: resource.ComposeTestCheckFunc(
@@ -248,7 +248,7 @@ func TestAccScalewayVPCPrivateNetwork_OneSubnet(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.test",
 						"ipv4_subnet.0.subnet",
-						"172.16.32.0/22",
+						"172.16.64.0/22",
 					),
 					resource.TestCheckResourceAttrSet(
 						"scaleway_vpc_private_network.test",
