@@ -19,7 +19,7 @@ func dataSourceScalewayFlexibleIPs() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional:    true,
-				Description: "Flexible IPs with server IDs like are listed.",
+				Description: "Flexible IPs that are attached to these server IDs are listed",
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -27,7 +27,7 @@ func dataSourceScalewayFlexibleIPs() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional:    true,
-				Description: "Flexible IPs with these exact tags are listed.",
+				Description: "Flexible IPs with these exact tags are listed",
 			},
 			"ips": {
 				Type:     schema.TypeList,
