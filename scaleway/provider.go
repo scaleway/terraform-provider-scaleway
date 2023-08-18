@@ -188,6 +188,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_function_namespace":                  dataSourceScalewayFunctionNamespace(),
 				"scaleway_iam_application":                     dataSourceScalewayIamApplication(),
 				"scaleway_flexible_ip":                         dataSourceScalewayFlexibleIP(),
+				"scaleway_flexible_ips":                        dataSourceScalewayFlexibleIPs(),
 				"scaleway_iam_group":                           dataSourceScalewayIamGroup(),
 				"scaleway_iam_ssh_key":                         dataSourceScalewayIamSSHKey(),
 				"scaleway_iam_user":                            dataSourceScalewayIamUser(),
