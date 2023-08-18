@@ -51,3 +51,32 @@ func waitFlexibleIP(ctx context.Context, api *flexibleip.API, zone scw.Zone, id 
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
+
+func flattenFlexibleIPMacAddress(mac *flexibleip.MACAddress) interface{} {
+	if mac == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"id":          mac.ID,
+			"mac_address": mac.MacAddress,
+			"mac_type":    mac.MacType,
+			"status":      mac.Status,
+			"created_at":  flattenTime(mac.CreatedAt),
+			"updated_at":  flattenTime(mac.UpdatedAt),
+			"zone":        mac.Zone,
+		},
+	}
+}
+
+func expandServerIDs(data interface{}) []string {
+	var expandedIDs []string
+	for _, s := range data.([]interface{}) {
+		if s == nil {
+			s = ""
+		}
+		expandedID := expandID(s.(string))
+		expandedIDs = append(expandedIDs, expandedID)
+	}
+	return expandedIDs
+}
