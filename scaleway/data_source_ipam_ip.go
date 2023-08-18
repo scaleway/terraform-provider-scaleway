@@ -65,7 +65,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	req := &ipam.ListIPsRequest{
+	req := &ipam.ListIPsRequest{ // TODO: add missing filters
 		Region:           region,
 		OrganizationID:   nil,
 		PrivateNetworkID: expandStringPtr(d.Get("private_network_id")),
