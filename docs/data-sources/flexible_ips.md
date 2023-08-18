@@ -21,9 +21,9 @@ data "scaleway_baremetal_offer" "my_offer" {
 }
 
 resource "scaleway_baremetal_server" "base" {
-  name 			             = "MyServer"
-  offer     				 = data.scaleway_baremetal_offer.my_offer.offer_id
-  install_config_afterward   = true
+  name  = "MyServer"
+  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+  install_config_afterward  = true
 }
 
 resource "scaleway_flexible_ip" "first" {
