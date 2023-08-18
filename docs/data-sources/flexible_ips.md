@@ -60,13 +60,13 @@ In addition to all above arguments, the following attributes are exported:
     - `tags` - The list of tags which are attached to the flexible IP.
     - `status` - The status of the flexible IP.
     - `mac_address` - The MAC address of the server associated with this flexible IP.
-      - `id` - The MAC address ID.
-      - `mac_address` - The MAC address of the Virtual MAC.
-      - `mac_type` - The type of virtual MAC.
-      - `status` - The status of virtual MAC.
-      - `created_at` - The date on which the virtual MAC was created (RFC 3339 format).
-      - `updated_at` - The date on which the virtual MAC was last updated (RFC 3339 format).
-      - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the MAC address exist.
+        - `id` - The MAC address ID.
+        - `mac_address` - The MAC address of the Virtual MAC.
+        - `mac_type` - The type of virtual MAC.
+        - `status` - The status of virtual MAC.
+        - `created_at` - The date on which the virtual MAC was created (RFC 3339 format).
+        - `updated_at` - The date on which the virtual MAC was last updated (RFC 3339 format).
+        - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the MAC address exist.
     - `created_at` - The date on which the flexible IP was created (RFC 3339 format).
     - `updated_at` - The date on which the flexible IP was last updated (RFC 3339 format).
     - `reverse` - The reverse domain associated with this IP.
