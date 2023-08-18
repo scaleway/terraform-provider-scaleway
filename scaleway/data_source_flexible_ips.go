@@ -109,7 +109,7 @@ func dataSourceScalewayFlexibleIPs() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
-						"zone":            zoneSchema(),
+						"zone":            zoneComputedSchema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
 					},
