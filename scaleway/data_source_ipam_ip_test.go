@@ -43,8 +43,10 @@ func TestAccScalewayDataSourceIPAMIP_Instance(t *testing.T) {
 					}
 
 					data "scaleway_ipam_ip" "by_id" {
-						resource_id = scaleway_instance_private_nic.main.id
-						resource_type = "instance_private_nic"
+						resource {
+							id = scaleway_instance_private_nic.main.id
+							type = "instance_private_nic"
+						}
 						type = "ipv4"
 					}`,
 				Check: resource.ComposeTestCheckFunc(
