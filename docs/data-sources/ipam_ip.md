@@ -24,7 +24,7 @@ data "scaleway_ipam_ip" "by_mac" {
   type = "ipv4"
 }
 
-# Find server private using private-nic id
+# Find server private IPv4 using private-nic id
 data "scaleway_ipam_ip" "by_id" {
   resource_id = scaleway_instance_private_nic.nic.id
   resource_type = "instance_private_nic"
