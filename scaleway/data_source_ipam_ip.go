@@ -24,6 +24,12 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"resource_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"resource_id"},
+				Default:      ipam.ResourceTypeUnknownType,
+			},
 			"mac_address": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -71,8 +77,8 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 		PrivateNetworkID: expandStringPtr(d.Get("private_network_id")),
 		SubnetID:         nil,
 		Attached:         nil,
-		ResourceID:       expandStringPtr(d.Get("resource_id")),
-		ResourceType:     ipam.ResourceTypeUnknownType,
+		ResourceID:       expandStringPtr(expandLastID(d.Get("resource_id"))),
+		ResourceType:     ipam.ResourceType(d.Get("resource_type").(string)),
 		MacAddress:       expandStringPtr(d.Get("mac_address")),
 		ResourceName:     nil,
 		ResourceIDs:      nil,
