@@ -37,12 +37,20 @@ func TestAccScalewayDataSourceIPAMIP_Instance(t *testing.T) {
 						server_id = scaleway_instance_server.main.id
 					}
 
-					data "scaleway_ipam_ip" "main" {
+					data "scaleway_ipam_ip" "by_mac" {
 						mac_address = scaleway_instance_private_nic.main.mac_address
+						type = "ipv4"
+					}
+
+					data "scaleway_ipam_ip" "by_id" {
+						resource_id = scaleway_instance_private_nic.main.id
+						resource_type = "instance_private_nic"
 						type = "ipv4"
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.main", "address"),
+					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.by_mac", "address"),
+					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.by_id", "address"),
+					resource.TestCheckResourceAttrPair("data.scaleway_ipam_ip.by_mac", "address", "data.scaleway_ipam_ip.by_id", "address"),
 				),
 			},
 		},
