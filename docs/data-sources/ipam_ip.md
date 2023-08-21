@@ -26,8 +26,10 @@ data "scaleway_ipam_ip" "by_mac" {
 
 # Find server private IPv4 using private-nic id
 data "scaleway_ipam_ip" "by_id" {
-  resource_id = scaleway_instance_private_nic.nic.id
-  resource_type = "instance_private_nic"
+  resource {
+    id = scaleway_instance_private_nic.nic.id
+    type = "instance_private_nic"
+  }
   type = "ipv4"
 }
 
@@ -39,9 +41,9 @@ data "scaleway_ipam_ip" "by_id" {
 
 - `private_network_id` - (Optional) The ID of the private network the IP belong to.
 
-- `resource_id` - (Optional) The ID of the resource that the IP is bound to. Require `resource_type`
-
-- `resource_type` - (Optional) The type of the resource to get the IP from. Required with `resource_id`. [Documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/ipam/v1alpha1#pkg-constants) with type list.
+- `resource` - (Optional) Filter by resource ID and type, both attributes must be set
+    - `id` - The ID of the resource that the IP is bound to.
+    - `type` - The type of the resource to get the IP from. [Documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/ipam/v1alpha1#pkg-constants) with type list.
 
 - `mac_address` - (Optional) The Mac Address linked to the IP.
 
