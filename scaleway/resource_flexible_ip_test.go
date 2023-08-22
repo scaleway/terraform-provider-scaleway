@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"net"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -93,6 +94,29 @@ func TestAccScalewayFlexibleIP_WithZone(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
 					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "nl-ams-1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayFlexibleIP_IPv6(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFlexibleIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_flexible_ip" "main" {
+							is_ipv6 = true
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.main", "is_ipv6", "true"),
+					testAccCheckScalewayFlexibleIPIsIPv6(tt, "scaleway_flexible_ip.main"), // Custom check for IPv6
 				),
 			},
 		},
@@ -395,6 +419,34 @@ func testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt *TestTools, ipRe
 
 		if ip.ServerID == nil || server.ID != *ip.ServerID {
 			return fmt.Errorf("IDs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.ID, ip.ServerID)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayFlexibleIPIsIPv6(tt *TestTools, resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		fipAPI, zone, ID, err := fipAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		flexibleIP, err := fipAPI.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
+			Zone:  zone,
+			FipID: ID,
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(flexibleIP.IPAddress.IP.To16()) != net.IPv6len {
+			return fmt.Errorf("expected an IPv6 address but got: %s", flexibleIP.IPAddress.String())
 		}
 
 		return nil

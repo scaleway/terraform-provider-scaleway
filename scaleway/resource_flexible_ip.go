@@ -32,10 +32,12 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Optional:    true,
 				Description: "Description of the flexible IP",
 			},
-			"ip_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IPv4 address of the flexible IP",
+			"is_ipv6": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "Defines whether the flexible IP has an IPv6 address",
 			},
 			"reverse": {
 				Type:        schema.TypeString,
@@ -59,6 +61,16 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
+			"ip_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IP address of the flexible IP",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the flexible IP",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -87,6 +99,7 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 		Tags:        expandStrings(d.Get("tags")),
 		ServerID:    expandStringPtr(expandID(d.Get("server_id"))),
 		Reverse:     expandStringPtr(d.Get("reverse")),
+		IsIPv6:      d.Get("is_ipv6").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -133,6 +146,8 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("reverse", flexibleIP.Reverse)
 	_ = d.Set("created_at", flattenTime(flexibleIP.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(flexibleIP.UpdatedAt))
+	_ = d.Set("tags", flexibleIP.Tags)
+	_ = d.Set("status", flexibleIP.Status.String())
 
 	if flexibleIP.ServerID != nil {
 		_ = d.Set("server_id", newZonedIDString(zone, *flexibleIP.ServerID))
