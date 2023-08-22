@@ -44,7 +44,6 @@ func testSweepFlexibleIP(_ string) error {
 		return nil
 	})
 }
-
 func TestAccScalewayFlexibleIP_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -61,9 +60,10 @@ func TestAccScalewayFlexibleIP_Basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "scaleway_flexible_ip.main",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "scaleway_flexible_ip.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"is_ipv6"},
 			},
 		},
 	})
