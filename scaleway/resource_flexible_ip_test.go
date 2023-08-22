@@ -116,7 +116,7 @@ func TestAccScalewayFlexibleIP_IPv6(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_flexible_ip.main", "is_ipv6", "true"),
-					testAccCheckScalewayFlexibleIPIsIPv6(tt, "scaleway_flexible_ip.main"), // Custom check for IPv6
+					testAccCheckScalewayFlexibleIPIsIPv6(tt, "scaleway_flexible_ip.main"),
 				),
 			},
 		},
