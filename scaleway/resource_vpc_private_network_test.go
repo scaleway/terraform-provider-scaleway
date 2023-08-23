@@ -143,7 +143,14 @@ func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `resource scaleway_vpc_private_network test {}`,
+				Config: `
+					resource scaleway_vpc vpc01 {
+						name = "my vpc"
+					}
+
+					resource scaleway_vpc_private_network test {
+						vpc_id = scaleway_vpc.vpc01.id
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPrivateNetworkExists(
 						tt,
@@ -162,14 +169,20 @@ func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
 				),
 			},
 			{
-				Config: `resource scaleway_vpc_private_network test {
-					ipv4_subnet {
-						subnet = "172.16.32.0/22"
+				Config: `
+					resource scaleway_vpc vpc01 {
+						name = "my vpc"
 					}
-					ipv6_subnets {
-    				    subnet = "fd46:78ab:30b8:177c::/64"
-					}
-				}`,
+					
+					resource scaleway_vpc_private_network test {
+						ipv4_subnet {
+							subnet = "172.16.32.0/22"
+						}
+						ipv6_subnets {
+							subnet = "fd46:78ab:30b8:177c::/64"
+						}
+						vpc_id = scaleway_vpc.vpc01.id
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPrivateNetworkExists(
 						tt,
@@ -235,11 +248,17 @@ func TestAccScalewayVPCPrivateNetwork_OneSubnet(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `resource scaleway_vpc_private_network test {
-   					 ipv4_subnet {
-						subnet = "172.16.64.0/22"
-					 }
-				}`,
+				Config: `
+					resource scaleway_vpc vpc01 {
+						name = "my vpc"
+					}
+
+					resource scaleway_vpc_private_network test {
+						ipv4_subnet {
+							subnet = "172.16.64.0/22"
+						}
+						vpc_id = scaleway_vpc.vpc01.id
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPrivateNetworkExists(
 						tt,
