@@ -325,6 +325,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChanges("secret_environment_variables") {
 		req.SecretEnvironmentVariables = expandFunctionsSecrets(d.Get("secret_environment_variables"))
+		updated = true
 	}
 
 	if d.HasChange("description") {
