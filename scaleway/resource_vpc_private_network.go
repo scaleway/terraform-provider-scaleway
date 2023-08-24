@@ -148,6 +148,7 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 				Description: "The VPC in which to create the private network",
 			},
 			"project_id": projectIDSchema(),
