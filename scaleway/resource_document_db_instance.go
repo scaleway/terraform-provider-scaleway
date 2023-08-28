@@ -301,7 +301,6 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 	}
 
 	return resourceScalewayDocumentDBInstanceRead(ctx, d, meta)
