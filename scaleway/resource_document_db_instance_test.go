@@ -19,9 +19,9 @@ func init() {
 
 func testSweepDocumentDBInstance(_ string) error {
 	return sweepRegions((&document_db.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		document_dbAPI := document_db.NewAPI(scwClient)
+		api := document_db.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the document_db instances in (%s)", region)
-		listInstances, err := document_dbAPI.ListInstances(
+		listInstances, err := api.ListInstances(
 			&document_db.ListInstancesRequest{
 				Region: region,
 			}, scw.WithAllPages())
@@ -30,7 +30,7 @@ func testSweepDocumentDBInstance(_ string) error {
 		}
 
 		for _, instance := range listInstances.Instances {
-			_, err := document_dbAPI.DeleteInstance(&document_db.DeleteInstanceRequest{
+			_, err := api.DeleteInstance(&document_db.DeleteInstanceRequest{
 				InstanceID: instance.ID,
 				Region:     region,
 			})
@@ -84,7 +84,7 @@ func testAccCheckScalewayDocumentDBInstanceExists(tt *TestTools, n string) resou
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := document_dbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := documentDBAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func testAccCheckScalewayDocumentDBInstanceDestroy(tt *TestTools) resource.TestC
 				continue
 			}
 
-			api, region, id, err := document_dbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := documentDBAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
