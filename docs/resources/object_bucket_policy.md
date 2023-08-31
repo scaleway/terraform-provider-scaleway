@@ -29,7 +29,7 @@ resource "scaleway_object_bucket_policy" "policy" {
             SCW = "application_id:<APPLICATION_ID>"
           },
           Action = "s3:ListBucket",
-          Resources = [
+          Resource = [
             "${scaleway_object_bucket.bucket.name}",
             "${scaleway_object_bucket.bucket.name}/*"
           ]
