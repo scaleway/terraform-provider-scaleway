@@ -21,7 +21,7 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-ns"
+					  name     = "test-mnq-creds-basic-1"
 					  protocol = "nats"
 					}
 			
@@ -40,7 +40,7 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-sqs"
+					  name     = "test-mnq-creds-basic-2"
 					  protocol = "sqs_sns"
 					}
 					
@@ -71,7 +71,7 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-sqs-update"
+					  name     = "test-mnq-creds-basic-3"
 					  protocol = "sqs_sns"
 					}
 					
@@ -102,7 +102,7 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-sqs-update"
+					  name     = "test-mnq-creds-basic-3"
 					  protocol = "sqs_sns"
 					}
 					
