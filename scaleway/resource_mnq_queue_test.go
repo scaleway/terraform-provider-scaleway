@@ -26,7 +26,7 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-sqs-basic"
+						name     = "test-mnq-queue-basic-1"
 						protocol = "sqs_sns"
 					}
 
@@ -70,7 +70,7 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-sqs-basic"
+						name     = "test-mnq-queue-basic-1"
 						protocol = "sqs_sns"
 					}
 
@@ -103,7 +103,7 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-sqs-basic"
+						name     = "test-mnq-queue-basic-1"
 						protocol = "sqs_sns"
 					}
 
@@ -140,7 +140,7 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-sqs-basic"
+						name     = "test-mnq-queue-basic-1"
 						protocol = "sqs_sns"
 					}
 
