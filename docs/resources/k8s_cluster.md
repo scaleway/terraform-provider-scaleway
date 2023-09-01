@@ -210,7 +210,13 @@ The following arguments are supported:
 
 - `name` - (Required) The name for the Kubernetes cluster.
 
-- `type` - (Optional) The type of Kubernetes cluster. Possible values are: `kapsule` or `multicloud`.
+- `type` - (Optional) The type of Kubernetes cluster. Possible values are:
+
+    - for mutualized clusters: `kapsule` or `multicloud`
+
+    - for dedicated Kapsule clusters: `kapsule-dedicated-4`, `kapsule-dedicated-8` or `kapsule-dedicated-16`.
+
+    - for dedicated Kosmos clusters: `multicloud-dedicated-4`, `multicloud-dedicated-8` or `multicloud-dedicated-16`.
 
 - `description` - (Optional) A description for the Kubernetes cluster.
 

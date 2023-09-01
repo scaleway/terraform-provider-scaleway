@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -1100,4 +1101,39 @@ func sliceContainsString(slice []string, str string) bool {
 		}
 	}
 	return false
+}
+
+// testAccCheckScalewayResourceIDPersisted checks that the ID of the resource is the same throughout tests of migration or mutation
+// It can be used to check that no ForceNew has been done
+func testAccCheckScalewayResourceIDPersisted(resourceName string, resourceID *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource was not found: %s", resourceName)
+		}
+		if *resourceID != "" && *resourceID != rs.Primary.ID {
+			return fmt.Errorf("resource ID changed when it should have persisted")
+		}
+		*resourceID = rs.Primary.ID
+		return nil
+	}
+}
+
+// testAccCheckScalewayResourceIDChanged checks that the ID of the resource has indeed changed, in case of ForceNew for example.
+// It will fail if resourceID is empty so be sure to use testAccCheckScalewayResourceIDPersisted first in a test suite.
+func testAccCheckScalewayResourceIDChanged(resourceName string, resourceID *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if resourceID == nil || *resourceID == "" {
+			return fmt.Errorf("resourceID was not set")
+		}
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource was not found: %s", resourceName)
+		}
+		if *resourceID == rs.Primary.ID {
+			return fmt.Errorf("resource ID persisted when it should have changed")
+		}
+		*resourceID = rs.Primary.ID
+		return nil
+	}
 }
