@@ -618,19 +618,23 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		}
 
 		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID {
-			_ = d.Set("public_ip", server.PublicIP.Address.String())
-			d.SetConnInfo(map[string]string{
-				"type": "ssh",
-				"host": server.PublicIP.Address.String(),
-			})
 			if !server.PublicIP.Dynamic {
 				_ = d.Set("ip_id", newZonedID(zone, server.PublicIP.ID).String())
 			} else {
 				_ = d.Set("ip_id", "")
 			}
 		} else {
-			_ = d.Set("public_ip", "")
 			_ = d.Set("ip_id", "")
+		}
+
+		if server.PublicIP != nil {
+			_ = d.Set("public_ip", server.PublicIP.Address.String())
+			d.SetConnInfo(map[string]string{
+				"type": "ssh",
+				"host": server.PublicIP.Address.String(),
+			})
+		} else {
+			_ = d.Set("public_ip", "")
 			d.SetConnInfo(nil)
 		}
 

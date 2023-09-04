@@ -823,7 +823,6 @@ func TestAccScalewayInstanceServer_WithReservedIP(t *testing.T) {
 						type  = "DEV1-S"
 						ip_id = scaleway_instance_ip.first.id
 						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-						state = "stopped"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -841,7 +840,6 @@ func TestAccScalewayInstanceServer_WithReservedIP(t *testing.T) {
 						type  = "DEV1-S"
 						ip_id = scaleway_instance_ip.second.id
 						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-						state = "stopped"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -859,7 +857,6 @@ func TestAccScalewayInstanceServer_WithReservedIP(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-						state = "stopped"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -878,7 +875,6 @@ func TestAccScalewayInstanceServer_WithReservedIP(t *testing.T) {
 						type  = "DEV1-S"
 						enable_dynamic_ip = true
 						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-						state = "stopped"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
