@@ -44,7 +44,8 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 }
 
 func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := secretAPIWithRegion(d, meta)
+	secretID, existSecretID := d.GetOk("secret_id")
+	api, region, err := secretAPIWithRegionAndDefault(d, meta, expandRegionalID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -52,7 +53,6 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	var secretVersionIDStr string
 	var payloadSecretRaw []byte
 
-	secretID, existSecretID := d.GetOk("secret_id")
 	if !existSecretID {
 		request := &secret.AccessSecretVersionByNameRequest{
 			Region:     region,

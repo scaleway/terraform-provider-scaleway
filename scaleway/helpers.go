@@ -249,6 +249,28 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	return "", ErrRegionNotFound
 }
 
+// extractRegion will try to guess the region from the following:
+//   - region field of the resource data
+//   - default region given in argument
+//   - default region from config
+func extractRegionWithDefault(d terraformResourceData, meta *Meta, defaultRegion scw.Region) (scw.Region, error) {
+	rawRegion, exist := d.GetOk("region")
+	if exist {
+		return scw.ParseRegion(rawRegion.(string))
+	}
+
+	if defaultRegion != "" {
+		return defaultRegion, nil
+	}
+
+	region, exist := meta.scwClient.GetDefaultRegion()
+	if exist {
+		return region, nil
+	}
+
+	return "", ErrRegionNotFound
+}
+
 // ErrProjectIDNotFound is returned when no region can be detected
 var ErrProjectIDNotFound = fmt.Errorf("could not detect project id")
 
