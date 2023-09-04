@@ -1404,3 +1404,133 @@ func TestAccScalewayInstanceServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayInstanceServer_CustomDiffImage(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+					resource "scaleway_instance_server" "copy" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.copy"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.copy", "image", "ubuntu_jammy"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
+				),
+				ResourceName: "scaleway_instance_server.copy",
+				ImportState:  true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return state.RootModule().Resources["scaleway_instance_server.main"].Primary.ID, nil
+				},
+				ImportStatePersist: true,
+			},
+			{
+				Config: `
+					data "scaleway_marketplace_image" "jammy" {
+						label = "ubuntu_jammy"
+					}
+					resource "scaleway_instance_server" "main" {
+						image = data.scaleway_marketplace_image.jammy.id
+						type = "DEV1-S"
+						state = "stopped"
+					}
+					resource "scaleway_instance_server" "copy" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.copy"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.jammy", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
+				),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.copy"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.jammy", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
+				),
+			},
+			{
+				Config: `
+					data "scaleway_marketplace_image" "focal" {
+						label = "ubuntu_focal"
+					}
+					resource "scaleway_instance_server" "main" {
+						image = data.scaleway_marketplace_image.focal.id
+						type = "DEV1-S"
+						state = "stopped"
+					}
+					resource "scaleway_instance_server" "copy" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+				`,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.focal", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.copy", "image", "ubuntu_jammy"),
+					testAccCheckScalewayInstanceServerIDsAreDifferent("scaleway_instance_server.main", "scaleway_instance_server.copy"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScalewayInstanceServerIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[nameFirst]
+		if !ok {
+			return fmt.Errorf("resource was not found: %s", nameFirst)
+		}
+		idFirst := rs.Primary.ID
+
+		rs, ok = s.RootModule().Resources[nameSecond]
+		if !ok {
+			return fmt.Errorf("resource was not found: %s", nameSecond)
+		}
+		idSecond := rs.Primary.ID
+
+		if idFirst == idSecond {
+			return fmt.Errorf("IDs of both resources were equal when they should not have been (%s and %s)", nameFirst, nameSecond)
+		}
+		return nil
+	}
+}

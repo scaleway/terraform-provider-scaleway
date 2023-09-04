@@ -47,7 +47,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"image": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
 				Description:      "The UUID or the label of the base image used by the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
@@ -284,6 +283,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				"ip_id",
 			),
 			customDiffInstanceServerType,
+			customDiffInstanceServerImage,
 		),
 	}
 }
@@ -558,8 +558,6 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		// Image could be empty in an import context.
 		image := expandRegionalID(d.Get("image").(string))
 		if server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
-			// TODO: If image is a label, check that server.Image.ID match the label.
-			// It could be useful if the user edit the image with another tool.
 			_ = d.Set("image", newZonedID(zone, server.Image.ID).String())
 		}
 
@@ -999,7 +997,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	}
 
 	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
@@ -1094,6 +1092,55 @@ func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, 
 		return fmt.Errorf("cannot change server type: %w", err)
 	}
 
+	return nil
+}
+
+func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if diff.Get("image") == "" || !diff.HasChange("image") || diff.Id() == "" {
+		return nil
+	}
+
+	// We get the server to fetch the UUID of the image
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, diff.Id())
+	if err != nil {
+		return err
+	}
+	server, err := instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	// If 'image' field is defined by the user and server.Image is empty, we should create a new server
+	if server.Server.Image == nil {
+		return diff.ForceNew("image")
+	}
+
+	// We get the image as it is defined by the user
+	image := expandRegionalID(diff.Get("image").(string))
+	if scwvalidation.IsUUID(image.ID) {
+		if image.ID == expandZonedID(server.Server.Image.ID).ID {
+			return nil
+		}
+	}
+
+	// If image is a label, we check that server.Image.ID matches the label in case the user has edited
+	// the image with another tool.
+	marketplaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
+	if err != nil {
+		return err
+	}
+	marketplaceImage, err := marketplaceAPI.GetLocalImage(&marketplace.GetLocalImageRequest{
+		LocalImageID: server.Server.Image.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+	if marketplaceImage.Label != image.ID {
+		return diff.ForceNew("image")
+	}
 	return nil
 }
 
