@@ -56,8 +56,13 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_function_trigger_sqs"
+					}
+
 					resource scaleway_function_namespace main {
 						name = "test-function-trigger-sqs"	
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource scaleway_function main {
@@ -70,7 +75,9 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 
 					resource scaleway_mnq_namespace main {
 						protocol = "sqs_sns"
-						name = "test-function-trigger-sqs"
+						name = "main"
+
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {
@@ -114,8 +121,13 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_function_trigger_sqs"
+					}
+
 					resource scaleway_function_namespace main {
 						name = "test-function-trigger-sqs"	
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource scaleway_function main {
@@ -128,7 +140,9 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 
 					resource scaleway_mnq_namespace main {
 						protocol = "sqs_sns"
-						name = "test-function-trigger-sqs"
+						name = "main"
+						
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {
