@@ -137,7 +137,6 @@ func TestAccScalewayInstanceIP_RoutedMigrate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_instance_ip" "main" {
-							zone = "fr-par-3"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -148,10 +147,8 @@ func TestAccScalewayInstanceIP_RoutedMigrate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_instance_ip" "main" {
-							zone = "fr-par-3"
 						}
 						resource "scaleway_instance_ip" "copy" {
-							zone = "fr-par-3"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -172,10 +169,8 @@ func TestAccScalewayInstanceIP_RoutedMigrate(t *testing.T) {
 				Config: `
 						resource "scaleway_instance_ip" "main" {
 							type = "routed_ipv4"
-							zone = "fr-par-3"
 						}
 						resource "scaleway_instance_ip" "copy" {
-							zone = "fr-par-3"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -212,7 +207,6 @@ func TestAccScalewayInstanceIP_RoutedDowngrade(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_instance_ip" "main" {
-							zone = "fr-par-3"
 							type = "routed_ipv4"
 						}
 					`,
@@ -226,7 +220,6 @@ func TestAccScalewayInstanceIP_RoutedDowngrade(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_instance_ip" "main" {
-							zone = "fr-par-3"
 							type = "nat"
 						}
 					`,
@@ -252,7 +245,6 @@ func TestAccScalewayInstanceIP_RoutedIPV6(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_instance_ip" "main" {
-							zone = "fr-par-3"
 							type = "routed_ipv6"
 						}
 					`,

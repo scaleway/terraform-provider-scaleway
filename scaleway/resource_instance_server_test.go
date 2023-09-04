@@ -1551,7 +1551,6 @@ func TestAccScalewayInstanceServer_RoutedIPEnable(t *testing.T) {
 				Config: `
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						state = "stopped"
 					}`,
@@ -1564,7 +1563,6 @@ func TestAccScalewayInstanceServer_RoutedIPEnable(t *testing.T) {
 				Config: `
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						routed_ip_enabled = true
 						state = "stopped"
@@ -1589,13 +1587,11 @@ func TestAccScalewayInstanceServer_RoutedIPEnableWithIP(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "main" {
-						zone = "fr-par-3"
 					}
 
 					resource "scaleway_instance_server" "main" {
 						ip_id = scaleway_instance_ip.main.id
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						state = "stopped"
 					}`,
@@ -1607,13 +1603,11 @@ func TestAccScalewayInstanceServer_RoutedIPEnableWithIP(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "main" {
-						zone = "fr-par-3"
 					}
 
 					resource "scaleway_instance_server" "main" {
 						ip_id = scaleway_instance_ip.main.id
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						state = "stopped"
 						routed_ip_enabled = true
@@ -1638,14 +1632,12 @@ func TestAccScalewayInstanceServer_IPs(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "ip1" {
-						zone = "fr-par-3"
 						type = "routed_ipv4"
 					}
 
 					resource "scaleway_instance_server" "main" {
 						ip_ids = [scaleway_instance_ip.ip1.id]
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						state = "stopped"
 					}`,
@@ -1659,19 +1651,16 @@ func TestAccScalewayInstanceServer_IPs(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "ip1" {
-						zone = "fr-par-3"
 						type = "routed_ipv4"
 					}
 
 					resource "scaleway_instance_ip" "ip2" {
-						zone = "fr-par-3"
 						type = "routed_ipv4"
 					}
 
 					resource "scaleway_instance_server" "main" {
 						ip_ids = [scaleway_instance_ip.ip1.id, scaleway_instance_ip.ip2.id]
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						state = "stopped"
 					}`,
@@ -1686,19 +1675,16 @@ func TestAccScalewayInstanceServer_IPs(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "ip1" {
-						zone = "fr-par-3"
 						type = "routed_ipv4"
 					}
 
 					resource "scaleway_instance_ip" "ip2" {
-						zone = "fr-par-3"
 						type = "routed_ipv4"
 					}
 
 					resource "scaleway_instance_server" "main" {
 						ip_ids = [scaleway_instance_ip.ip2.id]
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						state = "stopped"
 					}`,
@@ -1768,14 +1754,12 @@ func TestAccScalewayInstanceServer_IPsRemoved(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "main" {
-						zone = "fr-par-3"
 						type = "routed_ipv4"
 					}
 
 					resource "scaleway_instance_server" "main" {
 						ip_ids = [scaleway_instance_ip.main.id]
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						state = "stopped"
 					}`,
@@ -1789,13 +1773,11 @@ func TestAccScalewayInstanceServer_IPsRemoved(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "main" {
-						zone = "fr-par-3"
 						type = "routed_ipv4"
 					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
-						zone = "fr-par-3"
 						type  = "PRO2-XXS"
 						state = "stopped"
 					}`,
