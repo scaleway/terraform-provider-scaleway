@@ -25,9 +25,15 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_basic_sqs"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-queue-basic-1"
+						name     = "main"
 						protocol = "sqs_sns"
+
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {
@@ -69,9 +75,15 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_basic_sqs"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-queue-basic-1"
+						name     = "main"
 						protocol = "sqs_sns"
+
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {
@@ -102,9 +114,15 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_basic_sqs"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-queue-basic-1"
+						name     = "main"
 						protocol = "sqs_sns"
+
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {
@@ -139,9 +157,15 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_basic_sqs"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-queue-basic-1"
+						name     = "main"
 						protocol = "sqs_sns"
+
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {
@@ -194,9 +218,15 @@ func TestAccScalewayMNQQueue_BasicNATS(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_basic_nats"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-nats-basic"
+						name     = "main"
 						protocol = "nats"
+
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {
@@ -222,9 +252,15 @@ func TestAccScalewayMNQQueue_BasicNATS(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_basic_nats"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-						name     = "test-mnq-nats-basic"
+						name     = "main"
 						protocol = "nats"
+
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {

@@ -20,9 +20,15 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_credentials_basic_1"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-creds-basic-1"
-					  protocol = "nats"
+						name     = "main"
+						protocol = "nats"
+
+						project_id = scaleway_account_project.project.id
 					}
 			
 					resource "scaleway_mnq_credential" "main" {
@@ -39,9 +45,15 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_credentials_basic_2"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-creds-basic-2"
-					  protocol = "sqs_sns"
+						name     = "main"
+						protocol = "sqs_sns"
+
+						project_id = scaleway_account_project.project.id
 					}
 					
 					resource "scaleway_mnq_credential" "main" {
@@ -70,9 +82,15 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_credentials_basic_3"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-creds-basic-3"
-					  protocol = "sqs_sns"
+						name     = "main"
+						protocol = "sqs_sns"
+
+						project_id = scaleway_account_project.project.id
 					}
 					
 					resource "scaleway_mnq_credential" "main" {
@@ -101,9 +119,15 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_credentials_basic_3"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-creds-basic-3"
-					  protocol = "sqs_sns"
+						name     = "main"
+						protocol = "sqs_sns"
+
+						project_id = scaleway_account_project.project.id
 					}
 					
 					resource "scaleway_mnq_credential" "main" {

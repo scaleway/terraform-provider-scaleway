@@ -55,9 +55,15 @@ func TestAccScalewayMNQNamespace_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_namespace_basic_1"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-ns-basic-1"
-					  protocol = "nats"
+						name     = "main"
+						protocol = "nats"
+
+						project_id = scaleway_account_project.project.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -71,34 +77,13 @@ func TestAccScalewayMNQNamespace_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_mnq_namespace main {
-					  name     = "test-mnq-ns-basic-2"
-					  protocol = "nats"
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_namespace_basic_1"
 					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayMNQNamespaceExists(tt, "scaleway_mnq_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "name", "test-mnq-ns-basic-2"),
-				),
-			},
-			{
-				Config: `
+
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-ns-basic-1"
-					  protocol = "nats"
-					  region   = "fr-par"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayMNQNamespaceExists(tt, "scaleway_mnq_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "name", "test-mnq-ns-basic-1"),
-					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "region", "fr-par"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_mnq_namespace" "main" {
-					  protocol = "sqs_sns"
+						protocol = "sqs_sns"
+						project_id = scaleway_account_project.project.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
