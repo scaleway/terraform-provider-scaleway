@@ -50,16 +50,23 @@ func TestAccScalewayContainerTrigger_SQS(t *testing.T) {
 	defer tt.Cleanup()
 
 	basicConfig := `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_container_trigger_sqs"
+					}
+
 					resource scaleway_container_namespace main {
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
 					}
 
-					resource scaleway_mnq_namespace main {
+					resource "scaleway_mnq_namespace" "main" {
+						name     = "main"
 						protocol = "sqs_sns"
-						name = "test-container-trigger-sqs"
+
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_credential" "main" {
