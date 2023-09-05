@@ -38,6 +38,9 @@ const (
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 
 	defaultInstanceImageTimeout = 1 * time.Hour
+
+	// netIPNil define the nil string return by (*net.IP).String()
+	netIPNil = "<nil>"
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -623,4 +626,27 @@ func retryUpdateReverseDNS(ctx context.Context, instanceAPI *instance.API, req *
 			return err
 		}
 	}
+}
+
+func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []interface{} {
+	flattenedIPs := make([]interface{}, len(ips))
+
+	for i, ip := range ips {
+		flattenedIPs[i] = map[string]interface{}{
+			"id":      newZonedIDString(zone, ip.ID),
+			"address": ip.Address.String(),
+		}
+	}
+
+	return flattenedIPs
+}
+
+func flattenServerIPIDs(ips []*instance.ServerIP) []interface{} {
+	ipIDs := make([]interface{}, len(ips))
+
+	for i, ip := range ips {
+		ipIDs[i] = ip.ID
+	}
+
+	return ipIDs
 }

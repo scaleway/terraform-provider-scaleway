@@ -156,10 +156,10 @@ func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
 		n := make(map[string]interface{})
 		n["name"] = node.Name
 		n["status"] = node.Status.String()
-		if node.PublicIPV4 != nil && node.PublicIPV4.String() != "<nil>" {
+		if node.PublicIPV4 != nil && node.PublicIPV4.String() != netIPNil {
 			n["public_ip"] = node.PublicIPV4.String()
 		}
-		if node.PublicIPV6 != nil && node.PublicIPV6.String() != "<nil>" {
+		if node.PublicIPV6 != nil && node.PublicIPV6.String() != netIPNil {
 			n["public_ip_v6"] = node.PublicIPV6.String()
 		}
 		result = append(result, n)

@@ -173,6 +173,17 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Optional:         true,
 				Description:      "The ID of the reserved IP for the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
+				ConflictsWith:    []string{"ip_ids"},
+			},
+			"ip_ids": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				ConflictsWith: []string{"ip_id"},
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					Description:      "ID of the reserved IP for the server",
+					DiffSuppressFunc: diffSuppressFuncLocality,
+				},
 			},
 			"ipv6_address": {
 				Type:        schema.TypeString,
@@ -272,6 +283,32 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					},
 				},
 			},
+			"public_ips": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of public IPs attached to your instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the IP",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "IP Address",
+						},
+					},
+				},
+			},
+			"routed_ip_enabled": {
+				Type:        schema.TypeBool,
+				Description: "If server supports routed IPs, default to true if public_ips is used",
+				Optional:    true,
+				Computed:    true,
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -328,6 +365,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
+		RoutedIPEnabled:   expandBoolPtr(d.Get("routed_ip_enabled")),
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
@@ -346,6 +384,14 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
 		req.PublicIP = expandStringPtr(expandZonedID(ipID).ID)
+	}
+
+	if ipIDs, ok := d.GetOk("ip_ids"); ok {
+		req.PublicIPs = expandSliceIDsPtr(ipIDs)
+		// If server has multiple IPs, routed ip must be enabled per default
+		if getBool(d, "routed_ip_enabled") == nil {
+			req.RoutedIPEnabled = scw.BoolPtr(true)
+		}
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -554,6 +600,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)
 		_ = d.Set("project_id", server.Project)
+		_ = d.Set("routed_ip_enabled", server.RoutedIPEnabled)
 
 		// Image could be empty in an import context.
 		image := expandRegionalID(d.Get("image").(string))
@@ -570,21 +617,37 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			_ = d.Set("private_ip", flattenStringPtr(server.PrivateIP))
 		}
 
-		if server.PublicIP != nil {
-			_ = d.Set("public_ip", server.PublicIP.Address.String())
-			d.SetConnInfo(map[string]string{
-				"type": "ssh",
-				"host": server.PublicIP.Address.String(),
-			})
+		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID {
 			if !server.PublicIP.Dynamic {
 				_ = d.Set("ip_id", newZonedID(zone, server.PublicIP.ID).String())
 			} else {
 				_ = d.Set("ip_id", "")
 			}
 		} else {
-			_ = d.Set("public_ip", "")
 			_ = d.Set("ip_id", "")
+		}
+
+		if server.PublicIP != nil {
+			_ = d.Set("public_ip", server.PublicIP.Address.String())
+			d.SetConnInfo(map[string]string{
+				"type": "ssh",
+				"host": server.PublicIP.Address.String(),
+			})
+		} else {
+			_ = d.Set("public_ip", "")
 			d.SetConnInfo(nil)
+		}
+
+		if len(server.PublicIPs) > 0 {
+			_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
+		} else {
+			_ = d.Set("public_ips", []interface{}{})
+		}
+
+		if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
+			_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
+		} else {
+			_ = d.Set("ip_ids", []interface{}{})
 		}
 
 		if server.IPv6 != nil {
@@ -819,6 +882,13 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
+	if d.HasChange("ip_ids") {
+		err := resourceScalewayInstanceServerUpdateIPs(ctx, d, instanceAPI, zone, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChanges("boot_type") {
 		bootType := instance.BootType(d.Get("boot_type").(string))
 		updateRequest.BootType = &bootType
@@ -952,6 +1022,13 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	if d.HasChange("type") {
 		err := resourceScalewayInstanceServerMigrate(ctx, d, instanceAPI, zone, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChanges("routed_ip_enabled") {
+		err := resourceScalewayInstanceServerEnableRoutedIP(ctx, d, instanceAPI, zone, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1168,6 +1245,82 @@ func resourceScalewayInstanceServerMigrate(ctx context.Context, d *schema.Resour
 	err = reachState(ctx, instanceAPI, zone, id, beginningState)
 	if err != nil {
 		return fmt.Errorf("failed to start server after changing server type: %w", err)
+	}
+
+	return nil
+}
+
+func resourceScalewayInstanceServerEnableRoutedIP(ctx context.Context, d *schema.ResourceData, instanceAPI *instance.API, zone scw.Zone, id string) error {
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	_, err = instanceAPI.ServerAction(&instance.ServerActionRequest{
+		Zone:     server.Zone,
+		ServerID: server.ID,
+		Action:   "enable_routed_ip",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to enable routed ip: %w", err)
+	}
+
+	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resourceScalewayInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData, instanceAPI *instance.API, zone scw.Zone, id string) error {
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	schemaIPs := d.Get("ip_ids").([]interface{})
+	requestedIPs := make(map[string]bool, len(schemaIPs))
+
+	// Gather request IPs in a map
+	for _, rawIP := range schemaIPs {
+		requestedIPs[expandID(rawIP)] = false
+	}
+
+	// Detach all IPs that are not requested and set to true the one that are already attached
+	for _, ip := range server.PublicIPs {
+		_, isRequested := requestedIPs[ip.ID]
+		if isRequested {
+			requestedIPs[ip.ID] = true
+		} else {
+			_, err := instanceAPI.UpdateIP(&instance.UpdateIPRequest{
+				Zone: zone,
+				IP:   ip.ID,
+				Server: &instance.NullableStringValue{
+					Null: true,
+				},
+			})
+			if err != nil {
+				return fmt.Errorf("failed to detach IP: %w", err)
+			}
+		}
+	}
+
+	// Attach all remaining IPs that are not attached
+	for ipID, isAttached := range requestedIPs {
+		if isAttached {
+			continue
+		}
+		_, err := instanceAPI.UpdateIP(&instance.UpdateIPRequest{
+			Zone: zone,
+			IP:   ipID,
+			Server: &instance.NullableStringValue{
+				Value: server.ID,
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to attach IP: %w", err)
+		}
 	}
 
 	return nil
