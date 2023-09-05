@@ -52,7 +52,7 @@ func waitForBlockVolume(ctx context.Context, blockAPI *block.API, zone scw.Zone,
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	volume, err := blockAPI.WaitForVolume(&block.WaitForVolumeRequest{
+	volume, err := blockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeRequest{
 		Zone:          zone,
 		VolumeID:      id,
 		RetryInterval: &retryInterval,

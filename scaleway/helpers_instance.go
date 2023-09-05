@@ -169,7 +169,7 @@ func reachState(ctx context.Context, api *InstanceBlockAPI, zone scw.Zone, serve
 	// We need to check that all volumes are ready
 	for _, volume := range response.Server.Volumes {
 		if volume.VolumeType == blockVolumeType {
-			_, err := api.blockAPI.WaitForVolume(&block.WaitForVolumeRequest{
+			_, err := api.blockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeRequest{
 				VolumeID:      volume.ID,
 				Zone:          zone,
 				RetryInterval: DefaultWaitRetryInterval,
