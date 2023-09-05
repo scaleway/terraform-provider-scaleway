@@ -41,7 +41,6 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Computed:    true,
 				Description: "The type of cluster",
 			},
@@ -268,6 +267,33 @@ func resourceScalewayK8SCluster() *schema.Resource {
 					}
 					// Any other change will result in ForceNew
 					err := diff.ForceNew("private_network_id")
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+			},
+			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+				if diff.HasChange("type") && diff.Id() != "" {
+					k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(i, diff.Id())
+					if err != nil {
+						return err
+					}
+					possibleTypes, err := k8sAPI.ListClusterAvailableTypes(&k8s.ListClusterAvailableTypesRequest{
+						Region:    region,
+						ClusterID: clusterID,
+					}, scw.WithContext(ctx))
+					if err != nil {
+						return err
+					}
+
+					planned := diff.Get("type")
+					for _, possibleType := range possibleTypes.ClusterTypes {
+						if possibleType.Name == planned {
+							return nil
+						}
+					}
+					err = diff.ForceNew("type")
 					if err != nil {
 						return err
 					}
@@ -549,6 +575,25 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("type") {
+		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, defaultK8SClusterTimeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = k8sAPI.SetClusterType(&k8s.SetClusterTypeRequest{
+			Region:    region,
+			ClusterID: clusterID,
+			Type:      d.Get("type").(string),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, defaultK8SClusterTimeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	canUpgrade := false
