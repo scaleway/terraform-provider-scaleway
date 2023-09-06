@@ -41,6 +41,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					instance.VolumeVolumeTypeBSSD.String(),
 					instance.VolumeVolumeTypeLSSD.String(),
+					instance.VolumeVolumeTypeScratch.String(),
 				}, false),
 			},
 			"size_in_gb": {
