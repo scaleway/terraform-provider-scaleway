@@ -15,6 +15,11 @@ resource "scaleway_object_bucket" "bucket" {
   name = "some-unique-name"
 }
 
+resource "scaleway_iam_application" "main" {
+  name        = "My application"
+  description = "a description"
+}
+
 resource "scaleway_object_bucket_policy" "policy" {
   bucket = scaleway_object_bucket.bucket.name
   policy = jsonencode(
@@ -26,7 +31,7 @@ resource "scaleway_object_bucket_policy" "policy" {
           Sid    = "Delegate access",
           Effect = "Allow",
           Principal = {
-            SCW = "application_id:<APPLICATION_ID>"
+            SCW = "application_id:${scaleway_iam_application.main.id}"
           },
           Action = "s3:ListBucket",
           Resource = [
