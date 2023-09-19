@@ -290,7 +290,7 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 		Region:           region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is409Error(err) || is412Error(err) || is404Error(err) {
+		if is404Error(err) {
 			return append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  err.Error(),
