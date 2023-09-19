@@ -376,7 +376,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 
-	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZone: dnsZone}, scw.WithAllPages(), scw.WithContext(ctx))
+	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZone: scw.StringPtr(dnsZone)}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) || is403Error(err) {
 			d.SetId("")
