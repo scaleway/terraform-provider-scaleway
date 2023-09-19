@@ -298,7 +298,7 @@ func testAccCheckScalewayMNQQueueExists(tt *TestTools, n string) resource.TestCh
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		namespaceRegion, namespaceID, queueName, err := decomposeMNQQueueID(rs.Primary.ID)
+		namespaceRegion, namespaceID, queueName, err := decomposeMNQQueueID_alpha(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -360,7 +360,7 @@ func testAccCheckScalewayMNQQueueDestroy(tt *TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			namespaceRegion, namespaceID, queueName, err := decomposeMNQQueueID(rs.Primary.ID)
+			namespaceRegion, namespaceID, queueName, err := decomposeMNQQueueID_alpha(rs.Primary.ID)
 			if err != nil {
 				return err
 			}

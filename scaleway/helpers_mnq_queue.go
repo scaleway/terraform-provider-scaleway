@@ -61,7 +61,7 @@ func newSQSClient(httpClient *http.Client, region string, endpoint string, acces
 	return sqs.New(s), nil
 }
 
-func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn
+func NATSClientWithRegion_alpha(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn
 	meta := m.(*Meta)
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -74,6 +74,23 @@ func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStream
 
 	endpoint := d.Get("nats.0.endpoint").(string)
 	credentials := d.Get("nats.0.credentials").(string)
+	js, err := newNATSJetStreamClient(region.String(), endpoint, credentials)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return js, region, err
+}
+
+func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn
+	meta := m.(*Meta)
+	region, err := extractRegion(d, meta)
+	if err != nil {
+		return nil, "", err
+	}
+
+	endpoint := d.Get("endpoint").(string)
+	credentials := d.Get("credentials").(string)
 	js, err := newNATSJetStreamClient(region.String(), endpoint, credentials)
 	if err != nil {
 		return nil, "", err
@@ -299,11 +316,17 @@ func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ 
 	return nil
 }
 
-func composeMNQQueueID(region scw.Region, namespaceID string, queueName string) string {
+// TODO: remove with old MNQ code
+func composeMNQQueueID_alpha(region scw.Region, namespaceID string, queueName string) string {
 	return fmt.Sprintf("%s/%s/%s", region, namespaceID, queueName)
 }
 
-func decomposeMNQQueueID(id string) (region scw.Region, namespaceID string, name string, err error) {
+func composeMNQQueueID(region scw.Region, queueName string) string {
+	return fmt.Sprintf("%s/%s", region, queueName)
+}
+
+// TODO: remove with old MNQ code
+func decomposeMNQQueueID_alpha(id string) (region scw.Region, namespaceID string, name string, err error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 3 {
 		return "", "", "", fmt.Errorf("invalid ID format: %q", id)
@@ -317,13 +340,28 @@ func decomposeMNQQueueID(id string) (region scw.Region, namespaceID string, name
 	return region, parts[1], parts[2], nil
 }
 
+// decomposeMNQQueueID decompose ID into region and queue name
+func decomposeMNQQueueID(id string) (scw.Region, string, error) {
+	parts := strings.Split(id, "/")
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("expected ID format (region/queueName), got: %q", id)
+	}
+
+	region, err := scw.ParseRegion(parts[0])
+	if err != nil {
+		return "", "", err
+	}
+
+	return region, parts[1], nil
+}
+
 func getMNQNamespaceFromComposedQueueID(ctx context.Context, d *schema.ResourceData, meta interface{}, composedID string) (*mnq.Namespace, error) {
-	api, region, err := newMNQAPI(d, meta)
+	api, region, err := newMNQAPIalpha(d, meta)
 	if err != nil {
 		return nil, err
 	}
 
-	namespaceRegion, namespaceID, _, err := decomposeMNQQueueID(composedID)
+	namespaceRegion, namespaceID, _, err := decomposeMNQQueueID_alpha(composedID)
 	if err != nil {
 		return nil, err
 	}

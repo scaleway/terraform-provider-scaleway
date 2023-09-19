@@ -174,7 +174,7 @@ func resourceScalewayMNQQueueNATS() *schema.Resource {
 }
 
 func resourceScalewayMNQQueueCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQAPI(d, meta)
+	api, region, err := newMNQAPIalpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -239,13 +239,13 @@ func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(composeMNQQueueID(namespaceRegion, namespaceID, *input.QueueName))
+	d.SetId(composeMNQQueueID_alpha(namespaceRegion, namespaceID, *input.QueueName))
 
 	return resourceScalewayMNQQueueReadSQS(ctx, d, meta)
 }
 
 func resourceScalewayMNQQueueCreateNATS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -280,7 +280,7 @@ func resourceScalewayMNQQueueCreateNATS(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(composeMNQQueueID(namespaceRegion, namespaceID, name))
+	d.SetId(composeMNQQueueID_alpha(namespaceRegion, namespaceID, name))
 
 	return resourceScalewayMNQQueueReadNATS(ctx, d, meta)
 }
@@ -307,7 +307,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	namespaceRegion, namespaceID, queueName, err := decomposeMNQQueueID(d.Id())
+	namespaceRegion, namespaceID, queueName, err := decomposeMNQQueueID_alpha(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -359,12 +359,12 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayMNQQueueReadNATS(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	namespaceRegion, namespaceID, queueName, err := decomposeMNQQueueID(d.Id())
+	namespaceRegion, namespaceID, queueName, err := decomposeMNQQueueID_alpha(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -404,7 +404,7 @@ func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQQueueID_alpha(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -439,12 +439,12 @@ func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQQueueUpdateNATS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQQueueID_alpha(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -504,7 +504,7 @@ func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQQueueID_alpha(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -545,12 +545,12 @@ func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQQueueDeleteNATS(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQQueueID_alpha(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

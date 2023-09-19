@@ -113,7 +113,7 @@ func resourceScalewayMNQCredential() *schema.Resource {
 }
 
 func resourceScalewayMNQCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQAPI(d, meta)
+	api, region, err := newMNQAPIalpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,7 +150,7 @@ func resourceScalewayMNQCredentialCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayMNQCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqAPIWithRegionAndID(meta, d.Id())
+	api, region, id, err := mnqAPIWithRegionAndIDalpha(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -211,7 +211,7 @@ func setPermissionsSQS(credentials *mnq.CredentialSQSSNSCreds) interface{} {
 }
 
 func resourceScalewayMNQCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqAPIWithRegionAndID(meta, d.Id())
+	api, region, id, err := mnqAPIWithRegionAndIDalpha(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -242,7 +242,7 @@ func resourceScalewayMNQCredentialUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayMNQCredentialDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqAPIWithRegionAndID(meta, d.Id())
+	api, region, id, err := mnqAPIWithRegionAndIDalpha(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
