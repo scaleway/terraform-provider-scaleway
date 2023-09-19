@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	document_db "github.com/scaleway/scaleway-sdk-go/api/document_db/v1beta1"
+	document_db "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 )
 
 func TestAccScalewayDocumentDBDatabase_Basic(t *testing.T) {
@@ -23,7 +23,7 @@ func TestAccScalewayDocumentDBDatabase_Basic(t *testing.T) {
 					resource scaleway_document_db_instance main {
 						name = "test-document_db-database-basic"
 						node_type = "docdb-play2-pico"
-						engine = "FerretDB-1.0.0"
+						engine = "FerretDB-1"
 						is_ha_cluster = false
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"

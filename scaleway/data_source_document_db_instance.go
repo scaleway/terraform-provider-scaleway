@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	document_db "github.com/scaleway/scaleway-sdk-go/api/document_db/v1beta1"
+	document_db "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 )
 
 func dataSourceScalewayDocumentDBInstance() *schema.Resource {

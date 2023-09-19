@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	document_db "github.com/scaleway/scaleway-sdk-go/api/document_db/v1beta1"
+	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -58,7 +58,7 @@ func resourceScalewayDocumentDBDatabaseCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	database, err := api.CreateDatabase(&document_db.CreateDatabaseRequest{
+	database, err := api.CreateDatabase(&documentdb.CreateDatabaseRequest{
 		Region:     region,
 		InstanceID: instanceID,
 		Name:       expandOrGenerateString(d.Get("name").(string), "database"),
@@ -77,8 +77,8 @@ func resourceScalewayDocumentDBDatabaseCreate(ctx context.Context, d *schema.Res
 	return resourceScalewayDocumentDBDatabaseRead(ctx, d, meta)
 }
 
-func getDocumentDBDatabase(ctx context.Context, api *document_db.API, region scw.Region, instanceID string, dbName string) (*document_db.Database, error) {
-	res, err := api.ListDatabases(&document_db.ListDatabasesRequest{
+func getDocumentDBDatabase(ctx context.Context, api *documentdb.API, region scw.Region, instanceID string, dbName string) (*documentdb.Database, error) {
+	res, err := api.ListDatabases(&documentdb.ListDatabasesRequest{
 		Region:     region,
 		InstanceID: instanceID,
 		Name:       &dbName,
@@ -144,7 +144,7 @@ func resourceScalewayDocumentDBDatabaseDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteDatabase(&document_db.DeleteDatabaseRequest{
+	err = api.DeleteDatabase(&documentdb.DeleteDatabaseRequest{
 		Region:     region,
 		Name:       databaseName,
 		InstanceID: instanceID,

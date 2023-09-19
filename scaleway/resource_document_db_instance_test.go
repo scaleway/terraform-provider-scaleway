@@ -6,23 +6,23 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	document_db "github.com/scaleway/scaleway-sdk-go/api/document_db/v1beta1"
+	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func init() {
-	resource.AddTestSweepers("scaleway_document_db_instance", &resource.Sweeper{
-		Name: "scaleway_document_db_instance",
+	resource.AddTestSweepers("scaleway_documentdb_instance", &resource.Sweeper{
+		Name: "scaleway_documentdb_instance",
 		F:    testSweepDocumentDBInstance,
 	})
 }
 
 func testSweepDocumentDBInstance(_ string) error {
-	return sweepRegions((&document_db.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		api := document_db.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the document_db instances in (%s)", region)
+	return sweepRegions((&documentdb.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
+		api := documentdb.NewAPI(scwClient)
+		l.Debugf("sweeper: destroying the documentdb instances in (%s)", region)
 		listInstances, err := api.ListInstances(
-			&document_db.ListInstancesRequest{
+			&documentdb.ListInstancesRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
@@ -30,7 +30,7 @@ func testSweepDocumentDBInstance(_ string) error {
 		}
 
 		for _, instance := range listInstances.Instances {
-			_, err := api.DeleteInstance(&document_db.DeleteInstanceRequest{
+			_, err := api.DeleteInstance(&documentdb.DeleteInstanceRequest{
 				InstanceID: instance.ID,
 				Region:     region,
 			})
@@ -56,21 +56,22 @@ func TestAccScalewayDocumentDBInstance_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_document_db_instance main {
-						name = "test-document_db-instance-basic"
-						node_type = "docdb-play2-pico"
-						engine = "FerretDB-1.0.0"
-						is_ha_cluster = false
-						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_document_db_instance", "minimal" ]
-						volume_size_in_gb = 20
-					}
+				resource "scaleway_documentdb_instance" "main" {
+				  name              = "test-documentdb-instance-basic"
+				  node_type         = "docdb-play2-pico"
+				  engine            = "FerretDB-1"
+				  is_ha_cluster     = false
+				  user_name         = "my_initial_user"
+				  password          = "thiZ_is_v&ry_s3cret"
+				  tags              = ["terraform-test", "scaleway_documentdb_instance", "minimal"]
+				  volume_size_in_gb = 20
+				  telemetry_enabled = false
+				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceExists(tt, "scaleway_document_db_instance.main"),
-					testCheckResourceAttrUUID("scaleway_document_db_instance.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_document_db_instance.main", "name", "test-document_db-instance-basic"),
+					testAccCheckScalewayDocumentDBInstanceExists(tt, "scaleway_documentdb_instance.main"),
+					testCheckResourceAttrUUID("scaleway_documentdb_instance.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-basic"),
 				),
 			},
 		},
@@ -89,7 +90,7 @@ func testAccCheckScalewayDocumentDBInstanceExists(tt *TestTools, n string) resou
 			return err
 		}
 
-		_, err = api.GetInstance(&document_db.GetInstanceRequest{
+		_, err = api.GetInstance(&documentdb.GetInstanceRequest{
 			InstanceID: id,
 			Region:     region,
 		})
@@ -105,7 +106,7 @@ func testAccCheckScalewayDocumentDBInstanceExists(tt *TestTools, n string) resou
 func testAccCheckScalewayDocumentDBInstanceDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_document_db_instance" {
+			if rs.Type != "scaleway_documentdb_instance" {
 				continue
 			}
 
@@ -114,13 +115,13 @@ func testAccCheckScalewayDocumentDBInstanceDestroy(tt *TestTools) resource.TestC
 				return err
 			}
 
-			_, err = api.DeleteInstance(&document_db.DeleteInstanceRequest{
+			_, err = api.DeleteInstance(&documentdb.DeleteInstanceRequest{
 				InstanceID: id,
 				Region:     region,
 			})
 
 			if err == nil {
-				return fmt.Errorf("document_db instance (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("documentdb instance (%s) still exists", rs.Primary.ID)
 			}
 
 			if !is404Error(err) {

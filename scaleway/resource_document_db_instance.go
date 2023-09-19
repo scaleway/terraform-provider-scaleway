@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	document_db "github.com/scaleway/scaleway-sdk-go/api/document_db/v1beta1"
+	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -68,11 +68,11 @@ func resourceScalewayDocumentDBInstance() *schema.Resource {
 			},
 			"volume_type": {
 				Type:     schema.TypeString,
-				Default:  document_db.VolumeTypeBssd,
+				Default:  documentdb.VolumeTypeBssd,
 				Optional: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					document_db.VolumeTypeLssd.String(),
-					document_db.VolumeTypeBssd.String(),
+					documentdb.VolumeTypeLssd.String(),
+					documentdb.VolumeTypeBssd.String(),
 				}, false),
 				Description: "Type of volume where data are stored",
 			},
@@ -107,30 +107,29 @@ func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	createReq := &document_db.CreateInstanceRequest{
-		Region:        region,
-		ProjectID:     expandStringPtr(d.Get("project_id")),
-		Name:          expandOrGenerateString(d.Get("name").(string), "document-instance"),
-		NodeType:      d.Get("node_type").(string),
-		Engine:        d.Get("engine").(string),
-		IsHaCluster:   d.Get("is_ha_cluster").(bool),
-		UserName:      d.Get("user_name").(string),
-		Password:      d.Get("password").(string),
-		Tags:          expandStrings(d.Get("tags")),
-		VolumeType:    document_db.VolumeType(d.Get("volume_type").(string)),
-		InitEndpoints: nil, // TODO
+	createReq := &documentdb.CreateInstanceRequest{
+		Region:      region,
+		ProjectID:   expandStringPtr(d.Get("project_id")),
+		Name:        expandOrGenerateString(d.Get("name").(string), "document-instance"),
+		NodeType:    d.Get("node_type").(string),
+		Engine:      d.Get("engine").(string),
+		IsHaCluster: d.Get("is_ha_cluster").(bool),
+		UserName:    d.Get("user_name").(string),
+		Password:    d.Get("password").(string),
+		Tags:        expandStrings(d.Get("tags")),
+		VolumeType:  documentdb.VolumeType(d.Get("volume_type").(string)),
 	}
 
 	if size, ok := d.GetOk("volume_size_in_gb"); ok {
-		if createReq.VolumeType != document_db.VolumeTypeBssd {
-			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", document_db.VolumeTypeBssd.String()))
+		if createReq.VolumeType != documentdb.VolumeTypeBssd {
+			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", documentdb.VolumeTypeBssd.String()))
 		}
 		createReq.VolumeSize = scw.Size(uint64(size.(int)) * uint64(scw.GB))
 	}
 
 	if d.Get("telemetry_enabled").(bool) {
-		createReq.InitSettings = append(createReq.InitSettings, &document_db.InstanceSetting{
-			Name:  "telemetry_reporting",
+		createReq.InitSettings = append(createReq.InitSettings, &documentdb.InstanceSetting{
+			Name:  telemetryReporting,
 			Value: "true",
 		})
 	}
@@ -178,6 +177,18 @@ func resourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Resou
 		_ = d.Set("volume_size_in_gb", int(instance.Volume.Size/scw.GB))
 	}
 
+	_ = setInitSettings(d, instance.InitSettings)
+
+	return nil
+}
+
+func setInitSettings(d *schema.ResourceData, settings []*documentdb.InstanceSetting) error {
+	for _, s := range settings {
+		if s.Name == telemetryReporting {
+			_ = d.Set("telemetry_enabled", s.Value)
+		}
+	}
+
 	return nil
 }
 
@@ -196,7 +207,7 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	req := &document_db.UpdateInstanceRequest{
+	req := &documentdb.UpdateInstanceRequest{
 		Region:     region,
 		InstanceID: instance.ID,
 	}
@@ -218,16 +229,16 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	upgradeRequests := []*document_db.UpgradeInstanceRequest(nil)
+	upgradeRequests := []*documentdb.UpgradeInstanceRequest(nil)
 
 	if d.HasChanges("volume_type", "volume_size_in_gb") {
-		volType := document_db.VolumeType(d.Get("volume_type").(string))
+		volType := documentdb.VolumeType(d.Get("volume_type").(string))
 
 		switch volType {
-		case document_db.VolumeTypeBssd:
+		case documentdb.VolumeTypeBssd:
 			if d.HasChange("volume_type") {
 				upgradeRequests = append(upgradeRequests,
-					&document_db.UpgradeInstanceRequest{
+					&documentdb.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: id,
 						VolumeType: &volType,
@@ -246,20 +257,20 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 				}
 
 				upgradeRequests = append(upgradeRequests,
-					&document_db.UpgradeInstanceRequest{
+					&documentdb.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: id,
 						VolumeSize: scw.Uint64Ptr(newSize * uint64(scw.GB)),
 					})
 			}
-		case document_db.VolumeTypeLssd:
+		case documentdb.VolumeTypeLssd:
 			_, ok := d.GetOk("volume_size_in_gb")
 			if d.HasChange("volume_size_in_gb") && ok {
-				return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", document_db.VolumeTypeBssd.String()))
+				return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", documentdb.VolumeTypeBssd.String()))
 			}
 			if d.HasChange("volume_type") {
 				upgradeRequests = append(upgradeRequests,
-					&document_db.UpgradeInstanceRequest{
+					&documentdb.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: id,
 						VolumeType: &volType,
@@ -270,7 +281,7 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 		}
 
 		if d.HasChanges("node_type") {
-			upgradeRequests = append(upgradeRequests, &document_db.UpgradeInstanceRequest{
+			upgradeRequests = append(upgradeRequests, &documentdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: id,
 				NodeType:   expandStringPtr(d.Get("node_type")),
@@ -278,7 +289,7 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 		}
 
 		if d.HasChange("is_ha_cluster") {
-			upgradeRequests = append(upgradeRequests, &document_db.UpgradeInstanceRequest{
+			upgradeRequests = append(upgradeRequests, &documentdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: id,
 				EnableHa:   expandBoolPtr(d.Get("is_ha_cluster")),
@@ -317,7 +328,7 @@ func resourceScalewayDocumentDBInstanceDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	_, err = api.DeleteInstance(&document_db.DeleteInstanceRequest{
+	_, err = api.DeleteInstance(&documentdb.DeleteInstanceRequest{
 		Region:     region,
 		InstanceID: id,
 	}, scw.WithContext(ctx))
