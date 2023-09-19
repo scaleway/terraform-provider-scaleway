@@ -183,10 +183,6 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
-	/*
-		if assignIP, ok := d.GetOk("assign_flexible_ip"); ok {
-			createReq.AssignFlexibleIP = expandBoolPtr(getBool(d, assignIP.(string)))
-		}*/
 
 	lb, err := lbAPI.CreateLB(createReq, scw.WithContext(ctx))
 	if err != nil {
