@@ -89,7 +89,7 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: expandStringPtr(d.Get("project_id")),
-		DNSZone:   zoneName,
+		DNSZone:   scw.StringPtr(zoneName),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -129,7 +129,7 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: expandStringPtr(d.Get("project_id")),
-		DNSZone:   d.Id(),
+		DNSZone:   scw.StringPtr(d.Id()),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
