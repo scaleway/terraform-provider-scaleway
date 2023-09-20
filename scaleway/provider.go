@@ -100,6 +100,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_document_db_instance_endpoint":       resourceScalewayDocumentDBInstanceEndpoint(),
 				"scaleway_document_db_user":                    resourceScalewayDocumentDBUser(),
 				"scaleway_document_db_privilege":               resourceScalewayDocumentDBPrivilege(),
+				"scaleway_document_db_read_replica":            resourceScalewayDocumentDBReadReplica(),
 				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
 				"scaleway_flexible_ip":                         resourceScalewayFlexibleIP(),

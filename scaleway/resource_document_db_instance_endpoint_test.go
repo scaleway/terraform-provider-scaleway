@@ -33,7 +33,7 @@ func TestAccScalewayDocumentDBInstanceEndpoint_Basic(t *testing.T) {
 				}
 
 				resource "scaleway_vpc_private_network" "pn" {
-					name = "my_private_network"
+				  name = "my_private_network"
 				}
 
 				resource "scaleway_document_db_instance_endpoint" "main" {
@@ -68,18 +68,18 @@ func TestAccScalewayDocumentDBInstanceEndpoint_Basic(t *testing.T) {
 				}
 
 				resource "scaleway_vpc_private_network" "pn" {
-					name = "my_private_network"
+				  name = "my_private_network"
 				}
 
-				resource scaleway_vpc vpc {
-					name = "my vpc"
+				resource "scaleway_vpc" "vpc" {
+				  name = "my vpc"
 				}
 
 				resource "scaleway_vpc_private_network" "pn02" {
-					ipv4_subnet {
-						subnet = "172.16.64.0/22"
-					}
-					vpc_id = scaleway_vpc.vpc.id
+				  ipv4_subnet {
+					subnet = "172.16.64.0/22"
+				  }
+				  vpc_id = scaleway_vpc.vpc.id
 				}
 
 				resource "scaleway_document_db_instance_endpoint" "main" {
@@ -114,18 +114,18 @@ func TestAccScalewayDocumentDBInstanceEndpoint_Basic(t *testing.T) {
 				}
 
 				resource "scaleway_vpc_private_network" "pn" {
-					name = "my_private_network"
+				  name = "my_private_network"
 				}
 
-				resource scaleway_vpc vpc {
-					name = "my vpc"
+				resource "scaleway_vpc" "vpc" {
+				  name = "my vpc"
 				}
 
 				resource "scaleway_vpc_private_network" "pn02" {
-					ipv4_subnet {
-						subnet = "172.16.64.0/22"
-					}
-					vpc_id = scaleway_vpc.vpc.id
+				  ipv4_subnet {
+					subnet = "172.16.64.0/22"
+				  }
+				  vpc_id = scaleway_vpc.vpc.id
 				}
 
 				resource "scaleway_document_db_instance_endpoint" "main" {
@@ -134,7 +134,7 @@ func TestAccScalewayDocumentDBInstanceEndpoint_Basic(t *testing.T) {
 					ip_net = "172.16.64.4/22"
 					id     = scaleway_vpc_private_network.pn02.id
 				  }
-					depends_on = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
+				  depends_on = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -160,18 +160,18 @@ func TestAccScalewayDocumentDBInstanceEndpoint_Basic(t *testing.T) {
 				}
 
 				resource "scaleway_vpc_private_network" "pn" {
-					name = "my_private_network"
+				  name = "my_private_network"
 				}
 
-				resource scaleway_vpc vpc {
-					name = "my vpc"
+				resource "scaleway_vpc" "vpc" {
+				  name = "my vpc"
 				}
 
 				resource "scaleway_vpc_private_network" "pn02" {
-					ipv4_subnet {
-						subnet = "172.16.64.0/22"
-					}
-					vpc_id = scaleway_vpc.vpc.id
+				  ipv4_subnet {
+					subnet = "172.16.64.0/22"
+				  }
+				  vpc_id = scaleway_vpc.vpc.id
 				}
 
 				resource "scaleway_document_db_instance_endpoint" "main" {
@@ -180,7 +180,7 @@ func TestAccScalewayDocumentDBInstanceEndpoint_Basic(t *testing.T) {
 					ip_net = "172.16.64.4/22"
 					id     = scaleway_vpc_private_network.pn02.id
 				  }
-					depends_on = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
+				  depends_on = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -194,18 +194,18 @@ func TestAccScalewayDocumentDBInstanceEndpoint_Basic(t *testing.T) {
 			{
 				Config: `
 				resource "scaleway_vpc_private_network" "pn" {
-					name = "my_private_network"
+				  name = "my_private_network"
 				}
 
-				resource scaleway_vpc vpc {
-					name = "my vpc"
+				resource "scaleway_vpc" "vpc" {
+				  name = "my vpc"
 				}
 
 				resource "scaleway_vpc_private_network" "pn02" {
-					ipv4_subnet {
-						subnet = "172.16.64.0/22"
-					}
-					vpc_id = scaleway_vpc.vpc.id
+				  ipv4_subnet {
+					subnet = "172.16.64.0/22"
+				  }
+				  vpc_id = scaleway_vpc.vpc.id
 				}
 				`,
 			},
