@@ -67,7 +67,7 @@ func resourceScalewayLb() *schema.Resource {
 			},
 			"ip_id": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				ForceNew:         true,
 				Description:      "The load-balance public IP ID",
 				DiffSuppressFunc: diffSuppressFuncLocality,
@@ -147,6 +147,12 @@ func resourceScalewayLb() *schema.Resource {
 					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelOld.String(),
 				}, false),
 			},
+			"assign_flexible_ip": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Defines whether to automatically assign a flexible public IP to the load balancer",
+			},
 			"region":          regionComputedSchema(),
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
@@ -169,13 +175,15 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		Description:           d.Get("description").(string),
 		Type:                  d.Get("type").(string),
 		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level"))),
+		AssignFlexibleIP:      expandBoolPtr(getBool(d, "assign_flexible_ip")),
 	}
 
-	if raw, ok := d.GetOk("tags"); ok {
-		for _, tag := range raw.([]interface{}) {
+	if tags, ok := d.GetOk("tags"); ok {
+		for _, tag := range tags.([]interface{}) {
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
+
 	lb, err := lbAPI.CreateLB(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -241,9 +249,11 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 	_ = d.Set("tags", lb.Tags)
 	// For now API return lowercase lb type. This should be fixed in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(lb.Type))
-	_ = d.Set("ip_id", newZonedIDString(zone, lb.IP[0].ID))
-	_ = d.Set("ip_address", lb.IP[0].IPAddress)
 	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())
+	if len(lb.IP) > 0 {
+		_ = d.Set("ip_id", newZonedIDString(zone, lb.IP[0].ID))
+		_ = d.Set("ip_address", lb.IP[0].IPAddress)
+	}
 
 	// retrieve attached private networks
 	privateNetworks, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
@@ -265,38 +275,22 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	req := &lbSDK.ZonedAPIUpdateLBRequest{
-		Zone: zone,
-		LBID: ID,
+		Zone:                  zone,
+		LBID:                  ID,
+		Name:                  d.Get("name").(string),
+		Tags:                  expandStrings(d.Get("tags")),
+		Description:           d.Get("description").(string),
+		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level"))),
 	}
 
-	hasChanged := false
-
-	if d.HasChanges("name", "tags") {
-		req.Name = d.Get("name").(string)
-		req.Tags = expandStrings(d.Get("tags"))
-		hasChanged = true
+	_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
 	}
 
-	if d.HasChange("description") {
-		req.Description = d.Get("description").(string)
-		hasChanged = true
-	}
-
-	if d.HasChange("ssl_compatibility_level") {
-		req.SslCompatibilityLevel = lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level")))
-		hasChanged = true
-	}
-
-	if hasChanged {
-		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
-		if err != nil && !is404Error(err) {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
-			return diag.FromErr(err)
-		}
+	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("type") {

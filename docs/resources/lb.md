@@ -24,6 +24,18 @@ resource "scaleway_lb" "base" {
 }
 ```
 
+### Private LB
+
+```hcl
+
+resource "scaleway_lb" "base" {
+  ip_id  = scaleway_lb_ip.main.id
+  zone   = scaleway_lb_ip.main.zone
+  type   = "LB-S"
+  assign_flexible_ip = false
+}
+```
+
 ### Multiple configurations
 
 ```hcl
@@ -101,11 +113,13 @@ resource scaleway_lb main {
 
 The following arguments are supported:
 
-- `ip_id` - (Required) The ID of the associated LB IP. See below.
+- `ip_id` - (Optional) The ID of the associated LB IP. See below.
 
-~> **Important:** Updates to `ip_id` will not recreate the load-balancer.
+~> **Important:** Updates to `ip_id` will recreate the load-balancer.
 
-- `type` - (Required) The type of the load-balancer. Please check the [migration section](#migration) to upgrade the type
+- `type` - (Required) The type of the load-balancer. Please check the [migration section](#migration) to upgrade the type.
+
+- `assign_flexible_ip` - (Optional) Defines whether to automatically assign a flexible public IP to the load-balancer.
 
 - `name` - (Optional) The name of the load-balancer.
 
