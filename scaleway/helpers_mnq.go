@@ -50,3 +50,25 @@ func mnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, 
 	}
 	return api, region, ID, nil
 }
+
+func newMNQSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error) {
+	meta := m.(*Meta)
+	api := mnq.NewSqsAPI(meta.scwClient)
+
+	region, err := extractRegion(d, meta)
+	if err != nil {
+		return nil, "", nil
+	}
+
+	return api, region, nil
+}
+func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, scw.Region, string, error) {
+	meta := m.(*Meta)
+	api := mnq.NewSqsAPI(meta.scwClient)
+
+	region, ID, err := parseRegionalID(regionalID)
+	if err != nil {
+		return nil, "", "", err
+	}
+	return api, region, ID, nil
+}
