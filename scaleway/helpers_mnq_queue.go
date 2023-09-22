@@ -21,7 +21,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
+func SQSClientWithRegion_alpha(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
 	meta := m.(*Meta)
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -35,6 +35,25 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	endpoint := d.Get("sqs.0.endpoint").(string)
 	accessKey := d.Get("sqs.0.access_key").(string)
 	secretKey := d.Get("sqs.0.secret_key").(string)
+
+	sqsClient, err := newSQSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return sqsClient, region, err
+}
+
+func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
+	meta := m.(*Meta)
+	region, err := extractRegion(d, meta)
+	if err != nil {
+		return nil, "", err
+	}
+
+	endpoint := d.Get("endpoint").(string)
+	accessKey := d.Get("access_key").(string)
+	secretKey := d.Get("secret_key").(string)
 
 	sqsClient, err := newSQSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
@@ -139,7 +158,8 @@ func splitNATSJWTAndSeed(credentials string) (string, string, error) {
 
 const SQSFIFOQueueNameSuffix = ".fifo"
 
-var SQSAttributesToResourceMap = map[string]string{
+// Deprecated: remove with MNQ alpha1
+var SQSAttributesToResourceMap_alpha = map[string]string{
 	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
 	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
 	sqs.QueueAttributeNameFifoQueue:                     "sqs.0.fifo_queue",
@@ -148,11 +168,20 @@ var SQSAttributesToResourceMap = map[string]string{
 	sqs.QueueAttributeNameVisibilityTimeout:             "sqs.0.visibility_timeout_seconds",
 }
 
+var SQSAttributesToResourceMap = map[string]string{
+	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
+	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
+	sqs.QueueAttributeNameFifoQueue:                     "fifo_queue",
+	sqs.QueueAttributeNameContentBasedDeduplication:     "content_based_deduplication",
+	sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds: "receive_wait_time_seconds",
+	sqs.QueueAttributeNameVisibilityTimeout:             "visibility_timeout_seconds",
+}
+
 // Returns all managed SQS attribute names
 func getSQSAttributeNames() []*string {
 	var attributeNames []*string
 
-	for attribute := range SQSAttributesToResourceMap {
+	for attribute := range SQSAttributesToResourceMap_alpha {
 		attributeNames = append(attributeNames, aws.String(attribute))
 	}
 
@@ -189,7 +218,23 @@ func setResourceValue(values map[string]interface{}, resourcePath string, value 
 	values[resourcePath] = value
 }
 
+// Deprecated: remove with mnq alpha1
 // Get the SQS attributes from the resource data
+func sqsResourceDataToAttributes_alpha(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema) (map[string]*string, error) {
+	attributes := make(map[string]*string)
+
+	for attribute, resourcePath := range SQSAttributesToResourceMap_alpha {
+		if v, ok := d.GetOk(resourcePath); ok {
+			err := sqsResourceDataToAttribute(attributes, attribute, v, resourcePath, resourceSchemas)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return attributes, nil
+}
+
 func sqsResourceDataToAttributes(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema) (map[string]*string, error) {
 	attributes := make(map[string]*string)
 
@@ -228,7 +273,23 @@ func sqsResourceDataToAttribute(sqsAttributes map[string]*string, sqsAttribute s
 	return nil
 }
 
+// Deprecated: remove with mnq alpha1
 // Get the resource data from the SQS attributes
+func sqsAttributesToResourceData_alpha(attributes map[string]*string, resourceSchemas map[string]*schema.Schema) (map[string]interface{}, error) {
+	values := make(map[string]interface{})
+
+	for attribute, resourcePath := range SQSAttributesToResourceMap_alpha {
+		if value, ok := attributes[attribute]; ok && value != nil {
+			err := sqsAttributeToResourceData(values, *value, resourcePath, resourceSchemas)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return values, nil
+}
+
 func sqsAttributesToResourceData(attributes map[string]*string, resourceSchemas map[string]*schema.Schema) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
 
@@ -316,17 +377,11 @@ func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ 
 	return nil
 }
 
-// TODO: remove with old MNQ code
-func composeMNQQueueID_alpha(region scw.Region, namespaceID string, queueName string) string {
+func composeMNQQueueID(region scw.Region, namespaceID string, queueName string) string {
 	return fmt.Sprintf("%s/%s/%s", region, namespaceID, queueName)
 }
 
-func composeMNQQueueID(region scw.Region, queueName string) string {
-	return fmt.Sprintf("%s/%s", region, queueName)
-}
-
-// TODO: remove with old MNQ code
-func decomposeMNQQueueID_alpha(id string) (region scw.Region, namespaceID string, name string, err error) {
+func decomposeMNQQueueID(id string) (region scw.Region, namespaceID string, name string, err error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 3 {
 		return "", "", "", fmt.Errorf("invalid ID format: %q", id)
@@ -340,28 +395,13 @@ func decomposeMNQQueueID_alpha(id string) (region scw.Region, namespaceID string
 	return region, parts[1], parts[2], nil
 }
 
-// decomposeMNQQueueID decompose ID into region and queue name
-func decomposeMNQQueueID(id string) (scw.Region, string, error) {
-	parts := strings.Split(id, "/")
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("expected ID format (region/queueName), got: %q", id)
-	}
-
-	region, err := scw.ParseRegion(parts[0])
-	if err != nil {
-		return "", "", err
-	}
-
-	return region, parts[1], nil
-}
-
 func getMNQNamespaceFromComposedQueueID(ctx context.Context, d *schema.ResourceData, meta interface{}, composedID string) (*mnq.Namespace, error) {
 	api, region, err := newMNQAPIalpha(d, meta)
 	if err != nil {
 		return nil, err
 	}
 
-	namespaceRegion, namespaceID, _, err := decomposeMNQQueueID_alpha(composedID)
+	namespaceRegion, namespaceID, _, err := decomposeMNQQueueID(composedID)
 	if err != nil {
 		return nil, err
 	}

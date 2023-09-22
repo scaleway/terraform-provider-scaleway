@@ -57,7 +57,7 @@ func resourceScalewayMNQNatsQueueCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(composeMNQQueueID(region, stream.Config.Name))
+	d.SetId(composeMNQQueueID(region, "<>", stream.Config.Name))
 
 	return resourceScalewayMNQNatsQueueRead(ctx, d, meta)
 }
@@ -68,7 +68,7 @@ func resourceScalewayMNQNatsQueueRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	region, queueName, err := decomposeMNQQueueID(d.Id())
+	region, projectID, queueName, err := decomposeMNQQueueID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,6 +79,7 @@ func resourceScalewayMNQNatsQueueRead(ctx context.Context, d *schema.ResourceDat
 	}
 	_ = d.Set("name", stream.Config.Name)
 	_ = d.Set("region", region)
+	_ = d.Set("project_id", projectID)
 
 	return nil
 }
@@ -89,7 +90,7 @@ func resourceScalewayMNQNatsQueueUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQQueueID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,7 +112,7 @@ func resourceScalewayMNQNatsQueueDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQQueueID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

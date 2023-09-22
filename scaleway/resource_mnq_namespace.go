@@ -12,6 +12,7 @@ import (
 
 const (
 	defaultMNQNamespaceTimeout = 5 * time.Minute
+	defaultMNQQueueTimeout     = 5 * time.Minute
 )
 
 func resourceScalewayMNQNamespace() *schema.Resource {

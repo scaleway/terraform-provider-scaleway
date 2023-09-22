@@ -62,11 +62,13 @@ func resourceScalewayMNQSQSCredentials() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "SQS credentials access key",
+				Sensitive:   true,
 			},
 			"secret_key": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "SQS credentials secret key",
+				Sensitive:   true,
 			},
 		},
 	}

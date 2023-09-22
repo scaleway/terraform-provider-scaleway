@@ -163,6 +163,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_mnq_nats_credentials":                resourceScalewayMNQNatsCredentials(),
 				"scaleway_mnq_nats_queue":                      resourceScalewayMNQNatsQueue(),
 				"scaleway_mnq_sqs":                             resourceScalewayMNQSQS(),
+				"scaleway_mnq_sqs_queue":                       resourceScalewayMNQSQSQueue(),
 				"scaleway_mnq_sqs_credentials":                 resourceScalewayMNQSQSCredentials(),
 				"scaleway_mnq_namespace":                       resourceScalewayMNQNamespace(),
 				"scaleway_mnq_credential":                      resourceScalewayMNQCredential(),

@@ -244,8 +244,12 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 			expectedBucket := expectedS3Host[0]
 
 			// Remove random number at the end of the bucket name
-			actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
-			expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
+			if strings.Contains(actualBucket, "-") {
+				actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
+			}
+			if strings.Contains(expectedBucket, "-") {
+				expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
+			}
 
 			if actualBucket != expectedBucket {
 				return false
