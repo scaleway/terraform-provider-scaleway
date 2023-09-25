@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	document_db "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 )
 
 func dataSourceScalewayDocumentDBInstance() *schema.Resource {
@@ -36,7 +36,7 @@ func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Res
 
 	instanceID, instanceIDExists := d.GetOk("instance_id")
 	if !instanceIDExists {
-		res, err := api.ListInstances(&document_db.ListInstancesRequest{
+		res, err := api.ListInstances(&documentdb.ListInstancesRequest{
 			Region:    region,
 			Name:      expandStringPtr(d.Get("name")),
 			ProjectID: expandStringPtr(d.Get("project_id")),
