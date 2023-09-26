@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("scaleway_documentdb_instance", &resource.Sweeper{
+	resource.AddTestSweepers("scaleway_document_db_instance", &resource.Sweeper{
 		Name: "scaleway_document_db_instance",
 		F:    testSweepDocumentDBInstance,
 	})
@@ -63,15 +63,15 @@ func TestAccScalewayDocumentDBInstance_Basic(t *testing.T) {
 				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
-				  tags              = ["terraform-test", "scaleway_documentdb_instance", "minimal"]
+				  tags              = ["terraform-test", "scaleway_document_db_instance", "minimal"]
 				  volume_size_in_gb = 20
 				  telemetry_enabled = false
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceExists(tt, "scaleway_documentdb_instance.main"),
-					testCheckResourceAttrUUID("scaleway_documentdb_instance.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-basic"),
+					testAccCheckScalewayDocumentDBInstanceExists(tt, "scaleway_document_db_instance.main"),
+					testCheckResourceAttrUUID("scaleway_document_db_instance.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_document_db_instance.main", "name", "test-documentdb-instance-basic"),
 				),
 			},
 		},
