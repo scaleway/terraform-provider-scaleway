@@ -324,6 +324,108 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbBackend_HealthCheck_Port(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbBackendDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "tcp"
+					forward_port = "3333"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "3333"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "3333"),
+				),
+			},
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "tcp"
+					forward_port = "4444"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "4444"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
+				),
+			},
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "tcp"
+					forward_port = "4444"
+					health_check_port = "4444"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "4444"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
+				),
+			},
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "tcp"
+					forward_port = "5555"
+					health_check_port = "4444"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "5555"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayLbBackendExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

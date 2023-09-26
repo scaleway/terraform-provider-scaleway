@@ -613,6 +613,13 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		updateHCRequest.TCPConfig = expandLbHCTCP(d.Get("health_check_tcp"))
 	}
 
+	rawConfig := d.GetRawConfig().AsValueMap()
+	healthCheckPortValue, healthCheckPortExists := rawConfig["health_check_port"]
+	healthCheckPortSetByUser := healthCheckPortExists && !healthCheckPortValue.IsNull()
+	if d.HasChange("forward_port") && !healthCheckPortSetByUser {
+		updateHCRequest.Port = int32(d.Get("forward_port").(int))
+	}
+
 	_, err = lbAPI.UpdateHealthCheck(updateHCRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
