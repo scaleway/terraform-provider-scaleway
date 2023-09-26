@@ -39,6 +39,21 @@ func resourceScalewayDocumentDBDatabase() *schema.Resource {
 				ForceNew:    true,
 				Description: "The database name",
 			},
+			"managed": {
+				Type:        schema.TypeBool,
+				Description: "Whether or not the database is managed",
+				Computed:    true,
+			},
+			"owner": {
+				Type:        schema.TypeString,
+				Description: "User that own the database",
+				Computed:    true,
+			},
+			"size": {
+				Type:        schema.TypeString,
+				Description: "Size of the database",
+				Computed:    true,
+			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
 		},
@@ -120,6 +135,9 @@ func resourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.Resou
 
 	_ = d.Set("name", database.Name)
 	_ = d.Set("region", instance.Region)
+	_ = d.Set("owner", database.Owner)
+	_ = d.Set("managed", database.Managed)
+	_ = d.Set("size", database.Size.String())
 	_ = d.Set("project_id", instance.ProjectID)
 
 	return nil

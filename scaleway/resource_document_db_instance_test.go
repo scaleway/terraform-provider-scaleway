@@ -12,7 +12,7 @@ import (
 
 func init() {
 	resource.AddTestSweepers("scaleway_documentdb_instance", &resource.Sweeper{
-		Name: "scaleway_documentdb_instance",
+		Name: "scaleway_document_db_instance",
 		F:    testSweepDocumentDBInstance,
 	})
 }
@@ -56,7 +56,7 @@ func TestAccScalewayDocumentDBInstance_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_documentdb_instance" "main" {
+				resource "scaleway_document_db_instance" "main" {
 				  name              = "test-documentdb-instance-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -106,7 +106,7 @@ func testAccCheckScalewayDocumentDBInstanceExists(tt *TestTools, n string) resou
 func testAccCheckScalewayDocumentDBInstanceDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_documentdb_instance" {
+			if rs.Type != "scaleway_document_db_instance" {
 				continue
 			}
 
