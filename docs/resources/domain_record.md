@@ -211,7 +211,7 @@ The following arguments are supported:
     - `must_contain` - (Required) Text to search
     - `url` - (Required) URL to match the `must_contain` text to validate an IP
     - `user_agent` - (Optional) User-agent used when checking the URL
-    - `strategy` - (Required) Strategy to return an IP from the IPs list. Can be `random` or `hashed`
+    - `strategy` - (Required) Strategy to return an IP from the IPs list. Can be `random`, `hashed` or `all`
 
 
 - `view` - (Optional) The answer to a DNS request is based on the client’s (resolver) subnet. *(Can be more than 1)* [Documentation and usage example](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#views-records)
