@@ -188,6 +188,7 @@ func resourceScalewayDomainRecord() *schema.Resource {
 							ValidateFunc: validation.StringInSlice([]string{
 								domain.RecordHTTPServiceConfigStrategyRandom.String(),
 								domain.RecordHTTPServiceConfigStrategyHashed.String(),
+								domain.RecordHTTPServiceConfigStrategyAll.String(),
 							}, false),
 						},
 					},
