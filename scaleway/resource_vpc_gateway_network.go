@@ -48,7 +48,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Optional:      true,
 				ValidateFunc:  validationUUIDorUUIDWithLocality(),
 				Description:   "The ID of the public gateway DHCP config",
-				ConflictsWith: []string{"static_address"},
+				ConflictsWith: []string{"static_address", "ipam_config"},
 			},
 			"enable_masquerade": {
 				Type:        schema.TypeBool,
@@ -59,7 +59,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			"enable_dhcp": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
+				Computed:    true,
 				Description: "Enable DHCP config on this network",
 			},
 			"cleanup_dhcp": {
@@ -72,8 +72,24 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "The static IP address in CIDR on this network",
 				Optional:      true,
+				Computed:      true,
 				ValidateFunc:  validation.IsCIDR,
-				ConflictsWith: []string{"dhcp_id"},
+				ConflictsWith: []string{"dhcp_id", "ipam_config"},
+			},
+			"ipam_config": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Description:   "Auto-configure the Gateway Network using Scaleway's IPAM (IP address management service)",
+				ConflictsWith: []string{"dhcp_id", "static_address"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"push_default_route": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Defines whether the default route is enabled on that Gateway Network",
+						},
+					},
+				},
 			},
 			// Computed elements
 			"mac_address": {
@@ -90,6 +106,11 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time of the last update of the gateway network",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the Public Gateway's connection to the Private Network",
 			},
 			"zone": zoneSchema(),
 		},
@@ -116,6 +137,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		PrivateNetworkID: expandRegionalID(d.Get("private_network_id").(string)).ID,
 		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
 		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
+		IpamConfig:       expandIpamConfig(d.Get("ipam_config")),
 	}
 	staticAddress, staticAddressExist := d.GetOk("static_address")
 	if staticAddressExist {
@@ -130,6 +152,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 	if dhcpExist {
 		dhcpZoned := expandZonedID(dhcpID.(string))
 		req.DHCPID = &dhcpZoned.ID
+		req.EnableDHCP = scw.BoolPtr(true)
 	}
 
 	gatewayNetwork, err := retryOnTransientStateError(func() (*vpcgw.GatewayNetwork, error) {
@@ -219,6 +242,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", gatewayNetwork.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone.String())
+	_ = d.Set("status", gatewayNetwork.Status.String())
 
 	return nil
 }
@@ -234,7 +258,7 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("enable_masquerade", "dhcp_id", "enable_dhcp", "static_address") {
+	if d.HasChanges("enable_masquerade", "dhcp_id", "enable_dhcp", "static_address", "ipam_config") {
 		dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
 		updateRequest := &vpcgw.UpdateGatewayNetworkRequest{
 			GatewayNetworkID: ID,
@@ -242,6 +266,7 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 			EnableMasquerade: expandBoolPtr(d.Get("enable_masquerade")),
 			EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
 			DHCPID:           &dhcpID,
+			IpamConfig:       expandIpamConfig(d.Get("ipam_config")),
 		}
 		staticAddress, staticAddressExist := d.GetOk("static_address")
 		if staticAddressExist {
