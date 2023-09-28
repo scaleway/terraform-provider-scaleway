@@ -59,7 +59,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			"enable_dhcp": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
+				Default:     true,
 				Description: "Enable DHCP config on this network",
 			},
 			"cleanup_dhcp": {
@@ -152,7 +152,6 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 	if dhcpExist {
 		dhcpZoned := expandZonedID(dhcpID.(string))
 		req.DHCPID = &dhcpZoned.ID
-		req.EnableDHCP = scw.BoolPtr(true)
 	}
 
 	gatewayNetwork, err := retryOnTransientStateError(func() (*vpcgw.GatewayNetwork, error) {
@@ -258,16 +257,25 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("enable_masquerade", "dhcp_id", "enable_dhcp", "static_address", "ipam_config") {
+	updateRequest := &vpcgw.UpdateGatewayNetworkRequest{
+		GatewayNetworkID: ID,
+		Zone:             zone,
+	}
+
+	if d.HasChange("enable_masquerade") {
+		updateRequest.EnableMasquerade = expandBoolPtr(d.Get("enable_masquerade"))
+	}
+	if d.HasChange("enable_dhcp") {
+		updateRequest.EnableDHCP = expandBoolPtr(d.Get("enable_dhcp"))
+	}
+	if d.HasChange("dhcp_id") {
 		dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
-		updateRequest := &vpcgw.UpdateGatewayNetworkRequest{
-			GatewayNetworkID: ID,
-			Zone:             zone,
-			EnableMasquerade: expandBoolPtr(d.Get("enable_masquerade")),
-			EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
-			DHCPID:           &dhcpID,
-			IpamConfig:       expandIpamConfig(d.Get("ipam_config")),
-		}
+		updateRequest.DHCPID = &dhcpID
+	}
+	if d.HasChange("ipam_config") {
+		updateRequest.IpamConfig = expandIpamConfig(d.Get("ipam_config"))
+	}
+	if d.HasChange("static_address") {
 		staticAddress, staticAddressExist := d.GetOk("static_address")
 		if staticAddressExist {
 			address, err := expandIPNet(staticAddress.(string))
@@ -276,11 +284,11 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 			}
 			updateRequest.Address = &address
 		}
+	}
 
-		_, err = vpcgwAPI.UpdateGatewayNetwork(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = vpcgwAPI.UpdateGatewayNetwork(updateRequest, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
