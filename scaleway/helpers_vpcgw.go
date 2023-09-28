@@ -126,3 +126,13 @@ func retryUpdateGatewayReverseDNS(ctx context.Context, api *vpcgw.API, req *vpcg
 		}
 	}
 }
+
+func expandIpamConfig(raw interface{}) *vpcgw.IpamConfig {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &vpcgw.IpamConfig{
+		PushDefaultRoute: rawMap["push_default_route"].(bool),
+	}
+}
