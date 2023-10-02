@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_document_db_read_replica"
 # scaleway_document_db_read_replica
 
 Creates and manages Scaleway DocumentDB Database read replicas.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
 
 ## Examples
 

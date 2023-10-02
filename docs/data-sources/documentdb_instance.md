@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_document_db_instance"
 
 # scaleway_document_db_instance
 
-Gets information about an DocumentDB instance. For further information see our [developers website](https://developers.scaleway.com/en/products/DocumentDB/api/#database-instance)
+Gets information about an DocumentDB instance. For further information see our [developers website](https://www.scaleway.com/en/developers/api/document_db/)
 
 ## Example Usage
 

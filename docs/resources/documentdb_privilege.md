@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_document_db_privilege"
 # scaleway_document_db_privilege
 
 Create and manage Scaleway DocumentDB database privilege.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api/#user-and-permissions).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
 
 ## Example usage
 

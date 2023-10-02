@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_document_db_private_network_endpoint"
 # scaleway_document_db_private_network_endpoint
 
 Creates and manages Scaleway Database Private Network Endpoint.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
 
 ## Examples
 
