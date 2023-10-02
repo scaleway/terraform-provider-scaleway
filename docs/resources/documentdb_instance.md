@@ -51,7 +51,7 @@ interruption. Keep in mind that you cannot downgrade a Database Instance.
 
 - `is_ha_cluster` - (Optional) Enable or disable high availability for the database instance.
 
-- `telemetry_enabled` - (Optional) Enable telemetry, support FerretDB, an open-source project.
+- `telemetry_enabled` - (Optional) Enable telemetry to collects basic anonymous usage data and sends them to FerretDB telemetry service. More about the telemetry [here](https://docs.ferretdb.io/telemetry/#configure-telemetry).
 
 ~> **Important:** Updates to `is_ha_cluster` will recreate the Database Instance.
 

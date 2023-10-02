@@ -38,7 +38,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the database, which is of the form `{region}/{id}/{DBNAME}` e.g. `fr-par/11111111-1111-1111-1111-111111111111/mydb`
 - `owner` - The name of the owner of the database.
 - `managed` - Whether the database is managed or not.
-- `size` - Size of the database (in bytes).
+- `size` - Size in gigabytes of the database.
 
 ## Import
 
