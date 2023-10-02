@@ -34,7 +34,7 @@ resource scaleway_container main {
     timeout = 600
     max_concurrency = 80
     privacy = "private"
-    protocol = "h2c"
+    protocol = "http"
     deploy = true
 
     environment_variables = {
