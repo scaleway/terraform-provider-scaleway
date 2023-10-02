@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	telemetryReporting                 = "telemetry_reporting"
+	telemetryDocumentDBReporting       = "telemetry_reporting"
 	defaultDocumentDBInstanceTimeout   = defaultRdbInstanceTimeout
 	defaultWaitDocumentDBRetryInterval = defaultWaitRDBRetryInterval
 )

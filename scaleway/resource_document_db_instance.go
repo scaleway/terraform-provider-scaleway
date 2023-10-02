@@ -93,7 +93,7 @@ func resourceScalewayDocumentDBInstance() *schema.Resource {
 			"telemetry_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Enable telemetry, support FerretDB, an open-source project",
+				Description: " Enable telemetry to collects basic anonymous usage data and sends them to FerretDB telemetry service",
 			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
@@ -129,7 +129,7 @@ func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.Res
 
 	if d.Get("telemetry_enabled").(bool) {
 		createReq.InitSettings = append(createReq.InitSettings, &documentdb.InstanceSetting{
-			Name:  telemetryReporting,
+			Name:  telemetryDocumentDBReporting,
 			Value: "true",
 		})
 	}
@@ -184,7 +184,7 @@ func resourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Resou
 
 func setInitSettings(d *schema.ResourceData, settings []*documentdb.InstanceSetting) error {
 	for _, s := range settings {
-		if s.Name == telemetryReporting {
+		if s.Name == telemetryDocumentDBReporting {
 			_ = d.Set("telemetry_enabled", s.Value)
 		}
 	}
