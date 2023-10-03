@@ -27,7 +27,6 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
-				  tags              = ["terraform-test", "scaleway_document_db_instance", "minimal"]
 				  volume_size_in_gb = 20
 				  telemetry_enabled = false
 				}
@@ -60,7 +59,6 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
-				  tags              = ["terraform-test", "scaleway_document_db_instance", "minimal"]
 				  volume_size_in_gb = 20
 				  telemetry_enabled = false
 				}
@@ -104,7 +102,6 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
-				  tags              = ["terraform-test", "scaleway_document_db_instance", "minimal"]
 				  volume_size_in_gb = 20
 				  telemetry_enabled = false
 				}
@@ -148,7 +145,6 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
-				  tags              = ["terraform-test", "scaleway_document_db_instance", "minimal"]
 				  volume_size_in_gb = 20
 				  telemetry_enabled = false
 				}
