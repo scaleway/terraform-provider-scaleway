@@ -201,6 +201,7 @@ func TestAccScalewayDocumentDBReadReplica_MultipleEndpoints(t *testing.T) {
 						service_ip         = "10.12.1.0/20"
 					}
 					direct_access {}
+					depends_on         = [scaleway_vpc_private_network.pn]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
