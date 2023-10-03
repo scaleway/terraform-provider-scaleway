@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.4
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
-	github.com/nats-io/jwt/v2 v2.5.0
+	github.com/nats-io/jwt/v2 v2.5.2
 	github.com/nats-io/nats.go v1.30.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.21.0.20230920081818-d2f8a2eef94c
