@@ -80,8 +80,8 @@ func TestAccScalewayDocumentDBReadReplica_PrivateNetwork(t *testing.T) {
 					private_network {
 						private_network_id = scaleway_vpc_private_network.pn.id
 						service_ip         = "10.12.1.0/20"
-		  				depends_on         = [scaleway_vpc_private_network.pn]
 					}
+					depends_on         = [scaleway_vpc_private_network.pn]
 				}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_document_db_read_replica.replica"),
@@ -153,6 +153,7 @@ func TestAccScalewayDocumentDBReadReplica_Update(t *testing.T) {
 						private_network_id = scaleway_vpc_private_network.pn.id
 						service_ip         = "10.12.1.0/20"
 					}
+					depends_on         = [scaleway_vpc_private_network.pn]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
