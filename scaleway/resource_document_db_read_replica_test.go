@@ -30,7 +30,6 @@ func TestAccScalewayDocumentDBReadReplica_Basic(t *testing.T) {
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
 				  volume_size_in_gb = 20
-				  telemetry_enabled = false
 				}
 
 				resource "scaleway_document_db_read_replica" "replica" {
