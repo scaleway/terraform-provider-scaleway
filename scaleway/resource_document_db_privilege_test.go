@@ -43,6 +43,7 @@ func TestAccScalewayDocumentDBPrivilege_Basic(t *testing.T) {
 				  is_admin    = true
 				}
 
+				// Privilege creation with all permission
 				resource "scaleway_document_db_privilege" "priv_admin" {
 				  instance_id   = scaleway_document_db_instance.instance.id
 				  user_name     = scaleway_document_db_user.foo1.name
@@ -93,6 +94,7 @@ func TestAccScalewayDocumentDBPrivilege_Basic(t *testing.T) {
 				  password    = "R34lP4sSw#Rd"
 				}
 
+				// Add new privilege for user foo2 with readwrite permission
 				resource "scaleway_document_db_privilege" "priv_foo_02" {
 				  instance_id   = scaleway_document_db_instance.instance.id
 				  user_name     = scaleway_document_db_user.foo2.name
@@ -156,6 +158,7 @@ func TestAccScalewayDocumentDBPrivilege_Basic(t *testing.T) {
 			  password    = "R34lP4sSw#Rd"
 			}
 
+			// Add a new user privilege with none permission
 			resource "scaleway_document_db_privilege" "priv_foo_03" {
 			  instance_id   = scaleway_document_db_instance.instance.id
 			  user_name     = scaleway_document_db_user.foo3.name

@@ -185,7 +185,7 @@ func resourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Resou
 func setInitSettings(d *schema.ResourceData, settings []*documentdb.InstanceSetting) error {
 	for _, s := range settings {
 		if s.Name == telemetryDocumentDBReporting {
-			_ = d.Set("telemetry_enabled", s.Value)
+			_ = d.Set(telemetryDocumentDBReporting, s.Value)
 		}
 	}
 

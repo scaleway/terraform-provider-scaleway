@@ -28,7 +28,6 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
 				  volume_size_in_gb = 20
-				  telemetry_enabled = false
 				}
 				
 				resource "scaleway_vpc_private_network" "pn" {
@@ -60,7 +59,6 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
 				  volume_size_in_gb = 20
-				  telemetry_enabled = false
 				}
 
 				resource "scaleway_vpc_private_network" "pn" {
@@ -71,6 +69,7 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  name = "my vpc"
 				}
 
+				// Creation to the new private network with new subnet
 				resource "scaleway_vpc_private_network" "pn02" {
 				  ipv4_subnet {
 					subnet = "172.16.64.0/22"
@@ -121,49 +120,7 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  vpc_id = scaleway_vpc.vpc.id
 				}
 
-				resource "scaleway_document_db_private_network_endpoint" "main" {
-				  instance_id        = scaleway_document_db_instance.main.id
-				  ip_net             = "172.16.64.4/22"
-				  private_network_id = scaleway_vpc_private_network.pn02.id
-				  depends_on         = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
-				}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_document_db_private_network_endpoint.main"),
-					testCheckResourceAttrUUID("scaleway_document_db_private_network_endpoint.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_document_db_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
-					resource.TestCheckResourceAttr(
-						"scaleway_document_db_private_network_endpoint.main", "ip_net", "172.16.64.4/22"),
-				),
-			},
-			{
-				Config: `
-				resource "scaleway_document_db_instance" "main" {
-				  name              = "test-documentdb-instance-endpoint-basic"
-				  node_type         = "docdb-play2-pico"
-				  engine            = "FerretDB-1"
-				  is_ha_cluster     = false
-				  user_name         = "my_initial_user"
-				  password          = "thiZ_is_v&ry_s3cret"
-				  volume_size_in_gb = 20
-				  telemetry_enabled = false
-				}
-
-				resource "scaleway_vpc_private_network" "pn" {
-				  name = "my_private_network"
-				}
-
-				resource "scaleway_vpc" "vpc" {
-				  name = "my vpc"
-				}
-
-				resource "scaleway_vpc_private_network" "pn02" {
-				  ipv4_subnet {
-					subnet = "172.16.64.0/22"
-				  }
-				  vpc_id = scaleway_vpc.vpc.id
-				}
-
+				// Replace the ip on the new private network
 				resource "scaleway_document_db_private_network_endpoint" "main" {
 				  instance_id        = scaleway_document_db_instance.main.id
 				  ip_net             = "172.16.64.4/22"
