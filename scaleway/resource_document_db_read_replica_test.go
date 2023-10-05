@@ -26,7 +26,6 @@ func TestAccScalewayDocumentDBReadReplica_Basic(t *testing.T) {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
-				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
 				  volume_size_in_gb = 20
@@ -65,7 +64,6 @@ func TestAccScalewayDocumentDBReadReplica_PrivateNetwork(t *testing.T) {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
-				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
 				  volume_size_in_gb = 20
@@ -111,7 +109,6 @@ func TestAccScalewayDocumentDBReadReplica_Update(t *testing.T) {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
-				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
 				  volume_size_in_gb = 20
@@ -136,7 +133,6 @@ func TestAccScalewayDocumentDBReadReplica_Update(t *testing.T) {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
-				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
 				  volume_size_in_gb = 20
@@ -183,7 +179,6 @@ func TestAccScalewayDocumentDBReadReplica_MultipleEndpoints(t *testing.T) {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
-				  is_ha_cluster     = false
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
 				  volume_size_in_gb = 20

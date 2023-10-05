@@ -17,7 +17,6 @@ resource "scaleway_documentdb_instance" "main" {
   name              = "test-documentdb-instance-basic"
   node_type         = "docdb-play2-pico"
   engine            = "FerretDB-1"
-  is_ha_cluster     = false
   user_name         = "my_initial_user"
   password          = "thiZ_is_v&ry_s3cret"
   tags              = ["terraform-test", "scaleway_documentdb_instance", "minimal"]
