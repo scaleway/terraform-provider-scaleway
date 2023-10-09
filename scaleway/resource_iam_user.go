@@ -110,7 +110,7 @@ func resourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("updated_at", flattenTime(user.UpdatedAt))
 	_ = d.Set("organization_id", user.OrganizationID)
 	_ = d.Set("deletable", user.Deletable)
-	_ = d.Set("last_login_at", user.LastLoginAt)
+	_ = d.Set("last_login_at", flattenTime(user.LastLoginAt))
 	_ = d.Set("type", user.Type)
 	_ = d.Set("two_factor_enabled", user.TwoFactorEnabled)
 	_ = d.Set("status", user.Status)
