@@ -78,7 +78,6 @@ func TestAccScalewayMNQSQS_Basic(t *testing.T) {
 }
 
 func TestAccScalewayMNQSQS_AlreadyActivated(t *testing.T) {
-	t.Skip("API to change")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -108,7 +107,7 @@ func TestAccScalewayMNQSQS_AlreadyActivated(t *testing.T) {
 						project_id = scaleway_account_project.main.id
 					}
 				`,
-				ExpectError: regexp.MustCompile("SQS already activated"),
+				ExpectError: regexp.MustCompile(".*Conflict.*"),
 			},
 		},
 	})
