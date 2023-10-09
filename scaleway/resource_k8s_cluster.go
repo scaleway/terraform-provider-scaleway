@@ -554,7 +554,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Public clusters are deprecated",
-			Detail:   "Important: Harden your cluster's security by enabling a free private network ASAP. Full public clusters are deprecated and will reach End of Support in Q1 2024.",
+			Detail:   "Important: Harden your cluster's security by enabling a free Private Network ASAP. Full public clusters are deprecated and will reach End of Support in Q1 2024.",
 		})
 	}
 
