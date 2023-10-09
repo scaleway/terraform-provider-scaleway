@@ -1,10 +1,10 @@
 ---
 subcategory: "Databases"
 layout: "scaleway"
-page_title: "Scaleway: scaleway_document_db_instance"
+page_title: "Scaleway: scaleway_documentdb_instance"
 ---
 
-# scaleway_document_db_instance
+# scaleway_documentdb_instance
 
 Gets information about an DocumentDB instance. For further information see our [developers website](https://www.scaleway.com/en/developers/api/document_db/)
 
@@ -12,12 +12,12 @@ Gets information about an DocumentDB instance. For further information see our [
 
 ```hcl
 # Get info by name
-data "scaleway_document_db_instance" "db" {
+data "scaleway_documentdb_instance" "db" {
   name = "foobar"
 }
 
 # Get info by instance ID
-data "scaleway_document_db_instance" "db" {
+data "scaleway_documentdb_instance" "db" {
   instance_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
@@ -42,4 +42,4 @@ In addition to all above arguments, the following attributes are exported:
 
 ~> **Important:** DocumentDB instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-Exported attributes are the ones from `scaleway_document_db_instance` [resource](../resources/documentdb_instance.md)
+Exported attributes are the ones from `scaleway_documentdb_instance` [resource](../resources/documentdb_instance.md)

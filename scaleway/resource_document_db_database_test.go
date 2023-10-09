@@ -20,25 +20,25 @@ func TestAccScalewayDocumentDBDatabase_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_document_db_instance main {
+					resource scaleway_documentdb_instance main {
 						name = "test-document_db-database-basic"
 						node_type = "docdb-play2-pico"
 						engine = "FerretDB-1"
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_document_db_database", "minimal" ]
+						tags = [ "terraform-test", "scaleway_documentdb_database", "minimal" ]
 						volume_size_in_gb = 20
 					}
 
-					resource scaleway_document_db_database main {
-						instance_id = scaleway_document_db_instance.main.id
+					resource scaleway_documentdb_database main {
+						instance_id = scaleway_documentdb_instance.main.id
 						name        = "test-document_db-database-basic"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBDatabaseExists(tt, "scaleway_document_db_database.main"),
-					testCheckResourceAttrUUID("scaleway_document_db_database.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_document_db_database.main", "name", "test-document_db-database-basic"),
+					testAccCheckScalewayDocumentDBDatabaseExists(tt, "scaleway_documentdb_database.main"),
+					testCheckResourceAttrUUID("scaleway_documentdb_database.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_database.main", "name", "test-document_db-database-basic"),
 				),
 			},
 		},

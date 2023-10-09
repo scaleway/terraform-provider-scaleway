@@ -18,7 +18,7 @@ func TestAccScalewayDataSourceDocumentDBInstance_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_document_db_instance main {
+					resource scaleway_documentdb_instance main {
 						name = "test-ds-document_db-instance-basic"
 						node_type = "docdb-play2-pico"
 						engine = "FerretDB-1"
@@ -27,21 +27,21 @@ func TestAccScalewayDataSourceDocumentDBInstance_Basic(t *testing.T) {
 						volume_size_in_gb = 20
 					}
 
-					data scaleway_document_db_instance find_by_name {
-						name = scaleway_document_db_instance.main.name
+					data scaleway_documentdb_instance find_by_name {
+						name = scaleway_documentdb_instance.main.name
 					}
 
-					data scaleway_document_db_instance find_by_id {
-						instance_id = scaleway_document_db_instance.main.id
+					data scaleway_documentdb_instance find_by_id {
+						instance_id = scaleway_documentdb_instance.main.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceExists(tt, "scaleway_document_db_instance.main"),
+					testAccCheckScalewayDocumentDBInstanceExists(tt, "scaleway_documentdb_instance.main"),
 
-					resource.TestCheckResourceAttrPair("scaleway_document_db_instance.main", "name", "data.scaleway_document_db_instance.find_by_name", "name"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_instance.main", "name", "data.scaleway_document_db_instance.find_by_id", "name"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_instance.main", "id", "data.scaleway_document_db_instance.find_by_name", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_instance.main", "id", "data.scaleway_document_db_instance.find_by_id", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_instance.main", "name", "data.scaleway_documentdb_instance.find_by_name", "name"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_instance.main", "name", "data.scaleway_documentdb_instance.find_by_id", "name"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_instance.main", "id", "data.scaleway_documentdb_instance.find_by_name", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_instance.main", "id", "data.scaleway_documentdb_instance.find_by_id", "id"),
 				),
 			},
 		},
