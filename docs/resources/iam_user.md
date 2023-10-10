@@ -40,7 +40,7 @@ In addition to all above arguments, the following attributes are exported:
 - `two_factor_enabled` - Deprecated, use "mfa" instead.
 - `status` - The status of user invitation. Check the possible values on
   our [sdk](https://github.com/scaleway/scaleway-sdk-go/blob/master/api/iam/v1alpha1/iam_sdk.go#L475-L480).
-- `mfa` - Whether the MFA is enabled. 
+- `mfa` - Whether the MFA is enabled.
 - `account_root_user_id` - The ID of the account root user associated with the user.
 
 ## Import
