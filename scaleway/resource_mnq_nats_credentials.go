@@ -29,7 +29,7 @@ func resourceScalewayMNQNatsCredentials() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				Description: "The nats account name",
+				Description: "The nats credentials name",
 			},
 			"file": {
 				Type:        schema.TypeString,
