@@ -1,9 +1,9 @@
 ---
 subcategory: "Databases"
-page_title: "Scaleway: scaleway_document_db_private_network_endpoint"
+page_title: "Scaleway: scaleway_documentdb_private_network_endpoint"
 ---
 
-# scaleway_document_db_private_network_endpoint
+# scaleway_documentdb_private_network_endpoint
 
 Creates and manages Scaleway Database Private Network Endpoint.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
@@ -17,7 +17,7 @@ resource "scaleway_vpc_private_network" "pn" {
   name = "my_private_network"
 }
 
-resource "scaleway_document_db_private_network_endpoint" "main" {
+resource "scaleway_documentdb_private_network_endpoint" "main" {
   instance_id    = "11111111-1111-1111-1111-111111111111"
   private_network {
     ip_net = "172.16.32.3/22"
@@ -65,5 +65,5 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
 Database Instance Endpoint can be imported using the `{region}/{endpoint_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_document_db_private_network_endpoint.end fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_documentdb_private_network_endpoint.end fr-par/11111111-1111-1111-1111-111111111111
 ```

@@ -18,8 +18,8 @@ func TestAccScalewayDataSourceDocumentDBInstanceLoadBalancer_Basic(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "main" {
-				  name              = "test-ds-document_db-instance-basic"
+				resource "scaleway_documentdb_instance" "main" {
+				  name              = "test-ds-document_db-instance-basic-load-balancer"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
 				  user_name         = "my_initial_user"
@@ -27,19 +27,19 @@ func TestAccScalewayDataSourceDocumentDBInstanceLoadBalancer_Basic(t *testing.T)
 				  volume_size_in_gb = 20
 				}
 				
-				data "scaleway_document_db_load_balancer_endpoint" "find_by_name" {
-				  instance_name = scaleway_document_db_instance.main.name
+				data "scaleway_documentdb_load_balancer_endpoint" "find_by_name" {
+				  instance_name = scaleway_documentdb_instance.main.name
 				}
 				
-				data "scaleway_document_db_load_balancer_endpoint" "find_by_id" {
-				  instance_id = scaleway_document_db_instance.main.id
+				data "scaleway_documentdb_load_balancer_endpoint" "find_by_id" {
+				  instance_id = scaleway_documentdb_instance.main.id
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "data.scaleway_document_db_load_balancer_endpoint.find_by_name"),
-					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "data.scaleway_document_db_load_balancer_endpoint.find_by_id"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_instance.main", "name", "data.scaleway_document_db_load_balancer_endpoint.find_by_name", "instance_name"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_instance.main", "name", "data.scaleway_document_db_load_balancer_endpoint.find_by_id", "instance_name"),
+					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "data.scaleway_documentdb_load_balancer_endpoint.find_by_name"),
+					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "data.scaleway_documentdb_load_balancer_endpoint.find_by_id"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_instance.main", "name", "data.scaleway_documentdb_load_balancer_endpoint.find_by_name", "instance_name"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_instance.main", "name", "data.scaleway_documentdb_load_balancer_endpoint.find_by_id", "instance_name"),
 				),
 			},
 		},

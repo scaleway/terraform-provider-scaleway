@@ -19,7 +19,7 @@ func TestAccScalewayDocumentDBUser_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "main" {
+				resource "scaleway_documentdb_instance" "main" {
 				  name              = "test-documentdb-instance-endpoint-migration"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -28,22 +28,22 @@ func TestAccScalewayDocumentDBUser_Basic(t *testing.T) {
 				  volume_size_in_gb = 20
 				}
 				
-				resource "scaleway_document_db_user" "db_user" {
-				  instance_id = scaleway_document_db_instance.main.id
+				resource "scaleway_documentdb_user" "db_user" {
+				  instance_id = scaleway_documentdb_instance.main.id
 				  name        = "foo"
 				  password    = "R34lP4sSw#Rd"
 				  is_admin    = true
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBUserExists(tt, "scaleway_document_db_instance.main", "scaleway_document_db_user.db_user"),
-					resource.TestCheckResourceAttr("scaleway_document_db_user.db_user", "name", "foo"),
-					resource.TestCheckResourceAttr("scaleway_document_db_user.db_user", "is_admin", "true"),
+					testAccCheckDocumentDBUserExists(tt, "scaleway_documentdb_instance.main", "scaleway_documentdb_user.db_user"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_user.db_user", "name", "foo"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_user.db_user", "is_admin", "true"),
 				),
 			},
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "main" {
+				resource "scaleway_documentdb_instance" "main" {
 				  name              = "test-documentdb-instance-endpoint-migration"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -52,17 +52,17 @@ func TestAccScalewayDocumentDBUser_Basic(t *testing.T) {
 				  volume_size_in_gb = 20
 				}
 				
-				resource "scaleway_document_db_user" "db_user" {
-				  instance_id = scaleway_document_db_instance.main.id
+				resource "scaleway_documentdb_user" "db_user" {
+				  instance_id = scaleway_documentdb_instance.main.id
 				  name        = "bar"
 				  password    = "R34lP4sSw#Rd"
 				  is_admin    = false
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBUserExists(tt, "scaleway_document_db_instance.main", "scaleway_document_db_user.db_user"),
-					resource.TestCheckResourceAttr("scaleway_document_db_user.db_user", "name", "bar"),
-					resource.TestCheckResourceAttr("scaleway_document_db_user.db_user", "is_admin", "false"),
+					testAccCheckDocumentDBUserExists(tt, "scaleway_documentdb_instance.main", "scaleway_documentdb_user.db_user"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_user.db_user", "name", "bar"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_user.db_user", "is_admin", "false"),
 				),
 			},
 		},

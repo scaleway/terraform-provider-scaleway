@@ -1,9 +1,9 @@
 ---
 subcategory: "Databases"
-page_title: "Scaleway: scaleway_document_db_database"
+page_title: "Scaleway: scaleway_documentdb_database"
 ---
 
-# scaleway_document_db_database
+# scaleway_documentdb_database
 
 Creates and manages Scaleway DocumentDB database.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
@@ -13,7 +13,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 ### Basic
 
 ```hcl
-resource "scaleway_document_db_database" "main" {
+resource "scaleway_documentdb_database" "main" {
   instance_id    = "11111111-1111-1111-1111-111111111111"
   name           = "my-new-database"
 }
@@ -45,5 +45,5 @@ In addition to all arguments above, the following attributes are exported:
 DocumentDB Database can be imported using the `{region}/{id}/{DBNAME}`, e.g.
 
 ```bash
-$ terraform import scaleway_document_db_database.mydb fr-par/11111111-1111-1111-1111-111111111111/mydb
+$ terraform import scaleway_documentdb_database.mydb fr-par/11111111-1111-1111-1111-111111111111/mydb
 ```

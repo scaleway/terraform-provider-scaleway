@@ -22,7 +22,7 @@ func TestAccScalewayDocumentDBReadReplica_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "instance" {
+				resource "scaleway_documentdb_instance" "instance" {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -31,16 +31,16 @@ func TestAccScalewayDocumentDBReadReplica_Basic(t *testing.T) {
 				  volume_size_in_gb = 20
 				}
 
-				resource "scaleway_document_db_read_replica" "replica" {
-					instance_id = scaleway_document_db_instance.instance.id
+				resource "scaleway_documentdb_read_replica" "replica" {
+					instance_id = scaleway_documentdb_instance.instance.id
 					direct_access {}
 				}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_document_db_read_replica.replica"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_read_replica.replica", "instance_id", "scaleway_document_db_instance.instance", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.ip"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.port"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.endpoint_id"),
+					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.endpoint_id"),
 				),
 			},
 		},
@@ -60,7 +60,7 @@ func TestAccScalewayDocumentDBReadReplica_PrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "instance" {
+				resource "scaleway_documentdb_instance" "instance" {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -71,8 +71,8 @@ func TestAccScalewayDocumentDBReadReplica_PrivateNetwork(t *testing.T) {
 
 				resource "scaleway_vpc_private_network" "pn" {}
 
-				resource "scaleway_document_db_read_replica" "replica" {
-					instance_id = scaleway_document_db_instance.instance.id
+				resource "scaleway_documentdb_read_replica" "replica" {
+					instance_id = scaleway_documentdb_instance.instance.id
 					private_network {
 						private_network_id = scaleway_vpc_private_network.pn.id
 						service_ip         = "10.12.1.0/20"
@@ -80,11 +80,11 @@ func TestAccScalewayDocumentDBReadReplica_PrivateNetwork(t *testing.T) {
 					depends_on         = [scaleway_vpc_private_network.pn]
 				}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_document_db_read_replica.replica"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_read_replica.replica", "instance_id", "scaleway_document_db_instance.instance", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.ip"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.port"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.endpoint_id"),
+					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.endpoint_id"),
 				),
 			},
 		},
@@ -104,7 +104,7 @@ func TestAccScalewayDocumentDBReadReplica_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "instance" {
+				resource "scaleway_documentdb_instance" "instance" {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -113,22 +113,22 @@ func TestAccScalewayDocumentDBReadReplica_Update(t *testing.T) {
 				  volume_size_in_gb = 20
 				}
 
-				resource "scaleway_document_db_read_replica" "replica" {
-					instance_id = scaleway_document_db_instance.instance.id
+				resource "scaleway_documentdb_read_replica" "replica" {
+					instance_id = scaleway_documentdb_instance.instance.id
 					direct_access {}
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_document_db_read_replica.replica"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_read_replica.replica", "instance_id", "scaleway_document_db_instance.instance", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.ip"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.port"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.endpoint_id"),
+					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.endpoint_id"),
 				),
 			},
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "instance" {
+				resource "scaleway_documentdb_instance" "instance" {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -139,8 +139,8 @@ func TestAccScalewayDocumentDBReadReplica_Update(t *testing.T) {
 
 				resource "scaleway_vpc_private_network" "pn" {}
 
-				resource "scaleway_document_db_read_replica" "replica" {
-					instance_id = scaleway_document_db_instance.instance.id
+				resource "scaleway_documentdb_read_replica" "replica" {
+					instance_id = scaleway_documentdb_instance.instance.id
 					private_network {
 						private_network_id = scaleway_vpc_private_network.pn.id
 						service_ip         = "10.12.1.0/20"
@@ -149,12 +149,12 @@ func TestAccScalewayDocumentDBReadReplica_Update(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_document_db_read_replica.replica"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_read_replica.replica", "instance_id", "scaleway_document_db_instance.instance", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.ip"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.port"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.endpoint_id"),
-					resource.TestCheckResourceAttr("scaleway_document_db_read_replica.replica", "direct_access.#", "0"),
+					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_read_replica.replica", "direct_access.#", "0"),
 				),
 			},
 		},
@@ -174,7 +174,7 @@ func TestAccScalewayDocumentDBReadReplica_MultipleEndpoints(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "instance" {
+				resource "scaleway_documentdb_instance" "instance" {
 				  name              = "test-document_db-read-replica-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -185,8 +185,8 @@ func TestAccScalewayDocumentDBReadReplica_MultipleEndpoints(t *testing.T) {
 
 				resource "scaleway_vpc_private_network" "pn" {}
 
-				resource "scaleway_document_db_read_replica" "replica" {
-					instance_id = scaleway_document_db_instance.instance.id
+				resource "scaleway_documentdb_read_replica" "replica" {
+					instance_id = scaleway_documentdb_instance.instance.id
 					private_network {
 						private_network_id = scaleway_vpc_private_network.pn.id
 						service_ip         = "10.12.1.0/20"
@@ -196,14 +196,14 @@ func TestAccScalewayDocumentDBReadReplica_MultipleEndpoints(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_document_db_read_replica.replica"),
-					resource.TestCheckResourceAttrPair("scaleway_document_db_read_replica.replica", "instance_id", "scaleway_document_db_instance.instance", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.ip"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.port"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "private_network.0.endpoint_id"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.ip"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.port"),
-					resource.TestCheckResourceAttrSet("scaleway_document_db_read_replica.replica", "direct_access.0.endpoint_id"),
+					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.endpoint_id"),
 				),
 			},
 		},
@@ -237,7 +237,7 @@ func testAccCheckDocumentDBReadReplicaExists(tt *TestTools, readReplica string) 
 func testAccCheckScalewayDocumentDBReadReplicaDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_document_db_read_replica" {
+			if rs.Type != "scaleway_documentdb_read_replica" {
 				continue
 			}
 

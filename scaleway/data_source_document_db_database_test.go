@@ -18,7 +18,7 @@ func TestAccScalewayDataSourceDocumentDBDatabase_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_document_db_instance main {
+					resource scaleway_documentdb_instance main {
 						name = "test-ds-document_db-database-basic"
 						node_type = "docdb-play2-pico"
 						engine = "FerretDB-1"
@@ -27,20 +27,20 @@ func TestAccScalewayDataSourceDocumentDBDatabase_Basic(t *testing.T) {
 						volume_size_in_gb = 20
 					}
 
-					resource scaleway_document_db_database main {
-						instance_id = scaleway_document_db_instance.main.id
+					resource scaleway_documentdb_database main {
+						instance_id = scaleway_documentdb_instance.main.id
 						name        = "test-ds-document_db-database-basic"
 					}
 
-					data scaleway_document_db_database main {
-						instance_id = scaleway_document_db_instance.main.id
-						name        = scaleway_document_db_database.main.name
+					data scaleway_documentdb_database main {
+						instance_id = scaleway_documentdb_instance.main.id
+						name        = scaleway_documentdb_database.main.name
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBDatabaseExists(tt, "scaleway_document_db_database.main"),
+					testAccCheckScalewayDocumentDBDatabaseExists(tt, "scaleway_documentdb_database.main"),
 
-					resource.TestCheckResourceAttrPair("scaleway_document_db_database.main", "id", "data.scaleway_document_db_database.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_documentdb_database.main", "id", "data.scaleway_documentdb_database.main", "id"),
 				),
 			},
 		},
