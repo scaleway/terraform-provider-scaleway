@@ -15,7 +15,7 @@ our [documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@maste
 
 ```hcl
 resource "scaleway_mnq_nats_account" "main" {
-  name     = "nats-account"
+  name = "nats-account"
 }
 ```
 
@@ -40,8 +40,6 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Messaging and Queueing nats accounts' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `endpoint` - The endpoint of the NATS service for this account.
-- `created_at` - The date and time the Namespace was created.
-- `updated_at` - The date and time the Namespace was updated.
 
 ## Import
 
