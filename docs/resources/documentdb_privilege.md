@@ -1,9 +1,9 @@
 ---
 subcategory: "Databases"
-page_title: "Scaleway: scaleway_document_db_privilege"
+page_title: "Scaleway: scaleway_documentdb_privilege"
 ---
 
-# scaleway_document_db_privilege
+# scaleway_documentdb_privilege
 
 Create and manage Scaleway DocumentDB database privilege.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
@@ -11,7 +11,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 ## Example usage
 
 ```hcl
-resource "scaleway_document_db_privilege" "main" {
+resource "scaleway_documentdb_privilege" "main" {
   instance_id   = "11111111-1111-1111-1111-111111111111"
   user_name     = "my-db-user"
   database_name = "my-db-name"
@@ -45,5 +45,5 @@ In addition to all arguments above, the following attributes are exported:
 The user privileges can be imported using the `{region}/{instance_id}/{database_name}/{user_name}`, e.g.
 
 ```bash
-$ terraform import scaleway_document_db_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
+$ terraform import scaleway_documentdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
 ```

@@ -11,8 +11,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("scaleway_document_db_instance", &resource.Sweeper{
-		Name: "scaleway_document_db_instance",
+	resource.AddTestSweepers("scaleway_documentdb_instance", &resource.Sweeper{
+		Name: "scaleway_documentdb_instance",
 		F:    testSweepDocumentDBInstance,
 	})
 }
@@ -56,20 +56,20 @@ func TestAccScalewayDocumentDBInstance_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "main" {
+				resource "scaleway_documentdb_instance" "main" {
 				  name              = "test-documentdb-instance-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
-				  tags              = ["terraform-test", "scaleway_document_db_instance", "minimal"]
+				  tags              = ["terraform-test", "scaleway_documentdb_instance", "minimal"]
 				  volume_size_in_gb = 20
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceExists(tt, "scaleway_document_db_instance.main"),
-					testCheckResourceAttrUUID("scaleway_document_db_instance.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_document_db_instance.main", "name", "test-documentdb-instance-basic"),
+					testAccCheckScalewayDocumentDBInstanceExists(tt, "scaleway_documentdb_instance.main"),
+					testCheckResourceAttrUUID("scaleway_documentdb_instance.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-basic"),
 				),
 			},
 		},
@@ -104,7 +104,7 @@ func testAccCheckScalewayDocumentDBInstanceExists(tt *TestTools, n string) resou
 func testAccCheckScalewayDocumentDBInstanceDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_document_db_instance" {
+			if rs.Type != "scaleway_documentdb_instance" {
 				continue
 			}
 

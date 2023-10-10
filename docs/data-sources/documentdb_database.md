@@ -1,10 +1,10 @@
 ---
 subcategory: "Databases"
 layout: "scaleway"
-page_title: "Scaleway: scaleway_document_db_database"
+page_title: "Scaleway: scaleway_documentdb_database"
 ---
 
-# scaleway_document_db_database
+# scaleway_documentdb_database
 
 Gets information about DocumentDB database. More on our official [site](https://www.scaleway.com/en/developers/api/document_db/)
 
@@ -12,7 +12,7 @@ Gets information about DocumentDB database. More on our official [site](https://
 
 ```hcl
 # Get the database foobar hosted on instance id 11111111-1111-1111-1111-111111111111
-data scaleway_document_db_database main {
+data scaleway_documentdb_database main {
   instance_id = "11111111-1111-1111-1111-111111111111"
   name        = "foobar"
 }

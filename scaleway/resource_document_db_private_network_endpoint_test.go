@@ -20,7 +20,7 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "main" {
+				resource "scaleway_documentdb_instance" "main" {
 				  name              = "test-documentdb-instance-endpoint-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -33,24 +33,24 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  name = "my_private_network"
 				}
 				
-				resource "scaleway_document_db_private_network_endpoint" "main" {
-				  instance_id        = scaleway_document_db_instance.main.id
+				resource "scaleway_documentdb_private_network_endpoint" "main" {
+				  instance_id        = scaleway_documentdb_instance.main.id
 				  ip_net             = "172.16.32.3/22"
 				  private_network_id = scaleway_vpc_private_network.pn.id
 				  depends_on         = [scaleway_vpc_private_network.pn]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_document_db_private_network_endpoint.main"),
-					testCheckResourceAttrUUID("scaleway_document_db_private_network_endpoint.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_document_db_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
+					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_documentdb_private_network_endpoint.main"),
+					testCheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
 					resource.TestCheckResourceAttr(
-						"scaleway_document_db_private_network_endpoint.main", "ip_net", "172.16.32.3/22"),
+						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "172.16.32.3/22"),
 				),
 			},
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "main" {
+				resource "scaleway_documentdb_instance" "main" {
 				  name              = "test-documentdb-instance-endpoint-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -75,24 +75,24 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  vpc_id = scaleway_vpc.vpc.id
 				}
 
-				resource "scaleway_document_db_private_network_endpoint" "main" {
-				  instance_id        = scaleway_document_db_instance.main.id
+				resource "scaleway_documentdb_private_network_endpoint" "main" {
+				  instance_id        = scaleway_documentdb_instance.main.id
 				  ip_net             = "172.16.32.3/22"
 				  private_network_id = scaleway_vpc_private_network.pn.id
 				  depends_on         = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_document_db_private_network_endpoint.main"),
-					testCheckResourceAttrUUID("scaleway_document_db_private_network_endpoint.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_document_db_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
+					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_documentdb_private_network_endpoint.main"),
+					testCheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
 					resource.TestCheckResourceAttr(
-						"scaleway_document_db_private_network_endpoint.main", "ip_net", "172.16.32.3/22"),
+						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "172.16.32.3/22"),
 				),
 			},
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "main" {
+				resource "scaleway_documentdb_instance" "main" {
 				  name              = "test-documentdb-instance-endpoint-basic"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
@@ -117,19 +117,19 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				}
 
 				// Replace the ip on the new private network
-				resource "scaleway_document_db_private_network_endpoint" "main" {
-				  instance_id        = scaleway_document_db_instance.main.id
+				resource "scaleway_documentdb_private_network_endpoint" "main" {
+				  instance_id        = scaleway_documentdb_instance.main.id
 				  ip_net             = "172.16.64.4/22"
 				  private_network_id = scaleway_vpc_private_network.pn02.id
 				  depends_on         = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_document_db_private_network_endpoint.main"),
-					testCheckResourceAttrUUID("scaleway_document_db_private_network_endpoint.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_document_db_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
+					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_documentdb_private_network_endpoint.main"),
+					testCheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
 					resource.TestCheckResourceAttr(
-						"scaleway_document_db_private_network_endpoint.main", "ip_net", "172.16.64.4/22"),
+						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "172.16.64.4/22"),
 				),
 			},
 			{
@@ -165,13 +165,13 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Migration(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_document_db_instance" "main" {
+				resource "scaleway_documentdb_instance" "main" {
 				  name              = "test-documentdb-instance-endpoint-migration"
 				  node_type         = "docdb-play2-pico"
 				  engine            = "FerretDB-1"
 				  user_name         = "my_initial_user"
 				  password          = "thiZ_is_v&ry_s3cret"
-				  tags              = ["terraform-test", "scaleway_document_db_instance_migration", "minimal"]
+				  tags              = ["terraform-test", "scaleway_documentdb_instance_migration", "minimal"]
 				  volume_size_in_gb = 20
 				}
 
@@ -186,17 +186,17 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Migration(t *testing.T) {
 				  vpc_id = scaleway_vpc.vpc.id
 				}
 
-				resource "scaleway_document_db_private_network_endpoint" "main" {
-				  instance_id         = scaleway_document_db_instance.main.id
+				resource "scaleway_documentdb_private_network_endpoint" "main" {
+				  instance_id         = scaleway_documentdb_instance.main.id
 				  ip_net              = "10.10.64.4/22"
 				  private_network_id = scaleway_vpc_private_network.pn.id
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_document_db_private_network_endpoint.main"),
-					testCheckResourceAttrUUID("scaleway_document_db_private_network_endpoint.main", "id"),
+					testAccCheckScalewayDocumentDBInstanceEndpointExists(tt, "scaleway_documentdb_private_network_endpoint.main"),
+					testCheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
 					resource.TestCheckResourceAttr(
-						"scaleway_document_db_private_network_endpoint.main", "ip_net", "10.10.64.4/22"),
+						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "10.10.64.4/22"),
 				),
 			},
 			{
@@ -220,7 +220,7 @@ func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Migration(t *testing.T) {
 func testAccCheckScalewayDocumentDBInstanceEndpointDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_document_db_private_network_endpoint" {
+			if rs.Type != "scaleway_documentdb_private_network_endpoint" {
 				continue
 			}
 

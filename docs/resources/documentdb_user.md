@@ -1,9 +1,9 @@
 ---
 subcategory: "Databases"
-page_title: "Scaleway: scaleway_document_db_user"
+page_title: "Scaleway: scaleway_documentdb_user"
 ---
 
-# scaleway_document_db_user
+# scaleway_documentdb_user
 
 Creates and manages Scaleway Database DocumentDB Users.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
@@ -18,7 +18,7 @@ resource "random_password" "db_password" {
   special = true
 }
 
-resource "scaleway_document_db_user" "db_admin" {
+resource "scaleway_documentdb_user" "db_admin" {
   instance_id = "11111111-1111-1111-1111-111111111111"
   name        = "devtools"
   password    = random_password.db_password.result
@@ -55,5 +55,5 @@ In addition to all arguments above, the following attributes are exported:
 Database User can be imported using `{region}/{instance_id}/{user_name}`, e.g.
 
 ```bash
-$ terraform import scaleway_document_db_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin
+$ terraform import scaleway_documentdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin
 ```
