@@ -158,6 +158,7 @@ func TestAccScalewayDocumentDBPrivilege_Basic(t *testing.T) {
 			  user_name     = scaleway_documentdb_user.foo3.name
 			  database_name = scaleway_documentdb_database.db01.name
 			  permission    = "none"
+              depends_on    = [scaleway_documentdb_user.foo3]
 			}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDocumentDBPrivilegeExists(tt, "scaleway_documentdb_instance.instance", "scaleway_documentdb_database.db01", "scaleway_documentdb_user.foo3"),
