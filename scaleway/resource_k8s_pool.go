@@ -156,6 +156,13 @@ func resourceScalewayK8SPool() *schema.Resource {
 				ForceNew:    true,
 				Description: "The size of the system volume of the nodes in gigabyte",
 			},
+			"public_ip_disabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Defines if the public IP should be removed from the nodes.",
+			},
 			"zone":   zoneSchema(),
 			"region": regionSchema(),
 			// Computed elements
@@ -227,16 +234,17 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	// Create pool
 	////
 	req := &k8s.CreatePoolRequest{
-		Region:      region,
-		ClusterID:   expandID(d.Get("cluster_id")),
-		Name:        expandOrGenerateString(d.Get("name"), "pool"),
-		NodeType:    d.Get("node_type").(string),
-		Autoscaling: d.Get("autoscaling").(bool),
-		Autohealing: d.Get("autohealing").(bool),
-		Size:        uint32(d.Get("size").(int)),
-		Tags:        expandStrings(d.Get("tags")),
-		Zone:        scw.Zone(d.Get("zone").(string)),
-		KubeletArgs: expandKubeletArgs(d.Get("kubelet_args")),
+		Region:           region,
+		ClusterID:        expandID(d.Get("cluster_id")),
+		Name:             expandOrGenerateString(d.Get("name"), "pool"),
+		NodeType:         d.Get("node_type").(string),
+		Autoscaling:      d.Get("autoscaling").(bool),
+		Autohealing:      d.Get("autohealing").(bool),
+		Size:             uint32(d.Get("size").(int)),
+		Tags:             expandStrings(d.Get("tags")),
+		Zone:             scw.Zone(d.Get("zone").(string)),
+		KubeletArgs:      expandKubeletArgs(d.Get("kubelet_args")),
+		PublicIPDisabled: d.Get("public_ip_disabled").(bool),
 	}
 
 	if v, ok := d.GetOk("region"); ok {
@@ -379,6 +387,7 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
+	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
 
 	if pool.PlacementGroupID != nil {
 		_ = d.Set("placement_group_id", newZonedID(pool.Zone, *pool.PlacementGroupID).String())
