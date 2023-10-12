@@ -1,7 +1,5 @@
 package scaleway
 
-//#TODO see update empty
-
 import (
 	"context"
 
@@ -51,11 +49,6 @@ func resourceScalewayIamUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the iam user",
-			},
-			"two_factor_enabled": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Deprecated, use 'mfa' instead.",
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -112,7 +105,6 @@ func resourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("deletable", user.Deletable)
 	_ = d.Set("last_login_at", flattenTime(user.LastLoginAt))
 	_ = d.Set("type", user.Type)
-	_ = d.Set("two_factor_enabled", user.TwoFactorEnabled)
 	_ = d.Set("status", user.Status)
 	_ = d.Set("mfa", user.Mfa)
 
