@@ -14,7 +14,23 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ```hcl
 resource "scaleway_iam_user" "basic" {
-  email            = "test@test.com"
+  email = "test@test.com"
+}
+```
+
+### Multiple users
+
+```hcl
+locals {
+  users = toset([
+    "test@test.com",
+    "test2@test.com"
+  ])
+}
+
+resource scaleway_iam_user user {
+  for_each = local.users
+  email = each.key
 }
 ```
 
@@ -35,11 +51,8 @@ In addition to all above arguments, the following attributes are exported:
 - `deletable` - Whether the iam user is deletable.
 - `organization_id` - The ID of the organization the user.
 - `last_login_at` - The date of the last login.
-- `type` - The type of user. Check the possible values on
-  our [sdk](https://github.com/scaleway/scaleway-sdk-go/blob/master/api/iam/v1alpha1/iam_sdk.go#L508-L515C2).
-- `two_factor_enabled` - Deprecated, use "mfa" instead.
-- `status` - The status of user invitation. Check the possible values on
-  our [sdk](https://github.com/scaleway/scaleway-sdk-go/blob/master/api/iam/v1alpha1/iam_sdk.go#L475-L480).
+- `type` - The type of user. Check the possible values in the [api doc](https://www.scaleway.com/en/developers/api/iam/#path-users-get-a-given-user).
+- `status` - The status of user invitation. Check the possible values in the [api doc](https://www.scaleway.com/en/developers/api/iam/#path-users-get-a-given-user).
 - `mfa` - Whether the MFA is enabled.
 - `account_root_user_id` - The ID of the account root user associated with the user.
 
