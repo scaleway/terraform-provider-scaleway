@@ -520,7 +520,7 @@ func TestAccScalewayLbLb_WithStaticIPCIDR(t *testing.T) {
 	})
 }
 
-func TestAccScalewayLB_InvalidStaticConfig(t *testing.T) {
+func TestAccScalewayLbLb_InvalidStaticConfig(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
