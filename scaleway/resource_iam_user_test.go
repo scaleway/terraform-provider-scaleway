@@ -57,13 +57,13 @@ func TestAccScalewayIamUser_Basic(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_user" "user_basic" {
-							email = "user@example.com"
+							email = "foo@scaleway.com"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamUserExists(tt, "scaleway_iam_user.user_basic"),
 					testCheckResourceAttrUUID("scaleway_iam_user.user_basic", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "email", "user@example.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "email", "foo@scaleway.com"),
 				),
 			},
 		},
