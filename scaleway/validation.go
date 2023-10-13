@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/scaleway/scaleway-sdk-go/validation"
 )
@@ -56,6 +57,28 @@ func validationEmail() func(interface{}, string) ([]string, []error) {
 
 		if !validation.IsEmail(email) {
 			return nil, []error{fmt.Errorf("invalid email for key '%s': '%s': should contain valid '@' character", key, email)}
+		}
+
+		return
+	}
+}
+
+func validateStandaloneIPorCIDR() func(interface{}, string) ([]string, []error) {
+	return func(val interface{}, key string) (warns []string, errs []error) {
+		ip, isString := val.(string)
+		if !isString {
+			return nil, []error{fmt.Errorf("invalid input for key '%s': not a string", key)}
+		}
+
+		// Check if it's a standalone IP address
+		if net.ParseIP(ip) != nil {
+			return
+		}
+
+		// Check if it's an IP with CIDR notation
+		_, _, err := net.ParseCIDR(ip)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%q is not a valid IP address or CIDR notation: %s", key, ip))
 		}
 
 		return

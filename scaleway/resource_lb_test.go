@@ -483,6 +483,74 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbLb_WithStaticIPCIDR(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "ip01" {}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						name = "pn-with-lb-static"
+					}
+
+					resource "scaleway_lb" "lb01" {
+					    ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-with-pn-static-cidr"
+						type = "LB-S"
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pn.id
+							static_config = ["192.168.1.1/25"]
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.static_config.0", "192.168.1.1/25"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayLB_InvalidStaticConfig(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "ip01" {}
+
+					resource "scaleway_vpc_private_network" "pn" {
+					  name = "pn-with-lb-to-static"
+					}
+
+					resource "scaleway_lb" "lb01" {
+					  ip_id      = scaleway_lb_ip.ip01.id
+					  name       = "test-lb-with-invalid_ip"
+					  type       = "LB-S"
+					  private_network {
+						private_network_id = scaleway_vpc_private_network.pn.id
+						static_config      = ["472.16.0.100/24"]
+					  }
+					}`,
+				ExpectError: regexp.MustCompile("\".+\" is not a valid IP address or CIDR notation: .+"),
+			},
+		},
+	})
+}
+
 func TestAccScalewayLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
