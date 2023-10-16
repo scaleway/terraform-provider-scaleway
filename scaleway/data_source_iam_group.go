@@ -41,7 +41,7 @@ func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData,
 	groupID, groupIDExists := d.GetOk("group_id")
 	if !groupIDExists {
 		req := &iam.ListGroupsRequest{
-			OrganizationID: getOrganizationID(meta, d),
+			OrganizationID: flattenStringPtr(getOrganizationID(meta, d)).(string),
 			Name:           expandStringPtr(d.Get("name")),
 		}
 

@@ -42,7 +42,7 @@ func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.Resourc
 
 	if !appIDExists {
 		res, err := api.ListApplications(&iam.ListApplicationsRequest{
-			OrganizationID: getOrganizationID(meta, d),
+			OrganizationID: flattenStringPtr(getOrganizationID(meta, d)).(string),
 			Name:           expandStringPtr(d.Get("name")),
 		}, scw.WithContext(ctx))
 		if err != nil {
