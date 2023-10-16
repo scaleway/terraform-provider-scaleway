@@ -213,7 +213,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("url", flattenStringPtr(queue.QueueUrl))
 
 	for k, v := range values {
-		_ = d.Set(k, v)
+		_ = d.Set(k, v) // lintignore: R001
 	}
 
 	return nil
