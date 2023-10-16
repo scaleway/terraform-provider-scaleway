@@ -112,7 +112,7 @@ func resourceScalewayLb() *schema.Resource {
 							Optional:    true,
 							Elem: &schema.Schema{
 								Type:         schema.TypeString,
-								ValidateFunc: validation.IsIPAddress,
+								ValidateFunc: validateStandaloneIPorCIDR(),
 							},
 							MaxItems: 1,
 						},
