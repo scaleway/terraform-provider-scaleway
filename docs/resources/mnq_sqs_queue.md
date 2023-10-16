@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_mnq_sqs_queue"
 
 Creates and manages Scaleway Messaging and queuing SQS Queues.
 For further information please check
-our [documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/mnq/v1beta1#pkg-index)
+our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/how-to/create-manage-queues/)
 
 ## Examples
 

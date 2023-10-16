@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_mnq_sqs"
 
 Activate Scaleway Messaging and queuing SQS for a project.
 For further information please check
-our [documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/mnq/v1beta1#pkg-index)
+our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/snssqs-overview/)
 
 ## Examples
 

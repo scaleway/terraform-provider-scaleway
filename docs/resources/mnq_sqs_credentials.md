@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_mnq_sqs_credentials"
 
 Creates and manages Scaleway Messaging and queuing SQS Credentials.
 For further information please check
-our [documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/mnq/v1beta1#pkg-index)
+our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/snssqs-overview/)
 
 ## Examples
 
@@ -35,9 +35,9 @@ The following arguments are supported:
 - `name` - (Optional) The unique name of the sqs credentials.
 
 - `permissions` - (Optional). List of permissions associated to these credentials. Only one of permissions may be set.
-  - `can_publish` - (Optional). Defines if user can publish messages to the service.
-  - `can_receive` - (Optional). Defines if user can receive messages from the service.
-  - `can_manage` - (Optional). Defines if user can manage the associated resource(s).
+    - `can_publish` - (Optional). Defines if user can publish messages to the service.
+    - `can_receive` - (Optional). Defines if user can receive messages from the service.
+    - `can_manage` - (Optional). Defines if user can manage the associated resource(s).
 
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which sqs is enabled.
