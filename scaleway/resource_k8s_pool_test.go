@@ -414,6 +414,104 @@ func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_vpc_private_network" "public_ip" {
+				  name       = "k8s-private-network"
+				}
+			
+				resource "scaleway_k8s_cluster" "public_ip" {
+				  name = "private-network-cluster"
+				  version = "%s"
+				  cni     = "cilium"
+				  private_network_id = scaleway_vpc_private_network.public_ip.id
+				  tags = [ "terraform-test", "scaleway_k8s_cluster", "public_ip" ]
+				  delete_additional_resources = true
+				  depends_on = [scaleway_vpc_private_network.public_ip]
+				}
+			
+				resource "scaleway_k8s_pool" "public_ip" {
+				  cluster_id          = scaleway_k8s_cluster.public_ip.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 1
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.public_ip"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.public_ip"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.public_ip"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.public_ip", "public_ip_disabled", "false"),
+					testAccCheckScalewayK8SPoolPublicIP(tt, "scaleway_k8s_cluster.public_ip", "scaleway_k8s_pool.public_ip", false),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_vpc_private_network" "public_ip" {
+				  name       = "private-network-for-public-ip"
+				}
+				resource "scaleway_vpc_public_gateway" "public_ip" {
+   				  name = "public-gateway-for-public-ip"
+    			  type = "VPC-GW-S"
+				}
+				resource "scaleway_vpc_public_gateway_dhcp" "public_ip" {
+				  subnet = "192.168.0.0/22"
+				  push_default_route = true
+				}
+				resource "scaleway_vpc_gateway_network" "public_ip" {
+				  gateway_id = scaleway_vpc_public_gateway.public_ip.id
+				  private_network_id = scaleway_vpc_private_network.public_ip.id
+				  dhcp_id = scaleway_vpc_public_gateway_dhcp.public_ip.id
+				}
+
+				resource "scaleway_k8s_cluster" "public_ip" {
+				  name = "cluster-for-public-ip"
+				  version = "%s"
+				  cni     = "cilium"
+				  private_network_id = scaleway_vpc_private_network.public_ip.id
+				  tags = [ "terraform-test", "scaleway_k8s_cluster", "public_ip" ]
+				  delete_additional_resources = true
+				  depends_on = [
+					scaleway_vpc_private_network.public_ip,
+					scaleway_vpc_gateway_network.public_ip,
+				  ]
+				}
+
+				resource "scaleway_k8s_pool" "public_ip" {
+				  cluster_id          = scaleway_k8s_cluster.public_ip.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 1
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				  public_ip_disabled  = true
+				}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.public_ip"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.public_ip"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.public_ip"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.public_ip", "public_ip_disabled", "true"),
+					testAccCheckScalewayK8SPoolPublicIP(tt, "scaleway_k8s_cluster.public_ip", "scaleway_k8s_pool.public_ip", true),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, clusterTFName, poolTFName, pnTFName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[clusterTFName]
@@ -482,6 +580,64 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 			}
 			if pnfound == false {
 				return fmt.Errorf("node %s is not in linked to private network %s", node.ID, pnID)
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayK8SPoolPublicIP(tt *TestTools, clusterTFName, poolTFName string, disabled bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[clusterTFName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", clusterTFName)
+		}
+		k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		rs, ok = s.RootModule().Resources[poolTFName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", poolTFName)
+		}
+		_, _, poolID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		nodes, err := k8sAPI.ListNodes(&k8s.ListNodesRequest{
+			Region:    region,
+			PoolID:    &poolID,
+			ClusterID: clusterID,
+		})
+		if err != nil {
+			return err
+		}
+
+		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+
+		for _, node := range nodes.Nodes {
+			providerIDSplit := strings.SplitN(node.ProviderID, "/", 5)
+			// node.ProviderID is of the form scaleway://instance/<zone>/<id>
+			if len(providerIDSplit) < 5 {
+				return fmt.Errorf("unexpected format for ProviderID in node %s", node.ID)
+			}
+
+			server, err := instanceAPI.GetServer(&instance.GetServerRequest{
+				Zone:     scw.Zone(providerIDSplit[3]),
+				ServerID: providerIDSplit[4],
+			})
+			if err != nil {
+				return err
+			}
+
+			if disabled == true && server.Server.PublicIPs != nil && len(server.Server.PublicIPs) > 0 {
+				return fmt.Errorf("found node with public IP when none was expected")
+			}
+			if disabled == false && (server.Server.PublicIPs == nil || len(server.Server.PublicIPs) == 0) {
+				return fmt.Errorf("found node with no public IP when one was expected")
 			}
 		}
 
