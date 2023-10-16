@@ -68,7 +68,7 @@ func resourceScalewayMNQNatsQueueRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	region, projectID, queueName, err := decomposeMNQQueueID(d.Id())
+	region, _, queueName, err := decomposeMNQQueueID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,7 +79,6 @@ func resourceScalewayMNQNatsQueueRead(ctx context.Context, d *schema.ResourceDat
 	}
 	_ = d.Set("name", stream.Config.Name)
 	_ = d.Set("region", region)
-	_ = d.Set("project_id", projectID)
 
 	return nil
 }

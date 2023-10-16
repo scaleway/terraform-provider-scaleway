@@ -115,9 +115,9 @@ func resourceScalewayMNQNatsCredentialsDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteNatsAccount(&mnq.NatsAPIDeleteNatsAccountRequest{
-		Region:        region,
-		NatsAccountID: id,
+	err = api.DeleteNatsCredentials(&mnq.NatsAPIDeleteNatsCredentialsRequest{
+		Region:            region,
+		NatsCredentialsID: id,
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
