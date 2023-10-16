@@ -57,11 +57,12 @@ func newMNQSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
-		return nil, "", nil
+		return nil, "", err
 	}
 
 	return api, region, nil
 }
+
 func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, scw.Region, string, error) {
 	meta := m.(*Meta)
 	api := mnq.NewSqsAPI(meta.scwClient)

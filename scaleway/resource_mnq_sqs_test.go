@@ -129,7 +129,6 @@ func testAccCheckScalewayMNQSQSExists(tt *TestTools, n string) resource.TestChec
 			ProjectID: id,
 			Region:    region,
 		})
-
 		if err != nil {
 			return err
 		}

@@ -78,7 +78,7 @@ func TestAccScalewayMNQNatsQueue_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayNatsQueueExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayNatsQueueExists(_ *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -104,7 +104,7 @@ func testAccCheckScalewayNatsQueueExists(tt *TestTools, n string) resource.TestC
 	}
 }
 
-func testAccCheckScalewayNatsQueueDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayNatsQueueDestroy(_ *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_nats_queue" {

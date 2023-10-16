@@ -63,7 +63,7 @@ func resourceScalewayMNQNatsQueueCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayMNQNatsQueueRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, region, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

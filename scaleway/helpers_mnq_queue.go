@@ -21,7 +21,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func SQSClientWithRegion_alpha(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
+// SQSClientWithRegion_alpha
+// Deprecated: remove with MNQ v1alpha1
+func SQSClientWithRegion_alpha(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) { //nolint: revive,stylecheck
 	meta := m.(*Meta)
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -80,7 +82,9 @@ func newSQSClient(httpClient *http.Client, region string, endpoint string, acces
 	return sqs.New(s), nil
 }
 
-func NATSClientWithRegion_alpha(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn
+// NATSClientWithRegion_alpha
+// Deprecated: remove with MNQ v1alpha1
+func NATSClientWithRegion_alpha(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn,revive,stylecheck
 	meta := m.(*Meta)
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -158,8 +162,8 @@ func splitNATSJWTAndSeed(credentials string) (string, string, error) {
 
 const SQSFIFOQueueNameSuffix = ".fifo"
 
-// Deprecated: remove with MNQ alpha1
-var SQSAttributesToResourceMap_alpha = map[string]string{
+// SQSAttributesToResourceMap_alpha : Deprecated, remove with mnq v1alpha1
+var SQSAttributesToResourceMap_alpha = map[string]string{ //nolint: revive,stylecheck
 	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
 	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
 	sqs.QueueAttributeNameFifoQueue:                     "sqs.0.fifo_queue",
@@ -220,7 +224,7 @@ func setResourceValue(values map[string]interface{}, resourcePath string, value 
 
 // Deprecated: remove with mnq alpha1
 // Get the SQS attributes from the resource data
-func sqsResourceDataToAttributes_alpha(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema) (map[string]*string, error) {
+func sqsResourceDataToAttributes_alpha(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema) (map[string]*string, error) { //nolint: revive,stylecheck
 	attributes := make(map[string]*string)
 
 	for attribute, resourcePath := range SQSAttributesToResourceMap_alpha {
@@ -275,7 +279,7 @@ func sqsResourceDataToAttribute(sqsAttributes map[string]*string, sqsAttribute s
 
 // Deprecated: remove with mnq alpha1
 // Get the resource data from the SQS attributes
-func sqsAttributesToResourceData_alpha(attributes map[string]*string, resourceSchemas map[string]*schema.Schema) (map[string]interface{}, error) {
+func sqsAttributesToResourceData_alpha(attributes map[string]*string, resourceSchemas map[string]*schema.Schema) (map[string]interface{}, error) { //nolint: revive,stylecheck
 	values := make(map[string]interface{})
 
 	for attribute, resourcePath := range SQSAttributesToResourceMap_alpha {
