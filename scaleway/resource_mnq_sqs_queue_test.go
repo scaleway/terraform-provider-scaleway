@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 )
 
 func TestAccScalewayMNQSQSQueue_Basic(t *testing.T) {
@@ -119,8 +120,22 @@ func testAccCheckScalewayMNQSQSQueueDestroy(tt *TestTools) resource.TestCheckFun
 				continue
 			}
 
-			region, _, queueName, err := decomposeMNQQueueID(rs.Primary.ID)
+			region, projectID, queueName, err := decomposeMNQQueueID(rs.Primary.ID)
 			if err != nil {
+				return err
+			}
+
+			// Project may have been deleted, check for it first
+			// Checking for Queue first may lead to an AccessDenied if project has been deleted
+			accountAPI := accountV3ProjectAPI(tt.Meta)
+			_, err = accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
+				ProjectID: projectID,
+			})
+			if err != nil {
+				if is404Error(err) {
+					return nil
+				}
+
 				return err
 			}
 
