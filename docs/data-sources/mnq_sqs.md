@@ -13,10 +13,10 @@ Gets information about SQS for a project
 
 ```hcl
 // For default project
-resource "scaleway_mnq_sqs" "main" {}
+data "scaleway_mnq_sqs" "main" {}
 
 // For specific project
-resource "scaleway_mnq_sqs" "for_project" {
+data "scaleway_mnq_sqs" "for_project" {
   project_id = scaleway_account_project.main.id
 }
 ```
