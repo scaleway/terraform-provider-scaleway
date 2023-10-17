@@ -1,0 +1,899 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":""}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects
+    method: POST
+  response:
+    body: '{"created_at":"2023-10-17T11:42:07.441242Z","description":"","id":"d3366720-2762-451f-9fa2-abb3638b0756","name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2023-10-17T11:42:07.441242Z"}'
+    headers:
+      Content-Length:
+      - "258"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:07 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - cdf330de-71a6-4d88-a72f-5222f4d56820
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"project_id":"d3366720-2762-451f-9fa2-abb3638b0756"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/activate-sqs
+    method: POST
+  response:
+    body: '{"created_at":"2023-10-17T11:42:08.591894496Z","project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-10-17T11:42:08.591894496Z"}'
+    headers:
+      Content-Length:
+      - "244"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:09 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 5866a324-76e6-408d-be9c-4153aad8986e
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=d3366720-2762-451f-9fa2-abb3638b0756
+    method: GET
+  response:
+    body: '{"created_at":"2023-10-17T11:42:08.591894Z","project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-10-17T11:42:08.591894Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:09 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 31ba04a2-7333-4506-b194-df50fc0ab158
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"project_id":"d3366720-2762-451f-9fa2-abb3638b0756","name":"tf-sqs-credentials-intelligent-haslett","permissions":{"can_publish":false,"can_receive":false,"can_manage":true}}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials
+    method: POST
+  response:
+    body: '{"access_key":"TeO1BnCLMASfdWCSHoLn","created_at":"2023-10-17T11:42:09.832973238Z","id":"8dabde4c-7309-4b31-a9be-24f3a7a957fc","name":"tf-sqs-credentials-intelligent-haslett","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","secret_checksum":"6245ddd90526d27bab94ef816423bf4673c7f19c","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+    headers:
+      Content-Length:
+      - "489"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:09 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 15a62b93-7427-4059-aa49-114df6909984
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/8dabde4c-7309-4b31-a9be-24f3a7a957fc
+    method: GET
+  response:
+    body: '{"access_key":"TeO1BnCLMASfdWCSHoLn","created_at":"2023-10-17T11:42:09.832973Z","id":"8dabde4c-7309-4b31-a9be-24f3a7a957fc","name":"tf-sqs-credentials-intelligent-haslett","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","secret_checksum":"6245ddd90526d27bab94ef816423bf4673c7f19c","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+    headers:
+      Content-Length:
+      - "422"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:09 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 97ca374c-6a33-41c6-beb3-56ddc194c85a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=d3366720-2762-451f-9fa2-abb3638b0756
+    method: GET
+  response:
+    body: '{"created_at":"2023-10-17T11:42:08.591894Z","project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-10-17T11:42:08.591894Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:09 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 81873b84-fe3f-4cce-9fad-5ffdaba0aa1a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=CreateQueue&Attribute.1.Name=MaximumMessageSize&Attribute.1.Value=262144&Attribute.2.Name=MessageRetentionPeriod&Attribute.2.Value=345600&Attribute.3.Name=VisibilityTimeout&Attribute.3.Value=30&QueueName=test-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - CreateQueue
+      Attribute.1.Name:
+      - MaximumMessageSize
+      Attribute.1.Value:
+      - "262144"
+      Attribute.2.Name:
+      - MessageRetentionPeriod
+      Attribute.2.Value:
+      - "345600"
+      Attribute.3.Name:
+      - VisibilityTimeout
+      Attribute.3.Value:
+      - "30"
+      QueueName:
+      - test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "254"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114209Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <CreateQueueResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+          <CreateQueueResult>
+              <QueueUrl>https://sqs.mnq.fr-par.scaleway.com/project-d3366720-2762-451f-9fa2-abb3638b0756/test-mnq-sqs-queue-basic</QueueUrl>
+          </CreateQueueResult>
+          <ResponseMetadata>
+              <RequestId>tx5bc0caa0-8932-43c3-9c28-dcdbba0f2062</RequestId>
+          </ResponseMetadata>
+      </CreateQueueResponse>
+    headers:
+      Content-Length:
+      - "397"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:11 GMT
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=GetQueueUrl&QueueName=test-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - GetQueueUrl
+      QueueName:
+      - test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "72"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114211Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <GetQueueUrlResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+          <GetQueueUrlResult>
+              <QueueUrl>https://sqs.mnq.fr-par.scaleway.com/project-d3366720-2762-451f-9fa2-abb3638b0756/test-mnq-sqs-queue-basic</QueueUrl>
+          </GetQueueUrlResult>
+          <ResponseMetadata>
+              <RequestId>txc4222a24-19a5-4cb1-ad37-fcbd50d13b5b</RequestId>
+          </ResponseMetadata>
+      </GetQueueUrlResponse>
+    headers:
+      Content-Length:
+      - "397"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:11 GMT
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=GetQueueAttributes&AttributeName.1=VisibilityTimeout&AttributeName.2=MaximumMessageSize&AttributeName.3=MessageRetentionPeriod&AttributeName.4=FifoQueue&AttributeName.5=ContentBasedDeduplication&AttributeName.6=ReceiveMessageWaitTimeSeconds&QueueUrl=https%3A%2F%2Fsqs.mnq.fr-par.scaleway.com%2Fproject-d3366720-2762-451f-9fa2-abb3638b0756%2Ftest-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - GetQueueAttributes
+      AttributeName.1:
+      - VisibilityTimeout
+      AttributeName.2:
+      - MaximumMessageSize
+      AttributeName.3:
+      - MessageRetentionPeriod
+      AttributeName.4:
+      - FifoQueue
+      AttributeName.5:
+      - ContentBasedDeduplication
+      AttributeName.6:
+      - ReceiveMessageWaitTimeSeconds
+      QueueUrl:
+      - https://sqs.mnq.fr-par.scaleway.com/project-d3366720-2762-451f-9fa2-abb3638b0756/test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "391"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114211Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <GetQueueAttributesResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+          <GetQueueAttributesResult>
+              <Attribute>
+                  <Name>VisibilityTimeout</Name>
+                  <Value>30</Value>
+              </Attribute>
+              <Attribute>
+                  <Name>MaximumMessageSize</Name>
+                  <Value>262144</Value>
+              </Attribute>
+              <Attribute>
+                  <Name>MessageRetentionPeriod</Name>
+                  <Value>345600</Value>
+              </Attribute>
+              <Attribute>
+                  <Name>ReceiveMessageWaitTimeSeconds</Name>
+                  <Value>0</Value>
+              </Attribute>
+          </GetQueueAttributesResult>
+          <ResponseMetadata>
+              <RequestId>txa79b62ac-0795-407f-8467-6f58b1575db5</RequestId>
+          </ResponseMetadata>
+      </GetQueueAttributesResponse>
+    headers:
+      Content-Length:
+      - "771"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:11 GMT
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=GetQueueUrl&QueueName=test-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - GetQueueUrl
+      QueueName:
+      - test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "72"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114211Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <GetQueueUrlResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+          <GetQueueUrlResult>
+              <QueueUrl>https://sqs.mnq.fr-par.scaleway.com/project-d3366720-2762-451f-9fa2-abb3638b0756/test-mnq-sqs-queue-basic</QueueUrl>
+          </GetQueueUrlResult>
+          <ResponseMetadata>
+              <RequestId>tx56ed639a-1b12-4f3b-99f0-ed7121814cbf</RequestId>
+          </ResponseMetadata>
+      </GetQueueUrlResponse>
+    headers:
+      Content-Length:
+      - "397"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:11 GMT
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=d3366720-2762-451f-9fa2-abb3638b0756
+    method: GET
+  response:
+    body: '{"created_at":"2023-10-17T11:42:08.591894Z","project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-10-17T11:42:08.591894Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d32d71ca-4f22-43e7-9530-444b88d6f92d
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/8dabde4c-7309-4b31-a9be-24f3a7a957fc
+    method: GET
+  response:
+    body: '{"access_key":"TeO1BnCLMASfdWCSHoLn","created_at":"2023-10-17T11:42:09.832973Z","id":"8dabde4c-7309-4b31-a9be-24f3a7a957fc","name":"tf-sqs-credentials-intelligent-haslett","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","secret_checksum":"6245ddd90526d27bab94ef816423bf4673c7f19c","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+    headers:
+      Content-Length:
+      - "422"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - c3240ce6-9ef8-450a-a23e-7face221a86c
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=GetQueueUrl&QueueName=test-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - GetQueueUrl
+      QueueName:
+      - test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "72"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114212Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <GetQueueUrlResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+          <GetQueueUrlResult>
+              <QueueUrl>https://sqs.mnq.fr-par.scaleway.com/project-d3366720-2762-451f-9fa2-abb3638b0756/test-mnq-sqs-queue-basic</QueueUrl>
+          </GetQueueUrlResult>
+          <ResponseMetadata>
+              <RequestId>tx8a69851a-d1a0-4da6-828d-7efcf6e8f1db</RequestId>
+          </ResponseMetadata>
+      </GetQueueUrlResponse>
+    headers:
+      Content-Length:
+      - "397"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=GetQueueAttributes&AttributeName.1=MaximumMessageSize&AttributeName.2=MessageRetentionPeriod&AttributeName.3=FifoQueue&AttributeName.4=ContentBasedDeduplication&AttributeName.5=ReceiveMessageWaitTimeSeconds&AttributeName.6=VisibilityTimeout&QueueUrl=https%3A%2F%2Fsqs.mnq.fr-par.scaleway.com%2Fproject-d3366720-2762-451f-9fa2-abb3638b0756%2Ftest-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - GetQueueAttributes
+      AttributeName.1:
+      - MaximumMessageSize
+      AttributeName.2:
+      - MessageRetentionPeriod
+      AttributeName.3:
+      - FifoQueue
+      AttributeName.4:
+      - ContentBasedDeduplication
+      AttributeName.5:
+      - ReceiveMessageWaitTimeSeconds
+      AttributeName.6:
+      - VisibilityTimeout
+      QueueUrl:
+      - https://sqs.mnq.fr-par.scaleway.com/project-d3366720-2762-451f-9fa2-abb3638b0756/test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "391"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114212Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <GetQueueAttributesResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+          <GetQueueAttributesResult>
+              <Attribute>
+                  <Name>MaximumMessageSize</Name>
+                  <Value>262144</Value>
+              </Attribute>
+              <Attribute>
+                  <Name>MessageRetentionPeriod</Name>
+                  <Value>345600</Value>
+              </Attribute>
+              <Attribute>
+                  <Name>ReceiveMessageWaitTimeSeconds</Name>
+                  <Value>0</Value>
+              </Attribute>
+              <Attribute>
+                  <Name>VisibilityTimeout</Name>
+                  <Value>30</Value>
+              </Attribute>
+          </GetQueueAttributesResult>
+          <ResponseMetadata>
+              <RequestId>tx39c8efcf-41cd-46ea-874a-db209d7cb352</RequestId>
+          </ResponseMetadata>
+      </GetQueueAttributesResponse>
+    headers:
+      Content-Length:
+      - "771"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=GetQueueUrl&QueueName=test-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - GetQueueUrl
+      QueueName:
+      - test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "72"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114212Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <GetQueueUrlResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+          <GetQueueUrlResult>
+              <QueueUrl>https://sqs.mnq.fr-par.scaleway.com/project-d3366720-2762-451f-9fa2-abb3638b0756/test-mnq-sqs-queue-basic</QueueUrl>
+          </GetQueueUrlResult>
+          <ResponseMetadata>
+              <RequestId>tx3c89f291-e701-4307-8ff2-f5c2bfe791df</RequestId>
+          </ResponseMetadata>
+      </GetQueueUrlResponse>
+    headers:
+      Content-Length:
+      - "397"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=DeleteQueue&QueueUrl=https%3A%2F%2Fsqs.mnq.fr-par.scaleway.com%2Fproject-d3366720-2762-451f-9fa2-abb3638b0756%2Ftest-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - DeleteQueue
+      QueueUrl:
+      - https://sqs.mnq.fr-par.scaleway.com/project-d3366720-2762-451f-9fa2-abb3638b0756/test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "162"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114212Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <DeleteQueueResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+          <ResponseMetadata>
+              <RequestId>tx0afca79a-1303-4617-a666-af6f30efa5fe</RequestId>
+          </ResponseMetadata>
+      </DeleteQueueResponse>
+    headers:
+      Content-Length:
+      - "213"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=GetQueueUrl&QueueName=test-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - GetQueueUrl
+      QueueName:
+      - test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "72"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114212Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <ErrorResponse xmlns="">
+          <Error>
+              <Type>Sender</Type>
+              <Code>AWS.SimpleQueueService.NonExistentQueue</Code>
+              <Message>Queue &#34;test-mnq-sqs-queue-basic&#34; does not exist.</Message>
+          </Error>
+          <RequestId>tx2130b00e-1f41-4786-927e-5db38fdb55d4</RequestId>
+      </ErrorResponse>
+    headers:
+      Content-Length:
+      - "306"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+    status: 400 Bad Request
+    code: 400
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/8dabde4c-7309-4b31-a9be-24f3a7a957fc
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d01a8603-c351-415c-8616-d0c481de45b5
+    status: 204 No Content
+    code: 204
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=d3366720-2762-451f-9fa2-abb3638b0756
+    method: GET
+  response:
+    body: '{"created_at":"2023-10-17T11:42:08.591894Z","project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-10-17T11:42:08.591894Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:12 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 1806f54f-a5f6-4637-b3a1-941b867e4876
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"project_id":"d3366720-2762-451f-9fa2-abb3638b0756"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/deactivate-sqs
+    method: POST
+  response:
+    body: '{"created_at":null,"project_id":"d3366720-2762-451f-9fa2-abb3638b0756","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"disabled","updated_at":null}'
+    headers:
+      Content-Length:
+      - "189"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:14 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ce9073c5-d26d-48ae-bd3a-fa85035fbbb8
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/d3366720-2762-451f-9fa2-abb3638b0756
+    method: GET
+  response:
+    body: '{"created_at":"2023-10-17T11:42:07.441242Z","description":"","id":"d3366720-2762-451f-9fa2-abb3638b0756","name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2023-10-17T11:42:07.441242Z"}'
+    headers:
+      Content-Length:
+      - "258"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:14 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 1b19ca2f-4535-4c62-abcb-e1f016c4fada
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: Action=GetQueueUrl&QueueName=test-mnq-sqs-queue-basic&Version=2012-11-05
+    form:
+      Action:
+      - GetQueueUrl
+      QueueName:
+      - test-mnq-sqs-queue-basic
+      Version:
+      - "2012-11-05"
+    headers:
+      Content-Length:
+      - "72"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.45.20 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231017T114214Z
+    url: https://sqs.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <ErrorResponse xmlns="">
+          <Error>
+              <Type>Sender</Type>
+              <Code>AccessDeniedException</Code>
+              <Message>You do not have sufficient access to perform this action.</Message>
+          </Error>
+          <RequestId>tx381db197-84bc-4e42-a3e6-4121749220bb</RequestId>
+      </ErrorResponse>
+    headers:
+      Content-Length:
+      - "289"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Tue, 17 Oct 2023 11:42:14 GMT
+    status: 400 Bad Request
+    code: 400
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/d3366720-2762-451f-9fa2-abb3638b0756
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Oct 2023 11:42:15 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 1049d8da-bb25-494f-9d33-18dac84baa71
+    status: 204 No Content
+    code: 204
+    duration: ""

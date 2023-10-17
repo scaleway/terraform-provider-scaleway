@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -8,8 +9,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccScalewayMNQSQSQueue_Basic(t *testing.T) {
@@ -79,6 +83,77 @@ func TestAccScalewayMNQSQSQueue_Basic(t *testing.T) {
 					testAccCheckScalewayMNQSQSQueueExists(tt, "scaleway_mnq_sqs_queue.main"),
 					testCheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "message_max_age", "720"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayMNQSQSQueue_DefaultProject(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	ctx := context.Background()
+
+	accountAPI := accountV3.NewProjectAPI(tt.Meta.scwClient)
+	projectID := ""
+	project, err := accountAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
+		Name: "tf_tests_mnq_sqs_queue_default_project",
+	})
+	assert.Nil(t, err)
+
+	projectID = project.ID
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
+			metaProd, err := buildMeta(ctx, &metaConfig{
+				terraformVersion: "terraform-tests",
+				httpClient:       tt.Meta.httpClient,
+			})
+			require.NoError(t, err)
+
+			return map[string]func() (*schema.Provider, error){
+				"scaleway": func() (*schema.Provider, error) {
+					return Provider(&ProviderConfig{Meta: metaProd})(), nil
+				},
+			}
+		}(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayMNQSQSQueueDestroy(tt),
+			func(state *terraform.State) error {
+				return accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
+					ProjectID: projectID,
+				})
+			},
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_mnq_sqs main {
+						project_id = "%1s"
+					}
+
+					resource scaleway_mnq_sqs_credentials main {
+						project_id = scaleway_mnq_sqs.main.project_id
+						permissions {
+							can_manage = true
+						}
+					}
+
+					resource scaleway_mnq_sqs_queue main {
+						project_id = scaleway_mnq_sqs.main.project_id
+						name = "test-mnq-sqs-queue-basic"
+						endpoint = scaleway_mnq_sqs.main.endpoint
+						access_key = scaleway_mnq_sqs_credentials.main.access_key
+						secret_key = scaleway_mnq_sqs_credentials.main.secret_key
+					}
+				`, projectID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayMNQSQSQueueExists(tt, "scaleway_mnq_sqs_queue.main"),
+					testCheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "name", "test-mnq-sqs-queue-basic"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "project_id", projectID),
 				),
 			},
 		},
