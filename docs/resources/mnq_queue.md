@@ -9,6 +9,8 @@ Creates and manages Scaleway Messaging and Queuing queues.
 
 For more information about MNQ, see [the documentation](https://www.scaleway.com/en/developers/api/messaging-and-queuing/).
 
+~> NOTE: This resource refers to the old version of the MNQ API. You should use new resources dedicated to your protocol. [SQS](mnq_sqs_queue.md), [NATS](../guides/mnq_with_nats_terraform_provider.md).
+
 ## Examples
 
 ### NATS

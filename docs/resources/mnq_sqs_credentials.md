@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_mnq_sqs_credentials"
 
 Creates and manages Scaleway Messaging and queuing SQS Credentials.
 For further information please check
-our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/snssqs-overview/)
+our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sqs-overview/)
 
 ## Examples
 
