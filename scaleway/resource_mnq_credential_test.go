@@ -165,7 +165,7 @@ func testAccCheckScalewayMNQCreedExists(tt *TestTools, n string) resource.TestCh
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := mnqAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := mnqAPIWithRegionAndIDalpha(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -190,7 +190,7 @@ func testAccCheckScalewayMNQnNamespaceCreedDestroy(tt *TestTools) resource.TestC
 				continue
 			}
 
-			api, region, id, err := mnqAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := mnqAPIWithRegionAndIDalpha(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

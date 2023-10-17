@@ -174,7 +174,7 @@ func resourceScalewayMNQQueueNATS() *schema.Resource {
 }
 
 func resourceScalewayMNQQueueCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQAPI(d, meta)
+	api, region, err := newMNQAPIalpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -206,7 +206,7 @@ func resourceScalewayMNQQueueCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := SQSClientWithRegion(d, meta)
+	client, _, err := SQSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -214,7 +214,7 @@ func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceDa
 	isFifo := d.Get("sqs.0.fifo_queue").(bool)
 	name := resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
-	attributes, err := sqsResourceDataToAttributes(d, resourceScalewayMNQQueue().Schema)
+	attributes, err := sqsResourceDataToAttributes_alpha(d, resourceScalewayMNQQueue().Schema)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -245,7 +245,7 @@ func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQQueueCreateNATS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -302,7 +302,7 @@ func resourceScalewayMNQQueueRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := SQSClientWithRegion(d, meta)
+	client, _, err := SQSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -336,7 +336,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("namespace_id", newRegionalIDString(namespaceRegion, namespaceID))
 	_ = d.Set("name", queueName)
 
-	values, err := sqsAttributesToResourceData(queueAttributes.Attributes, resourceScalewayMNQQueue().Schema)
+	values, err := sqsAttributesToResourceData_alpha(queueAttributes.Attributes, resourceScalewayMNQQueue().Schema)
 	if err != nil {
 		return diag.Errorf("failed to convert SQS Queue attributes to resource data: %s", err)
 	}
@@ -359,7 +359,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayMNQQueueReadNATS(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -399,7 +399,7 @@ func resourceScalewayMNQQueueUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := SQSClientWithRegion(d, meta)
+	client, _, err := SQSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -422,7 +422,7 @@ func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
-	attributes, err := sqsResourceDataToAttributes(d, resourceScalewayMNQQueue().Schema)
+	attributes, err := sqsResourceDataToAttributes_alpha(d, resourceScalewayMNQQueue().Schema)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -439,7 +439,7 @@ func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQQueueUpdateNATS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -499,7 +499,7 @@ func resourceScalewayMNQQueueDelete(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := SQSClientWithRegion(d, meta)
+	client, _, err := SQSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -545,7 +545,7 @@ func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQQueueDeleteNATS(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion_alpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

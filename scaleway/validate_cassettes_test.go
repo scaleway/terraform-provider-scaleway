@@ -59,6 +59,7 @@ func exceptionsCassettesCases() map[string]struct{} {
 		"testdata/object-bucket-cors-empty-origin.cassette.yaml": {},
 		"testdata/rdb-privilege-basic.cassette.yaml":             {},
 		"testdata/data-source-rdb-privilege-basic.cassette.yaml": {},
+		"testdata/mnqsqs-already-activated.cassette.yaml":        {},
 	}
 }
 
