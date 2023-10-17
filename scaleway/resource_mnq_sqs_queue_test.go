@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
+	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -211,6 +212,20 @@ func testAccCheckScalewayMNQSQSQueueDestroy(tt *TestTools) resource.TestCheckFun
 				}
 
 				return err
+			}
+
+			mnqAPI := mnq.NewSqsAPI(tt.Meta.scwClient)
+			sqsInfo, err := mnqAPI.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: projectID,
+			})
+			if err != nil {
+				return err
+			}
+
+			// SQS may be disabled for project, this means the queue does not exist
+			if sqsInfo.Status == mnq.SqsInfoStatusDisabled {
+				return nil
 			}
 
 			sqsClient, err := newSQSClient(tt.Meta.httpClient, region.String(), rs.Primary.Attributes["endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
