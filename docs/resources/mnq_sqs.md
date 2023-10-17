@@ -14,10 +14,10 @@ our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/refere
 ### Basic
 
 ```hcl
-// For default project
+// For default project in default region
 resource "scaleway_mnq_sqs" "main" {}
 
-// For specific project
+// For specific project in default region
 resource "scaleway_mnq_sqs" "for_project" {
   project_id = scaleway_account_project.main.id
 }
