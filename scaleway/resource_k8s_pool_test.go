@@ -379,12 +379,16 @@ func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "vpc" {
+				  name       = "test-k8s-private-network"
+				}
 				resource "scaleway_vpc_private_network" "pn" {
-				  name       = "k8s-private-network"
+				  name       = "test-k8s-private-network"
+				  vpc_id = scaleway_vpc.vpc.id
 				}
 
 				resource "scaleway_k8s_cluster" "cluster_with_pn" {
-				  name = "private-network-cluster"
+				  name = "test-k8s-private-network"
 				  version = "%s"
 				  cni     = "cilium"
 				  private_network_id = scaleway_vpc_private_network.pn.id
@@ -401,6 +405,7 @@ func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
 				  autoscaling         = false
 				  autohealing         = true
 				  wait_for_pool_ready = true
+				  depends_on 		  = [scaleway_vpc_private_network.pn]
 				}`, latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.cluster_with_pn"),
@@ -428,11 +433,11 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_vpc_private_network" "public_ip" {
-				  name       = "k8s-private-network"
+				  name       = "test-k8s-public-ip"
 				}
 			
 				resource "scaleway_k8s_cluster" "public_ip" {
-				  name = "private-network-cluster"
+				  name = "test-k8s-public-ip"
 				  version = "%s"
 				  cni     = "cilium"
 				  private_network_id = scaleway_vpc_private_network.public_ip.id
@@ -461,10 +466,10 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_vpc_private_network" "public_ip" {
-				  name       = "private-network-for-public-ip"
+				  name       = "test-k8s-public-ip"
 				}
 				resource "scaleway_vpc_public_gateway" "public_ip" {
-   				  name = "public-gateway-for-public-ip"
+   				  name = "test-k8s-public-ip"
     			  type = "VPC-GW-S"
 				}
 				resource "scaleway_vpc_public_gateway_dhcp" "public_ip" {
@@ -478,7 +483,7 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 				}
 
 				resource "scaleway_k8s_cluster" "public_ip" {
-				  name = "cluster-for-public-ip"
+				  name = "test-k8s-public-ip"
 				  version = "%s"
 				  cni     = "cilium"
 				  private_network_id = scaleway_vpc_private_network.public_ip.id
