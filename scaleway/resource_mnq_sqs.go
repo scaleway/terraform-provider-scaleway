@@ -27,30 +27,6 @@ func resourceScalewayMNQSQS() *schema.Resource {
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
 		},
-		/* Goal here is to ForceNew if Status is found to be disabled, maybe just add a ForceNew `status` field in schema
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
-			api, region, id, err := mnqSQSAPIWithRegionAndID(meta, diff.Id())
-			if err != nil {
-				return err
-			}
-
-			sqs, err := api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
-				Region:    region,
-				ProjectID: id,
-			})
-			if err != nil {
-				return err
-			}
-
-			if sqs.Status == mnq.SqsInfoStatusDisabled {
-				err := diff.ForceNew("")
-				if err != nil {
-					return err
-				}
-			}
-
-			return nil
-		},*/
 	}
 }
 
