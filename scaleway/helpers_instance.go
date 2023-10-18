@@ -361,6 +361,17 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 			if err != nil {
 				return err
 			}
+
+			_, err = ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+				ServerID:      ph.serverID,
+				PrivateNicID:  p.ID,
+				Zone:          ph.zone,
+				Timeout:       &timeout,
+				RetryInterval: scw.TimeDurationPtr(defaultInstanceRetryInterval),
+			})
+			if err != nil && !is404Error(err) {
+				return err
+			}
 		}
 	}
 
