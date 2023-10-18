@@ -17,11 +17,10 @@ resource scaleway_function_trigger main {
   function_id = scaleway_function.main.id
   name = "my-trigger"
   sqs {
-    namespace_id = scaleway_mnq_namespace.main.id
+    project_id = scaleway_mnq_sqs.main.project_id
     queue = "MyQueue"
-    # If project or region is different
-    project_id = scaleway_mnq_namespace.main.project_id
-    region = scaleway_mnq_namespace.main.region
+    # If region is different
+    region = scaleway_mnq_sqs.main.region
   }
 }
 ```
@@ -37,7 +36,7 @@ The following arguments are supported:
 - `description` (Optional) The description of the trigger.
 
 - `sqs` The configuration of the Scaleway's SQS used by the trigger
-    - `namespace_id` (Required) ID of the mnq namespace
+    - `namespace_id` (Optional) ID of the mnq namespace. Deprecated.
     - `queue` (Required) Name of the queue
     - `project_id` (Optional) ID of the project that contain the mnq namespace, defaults to provider's project
     - `region` (Optional) Region where the mnq namespace is, defaults to provider's region

@@ -124,6 +124,77 @@ func TestAccScalewayContainerTrigger_SQS(t *testing.T) {
 	})
 }
 
+func TestAccScalewayContainerTrigger_SQS_MNQv1beta1(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	basicConfig := `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_container_trigger_sqs"
+					}
+
+					resource scaleway_container_namespace main {
+						project_id = scaleway_account_project.project.id
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+					}
+
+					resource "scaleway_mnq_sqs" "main" {
+						project_id = scaleway_account_project.project.id
+					}
+
+					resource "scaleway_mnq_sqs_credentials" "main" {
+						project_id = scaleway_mnq_sqs.main.project_id
+					
+						permissions {
+							can_publish = true
+							can_receive = true
+							can_manage  = true
+						}
+					}
+					
+					resource "scaleway_mnq_sqs_queue" "queue" {
+						project_id = scaleway_mnq_sqs.main.project_id
+						name = "TestQueue"
+						access_key = scaleway_mnq_sqs_credentials.main.access_key
+						secret_key = scaleway_mnq_sqs_credentials.main.secret_key
+					}
+
+					resource scaleway_container_trigger main {
+						container_id = scaleway_container.main.id
+						name = "test-container-trigger-sqs"
+						sqs {
+							queue = "TestQueue"
+							project_id = scaleway_mnq_sqs.main.project_id
+							region = scaleway_mnq_sqs.main.region
+						}
+					}
+				`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayContainerTriggerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: basicConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerTriggerExists(tt, "scaleway_container_trigger.main"),
+					testCheckResourceAttrUUID("scaleway_container_trigger.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container_trigger.main", "name", "test-container-trigger-sqs"),
+					testAccCheckScalewayContainerTriggerStatusReady(tt, "scaleway_container_trigger.main"),
+				),
+			},
+			{
+				Config:   basicConfig,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayContainerTriggerExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
