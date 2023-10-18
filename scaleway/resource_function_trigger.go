@@ -54,7 +54,7 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace_id": {
-							Required:         true,
+							Optional:         true,
 							Type:             schema.TypeString,
 							Description:      "ID of the mnq namespace",
 							DiffSuppressFunc: diffSuppressFuncLocality,

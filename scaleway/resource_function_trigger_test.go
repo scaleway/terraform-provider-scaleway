@@ -181,6 +181,82 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 	})
 }
 
+func TestAccScalewayFunctionTrigger_SQS_MNQv1beta1(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	config := `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_function_trigger_sqs"
+					}
+
+					resource scaleway_function_namespace main {
+						name = "test-function-trigger-sqs"	
+						project_id = scaleway_account_project.project.id
+					}
+
+					resource scaleway_function main {
+						name = "test-function-trigger-sqs"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node20"
+						privacy = "private"
+						handler = "handler.handle"
+					}
+
+					resource scaleway_mnq_sqs main {
+						project_id = scaleway_account_project.project.id
+					}
+
+					resource "scaleway_mnq_sqs_credentials" "main" {
+						project_id = scaleway_mnq_sqs.main.project_id
+					
+						permissions {
+							can_publish = true
+							can_receive = true
+							can_manage  = true
+						}
+					}
+					
+					resource "scaleway_mnq_sqs_queue" "queue" {
+						project_id = scaleway_mnq_sqs.main.project_id
+						name = "TestQueue"
+						access_key = scaleway_mnq_sqs_credentials.main.access_key
+						secret_key = scaleway_mnq_sqs_credentials.main.secret_key
+					}
+
+					resource scaleway_function_trigger main {
+						function_id = scaleway_function.main.id
+						name = "test-function-trigger-sqs"
+						sqs {
+							queue = "TestQueue"
+							project_id = scaleway_mnq_sqs.main.project_id
+							region = scaleway_mnq_sqs.main.region
+						}
+					}
+				`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionTriggerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionTriggerExists(tt, "scaleway_function_trigger.main"),
+					testCheckResourceAttrUUID("scaleway_function_trigger.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_function_trigger.main", "name", "test-function-trigger-sqs"),
+					testAccCheckScalewayFunctionTriggerStatusReady(tt, "scaleway_function_trigger.main"),
+				),
+			},
+			{
+				Config:   config,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccScalewayFunctionTrigger_Error(t *testing.T) {
 	// https://github.com/hashicorp/terraform-plugin-testing/issues/69
 	t.Skip("Currently cannot test warnings")

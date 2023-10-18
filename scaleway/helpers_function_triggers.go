@@ -13,12 +13,17 @@ func expandFunctionTriggerMnqSqsCreationConfig(i interface{}) *function.CreateTr
 
 	mnqNamespaceID := expandID(m["namespace_id"].(string))
 
-	return &function.CreateTriggerRequestMnqSqsClientConfig{
-		MnqNamespaceID: &mnqNamespaceID,
-		Queue:          m["queue"].(string),
-		MnqProjectID:   m["project_id"].(string),
-		MnqRegion:      m["region"].(string),
+	req := &function.CreateTriggerRequestMnqSqsClientConfig{
+		Queue:        m["queue"].(string),
+		MnqProjectID: m["project_id"].(string),
+		MnqRegion:    m["region"].(string),
 	}
+
+	if mnqNamespaceID != "" {
+		req.MnqNamespaceID = &mnqNamespaceID
+	}
+
+	return req
 }
 
 func completeFunctionTriggerMnqSqsCreationConfig(i interface{}, d *schema.ResourceData, meta interface{}, region scw.Region) error {

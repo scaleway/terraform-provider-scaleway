@@ -31,12 +31,17 @@ func expandContainerTriggerMnqSqsCreationConfig(i interface{}) *container.Create
 
 	mnqNamespaceID := expandID(m["namespace_id"].(string))
 
-	return &container.CreateTriggerRequestMnqSqsClientConfig{
-		MnqNamespaceID: &mnqNamespaceID,
-		Queue:          m["queue"].(string),
-		MnqProjectID:   m["project_id"].(string),
-		MnqRegion:      m["region"].(string),
+	req := &container.CreateTriggerRequestMnqSqsClientConfig{
+		Queue:        m["queue"].(string),
+		MnqProjectID: m["project_id"].(string),
+		MnqRegion:    m["region"].(string),
 	}
+
+	if mnqNamespaceID != "" {
+		req.MnqNamespaceID = &mnqNamespaceID
+	}
+
+	return req
 }
 
 func completeContainerTriggerMnqSqsCreationConfig(i interface{}, d *schema.ResourceData, meta interface{}, region scw.Region) error {
