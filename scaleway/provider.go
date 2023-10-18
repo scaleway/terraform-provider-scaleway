@@ -190,6 +190,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_baremetal_option":                    dataSourceScalewayBaremetalOption(),
 				"scaleway_baremetal_os":                        dataSourceScalewayBaremetalOs(),
 				"scaleway_baremetal_server":                    dataSourceScalewayBaremetalServer(),
+				"scaleway_billing_invoices":                    dataSourceScalewayBillingInvoices(),
 				"scaleway_cockpit":                             dataSourceScalewayCockpit(),
 				"scaleway_cockpit_plan":                        dataSourceScalewayCockpitPlan(),
 				"scaleway_domain_record":                       dataSourceScalewayDomainRecord(),
