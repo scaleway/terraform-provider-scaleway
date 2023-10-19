@@ -46,11 +46,12 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 				Description: "The trigger description",
 			},
 			"sqs": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Description: "Config for sqs based trigger using scaleway mnq",
-				Optional:    true,
-				ForceNew:    true,
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				Description:   "Config for sqs based trigger using scaleway mnq",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"nats"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace_id": {
@@ -85,7 +86,7 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 				Description:   "Config for nats based trigger using scaleway mnq",
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"sqs.0"},
+				ConflictsWith: []string{"sqs"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"account_id": {
