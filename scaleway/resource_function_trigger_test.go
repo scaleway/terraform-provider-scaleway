@@ -257,6 +257,58 @@ func TestAccScalewayFunctionTrigger_SQS_MNQv1beta1(t *testing.T) {
 	})
 }
 
+func TestAccScalewayFunctionTrigger_Nats(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	config := `
+					resource scaleway_function_namespace main {
+						name = "test-function-trigger-sqs"	
+					}
+
+					resource scaleway_function main {
+						name = "test-function-trigger-sqs"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node20"
+						privacy = "private"
+						handler = "handler.handle"
+					}
+
+					resource "scaleway_mnq_nats_account" "main" {}
+
+					resource scaleway_function_trigger main {
+						function_id = scaleway_function.main.id
+						name = "test-function-trigger-nats"
+						nats {
+							subject = "TestSubject"
+							account_id = scaleway_mnq_nats_account.main.id
+							region = scaleway_mnq_nats_account.main.region
+						}
+					}
+				`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionTriggerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionTriggerExists(tt, "scaleway_function_trigger.main"),
+					testCheckResourceAttrUUID("scaleway_function_trigger.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_function_trigger.main", "name", "test-function-trigger-nats"),
+					testAccCheckScalewayFunctionTriggerStatusReady(tt, "scaleway_function_trigger.main"),
+				),
+			},
+			{
+				Config:   config,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccScalewayFunctionTrigger_Error(t *testing.T) {
 	// https://github.com/hashicorp/terraform-plugin-testing/issues/69
 	t.Skip("Currently cannot test warnings")
