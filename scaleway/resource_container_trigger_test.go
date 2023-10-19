@@ -195,6 +195,53 @@ func TestAccScalewayContainerTrigger_SQS_MNQv1beta1(t *testing.T) {
 	})
 }
 
+func TestAccScalewayContainerTrigger_Nats(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	basicConfig := `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+					}
+
+					resource "scaleway_mnq_nats_account" "main" {}
+
+					resource scaleway_container_trigger main {
+						container_id = scaleway_container.main.id
+						name = "test-container-trigger-nats"
+						nats {
+							subject = "TestSubject"
+							account_id = scaleway_mnq_nats_account.main.id
+							region = scaleway_mnq_nats_account.main.region
+						}
+					}
+				`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayContainerTriggerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: basicConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerTriggerExists(tt, "scaleway_container_trigger.main"),
+					testCheckResourceAttrUUID("scaleway_container_trigger.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container_trigger.main", "name", "test-container-trigger-nats"),
+					testAccCheckScalewayContainerTriggerStatusReady(tt, "scaleway_container_trigger.main"),
+				),
+			},
+			{
+				Config:   basicConfig,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayContainerTriggerExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
