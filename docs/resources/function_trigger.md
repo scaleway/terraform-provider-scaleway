@@ -57,10 +57,10 @@ The following arguments are supported:
     - `region` (Optional) Region where the mnq namespace is, defaults to provider's region
 
 - `nats` The configuration for the Scaleway's Nats used by the trigger
-  - `account_id` (Required) ID of the mnq nats account.
-  - `subject` (Required) The subject to listen to
-  - `project_id` (Optional) ID of the project that contain the mnq nats account, defaults to provider's project
-  - `region` (Optional) Region where the mnq nats account is, defaults to provider's region
+    - `account_id` (Required) ID of the mnq nats account.
+    - `subject` (Required) The subject to listen to
+    - `project_id` (Optional) ID of the project that contain the mnq nats account, defaults to provider's project
+    - `region` (Optional) Region where the mnq nats account is, defaults to provider's region
 
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
