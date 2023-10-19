@@ -35,6 +35,13 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 				Required:    true,
 				Description: "Id of the rdb instance to replicate",
 			},
+			"same_zone": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Defines whether to create the replica in the same availability zone as the main instance nodes or not.",
+			},
 			"direct_access": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -155,6 +162,7 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 		Region:       region,
 		InstanceID:   expandID(d.Get("instance_id")),
 		EndpointSpec: endpointSpecs,
+		SameZone:     expandBoolPtr(d.Get("same_zone")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
@@ -189,6 +197,7 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("direct_access", directAccess)
 	_ = d.Set("private_network", privateNetwork)
 
+	_ = d.Set("same_zone", rr.SameZone)
 	_ = d.Set("region", string(region))
 
 	return nil
