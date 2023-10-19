@@ -63,7 +63,7 @@ func TestAccScalewayDataSourceIamGroup_UsersAndApplications(t *testing.T) {
 					  user_id         = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
 					}
 					data "scaleway_iam_user" "user01" {
-					  user_id         = "d55bae64-4e2b-490f-9b2e-688715f60f6c"
+					  user_id         = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
 					}
 					
 					resource "scaleway_iam_group" "main_ds_mix" {
