@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -64,10 +63,9 @@ func completeContainerTriggerMnqCreationConfig(i interface{}, d *schema.Resource
 
 	if projectID, exists := m["project_id"]; !exists || projectID == "" {
 		projectID, _, err := extractProjectID(d, meta.(*Meta))
-		if err != nil {
-			return fmt.Errorf("failed to find a valid project_id")
+		if err == nil {
+			m["project_id"] = projectID
 		}
-		m["project_id"] = projectID
 	}
 
 	return nil
