@@ -966,11 +966,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 						err = ph.detach(ctx, o, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							diag.FromErr(err)
+							return diag.FromErr(err)
 						}
 						err = ph.attach(ctx, n, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							diag.FromErr(err)
+							return diag.FromErr(err)
 						}
 					}
 				}
@@ -988,7 +988,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 					err = ph.detach(ctx, pn["pn_id"], d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
-						diag.FromErr(err)
+						return diag.FromErr(err)
 					}
 				}
 			}
@@ -1071,6 +1071,23 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	}
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	// Delete private-nic if managed by instance_server resource
+	if raw, ok := d.GetOk("private_network"); ok {
+		ph, err := newPrivateNICHandler(instanceAPI, id, zone)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for index := range raw.([]interface{}) {
+			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+			pn := d.Get(pnKey)
+			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
