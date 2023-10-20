@@ -13,6 +13,9 @@ import (
 func TestAccScalewayIotRoute_RDB(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -23,7 +26,7 @@ func TestAccScalewayIotRoute_RDB(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 						resource "scaleway_iot_hub" "minimal" {
 							name         = "minimal"
 							product_plan = "plan_shared"
@@ -32,7 +35,7 @@ func TestAccScalewayIotRoute_RDB(t *testing.T) {
 						resource "scaleway_rdb_instance" "minimal" {
 							name           = "minimal"
 							node_type      = "db-dev-s"
-							engine         = "PostgreSQL-12"
+							engine         = %q
 							is_ha_cluster  = false
 							disable_backup = true
 							user_name      = "root"
@@ -52,7 +55,7 @@ func TestAccScalewayIotRoute_RDB(t *testing.T) {
 								password = scaleway_rdb_instance.minimal.password
 							}
 						}
-						`,
+						`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
 					testAccCheckScalewayIotRouteExists(tt, "scaleway_iot_route.default"),

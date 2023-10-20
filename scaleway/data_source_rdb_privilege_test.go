@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -9,27 +10,30 @@ import (
 func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "instance" {
 						name = "test-privilege"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
-					}`,
+					}`, latestEngineVersion),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "instance" {
 						name = "test-privilege"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
@@ -37,14 +41,14 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 					resource "scaleway_rdb_database" "db" {
 						instance_id = scaleway_rdb_instance.instance.id
 						name = "foo"
-					}`,
+					}`, latestEngineVersion),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "instance" {
 						name = "test-privilege"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
@@ -58,14 +62,14 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 						instance_id = scaleway_rdb_instance.instance.id
 						name = "foo"
 						password = "R34lP4sSw#Rd"
-					}`,
+					}`, latestEngineVersion),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "instance" {
 						name = "test-privilege"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
@@ -86,14 +90,14 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 						user_name     = scaleway_rdb_user.foo.name
 						database_name = scaleway_rdb_database.db.name
 						permission    = "all"
-					}`,
+					}`, latestEngineVersion),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "instance" {
 						name = "test-privilege"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
@@ -121,7 +125,7 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 						user_name     = scaleway_rdb_user.foo.name
 						database_name = scaleway_rdb_database.db.name
 					}
-				`,
+				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db"),
 					resource.TestCheckResourceAttr("data.scaleway_rdb_privilege.find_priv", "permission", "all"),
@@ -129,14 +133,14 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "instance" {
 						name = "test-privilege"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
-					}`,
+					}`, latestEngineVersion),
 			},
 		},
 	})

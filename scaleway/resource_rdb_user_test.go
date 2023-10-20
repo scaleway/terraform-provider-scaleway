@@ -12,7 +12,10 @@ import (
 func TestAccScalewayRdbUser_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
 	instanceName := "TestAccScalewayRdbUser_Basic"
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -23,7 +26,7 @@ func TestAccScalewayRdbUser_Basic(t *testing.T) {
 					resource scaleway_rdb_instance main {
 						name = "%s"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
@@ -33,7 +36,7 @@ func TestAccScalewayRdbUser_Basic(t *testing.T) {
 						name = "foo"
 						password = "R34lP4sSw#Rd"
 						is_admin = true
-					}`, instanceName),
+					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbUserExists(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user", "name", "foo"),
@@ -45,7 +48,7 @@ func TestAccScalewayRdbUser_Basic(t *testing.T) {
 					resource scaleway_rdb_instance main {
 						name = "%s"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
@@ -55,7 +58,7 @@ func TestAccScalewayRdbUser_Basic(t *testing.T) {
 						name = "bar"
 						password = "R34lP4sSw#Rd"
 						is_admin = false
-					}`, instanceName),
+					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbUserExists(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user", "name", "bar"),
