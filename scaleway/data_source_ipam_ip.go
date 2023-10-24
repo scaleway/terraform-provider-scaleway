@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
+	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -17,8 +17,9 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Input
 			"private_network_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The private Network to filter for",
 			},
 			"resource": {
 				Type:     schema.TypeList,
@@ -27,22 +28,27 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							RequiredWith: []string{"resource.0.type"},
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "ID of the resource to filter for",
 						},
 						"type": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							RequiredWith: []string{"resource.0.id"},
-							Default:      ipam.ResourceTypeUnknownType,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type of resource to filter for",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Name of the resource to filter for",
 						},
 					},
 				},
 			},
 			"mac_address": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The MAC address to filter for",
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -64,8 +70,18 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 					}
 				},
 			},
-			"region": regionSchema(),
-
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the IP",
+			},
+			"zonal":           zoneSchema(),
+			"region":          regionSchema(),
+			"project_id":      projectIDSchema(),
+			"organization_id": organizationIDSchema(),
 			// Computed
 			"address": {
 				Type:     schema.TypeString,
@@ -81,17 +97,35 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	req := &ipam.ListIPsRequest{ // TODO: add missing filters
-		Region:           region,
-		OrganizationID:   nil,
-		PrivateNetworkID: expandStringPtr(d.Get("private_network_id")),
-		SubnetID:         nil,
-		Attached:         nil,
-		ResourceID:       expandStringPtr(expandLastID(d.Get("resource.0.id"))),
-		ResourceType:     ipam.ResourceType(d.Get("resource.0.type").(string)),
-		MacAddress:       expandStringPtr(d.Get("mac_address")),
-		ResourceName:     nil,
-		ResourceIDs:      nil,
+	resources, resourcesOk := d.GetOk("resource")
+	if resourcesOk {
+		resourceList := resources.([]interface{})
+		if len(resourceList) > 0 {
+			resourceMap := resourceList[0].(map[string]interface{})
+			id, idExists := resourceMap["id"].(string)
+			name, nameExists := resourceMap["name"].(string)
+
+			if (idExists && id == "") && (nameExists && name == "") {
+				return diag.Diagnostics{{
+					Severity: diag.Error,
+					Summary:  "Missing field",
+					Detail:   "Either 'id' or 'name' must be provided in 'resource'",
+				}}
+			}
+		}
+	}
+
+	req := &ipam.ListIPsRequest{
+		Region:         region,
+		ProjectID:      expandStringPtr(d.Get("project_id")),
+		Zonal:          expandStringPtr(d.Get("zonal")),
+		Attached:       expandBoolPtr(d.Get("attached")),
+		ResourceID:     expandStringPtr(expandLastID(d.Get("resource.0.id"))),
+		ResourceType:   ipam.ResourceType(d.Get("resource.0.type").(string)),
+		ResourceName:   expandStringPtr(d.Get("resource.0.name").(string)),
+		MacAddress:     expandStringPtr(d.Get("mac_address")),
+		Tags:           expandStrings(d.Get("tags")),
+		OrganizationID: expandStringPtr(d.Get("organization_id")),
 	}
 
 	switch d.Get("type").(string) {
