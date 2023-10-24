@@ -245,30 +245,40 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 				if diff.HasChange("private_network_id") {
-					clusterType := diff.Get("type")
-					isKapsule := clusterType == "" || strings.HasPrefix(clusterType.(string), "kapsule")
-					if !isKapsule {
-						return fmt.Errorf("only Kapsule clusters support private networks")
-					}
 					actual, planned := diff.GetChange("private_network_id")
-					if actual == "" {
-						// If no private network has been set yet, migrate the cluster in the Update function
-						return nil
-					}
-					if planned != "" {
-						_, plannedPNID, err := parseLocalizedID(planned.(string))
+					clusterType := diff.Get("type").(string)
+
+					switch {
+					// For Kosmos clusters
+					case strings.HasPrefix(clusterType, "multicloud"):
+						if planned != "" {
+							return fmt.Errorf("only Kapsule clusters support private networks")
+						}
+
+					// For Kapsule clusters
+					case clusterType == "" || strings.HasPrefix(clusterType, "kapsule"):
+						if actual == "" {
+							// If no private network has been set yet, migrate the cluster in the Update function
+							return nil
+						}
+						if planned != "" {
+							_, plannedPNID, err := parseLocalizedID(planned.(string))
+							if err != nil {
+								return err
+							}
+							if plannedPNID == actual {
+								// If the private network ID is the same, do nothing
+								return nil
+							}
+						}
+						// Any other change will result in ForceNew
+						err := diff.ForceNew("private_network_id")
 						if err != nil {
 							return err
 						}
-						if plannedPNID == actual {
-							// If the private network ID is the same, do nothing
-							return nil
-						}
-					}
-					// Any other change will result in ForceNew
-					err := diff.ForceNew("private_network_id")
-					if err != nil {
-						return err
+
+					default:
+						return fmt.Errorf("unknown cluster type %q", clusterType)
 					}
 				}
 				return nil
@@ -779,7 +789,11 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	// Private Network changes
 	////
 	if d.HasChange("private_network_id") {
-		actual, _ := d.GetChange("private_network_id")
+		actual, planned := d.GetChange("private_network_id")
+		if planned == "" && actual != "" {
+			// It's not possible to remove the private network anymore
+			return diag.FromErr(fmt.Errorf("it is only possible to change the private network attached to the cluster, but not to remove it"))
+		}
 		if actual == "" {
 			err = migrateToPrivateNetworkCluster(ctx, d, meta)
 			if err != nil {

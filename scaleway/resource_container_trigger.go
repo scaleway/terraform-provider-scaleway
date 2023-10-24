@@ -46,11 +46,12 @@ func resourceScalewayContainerTrigger() *schema.Resource {
 				Description: "The trigger description",
 			},
 			"sqs": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Description: "Config for sqs based trigger using scaleway mnq",
-				Optional:    true,
-				ForceNew:    true,
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				Description:   "Config for sqs based trigger using scaleway mnq",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"nats"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace_id": {
@@ -63,6 +64,41 @@ func resourceScalewayContainerTrigger() *schema.Resource {
 							Required:    true,
 							Type:        schema.TypeString,
 							Description: "Name of the queue",
+						},
+						"project_id": {
+							Computed:    true,
+							Optional:    true,
+							Type:        schema.TypeString,
+							Description: "Project ID of the project where the mnq sqs exists, defaults to provider project_id",
+						},
+						"region": {
+							Computed:    true,
+							Optional:    true,
+							Type:        schema.TypeString,
+							Description: "Region where the mnq sqs exists, defaults to function's region",
+						},
+					},
+				},
+			},
+			"nats": {
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				Description:   "Config for nats based trigger using scaleway mnq",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"sqs"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account_id": {
+							Optional:         true,
+							Type:             schema.TypeString,
+							Description:      "ID of the mnq nats account",
+							DiffSuppressFunc: diffSuppressFuncLocality,
+						},
+						"subject": {
+							Required:    true,
+							Type:        schema.TypeString,
+							Description: "Subject to listen to",
 						},
 						"project_id": {
 							Computed:    true,
@@ -99,13 +135,23 @@ func resourceScalewayContainerTriggerCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if scwSqs, isScwSqs := d.GetOk("sqs.0"); isScwSqs {
-		err := completeContainerTriggerMnqSqsCreationConfig(scwSqs, d, meta, region)
+		err := completeContainerTriggerMnqCreationConfig(scwSqs, d, meta, region)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to complete sqs config: %w", err))
 		}
 
 		_ = d.Set("sqs", []any{scwSqs})
 		req.ScwSqsConfig = expandContainerTriggerMnqSqsCreationConfig(scwSqs)
+	}
+
+	if scwNats, isScwNats := d.GetOk("nats.0"); isScwNats {
+		err := completeContainerTriggerMnqCreationConfig(scwNats, d, meta, region)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to complete nats config: %w", err))
+		}
+
+		_ = d.Set("nats", []any{scwNats})
+		req.ScwNatsConfig = expandContainerTriggerMnqNatsCreationConfig(scwNats)
 	}
 
 	trigger, err := api.CreateTrigger(req, scw.WithContext(ctx))
