@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -400,7 +401,12 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	serverType := getServerType(ctx, instanceAPI, req.Zone, req.CommercialType)
 	if serverType == nil {
-		return diag.FromErr(fmt.Errorf("could not find a server type associated with %s", req.CommercialType))
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       fmt.Sprintf("could not find a server type associated with %s in zone %s", req.CommercialType, req.Zone),
+			Detail:        "Ensure that the server type is correct, and that it does exist in this zone.",
+			AttributePath: cty.GetAttrPath("type"),
+		}}
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
