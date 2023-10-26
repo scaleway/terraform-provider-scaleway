@@ -758,20 +758,24 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	////
 	// Construct UpdateServerRequest
 	////
+	serverShouldUpdate := false
 	updateRequest := &instance.UpdateServerRequest{
 		Zone:     zone,
 		ServerID: server.ID,
 	}
 
 	if d.HasChange("name") {
+		serverShouldUpdate = true
 		updateRequest.Name = expandStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {
+		serverShouldUpdate = true
 		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("security_group_id") {
+		serverShouldUpdate = true
 		updateRequest.SecurityGroup = &instance.SecurityGroupTemplate{
 			ID:   expandZonedID(d.Get("security_group_id")).ID,
 			Name: newRandomName("sg"), // this value will be ignored by the API
@@ -779,10 +783,12 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("enable_ipv6") {
+		serverShouldUpdate = true
 		updateRequest.EnableIPv6 = scw.BoolPtr(d.Get("enable_ipv6").(bool))
 	}
 
 	if d.HasChange("enable_dynamic_ip") {
+		serverShouldUpdate = true
 		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
 	}
 
@@ -824,10 +830,12 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			}
 		}
 
+		serverShouldUpdate = true
 		updateRequest.Volumes = &volumes
 	}
 
 	if d.HasChange("placement_group_id") {
+		serverShouldUpdate = true
 		placementGroupID := expandZonedID(d.Get("placement_group_id")).ID
 		if placementGroupID == "" {
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Null: true}
@@ -842,7 +850,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	////
 	// Update reserved IP
 	////
-	if d.HasChange("ip_id") {
+	if d.HasChange("ip_id") && !instanceIPHasMigrated(d) {
 		server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -897,6 +905,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	if d.HasChanges("boot_type") {
 		bootType := instance.BootType(d.Get("boot_type").(string))
+		serverShouldUpdate = true
 		updateRequest.BootType = &bootType
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
@@ -907,6 +916,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChanges("bootscript_id") {
+		serverShouldUpdate = true
 		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
@@ -1016,9 +1026,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
-	_, err = instanceAPI.UpdateServer(updateRequest)
-	if err != nil {
-		return diag.FromErr(err)
+	if serverShouldUpdate {
+		_, err = instanceAPI.UpdateServer(updateRequest)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))

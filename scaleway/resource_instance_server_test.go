@@ -1,12 +1,14 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -1783,6 +1785,169 @@ func TestAccScalewayInstanceServer_IPsRemoved(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	// Goal of this test is to check that an IP will not get detached if moved from ip_id to ip_ids
+	// Between the two steps we will create an API key that cannot update the IP,
+	// it should fail if the provider tries to detach
+	temporaryAccessKey := ""
+	temporarySecretKey := ""
+	customProviderFactory := map[string]func() (*schema.Provider, error){
+		"scaleway": func() (*schema.Provider, error) {
+			meta, err := buildMeta(context.Background(), &metaConfig{
+				providerSchema:   nil,
+				terraformVersion: "terraform-tests",
+				httpClient:       tt.Meta.httpClient,
+				forceAccessKey:   temporaryAccessKey,
+				forceSecretKey:   temporarySecretKey,
+			})
+			if err != nil {
+				return nil, err
+			}
+			return Provider(&ProviderConfig{Meta: meta})(), nil
+		},
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				ProviderFactories: tt.ProviderFactories,
+				Config: `
+					resource "scaleway_instance_ip" "ip" {
+						type = "nat"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_id = scaleway_instance_ip.ip.id
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					data "scaleway_account_project" "current_project" {}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							project_ids = [data.scaleway_account_project.current_project.id]
+							permission_set_names = ["InstancesReadOnly"]
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = data.scaleway_account_project.current_project.organization_id
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_iam_api_key.key"]
+						if !ok {
+							return fmt.Errorf("resource was not found: %s", "scaleway_iam_api_key.key")
+						}
+						temporaryAccessKey = rs.Primary.Attributes["access_key"]
+						temporarySecretKey = rs.Primary.Attributes["secret_key"]
+
+						return nil
+					},
+				),
+			},
+			{
+				ProviderFactories: customProviderFactory,
+				// With migration supported, this should make no changes
+				// This is validated because we cannot add a nat IP to ip_ids
+				// This would fail if not moved from ip_id to ip_ids
+				Config: `
+					resource "scaleway_instance_ip" "ip" {
+						type = "nat"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					data "scaleway_account_project" "current_project" {}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							project_ids = [data.scaleway_account_project.current_project.id]
+							permission_set_names = ["InstancesReadOnly"]
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = data.scaleway_account_project.current_project.organization_id
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+				),
+			},
+			{
+				ProviderFactories: tt.ProviderFactories,
+				// Last step with default api key to remove resources
+				Config: `
+					resource "scaleway_instance_ip" "ip" {
+						type = "nat"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					data "scaleway_account_project" "current_project" {}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							project_ids = [data.scaleway_account_project.current_project.id]
+							permission_set_names = ["InstancesReadOnly"]
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = data.scaleway_account_project.current_project.organization_id
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`,
 			},
 		},
 	})
