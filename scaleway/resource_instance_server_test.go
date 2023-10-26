@@ -1799,6 +1799,25 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 	}
 
+	_, projectIDExists := tt.Meta.scwClient.GetDefaultProjectID()
+	if !projectIDExists {
+		var err error
+		tt.Meta, err = buildMeta(context.Background(), &metaConfig{
+			providerSchema:   nil,
+			terraformVersion: "terraform-tests",
+			httpClient:       tt.Meta.httpClient,
+			forceProjectID:   orgIDCassetteValue,
+		})
+		if err != nil {
+			t.Error("failed to set default project id:", err)
+		}
+		tt.ProviderFactories = map[string]func() (*schema.Provider, error){
+			"scaleway": func() (*schema.Provider, error) {
+				return Provider(&ProviderConfig{Meta: tt.Meta})(), nil
+			},
+		}
+	}
+
 	// Goal of this test is to check that an IP will not get detached if moved from ip_id to ip_ids
 	// Between the two steps we will create an API key that cannot update the IP,
 	// it should fail if the provider tries to detach
