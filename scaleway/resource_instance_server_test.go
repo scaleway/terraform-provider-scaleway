@@ -1793,6 +1793,12 @@ func TestAccScalewayInstanceServer_IPsRemoved(t *testing.T) {
 func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.scwClient.GetDefaultOrganizationID()
+	if !orgIDExists {
+		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+	}
+
 	// Goal of this test is to check that an IP will not get detached if moved from ip_id to ip_ids
 	// Between the two steps we will create an API key that cannot update the IP,
 	// it should fail if the provider tries to detach
@@ -1820,7 +1826,7 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ProviderFactories: tt.ProviderFactories,
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_ip" "ip" {
 						type = "nat"
 					}
@@ -1832,7 +1838,9 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 						state = "stopped"
 					}
 
-					data "scaleway_account_project" "current_project" {}
+					data "scaleway_account_project" "current_project" {
+						organization_id = "%s"
+					}
 
 					resource "scaleway_iam_application" "app" {
 						name = "tf_tests_instance_server_ipmigrate"
@@ -1852,7 +1860,7 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 
 					resource "scaleway_iam_api_key" "key" {
 						application_id = scaleway_iam_application.app.id
-					}`,
+					}`, orgID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "false"),
@@ -1874,7 +1882,7 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 				// With migration supported, this should make no changes
 				// This is validated because we cannot add a nat IP to ip_ids
 				// This would fail if not moved from ip_id to ip_ids
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_ip" "ip" {
 						type = "nat"
 					}
@@ -1886,7 +1894,9 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 						state = "stopped"
 					}
 
-					data "scaleway_account_project" "current_project" {}
+					data "scaleway_account_project" "current_project" {
+						organization_id = "%s"
+					}
 
 					resource "scaleway_iam_application" "app" {
 						name = "tf_tests_instance_server_ipmigrate"
@@ -1906,7 +1916,7 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 
 					resource "scaleway_iam_api_key" "key" {
 						application_id = scaleway_iam_application.app.id
-					}`,
+					}`, orgID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
@@ -1915,7 +1925,7 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 			{
 				ProviderFactories: tt.ProviderFactories,
 				// Last step with default api key to remove resources
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_ip" "ip" {
 						type = "nat"
 					}
@@ -1927,7 +1937,9 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 						state = "stopped"
 					}
 
-					data "scaleway_account_project" "current_project" {}
+					data "scaleway_account_project" "current_project" {
+						organization_id = "%s"
+					}
 
 					resource "scaleway_iam_application" "app" {
 						name = "tf_tests_instance_server_ipmigrate"
@@ -1947,7 +1959,7 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 
 					resource "scaleway_iam_api_key" "key" {
 						application_id = scaleway_iam_application.app.id
-					}`,
+					}`, orgID),
 			},
 		},
 	})
