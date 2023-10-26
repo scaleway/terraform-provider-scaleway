@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -1794,29 +1795,13 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	orgID, orgIDExists := tt.Meta.scwClient.GetDefaultOrganizationID()
-	if !orgIDExists {
-		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-	}
+	ctx := context.Background()
+	// This come from iam_policy tests to use policies in tests
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	require.NoError(t, err)
 
-	_, projectIDExists := tt.Meta.scwClient.GetDefaultProjectID()
-	if !projectIDExists {
-		var err error
-		tt.Meta, err = buildMeta(context.Background(), &metaConfig{
-			providerSchema:   nil,
-			terraformVersion: "terraform-tests",
-			httpClient:       tt.Meta.httpClient,
-			forceProjectID:   orgIDCassetteValue,
-		})
-		if err != nil {
-			t.Error("failed to set default project id:", err)
-		}
-		tt.ProviderFactories = map[string]func() (*schema.Provider, error){
-			"scaleway": func() (*schema.Provider, error) {
-				return Provider(&ProviderConfig{Meta: tt.Meta})(), nil
-			},
-		}
-	}
+	// This is the provider factory that will use the temporary project
+	providerFactories := fakeSideProjectProviders(ctx, tt, project, iamAPIKey)
 
 	// Goal of this test is to check that an IP will not get detached if moved from ip_id to ip_ids
 	// Between the two steps we will create an API key that cannot update the IP,
@@ -1840,25 +1825,24 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		CheckDestroy: testAccCheckScalewayInstanceServerDestroy(tt),
+		PreCheck: func() { testAccPreCheck(t) },
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayInstanceServerDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
-				ProviderFactories: tt.ProviderFactories,
+				ProviderFactories: providerFactories,
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_ip" "ip" {
-						type = "nat"
-					}
+					resource "scaleway_instance_ip" "ip" {}
 
 					resource "scaleway_instance_server" "main" {
 						ip_id = scaleway_instance_ip.ip.id
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
 						state = "stopped"
-					}
-
-					data "scaleway_account_project" "current_project" {
-						organization_id = "%s"
 					}
 
 					resource "scaleway_iam_application" "app" {
@@ -1868,18 +1852,18 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 					resource "scaleway_iam_policy" "policy" {
 						application_id = scaleway_iam_application.app.id
 						rule {
-							project_ids = [data.scaleway_account_project.current_project.id]
 							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
 						}
 						rule {
 							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
-							organization_id = data.scaleway_account_project.current_project.organization_id
+							organization_id = %[1]q
 						}
 					}
 
 					resource "scaleway_iam_api_key" "key" {
 						application_id = scaleway_iam_application.app.id
-					}`, orgID),
+					}`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "false"),
@@ -1913,10 +1897,6 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 						state = "stopped"
 					}
 
-					data "scaleway_account_project" "current_project" {
-						organization_id = "%s"
-					}
-
 					resource "scaleway_iam_application" "app" {
 						name = "tf_tests_instance_server_ipmigrate"
 					}
@@ -1924,18 +1904,18 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 					resource "scaleway_iam_policy" "policy" {
 						application_id = scaleway_iam_application.app.id
 						rule {
-							project_ids = [data.scaleway_account_project.current_project.id]
 							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
 						}
 						rule {
 							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
-							organization_id = data.scaleway_account_project.current_project.organization_id
+							organization_id = %[1]q
 						}
 					}
 
 					resource "scaleway_iam_api_key" "key" {
 						application_id = scaleway_iam_application.app.id
-					}`, orgID),
+					}`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
@@ -1956,10 +1936,6 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 						state = "stopped"
 					}
 
-					data "scaleway_account_project" "current_project" {
-						organization_id = "%s"
-					}
-
 					resource "scaleway_iam_application" "app" {
 						name = "tf_tests_instance_server_ipmigrate"
 					}
@@ -1967,18 +1943,18 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 					resource "scaleway_iam_policy" "policy" {
 						application_id = scaleway_iam_application.app.id
 						rule {
-							project_ids = [data.scaleway_account_project.current_project.id]
 							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
 						}
 						rule {
 							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
-							organization_id = data.scaleway_account_project.current_project.organization_id
+							organization_id = %[1]q
 						}
 					}
 
 					resource "scaleway_iam_api_key" "key" {
 						application_id = scaleway_iam_application.app.id
-					}`, orgID),
+					}`, project.OrganizationID),
 			},
 		},
 	})
