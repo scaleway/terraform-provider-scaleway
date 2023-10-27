@@ -533,8 +533,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
 
-	_ = d.Set("endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region))
-
 	// Read the versioning configuration
 	versioningResponse, err := s3Client.GetBucketVersioningWithContext(ctx, &s3.GetBucketVersioningInput{
 		Bucket: scw.StringPtr(bucketName),
