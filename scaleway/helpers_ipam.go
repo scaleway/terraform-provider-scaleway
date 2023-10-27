@@ -102,15 +102,15 @@ func checkSubnetIDInFlattenedSubnets(subnetID string, flattenedSubnets interface
 	return false
 }
 
-func diffSuppressFuncStandaloneIPandCIDR(k, old, new string, _ *schema.ResourceData) bool {
-	oldIP, oldNet, errOld := net.ParseCIDR(old)
+func diffSuppressFuncStandaloneIPandCIDR(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	oldIP, oldNet, errOld := net.ParseCIDR(oldValue)
 	if errOld != nil {
-		oldIP = net.ParseIP(old)
+		oldIP = net.ParseIP(oldValue)
 	}
 
-	newIP, newNet, errNew := net.ParseCIDR(new)
+	newIP, newNet, errNew := net.ParseCIDR(newValue)
 	if errNew != nil {
-		newIP = net.ParseIP(new)
+		newIP = net.ParseIP(newValue)
 	}
 
 	if oldIP != nil && newIP != nil && oldIP.Equal(newIP) {

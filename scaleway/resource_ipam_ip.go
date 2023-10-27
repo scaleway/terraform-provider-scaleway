@@ -27,6 +27,7 @@ func resourceScalewayIPAMIP() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
+				ForceNew:         true,
 				Description:      "Request a specific IP in the requested source pool",
 				ValidateFunc:     validateStandaloneIPorCIDR(),
 				DiffSuppressFunc: diffSuppressFuncStandaloneIPandCIDR,
@@ -122,7 +123,7 @@ func resourceScalewayIPAMIP() *schema.Resource {
 }
 
 func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamApi, region, err := ipamAPIWithRegion(d, meta)
+	ipamAPI, region, err := ipamAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,7 +152,7 @@ func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m
 		req.Source = expandIPSource(source)
 	}
 
-	res, err := ipamApi.BookIP(req, scw.WithContext(ctx))
+	res, err := ipamAPI.BookIP(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -162,7 +163,7 @@ func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamApi, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -171,7 +172,7 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	res, err := ipamApi.GetIP(&ipam.GetIPRequest{
+	res, err := ipamAPI.GetIP(&ipam.GetIPRequest{
 		Region: region,
 		IPID:   ID,
 	}, scw.WithContext(ctx))
@@ -196,21 +197,18 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 			}
 
 			ipv4Subnets, ipv6Subnets := flattenAndSortSubnets(pn.Subnets)
-			found := false
+			var found bool
 
-			// Check if the subnet ID is present in the flattened subnets based on the "is_ipv6" field.
 			if d.Get("is_ipv6").(bool) {
 				found = checkSubnetIDInFlattenedSubnets(*res.Source.SubnetID, ipv6Subnets)
 			} else {
 				found = checkSubnetIDInFlattenedSubnets(*res.Source.SubnetID, ipv4Subnets)
 			}
 
-			// If found, set the private network ID in the resource state
 			if found {
 				privateNetworkID = pn.ID
 			}
 		}
-
 	}
 
 	address, err := flattenIPNet(res.Address)
@@ -236,12 +234,12 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamApi, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = ipamApi.UpdateIP(&ipam.UpdateIPRequest{
+	_, err = ipamAPI.UpdateIP(&ipam.UpdateIPRequest{
 		IPID:   ID,
 		Region: region,
 		Tags:   expandUpdatedStringsPtr(d.Get("tags")),
@@ -254,12 +252,12 @@ func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIPAMIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamApi, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = ipamApi.ReleaseIP(&ipam.ReleaseIPRequest{
+	err = ipamAPI.ReleaseIP(&ipam.ReleaseIPRequest{
 		Region: region,
 		IPID:   ID,
 	}, scw.WithContext(ctx))

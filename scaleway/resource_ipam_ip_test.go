@@ -121,6 +121,7 @@ func TestAccScalewayIPAMIP_WithStandaloneAddress(t *testing.T) {
 		},
 	})
 }
+
 func TestAccScalewayIPAMIP_WithCIDRAddress(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -232,12 +233,12 @@ func testAccCheckScalewayIPAMIPExists(tt *TestTools, n string) resource.TestChec
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		ipamApi, region, ID, err := ipamAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		ipamAPI, region, ID, err := ipamAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = ipamApi.GetIP(&ipam.GetIPRequest{
+		_, err = ipamAPI.GetIP(&ipam.GetIPRequest{
 			IPID:   ID,
 			Region: region,
 		})
@@ -257,12 +258,12 @@ func testAccCheckScalewayIPAMIPDestroy(tt *TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			ipamApi, region, ID, err := ipamAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			ipamAPI, region, ID, err := ipamAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = ipamApi.GetIP(&ipam.GetIPRequest{
+			_, err = ipamAPI.GetIP(&ipam.GetIPRequest{
 				IPID:   ID,
 				Region: region,
 			})
