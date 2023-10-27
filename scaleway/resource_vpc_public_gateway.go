@@ -37,6 +37,7 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
+				ForceNew:         true,
 				Description:      "gateway type",
 				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
