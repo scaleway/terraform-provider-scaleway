@@ -91,6 +91,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	resourceData := models.NewResourceTemplate(resourceInput.API, resourceInput.Resource, resourceInput.Locality)
+	resourceData.SupportWaiters = resourceInput.Waiters
 
 	templates := []*TerraformTemplate{
 		{
