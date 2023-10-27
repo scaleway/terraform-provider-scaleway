@@ -216,6 +216,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `ip_ids` - (Optional) List of ID of reserved IPs that are attached to the server. Cannot be used with `ip_id`.
 
+~> `ip_id` to `ip_ids` migration: if moving the ip from the old `ip_id` field to the new `ip_ids`, it should not detach the ip.
+
 - `enable_dynamic_ip` - (Defaults to `false`) If true a dynamic IP will be attached to the server.
 
 - `routed_ip_enabled` - (Defaults to `false`) If true, the server will support routed ips only. Changing it to true will migrate the server and its IP to routed type.

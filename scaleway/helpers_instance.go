@@ -661,3 +661,28 @@ func flattenServerIPIDs(ips []*instance.ServerIP) []interface{} {
 
 	return ipIDs
 }
+
+// instanceIPHasMigrated check if instance migrate from ip_id to ip_ids
+// should be used if ip_id has changed
+// will return true if the id removed from ip_id is present in ip_ids
+func instanceIPHasMigrated(d *schema.ResourceData) bool {
+	oldIP, newIP := d.GetChange("ip_id")
+	// ip_id should have been removed
+	if newIP != "" {
+		return false
+	}
+
+	// ip_ids should have been added
+	if !d.HasChange("ip_ids") {
+		return false
+	}
+
+	ipIDs := expandStrings(d.Get("ip_ids"))
+	for _, ipID := range ipIDs {
+		if ipID == oldIP {
+			return true
+		}
+	}
+
+	return false
+}

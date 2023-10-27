@@ -1,15 +1,18 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -1783,6 +1786,175 @@ func TestAccScalewayInstanceServer_IPsRemoved(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	ctx := context.Background()
+	// This come from iam_policy tests to use policies in tests
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	require.NoError(t, err)
+
+	// This is the provider factory that will use the temporary project
+	providerFactories := fakeSideProjectProviders(ctx, tt, project, iamAPIKey)
+
+	// Goal of this test is to check that an IP will not get detached if moved from ip_id to ip_ids
+	// Between the two steps we will create an API key that cannot update the IP,
+	// it should fail if the provider tries to detach
+	temporaryAccessKey := ""
+	temporarySecretKey := ""
+	customProviderFactory := map[string]func() (*schema.Provider, error){
+		"scaleway": func() (*schema.Provider, error) {
+			meta, err := buildMeta(context.Background(), &metaConfig{
+				providerSchema:   nil,
+				terraformVersion: "terraform-tests",
+				httpClient:       tt.Meta.httpClient,
+				forceAccessKey:   temporaryAccessKey,
+				forceSecretKey:   temporarySecretKey,
+			})
+			if err != nil {
+				return nil, err
+			}
+			return Provider(&ProviderConfig{Meta: meta})(), nil
+		},
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayInstanceServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				ProviderFactories: providerFactories,
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "ip" {}
+
+					resource "scaleway_instance_server" "main" {
+						ip_id = scaleway_instance_ip.ip.id
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = %[1]q
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`, project.OrganizationID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_iam_api_key.key"]
+						if !ok {
+							return fmt.Errorf("resource was not found: %s", "scaleway_iam_api_key.key")
+						}
+						temporaryAccessKey = rs.Primary.Attributes["access_key"]
+						temporarySecretKey = rs.Primary.Attributes["secret_key"]
+
+						return nil
+					},
+				),
+			},
+			{
+				ProviderFactories: customProviderFactory,
+				// With migration supported, this should make no changes
+				// This is validated because we cannot add a nat IP to ip_ids
+				// This would fail if not moved from ip_id to ip_ids
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "ip" {
+						type = "nat"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = %[1]q
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`, project.OrganizationID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+				),
+			},
+			{
+				ProviderFactories: tt.ProviderFactories,
+				// Last step with default api key to remove resources
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "ip" {
+						type = "nat"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = %[1]q
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`, project.OrganizationID),
 			},
 		},
 	})
