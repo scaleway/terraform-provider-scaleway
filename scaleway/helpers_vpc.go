@@ -51,13 +51,13 @@ func vpcAPIWithRegionAndID(m interface{}, id string) (*v2.API, scw.Region, strin
 	return vpcAPI, region, ID, err
 }
 
-func vpcAPI(m interface{}) (*v1.API, error) {
+func vpcAPI(m interface{}) (*v2.API, error) {
 	meta, ok := m.(*Meta)
 	if !ok {
 		return nil, fmt.Errorf("wrong type: %T", m)
 	}
 
-	return v1.NewAPI(meta.scwClient), nil
+	return v2.NewAPI(meta.scwClient), nil
 }
 
 func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets []scw.IPNet, err error) {
