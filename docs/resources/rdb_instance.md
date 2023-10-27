@@ -108,6 +108,16 @@ resource "scaleway_rdb_instance" "main" {
     pn_id  = scaleway_vpc_private_network.pn.id
   }
 }
+
+
+### Configuring Logs config
+resource "scaleway_rdb_instance" "instance_with_logs_policy" {
+  # other configs ..
+  logs_policy {
+    max_age_retention    = 30
+    total_disk_retention = 100000000
+  }
+}
 ```
 
 ## Arguments Reference
@@ -153,6 +163,8 @@ interruption. Keep in mind that you cannot downgrade a Database Instance.
 
 - `settings` - (Optional) Map of engine settings to be set. Using this option will override default config.
 
+- `logs_policy` (Optional) List of logs policy. More about it in the [logs policy](#logs-policy) section
+-
 - `tags` - (Optional) The tags associated with the Database Instance.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
@@ -166,6 +178,18 @@ interruption. Keep in mind that you cannot downgrade a Database Instance.
 Please consult
 the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@v1.0.0-beta.9/api/rdb/v1#EngineVersion) to list all
 available `settings` and `init_settings` on your `node_type` of your convenient.
+
+## Logs Policy
+
+The `logs_policy` is a list of attributes allowing to configure the logs of a Database Instance:
+
+- `max_age_retention` - `max age (in days) of remote logs to keep on the Database Instance.
+
+- `total_disk_retention` - max disk size of remote logs to keep on the Database Instance. It must be greater than or
+  equal to 100000000
+
+More about the logs policy, check
+our [documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/#path-database-instances-list-available-logs-of-a-database-instance).
 
 ## Private Network
 

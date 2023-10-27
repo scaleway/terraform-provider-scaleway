@@ -81,6 +81,8 @@ func TestAccScalewayRdbInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.endpoint_id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention"),
 				),
 			},
 			{
@@ -192,6 +194,60 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.maintenance_work_mem", "150"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.max_parallel_workers", "2"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.max_parallel_workers_per_gather", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayRdbInstance_LogsPolicy(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_rdb_instance" "main" {
+					  name           = "test-rdb"
+					  node_type      = "db-dev-s"
+					  disable_backup = true
+					  engine         = "PostgreSQL-11"
+					  user_name      = "my_initial_user"
+					  password       = "thiZ_is_v&ry_s3cret"
+					  logs_policy {
+						max_age_retention    = 30
+						total_disk_retention = 100000000
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention", "30"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention", "100000000"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_rdb_instance" "main" {
+					  name           = "test-rdb"
+					  node_type      = "db-dev-s"
+					  disable_backup = true
+					  engine         = "PostgreSQL-11"
+					  user_name      = "my_initial_user"
+					  password       = "thiZ_is_v&ry_s3cret"
+					  logs_policy {
+						max_age_retention    = 30
+						total_disk_retention = 200000000
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention", "30"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention", "200000000"),
 				),
 			},
 		},
