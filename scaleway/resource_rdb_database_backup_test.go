@@ -45,7 +45,10 @@ func testSweepRDBDatabaseBackup(_ string) error {
 func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
 	instanceName := "TestAccScalewayRdbDatabaseBackup_Basic"
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -59,14 +62,14 @@ func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
 					resource scaleway_rdb_instance main {
 						name = "%s"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 					}
 
 					resource scaleway_rdb_database main {
 						instance_id = scaleway_rdb_instance.main.id
 						name = "foo"
-					}`, instanceName),
+					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.main", "scaleway_rdb_database.main"),
 				),
@@ -76,7 +79,7 @@ func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
 					resource scaleway_rdb_instance main {
 						name = "%s"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 					}
 
@@ -89,7 +92,7 @@ func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
 						instance_id = scaleway_rdb_instance.main.id
   						database_name = scaleway_rdb_database.main.name
   						name = "test_backup"
-					}`, instanceName),
+					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbDatabaseBackupExists(tt, "scaleway_rdb_database_backup.main"),
 
