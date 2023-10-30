@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"time"
@@ -160,6 +161,42 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 	return flattendIPs
 }
 
+func flattenBaremetalIPv4s(ips []*baremetal.IP) interface{} {
+	if ips == nil {
+		return nil
+	}
+	flattendIPs := []map[string]interface{}(nil)
+	for _, ip := range ips {
+		if ip.Version == baremetal.IPVersionIPv4 {
+			flattendIPs = append(flattendIPs, map[string]interface{}{
+				"id":      ip.ID,
+				"address": ip.Address.String(),
+				"reverse": ip.Reverse,
+				"version": ip.Version.String(),
+			})
+		}
+	}
+	return flattendIPs
+}
+
+func flattenBaremetalIPv6s(ips []*baremetal.IP) interface{} {
+	if ips == nil {
+		return nil
+	}
+	flattendIPs := []map[string]interface{}(nil)
+	for _, ip := range ips {
+		if ip.Version == baremetal.IPVersionIPv6 {
+			flattendIPs = append(flattendIPs, map[string]interface{}{
+				"id":      ip.ID,
+				"address": ip.Address.String(),
+				"reverse": ip.Reverse,
+				"version": ip.Version.String(),
+			})
+		}
+	}
+	return flattendIPs
+}
+
 func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) interface{} {
 	if options == nil {
 		return nil
@@ -175,11 +212,11 @@ func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) i
 	return flattenedOptions
 }
 
-func flattenBaremetalPrivateNetworks(zone scw.Zone, privateNetworks []*baremetal.ServerPrivateNetwork) interface{} {
+func flattenBaremetalPrivateNetworks(region scw.Region, privateNetworks []*baremetal.ServerPrivateNetwork) interface{} {
 	flattenedPrivateNetworks := []map[string]interface{}(nil)
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
-			"id":         newZonedID(zone, privateNetwork.PrivateNetworkID).String(),
+			"id":         newRegionalIDString(region, privateNetwork.PrivateNetworkID),
 			"vlan":       flattenUint32Ptr(privateNetwork.Vlan),
 			"status":     privateNetwork.Status,
 			"created_at": flattenTime(privateNetwork.CreatedAt),
@@ -338,4 +375,15 @@ func customDiffBaremetalPrivateNetworkOption() func(ctx context.Context, diff *s
 
 		return nil
 	}
+}
+
+func baremetalPrivateNetworkSetHash(v interface{}) int {
+	var buf bytes.Buffer
+
+	m := v.(map[string]interface{})
+	if pnID, ok := m["id"]; ok {
+		buf.WriteString(expandID(pnID))
+	}
+
+	return StringHashcode(buf.String())
 }

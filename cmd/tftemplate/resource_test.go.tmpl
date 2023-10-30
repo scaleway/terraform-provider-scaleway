@@ -1,0 +1,126 @@
+{{- /*gotype: tftemplate/models.ResourceTemplate*/ -}}
+package scaleway
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+func init() {
+	resource.AddTestSweepers("scaleway_{{ .ResourceHCL }}", &resource.Sweeper{
+		Name: "scaleway_{{ .ResourceHCL }}",
+		F:    testSweep{{ .Resource }},
+	})
+}
+
+func testSweep{{ .Resource }}(_ string) error {
+	return sweep{{.LocalityUpper}}s((&{{ .API }}.API{}).{{ .LocalityUpper }}s(), func(scwClient *scw.Client, {{ .Locality }} scw.{{.LocalityUpper}}) error {
+		{{ .API }}API := {{ .API }}.NewAPI(scwClient)
+		l.Debugf("sweeper: destroying the {{ .API }} {{ .ResourceCleanLow }}s in (%s)", {{.Locality}})
+		list{{.ResourceClean}}s, err := {{.API}}API.List{{.ResourceClean}}s(
+			&{{.API}}.List{{.ResourceClean}}sRequest{
+				{{.LocalityUpper}}: {{.Locality}},
+			}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing {{.ResourceCleanLow}} in (%s) in sweeper: %s", {{.Locality}}, err)
+		}
+
+		for _, {{.ResourceCleanLow}} := range list{{.ResourceClean}}s.{{.ResourceClean}}s {
+			_, err := {{.API}}API.Delete{{.ResourceClean}}(&{{.API}}.Delete{{.ResourceClean}}Request{
+				{{.ResourceClean}}ID: {{.ResourceCleanLow}}.ID,
+				{{.LocalityUpper}}:      {{.Locality}},
+			})
+			if err != nil {
+				l.Debugf("sweeper: error (%s)", err)
+
+				return fmt.Errorf("error deleting {{.ResourceCleanLow}} in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func TestAccScaleway{{.Resource}}_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScaleway{{.Resource}}Destroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_{{.ResourceHCL}} main {
+						name = "test-{{.API}}-{{ .ResourceCleanLow}}-basic"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScaleway{{.Resource}}Exists(tt, "scaleway_{{.ResourceHCL}}.main"),
+					testCheckResourceAttrUUID("scaleway_{{.ResourceHCL}}.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_{{.ResourceHCL}}.main", "name", "test-{{.API}}-{{ .ResourceCleanLow}}-basic"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScaleway{{.Resource}}Exists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		api, {{.Locality}}, id, err := {{.API}}APIWith{{.LocalityUpper}}AndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, err = api.Get{{.ResourceClean}}(&{{.API}}.Get{{.ResourceClean}}Request{
+			{{.ResourceClean}}ID: id,
+			{{.LocalityUpper}}:      {{.Locality}},
+		})
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScaleway{{.Resource}}Destroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_{{.ResourceHCL}}" {
+				continue
+			}
+
+			api, {{.Locality}}, id, err := {{.API}}APIWith{{.LocalityUpper}}AndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.Delete{{.ResourceClean}}(&{{.API}}.Delete{{.ResourceClean}}Request{
+				{{.ResourceClean}}ID: id,
+				{{.LocalityUpper}}:      {{.Locality}},
+			})
+
+			if err == nil {
+				return fmt.Errorf("{{.API}} {{.ResourceCleanLow}} (%s) still exists", rs.Primary.ID)
+			}
+
+			if !is404Error(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}

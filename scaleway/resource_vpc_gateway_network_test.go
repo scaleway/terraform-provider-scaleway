@@ -178,6 +178,61 @@ func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 	})
 }
 
+func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc vpc01 {
+						name = "my vpc"
+					}
+
+					resource scaleway_vpc_private_network pn01 {
+						name = "pn_test_network"
+						ipv4_subnet {
+							subnet = "172.16.64.0/22"
+						}
+						vpc_id = scaleway_vpc.vpc01.id
+					}
+
+					resource scaleway_vpc_public_gateway pg01 {
+						name = "foobar"
+						type = "VPC-GW-S"
+					}
+
+					resource scaleway_vpc_gateway_network main {
+						gateway_id = scaleway_vpc_public_gateway.pg01.id
+						private_network_id = scaleway_vpc_private_network.pn01.id
+						enable_masquerade = true
+						ipam_config {
+							push_default_route = true
+						}					
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "gateway_id"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "private_network_id"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "updated_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "status"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "zone"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "static_address"),
+					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "ipam_config.0.push_default_route", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_dhcp", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayVPCGatewayNetworkExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

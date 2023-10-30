@@ -13,9 +13,6 @@ import (
 )
 
 func init() {
-	if !terraformBetaEnabled {
-		return
-	}
 	resource.AddTestSweepers("scaleway_iam_policy", &resource.Sweeper{
 		Name: "scaleway_iam_policy",
 		F:    testSweepIamPolicy,
@@ -26,11 +23,21 @@ func testSweepIamPolicy(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		api := iam.NewAPI(scwClient)
 
-		listPols, err := api.ListPolicies(&iam.ListPoliciesRequest{})
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return fmt.Errorf("missing organizationID")
+		}
+
+		listPols, err := api.ListPolicies(&iam.ListPoliciesRequest{
+			OrganizationID: &orgID,
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list policies: %w", err)
 		}
 		for _, pol := range listPols.Policies {
+			if !isTestResource(pol.Name) {
+				continue
+			}
 			err = api.DeletePolicy(&iam.DeletePolicyRequest{
 				PolicyID: pol.ID,
 			})
@@ -179,8 +186,8 @@ func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
 	require.NoError(t, err)
-	randAppName := "test-acc-scaleway-iam-app-policy-permissions"
-	randGroupName := "test-acc-scaleway-iam-group-policy-permissions"
+	randAppName := "tf-tests-scaleway-iam-app-policy-permissions"
+	randGroupName := "tf-tests-scaleway-iam-group-policy-permissions"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),

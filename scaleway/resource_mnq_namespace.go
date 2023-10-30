@@ -12,6 +12,7 @@ import (
 
 const (
 	defaultMNQNamespaceTimeout = 5 * time.Minute
+	defaultMNQQueueTimeout     = 5 * time.Minute
 )
 
 func resourceScalewayMNQNamespace() *schema.Resource {
@@ -67,7 +68,7 @@ func resourceScalewayMNQNamespace() *schema.Resource {
 }
 
 func resourceScalewayMNQNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQAPI(d, meta)
+	api, region, err := newMNQAPIalpha(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -89,7 +90,7 @@ func resourceScalewayMNQNamespaceCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayMNQNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqAPIWithRegionAndID(meta, d.Id())
+	api, region, id, err := mnqAPIWithRegionAndIDalpha(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -120,7 +121,7 @@ func resourceScalewayMNQNamespaceRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayMNQNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqAPIWithRegionAndID(meta, d.Id())
+	api, region, id, err := mnqAPIWithRegionAndIDalpha(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,7 +144,7 @@ func resourceScalewayMNQNamespaceUpdate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayMNQNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqAPIWithRegionAndID(meta, d.Id())
+	api, region, id, err := mnqAPIWithRegionAndIDalpha(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

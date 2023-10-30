@@ -35,6 +35,13 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 				Required:    true,
 				Description: "Id of the rdb instance to replicate",
 			},
+			"same_zone": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Defines whether to create the replica in the same availability zone as the main instance nodes or not.",
+			},
 			"direct_access": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -80,20 +87,22 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						// Private network specific
 						"private_network_id": {
-							Type:         schema.TypeString,
-							Description:  "UUID of the private network to be connected to the read replica (UUID format).",
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
-							Required:     true,
+							Type:             schema.TypeString,
+							Description:      "UUID of the private network to be connected to the read replica (UUID format)",
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: diffSuppressFuncLocality,
+							Required:         true,
 						},
 						"service_ip": {
 							Type:         schema.TypeString,
-							Description:  "Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).",
-							Required:     true,
+							Description:  "The IP network address within the private subnet",
+							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validation.IsCIDR,
 						},
 						"zone": {
 							Type:        schema.TypeString,
-							Description: "Private network zone.",
+							Description: "Private network zone",
 							Computed:    true,
 						},
 						// Endpoints common
@@ -104,22 +113,22 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 						},
 						"ip": {
 							Type:        schema.TypeString,
-							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
+							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set",
 							Computed:    true,
 						},
 						"port": {
 							Type:        schema.TypeInt,
-							Description: "TCP port of the endpoint.",
+							Description: "TCP port of the endpoint",
 							Computed:    true,
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Description: "Name of the endpoint.",
+							Description: "Name of the endpoints",
 							Computed:    true,
 						},
 						"hostname": {
 							Type:        schema.TypeString,
-							Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
+							Description: "Hostname of the endpoint. Only one of ip and hostname may be set",
 							Computed:    true,
 						},
 					},
@@ -153,6 +162,7 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 		Region:       region,
 		InstanceID:   expandID(d.Get("instance_id")),
 		EndpointSpec: endpointSpecs,
+		SameZone:     expandBoolPtr(d.Get("same_zone")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
@@ -187,6 +197,7 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("direct_access", directAccess)
 	_ = d.Set("private_network", privateNetwork)
 
+	_ = d.Set("same_zone", rr.SameZone)
 	_ = d.Set("region", string(region))
 
 	return nil

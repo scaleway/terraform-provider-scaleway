@@ -49,7 +49,7 @@ resource "scaleway_rdb_read_replica" "replica" {
   instance_id = scaleway_rdb_instance.instance.id
   private_network {
     private_network_id = scaleway_vpc_private_network.pn.id
-    service_ip         = "192.168.1.254/24"
+    service_ip         = "192.168.1.254/24" // omit this attribute if private IP is determined by the IP Address Management (IPAM)
   }
 }
 ```
@@ -66,8 +66,9 @@ The following arguments are supported:
 
 - `private_network` - (Optional) Create an endpoint in a private network.
     - `private_network_id` - (Required) UUID of the private network to be connected to the read replica.
-    - `service_ip` - (Required) Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet
-      limitations. (IP network).
+    - `service_ip` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a
+      CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
+      service if not set.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the Database read replica should be created.

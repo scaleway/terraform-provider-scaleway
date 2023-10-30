@@ -12,6 +12,9 @@ import (
 func TestAccScalewayRdbReadReplica_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -21,11 +24,11 @@ func TestAccScalewayRdbReadReplica_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance instance {
 						name = "test-rdb-rr-basic"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
@@ -36,7 +39,7 @@ func TestAccScalewayRdbReadReplica_Basic(t *testing.T) {
 					resource "scaleway_rdb_read_replica" "replica" {
   						instance_id = scaleway_rdb_instance.instance.id
 						direct_access {}
-					}`,
+					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
@@ -52,6 +55,9 @@ func TestAccScalewayRdbReadReplica_Basic(t *testing.T) {
 func TestAccScalewayRdbReadReplica_PrivateNetwork(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -61,11 +67,11 @@ func TestAccScalewayRdbReadReplica_PrivateNetwork(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance instance {
 						name = "test-rdb-rr-pn"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
@@ -81,7 +87,7 @@ func TestAccScalewayRdbReadReplica_PrivateNetwork(t *testing.T) {
 							private_network_id = scaleway_vpc_private_network.pn.id
 							service_ip         = "10.12.1.0/20"
 						}
-					}`,
+					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
@@ -97,6 +103,9 @@ func TestAccScalewayRdbReadReplica_PrivateNetwork(t *testing.T) {
 func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -106,11 +115,11 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance instance {
 						name = "test-rdb-rr-update"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
@@ -121,7 +130,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 					resource "scaleway_rdb_read_replica" "replica" {
   						instance_id = scaleway_rdb_instance.instance.id
 						direct_access {}
-					}`,
+					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
@@ -131,11 +140,11 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance instance {
 						name = "test-rdb-rr-update"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
@@ -151,7 +160,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 							private_network_id = scaleway_vpc_private_network.pn.id
 							service_ip         = "10.12.1.0/20"
 						}
-					}`,
+					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
@@ -168,6 +177,9 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 func TestAccScalewayRdbReadReplica_MultipleEndpoints(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -177,11 +189,11 @@ func TestAccScalewayRdbReadReplica_MultipleEndpoints(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance instance {
 						name = "test-rdb-rr-multiple-endpoints"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
@@ -198,7 +210,7 @@ func TestAccScalewayRdbReadReplica_MultipleEndpoints(t *testing.T) {
 							service_ip         = "10.12.1.0/20"
 						}
 						direct_access {}
-					}`,
+					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
@@ -208,6 +220,90 @@ func TestAccScalewayRdbReadReplica_MultipleEndpoints(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "direct_access.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "direct_access.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "direct_access.0.endpoint_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayRdbReadReplica_DifferentZone(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	readReplicaID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayRdbInstanceDestroy(tt),
+			testAccCheckScalewayRdbReadReplicaDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc_private_network" "different_zone" {
+						name = "test-rdb-rr-different-zone"
+					}
+
+					resource "scaleway_rdb_instance" "different_zone" {
+						name = "test-rdb-rr-different-zone"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-14"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "different-zone" ]
+					}
+
+					resource "scaleway_rdb_read_replica" "different_zone" {
+  						instance_id = scaleway_rdb_instance.different_zone.id
+						region = scaleway_rdb_instance.different_zone.region
+						same_zone = false
+						private_network {
+							private_network_id = scaleway_vpc_private_network.different_zone.id
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.different_zone"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.different_zone"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.different_zone", "instance_id", "scaleway_rdb_instance.different_zone", "id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.different_zone", "same_zone", "false"),
+					testAccCheckScalewayResourceIDPersisted("scaleway_rdb_read_replica.different_zone", &readReplicaID),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc_private_network" "different_zone" {
+						name = "test-rdb-rr-different-zone"
+					}
+
+					resource "scaleway_rdb_instance" "different_zone" {
+						name = "test-rdb-rr-different-zone"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-14"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "different-zone" ]
+					}
+
+					resource "scaleway_rdb_read_replica" "different_zone" {
+  						instance_id = scaleway_rdb_instance.different_zone.id
+						region = scaleway_rdb_instance.different_zone.region
+						same_zone = true
+						private_network {
+							private_network_id = scaleway_vpc_private_network.different_zone.id
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.different_zone"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.different_zone"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.different_zone", "instance_id", "scaleway_rdb_instance.different_zone", "id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.different_zone", "same_zone", "true"),
+					testAccCheckScalewayResourceIDChanged("scaleway_rdb_read_replica.different_zone", &readReplicaID),
 				),
 			},
 		},

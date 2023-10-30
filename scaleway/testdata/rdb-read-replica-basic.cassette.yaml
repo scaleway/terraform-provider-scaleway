@@ -2,27 +2,358 @@
 version: 1
 interactions:
 - request:
-    body: '{"project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","name":"test-rdb-rr-basic","engine":"PostgreSQL-14","user_name":"my_initial_user","password":"thiZ_is_v\u0026ry_s3cret","node_type":"db-dev-s","is_ha_cluster":false,"disable_backup":true,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"init_settings":null,"volume_type":"lssd","volume_size":0,"init_endpoints":[{"load_balancer":{}}],"backup_same_region":false}'
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/database-engines
+    method: GET
+  response:
+    body: '{"engines":[{"logo_url":"https://s3.nl-ams.scw.cloud/scw-rdb-logos/mysql.svg","name":"MySQL","region":"fr-par","versions":[{"available_init_settings":[{"default_value":"0","description":"If
+      set to 0, table names are stored as specified and comparisons are case-sensitive.
+      If set to 1, table names are stored in lowercase on disk and comparisons are
+      not case sensitive.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":1,"int_min":0,"name":"lower_case_table_names","property_type":"INT","string_constraint":null,"unit":null}],"available_settings":[{"default_value":"1","description":"Controls
+      the AUTO_INCREMENT interval between successive column values","float_max":null,"float_min":null,"hot_configurable":true,"int_max":65535,"int_min":1,"name":"auto_increment_increment","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1","description":"Determines
+      the starting point for the AUTO_INCREMENT column value","float_max":null,"float_min":null,"hot_configurable":true,"int_max":65535,"int_min":1,"name":"auto_increment_offset","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"utf8mb4","description":"Specify
+      a specific server side character-set encoding","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"character_set_server","property_type":"STRING","string_constraint":"^(armscii8|ascii|big5|binary|cp1250|cp1251|cp1256|cp1257|cp850|cp852|cp866|cp932|dec8|eucjpms|euckr|gb18030|gb2312|gbk|geostd8|greek|hebrew|hp8|keybcs2|koi8r|koi8u|latin1|latin2|latin5|latin7|macce|macroman|sjis|swe7|tis620|ucs2|ujis|utf16|utf16le|utf32|utf8|utf8mb4)$","unit":null},{"default_value":"10","description":"The
+      number of seconds that the mysqld server waits for a connect packet before responding
+      with Bad handshake","float_max":null,"float_min":null,"hot_configurable":true,"int_max":300,"int_min":10,"name":"connect_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"mysql_native_password","description":"The
+      default authentication plugin at the user creation","float_max":null,"float_min":null,"hot_configurable":false,"int_max":null,"int_min":null,"name":"default_authentication_plugin","property_type":"STRING","string_constraint":"^(mysql_native_password|caching_sha2_password)$","unit":null},{"default_value":"UTC","description":"This
+      option sets the global time_zone system variable.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":null,"int_min":null,"name":"default_time_zone","property_type":"STRING","string_constraint":"^((Africa\\/(Abidjan|Accra|Addis_Ababa|Algiers|Asmara|Bamako|Bangui|Banjul|Bissau|Blantyre|Brazzaville|Bujumbura|Cairo|Casablanca|Ceuta|Conakry|Dakar|Dar_es_Salaam|Djibouti|Douala|El_Aaiun|Freetown|Gaborone|Harare|Johannesburg|Juba|Kampala|Khartoum|Kigali|Kinshasa|Lagos|Libreville|Lome|Luanda|Lubumbashi|Lusaka|Malabo|Maputo|Maseru|Mbabane|Mogadishu|Monrovia|Nairobi|Ndjamena|Niamey|Nouakchott|Ouagadougou|Porto-Novo|Sao_Tome|Tripoli|Tunis|Windhoek))|(America\\/)(Adak|Anchorage|Anguilla|Antigua|Araguaina|Argentina\\/Buenos_Aires|Argentina\\/Catamarca|Argentina\\/Cordoba|Argentina\\/Jujuy|Argentina\\/La_Rioja|Argentina\\/Mendoza|Argentina\\/Rio_Gallegos|Argentina\\/Salta|Argentina\\/San_Juan|Argentina\\/San_Luis|Argentina\\/Tucuman|Argentina\\/Ushuaia|Aruba|Asuncion|Atikokan|Bahia|Bahia_Banderas|Barbados|Belem|Belize|Blanc-Sablon|Boa_Vista|Bogota|Boise|Cambridge_Bay|Campo_Grande|Cancun|Caracas|Cayenne|Cayman|Chicago|Chihuahua|Costa_Rica|Creston|Cuiaba|Curacao|Danmarkshavn|Dawson|Dawson_Creek|Denver|Detroit|Dominica|Edmonton|Eirunepe|El_Salvador|Fort_Nelson|Fortaleza|Glace_Bay|Goose_Bay|Grand_Turk|Grenada|Guadeloupe|Guatemala|Guayaquil|Guyana|Halifax|Havana|Hermosillo|Indiana\\/Indianapolis|Indiana\\/Knox|Indiana\\/Marengo|Indiana\\/Petersburg|Indiana\\/Tell_City|Indiana\\/Vevay|Indiana\\/Vincennes|Indiana\\/Winamac|Inuvik|Iqaluit|Jamaica|Juneau|Kentucky\\/Louisville|Kentucky\\/Monticello|Kralendijk|La_Paz|Lima|Los_Angeles|Lower_Princes|Maceio|Managua|Manaus|Marigot|Martinique|Matamoros|Mazatlan|Menominee|Merida|Metlakatla|Mexico_City|Miquelon|Moncton|Monterrey|Montevideo|Montserrat|Nassau|New_York|Nipigon|Nome|Noronha|North_Dakota\\/Beulah|North_Dakota\\/Center|North_Dakota\\/New_Salem|Nuuk|Ojinaga|Panama|Pangnirtung|Paramaribo|Phoenix|Port-au-Prince|Port_of_Spain|Porto_Velho|Puerto_Rico|Punta_Arenas|Rainy_River|Rankin_Inlet|Recife|Regina|Resolute|Rio_Branco|Santarem|Santiago|Santo_Domingo|Sao_Paulo|Scoresbysund|Sitka|St_Barthelemy|St_Johns|St_Kitts|St_Lucia|St_Thomas|St_Vincent|Swift_Current|Tegucigalpa|Thule|Thunder_Bay|Tijuana|Toronto|Tortola|Vancouver|Whitehorse|Winnipeg|Yakutat|Yellowknife)|(Antarctica\\/)(Casey|Davis|DumontDUrville|Macquarie|Mawson|McMurdo|Palmer|Rothera|Syowa|Troll|Vostok)|(Arctic\\/Longyearbyen)|(Asia\\/)(Aden|Almaty|Amman|Anadyr|Aqtau|Aqtobe|Ashgabat|Atyrau|Baghdad|Bahrain|Baku|Bangkok|Barnaul|Beirut|Bishkek|Brunei|Chita|Choibalsan|Colombo|Damascus|Dhaka|Dili|Dubai|Dushanbe|Famagusta|Gaza|Hebron|Ho_Chi_Minh|Hong_Kong|Hovd|Irkutsk|Jakarta|Jayapura|Jerusalem|Kabul|Kamchatka|Karachi|Kathmandu|Khandyga|Kolkata|Krasnoyarsk|Kuala_Lumpur|Kuching|Kuwait|Macau|Magadan|Makassar|Manila|Muscat|Nicosia|Novokuznetsk|Novosibirsk|Omsk|Oral|Phnom_Penh|Pontianak|Pyongyang|Qatar|Qostanay|Qyzylorda|Riyadh|Sakhalin|Samarkand|Seoul|Shanghai|Singapore|Srednekolymsk|Taipei|Tashkent|Tbilisi|Tehran|Thimphu|Tokyo|Tomsk|Ulaanbaatar|Urumqi|Ust-Nera|Vientiane|Vladivostok|Yakutsk|Yangon|Yekaterinburg|Yerevan)|(Atlantic\\/)(Azores|Bermuda|Canary|Cape_Verde|Faroe|Madeira|Reykjavik|South_Georgia|St_Helena|Stanley)|(Australia\\/)(Adelaide|Brisbane|Broken_Hill|Currie|Darwin|Eucla|Hobart|Lindeman|Lord_Howe|Melbourne|Perth|Sydney)|(Canada\\/)(Atlantic|Central|Eastern|Mountain|Newfoundland|Pacific)|(Europe\\/)(Amsterdam|Andorra|Astrakhan|Athens|Belgrade|Berlin|Bratislava|Brussels|Bucharest|Budapest|Busingen|Chisinau|Copenhagen|Dublin|Gibraltar|Guernsey|Helsinki|Isle_of_Man|Istanbul|Jersey|Kaliningrad|Kiev|Kirov|Lisbon|Ljubljana|London|Luxembourg|Madrid|Malta|Mariehamn|Minsk|Monaco|Moscow|Oslo|Paris|Podgorica|Prague|Riga|Rome|Samara|San_Marino|Sarajevo|Saratov|Simferopol|Skopje|Sofia|Stockholm|Tallinn|Tirane|Ulyanovsk|Uzhgorod|Vaduz|Vatican|Vienna|Vilnius|Volgograd|Warsaw|Zagreb|Zaporozhye|Zurich)|(GMT)|(UTC)|(Indian\\/)(Antananarivo|Chagos|Christmas|Cocos|Comoro|Kerguelen|Mahe|Maldives|Mauritius|Mayotte|Reunion)|(Pacific\\/)(Apia|Auckland|Bougainville|Chatham|Chuuk|Easter|Efate|Enderbury|Fakaofo|Fiji|Funafuti|Galapagos|Gambier|Guadalcanal|Guam|Honolulu|Kiritimati|Kosrae|Kwajalein|Majuro|Marquesas|Midway|Nauru|Niue|Norfolk|Noumea|Pago_Pago|Palau|Pitcairn|Pohnpei|Port_Moresby|Rarotonga|Saipan|Tahiti|Tarawa|Tongatapu|Wake|Wallis)|(US\\/)(Alaska|Arizona|Central|Eastern|Hawaii|Mountain|Pacific))$","unit":null},{"default_value":"1024","description":"The
+      maximum permitted result length in bytes for the GROUP_CONCAT() function","float_max":null,"float_min":null,"hot_configurable":true,"int_max":65536,"int_min":1024,"name":"group_concat_max_len","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"fsync","description":"Defines
+      the method used to flush data to InnoDB data files and log files, which can
+      affect I/O throughput","float_max":null,"float_min":null,"hot_configurable":false,"int_max":null,"int_min":null,"name":"innodb_flush_method","property_type":"STRING","string_constraint":"^(fsync|O_DIRECT)$","unit":null},{"default_value":"84","description":"The
+      maximum character length of words that are stored in an InnoDB FULLTEXT index.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":84,"int_min":10,"name":"innodb_ft_max_token_size","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"3","description":"The
+      minimum character length of words that are stored in an InnoDB FULLTEXT index.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":16,"int_min":0,"name":"innodb_ft_min_token_size","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"50","description":"The
+      length of time in seconds an InnoDB transaction waits for a row lock before
+      giving up","float_max":null,"float_min":null,"hot_configurable":true,"int_max":600,"int_min":1,"name":"innodb_lock_wait_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"200","description":"The
+      number of index pages to sample when estimating cardinality and other statistics
+      for an indexed column","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1000,"int_min":20,"name":"innodb_stats_persistent_sample_pages","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"21600","description":"The
+      number of seconds the server waits for activity on an interactive connection
+      before closing it","float_max":null,"float_min":null,"hot_configurable":true,"int_max":21600,"int_min":60,"name":"interactive_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"OFF","description":"This
+      variable controls server-side LOCAL capability for LOAD DATA statements","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"local_infile","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"31536000","description":"This
+      variable specifies the timeout in seconds for attempts to acquire metadata locks","float_max":null,"float_min":null,"hot_configurable":true,"int_max":31536000,"int_min":60,"name":"lock_wait_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"OFF","description":"This
+      variable controls whether stored function creators can be trusted","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"log_bin_trust_function_creators","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"10","description":"If
+      the slow query log is enabled, the query is logged to the slow query log file
+      if it takes longer than this threshold","float_max":3600,"float_min":0,"hot_configurable":true,"int_max":null,"int_min":null,"name":"long_query_time","property_type":"FLOAT","string_constraint":null,"unit":null},{"default_value":"64","description":"The
+      maximum size (MB) of one packet or any generated/intermediate string, or any
+      parameter sent by the mysql_stmt_send_long_data() C API function","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":4,"name":"max_allowed_packet","property_type":"INT","string_constraint":null,"unit":"M"},{"default_value":"100","description":"The
+      maximum permitted number of simultaneous client connections","float_max":null,"float_min":null,"hot_configurable":true,"int_max":5000,"int_min":50,"name":"max_connections","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"16382","description":"Limit
+      the total number of prepared statements in the server","float_max":null,"float_min":null,"hot_configurable":false,"int_max":1048576,"int_min":16382,"name":"max_prepared_stmt_count","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Queries
+      that examine fewer than this number of rows are not logged to the slow query
+      log.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"min_examined_row_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"OFF","description":"Whether
+      the slow query log is enabled","float_max":null,"float_min":null,"hot_configurable":false,"int_max":null,"int_min":null,"name":"slow_query_log","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"262144","description":"Connection
+      sort buffer memory size. Large buffer slows down most queries that perform sorts.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10485760,"int_min":32768,"name":"sort_buffer_size","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION","description":"Modes
+      affect the SQL syntax MySQL supports and the data validation checks it performs","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"sql_mode","property_type":"STRING","string_constraint":"^((ONLY_FULL_GROUP_BY|STRICT_TRANS_TABLES|NO_ZERO_IN_DATE|NO_ZERO_DATE|ERROR_FOR_DIVISION_BY_ZERO|NO_ENGINE_SUBSTITUTION)(,(ONLY_FULL_GROUP_BY|STRICT_TRANS_TABLES|NO_ZERO_IN_DATE|NO_ZERO_DATE|ERROR_FOR_DIVISION_BY_ZERO|NO_ENGINE_SUBSTITUTION))*)?$","unit":null},{"default_value":"2000","description":"The
+      number of table definitions that can be stored in the definition cache","float_max":null,"float_min":null,"hot_configurable":true,"int_max":20000,"int_min":1000,"name":"table_definition_cache","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"10000","description":"The
+      number of open tables for all threads","float_max":null,"float_min":null,"hot_configurable":true,"int_max":20000,"int_min":1000,"name":"table_open_cache","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"16","description":"The
+      number of open tables cache instances. Improve scalability by reducing contention
+      among sessions but increase memory usage in case of many triggers or procedures","float_max":null,"float_min":null,"hot_configurable":true,"int_max":16,"int_min":1,"name":"table_open_cache_instances","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"280","description":"Defines
+      the stack size for each thread and impact the complexity of the SQL statements
+      that the server can handle.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":10240,"int_min":128,"name":"thread_stack","property_type":"INT","string_constraint":null,"unit":"K"},{"default_value":"REPEATABLE-READ","description":"Define
+      the transaction isolation level which fine-tunes the balance between performance
+      and reliability, consistency, and reproducibility of your database","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"transaction_isolation","property_type":"STRING","string_constraint":"^(REPEATABLE-READ|READ-COMMITTED|READ-UNCOMMITTED|SERIALIZABLE)$","unit":null},{"default_value":"21600","description":"The
+      number of seconds the server waits for activity on a noninteractive connection
+      before closing it","float_max":null,"float_min":null,"hot_configurable":false,"int_max":21600,"int_min":60,"name":"wait_timeout","property_type":"INT","string_constraint":null,"unit":null}],"beta":false,"disabled":false,"end_of_life":"2026-04-01T00:00:00Z","name":"MySQL-8","version":"8"}]},{"logo_url":"https://s3.nl-ams.scw.cloud/scw-rdb-logos/postgresql.svg","name":"PostgreSQL","region":"fr-par","versions":[{"available_init_settings":[],"available_settings":[{"default_value":"200","description":"Background
+      writer sleep time between rounds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":10,"name":"bgwriter_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"512","description":"Number
+      of pages after which previously performed writes are flushed to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2048,"int_min":0,"name":"bgwriter_flush_after","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"100","description":"Background
+      writer maximum number of LRU pages to flush per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741823,"int_min":0,"name":"bgwriter_lru_maxpages","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Multiple
+      of the average buffer usage to free per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10,"int_min":0,"name":"bgwriter_lru_multiplier","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30","description":"Sets
+      the maximum time between automatic WAL checkpoints","float_max":null,"float_min":null,"hot_configurable":true,"int_max":21600,"int_min":30,"name":"checkpoint_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Sets
+      the delay in microseconds between transaction commit and flushing WAL to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100000,"int_min":0,"name":"commit_delay","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1000","description":"Sets
+      the time to wait on a lock before checking for deadlock.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":60000,"int_min":100,"name":"deadlock_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"100","description":"Sets
+      the default statistics target.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"default_statistics_target","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"off","description":"Sets
+      the default deferrable status of new transactions.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"default_transaction_deferrable","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"4096","description":"Sets
+      the planner s assumption about the size of the data cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1048576,"int_min":64,"name":"effective_cache_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"off","description":"Specifies
+      whether or not a hot standby will send feedback to the primary or upstream standby
+      about queries currently executing on the standby.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"hot_standby_feedback","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"3600000","description":"Sets
+      the maximum allowed duration of any idling transaction. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"idle_in_transaction_session_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Sets
+      the maximum allowed duration of any wait for a lock.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":0,"name":"lock_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"-1","description":"Sets
+      the minimum execution time above which autovacuum actions will be logged","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":-1,"name":"log_autovacuum_min_duration","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"64","description":"Sets
+      the maximum memory to be used for maintenance operations.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"maintenance_work_mem","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"100","description":"Sets
+      the maximum number of concurrent connections.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":10000,"int_min":50,"name":"max_connections","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"64","description":"Sets
+      the maximum number of locks per transaction.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":10,"name":"max_locks_per_transaction","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8","description":"Sets
+      the maximum number of parallel workers that can be active at one time.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Sets
+      the maximum number of parallel processes per executor node.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers_per_gather","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30000","description":"Sets
+      the maximum delay before canceling queries when a hot standby server is processing
+      streamed WAL data.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":180000,"int_min":0,"name":"max_standby_streaming_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"1024","description":"Maximum
+      size to let the WAL grow during automatic checkpoints. Be careful adjusting
+      this setting will use disk space","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10240,"int_min":256,"name":"max_wal_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"86400000","description":"Sets
+      the maximum allowed duration of any statement. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":30000,"name":"statement_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Maximum
+      number of TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_count","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between issuing TCP keepalives.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_idle","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_interval","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8192","description":"Sets
+      the maximum number of temporary buffers used by each session.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741824,"int_min":800,"name":"temp_buffers","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"-1","description":"Limits
+      the total size of all temporary files used by each session.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":-1,"name":"temp_file_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"GMT","description":"This
+      option sets the global timezone system variable.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"timezone","property_type":"STRING","string_constraint":"^((Africa\\/(Abidjan|Accra|Addis_Ababa|Algiers|Asmara|Bamako|Bangui|Banjul|Bissau|Blantyre|Brazzaville|Bujumbura|Cairo|Casablanca|Ceuta|Conakry|Dakar|Dar_es_Salaam|Djibouti|Douala|El_Aaiun|Freetown|Gaborone|Harare|Johannesburg|Juba|Kampala|Khartoum|Kigali|Kinshasa|Lagos|Libreville|Lome|Luanda|Lubumbashi|Lusaka|Malabo|Maputo|Maseru|Mbabane|Mogadishu|Monrovia|Nairobi|Ndjamena|Niamey|Nouakchott|Ouagadougou|Porto-Novo|Sao_Tome|Tripoli|Tunis|Windhoek))|(America\\/)(Adak|Anchorage|Anguilla|Antigua|Araguaina|Argentina\\/Buenos_Aires|Argentina\\/Catamarca|Argentina\\/Cordoba|Argentina\\/Jujuy|Argentina\\/La_Rioja|Argentina\\/Mendoza|Argentina\\/Rio_Gallegos|Argentina\\/Salta|Argentina\\/San_Juan|Argentina\\/San_Luis|Argentina\\/Tucuman|Argentina\\/Ushuaia|Aruba|Asuncion|Atikokan|Bahia|Bahia_Banderas|Barbados|Belem|Belize|Blanc-Sablon|Boa_Vista|Bogota|Boise|Cambridge_Bay|Campo_Grande|Cancun|Caracas|Cayenne|Cayman|Chicago|Chihuahua|Costa_Rica|Creston|Cuiaba|Curacao|Danmarkshavn|Dawson|Dawson_Creek|Denver|Detroit|Dominica|Edmonton|Eirunepe|El_Salvador|Fort_Nelson|Fortaleza|Glace_Bay|Goose_Bay|Grand_Turk|Grenada|Guadeloupe|Guatemala|Guayaquil|Guyana|Halifax|Havana|Hermosillo|Indiana\\/Indianapolis|Indiana\\/Knox|Indiana\\/Marengo|Indiana\\/Petersburg|Indiana\\/Tell_City|Indiana\\/Vevay|Indiana\\/Vincennes|Indiana\\/Winamac|Inuvik|Iqaluit|Jamaica|Juneau|Kentucky\\/Louisville|Kentucky\\/Monticello|Kralendijk|La_Paz|Lima|Los_Angeles|Lower_Princes|Maceio|Managua|Manaus|Marigot|Martinique|Matamoros|Mazatlan|Menominee|Merida|Metlakatla|Mexico_City|Miquelon|Moncton|Monterrey|Montevideo|Montserrat|Nassau|New_York|Nipigon|Nome|Noronha|North_Dakota\\/Beulah|North_Dakota\\/Center|North_Dakota\\/New_Salem|Nuuk|Ojinaga|Panama|Pangnirtung|Paramaribo|Phoenix|Port-au-Prince|Port_of_Spain|Porto_Velho|Puerto_Rico|Punta_Arenas|Rainy_River|Rankin_Inlet|Recife|Regina|Resolute|Rio_Branco|Santarem|Santiago|Santo_Domingo|Sao_Paulo|Scoresbysund|Sitka|St_Barthelemy|St_Johns|St_Kitts|St_Lucia|St_Thomas|St_Vincent|Swift_Current|Tegucigalpa|Thule|Thunder_Bay|Tijuana|Toronto|Tortola|Vancouver|Whitehorse|Winnipeg|Yakutat|Yellowknife)|(Antarctica\\/)(Casey|Davis|DumontDUrville|Macquarie|Mawson|McMurdo|Palmer|Rothera|Syowa|Troll|Vostok)|(Arctic\\/Longyearbyen)|(Asia\\/)(Aden|Almaty|Amman|Anadyr|Aqtau|Aqtobe|Ashgabat|Atyrau|Baghdad|Bahrain|Baku|Bangkok|Barnaul|Beirut|Bishkek|Brunei|Chita|Choibalsan|Colombo|Damascus|Dhaka|Dili|Dubai|Dushanbe|Famagusta|Gaza|Hebron|Ho_Chi_Minh|Hong_Kong|Hovd|Irkutsk|Jakarta|Jayapura|Jerusalem|Kabul|Kamchatka|Karachi|Kathmandu|Khandyga|Kolkata|Krasnoyarsk|Kuala_Lumpur|Kuching|Kuwait|Macau|Magadan|Makassar|Manila|Muscat|Nicosia|Novokuznetsk|Novosibirsk|Omsk|Oral|Phnom_Penh|Pontianak|Pyongyang|Qatar|Qostanay|Qyzylorda|Riyadh|Sakhalin|Samarkand|Seoul|Shanghai|Singapore|Srednekolymsk|Taipei|Tashkent|Tbilisi|Tehran|Thimphu|Tokyo|Tomsk|Ulaanbaatar|Urumqi|Ust-Nera|Vientiane|Vladivostok|Yakutsk|Yangon|Yekaterinburg|Yerevan)|(Atlantic\\/)(Azores|Bermuda|Canary|Cape_Verde|Faroe|Madeira|Reykjavik|South_Georgia|St_Helena|Stanley)|(Australia\\/)(Adelaide|Brisbane|Broken_Hill|Currie|Darwin|Eucla|Hobart|Lindeman|Lord_Howe|Melbourne|Perth|Sydney)|(Canada\\/)(Atlantic|Central|Eastern|Mountain|Newfoundland|Pacific)|(Europe\\/)(Amsterdam|Andorra|Astrakhan|Athens|Belgrade|Berlin|Bratislava|Brussels|Bucharest|Budapest|Busingen|Chisinau|Copenhagen|Dublin|Gibraltar|Guernsey|Helsinki|Isle_of_Man|Istanbul|Jersey|Kaliningrad|Kiev|Kirov|Lisbon|Ljubljana|London|Luxembourg|Madrid|Malta|Mariehamn|Minsk|Monaco|Moscow|Oslo|Paris|Podgorica|Prague|Riga|Rome|Samara|San_Marino|Sarajevo|Saratov|Simferopol|Skopje|Sofia|Stockholm|Tallinn|Tirane|Ulyanovsk|Uzhgorod|Vaduz|Vatican|Vienna|Vilnius|Volgograd|Warsaw|Zagreb|Zaporozhye|Zurich)|(GMT)|(UTC)|(Indian\\/)(Antananarivo|Chagos|Christmas|Cocos|Comoro|Kerguelen|Mahe|Maldives|Mauritius|Mayotte|Reunion)|(Pacific\\/)(Apia|Auckland|Bougainville|Chatham|Chuuk|Easter|Efate|Enderbury|Fakaofo|Fiji|Funafuti|Galapagos|Gambier|Guadalcanal|Guam|Honolulu|Kiritimati|Kosrae|Kwajalein|Majuro|Marquesas|Midway|Nauru|Niue|Norfolk|Noumea|Pago_Pago|Palau|Pitcairn|Pohnpei|Port_Moresby|Rarotonga|Saipan|Tahiti|Tarawa|Tongatapu|Wake|Wallis)|(US\\/)(Alaska|Arizona|Central|Eastern|Hawaii|Mountain|Pacific))$","unit":null},{"default_value":"1024","description":"Sets
+      the size reserved for pg_stat_activity.query.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":8192,"int_min":100,"name":"track_activity_query_size","property_type":"INT","string_constraint":null,"unit":"B"},{"default_value":"0","description":"Vacuum
+      cost delay in milliseconds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100,"int_min":0,"name":"vacuum_cost_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"200","description":"Vacuum
+      cost amount available before napping.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"vacuum_cost_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"20","description":"Vacuum
+      cost for a page dirtied by vacuum.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_dirty","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1","description":"Vacuum
+      cost for a page found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_hit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"10","description":"Vacuum
+      cost for a page not found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_miss","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"4","description":"Sets
+      the maximum memory to be used for query workspaces.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"work_mem","property_type":"INT","string_constraint":null,"unit":"MB"}],"beta":false,"disabled":false,"end_of_life":"2027-11-11T00:00:00Z","name":"PostgreSQL-15","version":"15"},{"available_init_settings":[],"available_settings":[{"default_value":"200","description":"Background
+      writer sleep time between rounds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":10,"name":"bgwriter_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"512","description":"Number
+      of pages after which previously performed writes are flushed to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2048,"int_min":0,"name":"bgwriter_flush_after","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"100","description":"Background
+      writer maximum number of LRU pages to flush per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741823,"int_min":0,"name":"bgwriter_lru_maxpages","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Multiple
+      of the average buffer usage to free per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10,"int_min":0,"name":"bgwriter_lru_multiplier","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30","description":"Sets
+      the maximum time between automatic WAL checkpoints","float_max":null,"float_min":null,"hot_configurable":true,"int_max":21600,"int_min":30,"name":"checkpoint_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Sets
+      the delay in microseconds between transaction commit and flushing WAL to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100000,"int_min":0,"name":"commit_delay","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1000","description":"Sets
+      the time to wait on a lock before checking for deadlock.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":60000,"int_min":100,"name":"deadlock_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"100","description":"Sets
+      the default statistics target.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"default_statistics_target","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"off","description":"Sets
+      the default deferrable status of new transactions.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"default_transaction_deferrable","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"4096","description":"Sets
+      the planner s assumption about the size of the data cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1048576,"int_min":64,"name":"effective_cache_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"off","description":"Specifies
+      whether or not a hot standby will send feedback to the primary or upstream standby
+      about queries currently executing on the standby.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"hot_standby_feedback","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"3600000","description":"Sets
+      the maximum allowed duration of any idling transaction. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"idle_in_transaction_session_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Sets
+      the maximum allowed duration of any wait for a lock.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":0,"name":"lock_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"-1","description":"Sets
+      the minimum execution time above which autovacuum actions will be logged","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":-1,"name":"log_autovacuum_min_duration","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"64","description":"Sets
+      the maximum memory to be used for maintenance operations.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"maintenance_work_mem","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"100","description":"Sets
+      the maximum number of concurrent connections.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":10000,"int_min":50,"name":"max_connections","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"64","description":"Sets
+      the maximum number of locks per transaction.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":10,"name":"max_locks_per_transaction","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8","description":"Sets
+      the maximum number of parallel workers that can be active at one time.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Sets
+      the maximum number of parallel processes per executor node.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers_per_gather","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30000","description":"Sets
+      the maximum delay before canceling queries when a hot standby server is processing
+      streamed WAL data.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":180000,"int_min":0,"name":"max_standby_streaming_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"1024","description":"Maximum
+      size to let the WAL grow during automatic checkpoints. Be careful adjusting
+      this setting will use disk space","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10240,"int_min":256,"name":"max_wal_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"86400000","description":"Sets
+      the maximum allowed duration of any statement. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":30000,"name":"statement_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Maximum
+      number of TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_count","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between issuing TCP keepalives.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_idle","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_interval","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8192","description":"Sets
+      the maximum number of temporary buffers used by each session.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741824,"int_min":800,"name":"temp_buffers","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"-1","description":"Limits
+      the total size of all temporary files used by each session.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":-1,"name":"temp_file_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"GMT","description":"This
+      option sets the global timezone system variable.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"timezone","property_type":"STRING","string_constraint":"^((Africa\\/(Abidjan|Accra|Addis_Ababa|Algiers|Asmara|Bamako|Bangui|Banjul|Bissau|Blantyre|Brazzaville|Bujumbura|Cairo|Casablanca|Ceuta|Conakry|Dakar|Dar_es_Salaam|Djibouti|Douala|El_Aaiun|Freetown|Gaborone|Harare|Johannesburg|Juba|Kampala|Khartoum|Kigali|Kinshasa|Lagos|Libreville|Lome|Luanda|Lubumbashi|Lusaka|Malabo|Maputo|Maseru|Mbabane|Mogadishu|Monrovia|Nairobi|Ndjamena|Niamey|Nouakchott|Ouagadougou|Porto-Novo|Sao_Tome|Tripoli|Tunis|Windhoek))|(America\\/)(Adak|Anchorage|Anguilla|Antigua|Araguaina|Argentina\\/Buenos_Aires|Argentina\\/Catamarca|Argentina\\/Cordoba|Argentina\\/Jujuy|Argentina\\/La_Rioja|Argentina\\/Mendoza|Argentina\\/Rio_Gallegos|Argentina\\/Salta|Argentina\\/San_Juan|Argentina\\/San_Luis|Argentina\\/Tucuman|Argentina\\/Ushuaia|Aruba|Asuncion|Atikokan|Bahia|Bahia_Banderas|Barbados|Belem|Belize|Blanc-Sablon|Boa_Vista|Bogota|Boise|Cambridge_Bay|Campo_Grande|Cancun|Caracas|Cayenne|Cayman|Chicago|Chihuahua|Costa_Rica|Creston|Cuiaba|Curacao|Danmarkshavn|Dawson|Dawson_Creek|Denver|Detroit|Dominica|Edmonton|Eirunepe|El_Salvador|Fort_Nelson|Fortaleza|Glace_Bay|Goose_Bay|Grand_Turk|Grenada|Guadeloupe|Guatemala|Guayaquil|Guyana|Halifax|Havana|Hermosillo|Indiana\\/Indianapolis|Indiana\\/Knox|Indiana\\/Marengo|Indiana\\/Petersburg|Indiana\\/Tell_City|Indiana\\/Vevay|Indiana\\/Vincennes|Indiana\\/Winamac|Inuvik|Iqaluit|Jamaica|Juneau|Kentucky\\/Louisville|Kentucky\\/Monticello|Kralendijk|La_Paz|Lima|Los_Angeles|Lower_Princes|Maceio|Managua|Manaus|Marigot|Martinique|Matamoros|Mazatlan|Menominee|Merida|Metlakatla|Mexico_City|Miquelon|Moncton|Monterrey|Montevideo|Montserrat|Nassau|New_York|Nipigon|Nome|Noronha|North_Dakota\\/Beulah|North_Dakota\\/Center|North_Dakota\\/New_Salem|Nuuk|Ojinaga|Panama|Pangnirtung|Paramaribo|Phoenix|Port-au-Prince|Port_of_Spain|Porto_Velho|Puerto_Rico|Punta_Arenas|Rainy_River|Rankin_Inlet|Recife|Regina|Resolute|Rio_Branco|Santarem|Santiago|Santo_Domingo|Sao_Paulo|Scoresbysund|Sitka|St_Barthelemy|St_Johns|St_Kitts|St_Lucia|St_Thomas|St_Vincent|Swift_Current|Tegucigalpa|Thule|Thunder_Bay|Tijuana|Toronto|Tortola|Vancouver|Whitehorse|Winnipeg|Yakutat|Yellowknife)|(Antarctica\\/)(Casey|Davis|DumontDUrville|Macquarie|Mawson|McMurdo|Palmer|Rothera|Syowa|Troll|Vostok)|(Arctic\\/Longyearbyen)|(Asia\\/)(Aden|Almaty|Amman|Anadyr|Aqtau|Aqtobe|Ashgabat|Atyrau|Baghdad|Bahrain|Baku|Bangkok|Barnaul|Beirut|Bishkek|Brunei|Chita|Choibalsan|Colombo|Damascus|Dhaka|Dili|Dubai|Dushanbe|Famagusta|Gaza|Hebron|Ho_Chi_Minh|Hong_Kong|Hovd|Irkutsk|Jakarta|Jayapura|Jerusalem|Kabul|Kamchatka|Karachi|Kathmandu|Khandyga|Kolkata|Krasnoyarsk|Kuala_Lumpur|Kuching|Kuwait|Macau|Magadan|Makassar|Manila|Muscat|Nicosia|Novokuznetsk|Novosibirsk|Omsk|Oral|Phnom_Penh|Pontianak|Pyongyang|Qatar|Qostanay|Qyzylorda|Riyadh|Sakhalin|Samarkand|Seoul|Shanghai|Singapore|Srednekolymsk|Taipei|Tashkent|Tbilisi|Tehran|Thimphu|Tokyo|Tomsk|Ulaanbaatar|Urumqi|Ust-Nera|Vientiane|Vladivostok|Yakutsk|Yangon|Yekaterinburg|Yerevan)|(Atlantic\\/)(Azores|Bermuda|Canary|Cape_Verde|Faroe|Madeira|Reykjavik|South_Georgia|St_Helena|Stanley)|(Australia\\/)(Adelaide|Brisbane|Broken_Hill|Currie|Darwin|Eucla|Hobart|Lindeman|Lord_Howe|Melbourne|Perth|Sydney)|(Canada\\/)(Atlantic|Central|Eastern|Mountain|Newfoundland|Pacific)|(Europe\\/)(Amsterdam|Andorra|Astrakhan|Athens|Belgrade|Berlin|Bratislava|Brussels|Bucharest|Budapest|Busingen|Chisinau|Copenhagen|Dublin|Gibraltar|Guernsey|Helsinki|Isle_of_Man|Istanbul|Jersey|Kaliningrad|Kiev|Kirov|Lisbon|Ljubljana|London|Luxembourg|Madrid|Malta|Mariehamn|Minsk|Monaco|Moscow|Oslo|Paris|Podgorica|Prague|Riga|Rome|Samara|San_Marino|Sarajevo|Saratov|Simferopol|Skopje|Sofia|Stockholm|Tallinn|Tirane|Ulyanovsk|Uzhgorod|Vaduz|Vatican|Vienna|Vilnius|Volgograd|Warsaw|Zagreb|Zaporozhye|Zurich)|(GMT)|(UTC)|(Indian\\/)(Antananarivo|Chagos|Christmas|Cocos|Comoro|Kerguelen|Mahe|Maldives|Mauritius|Mayotte|Reunion)|(Pacific\\/)(Apia|Auckland|Bougainville|Chatham|Chuuk|Easter|Efate|Enderbury|Fakaofo|Fiji|Funafuti|Galapagos|Gambier|Guadalcanal|Guam|Honolulu|Kiritimati|Kosrae|Kwajalein|Majuro|Marquesas|Midway|Nauru|Niue|Norfolk|Noumea|Pago_Pago|Palau|Pitcairn|Pohnpei|Port_Moresby|Rarotonga|Saipan|Tahiti|Tarawa|Tongatapu|Wake|Wallis)|(US\\/)(Alaska|Arizona|Central|Eastern|Hawaii|Mountain|Pacific))$","unit":null},{"default_value":"1024","description":"Sets
+      the size reserved for pg_stat_activity.query.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":8192,"int_min":100,"name":"track_activity_query_size","property_type":"INT","string_constraint":null,"unit":"B"},{"default_value":"0","description":"Vacuum
+      cost delay in milliseconds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100,"int_min":0,"name":"vacuum_cost_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"200","description":"Vacuum
+      cost amount available before napping.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"vacuum_cost_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"20","description":"Vacuum
+      cost for a page dirtied by vacuum.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_dirty","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1","description":"Vacuum
+      cost for a page found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_hit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"10","description":"Vacuum
+      cost for a page not found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_miss","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"4","description":"Sets
+      the maximum memory to be used for query workspaces.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"work_mem","property_type":"INT","string_constraint":null,"unit":"MB"}],"beta":false,"disabled":false,"end_of_life":"2026-11-12T00:00:00Z","name":"PostgreSQL-14","version":"14"},{"available_init_settings":[],"available_settings":[{"default_value":"200","description":"Background
+      writer sleep time between rounds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":10,"name":"bgwriter_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"512","description":"Number
+      of pages after which previously performed writes are flushed to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2048,"int_min":0,"name":"bgwriter_flush_after","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"100","description":"Background
+      writer maximum number of LRU pages to flush per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741823,"int_min":0,"name":"bgwriter_lru_maxpages","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Multiple
+      of the average buffer usage to free per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10,"int_min":0,"name":"bgwriter_lru_multiplier","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30","description":"Sets
+      the maximum time between automatic WAL checkpoints","float_max":null,"float_min":null,"hot_configurable":true,"int_max":21600,"int_min":30,"name":"checkpoint_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Sets
+      the delay in microseconds between transaction commit and flushing WAL to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100000,"int_min":0,"name":"commit_delay","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1000","description":"Sets
+      the time to wait on a lock before checking for deadlock.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":60000,"int_min":100,"name":"deadlock_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"100","description":"Sets
+      the default statistics target.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"default_statistics_target","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"off","description":"Sets
+      the default deferrable status of new transactions.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"default_transaction_deferrable","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"4096","description":"Sets
+      the planner s assumption about the size of the data cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1048576,"int_min":64,"name":"effective_cache_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"off","description":"Specifies
+      whether or not a hot standby will send feedback to the primary or upstream standby
+      about queries currently executing on the standby.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"hot_standby_feedback","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"3600000","description":"Sets
+      the maximum allowed duration of any idling transaction. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"idle_in_transaction_session_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Sets
+      the maximum allowed duration of any wait for a lock.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":0,"name":"lock_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"-1","description":"Sets
+      the minimum execution time above which autovacuum actions will be logged","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":-1,"name":"log_autovacuum_min_duration","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"64","description":"Sets
+      the maximum memory to be used for maintenance operations.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"maintenance_work_mem","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"100","description":"Sets
+      the maximum number of concurrent connections.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":10000,"int_min":50,"name":"max_connections","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"64","description":"Sets
+      the maximum number of locks per transaction.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":10,"name":"max_locks_per_transaction","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8","description":"Sets
+      the maximum number of parallel workers that can be active at one time.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Sets
+      the maximum number of parallel processes per executor node.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers_per_gather","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30000","description":"Sets
+      the maximum delay before canceling queries when a hot standby server is processing
+      streamed WAL data.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":180000,"int_min":0,"name":"max_standby_streaming_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"1024","description":"Maximum
+      size to let the WAL grow during automatic checkpoints. Be careful adjusting
+      this setting will use disk space","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10240,"int_min":256,"name":"max_wal_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"86400000","description":"Sets
+      the maximum allowed duration of any statement. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":30000,"name":"statement_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Maximum
+      number of TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_count","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between issuing TCP keepalives.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_idle","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_interval","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8192","description":"Sets
+      the maximum number of temporary buffers used by each session.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741824,"int_min":800,"name":"temp_buffers","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"-1","description":"Limits
+      the total size of all temporary files used by each session.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":-1,"name":"temp_file_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"GMT","description":"This
+      option sets the global timezone system variable.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"timezone","property_type":"STRING","string_constraint":"^((Africa\\/(Abidjan|Accra|Addis_Ababa|Algiers|Asmara|Bamako|Bangui|Banjul|Bissau|Blantyre|Brazzaville|Bujumbura|Cairo|Casablanca|Ceuta|Conakry|Dakar|Dar_es_Salaam|Djibouti|Douala|El_Aaiun|Freetown|Gaborone|Harare|Johannesburg|Juba|Kampala|Khartoum|Kigali|Kinshasa|Lagos|Libreville|Lome|Luanda|Lubumbashi|Lusaka|Malabo|Maputo|Maseru|Mbabane|Mogadishu|Monrovia|Nairobi|Ndjamena|Niamey|Nouakchott|Ouagadougou|Porto-Novo|Sao_Tome|Tripoli|Tunis|Windhoek))|(America\\/)(Adak|Anchorage|Anguilla|Antigua|Araguaina|Argentina\\/Buenos_Aires|Argentina\\/Catamarca|Argentina\\/Cordoba|Argentina\\/Jujuy|Argentina\\/La_Rioja|Argentina\\/Mendoza|Argentina\\/Rio_Gallegos|Argentina\\/Salta|Argentina\\/San_Juan|Argentina\\/San_Luis|Argentina\\/Tucuman|Argentina\\/Ushuaia|Aruba|Asuncion|Atikokan|Bahia|Bahia_Banderas|Barbados|Belem|Belize|Blanc-Sablon|Boa_Vista|Bogota|Boise|Cambridge_Bay|Campo_Grande|Cancun|Caracas|Cayenne|Cayman|Chicago|Chihuahua|Costa_Rica|Creston|Cuiaba|Curacao|Danmarkshavn|Dawson|Dawson_Creek|Denver|Detroit|Dominica|Edmonton|Eirunepe|El_Salvador|Fort_Nelson|Fortaleza|Glace_Bay|Goose_Bay|Grand_Turk|Grenada|Guadeloupe|Guatemala|Guayaquil|Guyana|Halifax|Havana|Hermosillo|Indiana\\/Indianapolis|Indiana\\/Knox|Indiana\\/Marengo|Indiana\\/Petersburg|Indiana\\/Tell_City|Indiana\\/Vevay|Indiana\\/Vincennes|Indiana\\/Winamac|Inuvik|Iqaluit|Jamaica|Juneau|Kentucky\\/Louisville|Kentucky\\/Monticello|Kralendijk|La_Paz|Lima|Los_Angeles|Lower_Princes|Maceio|Managua|Manaus|Marigot|Martinique|Matamoros|Mazatlan|Menominee|Merida|Metlakatla|Mexico_City|Miquelon|Moncton|Monterrey|Montevideo|Montserrat|Nassau|New_York|Nipigon|Nome|Noronha|North_Dakota\\/Beulah|North_Dakota\\/Center|North_Dakota\\/New_Salem|Nuuk|Ojinaga|Panama|Pangnirtung|Paramaribo|Phoenix|Port-au-Prince|Port_of_Spain|Porto_Velho|Puerto_Rico|Punta_Arenas|Rainy_River|Rankin_Inlet|Recife|Regina|Resolute|Rio_Branco|Santarem|Santiago|Santo_Domingo|Sao_Paulo|Scoresbysund|Sitka|St_Barthelemy|St_Johns|St_Kitts|St_Lucia|St_Thomas|St_Vincent|Swift_Current|Tegucigalpa|Thule|Thunder_Bay|Tijuana|Toronto|Tortola|Vancouver|Whitehorse|Winnipeg|Yakutat|Yellowknife)|(Antarctica\\/)(Casey|Davis|DumontDUrville|Macquarie|Mawson|McMurdo|Palmer|Rothera|Syowa|Troll|Vostok)|(Arctic\\/Longyearbyen)|(Asia\\/)(Aden|Almaty|Amman|Anadyr|Aqtau|Aqtobe|Ashgabat|Atyrau|Baghdad|Bahrain|Baku|Bangkok|Barnaul|Beirut|Bishkek|Brunei|Chita|Choibalsan|Colombo|Damascus|Dhaka|Dili|Dubai|Dushanbe|Famagusta|Gaza|Hebron|Ho_Chi_Minh|Hong_Kong|Hovd|Irkutsk|Jakarta|Jayapura|Jerusalem|Kabul|Kamchatka|Karachi|Kathmandu|Khandyga|Kolkata|Krasnoyarsk|Kuala_Lumpur|Kuching|Kuwait|Macau|Magadan|Makassar|Manila|Muscat|Nicosia|Novokuznetsk|Novosibirsk|Omsk|Oral|Phnom_Penh|Pontianak|Pyongyang|Qatar|Qostanay|Qyzylorda|Riyadh|Sakhalin|Samarkand|Seoul|Shanghai|Singapore|Srednekolymsk|Taipei|Tashkent|Tbilisi|Tehran|Thimphu|Tokyo|Tomsk|Ulaanbaatar|Urumqi|Ust-Nera|Vientiane|Vladivostok|Yakutsk|Yangon|Yekaterinburg|Yerevan)|(Atlantic\\/)(Azores|Bermuda|Canary|Cape_Verde|Faroe|Madeira|Reykjavik|South_Georgia|St_Helena|Stanley)|(Australia\\/)(Adelaide|Brisbane|Broken_Hill|Currie|Darwin|Eucla|Hobart|Lindeman|Lord_Howe|Melbourne|Perth|Sydney)|(Canada\\/)(Atlantic|Central|Eastern|Mountain|Newfoundland|Pacific)|(Europe\\/)(Amsterdam|Andorra|Astrakhan|Athens|Belgrade|Berlin|Bratislava|Brussels|Bucharest|Budapest|Busingen|Chisinau|Copenhagen|Dublin|Gibraltar|Guernsey|Helsinki|Isle_of_Man|Istanbul|Jersey|Kaliningrad|Kiev|Kirov|Lisbon|Ljubljana|London|Luxembourg|Madrid|Malta|Mariehamn|Minsk|Monaco|Moscow|Oslo|Paris|Podgorica|Prague|Riga|Rome|Samara|San_Marino|Sarajevo|Saratov|Simferopol|Skopje|Sofia|Stockholm|Tallinn|Tirane|Ulyanovsk|Uzhgorod|Vaduz|Vatican|Vienna|Vilnius|Volgograd|Warsaw|Zagreb|Zaporozhye|Zurich)|(GMT)|(UTC)|(Indian\\/)(Antananarivo|Chagos|Christmas|Cocos|Comoro|Kerguelen|Mahe|Maldives|Mauritius|Mayotte|Reunion)|(Pacific\\/)(Apia|Auckland|Bougainville|Chatham|Chuuk|Easter|Efate|Enderbury|Fakaofo|Fiji|Funafuti|Galapagos|Gambier|Guadalcanal|Guam|Honolulu|Kiritimati|Kosrae|Kwajalein|Majuro|Marquesas|Midway|Nauru|Niue|Norfolk|Noumea|Pago_Pago|Palau|Pitcairn|Pohnpei|Port_Moresby|Rarotonga|Saipan|Tahiti|Tarawa|Tongatapu|Wake|Wallis)|(US\\/)(Alaska|Arizona|Central|Eastern|Hawaii|Mountain|Pacific))$","unit":null},{"default_value":"1024","description":"Sets
+      the size reserved for pg_stat_activity.query.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":8192,"int_min":100,"name":"track_activity_query_size","property_type":"INT","string_constraint":null,"unit":"B"},{"default_value":"0","description":"Vacuum
+      cost delay in milliseconds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100,"int_min":0,"name":"vacuum_cost_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"200","description":"Vacuum
+      cost amount available before napping.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"vacuum_cost_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"20","description":"Vacuum
+      cost for a page dirtied by vacuum.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_dirty","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1","description":"Vacuum
+      cost for a page found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_hit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"10","description":"Vacuum
+      cost for a page not found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_miss","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"4","description":"Sets
+      the maximum memory to be used for query workspaces.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"work_mem","property_type":"INT","string_constraint":null,"unit":"MB"}],"beta":false,"disabled":false,"end_of_life":"2025-11-13T00:00:00Z","name":"PostgreSQL-13","version":"13"},{"available_init_settings":[],"available_settings":[{"default_value":"200","description":"Background
+      writer sleep time between rounds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":10,"name":"bgwriter_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"512","description":"Number
+      of pages after which previously performed writes are flushed to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2048,"int_min":0,"name":"bgwriter_flush_after","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"100","description":"Background
+      writer maximum number of LRU pages to flush per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741823,"int_min":0,"name":"bgwriter_lru_maxpages","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Multiple
+      of the average buffer usage to free per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10,"int_min":0,"name":"bgwriter_lru_multiplier","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30","description":"Sets
+      the maximum time between automatic WAL checkpoints","float_max":null,"float_min":null,"hot_configurable":true,"int_max":21600,"int_min":30,"name":"checkpoint_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Sets
+      the delay in microseconds between transaction commit and flushing WAL to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100000,"int_min":0,"name":"commit_delay","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1000","description":"Sets
+      the time to wait on a lock before checking for deadlock.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":60000,"int_min":100,"name":"deadlock_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"100","description":"Sets
+      the default statistics target.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"default_statistics_target","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"off","description":"Sets
+      the default deferrable status of new transactions.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"default_transaction_deferrable","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"4096","description":"Sets
+      the planner s assumption about the size of the data cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1048576,"int_min":64,"name":"effective_cache_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"off","description":"Specifies
+      whether or not a hot standby will send feedback to the primary or upstream standby
+      about queries currently executing on the standby.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"hot_standby_feedback","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"3600000","description":"Sets
+      the maximum allowed duration of any idling transaction. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"idle_in_transaction_session_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Sets
+      the maximum allowed duration of any wait for a lock.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":0,"name":"lock_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"-1","description":"Sets
+      the minimum execution time above which autovacuum actions will be logged","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":-1,"name":"log_autovacuum_min_duration","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"64","description":"Sets
+      the maximum memory to be used for maintenance operations.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"maintenance_work_mem","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"100","description":"Sets
+      the maximum number of concurrent connections.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":10000,"int_min":50,"name":"max_connections","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"64","description":"Sets
+      the maximum number of locks per transaction.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":10,"name":"max_locks_per_transaction","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8","description":"Sets
+      the maximum number of parallel workers that can be active at one time.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Sets
+      the maximum number of parallel processes per executor node.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers_per_gather","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30000","description":"Sets
+      the maximum delay before canceling queries when a hot standby server is processing
+      streamed WAL data.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":180000,"int_min":0,"name":"max_standby_streaming_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"1024","description":"Maximum
+      size to let the WAL grow during automatic checkpoints. Be careful adjusting
+      this setting will use disk space","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10240,"int_min":256,"name":"max_wal_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"86400000","description":"Sets
+      the maximum allowed duration of any statement. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":30000,"name":"statement_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Maximum
+      number of TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_count","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between issuing TCP keepalives.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_idle","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_interval","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8192","description":"Sets
+      the maximum number of temporary buffers used by each session.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741824,"int_min":800,"name":"temp_buffers","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"-1","description":"Limits
+      the total size of all temporary files used by each session.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":-1,"name":"temp_file_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"GMT","description":"This
+      option sets the global timezone system variable.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"timezone","property_type":"STRING","string_constraint":"^((Africa\\/(Abidjan|Accra|Addis_Ababa|Algiers|Asmara|Bamako|Bangui|Banjul|Bissau|Blantyre|Brazzaville|Bujumbura|Cairo|Casablanca|Ceuta|Conakry|Dakar|Dar_es_Salaam|Djibouti|Douala|El_Aaiun|Freetown|Gaborone|Harare|Johannesburg|Juba|Kampala|Khartoum|Kigali|Kinshasa|Lagos|Libreville|Lome|Luanda|Lubumbashi|Lusaka|Malabo|Maputo|Maseru|Mbabane|Mogadishu|Monrovia|Nairobi|Ndjamena|Niamey|Nouakchott|Ouagadougou|Porto-Novo|Sao_Tome|Tripoli|Tunis|Windhoek))|(America\\/)(Adak|Anchorage|Anguilla|Antigua|Araguaina|Argentina\\/Buenos_Aires|Argentina\\/Catamarca|Argentina\\/Cordoba|Argentina\\/Jujuy|Argentina\\/La_Rioja|Argentina\\/Mendoza|Argentina\\/Rio_Gallegos|Argentina\\/Salta|Argentina\\/San_Juan|Argentina\\/San_Luis|Argentina\\/Tucuman|Argentina\\/Ushuaia|Aruba|Asuncion|Atikokan|Bahia|Bahia_Banderas|Barbados|Belem|Belize|Blanc-Sablon|Boa_Vista|Bogota|Boise|Cambridge_Bay|Campo_Grande|Cancun|Caracas|Cayenne|Cayman|Chicago|Chihuahua|Costa_Rica|Creston|Cuiaba|Curacao|Danmarkshavn|Dawson|Dawson_Creek|Denver|Detroit|Dominica|Edmonton|Eirunepe|El_Salvador|Fort_Nelson|Fortaleza|Glace_Bay|Goose_Bay|Grand_Turk|Grenada|Guadeloupe|Guatemala|Guayaquil|Guyana|Halifax|Havana|Hermosillo|Indiana\\/Indianapolis|Indiana\\/Knox|Indiana\\/Marengo|Indiana\\/Petersburg|Indiana\\/Tell_City|Indiana\\/Vevay|Indiana\\/Vincennes|Indiana\\/Winamac|Inuvik|Iqaluit|Jamaica|Juneau|Kentucky\\/Louisville|Kentucky\\/Monticello|Kralendijk|La_Paz|Lima|Los_Angeles|Lower_Princes|Maceio|Managua|Manaus|Marigot|Martinique|Matamoros|Mazatlan|Menominee|Merida|Metlakatla|Mexico_City|Miquelon|Moncton|Monterrey|Montevideo|Montserrat|Nassau|New_York|Nipigon|Nome|Noronha|North_Dakota\\/Beulah|North_Dakota\\/Center|North_Dakota\\/New_Salem|Nuuk|Ojinaga|Panama|Pangnirtung|Paramaribo|Phoenix|Port-au-Prince|Port_of_Spain|Porto_Velho|Puerto_Rico|Punta_Arenas|Rainy_River|Rankin_Inlet|Recife|Regina|Resolute|Rio_Branco|Santarem|Santiago|Santo_Domingo|Sao_Paulo|Scoresbysund|Sitka|St_Barthelemy|St_Johns|St_Kitts|St_Lucia|St_Thomas|St_Vincent|Swift_Current|Tegucigalpa|Thule|Thunder_Bay|Tijuana|Toronto|Tortola|Vancouver|Whitehorse|Winnipeg|Yakutat|Yellowknife)|(Antarctica\\/)(Casey|Davis|DumontDUrville|Macquarie|Mawson|McMurdo|Palmer|Rothera|Syowa|Troll|Vostok)|(Arctic\\/Longyearbyen)|(Asia\\/)(Aden|Almaty|Amman|Anadyr|Aqtau|Aqtobe|Ashgabat|Atyrau|Baghdad|Bahrain|Baku|Bangkok|Barnaul|Beirut|Bishkek|Brunei|Chita|Choibalsan|Colombo|Damascus|Dhaka|Dili|Dubai|Dushanbe|Famagusta|Gaza|Hebron|Ho_Chi_Minh|Hong_Kong|Hovd|Irkutsk|Jakarta|Jayapura|Jerusalem|Kabul|Kamchatka|Karachi|Kathmandu|Khandyga|Kolkata|Krasnoyarsk|Kuala_Lumpur|Kuching|Kuwait|Macau|Magadan|Makassar|Manila|Muscat|Nicosia|Novokuznetsk|Novosibirsk|Omsk|Oral|Phnom_Penh|Pontianak|Pyongyang|Qatar|Qostanay|Qyzylorda|Riyadh|Sakhalin|Samarkand|Seoul|Shanghai|Singapore|Srednekolymsk|Taipei|Tashkent|Tbilisi|Tehran|Thimphu|Tokyo|Tomsk|Ulaanbaatar|Urumqi|Ust-Nera|Vientiane|Vladivostok|Yakutsk|Yangon|Yekaterinburg|Yerevan)|(Atlantic\\/)(Azores|Bermuda|Canary|Cape_Verde|Faroe|Madeira|Reykjavik|South_Georgia|St_Helena|Stanley)|(Australia\\/)(Adelaide|Brisbane|Broken_Hill|Currie|Darwin|Eucla|Hobart|Lindeman|Lord_Howe|Melbourne|Perth|Sydney)|(Canada\\/)(Atlantic|Central|Eastern|Mountain|Newfoundland|Pacific)|(Europe\\/)(Amsterdam|Andorra|Astrakhan|Athens|Belgrade|Berlin|Bratislava|Brussels|Bucharest|Budapest|Busingen|Chisinau|Copenhagen|Dublin|Gibraltar|Guernsey|Helsinki|Isle_of_Man|Istanbul|Jersey|Kaliningrad|Kiev|Kirov|Lisbon|Ljubljana|London|Luxembourg|Madrid|Malta|Mariehamn|Minsk|Monaco|Moscow|Oslo|Paris|Podgorica|Prague|Riga|Rome|Samara|San_Marino|Sarajevo|Saratov|Simferopol|Skopje|Sofia|Stockholm|Tallinn|Tirane|Ulyanovsk|Uzhgorod|Vaduz|Vatican|Vienna|Vilnius|Volgograd|Warsaw|Zagreb|Zaporozhye|Zurich)|(GMT)|(UTC)|(Indian\\/)(Antananarivo|Chagos|Christmas|Cocos|Comoro|Kerguelen|Mahe|Maldives|Mauritius|Mayotte|Reunion)|(Pacific\\/)(Apia|Auckland|Bougainville|Chatham|Chuuk|Easter|Efate|Enderbury|Fakaofo|Fiji|Funafuti|Galapagos|Gambier|Guadalcanal|Guam|Honolulu|Kiritimati|Kosrae|Kwajalein|Majuro|Marquesas|Midway|Nauru|Niue|Norfolk|Noumea|Pago_Pago|Palau|Pitcairn|Pohnpei|Port_Moresby|Rarotonga|Saipan|Tahiti|Tarawa|Tongatapu|Wake|Wallis)|(US\\/)(Alaska|Arizona|Central|Eastern|Hawaii|Mountain|Pacific))$","unit":null},{"default_value":"1024","description":"Sets
+      the size reserved for pg_stat_activity.query.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":8192,"int_min":100,"name":"track_activity_query_size","property_type":"INT","string_constraint":null,"unit":"B"},{"default_value":"0","description":"Vacuum
+      cost delay in milliseconds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100,"int_min":0,"name":"vacuum_cost_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"200","description":"Vacuum
+      cost amount available before napping.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"vacuum_cost_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"20","description":"Vacuum
+      cost for a page dirtied by vacuum.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_dirty","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1","description":"Vacuum
+      cost for a page found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_hit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"10","description":"Vacuum
+      cost for a page not found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_miss","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"4","description":"Sets
+      the maximum memory to be used for query workspaces.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"work_mem","property_type":"INT","string_constraint":null,"unit":"MB"}],"beta":false,"disabled":false,"end_of_life":"2024-11-14T00:00:00Z","name":"PostgreSQL-12","version":"12"},{"available_init_settings":[],"available_settings":[{"default_value":"200","description":"Background
+      writer sleep time between rounds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":10,"name":"bgwriter_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"512","description":"Number
+      of pages after which previously performed writes are flushed to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2048,"int_min":0,"name":"bgwriter_flush_after","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"100","description":"Background
+      writer maximum number of LRU pages to flush per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741823,"int_min":0,"name":"bgwriter_lru_maxpages","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Multiple
+      of the average buffer usage to free per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10,"int_min":0,"name":"bgwriter_lru_multiplier","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30","description":"Sets
+      the maximum time between automatic WAL checkpoints","float_max":null,"float_min":null,"hot_configurable":true,"int_max":21600,"int_min":30,"name":"checkpoint_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Sets
+      the delay in microseconds between transaction commit and flushing WAL to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100000,"int_min":0,"name":"commit_delay","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1000","description":"Sets
+      the time to wait on a lock before checking for deadlock.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":60000,"int_min":100,"name":"deadlock_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"100","description":"Sets
+      the default statistics target.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"default_statistics_target","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"off","description":"Sets
+      the default deferrable status of new transactions.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"default_transaction_deferrable","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"4096","description":"Sets
+      the planner s assumption about the size of the data cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1048576,"int_min":64,"name":"effective_cache_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"off","description":"Specifies
+      whether or not a hot standby will send feedback to the primary or upstream standby
+      about queries currently executing on the standby.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"hot_standby_feedback","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"3600000","description":"Sets
+      the maximum allowed duration of any idling transaction. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"idle_in_transaction_session_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Sets
+      the maximum allowed duration of any wait for a lock.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":0,"name":"lock_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"-1","description":"Sets
+      the minimum execution time above which autovacuum actions will be logged","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":-1,"name":"log_autovacuum_min_duration","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"64","description":"Sets
+      the maximum memory to be used for maintenance operations.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"maintenance_work_mem","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"100","description":"Sets
+      the maximum number of concurrent connections.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":10000,"int_min":50,"name":"max_connections","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"64","description":"Sets
+      the maximum number of locks per transaction.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":10,"name":"max_locks_per_transaction","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8","description":"Sets
+      the maximum number of parallel workers that can be active at one time.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Sets
+      the maximum number of parallel processes per executor node.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers_per_gather","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30000","description":"Sets
+      the maximum delay before canceling queries when a hot standby server is processing
+      streamed WAL data.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":180000,"int_min":0,"name":"max_standby_streaming_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"1024","description":"Maximum
+      size to let the WAL grow during automatic checkpoints. Be careful adjusting
+      this setting will use disk space","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10240,"int_min":256,"name":"max_wal_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"86400000","description":"Sets
+      the maximum allowed duration of any statement. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":30000,"name":"statement_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Maximum
+      number of TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_count","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between issuing TCP keepalives.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_idle","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_interval","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8192","description":"Sets
+      the maximum number of temporary buffers used by each session.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741824,"int_min":800,"name":"temp_buffers","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"-1","description":"Limits
+      the total size of all temporary files used by each session.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":-1,"name":"temp_file_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"GMT","description":"This
+      option sets the global timezone system variable.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"timezone","property_type":"STRING","string_constraint":"^((Africa\\/(Abidjan|Accra|Addis_Ababa|Algiers|Asmara|Bamako|Bangui|Banjul|Bissau|Blantyre|Brazzaville|Bujumbura|Cairo|Casablanca|Ceuta|Conakry|Dakar|Dar_es_Salaam|Djibouti|Douala|El_Aaiun|Freetown|Gaborone|Harare|Johannesburg|Juba|Kampala|Khartoum|Kigali|Kinshasa|Lagos|Libreville|Lome|Luanda|Lubumbashi|Lusaka|Malabo|Maputo|Maseru|Mbabane|Mogadishu|Monrovia|Nairobi|Ndjamena|Niamey|Nouakchott|Ouagadougou|Porto-Novo|Sao_Tome|Tripoli|Tunis|Windhoek))|(America\\/)(Adak|Anchorage|Anguilla|Antigua|Araguaina|Argentina\\/Buenos_Aires|Argentina\\/Catamarca|Argentina\\/Cordoba|Argentina\\/Jujuy|Argentina\\/La_Rioja|Argentina\\/Mendoza|Argentina\\/Rio_Gallegos|Argentina\\/Salta|Argentina\\/San_Juan|Argentina\\/San_Luis|Argentina\\/Tucuman|Argentina\\/Ushuaia|Aruba|Asuncion|Atikokan|Bahia|Bahia_Banderas|Barbados|Belem|Belize|Blanc-Sablon|Boa_Vista|Bogota|Boise|Cambridge_Bay|Campo_Grande|Cancun|Caracas|Cayenne|Cayman|Chicago|Chihuahua|Costa_Rica|Creston|Cuiaba|Curacao|Danmarkshavn|Dawson|Dawson_Creek|Denver|Detroit|Dominica|Edmonton|Eirunepe|El_Salvador|Fort_Nelson|Fortaleza|Glace_Bay|Goose_Bay|Grand_Turk|Grenada|Guadeloupe|Guatemala|Guayaquil|Guyana|Halifax|Havana|Hermosillo|Indiana\\/Indianapolis|Indiana\\/Knox|Indiana\\/Marengo|Indiana\\/Petersburg|Indiana\\/Tell_City|Indiana\\/Vevay|Indiana\\/Vincennes|Indiana\\/Winamac|Inuvik|Iqaluit|Jamaica|Juneau|Kentucky\\/Louisville|Kentucky\\/Monticello|Kralendijk|La_Paz|Lima|Los_Angeles|Lower_Princes|Maceio|Managua|Manaus|Marigot|Martinique|Matamoros|Mazatlan|Menominee|Merida|Metlakatla|Mexico_City|Miquelon|Moncton|Monterrey|Montevideo|Montserrat|Nassau|New_York|Nipigon|Nome|Noronha|North_Dakota\\/Beulah|North_Dakota\\/Center|North_Dakota\\/New_Salem|Nuuk|Ojinaga|Panama|Pangnirtung|Paramaribo|Phoenix|Port-au-Prince|Port_of_Spain|Porto_Velho|Puerto_Rico|Punta_Arenas|Rainy_River|Rankin_Inlet|Recife|Regina|Resolute|Rio_Branco|Santarem|Santiago|Santo_Domingo|Sao_Paulo|Scoresbysund|Sitka|St_Barthelemy|St_Johns|St_Kitts|St_Lucia|St_Thomas|St_Vincent|Swift_Current|Tegucigalpa|Thule|Thunder_Bay|Tijuana|Toronto|Tortola|Vancouver|Whitehorse|Winnipeg|Yakutat|Yellowknife)|(Antarctica\\/)(Casey|Davis|DumontDUrville|Macquarie|Mawson|McMurdo|Palmer|Rothera|Syowa|Troll|Vostok)|(Arctic\\/Longyearbyen)|(Asia\\/)(Aden|Almaty|Amman|Anadyr|Aqtau|Aqtobe|Ashgabat|Atyrau|Baghdad|Bahrain|Baku|Bangkok|Barnaul|Beirut|Bishkek|Brunei|Chita|Choibalsan|Colombo|Damascus|Dhaka|Dili|Dubai|Dushanbe|Famagusta|Gaza|Hebron|Ho_Chi_Minh|Hong_Kong|Hovd|Irkutsk|Jakarta|Jayapura|Jerusalem|Kabul|Kamchatka|Karachi|Kathmandu|Khandyga|Kolkata|Krasnoyarsk|Kuala_Lumpur|Kuching|Kuwait|Macau|Magadan|Makassar|Manila|Muscat|Nicosia|Novokuznetsk|Novosibirsk|Omsk|Oral|Phnom_Penh|Pontianak|Pyongyang|Qatar|Qostanay|Qyzylorda|Riyadh|Sakhalin|Samarkand|Seoul|Shanghai|Singapore|Srednekolymsk|Taipei|Tashkent|Tbilisi|Tehran|Thimphu|Tokyo|Tomsk|Ulaanbaatar|Urumqi|Ust-Nera|Vientiane|Vladivostok|Yakutsk|Yangon|Yekaterinburg|Yerevan)|(Atlantic\\/)(Azores|Bermuda|Canary|Cape_Verde|Faroe|Madeira|Reykjavik|South_Georgia|St_Helena|Stanley)|(Australia\\/)(Adelaide|Brisbane|Broken_Hill|Currie|Darwin|Eucla|Hobart|Lindeman|Lord_Howe|Melbourne|Perth|Sydney)|(Canada\\/)(Atlantic|Central|Eastern|Mountain|Newfoundland|Pacific)|(Europe\\/)(Amsterdam|Andorra|Astrakhan|Athens|Belgrade|Berlin|Bratislava|Brussels|Bucharest|Budapest|Busingen|Chisinau|Copenhagen|Dublin|Gibraltar|Guernsey|Helsinki|Isle_of_Man|Istanbul|Jersey|Kaliningrad|Kiev|Kirov|Lisbon|Ljubljana|London|Luxembourg|Madrid|Malta|Mariehamn|Minsk|Monaco|Moscow|Oslo|Paris|Podgorica|Prague|Riga|Rome|Samara|San_Marino|Sarajevo|Saratov|Simferopol|Skopje|Sofia|Stockholm|Tallinn|Tirane|Ulyanovsk|Uzhgorod|Vaduz|Vatican|Vienna|Vilnius|Volgograd|Warsaw|Zagreb|Zaporozhye|Zurich)|(GMT)|(UTC)|(Indian\\/)(Antananarivo|Chagos|Christmas|Cocos|Comoro|Kerguelen|Mahe|Maldives|Mauritius|Mayotte|Reunion)|(Pacific\\/)(Apia|Auckland|Bougainville|Chatham|Chuuk|Easter|Efate|Enderbury|Fakaofo|Fiji|Funafuti|Galapagos|Gambier|Guadalcanal|Guam|Honolulu|Kiritimati|Kosrae|Kwajalein|Majuro|Marquesas|Midway|Nauru|Niue|Norfolk|Noumea|Pago_Pago|Palau|Pitcairn|Pohnpei|Port_Moresby|Rarotonga|Saipan|Tahiti|Tarawa|Tongatapu|Wake|Wallis)|(US\\/)(Alaska|Arizona|Central|Eastern|Hawaii|Mountain|Pacific))$","unit":null},{"default_value":"1024","description":"Sets
+      the size reserved for pg_stat_activity.query.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":8192,"int_min":100,"name":"track_activity_query_size","property_type":"INT","string_constraint":null,"unit":"B"},{"default_value":"0","description":"Vacuum
+      cost delay in milliseconds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100,"int_min":0,"name":"vacuum_cost_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"200","description":"Vacuum
+      cost amount available before napping.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"vacuum_cost_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"20","description":"Vacuum
+      cost for a page dirtied by vacuum.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_dirty","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1","description":"Vacuum
+      cost for a page found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_hit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"10","description":"Vacuum
+      cost for a page not found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_miss","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"4","description":"Sets
+      the maximum memory to be used for query workspaces.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"work_mem","property_type":"INT","string_constraint":null,"unit":"MB"}],"beta":false,"disabled":true,"end_of_life":"2023-11-09T00:00:00Z","name":"PostgreSQL-11","version":"11"},{"available_init_settings":[],"available_settings":[{"default_value":"200","description":"Background
+      writer sleep time between rounds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":10,"name":"bgwriter_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"512","description":"Number
+      of pages after which previously performed writes are flushed to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2048,"int_min":0,"name":"bgwriter_flush_after","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"100","description":"Background
+      writer maximum number of LRU pages to flush per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741823,"int_min":0,"name":"bgwriter_lru_maxpages","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Multiple
+      of the average buffer usage to free per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10,"int_min":0,"name":"bgwriter_lru_multiplier","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30","description":"Sets
+      the maximum time between automatic WAL checkpoints","float_max":null,"float_min":null,"hot_configurable":true,"int_max":21600,"int_min":30,"name":"checkpoint_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Sets
+      the delay in microseconds between transaction commit and flushing WAL to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100000,"int_min":0,"name":"commit_delay","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1000","description":"Sets
+      the time to wait on a lock before checking for deadlock.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":60000,"int_min":100,"name":"deadlock_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"100","description":"Sets
+      the default statistics target.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"default_statistics_target","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"off","description":"Sets
+      the default deferrable status of new transactions.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"default_transaction_deferrable","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"4096","description":"Sets
+      the planner s assumption about the size of the data cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1048576,"int_min":64,"name":"effective_cache_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"off","description":"Specifies
+      whether or not a hot standby will send feedback to the primary or upstream standby
+      about queries currently executing on the standby.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"hot_standby_feedback","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"3600000","description":"Sets
+      the maximum allowed duration of any idling transaction. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"idle_in_transaction_session_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Sets
+      the maximum allowed duration of any wait for a lock.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":0,"name":"lock_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"-1","description":"Sets
+      the minimum execution time above which autovacuum actions will be logged","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":-1,"name":"log_autovacuum_min_duration","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"64","description":"Sets
+      the maximum memory to be used for maintenance operations.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"maintenance_work_mem","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"100","description":"Sets
+      the maximum number of concurrent connections.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":10000,"int_min":50,"name":"max_connections","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"64","description":"Sets
+      the maximum number of locks per transaction.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":10,"name":"max_locks_per_transaction","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8","description":"Sets
+      the maximum number of parallel workers that can be active at one time.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Sets
+      the maximum number of parallel processes per executor node.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers_per_gather","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"30000","description":"Sets
+      the maximum delay before canceling queries when a hot standby server is processing
+      streamed WAL data.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":180000,"int_min":0,"name":"max_standby_streaming_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"1024","description":"Maximum
+      size to let the WAL grow during automatic checkpoints. Be careful adjusting
+      this setting will use disk space","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10240,"int_min":256,"name":"max_wal_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"86400000","description":"Sets
+      the maximum allowed duration of any statement. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":30000,"name":"statement_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Maximum
+      number of TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_count","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between issuing TCP keepalives.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_idle","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_interval","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8192","description":"Sets
+      the maximum number of temporary buffers used by each session.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741824,"int_min":800,"name":"temp_buffers","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"-1","description":"Limits
+      the total size of all temporary files used by each session.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":-1,"name":"temp_file_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"GMT","description":"This
+      option sets the global timezone system variable.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"timezone","property_type":"STRING","string_constraint":"^((Africa\\/(Abidjan|Accra|Addis_Ababa|Algiers|Asmara|Bamako|Bangui|Banjul|Bissau|Blantyre|Brazzaville|Bujumbura|Cairo|Casablanca|Ceuta|Conakry|Dakar|Dar_es_Salaam|Djibouti|Douala|El_Aaiun|Freetown|Gaborone|Harare|Johannesburg|Juba|Kampala|Khartoum|Kigali|Kinshasa|Lagos|Libreville|Lome|Luanda|Lubumbashi|Lusaka|Malabo|Maputo|Maseru|Mbabane|Mogadishu|Monrovia|Nairobi|Ndjamena|Niamey|Nouakchott|Ouagadougou|Porto-Novo|Sao_Tome|Tripoli|Tunis|Windhoek))|(America\\/)(Adak|Anchorage|Anguilla|Antigua|Araguaina|Argentina\\/Buenos_Aires|Argentina\\/Catamarca|Argentina\\/Cordoba|Argentina\\/Jujuy|Argentina\\/La_Rioja|Argentina\\/Mendoza|Argentina\\/Rio_Gallegos|Argentina\\/Salta|Argentina\\/San_Juan|Argentina\\/San_Luis|Argentina\\/Tucuman|Argentina\\/Ushuaia|Aruba|Asuncion|Atikokan|Bahia|Bahia_Banderas|Barbados|Belem|Belize|Blanc-Sablon|Boa_Vista|Bogota|Boise|Cambridge_Bay|Campo_Grande|Cancun|Caracas|Cayenne|Cayman|Chicago|Chihuahua|Costa_Rica|Creston|Cuiaba|Curacao|Danmarkshavn|Dawson|Dawson_Creek|Denver|Detroit|Dominica|Edmonton|Eirunepe|El_Salvador|Fort_Nelson|Fortaleza|Glace_Bay|Goose_Bay|Grand_Turk|Grenada|Guadeloupe|Guatemala|Guayaquil|Guyana|Halifax|Havana|Hermosillo|Indiana\\/Indianapolis|Indiana\\/Knox|Indiana\\/Marengo|Indiana\\/Petersburg|Indiana\\/Tell_City|Indiana\\/Vevay|Indiana\\/Vincennes|Indiana\\/Winamac|Inuvik|Iqaluit|Jamaica|Juneau|Kentucky\\/Louisville|Kentucky\\/Monticello|Kralendijk|La_Paz|Lima|Los_Angeles|Lower_Princes|Maceio|Managua|Manaus|Marigot|Martinique|Matamoros|Mazatlan|Menominee|Merida|Metlakatla|Mexico_City|Miquelon|Moncton|Monterrey|Montevideo|Montserrat|Nassau|New_York|Nipigon|Nome|Noronha|North_Dakota\\/Beulah|North_Dakota\\/Center|North_Dakota\\/New_Salem|Nuuk|Ojinaga|Panama|Pangnirtung|Paramaribo|Phoenix|Port-au-Prince|Port_of_Spain|Porto_Velho|Puerto_Rico|Punta_Arenas|Rainy_River|Rankin_Inlet|Recife|Regina|Resolute|Rio_Branco|Santarem|Santiago|Santo_Domingo|Sao_Paulo|Scoresbysund|Sitka|St_Barthelemy|St_Johns|St_Kitts|St_Lucia|St_Thomas|St_Vincent|Swift_Current|Tegucigalpa|Thule|Thunder_Bay|Tijuana|Toronto|Tortola|Vancouver|Whitehorse|Winnipeg|Yakutat|Yellowknife)|(Antarctica\\/)(Casey|Davis|DumontDUrville|Macquarie|Mawson|McMurdo|Palmer|Rothera|Syowa|Troll|Vostok)|(Arctic\\/Longyearbyen)|(Asia\\/)(Aden|Almaty|Amman|Anadyr|Aqtau|Aqtobe|Ashgabat|Atyrau|Baghdad|Bahrain|Baku|Bangkok|Barnaul|Beirut|Bishkek|Brunei|Chita|Choibalsan|Colombo|Damascus|Dhaka|Dili|Dubai|Dushanbe|Famagusta|Gaza|Hebron|Ho_Chi_Minh|Hong_Kong|Hovd|Irkutsk|Jakarta|Jayapura|Jerusalem|Kabul|Kamchatka|Karachi|Kathmandu|Khandyga|Kolkata|Krasnoyarsk|Kuala_Lumpur|Kuching|Kuwait|Macau|Magadan|Makassar|Manila|Muscat|Nicosia|Novokuznetsk|Novosibirsk|Omsk|Oral|Phnom_Penh|Pontianak|Pyongyang|Qatar|Qostanay|Qyzylorda|Riyadh|Sakhalin|Samarkand|Seoul|Shanghai|Singapore|Srednekolymsk|Taipei|Tashkent|Tbilisi|Tehran|Thimphu|Tokyo|Tomsk|Ulaanbaatar|Urumqi|Ust-Nera|Vientiane|Vladivostok|Yakutsk|Yangon|Yekaterinburg|Yerevan)|(Atlantic\\/)(Azores|Bermuda|Canary|Cape_Verde|Faroe|Madeira|Reykjavik|South_Georgia|St_Helena|Stanley)|(Australia\\/)(Adelaide|Brisbane|Broken_Hill|Currie|Darwin|Eucla|Hobart|Lindeman|Lord_Howe|Melbourne|Perth|Sydney)|(Canada\\/)(Atlantic|Central|Eastern|Mountain|Newfoundland|Pacific)|(Europe\\/)(Amsterdam|Andorra|Astrakhan|Athens|Belgrade|Berlin|Bratislava|Brussels|Bucharest|Budapest|Busingen|Chisinau|Copenhagen|Dublin|Gibraltar|Guernsey|Helsinki|Isle_of_Man|Istanbul|Jersey|Kaliningrad|Kiev|Kirov|Lisbon|Ljubljana|London|Luxembourg|Madrid|Malta|Mariehamn|Minsk|Monaco|Moscow|Oslo|Paris|Podgorica|Prague|Riga|Rome|Samara|San_Marino|Sarajevo|Saratov|Simferopol|Skopje|Sofia|Stockholm|Tallinn|Tirane|Ulyanovsk|Uzhgorod|Vaduz|Vatican|Vienna|Vilnius|Volgograd|Warsaw|Zagreb|Zaporozhye|Zurich)|(GMT)|(UTC)|(Indian\\/)(Antananarivo|Chagos|Christmas|Cocos|Comoro|Kerguelen|Mahe|Maldives|Mauritius|Mayotte|Reunion)|(Pacific\\/)(Apia|Auckland|Bougainville|Chatham|Chuuk|Easter|Efate|Enderbury|Fakaofo|Fiji|Funafuti|Galapagos|Gambier|Guadalcanal|Guam|Honolulu|Kiritimati|Kosrae|Kwajalein|Majuro|Marquesas|Midway|Nauru|Niue|Norfolk|Noumea|Pago_Pago|Palau|Pitcairn|Pohnpei|Port_Moresby|Rarotonga|Saipan|Tahiti|Tarawa|Tongatapu|Wake|Wallis)|(US\\/)(Alaska|Arizona|Central|Eastern|Hawaii|Mountain|Pacific))$","unit":null},{"default_value":"0","description":"Vacuum
+      cost delay in milliseconds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100,"int_min":0,"name":"vacuum_cost_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"200","description":"Vacuum
+      cost amount available before napping.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"vacuum_cost_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"20","description":"Vacuum
+      cost for a page dirtied by vacuum.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_dirty","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1","description":"Vacuum
+      cost for a page found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_hit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"10","description":"Vacuum
+      cost for a page not found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_miss","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"4","description":"Sets
+      the maximum memory to be used for query workspaces.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"work_mem","property_type":"INT","string_constraint":null,"unit":"MB"}],"beta":false,"disabled":true,"end_of_life":"2022-11-10T00:00:00Z","name":"PostgreSQL-10","version":"10"},{"available_init_settings":[],"available_settings":[{"default_value":"200","description":"Background
+      writer sleep time between rounds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":10,"name":"bgwriter_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"512","description":"Number
+      of pages after which previously performed writes are flushed to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2048,"int_min":0,"name":"bgwriter_flush_after","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"100","description":"Background
+      writer maximum number of LRU pages to flush per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741823,"int_min":0,"name":"bgwriter_lru_maxpages","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Multiple
+      of the average buffer usage to free per round.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10,"int_min":0,"name":"bgwriter_lru_multiplier","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Sets
+      the delay in microseconds between transaction commit and flushing WAL to disk.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100000,"int_min":0,"name":"commit_delay","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1000","description":"Sets
+      the time to wait on a lock before checking for deadlock.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":60000,"int_min":100,"name":"deadlock_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"100","description":"Sets
+      the default statistics target.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"default_statistics_target","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"off","description":"Sets
+      the default deferrable status of new transactions.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"default_transaction_deferrable","property_type":"BOOLEAN","string_constraint":null,"unit":null},{"default_value":"4096","description":"Sets
+      the planner s assumption about the size of the data cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1048576,"int_min":64,"name":"effective_cache_size","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"3600000","description":"Sets
+      the maximum allowed duration of any idling transaction. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"idle_in_transaction_session_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Sets
+      the maximum allowed duration of any wait for a lock.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":0,"name":"lock_timeout","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"64","description":"Sets
+      the maximum memory to be used for maintenance operations.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"maintenance_work_mem","property_type":"INT","string_constraint":null,"unit":"MB"},{"default_value":"100","description":"Sets
+      the maximum number of concurrent connections.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":10000,"int_min":50,"name":"max_connections","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"64","description":"Sets
+      the maximum number of locks per transaction.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":10,"name":"max_locks_per_transaction","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"2","description":"Sets
+      the maximum number of parallel processes per executor node.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1024,"int_min":0,"name":"max_parallel_workers_per_gather","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"86400000","description":"Sets
+      the maximum allowed duration of any statement. Value in ms","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":30000,"name":"statement_timeout","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"0","description":"Maximum
+      number of TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_count","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between issuing TCP keepalives.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_idle","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"0","description":"Time
+      between TCP keepalive retransmits.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2147483647,"int_min":0,"name":"tcp_keepalives_interval","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"8192","description":"Sets
+      the maximum number of temporary buffers used by each session.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":1073741824,"int_min":800,"name":"temp_buffers","property_type":"INT","string_constraint":null,"unit":"kB"},{"default_value":"-1","description":"Limits
+      the total size of all temporary files used by each session.","float_max":null,"float_min":null,"hot_configurable":false,"int_max":2147483647,"int_min":-1,"name":"temp_file_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"GMT","description":"This
+      option sets the global timezone system variable.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":null,"int_min":null,"name":"timezone","property_type":"STRING","string_constraint":"^((Africa\\/(Abidjan|Accra|Addis_Ababa|Algiers|Asmara|Bamako|Bangui|Banjul|Bissau|Blantyre|Brazzaville|Bujumbura|Cairo|Casablanca|Ceuta|Conakry|Dakar|Dar_es_Salaam|Djibouti|Douala|El_Aaiun|Freetown|Gaborone|Harare|Johannesburg|Juba|Kampala|Khartoum|Kigali|Kinshasa|Lagos|Libreville|Lome|Luanda|Lubumbashi|Lusaka|Malabo|Maputo|Maseru|Mbabane|Mogadishu|Monrovia|Nairobi|Ndjamena|Niamey|Nouakchott|Ouagadougou|Porto-Novo|Sao_Tome|Tripoli|Tunis|Windhoek))|(America\\/)(Adak|Anchorage|Anguilla|Antigua|Araguaina|Argentina\\/Buenos_Aires|Argentina\\/Catamarca|Argentina\\/Cordoba|Argentina\\/Jujuy|Argentina\\/La_Rioja|Argentina\\/Mendoza|Argentina\\/Rio_Gallegos|Argentina\\/Salta|Argentina\\/San_Juan|Argentina\\/San_Luis|Argentina\\/Tucuman|Argentina\\/Ushuaia|Aruba|Asuncion|Atikokan|Bahia|Bahia_Banderas|Barbados|Belem|Belize|Blanc-Sablon|Boa_Vista|Bogota|Boise|Cambridge_Bay|Campo_Grande|Cancun|Caracas|Cayenne|Cayman|Chicago|Chihuahua|Costa_Rica|Creston|Cuiaba|Curacao|Danmarkshavn|Dawson|Dawson_Creek|Denver|Detroit|Dominica|Edmonton|Eirunepe|El_Salvador|Fort_Nelson|Fortaleza|Glace_Bay|Goose_Bay|Grand_Turk|Grenada|Guadeloupe|Guatemala|Guayaquil|Guyana|Halifax|Havana|Hermosillo|Indiana\\/Indianapolis|Indiana\\/Knox|Indiana\\/Marengo|Indiana\\/Petersburg|Indiana\\/Tell_City|Indiana\\/Vevay|Indiana\\/Vincennes|Indiana\\/Winamac|Inuvik|Iqaluit|Jamaica|Juneau|Kentucky\\/Louisville|Kentucky\\/Monticello|Kralendijk|La_Paz|Lima|Los_Angeles|Lower_Princes|Maceio|Managua|Manaus|Marigot|Martinique|Matamoros|Mazatlan|Menominee|Merida|Metlakatla|Mexico_City|Miquelon|Moncton|Monterrey|Montevideo|Montserrat|Nassau|New_York|Nipigon|Nome|Noronha|North_Dakota\\/Beulah|North_Dakota\\/Center|North_Dakota\\/New_Salem|Nuuk|Ojinaga|Panama|Pangnirtung|Paramaribo|Phoenix|Port-au-Prince|Port_of_Spain|Porto_Velho|Puerto_Rico|Punta_Arenas|Rainy_River|Rankin_Inlet|Recife|Regina|Resolute|Rio_Branco|Santarem|Santiago|Santo_Domingo|Sao_Paulo|Scoresbysund|Sitka|St_Barthelemy|St_Johns|St_Kitts|St_Lucia|St_Thomas|St_Vincent|Swift_Current|Tegucigalpa|Thule|Thunder_Bay|Tijuana|Toronto|Tortola|Vancouver|Whitehorse|Winnipeg|Yakutat|Yellowknife)|(Antarctica\\/)(Casey|Davis|DumontDUrville|Macquarie|Mawson|McMurdo|Palmer|Rothera|Syowa|Troll|Vostok)|(Arctic\\/Longyearbyen)|(Asia\\/)(Aden|Almaty|Amman|Anadyr|Aqtau|Aqtobe|Ashgabat|Atyrau|Baghdad|Bahrain|Baku|Bangkok|Barnaul|Beirut|Bishkek|Brunei|Chita|Choibalsan|Colombo|Damascus|Dhaka|Dili|Dubai|Dushanbe|Famagusta|Gaza|Hebron|Ho_Chi_Minh|Hong_Kong|Hovd|Irkutsk|Jakarta|Jayapura|Jerusalem|Kabul|Kamchatka|Karachi|Kathmandu|Khandyga|Kolkata|Krasnoyarsk|Kuala_Lumpur|Kuching|Kuwait|Macau|Magadan|Makassar|Manila|Muscat|Nicosia|Novokuznetsk|Novosibirsk|Omsk|Oral|Phnom_Penh|Pontianak|Pyongyang|Qatar|Qostanay|Qyzylorda|Riyadh|Sakhalin|Samarkand|Seoul|Shanghai|Singapore|Srednekolymsk|Taipei|Tashkent|Tbilisi|Tehran|Thimphu|Tokyo|Tomsk|Ulaanbaatar|Urumqi|Ust-Nera|Vientiane|Vladivostok|Yakutsk|Yangon|Yekaterinburg|Yerevan)|(Atlantic\\/)(Azores|Bermuda|Canary|Cape_Verde|Faroe|Madeira|Reykjavik|South_Georgia|St_Helena|Stanley)|(Australia\\/)(Adelaide|Brisbane|Broken_Hill|Currie|Darwin|Eucla|Hobart|Lindeman|Lord_Howe|Melbourne|Perth|Sydney)|(Canada\\/)(Atlantic|Central|Eastern|Mountain|Newfoundland|Pacific)|(Europe\\/)(Amsterdam|Andorra|Astrakhan|Athens|Belgrade|Berlin|Bratislava|Brussels|Bucharest|Budapest|Busingen|Chisinau|Copenhagen|Dublin|Gibraltar|Guernsey|Helsinki|Isle_of_Man|Istanbul|Jersey|Kaliningrad|Kiev|Kirov|Lisbon|Ljubljana|London|Luxembourg|Madrid|Malta|Mariehamn|Minsk|Monaco|Moscow|Oslo|Paris|Podgorica|Prague|Riga|Rome|Samara|San_Marino|Sarajevo|Saratov|Simferopol|Skopje|Sofia|Stockholm|Tallinn|Tirane|Ulyanovsk|Uzhgorod|Vaduz|Vatican|Vienna|Vilnius|Volgograd|Warsaw|Zagreb|Zaporozhye|Zurich)|(GMT)|(UTC)|(Indian\\/)(Antananarivo|Chagos|Christmas|Cocos|Comoro|Kerguelen|Mahe|Maldives|Mauritius|Mayotte|Reunion)|(Pacific\\/)(Apia|Auckland|Bougainville|Chatham|Chuuk|Easter|Efate|Enderbury|Fakaofo|Fiji|Funafuti|Galapagos|Gambier|Guadalcanal|Guam|Honolulu|Kiritimati|Kosrae|Kwajalein|Majuro|Marquesas|Midway|Nauru|Niue|Norfolk|Noumea|Pago_Pago|Palau|Pitcairn|Pohnpei|Port_Moresby|Rarotonga|Saipan|Tahiti|Tarawa|Tongatapu|Wake|Wallis)|(US\\/)(Alaska|Arizona|Central|Eastern|Hawaii|Mountain|Pacific))$","unit":null},{"default_value":"0","description":"Vacuum
+      cost delay in milliseconds.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":100,"int_min":0,"name":"vacuum_cost_delay","property_type":"INT","string_constraint":null,"unit":"ms"},{"default_value":"200","description":"Vacuum
+      cost amount available before napping.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":1,"name":"vacuum_cost_limit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"20","description":"Vacuum
+      cost for a page dirtied by vacuum.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_dirty","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"1","description":"Vacuum
+      cost for a page found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_hit","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"10","description":"Vacuum
+      cost for a page not found in the buffer cache.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":10000,"int_min":0,"name":"vacuum_cost_page_miss","property_type":"INT","string_constraint":null,"unit":null},{"default_value":"4","description":"Sets
+      the maximum memory to be used for query workspaces.","float_max":null,"float_min":null,"hot_configurable":true,"int_max":2097151,"int_min":1,"name":"work_mem","property_type":"INT","string_constraint":null,"unit":"MB"}],"beta":false,"disabled":true,"end_of_life":"2021-11-11T00:00:00Z","name":"PostgreSQL-9.6","version":"9.6"}]}],"total_count":2}'
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Oct 2023 15:51:07 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - bbd636d9-8cef-4de1-9191-8efbf8d8a3ae
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","name":"test-rdb-rr-basic","engine":"PostgreSQL-15","user_name":"my_initial_user","password":"thiZ_is_v\u0026ry_s3cret","node_type":"db-dev-s","is_ha_cluster":false,"disable_backup":true,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"init_settings":null,"volume_type":"lssd","volume_size":0,"init_endpoints":[{"load_balancer":{}}],"backup_same_region":false}'
     form: {}
     headers:
       Content-Type:
       - application/json
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances
     method: POST
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"provisioning","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":null,"endpoints":[],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[],"status":"provisioning","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "703"
+      - "790"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:22:52 GMT
+      - Fri, 20 Oct 2023 15:58:20 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -32,7 +363,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 76020397-2e95-4aca-a4fe-460c310ac07d
+      - c9e95ad3-519f-4a37-ad71-81e6f30c3523
     status: 200 OK
     code: 200
     duration: ""
@@ -41,21 +372,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"provisioning","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":null,"endpoints":[],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[],"status":"provisioning","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "703"
+      - "790"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:22:52 GMT
+      - Fri, 20 Oct 2023 15:58:20 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -65,7 +396,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ff458911-0465-4d6e-8db6-9b8ef8018aa0
+      - 39af4d7a-ed3c-4bbc-a902-3cdf9c50a179
     status: 200 OK
     code: 200
     duration: ""
@@ -74,21 +405,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"provisioning","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":null,"endpoints":[],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[],"status":"provisioning","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "703"
+      - "790"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:23:22 GMT
+      - Fri, 20 Oct 2023 15:58:51 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -98,7 +429,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 48087714-fe62-43ca-af0b-f7d3981c2998
+      - ce28705f-09ea-4f54-aea5-6b6b4bfc0a6f
     status: 200 OK
     code: 200
     duration: ""
@@ -107,21 +438,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"initializing","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":null,"endpoints":[],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[],"status":"initializing","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "703"
+      - "790"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:23:52 GMT
+      - Fri, 20 Oct 2023 15:59:21 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -131,7 +462,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - c894656d-012f-4e14-a13e-bf28772f1001
+      - bdc429f0-4cdc-452e-a7c2-c5f6222a2b73
     status: 200 OK
     code: 200
     duration: ""
@@ -140,21 +471,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"initializing","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":null,"endpoints":[],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[],"status":"initializing","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "703"
+      - "790"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:24:23 GMT
+      - Fri, 20 Oct 2023 15:59:51 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -164,7 +495,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 8f5d2150-0ef2-4591-a2c8-d3a0c602fbe4
+      - e47fc5f8-b273-4c2b-8956-60d0234f981d
     status: 200 OK
     code: 200
     duration: ""
@@ -173,21 +504,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"initializing","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":null,"endpoints":[],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[],"status":"initializing","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "703"
+      - "790"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:24:53 GMT
+      - Fri, 20 Oct 2023 16:00:22 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -197,7 +528,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - e490f4b6-097a-40a0-a071-16f23fa64009
+      - 522cd6c2-eca7-43bb-a32d-0d911c5e7485
     status: 200 OK
     code: 200
     duration: ""
@@ -206,21 +537,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"initializing","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":null,"endpoints":[],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[],"status":"initializing","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "703"
+      - "790"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:25:24 GMT
+      - Fri, 20 Oct 2023 16:00:52 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -230,7 +561,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9f6198bf-e09f-444a-8148-30555d1c5745
+      - 09cb61aa-a0d5-433c-9706-6aa8a105bd70
     status: 200 OK
     code: 200
     duration: ""
@@ -239,21 +570,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"initializing","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311},"endpoints":[{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311}],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_connections","value":"100"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"},{"name":"work_mem","value":"4"}],"status":"ready","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "703"
+      - "1282"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:25:54 GMT
+      - Fri, 20 Oct 2023 16:01:22 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -263,7 +594,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0e9c1323-f1d3-4d2b-9b4d-cb7b9641d9f7
+      - cf445ea4-bb98-4268-868c-d4bfe4006b77
     status: 200 OK
     code: 200
     duration: ""
@@ -272,21 +603,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d/certificate
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"initializing","engine":"PostgreSQL-14","endpoint":null,"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"content":"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURwRENDQW95Z0F3SUJBZ0lVRVpQakx1ZzBMMGJIMDdnYVNEaXVmaC9ldXY0d0RRWUpLb1pJaHZjTkFRRUwKQlFBd1dERUxNQWtHQTFVRUJoTUNSbEl4RGpBTUJnTlZCQWdNQlZCaGNtbHpNUTR3REFZRFZRUUhEQVZRWVhKcApjekVSTUE4R0ExVUVDZ3dJVTJOaGJHVjNZWGt4RmpBVUJnTlZCQU1NRFRVeExqRTFPUzR5Tmk0eE5EZ3dIaGNOCk1qTXhNREl3TVRVMU9EVTVXaGNOTXpNeE1ERTNNVFUxT0RVNVdqQllNUXN3Q1FZRFZRUUdFd0pHVWpFT01Bd0cKQTFVRUNBd0ZVR0Z5YVhNeERqQU1CZ05WQkFjTUJWQmhjbWx6TVJFd0R3WURWUVFLREFoVFkyRnNaWGRoZVRFVwpNQlFHQTFVRUF3d05OVEV1TVRVNUxqSTJMakUwT0RDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDCkFRb0NnZ0VCQU1sVkgvTzZoZW95eHB3MmxEdFJVck9RVXJzOFhaMWVtV21qbmxWWTVNNC9MUFE5Q09UWlBCek0KQUliUDNSem4rci8zanM0OTRBNzhuS3JaMVNiYWxFT2M3cTBNOUd6TnQ2R1BSbjRlS0FYbUtwcHpSQ2pMc2NEdAo0OVdtTmNpS0Y3REZVSDVxMWxmQjdHalZQc0lHcEUyYitPMFNEVFJ4ZlZBM1Ywd1FSRm5nRGpuZzdKbnRvZVRMCitrcnROWDFrNldvTUlsVEkzcUt6NG9NREF3b0hhS3NTdVVYZXlDZDVSRzVzUlUwYXJDV1lwZFdDRFlZS0JzR1oKekdVazRjUEdxaWVMaVNkVFB3ODU0SDRJbGkrOGJnU0w2Z1RYUFIwVFZ3WTZGdjFBdkxYWGlHdWdPazZaeWdXWQo4bnpBMXk2Nzdza3cvNVM2YkpteDdEMkRmNC9tMTFjQ0F3RUFBYU5tTUdRd1lnWURWUjBSQkZzd1dZSU5OVEV1Ck1UVTVMakkyTGpFME9JSThjbmN0Tm1JellUZ3dOemd0WXpBM1lTMDBNemhqTFRnM05EVXROR00zT0ROak9HUXcKT1RGa0xuSmtZaTVtY2kxd1lYSXVjMk4zTG1Oc2IzVmtod1F6RDhaYWh3UXpueHFVTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRREZEMlBEenFnVHc2NDlCQy9memtHWnllMXkxSTh3MW5SOTFDUC81RHVGMzdwWHAyekVWd2VqCkJhOFhLU1p2VmRETUJ2d2tpZ1RMTklTdG04TzhIdzhFYWxIMGlTTENYM2ZwYlJJRVV2T2tlTHJ0ZFZJbGU1OEgKN3Qyem1LRlVQUnpPcWxJdGpvK1dkeXFqR0VaRC9ScXR3aFBkWXJZSkVJc2ZiTDZsd3N1Y3N1UnFkTlJGSDROaQpoMkNhaUozL1IwRFBkbE1lUTlwdVdzT1pmb3FHTWNoRHgzZTVzU01sZVNRL2xSV3Zoc214d3g3N1c0K21nWi9BCmx1cDh1VTYzTHVidmZyd3M1MWFlZk1UQlU5VGZ2Rmg4TGJiNHlHVy83V09ZN2ltUEgvY0lJa0d3WTROK2JZVFgKcnI2WW5tZXZxeENGMHEreCtsMkhpRXFRN3c1NG9LMU8KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=","content_type":"application/x-pem-file","name":"ssl_certificate"}'
     headers:
       Content-Length:
-      - "703"
+      - "1845"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:26:25 GMT
+      - Fri, 20 Oct 2023 16:01:22 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -296,98 +627,32 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 125851e7-0d6c-4ab8-ab5f-96841ac636ad
+      - d165e7eb-14ec-4a9a-b7e9-148637ca60e5
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
-    method: GET
-  response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"ready","engine":"PostgreSQL-14","endpoint":{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}},"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[{"name":"work_mem","value":"4"},{"name":"max_connections","value":"100"},{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"}],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}}],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
-    headers:
-      Content-Length:
-      - "1174"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 18 Aug 2022 11:26:55 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 693c278b-64bb-4cd1-a641-d56bf239fc9f
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460/certificate
-    method: GET
-  response:
-    body: '{"name":"ssl_certificate","content_type":"application/x-pem-file","content":"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQ5VENDQXQyZ0F3SUJBZ0lVWUoxeHN4em1LWDFzcmY3c3E0S0tJbHlZRVRVd0RRWUpLb1pJaHZjTkFRRUwKQlFBd2dZY3hDekFKQmdOVkJBWVRBa1pTTVE0d0RBWURWUVFJREFWUVlYSnBjekVPTUF3R0ExVUVCd3dGVUdGeQphWE14RVRBUEJnTlZCQW9NQ0ZOallXeGxkMkY1TVVVd1F3WURWUVFERER4eWR5MDJNelU0WmpOa1pDMDNZamcxCkxUUTVZMkV0WVRFMFlTMHdNbVl4TW1RME5XVTBOakF1Y21SaUxtWnlMWEJoY2k1elkzY3VZMnh2ZFdRd0hoY04KTWpJd09ERTRNVEV5TXpRNVdoY05Nekl3T0RFMU1URXlNelE1V2pDQmh6RUxNQWtHQTFVRUJoTUNSbEl4RGpBTQpCZ05WQkFnTUJWQmhjbWx6TVE0d0RBWURWUVFIREFWUVlYSnBjekVSTUE4R0ExVUVDZ3dJVTJOaGJHVjNZWGt4ClJUQkRCZ05WQkFNTVBISjNMVFl6TlRobU0yUmtMVGRpT0RVdE5EbGpZUzFoTVRSaExUQXlaakV5WkRRMVpUUTIKTUM1eVpHSXVabkl0Y0dGeUxuTmpkeTVqYkc5MVpEQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQwpBUW9DZ2dFQkFNdG5OZ0dwcklxZ2FldHNtMG5kbE14K3BudGJpaW9ZdisrU3Q3ZUd0YkprWHZZb1kxUzZrWW1uCmRqTUdNRzFFc2E5SlUyaG8rTFNvKzFLVDh0cXZISFE2dGlNdU9ub0Zpb1pPVE1UVHZNeU5FWVV1R3V1SDltMG4KSU1mbkN2QXFYcDYyTy9jeEtrN3VROERuQnJUcnlXeGpZRGlodzdGLzFscENtS2ZlblVDYnpmeEhicFpQUERqWgpzUTNkSnlYZUI2eitGZEpBanl3OFdaTXRJOTA3UHdnbStOVHhoTVdlaTMyanpoSzc1Vm05aU1sQXJDMStWSXRMCkVlMkI2TnYxNVgwbjV5TzFhT09MZ3VOeDJ2RWYwQWQ4ODFFY3loUlhZeUJ6TVJ1b3FTZ1AvSVNnejhhSVVEUnQKME1GQXBtcG53a04zbHA2RklKbnZJNEhKUGlGcGxjVUNBd0VBQWFOWE1GVXdVd1lEVlIwUkJFd3dTb0k4Y25jdApOak0xT0dZelpHUXROMkk0TlMwME9XTmhMV0V4TkdFdE1ESm1NVEprTkRWbE5EWXdMbkprWWk1bWNpMXdZWEl1CmMyTjNMbU5zYjNWa2h3UXpua1RjaHdURG1rUXdNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNmeWdFMGJuVEMKYU43Y0NjTDVRaExSTmNRRjk4L0ZmdWtZK2UzS1JFVmFjNXVFY3FrR1k0cDhLYzdSbEdwRmlYQ1ZtclU4RkFpcQpxVDZ1N3NNdDZRQ1MwYzJ5Sk4xdnFuajF4RU50TkladitZR0g2ZThtZlNRdjVGYlJlWXlOQXJ2TE9vaTBSeERaCktyUm5seEU2RU9mOXptVHBHZFR5cXZJRlZIcnNBVS8wNnlmMlhvZG1EQjkwVUpZditjTk9pSmxheVFYUUtKcEIKM3ByYkFETDR4alY2UU9EZDFDdkRFZTd5c0dISUJoeVB3VmNnaU5KanNibzNKSnd5YTdZNGgwNTlvcXlUOTJiZgpzSlhSNk0zNzdIa1I2cERTWTJrSmJuUnNON1gzamtKYWJyNzFhcG1MN25qT3ZianJvOXIrem5qS1VDdjhjeWlFClpsT1RJS0VkWWxLaAotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="}'
-    headers:
-      Content-Length:
-      - "1991"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 18 Aug 2022 11:26:55 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - b29baae3-78ea-4b23-9ac2-57b0eb2e090b
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: '{"instance_id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","endpoint_spec":[{"direct_access":{}}]}'
+    body: '{"instance_id":"6b3a8078-c07a-438c-8745-4c783c8d091d","endpoint_spec":[{"direct_access":{}}],"same_zone":null}'
     form: {}
     headers:
       Content-Type:
       - application/json
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas
     method: POST
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[],"status":"provisioning","region":"fr-par"}'
+    body: '{"endpoints":[],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"provisioning"}'
     headers:
       Content-Length:
-      - "102"
+      - "123"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:26:56 GMT
+      - Fri, 20 Oct 2023 16:01:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -397,7 +662,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 53a5f1cd-6054-4489-a4e8-83599c4470e7
+      - 7308fec6-3eed-44eb-8c30-f389dfa9d432
     status: 200 OK
     code: 200
     duration: ""
@@ -406,21 +671,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[],"status":"provisioning","region":"fr-par"}'
+    body: '{"endpoints":[],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"provisioning"}'
     headers:
       Content-Length:
-      - "102"
+      - "123"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:26:56 GMT
+      - Fri, 20 Oct 2023 16:01:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -430,7 +695,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 51b67175-7648-4724-a589-8b006e8bb2f8
+      - d7bb540c-d3b1-4046-961d-bfdc5f31aaf3
     status: 200 OK
     code: 200
     duration: ""
@@ -439,21 +704,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[],"status":"provisioning","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"initializing"}'
     headers:
       Content-Length:
-      - "102"
+      - "237"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:27:27 GMT
+      - Fri, 20 Oct 2023 16:01:53 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -463,7 +728,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - e2fedff7-3a17-4e74-91a7-b04cfbb66ac0
+      - 310707d6-3758-4473-af6f-f9529a36b67f
     status: 200 OK
     code: 200
     duration: ""
@@ -472,21 +737,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"initializing","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"initializing"}'
     headers:
       Content-Length:
-      - "210"
+      - "237"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:27:57 GMT
+      - Fri, 20 Oct 2023 16:02:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -496,7 +761,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 38e9a160-8310-47e3-aebe-6ba7da6b9558
+      - 8b359f3d-e911-47ac-8936-10037f03b93c
     status: 200 OK
     code: 200
     duration: ""
@@ -505,21 +770,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"initializing","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"initializing"}'
     headers:
       Content-Length:
-      - "210"
+      - "237"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:28:27 GMT
+      - Fri, 20 Oct 2023 16:02:53 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -529,7 +794,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1c1984ae-a038-4681-ba47-89f33578878a
+      - 7d5fe29e-41df-42c2-9d65-092b52512043
     status: 200 OK
     code: 200
     duration: ""
@@ -538,21 +803,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"initializing","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"initializing"}'
     headers:
       Content-Length:
-      - "210"
+      - "237"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:28:58 GMT
+      - Fri, 20 Oct 2023 16:03:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -562,7 +827,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 18bd4ae1-c326-47ec-9598-2a1ddcde26a0
+      - bd5e89d4-0dee-4bfd-a9d1-ff7d2a3da5fe
     status: 200 OK
     code: 200
     duration: ""
@@ -571,21 +836,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"initializing","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"ready"}'
     headers:
       Content-Length:
-      - "210"
+      - "230"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:29:28 GMT
+      - Fri, 20 Oct 2023 16:03:53 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -595,7 +860,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0194e0ac-faf6-49d4-868b-2bac42e2b58e
+      - 43eaa8ef-2df8-4d94-a48d-f5564b5bd7ea
     status: 200 OK
     code: 200
     duration: ""
@@ -604,21 +869,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"ready","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"ready"}'
     headers:
       Content-Length:
-      - "203"
+      - "230"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:29:58 GMT
+      - Fri, 20 Oct 2023 16:03:53 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -628,7 +893,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 280e38e2-ab7b-4de5-bf20-5fbb8f7e5a4d
+      - 85cdafda-c630-4c02-b54b-b2629d98530e
     status: 200 OK
     code: 200
     duration: ""
@@ -637,21 +902,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"ready","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"ready"}'
     headers:
       Content-Length:
-      - "203"
+      - "230"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:29:58 GMT
+      - Fri, 20 Oct 2023 16:03:54 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -661,7 +926,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 3c62b741-c0cb-40d6-aea4-b12768369110
+      - d33f3e2a-6ffc-4b66-a0c6-88402471bb12
     status: 200 OK
     code: 200
     duration: ""
@@ -670,21 +935,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"ready","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311},"endpoints":[{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311}],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"ready"}],"region":"fr-par","settings":[{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_connections","value":"100"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"},{"name":"work_mem","value":"4"}],"status":"ready","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "203"
+      - "1512"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:29:59 GMT
+      - Fri, 20 Oct 2023 16:03:54 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -694,7 +959,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 03664302-c577-4b45-b1f4-793e171b9d00
+      - 60f3762f-5c2e-4f45-b0b9-55f24d416679
     status: 200 OK
     code: 200
     duration: ""
@@ -703,21 +968,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d/certificate
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"ready","engine":"PostgreSQL-14","endpoint":{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}},"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[{"name":"work_mem","value":"4"},{"name":"max_connections","value":"100"},{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"}],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"ready","region":"fr-par"}],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}}],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"content":"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURwRENDQW95Z0F3SUJBZ0lVRVpQakx1ZzBMMGJIMDdnYVNEaXVmaC9ldXY0d0RRWUpLb1pJaHZjTkFRRUwKQlFBd1dERUxNQWtHQTFVRUJoTUNSbEl4RGpBTUJnTlZCQWdNQlZCaGNtbHpNUTR3REFZRFZRUUhEQVZRWVhKcApjekVSTUE4R0ExVUVDZ3dJVTJOaGJHVjNZWGt4RmpBVUJnTlZCQU1NRFRVeExqRTFPUzR5Tmk0eE5EZ3dIaGNOCk1qTXhNREl3TVRVMU9EVTVXaGNOTXpNeE1ERTNNVFUxT0RVNVdqQllNUXN3Q1FZRFZRUUdFd0pHVWpFT01Bd0cKQTFVRUNBd0ZVR0Z5YVhNeERqQU1CZ05WQkFjTUJWQmhjbWx6TVJFd0R3WURWUVFLREFoVFkyRnNaWGRoZVRFVwpNQlFHQTFVRUF3d05OVEV1TVRVNUxqSTJMakUwT0RDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDCkFRb0NnZ0VCQU1sVkgvTzZoZW95eHB3MmxEdFJVck9RVXJzOFhaMWVtV21qbmxWWTVNNC9MUFE5Q09UWlBCek0KQUliUDNSem4rci8zanM0OTRBNzhuS3JaMVNiYWxFT2M3cTBNOUd6TnQ2R1BSbjRlS0FYbUtwcHpSQ2pMc2NEdAo0OVdtTmNpS0Y3REZVSDVxMWxmQjdHalZQc0lHcEUyYitPMFNEVFJ4ZlZBM1Ywd1FSRm5nRGpuZzdKbnRvZVRMCitrcnROWDFrNldvTUlsVEkzcUt6NG9NREF3b0hhS3NTdVVYZXlDZDVSRzVzUlUwYXJDV1lwZFdDRFlZS0JzR1oKekdVazRjUEdxaWVMaVNkVFB3ODU0SDRJbGkrOGJnU0w2Z1RYUFIwVFZ3WTZGdjFBdkxYWGlHdWdPazZaeWdXWQo4bnpBMXk2Nzdza3cvNVM2YkpteDdEMkRmNC9tMTFjQ0F3RUFBYU5tTUdRd1lnWURWUjBSQkZzd1dZSU5OVEV1Ck1UVTVMakkyTGpFME9JSThjbmN0Tm1JellUZ3dOemd0WXpBM1lTMDBNemhqTFRnM05EVXROR00zT0ROak9HUXcKT1RGa0xuSmtZaTVtY2kxd1lYSXVjMk4zTG1Oc2IzVmtod1F6RDhaYWh3UXpueHFVTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRREZEMlBEenFnVHc2NDlCQy9memtHWnllMXkxSTh3MW5SOTFDUC81RHVGMzdwWHAyekVWd2VqCkJhOFhLU1p2VmRETUJ2d2tpZ1RMTklTdG04TzhIdzhFYWxIMGlTTENYM2ZwYlJJRVV2T2tlTHJ0ZFZJbGU1OEgKN3Qyem1LRlVQUnpPcWxJdGpvK1dkeXFqR0VaRC9ScXR3aFBkWXJZSkVJc2ZiTDZsd3N1Y3N1UnFkTlJGSDROaQpoMkNhaUozL1IwRFBkbE1lUTlwdVdzT1pmb3FHTWNoRHgzZTVzU01sZVNRL2xSV3Zoc214d3g3N1c0K21nWi9BCmx1cDh1VTYzTHVidmZyd3M1MWFlZk1UQlU5VGZ2Rmg4TGJiNHlHVy83V09ZN2ltUEgvY0lJa0d3WTROK2JZVFgKcnI2WW5tZXZxeENGMHEreCtsMkhpRXFRN3c1NG9LMU8KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=","content_type":"application/x-pem-file","name":"ssl_certificate"}'
     headers:
       Content-Length:
-      - "1377"
+      - "1845"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:29:59 GMT
+      - Fri, 20 Oct 2023 16:03:58 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -727,7 +992,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 2613ac61-f305-4f09-9c88-8e6a111245fa
+      - 3a3bfa50-140d-4f8f-9884-8f50512c7998
     status: 200 OK
     code: 200
     duration: ""
@@ -736,21 +1001,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460/certificate
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"name":"ssl_certificate","content_type":"application/x-pem-file","content":"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQ5VENDQXQyZ0F3SUJBZ0lVWUoxeHN4em1LWDFzcmY3c3E0S0tJbHlZRVRVd0RRWUpLb1pJaHZjTkFRRUwKQlFBd2dZY3hDekFKQmdOVkJBWVRBa1pTTVE0d0RBWURWUVFJREFWUVlYSnBjekVPTUF3R0ExVUVCd3dGVUdGeQphWE14RVRBUEJnTlZCQW9NQ0ZOallXeGxkMkY1TVVVd1F3WURWUVFERER4eWR5MDJNelU0WmpOa1pDMDNZamcxCkxUUTVZMkV0WVRFMFlTMHdNbVl4TW1RME5XVTBOakF1Y21SaUxtWnlMWEJoY2k1elkzY3VZMnh2ZFdRd0hoY04KTWpJd09ERTRNVEV5TXpRNVdoY05Nekl3T0RFMU1URXlNelE1V2pDQmh6RUxNQWtHQTFVRUJoTUNSbEl4RGpBTQpCZ05WQkFnTUJWQmhjbWx6TVE0d0RBWURWUVFIREFWUVlYSnBjekVSTUE4R0ExVUVDZ3dJVTJOaGJHVjNZWGt4ClJUQkRCZ05WQkFNTVBISjNMVFl6TlRobU0yUmtMVGRpT0RVdE5EbGpZUzFoTVRSaExUQXlaakV5WkRRMVpUUTIKTUM1eVpHSXVabkl0Y0dGeUxuTmpkeTVqYkc5MVpEQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQwpBUW9DZ2dFQkFNdG5OZ0dwcklxZ2FldHNtMG5kbE14K3BudGJpaW9ZdisrU3Q3ZUd0YkprWHZZb1kxUzZrWW1uCmRqTUdNRzFFc2E5SlUyaG8rTFNvKzFLVDh0cXZISFE2dGlNdU9ub0Zpb1pPVE1UVHZNeU5FWVV1R3V1SDltMG4KSU1mbkN2QXFYcDYyTy9jeEtrN3VROERuQnJUcnlXeGpZRGlodzdGLzFscENtS2ZlblVDYnpmeEhicFpQUERqWgpzUTNkSnlYZUI2eitGZEpBanl3OFdaTXRJOTA3UHdnbStOVHhoTVdlaTMyanpoSzc1Vm05aU1sQXJDMStWSXRMCkVlMkI2TnYxNVgwbjV5TzFhT09MZ3VOeDJ2RWYwQWQ4ODFFY3loUlhZeUJ6TVJ1b3FTZ1AvSVNnejhhSVVEUnQKME1GQXBtcG53a04zbHA2RklKbnZJNEhKUGlGcGxjVUNBd0VBQWFOWE1GVXdVd1lEVlIwUkJFd3dTb0k4Y25jdApOak0xT0dZelpHUXROMkk0TlMwME9XTmhMV0V4TkdFdE1ESm1NVEprTkRWbE5EWXdMbkprWWk1bWNpMXdZWEl1CmMyTjNMbU5zYjNWa2h3UXpua1RjaHdURG1rUXdNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNmeWdFMGJuVEMKYU43Y0NjTDVRaExSTmNRRjk4L0ZmdWtZK2UzS1JFVmFjNXVFY3FrR1k0cDhLYzdSbEdwRmlYQ1ZtclU4RkFpcQpxVDZ1N3NNdDZRQ1MwYzJ5Sk4xdnFuajF4RU50TkladitZR0g2ZThtZlNRdjVGYlJlWXlOQXJ2TE9vaTBSeERaCktyUm5seEU2RU9mOXptVHBHZFR5cXZJRlZIcnNBVS8wNnlmMlhvZG1EQjkwVUpZditjTk9pSmxheVFYUUtKcEIKM3ByYkFETDR4alY2UU9EZDFDdkRFZTd5c0dISUJoeVB3VmNnaU5KanNibzNKSnd5YTdZNGgwNTlvcXlUOTJiZgpzSlhSNk0zNzdIa1I2cERTWTJrSmJuUnNON1gzamtKYWJyNzFhcG1MN25qT3ZianJvOXIrem5qS1VDdjhjeWlFClpsT1RJS0VkWWxLaAotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"ready"}'
     headers:
       Content-Length:
-      - "1991"
+      - "230"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:30:00 GMT
+      - Fri, 20 Oct 2023 16:04:01 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -760,7 +1025,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1bf9537c-8379-43f1-9660-4ae9e0f9a17e
+      - e3726097-a34f-4b40-a942-87d24409706f
     status: 200 OK
     code: 200
     duration: ""
@@ -769,21 +1034,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"ready","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"ready"}'
     headers:
       Content-Length:
-      - "203"
+      - "230"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:30:00 GMT
+      - Fri, 20 Oct 2023 16:04:01 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -793,7 +1058,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 3fe01d72-71de-4cd5-81ba-701ba3ae1d67
+      - fe8ee8ee-da5b-48de-bb4a-0483d3bebe69
     status: 200 OK
     code: 200
     duration: ""
@@ -802,54 +1067,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
-    method: GET
-  response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"ready","region":"fr-par"}'
-    headers:
-      Content-Length:
-      - "203"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 18 Aug 2022 11:30:01 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 958050fc-d6cd-4020-8b8f-1b96500bb50e
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: DELETE
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"deleting","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"deleting"}'
     headers:
       Content-Length:
-      - "206"
+      - "233"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:30:01 GMT
+      - Fri, 20 Oct 2023 16:04:02 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -859,7 +1091,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ef57c7f4-743b-496b-b9a6-1569977b2171
+      - e7bf4c1a-e5da-452b-8b82-fda12dccae1d
     status: 200 OK
     code: 200
     duration: ""
@@ -868,21 +1100,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"deleting","region":"fr-par"}'
+    body: '{"endpoints":[{"direct_access":{},"id":"de60c04b-f548-4b5b-994e-f93908a78ff2","ip":"51.158.106.174","name":null,"port":5432}],"id":"2666f31a-938d-4da8-a504-61ade33abcff","region":"fr-par","same_zone":true,"status":"deleting"}'
     headers:
       Content-Length:
-      - "206"
+      - "233"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:30:01 GMT
+      - Fri, 20 Oct 2023 16:04:02 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -892,7 +1124,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 80bba979-dfc5-44cc-bc02-a09c46b767b6
+      - de2c84b7-98c3-4553-9aae-b7965823a2cb
     status: 200 OK
     code: 200
     duration: ""
@@ -901,21 +1133,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"id":"7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b","endpoints":[{"ip":"51.15.140.75","port":5432,"name":null,"id":"d0541fe3-6330-41f5-a818-c0d0490de322","direct_access":{}}],"status":"deleting","region":"fr-par"}'
+    body: '{"message":"resource is not found","resource":"read_replica","resource_id":"2666f31a-938d-4da8-a504-61ade33abcff","type":"not_found"}'
     headers:
       Content-Length:
-      - "206"
+      - "133"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:30:32 GMT
+      - Fri, 20 Oct 2023 16:04:32 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -925,40 +1157,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ab8bdd2a-4b4a-4679-a9fb-662bb35a76aa
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
-    method: GET
-  response:
-    body: '{"message":"resource is not found","resource":"read_replica","resource_id":"","type":"not_found"}'
-    headers:
-      Content-Length:
-      - "97"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 18 Aug 2022 11:31:02 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 5b0d518a-010c-4bee-864c-a359acd91c97
+      - a2e6e238-8b36-4512-b53f-48131ae5e1ca
     status: 404 Not Found
     code: 404
     duration: ""
@@ -967,21 +1166,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"ready","engine":"PostgreSQL-14","endpoint":{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}},"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[{"name":"work_mem","value":"4"},{"name":"max_connections","value":"100"},{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"}],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}}],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311},"endpoints":[{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311}],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_connections","value":"100"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"},{"name":"work_mem","value":"4"}],"status":"ready","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "1174"
+      - "1282"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:31:02 GMT
+      - Fri, 20 Oct 2023 16:04:32 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -991,7 +1190,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ac4da475-1cdf-4863-9af5-c3a8240a14d7
+      - 2d437de1-814e-44b9-8d22-0bfe97452f9e
     status: 200 OK
     code: 200
     duration: ""
@@ -1000,21 +1199,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: DELETE
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"deleting","engine":"PostgreSQL-14","endpoint":{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}},"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[{"name":"work_mem","value":"4"},{"name":"max_connections","value":"100"},{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"}],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}}],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311},"endpoints":[{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311}],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_connections","value":"100"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"},{"name":"work_mem","value":"4"}],"status":"deleting","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "1177"
+      - "1285"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:31:03 GMT
+      - Fri, 20 Oct 2023 16:04:32 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1024,7 +1223,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 70da6c8e-ba4e-453e-b6fe-e87387f99ca8
+      - 7937d6a7-2457-4a27-9230-50f12ef31f8a
     status: 200 OK
     code: 200
     duration: ""
@@ -1033,21 +1232,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","name":"test-rdb-rr-basic","organization_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","status":"deleting","engine":"PostgreSQL-14","endpoint":{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}},"tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"settings":[{"name":"work_mem","value":"4"},{"name":"max_connections","value":"100"},{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"}],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"lssd","size":5000000000},"init_settings":[],"endpoints":[{"ip":"195.154.68.48","port":4338,"name":null,"id":"ed7c0889-967c-4181-9d8a-b0e331805c94","load_balancer":{}}],"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"backup_same_region":false,"maintenances":[],"created_at":"2022-08-18T11:22:51.938678Z","region":"fr-par"}'
+    body: '{"backup_same_region":false,"backup_schedule":{"disabled":true,"frequency":24,"next_run_at":null,"retention":7},"created_at":"2023-10-20T15:58:20.199545Z","endpoint":{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311},"endpoints":[{"id":"075e3bbe-40ae-4ef0-b23a-e5ea0a5b6c00","ip":"51.159.26.148","load_balancer":{},"name":null,"port":18311}],"engine":"PostgreSQL-15","id":"6b3a8078-c07a-438c-8745-4c783c8d091d","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"test-rdb-rr-basic","node_type":"db-dev-s","organization_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","read_replicas":[],"region":"fr-par","settings":[{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_connections","value":"100"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"},{"name":"work_mem","value":"4"}],"status":"deleting","tags":["terraform-test","scaleway_rdb_read_replica","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
     headers:
       Content-Length:
-      - "1177"
+      - "1285"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:31:03 GMT
+      - Fri, 20 Oct 2023 16:04:33 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1057,7 +1256,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - e424b11e-55c5-4566-ad7c-53dffba23a23
+      - 3757e77b-5fec-4642-b5c6-262d69bcd64b
     status: 200 OK
     code: 200
     duration: ""
@@ -1066,12 +1265,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"message":"resource is not found","resource":"instance","resource_id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","type":"not_found"}'
+    body: '{"message":"resource is not found","resource":"instance","resource_id":"6b3a8078-c07a-438c-8745-4c783c8d091d","type":"not_found"}'
     headers:
       Content-Length:
       - "129"
@@ -1080,7 +1279,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:31:33 GMT
+      - Fri, 20 Oct 2023 16:05:03 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1090,7 +1289,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 4706f376-1fc2-47dc-a085-22a4ede72559
+      - f4e19718-d22e-4edf-8915-6a40bde30574
     status: 404 Not Found
     code: 404
     duration: ""
@@ -1099,12 +1298,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6358f3dd-7b85-49ca-a14a-02f12d45e460
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/6b3a8078-c07a-438c-8745-4c783c8d091d
     method: GET
   response:
-    body: '{"message":"resource is not found","resource":"instance","resource_id":"6358f3dd-7b85-49ca-a14a-02f12d45e460","type":"not_found"}'
+    body: '{"message":"resource is not found","resource":"instance","resource_id":"6b3a8078-c07a-438c-8745-4c783c8d091d","type":"not_found"}'
     headers:
       Content-Length:
       - "129"
@@ -1113,7 +1312,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:31:34 GMT
+      - Fri, 20 Oct 2023 16:05:03 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1123,7 +1322,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - cdb36f7e-81c6-4693-bb47-85d26cd2eac6
+      - 4f0204ec-d6c9-41eb-8b93-1132ff595223
     status: 404 Not Found
     code: 404
     duration: ""
@@ -1132,21 +1331,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/7b8fd1f5-63a2-4cd0-89fc-48a44327fe0b
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/read-replicas/2666f31a-938d-4da8-a504-61ade33abcff
     method: GET
   response:
-    body: '{"message":"resource is not found","resource":"read_replica","resource_id":"","type":"not_found"}'
+    body: '{"message":"resource is not found","resource":"read_replica","resource_id":"2666f31a-938d-4da8-a504-61ade33abcff","type":"not_found"}'
     headers:
       Content-Length:
-      - "97"
+      - "133"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Thu, 18 Aug 2022 11:31:34 GMT
+      - Fri, 20 Oct 2023 16:05:03 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1156,7 +1355,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 71a17f55-b24b-46db-9351-7a591679a9b2
+      - b2c93a3c-294c-4edb-902d-1086d31a46f0
     status: 404 Not Found
     code: 404
     duration: ""

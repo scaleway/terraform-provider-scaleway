@@ -34,7 +34,7 @@ resource scaleway_container main {
     timeout = 600
     max_concurrency = 80
     privacy = "private"
-    protocol = "h2c"
+    protocol = "http1"
     deploy = true
 
     environment_variables = {
@@ -68,9 +68,9 @@ The following arguments are optional:
 
 - `max_scale` - (Optional) The maximum of number of instances this container can scale to. Default to 20.
 
-- `memory_limit` - (Optional) The memory computing resources in MB to allocate to each container. Defaults to 128.
+- `memory_limit` - (Optional) The memory computing resources in MB to allocate to each container. Defaults to 256.
 
-- `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container. Defaults to 70.
+- `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container. Defaults to 140.
 
 - `timeout` - (Optional) The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to 300s.
 

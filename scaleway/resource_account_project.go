@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -54,11 +54,11 @@ func resourceScalewayAccountProject() *schema.Resource {
 }
 
 func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV2API(meta)
+	accountAPI := accountV3ProjectAPI(meta)
 
-	request := &accountV2.CreateProjectRequest{
+	request := &accountV3.ProjectAPICreateProjectRequest{
 		Name:        expandOrGenerateString(d.Get("name"), "project"),
-		Description: expandStringPtr(d.Get("description").(string)),
+		Description: d.Get("description").(string),
 	}
 
 	if organisationIDRaw, exist := d.GetOk("organization_id"); exist {
@@ -76,8 +76,8 @@ func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV2API(meta)
-	res, err := accountAPI.GetProject(&accountV2.GetProjectRequest{
+	accountAPI := accountV3ProjectAPI(meta)
+	res, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -98,9 +98,9 @@ func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV2API(meta)
+	accountAPI := accountV3ProjectAPI(meta)
 
-	req := &accountV2.UpdateProjectRequest{
+	req := &accountV3.ProjectAPIUpdateProjectRequest{
 		ProjectID: d.Id(),
 	}
 
@@ -126,9 +126,9 @@ func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV2API(meta)
+	accountAPI := accountV3ProjectAPI(meta)
 
-	err := accountAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+	err := accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {

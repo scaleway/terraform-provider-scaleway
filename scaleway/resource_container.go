@@ -184,7 +184,7 @@ func resourceScalewayContainer() *schema.Resource {
 				Computed:    true,
 				Description: "The error description",
 			},
-			"region": regionComputedSchema(),
+			"region": regionSchema(),
 		},
 	}
 }
@@ -195,9 +195,6 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	if region.String() == "" {
-		region = scw.RegionFrPar
-	}
 	namespaceID := expandID(d.Get("namespace_id").(string))
 	// verify name space state
 	_, err = waitForContainerNamespace(ctx, api, region, namespaceID, d.Timeout(schema.TimeoutCreate))
@@ -328,6 +325,10 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("memory_limit") {
 		req.MemoryLimit = scw.Uint32Ptr(uint32(d.Get("memory_limit").(int)))
+	}
+
+	if d.HasChanges("cpu_limit") {
+		req.CPULimit = scw.Uint32Ptr(uint32(d.Get("cpu_limit").(int)))
 	}
 
 	if d.HasChanges("timeout") {

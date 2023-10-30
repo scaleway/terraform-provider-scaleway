@@ -230,7 +230,7 @@ Configure your backend as:
 ```
 terraform {
   backend "s3" {
-    bucket                      = "terraform_state"
+    bucket                      = "terraform-state"
     key                         = "my_state.tfstate"
     region                      = "fr-par"
     endpoint                    = "https://s3.fr-par.scw.cloud"
@@ -238,6 +238,7 @@ terraform {
     secret_key                  = "my-secret-key"
     skip_credentials_validation = true
     skip_region_validation      = true
+    skip_requesting_account_id  = true
   }
 }
 ```

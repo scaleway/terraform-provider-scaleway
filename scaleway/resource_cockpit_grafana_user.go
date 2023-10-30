@@ -140,11 +140,24 @@ func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	_, err = api.WaitForCockpit(&cockpit.WaitForCockpitRequest{
+		ProjectID: projectID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
 	err = api.DeleteGrafanaUser(&cockpit.DeleteGrafanaUserRequest{
 		ProjectID:     projectID,
 		GrafanaUserID: grafanaUserID,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is404Error(err) {
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 

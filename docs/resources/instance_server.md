@@ -169,7 +169,10 @@ The following arguments are supported:
 
 - `type` - (Required) The commercial type of the server.
 You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
-Updates to this field will recreate a new resource.
+Updates to this field will migrate the server, local storage constraint must be respected. [More info](https://www.scaleway.com/en/docs/compute/instances/api-cli/migrating-instances/).
+Use `replace_on_type_change` to trigger replacement instead of migration.
+
+~> **Important:** If `type` change and migration occurs, the server will be stopped and changed backed to its original state. It will be started again if it was running.
 
 - `image` - (Optional) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
 to find either the right `label` or the right local image `ID` for a given `type`. Optional when creating an instance with an existing root volume.
@@ -209,9 +212,17 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
 
-- `ip_id` = (Optional) The ID of the reserved IP that is attached to the server.
+- `ip_id` - (Optional) The ID of the reserved IP that is attached to the server.
+
+- `ip_ids` - (Optional) List of ID of reserved IPs that are attached to the server. Cannot be used with `ip_id`.
+
+~> `ip_id` to `ip_ids` migration: if moving the ip from the old `ip_id` field to the new `ip_ids`, it should not detach the ip.
 
 - `enable_dynamic_ip` - (Defaults to `false`) If true a dynamic IP will be attached to the server.
+
+- `routed_ip_enabled` - (Defaults to `false`) If true, the server will support routed ips only. Changing it to true will migrate the server and its IP to routed type.
+
+~> **Important:** Enabling routed ip will restart the server
 
 - `state` - (Defaults to `started`) The state of the server. Possible values are: `started`, `stopped` or `standby`.
 
@@ -227,7 +238,9 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 
-- `bootscript_id` - The ID of the bootscript to use  (set boot_type to `bootscript`).
+- `replace_on_type_change` - (Defaults to false) If true, the server will be replaced if `type` is changed. Otherwise, the server will migrate.
+
+- `bootscript_id` (Deprecated) - The ID of the bootscript to use  (set boot_type to `bootscript`).
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
@@ -260,7 +273,10 @@ In addition to all above arguments, the following attributes are exported:
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.
 - `private_ip` - The Scaleway internal IP address of the server.
-- `public_ip` - The public IPv4 address of the server.
+- `public_ip` - The public IP address of the server.
+- `public_ips` - The list of public IPs of the server.
+    - `id` - The ID of the IP
+    - `address` - The address of the IP
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
 - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
 - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )

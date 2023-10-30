@@ -51,7 +51,7 @@ func resourceScalewayContainerCron() *schema.Resource {
 				Computed:    true,
 				Description: "Cron job status.",
 			},
-			"region": regionComputedSchema(),
+			"region": regionSchema(),
 		},
 	}
 }
@@ -60,10 +60,6 @@ func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.Resource
 	api, region, err := containerAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	if region.String() == "" {
-		region = scw.RegionFrPar
 	}
 
 	jsonObj, err := scw.DecodeJSONObject(d.Get("args").(string), scw.NoEscape)

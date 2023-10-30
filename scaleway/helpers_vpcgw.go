@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,7 +13,7 @@ import (
 const (
 	defaultVPCGatewayTimeout                   = 10 * time.Minute
 	defaultVPCGatewayRetry                     = 5 * time.Second
-	defaultVPCPublicGatewayIPReverseDNSTimeout = 5 * time.Minute
+	defaultVPCPublicGatewayIPReverseDNSTimeout = 10 * time.Minute
 )
 
 // vpcgwAPIWithZone returns a new VPC API and the zone for a Create request
@@ -92,15 +93,46 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 	return dhcpEntries, err
 }
 
-func isGatewayIPReverseResolved(ctx context.Context, api *vpcgw.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
-	getIPReq := &vpcgw.GetIPRequest{
-		Zone: zone,
-		IPID: id,
-	}
-	IP, err := api.GetIP(getIPReq, scw.WithContext(ctx))
-	if err != nil {
+func isGatewayReverseDNSResolveError(err error) bool {
+	invalidArgError := &scw.InvalidArgumentsError{}
+
+	if !errors.As(err, &invalidArgError) {
 		return false
 	}
 
-	return hostResolver(ctx, timeout, reverse, IP.Address.String())
+	for _, fields := range invalidArgError.Details {
+		if fields.ArgumentName == "reverse" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func retryUpdateGatewayReverseDNS(ctx context.Context, api *vpcgw.API, req *vpcgw.UpdateIPRequest, timeout time.Duration) error {
+	timeoutChannel := time.After(timeout)
+
+	for {
+		select {
+		case <-time.After(defaultVPCGatewayRetry):
+			_, err := api.UpdateIP(req, scw.WithContext(ctx))
+			if err != nil && isGatewayReverseDNSResolveError(err) {
+				continue
+			}
+			return err
+		case <-timeoutChannel:
+			_, err := api.UpdateIP(req, scw.WithContext(ctx))
+			return err
+		}
+	}
+}
+
+func expandIpamConfig(raw interface{}) *vpcgw.IpamConfig {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &vpcgw.IpamConfig{
+		PushDefaultRoute: rawMap["push_default_route"].(bool),
+	}
 }

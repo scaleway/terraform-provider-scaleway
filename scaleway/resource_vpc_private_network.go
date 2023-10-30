@@ -2,11 +2,11 @@ package scaleway
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -19,13 +19,115 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion: 0,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{Version: 0, Type: vpcPrivateNetworkUpgradeV1SchemaType(), Upgrade: vpcPrivateNetworkV1SUpgradeFunc},
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The name of the private network",
 				Computed:    true,
+			},
+			"ipv4_subnet": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The IPv4 subnet associated with the private network",
+				Computed:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"subnet": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							Description:  "The subnet CIDR",
+							ValidateFunc: validation.IsCIDRNetwork(0, 32),
+						},
+						// computed
+						"id": {
+							Type:        schema.TypeString,
+							Description: "The subnet ID",
+							Computed:    true,
+						},
+						"created_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time of the creation of the subnet",
+						},
+						"updated_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time of the last update of the subnet",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet",
+						},
+						"subnet_mask": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet",
+						},
+						"prefix_length": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
+						},
+					},
+				},
+			},
+			"ipv6_subnets": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "The IPv6 subnet associated with the private network",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"subnet": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							Description:  "The subnet CIDR",
+							ValidateFunc: validation.IsCIDRNetwork(0, 128),
+						},
+						// computed
+						"id": {
+							Type:        schema.TypeString,
+							Description: "The subnet ID",
+							Computed:    true,
+						},
+						"created_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time of the creation of the subnet",
+						},
+						"updated_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time of the last update of the subnet",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet",
+						},
+						"subnet_mask": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet",
+						},
+						"prefix_length": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
+						},
+					},
+				},
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -35,8 +137,30 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"is_regional": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Deprecated:  "This field is deprecated and will be removed in the next major version",
+				Description: "Defines whether the private network is Regional. By default, it will be Zonal",
+			},
+			"vpc_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The VPC in which to create the private network",
+			},
 			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
+			"zone": {
+				Type:             schema.TypeString,
+				Description:      "The zone you want to attach the resource to",
+				Optional:         true,
+				Computed:         true,
+				Deprecated:       "This field is deprecated and will be removed in the next major version, please use `region` instead",
+				ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
+			},
+			"region": regionSchema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -54,35 +178,55 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 }
 
 func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, err := vpcAPIWithZone(d, meta)
+	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	pn, err := vpcAPI.CreatePrivateNetwork(&vpc.CreatePrivateNetworkRequest{
+	ipv4Subnets, ipv6Subnets, err := expandSubnets(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	req := &vpc.CreatePrivateNetworkRequest{
 		Name:      expandOrGenerateString(d.Get("name"), "pn"),
 		Tags:      expandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
-		Zone:      zone,
-	}, scw.WithContext(ctx))
+		Region:    region,
+	}
+
+	if _, ok := d.GetOk("vpc_id"); ok {
+		vpcID := expandRegionalID(d.Get("vpc_id").(string)).ID
+		req.VpcID = expandUpdatedStringPtr(vpcID)
+	}
+
+	if ipv4Subnets != nil {
+		req.Subnets = append(req.Subnets, ipv4Subnets...)
+	}
+
+	if ipv6Subnets != nil {
+		req.Subnets = append(req.Subnets, ipv6Subnets...)
+	}
+
+	pn, err := vpcAPI.CreatePrivateNetwork(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, pn.ID))
+	d.SetId(newRegionalIDString(region, pn.ID))
 
 	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }
 
 func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	pn, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
 		PrivateNetworkID: ID,
-		Zone:             zone,
+		Region:           region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
@@ -92,42 +236,50 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
+	zone, err := extractZone(d, meta.(*Meta))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", pn.Name)
+	_ = d.Set("vpc_id", newRegionalIDString(region, pn.VpcID))
 	_ = d.Set("organization_id", pn.OrganizationID)
 	_ = d.Set("project_id", pn.ProjectID)
-	_ = d.Set("created_at", pn.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", pn.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("zone", zone)
+	_ = d.Set("created_at", flattenTime(pn.CreatedAt))
+	_ = d.Set("updated_at", flattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
+	_ = d.Set("region", region)
+	_ = d.Set("is_regional", true)
+	_ = d.Set("zone", zone)
+
+	ipv4Subnet, ipv6Subnets := flattenAndSortSubnets(pn.Subnets)
+	_ = d.Set("ipv4_subnet", ipv4Subnet)
+	_ = d.Set("ipv6_subnets", ipv6Subnets)
 
 	return nil
 }
 
 func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "tags") {
-		updateRequest := &vpc.UpdatePrivateNetworkRequest{
-			PrivateNetworkID: ID,
-			Zone:             zone,
-			Name:             scw.StringPtr(d.Get("name").(string)),
-			Tags:             expandUpdatedStringsPtr(d.Get("tags")),
-		}
-
-		_, err = vpcAPI.UpdatePrivateNetwork(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
+		PrivateNetworkID: ID,
+		Region:           region,
+		Name:             scw.StringPtr(d.Get("name").(string)),
+		Tags:             expandUpdatedStringsPtr(d.Get("tags")),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }
 
 func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,10 +287,10 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 	var warnings diag.Diagnostics
 	err = vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
 		PrivateNetworkID: ID,
-		Zone:             zone,
+		Region:           region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is409Error(err) || is412Error(err) || is404Error(err) {
+		if is404Error(err) {
 			return append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  err.Error(),

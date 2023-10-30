@@ -89,7 +89,7 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: expandStringPtr(d.Get("project_id")),
-		DNSZone:   zoneName,
+		DNSZone:   scw.StringPtr(zoneName),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -129,7 +129,7 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: expandStringPtr(d.Get("project_id")),
-		DNSZone:   d.Id(),
+		DNSZone:   scw.StringPtr(d.Id()),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
@@ -181,7 +181,15 @@ func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceDat
 func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	domainAPI := newDomainAPI(meta)
 
-	_, err := domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
+	_, err := waitForDNSZone(ctx, domainAPI, d.Id(), d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
 		ProjectID: d.Get("project_id").(string),
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))

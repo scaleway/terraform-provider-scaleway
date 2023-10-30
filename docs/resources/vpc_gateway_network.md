@@ -62,17 +62,49 @@ resource scaleway_vpc_gateway_network main {
 }
 ```
 
+### Create a gateway network with IPAM config
+
+```hcl
+resource scaleway_vpc vpc01 {
+  name = "my vpc"
+}
+
+resource scaleway_vpc_private_network pn01 {
+  name = "pn_test_network"
+  ipv4_subnet {
+    subnet = "172.16.64.0/22"
+  }
+  vpc_id = scaleway_vpc.vpc01.id
+}
+
+resource scaleway_vpc_public_gateway pg01 {
+  name = "foobar"
+  type = "VPC-GW-S"
+}
+
+resource scaleway_vpc_gateway_network main {
+  gateway_id = scaleway_vpc_public_gateway.pg01.id
+  private_network_id = scaleway_vpc_private_network.pn01.id
+  enable_masquerade = true
+  ipam_config {
+    push_default_route = true
+  }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
 
 - `gateway_id` - (Required) The ID of the public gateway.
 - `private_network_id` - (Required) The ID of the private network.
-- `dhcp_id` - (Required) The ID of the public gateway DHCP config. Only one of `dhcp_id` and `static_address` should be specified.
+- `dhcp_id` - (Required) The ID of the public gateway DHCP config. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
 - `enable_masquerade` - (Defaults to true) Enable masquerade on this network
 - `enable_dhcp` - (Defaults to true) Enable DHCP config on this network. It requires DHCP id.
 - `cleanup_dhcp` - (Defaults to false) Remove DHCP config on this network on destroy. It requires DHCP id.
-- `static_address` - Enable DHCP config on this network. Only one of `dhcp_id` and `static_address` should be specified.
+- `static_address` - Enable DHCP config on this network. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
+- `ipam_config` - Auto-configure the Gateway Network using Scaleway's IPAM (IP address management service).
+    - `push_default_route` - Defines whether the default route is enabled on that Gateway Network. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the gateway network should be created.
 
 ## Attributes Reference
@@ -86,6 +118,7 @@ In addition to all above arguments, the following attributes are exported:
 - `mac_address` - The mac address of the creation of the gateway network.
 - `created_at` - The date and time of the creation of the gateway network.
 - `updated_at` - The date and time of the last update of the gateway network.
+- `status` - The status of the Public Gateway's connection to the Private Network.
 
 ## Import
 

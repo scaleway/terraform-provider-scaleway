@@ -11,9 +11,6 @@ import (
 )
 
 func init() {
-	if !terraformBetaEnabled {
-		return
-	}
 	resource.AddTestSweepers("scaleway_iam_api_key", &resource.Sweeper{
 		Name: "scaleway_iam_api_key",
 		F:    testSweepIamAPIKey,
@@ -26,13 +23,23 @@ func testSweepIamAPIKey(_ string) error {
 
 		l.Debugf("sweeper: destroying the api keys")
 
-		listAPIKeys, err := api.ListAPIKeys(&iam.ListAPIKeysRequest{})
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return fmt.Errorf("missing organizationID")
+		}
+
+		listAPIKeys, err := api.ListAPIKeys(&iam.ListAPIKeysRequest{
+			OrganizationID: &orgID,
+		}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list api keys: %w", err)
 		}
-		for _, app := range listAPIKeys.APIKeys {
+		for _, key := range listAPIKeys.APIKeys {
+			if !isTestResource(key.Description) {
+				continue
+			}
 			err = api.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
-				AccessKey: app.AccessKey,
+				AccessKey: key.AccessKey,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to delete api key: %w", err)
@@ -60,13 +67,13 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
-							description = "a description"
+							description = "tf_tests_with_application"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "a description"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_with_application"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
 				),
 			},
@@ -78,13 +85,77 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
-							description = "another description"
+							description = "tf_tests_with_application_changed"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "another description"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_with_application_changed"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_iam_api_key.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret_key"},
+			},
+		},
+	})
+}
+
+func TestAccScalewayIamApiKey_WithApplicationChange(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayIamAPIKeyDestroy(tt),
+			testAccCheckScalewayIamApplicationDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_iam_application" "main" {
+							name = "tf_tests_api_key_app_change"
+						}
+
+						resource "scaleway_iam_application" "main2" {
+							name = "tf_tests_api_key_app_change2"
+						}
+
+						resource "scaleway_iam_api_key" "main" {
+							application_id = scaleway_iam_application.main.id
+							description = "tf_tests_with_application_change"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_with_application_change"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iam_application" "main" {
+							name = "tf_tests_api_key_app_change"
+						}
+
+						resource "scaleway_iam_application" "main2" {
+							name = "tf_tests_api_key_app_change2"
+						}
+
+						resource "scaleway_iam_api_key" "main" {
+							application_id = scaleway_iam_application.main2.id
+							description = "tf_tests_with_application_change"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main2", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_with_application_change"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
 				),
 			},
@@ -116,14 +187,14 @@ func TestAccScalewayIamApiKey_Expires(t *testing.T) {
 
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
-							description = "an api key with an expiration date"
+							description = "tf_tests_expires"
 							expires_at = "2025-07-06T09:00:00Z"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "an api key with an expiration date"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_expires"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "expires_at", "2025-07-06T09:00:00Z"),
 				),
 			},
@@ -147,13 +218,13 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
-							description = "no update"
+							description = "tf_tests_no_update"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "no update"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_no_update"),
 				),
 			},
 			{
@@ -164,13 +235,13 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
-							description = "no update"
+							description = "tf_tests_no_update"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "no update"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_no_update"),
 				),
 			},
 		},

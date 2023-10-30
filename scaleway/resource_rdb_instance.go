@@ -139,31 +139,30 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Description: "List of private network to expose your database instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ip_net": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.IsCIDR,
-							Description:  "The ip net of your private network",
-						},
 						"pn_id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
-							Description:  "The private network ID",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: diffSuppressFuncLocality,
+							Description:      "The private network ID",
 						},
 						// Computed
 						"endpoint_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The endpoint ID",
 						},
-						"ip": {
+						"ip_net": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Computed:     true,
-							ValidateFunc: validation.IsIPAddress,
-							Description:  "The IP of your private service",
+							ValidateFunc: validation.IsCIDR,
+							Description:  "The IP with the given mask within the private subnet",
+						},
+						"ip": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP of your Instance within the private service",
 						},
 						"port": {
 							Type:         schema.TypeInt,
@@ -174,13 +173,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The name of your private service",
 						},
 						"hostname": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The hostname of your endpoint",
 						},
@@ -243,28 +240,22 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							Description: "The endpoint ID",
 						},
 						"ip": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsIPAddress,
-							Description:  "The IP of your load balancer service",
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP of your load balancer service",
 						},
 						"port": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsPortNumber,
-							Description:  "The port of your load balancer service",
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The port of your load balancer service",
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The name of your load balancer service",
 						},
 						"hostname": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The hostname of your endpoint",
 						},
@@ -620,16 +611,11 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		// get endpoints to detach. It will handle only private networks
-		endPointsToRemove, err := endpointsToRemove(res.Endpoints, d.Get("private_network"))
-		if err != nil {
-			diag.FromErr(err)
-		}
-		for endPointID, remove := range endPointsToRemove {
-			if remove {
+		for _, e := range res.Endpoints {
+			if e.PrivateNetwork != nil {
 				err := rdbAPI.DeleteEndpoint(
 					&rdb.DeleteEndpointRequest{
-						EndpointID: endPointID, Region: region,
+						EndpointID: e.ID, Region: region,
 					},
 					scw.WithContext(ctx))
 				if err != nil {

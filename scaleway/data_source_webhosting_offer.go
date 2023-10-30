@@ -109,7 +109,7 @@ func dataSourceScalewayWebhostingOfferRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("no offer found with the name or id: %s%s in region %s", d.Get("name"), d.Get("offer_id"), region))
 	}
 
-	regionalID := datasourceNewRegionalizedID(filteredOffer.ID, region)
+	regionalID := datasourceNewRegionalID(filteredOffer.ID, region)
 	d.SetId(regionalID)
 	_ = d.Set("offer_id", regionalID)
 	_ = d.Set("name", filteredOffer.Product.Name)

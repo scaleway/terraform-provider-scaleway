@@ -120,6 +120,61 @@ func TestAccScalewayLbLb_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbLb_Private(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb main {
+						name = "test-lb-basic"
+						description = "a description"
+						type = "LB-S"
+						tags = ["basic"]
+						assign_flexible_ip = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					testCheckResourceAttrUUID("scaleway_lb.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "assign_flexible_ip", "false"),
+					resource.TestCheckNoResourceAttr("scaleway_lb.main", "ip_address"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-basic"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "description", "a description"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb main {
+						name = "test-lb-rename"
+						description = "another description"
+						type = "LB-S"
+						tags = ["basic", "tag2"]
+						assign_flexible_ip = false
+						ssl_compatibility_level = "ssl_compatibility_level_modern"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					testCheckResourceAttrUUID("scaleway_lb.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "assign_flexible_ip", "false"),
+					resource.TestCheckNoResourceAttr("scaleway_lb.main", "ip_address"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-rename"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "description", "another description"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "ssl_compatibility_level", lbSDK.SSLCompatibilityLevelSslCompatibilityLevelModern.String()),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayLbLb_Migrate(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -299,10 +354,12 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.0.static_config.0", "172.16.0.100"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.1.static_config.0", "172.16.0.105"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
+						"static_config.0": "172.16.0.100",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
+						"static_config.0": "172.16.0.105",
+					}),
 				),
 			},
 			{
@@ -337,10 +394,12 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.0.static_config.0", "172.16.0.100"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.1.static_config.0", "172.16.0.107"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
+						"static_config.0": "172.16.0.100",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
+						"static_config.0": "172.16.0.107",
+					}),
 				),
 			},
 			{
@@ -419,6 +478,74 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayLbLb_WithStaticIPCIDR(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "ip01" {}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						name = "pn-with-lb-static"
+					}
+
+					resource "scaleway_lb" "lb01" {
+					    ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-with-pn-static-cidr"
+						type = "LB-S"
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pn.id
+							static_config = ["192.168.1.1/25"]
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.static_config.0", "192.168.1.1/25"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayLbLb_InvalidStaticConfig(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "ip01" {}
+
+					resource "scaleway_vpc_private_network" "pn" {
+					  name = "pn-with-lb-to-static"
+					}
+
+					resource "scaleway_lb" "lb01" {
+					  ip_id      = scaleway_lb_ip.ip01.id
+					  name       = "test-lb-with-invalid_ip"
+					  type       = "LB-S"
+					  private_network {
+						private_network_id = scaleway_vpc_private_network.pn.id
+						static_config      = ["472.16.0.100/24"]
+					  }
+					}`,
+				ExpectError: regexp.MustCompile("\".+\" is not a valid IP address or CIDR notation: .+"),
 			},
 		},
 	})

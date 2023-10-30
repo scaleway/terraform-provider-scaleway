@@ -65,7 +65,7 @@ func dataSourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	regionalID := datasourceNewRegionalizedID(deviceID, region)
+	regionalID := datasourceNewRegionalID(deviceID, region)
 	d.SetId(regionalID)
 	err = d.Set("device_id", regionalID)
 	if err != nil {

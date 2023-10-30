@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -31,12 +32,15 @@ const (
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
-	defaultInstanceIPReverseDNSTimeout      = 5 * time.Minute
+	defaultInstanceIPReverseDNSTimeout      = 10 * time.Minute
 	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 
 	defaultInstanceImageTimeout = 1 * time.Hour
+
+	// netIPNil define the nil string return by (*net.IP).String()
+	netIPNil = "<nil>"
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -192,21 +196,20 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 
 // getServerType is a util to get a instance.ServerType by its commercialType
 func getServerType(ctx context.Context, apiInstance *instance.API, zone scw.Zone, commercialType string) *instance.ServerType {
-	serverType := (*instance.ServerType)(nil)
-
-	serverTypesRes, err := apiInstance.ListServersTypes(&instance.ListServersTypesRequest{
+	serverType, err := apiInstance.GetServerType(&instance.GetServerTypeRequest{
 		Zone: zone,
+		Name: commercialType,
 	})
 	if err != nil {
 		tflog.Warn(ctx, fmt.Sprintf("cannot get server types: %s", err))
 	} else {
-		serverType = serverTypesRes.Servers[commercialType]
 		if serverType == nil {
 			tflog.Warn(ctx, fmt.Sprintf("unrecognized server type: %s", commercialType))
 		}
+		return serverType
 	}
 
-	return serverType
+	return nil
 }
 
 // validateLocalVolumeSizes validates the total size of local volumes.
@@ -214,8 +217,8 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 	// Calculate local volume total size.
 	var localVolumeTotalSize scw.Size
 	for _, volume := range volumes {
-		if volume.VolumeType == instance.VolumeVolumeTypeLSSD {
-			localVolumeTotalSize += volume.Size
+		if volume.VolumeType == instance.VolumeVolumeTypeLSSD && volume.Size != nil {
+			localVolumeTotalSize += *volume.Size
 		}
 	}
 
@@ -252,7 +255,7 @@ func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[st
 		switch {
 		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
 		// TODO: Fix once instance accept volume type in the schema validation
-		case v.ID != "":
+		case v.ID != nil:
 			v = &instance.VolumeServerTemplate{
 				ID:   v.ID,
 				Name: v.Name,
@@ -260,7 +263,7 @@ func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[st
 			}
 		// For the root volume (index 0) if the size is 0, it is considered as a volume created from an image.
 		// The size is not passed to the API, so it's computed by the API
-		case index == "0" && v.Size == 0:
+		case index == "0" && v.Size == nil:
 			v = &instance.VolumeServerTemplate{
 				VolumeType: v.VolumeType,
 				Boot:       v.Boot,
@@ -356,6 +359,17 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 			},
 				scw.WithContext(ctx))
 			if err != nil {
+				return err
+			}
+
+			_, err = ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+				ServerID:      ph.serverID,
+				PrivateNicID:  p.ID,
+				Zone:          ph.zone,
+				Timeout:       &timeout,
+				RetryInterval: scw.TimeDurationPtr(defaultInstanceRetryInterval),
+			})
+			if err != nil && !is404Error(err) {
 				return err
 			}
 		}
@@ -591,15 +605,84 @@ func formatImageLabel(imageUUID string) string {
 	return strings.ReplaceAll(imageUUID, "-", "_")
 }
 
-func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
-	getIPReq := &instance.GetIPRequest{
-		Zone: zone,
-		IP:   id,
-	}
-	res, err := instanceAPI.GetIP(getIPReq, scw.WithContext(ctx))
-	if err != nil {
+func isIPReverseDNSResolveError(err error) bool {
+	invalidArgError := &scw.InvalidArgumentsError{}
+
+	if !errors.As(err, &invalidArgError) {
 		return false
 	}
 
-	return hostResolver(ctx, timeout, reverse, res.IP.Address.String())
+	for _, fields := range invalidArgError.Details {
+		if fields.ArgumentName == "reverse" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func retryUpdateReverseDNS(ctx context.Context, instanceAPI *instance.API, req *instance.UpdateIPRequest, timeout time.Duration) error {
+	timeoutChannel := time.After(timeout)
+
+	for {
+		select {
+		case <-time.After(defaultInstanceRetryInterval):
+			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+			if err != nil && isIPReverseDNSResolveError(err) {
+				continue
+			}
+			return err
+		case <-timeoutChannel:
+			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+			return err
+		}
+	}
+}
+
+func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []interface{} {
+	flattenedIPs := make([]interface{}, len(ips))
+
+	for i, ip := range ips {
+		flattenedIPs[i] = map[string]interface{}{
+			"id":      newZonedIDString(zone, ip.ID),
+			"address": ip.Address.String(),
+		}
+	}
+
+	return flattenedIPs
+}
+
+func flattenServerIPIDs(ips []*instance.ServerIP) []interface{} {
+	ipIDs := make([]interface{}, len(ips))
+
+	for i, ip := range ips {
+		ipIDs[i] = ip.ID
+	}
+
+	return ipIDs
+}
+
+// instanceIPHasMigrated check if instance migrate from ip_id to ip_ids
+// should be used if ip_id has changed
+// will return true if the id removed from ip_id is present in ip_ids
+func instanceIPHasMigrated(d *schema.ResourceData) bool {
+	oldIP, newIP := d.GetChange("ip_id")
+	// ip_id should have been removed
+	if newIP != "" {
+		return false
+	}
+
+	// ip_ids should have been added
+	if !d.HasChange("ip_ids") {
+		return false
+	}
+
+	ipIDs := expandStrings(d.Get("ip_ids"))
+	for _, ipID := range ipIDs {
+		if ipID == oldIP {
+			return true
+		}
+	}
+
+	return false
 }

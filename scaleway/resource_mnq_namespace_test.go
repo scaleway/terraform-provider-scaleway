@@ -55,9 +55,15 @@ func TestAccScalewayMNQNamespace_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_namespace_basic_1"
+					}
+
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-ns"
-					  protocol = "nats"
+						name     = "main"
+						protocol = "nats"
+
+						project_id = scaleway_account_project.project.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -71,34 +77,13 @@ func TestAccScalewayMNQNamespace_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_mnq_namespace main {
-					  name     = "test-mnq-ns-updated"
-					  protocol = "nats"
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_mnq_namespace_basic_1"
 					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayMNQNamespaceExists(tt, "scaleway_mnq_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "name", "test-mnq-ns-updated"),
-				),
-			},
-			{
-				Config: `
+
 					resource "scaleway_mnq_namespace" "main" {
-					  name     = "test-mnq-ns"
-					  protocol = "nats"
-					  region   = "fr-par"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayMNQNamespaceExists(tt, "scaleway_mnq_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "name", "test-mnq-ns"),
-					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "region", "fr-par"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_mnq_namespace" "main" {
-					  protocol = "sqs_sns"
+						protocol = "sqs_sns"
+						project_id = scaleway_account_project.project.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -118,7 +103,7 @@ func testAccCheckScalewayMNQNamespaceExists(tt *TestTools, n string) resource.Te
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := mnqAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := mnqAPIWithRegionAndIDalpha(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -143,7 +128,7 @@ func testAccCheckScalewayMNQnNamespaceDestroy(tt *TestTools) resource.TestCheckF
 				continue
 			}
 
-			api, region, id, err := mnqAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := mnqAPIWithRegionAndIDalpha(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

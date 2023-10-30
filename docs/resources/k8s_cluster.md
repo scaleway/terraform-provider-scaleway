@@ -110,12 +110,10 @@ resource "null_resource" "kubeconfig" {
 }
 
 provider "kubernetes" {
-  load_config_file = "false"
-
   host  = null_resource.kubeconfig.triggers.host
   token = null_resource.kubeconfig.triggers.token
   cluster_ca_certificate = base64decode(
-  null_resource.kubeconfig.triggers.cluster_ca_certificate
+    null_resource.kubeconfig.triggers.cluster_ca_certificate
   )
 }
 ```
@@ -212,7 +210,13 @@ The following arguments are supported:
 
 - `name` - (Required) The name for the Kubernetes cluster.
 
-- `type` - (Optional) The type of Kubernetes cluster. Possible values are: `kapsule` or `multicloud`.
+- `type` - (Optional) The type of Kubernetes cluster. Possible values are:
+
+    - for mutualized clusters: `kapsule` or `multicloud`
+
+    - for dedicated Kapsule clusters: `kapsule-dedicated-4`, `kapsule-dedicated-8` or `kapsule-dedicated-16`.
+
+    - for dedicated Kosmos clusters: `multicloud-dedicated-4`, `multicloud-dedicated-8` or `multicloud-dedicated-16`.
 
 - `description` - (Optional) A description for the Kubernetes cluster.
 
@@ -221,7 +225,7 @@ The following arguments are supported:
 - `cni` - (Required) The Container Network Interface (CNI) for the Kubernetes cluster.
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `delete_additional_resources` - (Required) Delete additional resources like block volumes, IPs and loadbalancers that were created in Kubernetes on cluster deletion.
+- `delete_additional_resources` - (Required) Delete additional resources like block volumes, loadbalancers and the cluster private network (if empty) that were created in Kubernetes on cluster deletion.
 ~> **Important:** Setting this field to `true` means that you will lose all your cluster data and network configuration when you delete your cluster.
 If you prefer keeping it, you should instead set it as `false`.
 
@@ -282,8 +286,10 @@ If you prefer keeping it, you should instead set it as `false`.
 
 - `private_network_id` - (Optional) The ID of the private network of the cluster.
 
-~> **Important:** This field can only be set at cluster creation and cannot be updated later.
-Changes to this field will cause the cluster to be destroyed then recreated.
+~> **Important:** This field can be set at cluster creation or later to migrate to a Private Network.
+Any subsequent change after this field got set will prompt for cluster recreation.
+
+~> Also, you should only use **regional** Private Networks with Kapsule clusters, otherwise you will get an error saying that the Private Network can't be found.
 
 - `default_pool` - (Deprecated) See below.
 

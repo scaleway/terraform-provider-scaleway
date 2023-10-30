@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,7 +41,6 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Computed:    true,
 				Description: "The type of cluster",
 			},
@@ -161,8 +161,6 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			"private_network_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
 				Description:      "The ID of the cluster's private network",
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
@@ -245,7 +243,73 @@ func resourceScalewayK8SCluster() *schema.Resource {
 
 				return nil
 			},
-			customizeDiffLocalityCheck("private_network_id"),
+			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+				if diff.HasChange("private_network_id") {
+					actual, planned := diff.GetChange("private_network_id")
+					clusterType := diff.Get("type").(string)
+
+					switch {
+					// For Kosmos clusters
+					case strings.HasPrefix(clusterType, "multicloud"):
+						if planned != "" {
+							return fmt.Errorf("only Kapsule clusters support private networks")
+						}
+
+					// For Kapsule clusters
+					case clusterType == "" || strings.HasPrefix(clusterType, "kapsule"):
+						if actual == "" {
+							// If no private network has been set yet, migrate the cluster in the Update function
+							return nil
+						}
+						if planned != "" {
+							_, plannedPNID, err := parseLocalizedID(planned.(string))
+							if err != nil {
+								return err
+							}
+							if plannedPNID == actual {
+								// If the private network ID is the same, do nothing
+								return nil
+							}
+						}
+						// Any other change will result in ForceNew
+						err := diff.ForceNew("private_network_id")
+						if err != nil {
+							return err
+						}
+
+					default:
+						return fmt.Errorf("unknown cluster type %q", clusterType)
+					}
+				}
+				return nil
+			},
+			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+				if diff.HasChange("type") && diff.Id() != "" {
+					k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(i, diff.Id())
+					if err != nil {
+						return err
+					}
+					possibleTypes, err := k8sAPI.ListClusterAvailableTypes(&k8s.ListClusterAvailableTypesRequest{
+						Region:    region,
+						ClusterID: clusterID,
+					}, scw.WithContext(ctx))
+					if err != nil {
+						return err
+					}
+
+					planned := diff.Get("type")
+					for _, possibleType := range possibleTypes.ClusterTypes {
+						if possibleType.Name == planned {
+							return nil
+						}
+					}
+					err = diff.ForceNew("type")
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+			},
 		),
 	}
 }
@@ -415,7 +479,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	// Private network configuration
 
 	if pnID, ok := d.GetOk("private_network_id"); ok {
-		req.PrivateNetworkID = scw.StringPtr(expandZonedID(pnID.(string)).ID)
+		req.PrivateNetworkID = scw.StringPtr(expandRegionalID(pnID.(string)).ID)
 	}
 
 	// Cluster creation
@@ -491,46 +555,38 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(cluster))
 	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(cluster))
 
+	var diags diag.Diagnostics
+
 	// private_network
-	if cluster.PrivateNetworkID != nil {
-		_ = d.Set("private_network_id", cluster.PrivateNetworkID)
+	pnID := flattenStringPtr(cluster.PrivateNetworkID)
+	_ = d.Set("private_network_id", pnID)
+	if pnID == "" {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Public clusters are deprecated",
+			Detail:   "Important: Harden your cluster's security by enabling a free Private Network ASAP. Full public clusters are deprecated and will reach End of Support in Q1 2024.",
+		})
 	}
 
 	////
 	// Read kubeconfig
 	////
-	kubeconfig, err := k8sAPI.GetClusterKubeConfig(&k8s.GetClusterKubeConfigRequest{
-		Region:    region,
-		ClusterID: clusterID,
-	}, scw.WithContext(ctx))
+	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, region, clusterID)
 	if err != nil {
-		return diag.FromErr(err)
+		if is403Error(err) {
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       "Cannot read kubeconfig: unauthorized",
+				Detail:        "Got 403 while reading kubeconfig, please check your permissions",
+				AttributePath: cty.GetAttrPath("kubeconfig"),
+			})
+		}
+	} else {
+		diags = append(diags, diag.FromErr(err)...)
 	}
+	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconfig})
 
-	kubeconfigServer, err := kubeconfig.GetServer()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	kubeconfigCa, err := kubeconfig.GetCertificateAuthorityData()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	kubeconfigToken, err := kubeconfig.GetToken()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	kubeconf := map[string]interface{}{}
-	kubeconf["config_file"] = string(kubeconfig.GetRaw())
-	kubeconf["host"] = kubeconfigServer
-	kubeconf["cluster_ca_certificate"] = kubeconfigCa
-	kubeconf["token"] = kubeconfigToken
-
-	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconf})
-
-	return nil
+	return diags
 }
 
 //gocyclo:ignore
@@ -538,6 +594,25 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("type") {
+		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, defaultK8SClusterTimeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = k8sAPI.SetClusterType(&k8s.SetClusterTypeRequest{
+			Region:    region,
+			ClusterID: clusterID,
+			Type:      d.Get("type").(string),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, defaultK8SClusterTimeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	canUpgrade := false
@@ -574,6 +649,9 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		updateRequest.AdmissionPlugins = expandUpdatedStringsPtr(d.Get("admission_plugins"))
 	}
 
+	////
+	// AutoUpgrade changes
+	////
 	updateRequest.AutoUpgrade = &k8s.UpdateClusterRequestAutoUpgrade{}
 	autoupgradeEnabled := d.Get("auto_upgrade.0.enable").(bool)
 
@@ -587,6 +665,9 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		updateRequest.AutoUpgrade.MaintenanceWindow.Day = k8s.MaintenanceWindowDayOfTheWeek(d.Get("auto_upgrade.0.maintenance_window_day").(string))
 	}
 
+	////
+	// Version changes
+	////
 	version := d.Get("version").(string)
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
@@ -622,6 +703,9 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
+	////
+	// Autoscaler changes
+	////
 	autoscalerReq := &k8s.UpdateClusterRequestAutoscalerConfig{}
 
 	if d.HasChange("autoscaler_config.0.disable_scale_down") {
@@ -666,6 +750,9 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 
 	updateRequest.AutoscalerConfig = autoscalerReq
 
+	////
+	// OpenIDConnect Config changes
+	////
 	updateClusterRequestOpenIDConnectConfig := &k8s.UpdateClusterRequestOpenIDConnectConfig{}
 
 	if d.HasChange("open_id_connect_config.0.issuer_url") {
@@ -697,6 +784,23 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	updateRequest.OpenIDConnectConfig = updateClusterRequestOpenIDConnectConfig
+
+	////
+	// Private Network changes
+	////
+	if d.HasChange("private_network_id") {
+		actual, planned := d.GetChange("private_network_id")
+		if planned == "" && actual != "" {
+			// It's not possible to remove the private network anymore
+			return diag.FromErr(fmt.Errorf("it is only possible to change the private network attached to the cluster, but not to remove it"))
+		}
+		if actual == "" {
+			err = migrateToPrivateNetworkCluster(ctx, d, meta)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
 
 	////
 	// Apply Update

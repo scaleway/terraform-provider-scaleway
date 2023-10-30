@@ -235,6 +235,25 @@ func TestAccScalewayInstanceVolume_CannotResizeBlockDown(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceVolume_Scratch(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						type       = "scratch"
+						size_in_gb = 20
+					}`,
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceVolumeExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

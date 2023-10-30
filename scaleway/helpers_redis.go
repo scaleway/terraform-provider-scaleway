@@ -1,10 +1,13 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -66,17 +69,22 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 		pnID := expandID(pn["id"].(string))
 		rawIPs := pn["service_ips"].([]interface{})
 		ips := []scw.IPNet(nil)
-		for _, rawIP := range rawIPs {
-			ip, err := expandIPNet(rawIP.(string))
-			if err != nil {
-				return epSpecs, err
-			}
-			ips = append(ips, ip)
-		}
 		spec := &redis.EndpointSpecPrivateNetworkSpec{
-			ID:         pnID,
-			ServiceIPs: ips,
+			ID: pnID,
 		}
+		if len(rawIPs) != 0 {
+			for _, rawIP := range rawIPs {
+				ip, err := expandIPNet(rawIP.(string))
+				if err != nil {
+					return epSpecs, err
+				}
+				ips = append(ips, ip)
+			}
+			spec.ServiceIPs = ips
+		} else {
+			spec.IpamConfig = &redis.EndpointSpecPrivateNetworkSpecIpamConfig{}
+		}
+
 		epSpecs = append(epSpecs, &redis.EndpointSpec{PrivateNetwork: spec})
 	}
 	return epSpecs, nil
@@ -141,7 +149,11 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 			continue
 		}
 		pn := endpoint.PrivateNetwork
-		pnZonedID := newZonedIDString(pn.Zone, pn.ID)
+		fetchRegion, err := pn.Zone.Region()
+		if err != nil {
+			return diag.FromErr(err), false
+		}
+		pnRegionalID := newRegionalIDString(fetchRegion, pn.ID)
 		serviceIps := []interface{}(nil)
 		for _, ip := range pn.ServiceIPs {
 			serviceIps = append(serviceIps, ip.String())
@@ -149,7 +161,7 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 		pnFlat = append(pnFlat, map[string]interface{}{
 			"endpoint_id": endpoint.ID,
 			"zone":        pn.Zone,
-			"id":          pnZonedID,
+			"id":          pnRegionalID,
 			"service_ips": serviceIps,
 		})
 	}
@@ -174,4 +186,27 @@ func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 		break
 	}
 	return pnFlat
+}
+
+func redisPrivateNetworkSetHash(v interface{}) int {
+	var buf bytes.Buffer
+
+	m := v.(map[string]interface{})
+	if pnID, ok := m["id"]; ok {
+		buf.WriteString(expandID(pnID))
+	}
+
+	if serviceIPs, ok := m["service_ips"]; ok {
+		// Sort the service IPs before generating the hash.
+		ips := serviceIPs.([]interface{})
+		sort.Slice(ips, func(i, j int) bool {
+			return ips[i].(string) < ips[j].(string)
+		})
+
+		for i, item := range ips {
+			buf.WriteString(fmt.Sprintf("%d-%s-", i, item.(string)))
+		}
+	}
+
+	return StringHashcode(buf.String())
 }

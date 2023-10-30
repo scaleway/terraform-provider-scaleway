@@ -37,17 +37,18 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Description:  "The ID of the public gateway where connect to",
 			},
 			"private_network_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The ID of the private network where connect to",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: diffSuppressFuncLocality,
+				Description:      "The ID of the private network where connect to",
 			},
 			"dhcp_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ValidateFunc:  validationUUIDorUUIDWithLocality(),
 				Description:   "The ID of the public gateway DHCP config",
-				ConflictsWith: []string{"static_address"},
+				ConflictsWith: []string{"static_address", "ipam_config"},
 			},
 			"enable_masquerade": {
 				Type:        schema.TypeBool,
@@ -71,8 +72,24 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "The static IP address in CIDR on this network",
 				Optional:      true,
+				Computed:      true,
 				ValidateFunc:  validation.IsCIDR,
-				ConflictsWith: []string{"dhcp_id"},
+				ConflictsWith: []string{"dhcp_id", "ipam_config"},
+			},
+			"ipam_config": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Description:   "Auto-configure the Gateway Network using Scaleway's IPAM (IP address management service)",
+				ConflictsWith: []string{"dhcp_id", "static_address"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"push_default_route": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Defines whether the default route is enabled on that Gateway Network",
+						},
+					},
+				},
 			},
 			// Computed elements
 			"mac_address": {
@@ -89,6 +106,11 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time of the last update of the gateway network",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the Public Gateway's connection to the Private Network",
 			},
 			"zone": zoneSchema(),
 		},
@@ -112,9 +134,10 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 	req := &vpcgw.CreateGatewayNetworkRequest{
 		Zone:             zone,
 		GatewayID:        gateway.ID,
-		PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
+		PrivateNetworkID: expandRegionalID(d.Get("private_network_id").(string)).ID,
 		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
 		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
+		IpamConfig:       expandIpamConfig(d.Get("ipam_config")),
 	}
 	staticAddress, staticAddressExist := d.GetOk("static_address")
 	if staticAddressExist {
@@ -206,13 +229,19 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
+	fetchRegion, err := zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())
-	_ = d.Set("private_network_id", newZonedID(zone, gatewayNetwork.PrivateNetworkID).String())
+	_ = d.Set("private_network_id", newRegionalIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
 	_ = d.Set("enable_masquerade", gatewayNetwork.EnableMasquerade)
 	_ = d.Set("cleanup_dhcp", cleanUpDHCPValue)
 	_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", gatewayNetwork.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone.String())
+	_ = d.Set("status", gatewayNetwork.Status.String())
 
 	return nil
 }
@@ -228,15 +257,25 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("enable_masquerade", "dhcp_id", "enable_dhcp", "static_address") {
+	updateRequest := &vpcgw.UpdateGatewayNetworkRequest{
+		GatewayNetworkID: ID,
+		Zone:             zone,
+	}
+
+	if d.HasChange("enable_masquerade") {
+		updateRequest.EnableMasquerade = expandBoolPtr(d.Get("enable_masquerade"))
+	}
+	if d.HasChange("enable_dhcp") {
+		updateRequest.EnableDHCP = expandBoolPtr(d.Get("enable_dhcp"))
+	}
+	if d.HasChange("dhcp_id") {
 		dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
-		updateRequest := &vpcgw.UpdateGatewayNetworkRequest{
-			GatewayNetworkID: ID,
-			Zone:             zone,
-			EnableMasquerade: expandBoolPtr(d.Get("enable_masquerade")),
-			EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
-			DHCPID:           &dhcpID,
-		}
+		updateRequest.DHCPID = &dhcpID
+	}
+	if d.HasChange("ipam_config") {
+		updateRequest.IpamConfig = expandIpamConfig(d.Get("ipam_config"))
+	}
+	if d.HasChange("static_address") {
 		staticAddress, staticAddressExist := d.GetOk("static_address")
 		if staticAddressExist {
 			address, err := expandIPNet(staticAddress.(string))
@@ -245,11 +284,11 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 			}
 			updateRequest.Address = &address
 		}
+	}
 
-		_, err = vpcgwAPI.UpdateGatewayNetwork(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = vpcgwAPI.UpdateGatewayNetwork(updateRequest, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))

@@ -111,6 +111,21 @@ resource "scaleway_baremetal_server" "base" {
 }
 ```
 
+### Without install config
+
+```hcl
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-B112X-SSD"
+}
+
+resource "scaleway_baremetal_server" "base" {
+  zone	                   = "fr-par-2"
+  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
+  install_config_afterward = true
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
@@ -130,6 +145,7 @@ The following arguments are supported:
 - `service_password` - (Optional) Password used for the service to install. May be required depending on used os.
 - `reinstall_on_config_changes` - (Optional) If True, this boolean allows to reinstall the server on install config changes.
   ~> **Important:** Updates to `ssh_key_ids`, `user`, `password`, `service_user` or `service_password` will not take effect on the server, it requires to reinstall it. To do so please set 'reinstall_on_config_changes' argument to true.
+- `install_config_afterward` - (Optional) If True, this boolean allows to create a server without the install config if you want to provide it later.
 - `name` - (Optional) The name of the server.
 - `hostname` - (Optional) The hostname of the server.
 - `description` - (Optional) A description for the server.
@@ -166,6 +182,16 @@ In addition to all above arguments, the following attributes are exported:
     - `address` - The address of the IP.
     - `reverse` - The reverse of the IP.
     - `version` - The type of the IP.
+- `ipv4` - (List of) The IPv4 addresses of the server.
+    - `id` - The ID of the IPv4.
+    - `address` - The address of the IPv4.
+    - `reverse` - The reverse of the IPv4.
+    - `version` - The type of the IPv4.
+- `ipv6` - (List of) The IPv6 addresses of the server.
+    - `id` - The ID of the IPv6.
+    - `address` - The address of the IPv6.
+    - `reverse` - The reverse of the IPv6.
+    - `version` - The type of the IPv6.
 - `domain` - The domain of the server.
 - `organization_id` - The organization ID the server is associated with.
 

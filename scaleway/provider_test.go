@@ -21,7 +21,7 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
@@ -115,6 +115,37 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 	return true
 }
 
+// compareFormBodies compare two given url.Values
+// returns true if both url.Values are equivalent
+func compareFormBodies(expected, actual url.Values) bool {
+	// Check for each key in actual requests
+	// Compare its value to cassette content if marshal-able to string
+	for key := range actual {
+		expectedValue, exists := expected[key]
+		if !exists {
+			// Actual request may contain a field that does not exist in cassette
+			// New fields can appear in requests with new api features
+			// We do not want to generate new cassettes for each new features
+			continue
+		}
+		if !compareJSONFields(expectedValue, actual[key]) {
+			return false
+		}
+	}
+
+	for key := range expected {
+		_, exists := actual[key]
+		if !exists && expected[key] != nil {
+			// Fails match if cassettes contains a field not in actual requests
+			// Fields should not disappear from requests unless a sdk breaking change
+			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
+			return false
+		}
+	}
+
+	return true
+}
+
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
 func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.Request) bool {
 	if actualRequest.Body == nil || actualRequest.ContentLength == 0 {
@@ -147,6 +178,21 @@ func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.R
 	if err == nil {
 		// match if content is xml
 		return true
+	}
+
+	if !json.Valid(actualRawBody) {
+		values, err := url.ParseQuery(string(actualRawBody))
+		if err != nil {
+			panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
+		}
+
+		// Remove keys that should be ignored during compare
+		for _, key := range BodyMatcherIgnore {
+			values.Del(key)
+		}
+
+		// Compare url values
+		return compareFormBodies(values, cassetteRequest.Form)
 	}
 
 	err = json.Unmarshal(actualRawBody, &actualJSON)
@@ -198,8 +244,12 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 			expectedBucket := expectedS3Host[0]
 
 			// Remove random number at the end of the bucket name
-			actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
-			expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
+			if strings.Contains(actualBucket, "-") {
+				actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
+			}
+			if strings.Contains(expectedBucket, "-") {
+				expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
+			}
 
 			if actualBucket != expectedBucket {
 				return false
@@ -282,7 +332,7 @@ type FakeSideProjectTerminateFunc func() error
 // createFakeSideProject creates a temporary project with a temporary IAM application and policy.
 //
 // The returned function is a cleanup function that should be called when to delete the project.
-func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+func createFakeSideProject(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
 	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
 		for i := len(terminateFunctions) - 1; i >= 0; i-- {
@@ -299,8 +349,8 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, Fake
 	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
 	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
 
-	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
-	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+	projectAPI := accountV3.NewProjectAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
 		Name: projectName,
 	})
 	if err != nil {
@@ -311,7 +361,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, Fake
 		return nil, nil, nil, err
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
-		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+		return projectAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 			ProjectID: project.ID,
 		})
 	})
@@ -379,7 +429,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, Fake
 // createFakeIAMManager creates a temporary project with a temporary IAM application and policy manager.
 //
 // The returned function is a cleanup function that should be called when to delete the project.
-func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+func createFakeIAMManager(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
 	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
 		for i := len(terminateFunctions) - 1; i >= 0; i-- {
@@ -396,8 +446,8 @@ func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeS
 	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
 	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
 
-	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
-	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+	projectAPI := accountV3.NewProjectAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
 		Name: projectName,
 	})
 	if err != nil {
@@ -408,7 +458,7 @@ func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeS
 		return nil, nil, nil, err
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
-		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+		return projectAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 			ProjectID: project.ID,
 		})
 	})
@@ -477,7 +527,7 @@ func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeS
 // given project and API key as default profile configuration.
 //
 // This is useful to test resources that need to create resources in another project.
-func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV2.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
+func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV3.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
 	t := tt.T
 
 	metaSide, err := buildMeta(ctx, &metaConfig{
@@ -526,7 +576,6 @@ func NewTestTools(t *testing.T) *TestTools {
 	require.NoError(t, err)
 
 	if !*UpdateCassettes {
-		disableDNSResolver = true
 		tmp := 0 * time.Second
 		DefaultWaitRetryInterval = &tmp
 	}

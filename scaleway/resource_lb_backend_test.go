@@ -43,7 +43,9 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port_algorithm", "roundrobin"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "sticky_sessions", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "proxy_protocol", "none"),
-					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_server", ""),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_server", "5m0s"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_connect", "5s"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_tunnel", "15m0s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "on_marked_down_action", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_timeout", "30s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "80"),
@@ -52,6 +54,10 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.0", "scaleway_instance_ip.ip01", "address"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ssl_bridging", "false"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ignore_ssl_server_verify", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "redispatch_attempt_count", "0"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "max_retries", "3"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_transient_delay", "500ms"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_send_proxy", "false"),
 				),
 			},
 			{
@@ -86,12 +92,21 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 						on_marked_down_action = "shutdown_sessions"
 						ssl_bridging = "true"
 						ignore_ssl_server_verify = "true"
+						max_connections = 42
+						timeout_queue = "4s"
+						redispatch_attempt_count = 1
+						max_retries = 6
+						health_check_transient_delay = "0.2s"
+						health_check_send_proxy = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.0", "scaleway_instance_ip.ip01", "address"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.1", "scaleway_instance_ip.ip02", "address"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_server", "1s"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_connect", "2.5s"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_tunnel", "3s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_delay", "10s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_timeout", "15s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "81"),
@@ -99,6 +114,12 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "on_marked_down_action", "shutdown_sessions"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ssl_bridging", "true"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ignore_ssl_server_verify", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "max_connections", "42"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_queue", "4s"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "redispatch_attempt_count", "1"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "max_retries", "6"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_transient_delay", "200ms"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_send_proxy", "true"),
 				),
 			},
 		},
@@ -298,6 +319,108 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_lb_backend.bkd01", "failover_host"),
 				),
 				ExpectNonEmptyPlan: !*UpdateCassettes,
+			},
+		},
+	})
+}
+
+func TestAccScalewayLbBackend_HealthCheck_Port(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbBackendDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "tcp"
+					forward_port = "3333"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "3333"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "3333"),
+				),
+			},
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "tcp"
+					forward_port = "4444"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "4444"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
+				),
+			},
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "tcp"
+					forward_port = "4444"
+					health_check_port = "4444"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "4444"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
+				),
+			},
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "tcp"
+					forward_port = "5555"
+					health_check_port = "4444"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "5555"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
+				),
 			},
 		},
 	})

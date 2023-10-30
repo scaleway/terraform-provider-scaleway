@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -390,6 +391,8 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
+	clusterID := ""
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -398,11 +401,22 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayK8SClusterConfigPrivateNetwork(latestK8SVersion),
+				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkLinked(latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
 					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network"),
+					testAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.private_network", &clusterID),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkChange(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network_2"),
+					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network_2"),
+					testAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.private_network", &clusterID),
 				),
 			},
 		},
@@ -427,6 +441,88 @@ func TestAccScalewayK8SCluster_Multicloud(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.multicloud"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.multicloud", "version", latestK8SVersion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
+	clusterID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				// 1 : Start with a mutualized Kapsule cluster
+				Config: testAccCheckScalewayK8SClusterTypeChange("kapsule", "cilium", latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule"),
+					testAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+				),
+			},
+			{
+				// 2 : Upgrade to a dedicated Kapsule --> should migrate
+				Config: testAccCheckScalewayK8SClusterTypeChange("kapsule-dedicated-4", "cilium", latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule-dedicated-4"),
+					testAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+				),
+			},
+			{
+				// 3 : Upgrade to an even bigger dedicated Kapsule --> should migrate
+				Config: testAccCheckScalewayK8SClusterTypeChange("kapsule-dedicated-16", "cilium", latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule-dedicated-16"),
+					testAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+				),
+			},
+			{
+				// 4 : Downgrade to a smaller dedicated Kapsule --> should recreate
+				Config: testAccCheckScalewayK8SClusterTypeChange("kapsule-dedicated-8", "cilium", latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule-dedicated-8"),
+					testAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
+				),
+			},
+			{
+				// 5 : Change to a dedicated Kosmos --> should recreate
+				Config: testAccCheckScalewayK8SClusterTypeChange("multicloud-dedicated-4", "kilo", latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud-dedicated-4"),
+					testAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
+				),
+			},
+			{
+				// 6 : Upgrade to a bigger dedicated Kosmos --> should migrate
+				Config: testAccCheckScalewayK8SClusterTypeChange("multicloud-dedicated-8", "kilo", latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud-dedicated-8"),
+					testAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+				),
+			},
+			{
+				// 7 : Downgrade to a mutualized Kosmos --> should recreate
+				Config: testAccCheckScalewayK8SClusterTypeChange("multicloud", "kilo", latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud"),
+					testAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 		},
@@ -515,9 +611,14 @@ func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, 
 			return fmt.Errorf("resource not found: %s", pnName)
 		}
 
-		_, _, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return err
+			if strings.Contains(err.Error(), "bad region format") {
+				_, _, pnID, err = vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 		if clusterPNID == nil {
@@ -533,21 +634,29 @@ func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, 
 
 func testAccCheckScalewayK8SClusterConfigMinimal(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "minimal" {
+  name       = "test-minimal"
+}
 resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
-	name = "ClusterConfigMinimal"
+	name = "test-minimal"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
 	delete_additional_resources = true
+	private_network_id = scaleway_vpc_private_network.minimal.id
 }`, version)
 }
 
 func testAccCheckScalewayK8SClusterConfigAutoscaler(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "autoscaler" {
+  name       = "test-autoscaler"
+  region 	 = "nl-ams"
+}
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
-	name = "autoscaler-01"
+	name = "test-autoscaler-01"
 	region = "nl-ams"
 	autoscaler_config {
 		disable_scale_down = true
@@ -563,15 +672,20 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "autoscaler-config" ]
 	delete_additional_resources = true
+	private_network_id = scaleway_vpc_private_network.autoscaler.id
 }`, version)
 }
 
 func testAccCheckScalewayK8SClusterConfigAutoscalerChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "autoscaler" {
+  name       = "test-autoscaler"
+  region 	 = "nl-ams"
+}
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
-	name = "autoscaler-02"
+	name = "test-autoscaler-02"
 	region = "nl-ams"
 	autoscaler_config {
 		disable_scale_down = false
@@ -585,15 +699,19 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "autoscaler-config" ]
 	delete_additional_resources = true
+	private_network_id = scaleway_vpc_private_network.autoscaler.id
 }`, version)
 }
 
 func testAccCheckScalewayK8SClusterConfigOIDC(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "oidc" {
+  name       = "test-oidc"
+}
 resource "scaleway_k8s_cluster" "oidc" {
 	cni = "cilium"
 	version = "%s"
-	name = "oidc"
+	name = "test-oidc"
 	open_id_connect_config {
 		issuer_url = "https://accounts.google.com"
 		client_id = "my-super-id"
@@ -603,16 +721,20 @@ resource "scaleway_k8s_cluster" "oidc" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "oidc-config" ]
 	delete_additional_resources = true
+	private_network_id = scaleway_vpc_private_network.oidc.id
 }
 `, version)
 }
 
 func testAccCheckScalewayK8SClusterConfigOIDCChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "oidc" {
+  name       = "test-oidc"
+}
 resource "scaleway_k8s_cluster" "oidc" {
 	cni = "cilium"
 	version = "%s"
-	name = "oidc"
+	name = "test-oidc"
 	open_id_connect_config {
 		issuer_url = "https://gitlab.com"
 		client_id = "my-even-more-awesome-id"
@@ -622,16 +744,20 @@ resource "scaleway_k8s_cluster" "oidc" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "oidc-config" ]
 	delete_additional_resources = true
+	private_network_id = scaleway_vpc_private_network.oidc.id
 }
 `, version)
 }
 
 func testAccCheckScalewayK8SClusterAutoUpgrade(enable bool, day string, hour uint64, version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "auto_upgrade" {
+  name       = "test-auto-upgrade"
+}
 resource "scaleway_k8s_cluster" "auto_upgrade" {
 	cni = "calico"
 	version = "%s"
-	name = "default-pool"
+	name = "test-auto-upgrade"
 	auto_upgrade {
 	    enable = %t
 		maintenance_window_start_hour = %d
@@ -639,10 +765,11 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "auto_upgrade" ]
 	delete_additional_resources = true
+	private_network_id = scaleway_vpc_private_network.auto_upgrade.id
 }`, version, enable, hour, day)
 }
 
-func testAccCheckScalewayK8SClusterConfigPrivateNetwork(version string) string {
+func testAccCheckScalewayK8SClusterConfigPrivateNetworkLinked(version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_vpc_private_network" "private_network" {
   name       = "k8s-private-network"
@@ -651,10 +778,29 @@ resource "scaleway_k8s_cluster" "private_network" {
 	cni = "calico"
 	version = "%s"
 	name = "k8s-private-network-cluster"
-    private_network_id = scaleway_vpc_private_network.private_network.id
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
-	delete_additional_resources = true
+	delete_additional_resources = false
 	depends_on = [scaleway_vpc_private_network.private_network]
+    private_network_id = scaleway_vpc_private_network.private_network.id
+}`, version)
+}
+
+func testAccCheckScalewayK8SClusterConfigPrivateNetworkChange(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "private_network" {
+  name       = "k8s-private-network"
+}
+resource "scaleway_vpc_private_network" "private_network_2" {
+  name       = "other-private-network"
+}
+resource "scaleway_k8s_cluster" "private_network" {
+	cni = "calico"
+	version = "%s"
+	name = "k8s-private-network-cluster"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
+	delete_additional_resources = false
+	depends_on = [scaleway_vpc_private_network.private_network_2]
+    private_network_id = scaleway_vpc_private_network.private_network_2.id
 }`, version)
 }
 
@@ -675,4 +821,32 @@ resource "scaleway_k8s_pool" "multicloud" {
 	size = 1
 }
 `, version)
+}
+
+func testAccCheckScalewayK8SClusterTypeChange(clusterType, cni, version string) string {
+	config := ""
+	isKapsule := strings.HasPrefix(clusterType, "kapsule")
+	if isKapsule {
+		config = `
+resource "scaleway_vpc_private_network" "type-change" {
+  name       = "test-type-change"
+}`
+	}
+
+	config += fmt.Sprintf(`
+resource "scaleway_k8s_cluster" "type-change" {
+	type = "%s"
+	cni = "%s"
+	version = "%s"
+	name = "test-type-change"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "type-change" ]
+	delete_additional_resources = false`, clusterType, cni, version)
+
+	if isKapsule {
+		config += "\nprivate_network_id = scaleway_vpc_private_network.type-change.id\n}"
+	} else {
+		config += "\n}"
+	}
+
+	return config
 }

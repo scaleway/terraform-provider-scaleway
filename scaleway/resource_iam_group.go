@@ -59,6 +59,12 @@ func resourceScalewayIamGroup() *schema.Resource {
 					ValidateFunc: validationUUID(),
 				},
 			},
+			"external_membership": {
+				Type:        schema.TypeBool,
+				Description: "Handle user and application memberships externally",
+				Optional:    true,
+				Default:     false,
+			},
 			"organization_id": organizationIDOptionalSchema(),
 		},
 	}
@@ -80,7 +86,7 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 
 	appIds := expandStrings(d.Get("application_ids").(*schema.Set).List())
 	userIds := expandStrings(d.Get("user_ids").(*schema.Set).List())
-	if len(appIds) > 0 || len(userIds) > 0 {
+	if !d.Get("external_membership").(bool) && (len(appIds) > 0 || len(userIds) > 0) {
 		_, err := api.SetGroupMembers(&iam.SetGroupMembersRequest{
 			GroupID:        group.ID,
 			ApplicationIDs: appIds,
@@ -112,8 +118,11 @@ func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("created_at", flattenTime(group.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(group.UpdatedAt))
 	_ = d.Set("organization_id", group.OrganizationID)
-	_ = d.Set("user_ids", group.UserIDs)
-	_ = d.Set("application_ids", group.ApplicationIDs)
+
+	if !d.Get("external_membership").(bool) {
+		_ = d.Set("user_ids", group.UserIDs)
+		_ = d.Set("application_ids", group.ApplicationIDs)
+	}
 
 	return nil
 }
@@ -139,7 +148,7 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	if d.HasChanges("application_ids", "user_ids") {
+	if !d.Get("external_membership").(bool) && d.HasChanges("application_ids", "user_ids") {
 		appIds := expandStrings(d.Get("application_ids").(*schema.Set).List())
 		userIds := expandStrings(d.Get("user_ids").(*schema.Set).List())
 		if len(appIds) > 0 || len(userIds) > 0 {

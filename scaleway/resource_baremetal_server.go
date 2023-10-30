@@ -48,6 +48,15 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "ID or name of the server offer",
+				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
+					// remove the locality from the IDs when checking diff
+					if expandID(newValue) == expandID(oldValue) {
+						return true
+					}
+					// if the offer was provided by name
+					offerName, ok := d.GetOk("offer_name")
+					return ok && newValue == offerName
+				},
 			},
 			"offer_id": {
 				Type:        schema.TypeString,
@@ -61,7 +70,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 			},
 			"os": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				Description:      "The base image of the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
@@ -77,7 +86,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
 				},
-				Required: true,
+				Optional: true,
 				Description: `Array of SSH key IDs allowed to SSH to the server
 
 **NOTE** : If you are attempting to update your SSH key IDs, it will induce the reinstall of your server. 
@@ -113,6 +122,12 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Default:     false,
 				Description: "If True, this boolean allows to reinstall the server on SSH key IDs, user or password changes",
 			},
+			"install_config_afterward": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If True, this boolean allows to create a server without the install config if you want to provide it later",
+			},
 			"description": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -132,32 +147,22 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			"ips": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP",
-						},
-						"version": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The version of the IP",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IP address of the IP",
-						},
-						"reverse": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The Reverse of the IP",
-						},
-					},
-				},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IP addresses attached to the server.",
+				Elem:        resourceScalewayBaremetalServerIP(),
+			},
+			"ipv4": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IPv4 addresses attached to the server",
+				Elem:        resourceScalewayBaremetalServerIP(),
+			},
+			"ipv6": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IPv6 addresses attached to the server",
+				Elem:        resourceScalewayBaremetalServerIP(),
 			},
 			"domain": {
 				Type:     schema.TypeString,
@@ -194,6 +199,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			"private_network": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Set:         baremetalPrivateNetworkSetHash,
 				Description: "The private networks to attach to the server",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -202,6 +208,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							Description:  "The private network ID",
 							Required:     true,
 							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							StateFunc: func(i interface{}) string {
+								return expandID(i.(string))
+							},
 						},
 						// computed
 						"vlan": {
@@ -235,6 +244,33 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 	}
 }
 
+func resourceScalewayBaremetalServerIP() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the IPv6",
+			},
+			"version": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The version of the IPv6",
+			},
+			"address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IPv6 address",
+			},
+			"reverse": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Reverse of the IPv6",
+			},
+		},
+	}
+}
+
 func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	baremetalAPI, zone, err := baremetalAPIWithZone(d, meta)
 	if err != nil {
@@ -257,8 +293,11 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		}
 		offerID = newZonedID(zone, o.ID)
 	}
-	if diags := validateInstallConfig(ctx, d, meta); len(diags) > 0 {
-		return diags
+
+	if !d.Get("install_config_afterward").(bool) {
+		if diags := validateInstallConfig(ctx, d, meta); len(diags) > 0 {
+			return diags
+		}
 	}
 
 	server, err := baremetalAPI.CreateServer(&baremetal.CreateServerRequest{
@@ -280,19 +319,26 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = baremetalAPI.InstallServer(&baremetal.InstallServerRequest{
-		Zone:            server.Zone,
-		ServerID:        server.ID,
-		OsID:            expandZonedID(d.Get("os")).ID,
-		Hostname:        expandStringWithDefault(d.Get("hostname"), server.Name),
-		SSHKeyIDs:       expandStrings(d.Get("ssh_key_ids")),
-		User:            expandStringPtr(d.Get("user")),
-		Password:        expandStringPtr(d.Get("password")),
-		ServiceUser:     expandStringPtr(d.Get("service_user")),
-		ServicePassword: expandStringPtr(d.Get("service_password")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if !d.Get("install_config_afterward").(bool) {
+		_, err = baremetalAPI.InstallServer(&baremetal.InstallServerRequest{
+			Zone:            server.Zone,
+			ServerID:        server.ID,
+			OsID:            expandZonedID(d.Get("os")).ID,
+			Hostname:        expandStringWithDefault(d.Get("hostname"), server.Name),
+			SSHKeyIDs:       expandStrings(d.Get("ssh_key_ids")),
+			User:            expandStringPtr(d.Get("user")),
+			Password:        expandStringPtr(d.Get("password")),
+			ServiceUser:     expandStringPtr(d.Get("service_user")),
+			ServicePassword: expandStringPtr(d.Get("service_password")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zone, server.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	options, optionsExist := d.GetOk("options")
@@ -334,11 +380,6 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
-	}
-
-	_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zone, server.ID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
 	}
 
 	return resourceScalewayBaremetalServerRead(ctx, d, meta)
@@ -392,9 +433,12 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("project_id", server.ProjectID)
 	_ = d.Set("offer_id", newZonedIDString(server.Zone, offer.ID))
 	_ = d.Set("offer_name", offer.Name)
+	_ = d.Set("offer", newZonedIDString(server.Zone, offer.ID))
 	_ = d.Set("tags", server.Tags)
 	_ = d.Set("domain", server.Domain)
 	_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
+	_ = d.Set("ipv4", flattenBaremetalIPv4s(server.IPs))
+	_ = d.Set("ipv6", flattenBaremetalIPv6s(server.IPs))
 	if server.Install != nil {
 		_ = d.Set("os", newZonedIDString(server.Zone, os.ID))
 		_ = d.Set("os_name", os.Name)
@@ -412,7 +456,11 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to list server's private networks: %w", err))
 	}
-	_ = d.Set("private_network", flattenBaremetalPrivateNetworks(server.Zone, listPrivateNetworks.ServerPrivateNetworks))
+	pnRegion, err := server.Zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	_ = d.Set("private_network", flattenBaremetalPrivateNetworks(pnRegion, listPrivateNetworks.ServerPrivateNetworks))
 
 	return nil
 }

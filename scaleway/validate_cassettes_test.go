@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,6 +59,7 @@ func exceptionsCassettesCases() map[string]struct{} {
 		"testdata/object-bucket-cors-empty-origin.cassette.yaml": {},
 		"testdata/rdb-privilege-basic.cassette.yaml":             {},
 		"testdata/data-source-rdb-privilege-basic.cassette.yaml": {},
+		"testdata/mnqsqs-already-activated.cassette.yaml":        {},
 	}
 }
 
@@ -66,6 +68,11 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 	_, isException := exceptions[c.File]
 	if isException {
 		return isException
+	}
+
+	// SQS returns 400 when the queue does not exist
+	if strings.Contains(i.Response.Body, sqs.ErrCodeQueueDoesNotExist) && i.Code == 400 {
+		return true
 	}
 
 	if i.Code >= 400 {

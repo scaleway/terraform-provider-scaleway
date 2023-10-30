@@ -9,8 +9,10 @@ import (
 	"strconv"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -46,7 +48,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"image": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
 				Description:      "The UUID or the label of the base image used by the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
@@ -54,9 +55,14 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         true,
 				Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
 				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
+			},
+			"replace_on_type_change": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Delete and re-create server if type change",
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -168,6 +174,17 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Optional:         true,
 				Description:      "The ID of the reserved IP for the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
+				ConflictsWith:    []string{"ip_ids"},
+			},
+			"ip_ids": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				ConflictsWith: []string{"ip_id"},
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					Description:      "ID of the reserved IP for the server",
+					DiffSuppressFunc: diffSuppressFuncLocality,
+				},
 			},
 			"ipv6_address": {
 				Type:        schema.TypeString,
@@ -246,10 +263,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					},
 					Schema: map[string]*schema.Schema{
 						"pn_id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
-							Description:  "The Private Network ID",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							Description:      "The Private Network ID",
+							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
 						// Computed
 						"mac_address": {
@@ -266,14 +284,44 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					},
 				},
 			},
+			"public_ips": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of public IPs attached to your instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the IP",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "IP Address",
+						},
+					},
+				},
+			},
+			"routed_ip_enabled": {
+				Type:        schema.TypeBool,
+				Description: "If server supports routed IPs, default to true if public_ips is used",
+				Optional:    true,
+				Computed:    true,
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck(
-			"placement_group_id",
-			"additional_volume_ids.#",
-			"ip_id",
+		CustomizeDiff: customdiff.All(
+			customizeDiffLocalityCheck(
+				"placement_group_id",
+				"additional_volume_ids.#",
+				"ip_id",
+			),
+			customDiffInstanceServerType,
+			customDiffInstanceServerImage,
 		),
 	}
 }
@@ -301,6 +349,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			CommercialType: commercialType,
 			Zone:           zone,
 			ImageLabel:     imageLabel,
+			Type:           marketplace.LocalImageTypeInstanceLocal,
 		})
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageLabel), err))
@@ -317,6 +366,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
+		RoutedIPEnabled:   expandBoolPtr(d.Get("routed_ip_enabled")),
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
@@ -337,13 +387,26 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		req.PublicIP = expandStringPtr(expandZonedID(ipID).ID)
 	}
 
+	if ipIDs, ok := d.GetOk("ip_ids"); ok {
+		req.PublicIPs = expandSliceIDsPtr(ipIDs)
+		// If server has multiple IPs, routed ip must be enabled per default
+		if getBool(d, "routed_ip_enabled") == nil {
+			req.RoutedIPEnabled = scw.BoolPtr(true)
+		}
+	}
+
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
 		req.PlacementGroup = expandStringPtr(expandZonedID(placementGroupID).ID)
 	}
 
 	serverType := getServerType(ctx, instanceAPI, req.Zone, req.CommercialType)
 	if serverType == nil {
-		return diag.FromErr(fmt.Errorf("could not find a server type associated with %s", req.CommercialType))
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       fmt.Sprintf("could not find a server type associated with %s in zone %s", req.CommercialType, req.Zone),
+			Detail:        "Ensure that the server type is correct, and that it does exist in this zone.",
+			AttributePath: cty.GetAttrPath("type"),
+		}}
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
@@ -367,24 +430,23 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		rootVolumeName = newRandomName("vol")
 	}
 
-	var rootVolumeSize scw.Size
+	var rootVolumeSize *scw.Size
 	if sizeInput == 0 && rootVolumeType == instance.VolumeVolumeTypeLSSD.String() {
 		// Compute the rootVolumeSize so it will be valid against the local volume constraints
 		// It wouldn't be valid if another local volume is added, but in this case
 		// the user would be informed that it does not fulfill the local volume constraints
-		rootVolumeSize = serverType.VolumesConstraint.MaxSize
-	} else {
-		rootVolumeSize = scw.Size(uint64(sizeInput) * gb)
+		rootVolumeSize = scw.SizePtr(serverType.VolumesConstraint.MaxSize)
+	} else if sizeInput > 0 {
+		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
 	}
 
 	req.Volumes["0"] = &instance.VolumeServerTemplate{
-		Name:       rootVolumeName,
-		ID:         rootVolumeID,
+		Name:       expandStringPtr(rootVolumeName),
+		ID:         expandStringPtr(rootVolumeID),
 		VolumeType: instance.VolumeVolumeType(rootVolumeType),
 		Size:       rootVolumeSize,
-		Boot:       *rootVolumeIsBootVolume,
+		Boot:       rootVolumeIsBootVolume,
 	}
-
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
 			// We have to get the volume to know whether it is a local or a block volume
@@ -396,10 +458,10 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				return diag.FromErr(err)
 			}
 			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
-				ID:         vol.Volume.ID,
-				Name:       vol.Volume.Name,
+				ID:         &vol.Volume.ID,
+				Name:       &vol.Volume.Name,
 				VolumeType: vol.Volume.VolumeType,
-				Size:       vol.Volume.Size,
+				Size:       &vol.Volume.Size,
 			}
 		}
 	}
@@ -544,12 +606,11 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)
 		_ = d.Set("project_id", server.Project)
+		_ = d.Set("routed_ip_enabled", server.RoutedIPEnabled)
 
 		// Image could be empty in an import context.
 		image := expandRegionalID(d.Get("image").(string))
 		if server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
-			// TODO: If image is a label, check that server.Image.ID match the label.
-			// It could be useful if the user edit the image with another tool.
 			_ = d.Set("image", newZonedID(zone, server.Image.ID).String())
 		}
 
@@ -562,21 +623,37 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			_ = d.Set("private_ip", flattenStringPtr(server.PrivateIP))
 		}
 
-		if server.PublicIP != nil {
-			_ = d.Set("public_ip", server.PublicIP.Address.String())
-			d.SetConnInfo(map[string]string{
-				"type": "ssh",
-				"host": server.PublicIP.Address.String(),
-			})
+		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID {
 			if !server.PublicIP.Dynamic {
 				_ = d.Set("ip_id", newZonedID(zone, server.PublicIP.ID).String())
 			} else {
 				_ = d.Set("ip_id", "")
 			}
 		} else {
-			_ = d.Set("public_ip", "")
 			_ = d.Set("ip_id", "")
+		}
+
+		if server.PublicIP != nil {
+			_ = d.Set("public_ip", server.PublicIP.Address.String())
+			d.SetConnInfo(map[string]string{
+				"type": "ssh",
+				"host": server.PublicIP.Address.String(),
+			})
+		} else {
+			_ = d.Set("public_ip", "")
 			d.SetConnInfo(nil)
+		}
+
+		if len(server.PublicIPs) > 0 {
+			_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
+		} else {
+			_ = d.Set("public_ips", []interface{}{})
+		}
+
+		if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
+			_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
+		} else {
+			_ = d.Set("ip_ids", []interface{}{})
 		}
 
 		if server.IPv6 != nil {
@@ -681,20 +758,24 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	////
 	// Construct UpdateServerRequest
 	////
+	serverShouldUpdate := false
 	updateRequest := &instance.UpdateServerRequest{
 		Zone:     zone,
 		ServerID: server.ID,
 	}
 
 	if d.HasChange("name") {
+		serverShouldUpdate = true
 		updateRequest.Name = expandStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {
+		serverShouldUpdate = true
 		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("security_group_id") {
+		serverShouldUpdate = true
 		updateRequest.SecurityGroup = &instance.SecurityGroupTemplate{
 			ID:   expandZonedID(d.Get("security_group_id")).ID,
 			Name: newRandomName("sg"), // this value will be ignored by the API
@@ -702,10 +783,12 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("enable_ipv6") {
+		serverShouldUpdate = true
 		updateRequest.EnableIPv6 = scw.BoolPtr(d.Get("enable_ipv6").(bool))
 	}
 
 	if d.HasChange("enable_dynamic_ip") {
+		serverShouldUpdate = true
 		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
 	}
 
@@ -713,9 +796,9 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChanges("additional_volume_ids", "root_volume") {
 		volumes["0"] = &instance.VolumeServerTemplate{
-			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
-			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
-			Boot: d.Get("root_volume.0.boot").(bool),
+			ID:   scw.StringPtr(expandZonedID(d.Get("root_volume.0.volume_id")).ID),
+			Name: scw.StringPtr(newRandomName("vol")), // name is ignored by the API, any name will work here
+			Boot: expandBoolPtr(d.Get("root_volume.0.boot")),
 		}
 
 		if !hasAdditionalVolumes {
@@ -742,15 +825,17 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				}
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
-				ID:   expandZonedID(volumeID).ID,
-				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
+				ID:   scw.StringPtr(expandZonedID(volumeID).ID),
+				Name: scw.StringPtr(newRandomName("vol")), // name is ignored by the API, any name will work here
 			}
 		}
 
+		serverShouldUpdate = true
 		updateRequest.Volumes = &volumes
 	}
 
 	if d.HasChange("placement_group_id") {
+		serverShouldUpdate = true
 		placementGroupID := expandZonedID(d.Get("placement_group_id")).ID
 		if placementGroupID == "" {
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Null: true}
@@ -765,7 +850,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	////
 	// Update reserved IP
 	////
-	if d.HasChange("ip_id") {
+	if d.HasChange("ip_id") && !instanceIPHasMigrated(d) {
 		server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -811,8 +896,16 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
+	if d.HasChange("ip_ids") {
+		err := resourceScalewayInstanceServerUpdateIPs(ctx, d, instanceAPI, zone, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChanges("boot_type") {
 		bootType := instance.BootType(d.Get("boot_type").(string))
+		serverShouldUpdate = true
 		updateRequest.BootType = &bootType
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
@@ -823,6 +916,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChanges("bootscript_id") {
+		serverShouldUpdate = true
 		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
@@ -888,11 +982,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 						err = ph.detach(ctx, o, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							diag.FromErr(err)
+							return diag.FromErr(err)
 						}
 						err = ph.attach(ctx, n, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							diag.FromErr(err)
+							return diag.FromErr(err)
 						}
 					}
 				}
@@ -910,7 +1004,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 					err = ph.detach(ctx, pn["pn_id"], d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
-						diag.FromErr(err)
+						return diag.FromErr(err)
 					}
 				}
 			}
@@ -932,14 +1026,30 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
-	_, err = instanceAPI.UpdateServer(updateRequest)
-	if err != nil {
-		return diag.FromErr(err)
+	if serverShouldUpdate {
+		_, err = instanceAPI.UpdateServer(updateRequest)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("type") {
+		err := resourceScalewayInstanceServerMigrate(ctx, d, instanceAPI, zone, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChanges("routed_ip_enabled") {
+		err := resourceScalewayInstanceServerEnableRoutedIP(ctx, d, instanceAPI, zone, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return append(warnings, resourceScalewayInstanceServerRead(ctx, d, meta)...)
@@ -981,8 +1091,25 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	// Delete private-nic if managed by instance_server resource
+	if raw, ok := d.GetOk("private_network"); ok {
+		ph, err := newPrivateNICHandler(instanceAPI, id, zone)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for index := range raw.([]interface{}) {
+			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+			pn := d.Get(pnKey)
+			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
@@ -1012,6 +1139,222 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		})
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
+		}
+	}
+
+	return nil
+}
+
+func instanceServerCanMigrate(api *instance.API, server *instance.Server, requestedType string) error {
+	var localVolumeSize scw.Size
+
+	for _, volume := range server.Volumes {
+		if volume.VolumeType == instance.VolumeServerVolumeTypeLSSD {
+			localVolumeSize += volume.Size
+		}
+	}
+
+	serverType, err := api.GetServerType(&instance.GetServerTypeRequest{
+		Zone: server.Zone,
+		Name: requestedType,
+	})
+	if err != nil {
+		return err
+	}
+
+	if serverType.VolumesConstraint != nil &&
+		(localVolumeSize > serverType.VolumesConstraint.MaxSize) ||
+		(localVolumeSize < serverType.VolumesConstraint.MinSize) {
+		return fmt.Errorf("local volume total size does not respect type constraint, expected beteween (%dGB, %dGB), got %sGB",
+			serverType.VolumesConstraint.MinSize/scw.GB,
+			serverType.VolumesConstraint.MaxSize/scw.GB,
+			localVolumeSize/scw.GB)
+	}
+
+	return nil
+}
+
+func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if !diff.HasChange("type") || diff.Id() == "" {
+		return nil
+	}
+
+	if diff.Get("replace_on_type_change").(bool) {
+		return diff.ForceNew("type")
+	}
+
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, diff.Id())
+	if err != nil {
+		return err
+	}
+
+	_, newValue := diff.GetChange("type")
+	newType := newValue.(string)
+
+	resp, err := instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check server type change: %w", err)
+	}
+
+	err = instanceServerCanMigrate(instanceAPI, resp.Server, newType)
+	if err != nil {
+		return fmt.Errorf("cannot change server type: %w", err)
+	}
+
+	return nil
+}
+
+func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if diff.Get("image") == "" || !diff.HasChange("image") || diff.Id() == "" {
+		return nil
+	}
+
+	// We get the server to fetch the UUID of the image
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, diff.Id())
+	if err != nil {
+		return err
+	}
+	server, err := instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	// If 'image' field is defined by the user and server.Image is empty, we should create a new server
+	if server.Server.Image == nil {
+		return diff.ForceNew("image")
+	}
+
+	// We get the image as it is defined by the user
+	image := expandRegionalID(diff.Get("image").(string))
+	if scwvalidation.IsUUID(image.ID) {
+		if image.ID == expandZonedID(server.Server.Image.ID).ID {
+			return nil
+		}
+	}
+
+	// If image is a label, we check that server.Image.ID matches the label in case the user has edited
+	// the image with another tool.
+	marketplaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
+	if err != nil {
+		return err
+	}
+	marketplaceImage, err := marketplaceAPI.GetLocalImage(&marketplace.GetLocalImageRequest{
+		LocalImageID: server.Server.Image.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+	if marketplaceImage.Label != image.ID {
+		return diff.ForceNew("image")
+	}
+	return nil
+}
+
+func resourceScalewayInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, instanceAPI *instance.API, zone scw.Zone, id string) error {
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return fmt.Errorf("failed to wait for server before changing server type: %w", err)
+	}
+	beginningState := server.State
+
+	err = reachState(ctx, instanceAPI, zone, id, instance.ServerStateStopped)
+	if err != nil {
+		return fmt.Errorf("failed to stop server before changing server type: %w", err)
+	}
+
+	_, err = instanceAPI.UpdateServer(&instance.UpdateServerRequest{
+		Zone:           zone,
+		ServerID:       id,
+		CommercialType: expandStringPtr(d.Get("type")),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to change server type server")
+	}
+
+	err = reachState(ctx, instanceAPI, zone, id, beginningState)
+	if err != nil {
+		return fmt.Errorf("failed to start server after changing server type: %w", err)
+	}
+
+	return nil
+}
+
+func resourceScalewayInstanceServerEnableRoutedIP(ctx context.Context, d *schema.ResourceData, instanceAPI *instance.API, zone scw.Zone, id string) error {
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	_, err = instanceAPI.ServerAction(&instance.ServerActionRequest{
+		Zone:     server.Zone,
+		ServerID: server.ID,
+		Action:   "enable_routed_ip",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to enable routed ip: %w", err)
+	}
+
+	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resourceScalewayInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData, instanceAPI *instance.API, zone scw.Zone, id string) error {
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	schemaIPs := d.Get("ip_ids").([]interface{})
+	requestedIPs := make(map[string]bool, len(schemaIPs))
+
+	// Gather request IPs in a map
+	for _, rawIP := range schemaIPs {
+		requestedIPs[expandID(rawIP)] = false
+	}
+
+	// Detach all IPs that are not requested and set to true the one that are already attached
+	for _, ip := range server.PublicIPs {
+		_, isRequested := requestedIPs[ip.ID]
+		if isRequested {
+			requestedIPs[ip.ID] = true
+		} else {
+			_, err := instanceAPI.UpdateIP(&instance.UpdateIPRequest{
+				Zone: zone,
+				IP:   ip.ID,
+				Server: &instance.NullableStringValue{
+					Null: true,
+				},
+			})
+			if err != nil {
+				return fmt.Errorf("failed to detach IP: %w", err)
+			}
+		}
+	}
+
+	// Attach all remaining IPs that are not attached
+	for ipID, isAttached := range requestedIPs {
+		if isAttached {
+			continue
+		}
+		_, err := instanceAPI.UpdateIP(&instance.UpdateIPRequest{
+			Zone: zone,
+			IP:   ipID,
+			Server: &instance.NullableStringValue{
+				Value: server.ID,
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to attach IP: %w", err)
 		}
 	}
 

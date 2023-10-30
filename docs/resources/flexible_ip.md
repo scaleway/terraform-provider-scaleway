@@ -26,6 +26,14 @@ resource "scaleway_flexible_ip" "main" {
 }
 ```
 
+### With IPv6
+
+```hcl
+resource "scaleway_flexible_ip" "main" {
+    is_ipv6 = "true"
+}
+```
+
 ### With baremetal server
 
 ```hcl
@@ -62,9 +70,10 @@ resource "scaleway_flexible_ip" "main" {
 
 The following arguments are supported:
 
-- `description`: (Optional) A description of the flexible IP.
-- `tags`: (Optional) A list of tags to apply to the flexible IP.
+- `description` - (Optional) A description of the flexible IP.
+- `tags` - (Optional) A list of tags to apply to the flexible IP.
 - `reverse` - (Optional) The reverse domain associated with this flexible IP.
+- `is_ipv6` - (Optional) Defines whether the flexible IP has an IPv6 address.
 
 ## Attributes Reference
 
@@ -74,11 +83,14 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Flexible IPs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `ip_address` -  The IPv4 address of the Flexible IP
-- `zone` - The zone of the Flexible IP
-- `organization_id` - The organization of the Flexible IP
-- `project_id` - The project of the Flexible IP
-- `server_id` - The ID of the associated server
+- `ip_address` -  The IP address of the Flexible IP.
+- `server_id` - The ID of the associated server.
+- `status` - The status of the flexible IP.
+- `created_at` - The date and time of the creation of the Flexible IP (Format ISO 8601).
+- `updated_at` - The date and time of the last update of the Flexible IP (Format ISO 8601).
+- `zone` - The zone of the Flexible IP.
+- `organization_id` - The organization of the Flexible IP.
+- `project_id` - The project of the Flexible IP.
 
 ## Import
 

@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,6 +33,7 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 	dsSchema["data"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
+		Sensitive:   true,
 		Description: "The payload of the secret version",
 	}
 
@@ -42,7 +44,8 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 }
 
 func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := secretAPIWithRegion(d, meta)
+	secretID, existSecretID := d.GetOk("secret_id")
+	api, region, err := secretAPIWithRegionAndDefault(d, meta, expandRegionalID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -50,7 +53,6 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	var secretVersionIDStr string
 	var payloadSecretRaw []byte
 
-	secretID, existSecretID := d.GetOk("secret_id")
 	if !existSecretID {
 		request := &secret.AccessSecretVersionByNameRequest{
 			Region:     region,
@@ -83,7 +85,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	}
 
 	d.SetId(secretVersionIDStr)
-	err = d.Set("data", base64Encoded(payloadSecretRaw))
+	err = d.Set("data", base64.StdEncoding.EncodeToString(payloadSecretRaw))
 	if err != nil {
 		return diag.FromErr(err)
 	}

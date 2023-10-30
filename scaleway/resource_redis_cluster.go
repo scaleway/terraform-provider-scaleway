@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -118,13 +119,17 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Optional:      true,
 				Description:   "Private network specs details",
 				ConflictsWith: []string{"acl"},
+				Set:           redisPrivateNetworkSetHash,
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					// Check if the key is for the 'id' attribute
+					if strings.HasSuffix(k, "id") {
+						return expandID(oldValue) == expandID(newValue)
+					}
+					// For all other attributes, don't suppress the diff
+					return false
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "UUID of the endpoint to be connected to the cluster",
-						},
 						"id": {
 							Type:         schema.TypeString,
 							Required:     true,
@@ -133,14 +138,21 @@ func resourceScalewayRedisCluster() *schema.Resource {
 						},
 						"service_ips": {
 							Type:     schema.TypeList,
-							Required: true,
+							Optional: true,
+							Computed: true,
 							Elem: &schema.Schema{
 								Type:         schema.TypeString,
 								ValidateFunc: validation.IsCIDR,
 							},
 							Description: "List of IPv4 addresses of the private network with a CIDR notation",
 						},
-						"zone": zoneSchema(),
+						// computed
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "UUID of the endpoint to be connected to the cluster",
+						},
+						"zone": zoneComputedSchema(),
 					},
 				},
 			},
@@ -236,9 +248,9 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 		createReq.ClusterSettings = expandRedisSettings(settings)
 	}
 
-	privN, privNExists := d.GetOk("private_network")
-	if privNExists {
-		pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
+	pn, pnExists := d.GetOk("private_network")
+	if pnExists {
+		pnSpecs, err := expandRedisPrivateNetwork(pn.(*schema.Set).List())
 		if err != nil {
 			return diag.FromErr(err)
 		}

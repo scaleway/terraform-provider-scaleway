@@ -325,6 +325,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChanges("secret_environment_variables") {
 		req.SecretEnvironmentVariables = expandFunctionsSecrets(d.Get("secret_environment_variables"))
+		updated = true
 	}
 
 	if d.HasChange("description") {
@@ -359,6 +360,11 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("http_option") {
 		req.HTTPOption = function.FunctionHTTPOption(d.Get("http_option").(string))
+		updated = true
+	}
+
+	if d.HasChange("privacy") {
+		req.Privacy = function.FunctionPrivacy(d.Get("privacy").(string))
 		updated = true
 	}
 

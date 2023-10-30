@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -22,10 +22,10 @@ func init() {
 
 func testSweepCockpitGrafanaUser(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
-		accountAPI := accountV2.NewAPI(scwClient)
+		accountAPI := accountV3.NewProjectAPI(scwClient)
 		cockpitAPI := cockpit.NewAPI(scwClient)
 
-		listProjects, err := accountAPI.ListProjects(&accountV2.ListProjectsRequest{}, scw.WithAllPages())
+		listProjects, err := accountAPI.ListProjects(&accountV3.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}

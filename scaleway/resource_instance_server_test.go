@@ -1,14 +1,18 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -335,6 +339,7 @@ func TestAccScalewayInstanceServer_Basic(t *testing.T) {
 					  name  = "test"
 					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
+					  replace_on_type_change  = true
 					
 					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
 					}`,
@@ -1177,7 +1182,6 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network internal {
 						name = "private_network_instance"
-						zone = "fr-par-2"
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1313,6 +1317,644 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_Migrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XS"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "DEV1-L"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-L"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "DEV1-S"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-S"),
+				),
+				ExpectError: regexp.MustCompile("cannot change server type"),
+				PlanOnly:    true,
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_CustomDiffImage(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+					resource "scaleway_instance_server" "copy" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.copy"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.copy", "image", "ubuntu_jammy"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
+				),
+				ResourceName: "scaleway_instance_server.copy",
+				ImportState:  true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return state.RootModule().Resources["scaleway_instance_server.main"].Primary.ID, nil
+				},
+				ImportStatePersist: true,
+			},
+			{
+				Config: `
+					data "scaleway_marketplace_image" "jammy" {
+						label = "ubuntu_jammy"
+					}
+					resource "scaleway_instance_server" "main" {
+						image = data.scaleway_marketplace_image.jammy.id
+						type = "DEV1-S"
+						state = "stopped"
+					}
+					resource "scaleway_instance_server" "copy" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.copy"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.jammy", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
+				),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.copy"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.jammy", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
+				),
+			},
+			{
+				Config: `
+					data "scaleway_marketplace_image" "focal" {
+						label = "ubuntu_focal"
+					}
+					resource "scaleway_instance_server" "main" {
+						image = data.scaleway_marketplace_image.focal.id
+						type = "DEV1-S"
+						state = "stopped"
+					}
+					resource "scaleway_instance_server" "copy" {
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+				`,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.focal", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.copy", "image", "ubuntu_jammy"),
+					testAccCheckScalewayInstanceServerIDsAreDifferent("scaleway_instance_server.main", "scaleway_instance_server.copy"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScalewayInstanceServerIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[nameFirst]
+		if !ok {
+			return fmt.Errorf("resource was not found: %s", nameFirst)
+		}
+		idFirst := rs.Primary.ID
+
+		rs, ok = s.RootModule().Resources[nameSecond]
+		if !ok {
+			return fmt.Errorf("resource was not found: %s", nameSecond)
+		}
+		idSecond := rs.Primary.ID
+
+		if idFirst == idSecond {
+			return fmt.Errorf("IDs of both resources were equal when they should not have been (%s and %s)", nameFirst, nameSecond)
+		}
+		return nil
+	}
+}
+
+func TestAccScalewayInstanceServer_RoutedIPEnable(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "false"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						routed_ip_enabled = true
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_RoutedIPEnableWithIP(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_ip" "main" {
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_id = scaleway_instance_ip.main.id
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "false"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "main" {
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_id = scaleway_instance_ip.main.id
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+						routed_ip_enabled = true
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_IPs(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip1.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_ip" "ip2" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip1.id, scaleway_instance_ip.ip2.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "2"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.1.id", "scaleway_instance_ip.ip2", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_ip" "ip2" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip2.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip2", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_IPRemoved(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_ip" "main" {}
+
+					resource "scaleway_instance_server" "main" {
+						ip_id = scaleway_instance_ip.main.id
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.address", "scaleway_instance_server.main", "public_ip"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "main" {}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					testAccCheckScalewayInstanceServerNoIPAssigned(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_IPsRemoved(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_ip" "main" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.main.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.main", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "main" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					testAccCheckScalewayInstanceServerNoIPAssigned(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	ctx := context.Background()
+	// This come from iam_policy tests to use policies in tests
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	require.NoError(t, err)
+
+	// This is the provider factory that will use the temporary project
+	providerFactories := fakeSideProjectProviders(ctx, tt, project, iamAPIKey)
+
+	// Goal of this test is to check that an IP will not get detached if moved from ip_id to ip_ids
+	// Between the two steps we will create an API key that cannot update the IP,
+	// it should fail if the provider tries to detach
+	temporaryAccessKey := ""
+	temporarySecretKey := ""
+	customProviderFactory := map[string]func() (*schema.Provider, error){
+		"scaleway": func() (*schema.Provider, error) {
+			meta, err := buildMeta(context.Background(), &metaConfig{
+				providerSchema:   nil,
+				terraformVersion: "terraform-tests",
+				httpClient:       tt.Meta.httpClient,
+				forceAccessKey:   temporaryAccessKey,
+				forceSecretKey:   temporarySecretKey,
+			})
+			if err != nil {
+				return nil, err
+			}
+			return Provider(&ProviderConfig{Meta: meta})(), nil
+		},
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayInstanceServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				ProviderFactories: providerFactories,
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "ip" {}
+
+					resource "scaleway_instance_server" "main" {
+						ip_id = scaleway_instance_ip.ip.id
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = %[1]q
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`, project.OrganizationID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_iam_api_key.key"]
+						if !ok {
+							return fmt.Errorf("resource was not found: %s", "scaleway_iam_api_key.key")
+						}
+						temporaryAccessKey = rs.Primary.Attributes["access_key"]
+						temporarySecretKey = rs.Primary.Attributes["secret_key"]
+
+						return nil
+					},
+				),
+			},
+			{
+				ProviderFactories: customProviderFactory,
+				// With migration supported, this should make no changes
+				// This is validated because we cannot add a nat IP to ip_ids
+				// This would fail if not moved from ip_id to ip_ids
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "ip" {
+						type = "nat"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = %[1]q
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`, project.OrganizationID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
+				),
+			},
+			{
+				ProviderFactories: tt.ProviderFactories,
+				// Last step with default api key to remove resources
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "ip" {
+						type = "nat"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						ip_ids = [scaleway_instance_ip.ip.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+					}
+
+					resource "scaleway_iam_application" "app" {
+						name = "tf_tests_instance_server_ipmigrate"
+					}
+
+					resource "scaleway_iam_policy" "policy" {
+						application_id = scaleway_iam_application.app.id
+						rule {
+							permission_set_names = ["InstancesReadOnly"]
+							organization_id = %[1]q
+						}
+						rule {
+							permission_set_names = ["ProjectReadOnly", "IAMReadOnly"]
+							organization_id = %[1]q
+						}
+					}
+
+					resource "scaleway_iam_api_key" "key" {
+						application_id = scaleway_iam_application.app.id
+					}`, project.OrganizationID),
 			},
 		},
 	})

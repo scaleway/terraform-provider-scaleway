@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func TestAccScalewayDomainZone_Basic(t *testing.T) {
@@ -48,7 +49,7 @@ func testAccCheckScalewayDomainZoneExists(tt *TestTools, n string) resource.Test
 
 		domainAPI := newDomainAPI(tt.Meta)
 		listDNSZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-			DNSZone: fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"]),
+			DNSZone: scw.StringPtr(fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])),
 		})
 		if err != nil {
 			return err
@@ -75,7 +76,7 @@ func testAccCheckScalewayDomainZoneDestroy(tt *TestTools) resource.TestCheckFunc
 			// check if the zone still exists
 			domainAPI := newDomainAPI(tt.Meta)
 			listDNSZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-				DNSZone: fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"]),
+				DNSZone: scw.StringPtr(fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])),
 			})
 
 			if is403Error(err) { // forbidden: subdomain not found

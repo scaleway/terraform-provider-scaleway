@@ -2,10 +2,11 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -29,7 +30,7 @@ func dataSourceScalewayAccountProject() *schema.Resource {
 }
 
 func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV2API(meta)
+	accountAPI := accountV3ProjectAPI(meta)
 
 	var projectID string
 
@@ -39,7 +40,7 @@ func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.Resourc
 			// required not in schema as we could use default
 			return diag.Errorf("organization_id is required with name")
 		}
-		res, err := accountAPI.ListProjects(&accountV2.ListProjectsRequest{
+		res, err := accountAPI.ListProjects(&accountV3.ProjectAPIListProjectsRequest{
 			OrganizationID: *orgID,
 			Name:           expandStringPtr(name),
 		}, scw.WithContext(ctx))
@@ -55,7 +56,11 @@ func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.Resourc
 			}
 		}
 		if projectID == "" {
-			diag.Errorf("no project found with the name %s", d.Get("name"))
+			return diag.Diagnostics{{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("no project found with the name %s", d.Get("name")),
+				Detail:   "API Keys must be from the same organization as the project to fetch it",
+			}}
 		}
 	} else {
 		extractedProjectID, _, err := extractProjectID(d, meta.(*Meta))

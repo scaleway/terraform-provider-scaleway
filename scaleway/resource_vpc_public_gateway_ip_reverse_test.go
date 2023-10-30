@@ -12,7 +12,7 @@ import (
 func TestAccScalewayVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testDNSZone := fmt.Sprintf("%s.%s", testDomainZone, testDomain)
+	testDNSZone := fmt.Sprintf("tf-reverse-vpcgw.%s", testDomain)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -24,7 +24,7 @@ func TestAccScalewayVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 					
 					resource "scaleway_domain_record" "tf_A" {
 						dns_zone = %[1]q
-						name     = "tf"
+						name     = ""
 						type     = "A"
                         data     = "${scaleway_vpc_public_gateway_ip.main.address}"
 						ttl      = 3600
@@ -33,9 +33,10 @@ func TestAccScalewayVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 
 					resource "scaleway_vpc_public_gateway_ip_reverse_dns" "main" {
 					    gateway_ip_id   = scaleway_vpc_public_gateway_ip.main.id
-					    reverse         = %[2]q
+					    reverse         = %[1]q
+						depends_on      = [scaleway_domain_record.tf_A]
 					}
-				`, testDomain, testDNSZone),
+				`, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip_reverse_dns.main", "reverse", testDNSZone),
 				),

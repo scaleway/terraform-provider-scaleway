@@ -9,6 +9,8 @@ This Terraform configuration creates and manage a Scaleway MNQ credential associ
 For additional details, kindly refer to our [website](https://www.scaleway.com/en/docs/serverless/messaging/) and
 the [API documentation](https://developers.scaleway.com/en/products/messaging_and_queuing/api/v1alpha1/#post-67608e)
 
+~> NOTE: This resource refers to the old version of the MNQ API. You should use new resources dedicated to your protocol. [SQS](mnq_sqs_credentials.md), [NATS](mnq_nats_credentials.md).
+
 ## Examples
 
 ### NATS credential
