@@ -69,15 +69,18 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "tags.%", "1"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "tags.foo", "bar"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketBasic, "fr-par")),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "api_endpoint", fmt.Sprintf("https://s3.%s.scw.cloud", "fr-par")),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "name", bucketAms),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.%", "2"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.foo", "bar"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.baz", "qux"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketAms, "nl-ams")),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "api_endpoint", fmt.Sprintf("https://s3.%s.scw.cloud", "nl-ams")),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-01", "name", bucketPar),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketPar, "fr-par")),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-01", "api_endpoint", fmt.Sprintf("https://s3.%s.scw.cloud", "fr-par")),
 				),
 			},
 			{
