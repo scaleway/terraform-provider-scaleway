@@ -769,6 +769,111 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRdbInstance_DisablePublicEndpoint(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "disable_public_endpoint" {
+						name = "test-rdb-disable-public-endpoint"
+					}
+
+					resource "scaleway_rdb_instance" "disable_public_endpoint" {
+						name = "test-rdb-disable-public-endpoint"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "disable_public_endpoint" ]
+						disable_public_endpoint = true
+						private_network {
+							pn_id = scaleway_vpc_private_network.disable_public_endpoint.id
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.disable_public_endpoint"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.disable_public_endpoint"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "disable_public_endpoint", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "load_balancer.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "private_network.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.disable_public_endpoint", "private_network.0.pn_id", "scaleway_vpc_private_network.disable_public_endpoint", "id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "endpoint_ip", ""),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "endpoint_port", "0"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "disable_public_endpoint" {
+						name = "test-rdb-disable-public-endpoint"
+					}
+
+					resource "scaleway_rdb_instance" "disable_public_endpoint" {
+						name = "test-rdb-disable-public-endpoint"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "disable_public_endpoint" ]
+						private_network {
+							pn_id = scaleway_vpc_private_network.disable_public_endpoint.id
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.disable_public_endpoint"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.disable_public_endpoint"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "disable_public_endpoint", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "private_network.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.disable_public_endpoint", "private_network.0.pn_id", "scaleway_vpc_private_network.disable_public_endpoint", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.disable_public_endpoint", "endpoint_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.disable_public_endpoint", "endpoint_port"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "disable_public_endpoint" {
+						name = "test-rdb-disable-public-endpoint"
+					}
+
+					resource "scaleway_rdb_instance" "disable_public_endpoint" {
+						name = "test-rdb-disable-public-endpoint"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "disable_public_endpoint" ]
+						disable_public_endpoint = true
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.disable_public_endpoint"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "disable_public_endpoint", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "load_balancer.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "private_network.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "endpoint_ip", ""),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "endpoint_port", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

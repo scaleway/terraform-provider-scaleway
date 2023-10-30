@@ -107,6 +107,7 @@ resource "scaleway_rdb_instance" "main" {
     ip_net = "172.16.20.4/22" # IP address within a given IP network
     pn_id  = scaleway_vpc_private_network.pn.id
   }
+  disable_public_endpoint = true
 }
 ```
 
@@ -159,6 +160,8 @@ and if you are using `bssd` storage, you should increase the volume size before 
 - `settings` - (Optional) Map of engine settings to be set. Using this option will override default config.
 
 - `tags` - (Optional) The tags associated with the Database Instance.
+
+- `disable_public_endpoint` - (Optional) Disable the default public endpoint
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the Database Instance should be created.

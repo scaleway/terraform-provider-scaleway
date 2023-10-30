@@ -137,14 +137,10 @@ func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, er
 	return res, nil
 }
 
-func expandLoadBalancer() []*rdb.EndpointSpec {
-	var res []*rdb.EndpointSpec
-
-	res = append(res, &rdb.EndpointSpec{
+func expandLoadBalancer() *rdb.EndpointSpec {
+	return &rdb.EndpointSpec{
 		LoadBalancer: &rdb.EndpointSpecLoadBalancer{},
-	})
-
-	return res
+	}
 }
 
 func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
@@ -177,7 +173,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	return pnI, false
 }
 
-func flattenLoadBalancer(endpoints []*rdb.Endpoint) interface{} {
+func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	flat := []map[string]interface{}(nil)
 	for _, endpoint := range endpoints {
 		if endpoint.LoadBalancer != nil {
@@ -188,11 +184,11 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) interface{} {
 				"name":        endpoint.Name,
 				"hostname":    flattenStringPtr(endpoint.Hostname),
 			})
-			return flat
+			return flat, true
 		}
 	}
 
-	return flat
+	return flat, false
 }
 
 // expandTimePtr returns a time pointer for an RFC3339 time.
