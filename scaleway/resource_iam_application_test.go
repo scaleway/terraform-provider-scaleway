@@ -27,7 +27,7 @@ func testSweepIamApplication(_ string) error {
 		}
 
 		listApps, err := api.ListApplications(&iam.ListApplicationsRequest{
-			OrganizationID: &orgID,
+			OrganizationID: orgID,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list applications: %w", err)

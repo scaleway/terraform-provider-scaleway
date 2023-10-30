@@ -41,8 +41,13 @@ func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.Resourc
 	appID, appIDExists := d.GetOk("application_id")
 
 	if !appIDExists {
+		orgID := getOrganizationID(meta, d)
+		if orgID == nil {
+			return diag.Errorf("could not find a valid organization_id")
+		}
+
 		res, err := api.ListApplications(&iam.ListApplicationsRequest{
-			OrganizationID: getOrganizationID(meta, d),
+			OrganizationID: *orgID,
 			Name:           expandStringPtr(d.Get("name")),
 		}, scw.WithContext(ctx))
 		if err != nil {
