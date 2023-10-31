@@ -50,10 +50,12 @@ func resourceScaleway{{ .Resource }}Create(ctx context.Context, d *schema.Resour
 
 	d.SetId(new{{ .LocalityAdjectiveUpper }}IDString({{ .Locality }}, {{ .ResourceCleanLow }}.ID))
 
+{{if .SupportWaiters}}
 	_, err = waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, {{ .ResourceCleanLow }}.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+{{end}}
 
 	return resourceScaleway{{ .Resource }}Read(ctx, d, meta)
 }
@@ -63,7 +65,7 @@ func resourceScaleway{{ .Resource }}Read(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+{{if .SupportWaiters}}
 	{{ .ResourceCleanLow }}, err := waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
@@ -72,6 +74,12 @@ func resourceScaleway{{ .Resource }}Read(ctx context.Context, d *schema.Resource
 		}
 		return diag.FromErr(err)
 	}
+{{- else}}
+	{{.ResourceCleanLow}}, err := api.Get{{.ResourceClean}}(&{{.API}}.Get{{.ResourceClean}}Request{
+		{{.ResourceClean}}ID: id,
+		{{.LocalityUpper}}: {{.Locality}},
+	}, scw.WithContext(ctx))
+{{- end }}
 
 	_ = d.Set("name", {{ .ResourceCleanLow }}.Name)
 	_ = d.Set("{{.Locality}}", {{.ResourceCleanLow}}.{{.LocalityUpper}})
@@ -85,7 +93,7 @@ func resourceScaleway{{ .Resource }}Update(ctx context.Context, d *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+{{if .SupportWaiters }}
 	{{ .ResourceCleanLow }}, err := waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is404Error(err) {
@@ -94,10 +102,10 @@ func resourceScaleway{{ .Resource }}Update(ctx context.Context, d *schema.Resour
 		}
 		return diag.FromErr(err)
 	}
-
+{{- end}}
 	req := &{{ .API }}.Update{{ .ResourceClean }}Request{
 		{{ .LocalityUpper }}:      {{.Locality}},
-		{{ .ResourceClean }}ID: {{ .ResourceCleanLow }}.ID,
+		{{ .ResourceClean }}ID: {{if .SupportWaiters}}{{ .ResourceCleanLow }}.ID{{else}}id{{end}},
 	}
 
 	if d.HasChange("name") {
@@ -116,12 +124,12 @@ func resourceScaleway{{ .Resource }}Delete(ctx context.Context, d *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+{{if .SupportWaiters}}
 	_, err = waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+{{- end}}
 	_, err = api.Delete{{ .ResourceClean }}(&{{ .API }}.Delete{{ .ResourceClean}}Request{
 		{{ .LocalityUpper }}:      {{ .Locality }},
 		{{ .ResourceClean }}ID: id,
@@ -130,10 +138,12 @@ func resourceScaleway{{ .Resource }}Delete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
+{{- if .SupportWaiters}}
 	_, err = waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
+{{- end}}
 
 	return nil
 }
