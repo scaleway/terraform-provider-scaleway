@@ -165,7 +165,7 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("no_principal", flattenBoolPtr(pol.NoPrincipal))
 
 	listRules, err := api.ListRules(&iam.ListRulesRequest{
-		PolicyID: &pol.ID,
+		PolicyID: pol.ID,
 	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to list policy's rules: %w", err))

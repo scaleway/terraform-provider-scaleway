@@ -27,7 +27,7 @@ func testSweepIamGroup(_ string) error {
 		}
 
 		listApps, err := api.ListGroups(&iam.ListGroupsRequest{
-			OrganizationID: &orgID,
+			OrganizationID: orgID,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list groups: %w", err)
