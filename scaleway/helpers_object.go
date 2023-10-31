@@ -201,6 +201,10 @@ func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 	return fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region)
 }
 
+func objectBucketAPIEndpointURL(region scw.Region) string {
+	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
+}
+
 // Returns true if the error matches all these conditions:
 //   - err is of type aws err.Error
 //   - Error.Code() matches code
