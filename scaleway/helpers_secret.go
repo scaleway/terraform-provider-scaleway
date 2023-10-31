@@ -1,7 +1,9 @@
 package scaleway
 
 import (
+	"context"
 	"encoding/base64"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -90,4 +92,21 @@ func base64Encoded(data []byte) string {
 		return string(data)
 	}
 	return base64.StdEncoding.EncodeToString(data)
+}
+
+func getSecretFolderByID(ctx context.Context, api *secret.API, region scw.Region, id string) (*secret.Folder, error) {
+	listResp, err := api.ListFolders(&secret.ListFoldersRequest{
+		Region: region,
+	}, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, folder := range listResp.Folders {
+		if folder.ID == id {
+			return folder, nil
+		}
+	}
+
+	return nil, fmt.Errorf("failed to find folder with given id %q in region %q", id, region)
 }

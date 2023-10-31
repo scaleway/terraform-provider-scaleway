@@ -113,6 +113,132 @@ func TestAccScalewaySecret_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewaySecret_Path(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewaySecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_secret_folder" "folder1" {
+					name = "tf_tests_secret_path_folder1"
+				}
+
+				resource "scaleway_secret_folder" "folder2" {
+					name = "tf_tests_secret_path_folder2"
+				}
+
+				resource "scaleway_secret" "main" {
+					name = "tf_tests_secret_path"
+					tags = ["devtools", "provider", "terraform"]
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "tf_tests_secret_path"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				Config: `
+				resource "scaleway_secret_folder" "folder1" {
+					name = "tf_tests_secret_path_folder1"
+				}
+
+				resource "scaleway_secret_folder" "folder2" {
+					name = "tf_tests_secret_path_folder2"
+				}
+
+				resource "scaleway_secret" "main" {
+					name = "tf_tests_secret_path"
+					tags = ["devtools", "provider", "terraform"]
+					path = scaleway_secret_folder.folder1.full_path
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "tf_tests_secret_path"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/tf_tests_secret_path_folder1"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				Config: `
+				resource "scaleway_secret_folder" "folder1" {
+					name = "tf_tests_secret_path_folder1"
+				}
+
+				resource "scaleway_secret_folder" "folder2" {
+					name = "tf_tests_secret_path_folder2"
+				}
+
+				resource "scaleway_secret" "main" {
+					name = "tf_tests_secret_path"
+					tags = ["devtools", "provider", "terraform"]
+					path = scaleway_secret_folder.folder2.full_path
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "tf_tests_secret_path"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/tf_tests_secret_path_folder2"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+					name = "tf_tests_secret_path"
+					tags = ["devtools", "provider", "terraform"]
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "tf_tests_secret_path"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewaySecret_Type(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewaySecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+					name = "tf_tests_secret_path"
+					tags = ["devtools", "provider", "terraform"]
+					type = ""
+				}
+
+				resource "scaleway_secret_version" "version" {
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "tf_tests_secret_path"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewaySecretExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
