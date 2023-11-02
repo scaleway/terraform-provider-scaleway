@@ -158,7 +158,7 @@ func testAccCheckScalewayMNQSQSDestroy(tt *TestTools) resource.TestCheckFunc {
 				Region:    region,
 			})
 			if err != nil {
-				if is403Error(err) { // Project may have been deleted
+				if is404Error(err) { // Project may have been deleted
 					return nil
 				}
 				return err
