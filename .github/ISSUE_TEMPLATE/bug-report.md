@@ -53,6 +53,7 @@ Please provide a link to a GitHub Gist (https://gist.github.com/) containing the
 Please do NOT paste the debug output in the issue; just paste a link to the Gist.
 
 To obtain the debug output, see the [Provider documentation on debugging](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs#debugging-a-deployment).
+The debug output might contain sensitive information in requests, you might want to verify the content of those requests.
 --->
 
 ### Panic Output
