@@ -451,59 +451,23 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	req := &rdb.UpdateInstanceRequest{
+	////////////////////
+	// Upgrade instance
+	////////////////////
+	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
+
+	rdbInstance, err := rdbAPI.GetInstance(&rdb.GetInstanceRequest{
 		Region:     region,
 		InstanceID: ID,
-	}
-
-	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
-	}
-	if d.HasChange("disable_backup") {
-		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
-	}
-	if d.HasChange("backup_schedule_frequency") {
-		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
-	}
-	if d.HasChange("backup_schedule_retention") {
-		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
-	}
-	if d.HasChange("backup_same_region") {
-		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
-	}
-	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
-	}
-
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	diskIsFull := rdbInstance.Status == rdb.InstanceStatusDiskFull
+	volType := rdb.VolumeType(d.Get("volume_type").(string))
 
-	_, err = rdbAPI.UpdateInstance(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	// Change settings
-	if d.HasChange("settings") {
-		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
-			return diag.FromErr(err)
-		}
-		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
-			InstanceID: ID,
-			Region:     region,
-			Settings:   expandInstanceSettings(d.Get("settings")),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
+	// Volume type and size
 	if d.HasChanges("volume_type", "volume_size_in_gb") {
-		volType := rdb.VolumeType(d.Get("volume_type").(string))
-
 		switch volType {
 		case rdb.VolumeTypeBssd:
 			if d.HasChange("volume_type") {
@@ -551,15 +515,29 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	// Node type
 	if d.HasChange("node_type") {
-		upgradeInstanceRequests = append(upgradeInstanceRequests,
-			rdb.UpgradeInstanceRequest{
-				Region:     region,
-				InstanceID: ID,
-				NodeType:   expandStringPtr(d.Get("node_type")),
-			})
+		// Upgrading the node_type with block storage is not allowed when the disk is full, so if we are in this case,
+		// we can only allow this action if an increase of the size of the volume is also scheduled before it.
+		if !diskIsFull || volType == rdb.VolumeTypeLssd || len(upgradeInstanceRequests) > 0 {
+			upgradeInstanceRequests = append(upgradeInstanceRequests,
+				rdb.UpgradeInstanceRequest{
+					Region:     region,
+					InstanceID: ID,
+					NodeType:   expandStringPtr(d.Get("node_type")),
+				})
+		} else {
+			return diag.Diagnostics{
+				{
+					Severity: diag.Error,
+					Summary:  "Node type upgrade forbidden when disk is full",
+					Detail:   "You cannot upgrade the node_type of an instance that is using bssd storage once it is in disk_full state. Please increase the volume_size_in_gb first.",
+				},
+			}
+		}
 	}
 
+	// HA cluster
 	if d.HasChange("is_ha_cluster") {
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
 			rdb.UpgradeInstanceRequest{
@@ -568,6 +546,8 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
 			})
 	}
+
+	// Carry out the upgrades
 	for i := range upgradeInstanceRequests {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
@@ -585,6 +565,64 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	////////////////////
+	// Update instance
+	////////////////////
+	req := &rdb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: ID,
+	}
+
+	if d.HasChange("name") {
+		req.Name = expandStringPtr(d.Get("name"))
+	}
+	if d.HasChange("disable_backup") {
+		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+	}
+	if d.HasChange("backup_schedule_frequency") {
+		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
+	}
+	if d.HasChange("backup_schedule_retention") {
+		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
+	}
+	if d.HasChange("backup_same_region") {
+		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
+	}
+	if d.HasChange("tags") {
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = rdbAPI.UpdateInstance(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	////////////////////
+	// Change settings
+	////////////////////
+	if d.HasChange("settings") {
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+			InstanceID: ID,
+			Region:     region,
+			Settings:   expandInstanceSettings(d.Get("settings")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	////////////////////
+	// Update user
+	////////////////////
 	if d.HasChange("password") {
 		_, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -604,6 +642,9 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	////////////////////
+	// Update endpoints
+	////////////////////
 	if d.HasChanges("private_network") {
 		// retrieve state
 		res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
