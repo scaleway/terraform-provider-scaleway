@@ -1248,6 +1248,10 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 		LocalImageID: server.Server.Image.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		// If UUID is not in marketplace, then it's an image change
+		if is404Error(err) {
+			return diff.ForceNew("image")
+		}
 		return err
 	}
 	if marketplaceImage.Label != image.ID {
