@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -9,29 +10,32 @@ import (
 func TestAccScalewayDataSourceRdbDatabase_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "server" {
 						name      = "test-terraform"
 						node_type = "db-dev-s"
-						engine    = "PostgreSQL-11"
+						engine    = %q
 					}
 					resource "scaleway_rdb_database" "database" {
 						name        = "test-terraform"
 						instance_id = scaleway_rdb_instance.server.id
-					}`,
+					}`, latestEngineVersion),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "server" {
 						name      = "test-terraform"
 						node_type = "db-dev-s"
-						engine    = "PostgreSQL-11"
+						engine    = %q
 					}
 					resource "scaleway_rdb_database" "database" {
 						name        = "test-terraform"
@@ -41,7 +45,7 @@ func TestAccScalewayDataSourceRdbDatabase_Basic(t *testing.T) {
 						name        = scaleway_rdb_database.database.name
 						instance_id = scaleway_rdb_instance.server.id
 					}
-				`,
+				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.server", "scaleway_rdb_database.database"),
 

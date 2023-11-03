@@ -14,6 +14,9 @@ import (
 func TestAccScalewayRdbDatabase_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	instanceName := "TestAccScalewayRdbDatabase_Basic"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -25,7 +28,7 @@ func TestAccScalewayRdbDatabase_Basic(t *testing.T) {
 					resource scaleway_rdb_instance main {
 						name = "%s"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
+						engine = %q
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
@@ -33,7 +36,7 @@ func TestAccScalewayRdbDatabase_Basic(t *testing.T) {
 					resource scaleway_rdb_database main {
 						instance_id = scaleway_rdb_instance.main.id
 						name = "foo"
-					}`, instanceName),
+					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.main", "scaleway_rdb_database.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_database.main", "name", "foo"),
@@ -47,17 +50,19 @@ func TestAccScalewayRdbDatabase_ManualDelete(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "pgsql" {
 						name           = "bug"
 						node_type      = "db-dev-m"
-						engine         = "PostgreSQL-13"
+						engine         = %q
 						is_ha_cluster  = false
 						disable_backup = true
 						user_name      = "admin"
@@ -85,7 +90,7 @@ func TestAccScalewayRdbDatabase_ManualDelete(t *testing.T) {
 
 						depends_on = [scaleway_rdb_user.bug, scaleway_rdb_database.bug]
 					}
-				`,
+				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.pgsql", "scaleway_rdb_database.bug"),
 					resource.TestCheckResourceAttr("scaleway_rdb_database.bug", "name", "bug"),

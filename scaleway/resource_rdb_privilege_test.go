@@ -12,7 +12,10 @@ import (
 func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
 	instanceName := "TestAccScalewayRdbPrivilege_Basic"
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -23,7 +26,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 					resource "scaleway_rdb_instance" "instance" {
 					  name          = "%s"
 					  node_type     = "db-dev-s"
-					  engine        = "PostgreSQL-12"
+					  engine        = %q
 					  is_ha_cluster = false
 					  tags          = ["terraform-test", "scaleway_rdb_user", "minimal"]
 					}
@@ -46,7 +49,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 					  database_name = scaleway_rdb_database.db01.name
 					  permission    = "all"
 					}
-					`, instanceName),
+					`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_admin", "permission", "all"),
@@ -57,7 +60,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 					resource "scaleway_rdb_instance" "instance" {
 					  name          = "%s"
 					  node_type     = "db-dev-s"
-					  engine        = "PostgreSQL-12"
+					  engine        = %q
 					  is_ha_cluster = false
 					  tags          = ["terraform-test", "scaleway_rdb_user", "minimal"]
 					}
@@ -93,7 +96,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 					  database_name = scaleway_rdb_database.db01.name
 					  permission    = "readwrite"
 					}
-					`, instanceName),
+					`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo2"),
 					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_02", "permission", "readwrite"),
@@ -104,7 +107,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 					resource "scaleway_rdb_instance" "instance" {
 					  name          = "%s"
 					  node_type     = "db-dev-s"
-					  engine        = "PostgreSQL-12"
+					  engine        = %q
 					  is_ha_cluster = false
 					  tags          = ["terraform-test", "scaleway_rdb_user", "minimal"]
 					}
@@ -153,7 +156,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 					  database_name = scaleway_rdb_database.db01.name
 					  permission    = "none"
 					}
-					`, instanceName),
+					`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo3"),
 					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_03", "permission", "none"),

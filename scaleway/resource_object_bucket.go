@@ -70,6 +70,11 @@ func resourceScalewayObjectBucket() *schema.Resource {
 				Description: "Endpoint of the bucket",
 				Computed:    true,
 			},
+			"api_endpoint": {
+				Type:        schema.TypeString,
+				Description: "API URL of the bucket",
+				Computed:    true,
+			},
 			"cors_rule": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -521,6 +526,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
 
 	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
+	_ = d.Set("api_endpoint", objectBucketAPIEndpointURL(region))
 
 	// Read the CORS
 	corsResponse, err := s3Client.GetBucketCorsWithContext(ctx, &s3.GetBucketCorsInput{
@@ -532,8 +538,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
-
-	_ = d.Set("endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region))
 
 	// Read the versioning configuration
 	versioningResponse, err := s3Client.GetBucketVersioningWithContext(ctx, &s3.GetBucketVersioningInput{

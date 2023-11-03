@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -35,7 +36,11 @@ func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (
 	config := &aws.Config{}
 	config.WithRegion(region)
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
-	config.WithEndpoint("https://s3." + region + ".scw.cloud")
+	if ep := os.Getenv("SCW_S3_ENDPOINT"); ep != "" {
+		config.WithEndpoint(ep)
+	} else {
+		config.WithEndpoint("https://s3." + region + ".scw.cloud")
+	}
 	config.WithHTTPClient(httpClient)
 	if logging.IsDebugOrHigher() {
 		config.WithLogLevel(aws.LogDebugWithHTTPBody)
@@ -194,6 +199,10 @@ func expandObjectBucketTags(tags interface{}) []*s3.Tag {
 
 func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 	return fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region)
+}
+
+func objectBucketAPIEndpointURL(region scw.Region) string {
+	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
 }
 
 // Returns true if the error matches all these conditions:

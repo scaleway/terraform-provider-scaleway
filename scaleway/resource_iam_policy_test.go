@@ -29,7 +29,7 @@ func testSweepIamPolicy(_ string) error {
 		}
 
 		listPols, err := api.ListPolicies(&iam.ListPoliciesRequest{
-			OrganizationID: &orgID,
+			OrganizationID: orgID,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list policies: %w", err)
