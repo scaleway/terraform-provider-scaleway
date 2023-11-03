@@ -613,12 +613,7 @@ func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, 
 
 		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			if strings.Contains(err.Error(), "bad region format") {
-				_, _, pnID, err = vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-				if err != nil {
-					return err
-				}
-			}
+			return err
 		}
 
 		if clusterPNID == nil {

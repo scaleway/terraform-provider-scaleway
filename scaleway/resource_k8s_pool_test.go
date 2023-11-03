@@ -551,12 +551,7 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 		}
 		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			if strings.Contains(err.Error(), "bad region format") {
-				_, _, pnID, err = vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-				if err != nil {
-					return err
-				}
-			}
+			return err
 		}
 
 		nodes, err := k8sAPI.ListNodes(&k8s.ListNodesRequest{
