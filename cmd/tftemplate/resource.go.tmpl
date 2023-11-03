@@ -109,7 +109,7 @@ func resourceScaleway{{ .Resource }}Update(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = expandStringPtr(d.Get("name"))
 	}
 
 	if _, err := api.Update{{ .ResourceClean }}(req, scw.WithContext(ctx)); err != nil {
