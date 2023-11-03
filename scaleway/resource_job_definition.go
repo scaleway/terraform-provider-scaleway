@@ -72,6 +72,11 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	var timeout *scw.Duration
+	if timeoutSeconds, ok := d.GetOk("timeout_in_seconds"); ok {
+		timeout = &scw.Duration{Seconds: int64(timeoutSeconds.(int))}
+	}
+
 	definition, err := api.CreateJobDefinition(&jobs.CreateJobDefinitionRequest{
 		Region:               region,
 		Name:                 expandOrGenerateString(d.Get("name").(string), "job"),
@@ -82,7 +87,7 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 		ProjectID:            d.Get("project_id").(string),
 		EnvironmentVariables: expandMapStringString(d.Get("env")),
 		Description:          d.Get("description").(string),
-		JobTimeout:           &scw.Duration{Seconds: int64(d.Get("timeout_in_seconds").(int))},
+		JobTimeout:           timeout,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -103,8 +108,22 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 		JobDefinitionID: id,
 		Region:          region,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
 
 	_ = d.Set("name", definition.Name)
+	_ = d.Set("cpu_limit", definition.CPULimit)
+	_ = d.Set("memory_limit", definition.MemoryLimit)
+	_ = d.Set("image_uri", definition.ImageURI)
+	_ = d.Set("command", definition.Command)
+	_ = d.Set("env", flattenMap(definition.EnvironmentVariables))
+	_ = d.Set("description", definition.Description)
+	_ = d.Set("timeout_in_seconds", definition.JobTimeout)
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
 
@@ -150,6 +169,10 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 		req.Description = expandUpdatedStringPtr(d.Get("description"))
 	}
 
+	if d.HasChange("timeout_in_seconds") {
+		req.JobTimeout = &scw.Duration{Seconds: int64(d.Get("timeout_in_seconds").(int))}
+	}
+
 	if _, err := api.UpdateJobDefinition(req, scw.WithContext(ctx)); err != nil {
 		return diag.FromErr(err)
 	}
@@ -167,9 +190,11 @@ func resourceScalewayJobDefinitionDelete(ctx context.Context, d *schema.Resource
 		Region:          region,
 		JobDefinitionID: id,
 	}, scw.WithContext(ctx))
-	if err != nil {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
+
+	d.SetId("")
 
 	return nil
 }
