@@ -1,0 +1,175 @@
+package scaleway
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+func resourceScalewayJobDefinition() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceScalewayJobDefinitionCreate,
+		ReadContext:   resourceScalewayJobDefinitionRead,
+		UpdateContext: resourceScalewayJobDefinitionUpdate,
+		DeleteContext: resourceScalewayJobDefinitionDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		SchemaVersion: 0,
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The job name",
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"cpu_limit": {
+				Type:     schema.TypeInt,
+				Required: true,
+			},
+			"memory_limit": {
+				Type:     schema.TypeInt,
+				Required: true,
+			},
+			"image_uri": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"command": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"timeout_in_seconds": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"env": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
+				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+			},
+			"region":     regionSchema(),
+			"project_id": projectIDSchema(),
+		},
+	}
+}
+
+func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, err := jobsAPIWithRegion(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	definition, err := api.CreateJobDefinition(&jobs.CreateJobDefinitionRequest{
+		Region:               region,
+		Name:                 expandOrGenerateString(d.Get("name").(string), "job"),
+		CPULimit:             uint32(d.Get("cpu_limit").(int)),
+		MemoryLimit:          uint32(d.Get("memory_limit").(int)),
+		ImageURI:             d.Get("image_uri").(string),
+		Command:              d.Get("command").(string),
+		ProjectID:            d.Get("project_id").(string),
+		EnvironmentVariables: expandMapStringString(d.Get("env")),
+		Description:          d.Get("description").(string),
+		JobTimeout:           &scw.Duration{Seconds: int64(d.Get("timeout_in_seconds").(int))},
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(newRegionalIDString(region, definition.JobDefinitionID))
+
+	return resourceScalewayJobDefinitionRead(ctx, d, meta)
+}
+
+func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, id, err := jobsAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	definition, err := api.GetJobDefinition(&jobs.GetJobDefinitionRequest{
+		JobDefinitionID: id,
+		Region:          region,
+	}, scw.WithContext(ctx))
+
+	_ = d.Set("name", definition.Name)
+	_ = d.Set("region", definition.Region)
+	_ = d.Set("project_id", definition.ProjectID)
+
+	return nil
+}
+
+func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, id, err := jobsAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	req := &jobs.UpdateJobDefinitionRequest{
+		Region:          region,
+		JobDefinitionID: id,
+	}
+
+	if d.HasChange("name") {
+		req.Name = expandUpdatedStringPtr(d.Get("name"))
+	}
+
+	if d.HasChange("cpu_limit") {
+		req.CPULimit = expandUint32Ptr(d.Get("cpu_limit"))
+	}
+
+	if d.HasChange("memory_limit") {
+		req.MemoryLimit = expandUint32Ptr(d.Get("memory_limit"))
+	}
+
+	if d.HasChange("image_uri") {
+		req.ImageURI = expandUpdatedStringPtr(d.Get("image_uri"))
+	}
+
+	if d.HasChange("command") {
+		req.Command = expandUpdatedStringPtr(d.Get("command"))
+	}
+
+	if d.HasChange("env") {
+		req.EnvironmentVariables = expandMapPtrStringString(d.Get("env"))
+	}
+
+	if d.HasChange("description") {
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
+	}
+
+	if _, err := api.UpdateJobDefinition(req, scw.WithContext(ctx)); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceScalewayJobDefinitionRead(ctx, d, meta)
+}
+
+func resourceScalewayJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, id, err := jobsAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
+		Region:          region,
+		JobDefinitionID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
