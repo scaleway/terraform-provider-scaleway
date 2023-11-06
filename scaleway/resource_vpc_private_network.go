@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
@@ -284,18 +285,23 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	var warnings diag.Diagnostics
-	err = vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
-		PrivateNetworkID: ID,
-		Region:           region,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is404Error(err) {
-			return append(warnings, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  err.Error(),
-			})
+	err = retry.RetryContext(ctx, defaultVPCPrivateNetworkRetryInterval, func() *retry.RetryError {
+		err := vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
+			PrivateNetworkID: ID,
+			Region:           region,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is412Error(err) {
+				return retry.RetryableError(err)
+			} else if !is404Error(err) {
+				return retry.NonRetryableError(err)
+			}
 		}
+
+		return nil
+	})
+
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
