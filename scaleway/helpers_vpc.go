@@ -9,28 +9,15 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	v1 "github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
-	v2 "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
-// vpcAPIWithZoneAndID
-func vpcAPIWithZoneAndID(m interface{}, id string) (*v1.API, scw.Zone, string, error) {
-	meta := m.(*Meta)
-	vpcAPI := v1.NewAPI(meta.scwClient)
-
-	zone, ID, err := parseZonedID(id)
-	if err != nil {
-		return nil, "", "", err
-	}
-	return vpcAPI, zone, ID, err
-}
-
 // vpcAPIWithRegion returns a new VPC API and the region for a Create request
-func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*v2.API, scw.Region, error) {
+func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Region, error) {
 	meta := m.(*Meta)
-	vpcAPI := v2.NewAPI(meta.scwClient)
+	vpcAPI := vpc.NewAPI(meta.scwClient)
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -40,9 +27,9 @@ func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*v2.API, scw.Regio
 }
 
 // vpcAPIWithRegionAndID returns a new VPC API with locality and ID extracted from the state
-func vpcAPIWithRegionAndID(m interface{}, id string) (*v2.API, scw.Region, string, error) {
+func vpcAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, string, error) {
 	meta := m.(*Meta)
-	vpcAPI := v2.NewAPI(meta.scwClient)
+	vpcAPI := vpc.NewAPI(meta.scwClient)
 
 	region, ID, err := parseRegionalID(id)
 	if err != nil {
@@ -51,13 +38,13 @@ func vpcAPIWithRegionAndID(m interface{}, id string) (*v2.API, scw.Region, strin
 	return vpcAPI, region, ID, err
 }
 
-func vpcAPI(m interface{}) (*v1.API, error) {
+func vpcAPI(m interface{}) (*vpc.API, error) {
 	meta, ok := m.(*Meta)
 	if !ok {
 		return nil, fmt.Errorf("wrong type: %T", m)
 	}
 
-	return v1.NewAPI(meta.scwClient), nil
+	return vpc.NewAPI(meta.scwClient), nil
 }
 
 func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets []scw.IPNet, err error) {
@@ -89,7 +76,7 @@ func flattenAndSortSubnets(sub interface{}) (interface{}, interface{}) {
 	switch subnets := sub.(type) {
 	case []scw.IPNet:
 		return flattenAndSortIPNetSubnets(subnets)
-	case []*v2.Subnet:
+	case []*vpc.Subnet:
 		return flattenAndSortSubnetV2s(subnets)
 	default:
 		return "", nil
@@ -134,7 +121,7 @@ func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) 
 	return flattenedipv4Subnets, flattenedipv6Subnets
 }
 
-func flattenAndSortSubnetV2s(subnets []*v2.Subnet) (interface{}, interface{}) {
+func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (interface{}, interface{}) {
 	if subnets == nil {
 		return "", nil
 	}
