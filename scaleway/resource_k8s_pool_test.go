@@ -456,7 +456,7 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 			
 				resource "scaleway_k8s_pool" "public_ip" {
 				  cluster_id          = scaleway_k8s_cluster.public_ip.id
-				  name                = "pool"
+				  name                = "test-k8s-public-ip"
 				  node_type           = "gp1_xs"
 				  size                = 1
 				  autoscaling         = false
@@ -505,7 +505,7 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 
 				resource "scaleway_k8s_pool" "public_ip" {
 				  cluster_id          = scaleway_k8s_cluster.public_ip.id
-				  name                = "pool"
+				  name                = "test-k8s-public-ip"
 				  node_type           = "gp1_xs"
 				  size                = 1
 				  autoscaling         = false

@@ -487,6 +487,16 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	_, err = k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
+		PoolID: poolID,
+		Region: region,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
 	return nil
 }
 
