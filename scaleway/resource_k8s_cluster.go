@@ -559,8 +559,9 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 
 	// private_network
 	pnID := flattenStringPtr(cluster.PrivateNetworkID)
+	clusterType := d.Get("type").(string)
 	_ = d.Set("private_network_id", pnID)
-	if pnID == "" {
+	if pnID == "" && !strings.HasPrefix(clusterType, "multicloud") {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Public clusters are deprecated",
