@@ -44,6 +44,7 @@ In addition to all above arguments, the following attributes are exported:
 - `organization_id` - The organization ID the public gateway is associated with.
 - `created_at` - The date and time of the creation of the public gateway.
 - `updated_at` - The date and time of the last update of the public gateway.
+- `status` - The status of the public gateway.
 
 ## Import
 

@@ -59,15 +59,10 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 					}
 				`, publicGatewayName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPublicGatewayExists(
-						tt,
-						"scaleway_vpc_public_gateway.main",
-					),
-					resource.TestCheckResourceAttr(
-						"scaleway_vpc_public_gateway.main",
-						"name",
-						publicGatewayName,
-					),
+					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-S"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "status", vpcgw.GatewayStatusRunning.String()),
 				),
 			},
 			{
@@ -82,6 +77,8 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName+"-new"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-S"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "status", vpcgw.GatewayStatusRunning.String()),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "tags.0", "tag0"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "tags.1", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "upstream_dns_servers.0", "1.2.3.4"),
@@ -99,6 +96,8 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName+"-zone"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-S"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "status", vpcgw.GatewayStatusRunning.String()),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "zone", "nl-ams-1"),
 				),
 			},
@@ -113,6 +112,8 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName+"-zone-to-update"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-S"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "status", vpcgw.GatewayStatusRunning.String()),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "zone", "nl-ams-1"),
 				),
 			},
