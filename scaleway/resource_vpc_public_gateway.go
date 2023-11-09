@@ -95,6 +95,11 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the public gateway",
 			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the public gateway",
+			},
 		},
 	}
 }
@@ -156,6 +161,8 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	}
 
 	_ = d.Set("name", gateway.Name)
+	_ = d.Set("type", gateway.Type.Name)
+	_ = d.Set("status", gateway.Status.String())
 	_ = d.Set("organization_id", gateway.OrganizationID)
 	_ = d.Set("project_id", gateway.ProjectID)
 	_ = d.Set("created_at", gateway.CreatedAt.Format(time.RFC3339))
