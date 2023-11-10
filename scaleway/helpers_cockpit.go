@@ -64,6 +64,7 @@ func flattenCockpitEndpoints(endpoints *cockpit.CockpitEndpoints) []map[string]i
 			"logs_url":         endpoints.LogsURL,
 			"alertmanager_url": endpoints.AlertmanagerURL,
 			"grafana_url":      endpoints.GrafanaURL,
+			"traces_url":       endpoints.TracesURL,
 		},
 	}
 }
@@ -82,6 +83,8 @@ func expandCockpitTokenScopes(raw interface{}) *cockpit.TokenScopes {
 		WriteLogs:         rawMap["write_logs"].(bool),
 		SetupLogsRules:    rawMap["setup_logs_rules"].(bool),
 		SetupAlerts:       rawMap["setup_alerts"].(bool),
+		QueryTraces:       rawMap["query_traces"].(bool),
+		WriteTraces:       rawMap["write_traces"].(bool),
 	}
 }
 
@@ -95,6 +98,8 @@ func flattenCockpitTokenScopes(scopes *cockpit.TokenScopes) []map[string]interfa
 			"write_logs":          scopes.WriteLogs,
 			"setup_logs_rules":    scopes.SetupLogsRules,
 			"setup_alerts":        scopes.SetupAlerts,
+			"query_traces":        scopes.QueryTraces,
+			"write_traces":        scopes.WriteTraces,
 		},
 	}
 }

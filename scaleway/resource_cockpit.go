@@ -62,6 +62,11 @@ func resourceScalewayCockpit() *schema.Resource {
 							Computed:    true,
 							Description: "The grafana URL",
 						},
+						"traces_url": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The traces URL",
+						},
 					},
 				},
 			},
