@@ -21,7 +21,12 @@ func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.minimal"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigMinimal(latestK8SVersion, false),
@@ -73,7 +78,12 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.minimal"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigWait(latestK8SVersion, false, 0),
@@ -143,11 +153,18 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.placement_group"),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.placement_group_2"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigPlacementGroup(latestK8SVersion),
@@ -199,7 +216,11 @@ func TestAccScalewayK8SCluster_PoolUpgradePolicy(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.upgrade_policy"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigUpgradePolicy(latestK8SVersion, 2, 3),
@@ -250,7 +271,11 @@ func TestAccScalewayK8SCluster_PoolKubeletArgs(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.kubelet_args"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigKubeletArgs(latestK8SVersion, 1337),
@@ -285,7 +310,11 @@ func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.zone"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigZone(latestK8SVersion, "fr-par-2"),
@@ -310,7 +339,11 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.pool"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -383,7 +416,11 @@ func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.pool_with_pn"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -436,7 +473,14 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
+			testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.public_ip"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
