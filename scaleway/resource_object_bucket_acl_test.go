@@ -79,29 +79,30 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						access_control_policy {
-						  grant {
-							grantee {
-								id   = "%[2]s"
-								type = "CanonicalUser"
-							}
-							permission = "FULL_CONTROL"
-						  }
+						  	grant {
+								grantee {
+									id   = "%[2]s"
+									type = "CanonicalUser"
+								}
+								permission = "FULL_CONTROL"
+						  	}
 						
-						  grant {
-							grantee {
-							  id   = "%[2]s"
-							  type = "CanonicalUser"
-							}
-							permission = "WRITE"
-						  }
+						  	grant {
+								grantee {
+							  		id   = "%[2]s"
+							  		type = "CanonicalUser"
+								}
+								permission = "WRITE"
+						  	}
 						
-						  owner {
-							id = "%[2]s"
-						  }
+						  	owner {
+								id = "%[2]s"
+						  	}
 						}
 					}
 					`, testBucketName, ownerID),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 				),
 			},
@@ -114,21 +115,38 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						access_control_policy {
+						  	grant {
+								grantee {
+									id   = "%[2]s"
+									type = "CanonicalUser"
+								}
+								permission = "FULL_CONTROL"
+						  	}
+						
+						  	grant {
+								grantee {
+							  		id   = "%[2]s"
+							  		type = "CanonicalUser"
+								}
+								permission = "WRITE"
+						  	}
+
 							grant {
 								grantee {
-								  id   = "%[3]s"
-								  type = "CanonicalUser"
+								  	id   = "%[3]s"
+								  	type = "CanonicalUser"
 								}
 								permission = "FULL_CONTROL"
 							}
 						
-							owner {
+						  	owner {
 								id = "%[2]s"
-							}
+						  	}
+						}
 					}
-				}
-					`, testBucketName, ownerID, ownerIDChild),
+				`, testBucketName, ownerID, ownerIDChild),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 				),
 			},
