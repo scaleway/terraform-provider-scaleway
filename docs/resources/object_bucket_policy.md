@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_object_bucket_policy"
 # scaleway_object_bucket
 
 Creates and manages Scaleway object storage bucket policy.
-For more information, see [the documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/using-bucket-policies/).
+For more information, see [the documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-policy/).
 
 ## Example Usage
 
