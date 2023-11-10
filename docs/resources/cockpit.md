@@ -56,13 +56,13 @@ resource "grafana_folder" "test_folder" {
 
 In addition to all arguments above, the following attributes are exported:
 
-- `plan_id` - The ID of the current plan
-- `endpoints` - Endpoints
-    - `metrics_url` - The metrics URL
-    - `logs_url` - The logs URL
-    - `alertmanager_url` - The alertmanager URL
-    - `grafana_url` - The grafana URL
-
+- `plan_id` - The ID of the current plan.
+- `endpoints` - Endpoints.
+    - `metrics_url` - The metrics URL.
+    - `logs_url` - The logs URL.
+    - `alertmanager_url` - The alertmanager URL.
+    - `grafana_url` - The grafana URL.
+    - `traces_url` - The traces URL.
 
 ## Import
 
