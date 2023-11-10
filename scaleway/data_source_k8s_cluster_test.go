@@ -15,7 +15,11 @@ func TestAccScalewayDataSourceK8SCluster_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
