@@ -44,3 +44,31 @@ func TestAccScalewayDataSourceTemDomain_Basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayDataSourceTemDomain_Reputation(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	domainName := "test.scaleway-terraform.com"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_tem_domain" "test" {
+						name = "%s"
+					}
+				`, domainName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayTemDomainExists(tt, "data.scaleway_tem_domain.test"),
+					resource.TestCheckResourceAttr("data.scaleway_tem_domain.test", "name", domainName),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_domain.test", "reputation.0.status"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_domain.test", "reputation.0.score"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_domain.test", "reputation.0.scored_at"),
+				),
+			},
+		},
+	})
+}
