@@ -3,6 +3,7 @@ package scaleway
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -12,8 +13,44 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
-	bucketName := sdkacctest.RandomWithPrefix("tf-test-bucket")
+func TestAccScalewayObjectBucketPolicy_Basic(t *testing.T) {
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-basic")
+
+	tfConfig := fmt.Sprintf(`
+		resource "scaleway_object_bucket" "bucket" {
+			name = %[1]q
+			region = %[2]q
+			tags = {
+				TestName = "TestAccScalewayObjectBucketPolicy_Basic"
+			}
+		}
+
+		resource "scaleway_object_bucket_policy" "bucket" {
+			bucket = scaleway_object_bucket.bucket.id
+			policy = jsonencode(
+				{
+					Id = "MyPolicy"
+					Statement = [
+						{
+							Action = [
+								"s3:ListBucket",
+								"s3:GetObject",
+							]
+							Effect = "Allow"
+							Principal = {
+								SCW = "*"
+							}
+							Resource  = [
+								"%[1]s",
+								"%[1]s/*",
+							]
+							Sid = "GrantToEveryone"
+						},
+					]
+					Version = "2012-10-17"
+				}
+			)
+		}`, bucketName, objectTestsMainRegion)
 
 	expectedPolicyText := `{
 	"Version":"2012-10-17",
@@ -43,12 +80,132 @@ func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
 			{
+				Config: tfConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.bucket"),
+					resource.TestCheckResourceAttrPair("scaleway_object_bucket_policy.bucket", "region", "scaleway_object_bucket.bucket", "region"),
+					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
+				),
+				ExpectNonEmptyPlan: !*UpdateCassettes,
+			},
+			{
+				ResourceName: "scaleway_object_bucket_policy.bucket",
+				ImportState:  true,
+			},
+			{
+				Config:             tfConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: !*UpdateCassettes,
+			},
+		},
+	})
+}
+
+func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-with-bucket-id")
+
+	tfConfig := fmt.Sprintf(`
+		resource "scaleway_object_bucket" "bucket" {
+			name = %[1]q
+			region = %[2]q
+			tags = {
+				TestName = "TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketID"
+			}
+		}
+
+		resource "scaleway_object_bucket_policy" "bucket" {
+			bucket = scaleway_object_bucket.bucket.id
+			policy = jsonencode(
+				{
+					Id = "MyPolicy"
+					Statement = [
+						{
+							Action = [
+								"s3:*"
+							]
+							Effect = "Allow"
+							Principal = {
+								SCW = "*"
+							}
+							Resource  = [
+								"%[1]s",
+								"%[1]s/*",
+							]
+							Sid = "GrantToEveryone"
+						},
+					]
+					Version = "2023-04-17"
+				}
+			)
+		}`, bucketName, objectTestsSecondaryRegion)
+
+	expectedPolicyText := `{
+	"Version":"2023-04-17",
+	"Id":"MyPolicy",
+	"Statement": [
+		{
+			"Sid":"GrantToEveryone",
+			"Effect":"Allow",
+			"Principal":{
+				"SCW":"*"
+			},
+			"Action":[
+				"s3:*"
+			]
+		}
+   ]
+}`
+
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: tfConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.bucket"),
+					resource.TestCheckResourceAttrPair("scaleway_object_bucket_policy.bucket", "region", "scaleway_object_bucket.bucket", "region"),
+					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
+				),
+				ExpectNonEmptyPlan: !*UpdateCassettes,
+			},
+			{
+				ResourceName: "scaleway_object_bucket_policy.bucket",
+				ImportState:  true,
+			},
+			{
+				Config:             tfConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: !*UpdateCassettes,
+			},
+		},
+	})
+}
+
+func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-with-bucket-name")
+
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
+		Steps: []resource.TestStep{
+			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
-
+						region = %[2]q
 						tags = {
-							TestName = "TestAccSCWBucketPolicy_basic"
+							TestName = "TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketName"
 						}
 					}
 
@@ -60,8 +217,7 @@ func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
 								Statement = [
 									{
 										Action = [
-											"s3:ListBucket",
-											"s3:GetObject",
+											"s3:*"
 										]
 										Effect = "Allow"
 										Principal = {
@@ -74,21 +230,11 @@ func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
 										Sid = "GrantToEveryone"
 									},
 								]
-								Version = "2012-10-17"
+								Version = "2023-04-17"
 							}
 						)
-					}
-					`, bucketName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.bucket"),
-					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
-				),
-				ExpectNonEmptyPlan: !*UpdateCassettes,
-			},
-			{
-				ResourceName:      "scaleway_object_bucket_policy.bucket",
-				ImportState:       true,
-				ImportStateVerify: true,
+					}`, bucketName, objectTestsSecondaryRegion),
+				ExpectError: regexp.MustCompile("error putting SCW bucket policy: NoSuchBucket: The specified bucket does not exist"),
 			},
 		},
 	})
@@ -101,7 +247,8 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		s3Client, err := newS3ClientFromMeta(tt.Meta)
+		bucketRegion := rs.Primary.Attributes["region"]
+		s3Client, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}

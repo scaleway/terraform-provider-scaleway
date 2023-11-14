@@ -699,6 +699,43 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 	}
 }
 
+func testAccCheckScalewayObjectBucketExistsForceRegion(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs := state.RootModule().Resources[n]
+		if rs == nil {
+			return fmt.Errorf("resource not found")
+		}
+		bucketName := rs.Primary.Attributes["name"]
+		bucketRegion := rs.Primary.Attributes["region"]
+
+		s3Client, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion)
+		if err != nil {
+			return err
+		}
+
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
+
+		_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
+			Bucket: scw.StringPtr(bucketName),
+		})
+
+		if err != nil {
+			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+				return fmt.Errorf("s3 bucket not found")
+			}
+			return err
+		}
+		return nil
+	}
+}
+
 func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

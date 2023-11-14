@@ -21,7 +21,7 @@ resource "scaleway_iam_application" "main" {
 }
 
 resource "scaleway_object_bucket_policy" "policy" {
-  bucket = scaleway_object_bucket.bucket.name
+  bucket = scaleway_object_bucket.bucket.id
   policy = jsonencode(
     {
       Version = "2023-04-17",
@@ -53,7 +53,7 @@ resource "scaleway_object_bucket" "bucket" {
 }
 
 resource "scaleway_object_bucket_policy" "main" {
-  bucket = scaleway_object_bucket.bucket.name
+  bucket = scaleway_object_bucket.bucket.id
   policy = data.aws_iam_policy_document.policy.json
 }
 
