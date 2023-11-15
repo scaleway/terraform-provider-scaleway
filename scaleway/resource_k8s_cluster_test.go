@@ -127,8 +127,8 @@ func TestAccScalewayK8SCluster_Basic(t *testing.T) {
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -183,8 +183,8 @@ func TestAccScalewayK8SCluster_Autoscaling(t *testing.T) {
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -259,8 +259,8 @@ func TestAccScalewayK8SCluster_OIDC(t *testing.T) {
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -329,8 +329,8 @@ func TestAccScalewayK8SCluster_AutoUpgrade(t *testing.T) {
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -411,8 +411,8 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -476,8 +476,8 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
