@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -98,14 +98,14 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 
 	var db *rdb.Database
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		currentDB, errCreateDB := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
 		if errCreateDB != nil {
 			// WIP: Issue on creation/write database. Need a database stable status
 			if is409Error(errCreateDB) {
-				return resource.RetryableError(errCreateDB)
+				return retry.RetryableError(errCreateDB)
 			}
-			return resource.NonRetryableError(errCreateDB)
+			return retry.NonRetryableError(errCreateDB)
 		}
 		// set database information
 		db = currentDB

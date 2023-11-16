@@ -3,7 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -424,7 +424,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	certContent, err := ioutil.ReadAll(cert.Content)
+	certContent, err := io.ReadAll(cert.Content)
 	if err != nil {
 		return diag.FromErr(err)
 	}

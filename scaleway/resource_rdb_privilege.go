@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -93,17 +93,17 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	//  wrapper around StateChangeConf that will just retry  write on database
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		_, errSetPrivilege := api.SetPrivilege(createReq, scw.WithContext(ctx))
 		if errSetPrivilege != nil {
 			if is409Error(errSetPrivilege) {
 				_, errWait := waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
-					return resource.NonRetryableError(errWait)
+					return retry.NonRetryableError(errWait)
 				}
-				return resource.RetryableError(errSetPrivilege)
+				return retry.RetryableError(errSetPrivilege)
 			}
-			return resource.NonRetryableError(errSetPrivilege)
+			return retry.NonRetryableError(errSetPrivilege)
 		}
 		return nil
 	})
@@ -221,17 +221,17 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
 			if is409Error(errSet) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if errWait != nil {
-					return resource.NonRetryableError(errWait)
+					return retry.NonRetryableError(errWait)
 				}
-				return resource.RetryableError(errSet)
+				return retry.RetryableError(errSet)
 			}
-			return resource.NonRetryableError(errSet)
+			return retry.NonRetryableError(errSet)
 		}
 		return nil
 	})
@@ -288,7 +288,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(ctx, defaultRdbInstanceTimeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, defaultRdbInstanceTimeout, func() *retry.RetryError {
 		// check if user exist on retry
 		listUsers, errUserExist := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 			Region:     region,
@@ -300,7 +300,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 				d.SetId("")
 				return nil
 			}
-			return resource.NonRetryableError(errUserExist)
+			return retry.NonRetryableError(errUserExist)
 		}
 
 		if listUsers != nil && len(listUsers.Users) == 0 {
@@ -312,11 +312,11 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 			if is409Error(errSet) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
-					return resource.NonRetryableError(errWait)
+					return retry.NonRetryableError(errWait)
 				}
-				return resource.RetryableError(errSet)
+				return retry.RetryableError(errSet)
 			}
-			return resource.NonRetryableError(errSet)
+			return retry.NonRetryableError(errSet)
 		}
 		return nil
 	})
