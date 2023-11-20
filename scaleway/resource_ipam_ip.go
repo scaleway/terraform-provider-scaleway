@@ -261,7 +261,7 @@ func resourceScalewayIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m
 		Region: region,
 		IPID:   ID,
 	}, scw.WithContext(ctx))
-	if err != nil {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
