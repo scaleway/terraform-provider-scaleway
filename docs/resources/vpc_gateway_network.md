@@ -142,7 +142,7 @@ The following arguments are supported:
 - `cleanup_dhcp` - (Defaults to false) Remove DHCP config on this network on destroy. It requires DHCP id.
 - `static_address` - Enable DHCP config on this network. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
 - `ipam_config` - Auto-configure the Gateway Network using Scaleway's IPAM (IP address management service). Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
-    - `push_default_route` - Defines whether the default route is enabled on that Gateway Network. 
+    - `push_default_route` - Defines whether the default route is enabled on that Gateway Network.
     - `ipam_ip_id` - Use this IPAM-booked IP ID as the Gateway's IP in this Private Network.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the gateway network should be created.
 
