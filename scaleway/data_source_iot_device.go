@@ -44,25 +44,26 @@ func dataSourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData
 				return diag.FromErr(err)
 			}
 		}
+		deviceName := d.Get("name").(string)
 		res, err := api.ListDevices(&iot.ListDevicesRequest{
 			Region: region,
-			Name:   expandStringPtr(d.Get("name")),
+			Name:   expandStringPtr(deviceName),
 			HubID:  expandStringPtr(hubID),
 		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, device := range res.Devices {
-			if device.Name == d.Get("name").(string) {
-				if deviceID != "" {
-					return diag.Errorf("more than 1 device with the same name %s", d.Get("name"))
-				}
-				deviceID = device.ID
-			}
+
+		foundDevice, err := findExact(
+			res.Devices,
+			func(s *iot.Device) bool { return s.Name == deviceName },
+			deviceName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if deviceID == "" {
-			return diag.Errorf("no device found with the name %s", d.Get("name"))
-		}
+
+		deviceID = foundDevice.ID
 	}
 
 	regionalID := datasourceNewRegionalID(deviceID, region)

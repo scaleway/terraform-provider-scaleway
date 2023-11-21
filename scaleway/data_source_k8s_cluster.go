@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -42,25 +41,26 @@ func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceDat
 
 	clusterID, ok := d.GetOk("cluster_id")
 	if !ok {
+		clusterName := d.Get("name").(string)
 		res, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{
 			Region:    region,
-			Name:      expandStringPtr(d.Get("name")),
+			Name:      expandStringPtr(clusterName),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, cluster := range res.Clusters {
-			if cluster.Name == d.Get("name").(string) {
-				if clusterID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 cluster found with the same name %s", d.Get("name")))
-				}
-				clusterID = cluster.ID
-			}
+
+		foundCluster, err := findExact(
+			res.Clusters,
+			func(s *k8s.Cluster) bool { return s.Name == clusterName },
+			clusterName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if clusterID == "" {
-			return diag.FromErr(fmt.Errorf("no cluster found with the name %s", d.Get("name")))
-		}
+
+		clusterID = foundCluster.ID
 	}
 
 	regionalizedID := datasourceNewRegionalID(clusterID, region)

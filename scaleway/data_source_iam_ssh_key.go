@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -34,24 +33,25 @@ func dataSourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData
 
 	sshKeyID, sshKeyIDExists := d.GetOk("ssh_key_id")
 	if !sshKeyIDExists {
+		sshKeyName := d.Get("name").(string)
 		res, err := iamAPI.ListSSHKeys(&iam.ListSSHKeysRequest{
-			Name:      expandStringPtr(d.Get("name")),
+			Name:      expandStringPtr(sshKeyName),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, sshKey := range res.SSHKeys {
-			if sshKey.Name == d.Get("name").(string) {
-				if sshKeyID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 SSH Key found with the same name %s", d.Get("name")))
-				}
-				sshKeyID = sshKey.ID
-			}
+
+		foundKey, err := findExact(
+			res.SSHKeys,
+			func(s *iam.SSHKey) bool { return s.Name == sshKeyName },
+			sshKeyName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if sshKeyID == "" {
-			return diag.FromErr(fmt.Errorf("no SSH Key found with the name %s", d.Get("name")))
-		}
+
+		sshKeyID = foundKey.ID
 	}
 
 	d.SetId(sshKeyID.(string))

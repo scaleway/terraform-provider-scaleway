@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -37,21 +36,26 @@ func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData,
 
 	functionID, ok := d.GetOk("function_id")
 	if !ok {
+		functionName := d.Get("name").(string)
 		res, err := api.ListFunctions(&function.ListFunctionsRequest{
 			Region:      region,
 			NamespaceID: expandID(d.Get("namespace_id").(string)),
-			Name:        expandStringPtr(d.Get("name")),
+			Name:        expandStringPtr(functionName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Functions) == 0 {
-			return diag.FromErr(fmt.Errorf("no functions found with the name %s", d.Get("name")))
+
+		foundFunction, err := findExact(
+			res.Functions,
+			func(s *function.Function) bool { return s.Name == functionName },
+			functionName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if len(res.Functions) > 1 {
-			return diag.FromErr(fmt.Errorf("%d functions found with the same name %s", len(res.Functions), d.Get("name")))
-		}
-		functionID = res.Functions[0].ID
+
+		functionID = foundFunction.ID
 	}
 
 	regionalID := datasourceNewRegionalID(functionID, region)

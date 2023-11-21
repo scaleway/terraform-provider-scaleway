@@ -37,25 +37,26 @@ func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m
 
 	hubID, ok := d.GetOk("hub_id")
 	if !ok {
+		hubName := d.Get("name").(string)
 		res, err := api.ListHubs(&iot.ListHubsRequest{
 			Region:    region,
 			ProjectID: expandStringPtr(d.Get("project_id")),
-			Name:      expandStringPtr(d.Get("name")),
+			Name:      expandStringPtr(hubName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, hub := range res.Hubs {
-			if hub.Name == d.Get("name").(string) {
-				if hubID != "" {
-					return diag.Errorf("more than 1 hub with the same name %s", d.Get("name"))
-				}
-				hubID = hub.ID
-			}
+
+		foundHub, err := findExact(
+			res.Hubs,
+			func(s *iot.Hub) bool { return s.Name == hubName },
+			hubName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if hubID == "" {
-			return diag.Errorf("no hub found with the name %s", d.Get("name"))
-		}
+
+		hubID = foundHub.ID
 	}
 
 	regionalID := datasourceNewRegionalID(hubID, region)

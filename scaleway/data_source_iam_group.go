@@ -40,9 +40,10 @@ func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData,
 
 	groupID, groupIDExists := d.GetOk("group_id")
 	if !groupIDExists {
+		groupName := d.Get("name").(string)
 		req := &iam.ListGroupsRequest{
 			OrganizationID: flattenStringPtr(getOrganizationID(meta, d)).(string),
-			Name:           expandStringPtr(d.Get("name")),
+			Name:           expandStringPtr(groupName),
 		}
 
 		res, err := api.ListGroups(req, scw.WithContext(ctx))
@@ -50,17 +51,16 @@ func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 
-		for _, group := range res.Groups {
-			if group.Name == d.Get("name").(string) {
-				if groupID != "" {
-					return diag.Errorf("more than 1 group found with the same name %s", d.Get("name"))
-				}
-				groupID = group.ID
-			}
+		foundGroup, err := findExact(
+			res.Groups,
+			func(s *iam.Group) bool { return s.Name == groupName },
+			groupName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if groupID == "" {
-			return diag.Errorf("no group found with the name %s", d.Get("name"))
-		}
+
+		groupID = foundGroup.ID
 	}
 
 	d.SetId(groupID.(string))

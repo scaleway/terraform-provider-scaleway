@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -41,25 +40,26 @@ func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.Resourc
 
 	serverID, ok := d.GetOk("server_id")
 	if !ok {
+		serverName := d.Get("name").(string)
 		res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(d.Get("name")),
+			Name:    expandStringPtr(serverName),
 			Project: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, server := range res.Servers {
-			if server.Name == d.Get("name").(string) {
-				if serverID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 server found with the same name %s", d.Get("name")))
-				}
-				serverID = server.ID
-			}
+
+		foundServer, err := findExact(
+			res.Servers,
+			func(s *instance.Server) bool { return s.Name == serverName },
+			serverName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if serverID == "" {
-			return diag.FromErr(fmt.Errorf("no server found with the name %s", d.Get("name")))
-		}
+
+		serverID = foundServer.ID
 	}
 
 	zonedID := datasourceNewZonedID(serverID, zone)

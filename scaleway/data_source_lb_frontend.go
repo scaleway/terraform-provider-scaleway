@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,21 +39,26 @@ func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceDat
 
 	frontID, ok := d.GetOk("frontend_id")
 	if !ok { // Get LB by name.
+		frontName := d.Get("name").(string)
 		res, err := api.ListFrontends(&lbSDK.ZonedAPIListFrontendsRequest{
 			Zone: zone,
-			Name: expandStringPtr(d.Get("name")),
+			Name: expandStringPtr(frontName),
 			LBID: expandID(d.Get("lb_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Frontends) == 0 {
-			return diag.FromErr(fmt.Errorf("no frontends found with the name %s", d.Get("name")))
+
+		foundFront, err := findExact(
+			res.Frontends,
+			func(s *lbSDK.Frontend) bool { return s.Name == frontName },
+			frontName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if len(res.Frontends) > 1 {
-			return diag.FromErr(fmt.Errorf("%d frontend found with the same name %s", len(res.Frontends), d.Get("name")))
-		}
-		frontID = res.Frontends[0].ID
+
+		frontID = foundFront.ID
 	}
 	zonedID := datasourceNewZonedID(frontID, zone)
 	d.SetId(zonedID)

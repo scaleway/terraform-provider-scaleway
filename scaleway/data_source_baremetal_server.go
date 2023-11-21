@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,20 +39,25 @@ func dataSourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resour
 
 	serverID, ok := d.GetOk("server_id")
 	if !ok { // Get server by zone and name.
+		serverName := d.Get("name").(string)
 		res, err := api.ListServers(&baremetal.ListServersRequest{
 			Zone: zone,
-			Name: scw.StringPtr(d.Get("name").(string)),
+			Name: scw.StringPtr(serverName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Servers) == 0 {
-			return diag.FromErr(fmt.Errorf("no servers found with the name %s", d.Get("name")))
+
+		foundServer, err := findExact(
+			res.Servers,
+			func(s *baremetal.Server) bool { return s.Name == serverName },
+			serverName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if len(res.Servers) > 1 {
-			return diag.FromErr(fmt.Errorf("%d servers found with the same name %s", len(res.Servers), d.Get("name")))
-		}
-		serverID = res.Servers[0].ID
+
+		serverID = foundServer.ID
 	}
 
 	zoneID := datasourceNewZonedID(serverID, zone)

@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -46,21 +45,26 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 	containerID, ok := d.GetOk("container_id")
 	namespaceID := d.Get("namespace_id")
 	if !ok {
+		containerName := d.Get("name").(string)
 		res, err := api.ListContainers(&container.ListContainersRequest{
 			Region:      region,
-			Name:        expandStringPtr(d.Get("name")),
+			Name:        expandStringPtr(containerName),
 			NamespaceID: expandID(namespaceID),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Containers) == 0 {
-			return diag.FromErr(fmt.Errorf("no container found with the name %s", d.Get("name")))
+
+		foundContainer, err := findExact(
+			res.Containers,
+			func(s *container.Container) bool { return s.Name == containerName },
+			containerName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if len(res.Containers) > 1 {
-			return diag.FromErr(fmt.Errorf("%d container found with the same name %s", len(res.Containers), d.Get("name")))
-		}
-		containerID = res.Containers[0].ID
+
+		containerID = foundContainer.ID
 	}
 
 	regionalID := datasourceNewRegionalID(containerID, region)
