@@ -88,6 +88,14 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 							Optional:    true,
 							Description: "Defines whether the default route is enabled on that Gateway Network",
 						},
+						"ipam_ip_id": {
+							Type:             schema.TypeString,
+							Optional:         true,
+							Computed:         true,
+							Description:      "Use this IPAM-booked IP ID as the Gateway's IP in this Private Network",
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: diffSuppressFuncLocality,
+						},
 					},
 				},
 			},
@@ -216,6 +224,10 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 
 	if enableDHCP := gatewayNetwork.EnableDHCP; enableDHCP {
 		_ = d.Set("enable_dhcp", enableDHCP)
+	}
+
+	if ipamConfig := gatewayNetwork.IpamConfig; ipamConfig != nil {
+		_ = d.Set("ipam_config", flattenIpamConfig(ipamConfig))
 	}
 
 	var cleanUpDHCPValue bool
