@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	natsjwt "github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nats.go"
-	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -31,31 +30,6 @@ const (
 	DefaultQueueReceiveMessageWaitTimeSeconds = 0
 	DefaultQueueVisibilityTimeout             = 30
 )
-
-// SQSClientWithRegion_alpha
-// Deprecated: remove with MNQ v1alpha1
-func SQSClientWithRegion_alpha(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) { //nolint: revive,stylecheck
-	meta := m.(*Meta)
-	region, err := extractRegion(d, meta)
-	if err != nil {
-		return nil, "", err
-	}
-
-	if _, ok := d.GetOk("sqs"); !ok {
-		return nil, "", fmt.Errorf("sqs access_key and secret_key are required")
-	}
-
-	endpoint := d.Get("sqs.0.endpoint").(string)
-	accessKey := d.Get("sqs.0.access_key").(string)
-	secretKey := d.Get("sqs.0.secret_key").(string)
-
-	sqsClient, err := newSQSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return sqsClient, region, err
-}
 
 func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
 	meta := m.(*Meta)
@@ -91,29 +65,6 @@ func newSQSClient(httpClient *http.Client, region string, endpoint string, acces
 		return nil, err
 	}
 	return sqs.New(s), nil
-}
-
-// NATSClientWithRegion_alpha
-// Deprecated: remove with MNQ v1alpha1
-func NATSClientWithRegion_alpha(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn,revive,stylecheck
-	meta := m.(*Meta)
-	region, err := extractRegion(d, meta)
-	if err != nil {
-		return nil, "", err
-	}
-
-	if _, ok := d.GetOk("nats"); !ok {
-		return nil, "", fmt.Errorf("nats credentials are required")
-	}
-
-	endpoint := d.Get("nats.0.endpoint").(string)
-	credentials := d.Get("nats.0.credentials").(string)
-	js, err := newNATSJetStreamClient(region.String(), endpoint, credentials)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return js, region, err
 }
 
 func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn
@@ -233,23 +184,6 @@ func setResourceValue(values map[string]interface{}, resourcePath string, value 
 	values[resourcePath] = value
 }
 
-// Deprecated: remove with mnq alpha1
-// Get the SQS attributes from the resource data
-func sqsResourceDataToAttributes_alpha(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema) (map[string]*string, error) { //nolint: revive,stylecheck
-	attributes := make(map[string]*string)
-
-	for attribute, resourcePath := range SQSAttributesToResourceMap_alpha {
-		if v, ok := d.GetOk(resourcePath); ok {
-			err := sqsResourceDataToAttribute(attributes, attribute, v, resourcePath, resourceSchemas)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return attributes, nil
-}
-
 func sqsResourceDataToAttributes(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema) (map[string]*string, error) {
 	attributes := make(map[string]*string)
 
@@ -286,23 +220,6 @@ func sqsResourceDataToAttribute(sqsAttributes map[string]*string, sqsAttribute s
 
 	sqsAttributes[sqsAttribute] = &s
 	return nil
-}
-
-// Deprecated: remove with mnq alpha1
-// Get the resource data from the SQS attributes
-func sqsAttributesToResourceData_alpha(attributes map[string]*string, resourceSchemas map[string]*schema.Schema) (map[string]interface{}, error) { //nolint: revive,stylecheck
-	values := make(map[string]interface{})
-
-	for attribute, resourcePath := range SQSAttributesToResourceMap_alpha {
-		if value, ok := attributes[attribute]; ok && value != nil {
-			err := sqsAttributeToResourceData(values, *value, resourcePath, resourceSchemas)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return values, nil
 }
 
 func sqsAttributesToResourceData(attributes map[string]*string, resourceSchemas map[string]*schema.Schema) (map[string]interface{}, error) {
@@ -362,27 +279,24 @@ func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isSQ
 }
 
 func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	_, isSQS := d.GetOk("sqs")
-	isSQSFifo := isSQS && d.Get("sqs.0.fifo_queue").(bool)
+	isSQSFifo := d.Get("fifo_queue").(bool)
 
 	var name string
 	if d.Id() == "" {
-		name = resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), isSQS, isSQSFifo)
+		name = resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), true, isSQSFifo)
 	} else {
 		name = d.Get("name").(string)
 	}
 
 	nameRegex := regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
 
-	if isSQS {
-		if isSQSFifo {
-			nameRegex = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,75}\` + SQSFIFOQueueNameSuffix + `$`)
-		}
+	if isSQSFifo {
+		nameRegex = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,75}\` + SQSFIFOQueueNameSuffix + `$`)
+	}
 
-		contentBasedDeduplication := d.Get("sqs.0.content_based_deduplication").(bool)
-		if !isSQSFifo && contentBasedDeduplication {
-			return fmt.Errorf("content-based deduplication can only be set for FIFO queue")
-		}
+	contentBasedDeduplication := d.Get("content_based_deduplication").(bool)
+	if !isSQSFifo && contentBasedDeduplication {
+		return fmt.Errorf("content-based deduplication can only be set for FIFO queue")
 	}
 
 	if !nameRegex.MatchString(name) {
@@ -408,24 +322,4 @@ func decomposeMNQQueueID(id string) (region scw.Region, namespaceID string, name
 	}
 
 	return region, parts[1], parts[2], nil
-}
-
-func getMNQNamespaceFromComposedQueueID(ctx context.Context, d *schema.ResourceData, meta interface{}, composedID string) (*mnq.Namespace, error) {
-	api, region, err := newMNQAPIalpha(d, meta)
-	if err != nil {
-		return nil, err
-	}
-
-	namespaceRegion, namespaceID, _, err := decomposeMNQQueueID(composedID)
-	if err != nil {
-		return nil, err
-	}
-	if namespaceRegion != region {
-		return nil, fmt.Errorf("namespace region (%s) and queue region (%s) must be the same", namespaceRegion, region)
-	}
-
-	return api.GetNamespace(&mnq.GetNamespaceRequest{
-		Region:      namespaceRegion,
-		NamespaceID: namespaceID,
-	}, scw.WithContext(ctx))
 }

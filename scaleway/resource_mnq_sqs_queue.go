@@ -114,6 +114,7 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 				Description: "The URL of the queue",
 			},
 		},
+		CustomizeDiff: resourceMNQQueueCustomizeDiff,
 	}
 }
 
