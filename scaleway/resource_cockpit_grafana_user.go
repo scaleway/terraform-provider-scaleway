@@ -32,7 +32,7 @@ func resourceScalewayCockpitGrafanaUser() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				Description:  "The login of the Grafana user",
-				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9_]{2,24}$`), "must have between 2 and 24 alphanumeric characters"),
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9_-]{2,24}$`), "must have between 2 and 24 alphanumeric characters"),
 			},
 			"password": {
 				Type:        schema.TypeString,
