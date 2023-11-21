@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,20 +39,25 @@ func dataSourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Reso
 
 	namespaceID, ok := d.GetOk("namespace_id")
 	if !ok {
+		namespaceName := d.Get("name").(string)
 		res, err := api.ListNamespaces(&registry.ListNamespacesRequest{
 			Region: region,
-			Name:   expandStringPtr(d.Get("name")),
+			Name:   expandStringPtr(namespaceName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Namespaces) == 0 {
-			return diag.FromErr(fmt.Errorf("no namespaces found with the name %s", d.Get("name")))
+
+		foundNamespace, err := findExact(
+			res.Namespaces,
+			func(s *registry.Namespace) bool { return s.Name == namespaceName },
+			namespaceName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if len(res.Namespaces) > 1 {
-			return diag.FromErr(fmt.Errorf("%d namespaces found with the same name %s", len(res.Namespaces), d.Get("name")))
-		}
-		namespaceID = res.Namespaces[0].ID
+
+		namespaceID = foundNamespace.ID
 	}
 
 	regionalID := datasourceNewRegionalID(namespaceID, region)

@@ -39,25 +39,26 @@ func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceD
 
 	clusterID, ok := d.GetOk("cluster_id")
 	if !ok {
+		clusterName := d.Get("name").(string)
 		res, err := api.ListClusters(&redis.ListClustersRequest{
 			Zone:      zone,
-			Name:      expandStringPtr(d.Get("name")),
+			Name:      expandStringPtr(clusterName),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, cluster := range res.Clusters {
-			if cluster.Name == d.Get("name").(string) {
-				if clusterID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 cluster found with the same name %s", d.Get("name")))
-				}
-				clusterID = cluster.ID
-			}
+
+		foundCluster, err := findExact(
+			res.Clusters,
+			func(s *redis.Cluster) bool { return s.Name == clusterName },
+			clusterName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if clusterID == "" {
-			return diag.FromErr(fmt.Errorf("no clusters found with the name %s", d.Get("name")))
-		}
+
+		clusterID = foundCluster.ID
 	}
 
 	zonedID := datasourceNewZonedID(clusterID, zone)

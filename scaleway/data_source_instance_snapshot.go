@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,25 +39,26 @@ func dataSourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resou
 
 	snapshotID, ok := d.GetOk("snapshot_id")
 	if !ok {
+		snapshotName := d.Get("name").(string)
 		res, err := instanceAPI.ListSnapshots(&instance.ListSnapshotsRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(d.Get("name")),
+			Name:    expandStringPtr(snapshotName),
 			Project: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, snapshot := range res.Snapshots {
-			if snapshot.Name == d.Get("name").(string) {
-				if snapshotID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 snapshot found with the same name %s", d.Get("name")))
-				}
-				snapshotID = snapshot.ID
-			}
+
+		foundSnapshot, err := findExact(
+			res.Snapshots,
+			func(s *instance.Snapshot) bool { return s.Name == snapshotName },
+			snapshotName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if snapshotID == "" {
-			return diag.FromErr(fmt.Errorf("no snapshot found with the name %s", d.Get("name")))
-		}
+
+		snapshotID = foundSnapshot.ID
 	}
 
 	zonedID := datasourceNewZonedID(snapshotID, zone)

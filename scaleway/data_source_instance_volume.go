@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,25 +39,26 @@ func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.Resourc
 
 	volumeID, ok := d.GetOk("volume_id")
 	if !ok { // Get volumes by zone and name.
+		volumeName := d.Get("name").(string)
 		res, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(d.Get("name")),
+			Name:    expandStringPtr(volumeName),
 			Project: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, volume := range res.Volumes {
-			if volume.Name == d.Get("name").(string) {
-				if volumeID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 volume found with the same name %s", d.Get("name")))
-				}
-				volumeID = volume.ID
-			}
+
+		foundVolume, err := findExact(
+			res.Volumes,
+			func(s *instance.Volume) bool { return s.Name == volumeName },
+			volumeName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if volumeID == "" {
-			return diag.FromErr(fmt.Errorf("no volume found with the name %s", d.Get("name")))
-		}
+
+		volumeID = foundVolume.ID
 	}
 
 	zonedID := datasourceNewZonedID(volumeID, zone)

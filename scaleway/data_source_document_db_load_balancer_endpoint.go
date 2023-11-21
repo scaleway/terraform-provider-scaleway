@@ -62,25 +62,26 @@ func dataSourceScalewayDocumentDBLoadBalancerRead(ctx context.Context, d *schema
 
 	rawInstanceID, instanceIDExists := d.GetOk("instance_id")
 	if !instanceIDExists {
+		rawInstanceName := d.Get("instance_name").(string)
 		res, err := api.ListInstances(&documentdb.ListInstancesRequest{
 			Region:    region,
-			Name:      expandStringPtr(d.Get("instance_name")),
+			Name:      expandStringPtr(rawInstanceName),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, instance := range res.Instances {
-			if instance.Name == d.Get("instance_name").(string) {
-				if rawInstanceID != "" {
-					return diag.Errorf("more than 1 instance found with the same name %s", d.Get("name"))
-				}
-				rawInstanceID = instance.ID
-			}
+
+		foundRawInstance, err := findExact(
+			res.Instances,
+			func(s *documentdb.Instance) bool { return s.Name == rawInstanceName },
+			rawInstanceName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if rawInstanceID == "" {
-			return diag.Errorf("no instance found with the name %s", d.Get("instance_name"))
-		}
+
+		rawInstanceID = foundRawInstance.ID
 	}
 
 	instanceID := expandID(rawInstanceID)

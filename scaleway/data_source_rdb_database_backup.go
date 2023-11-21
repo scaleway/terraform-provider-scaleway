@@ -37,26 +37,27 @@ func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.Reso
 
 	backupID, backupIDExists := d.GetOk("backup_id")
 	if !backupIDExists {
+		backupName := d.Get("name").(string)
 		res, err := api.ListDatabaseBackups(&rdb.ListDatabaseBackupsRequest{
 			Region:     region,
-			Name:       expandStringPtr(d.Get("name")),
+			Name:       expandStringPtr(backupName),
 			InstanceID: expandStringPtr(expandID(d.Get("instance_id"))),
 			ProjectID:  expandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, backup := range res.DatabaseBackups {
-			if backup.Name == d.Get("name").(string) {
-				if backupID != "" {
-					return diag.Errorf("more than 1 backup found with the same name %s", d.Get("name"))
-				}
-				backupID = backup.ID
-			}
+
+		foundBackup, err := findExact(
+			res.DatabaseBackups,
+			func(s *rdb.DatabaseBackup) bool { return s.Name == backupName },
+			backupName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if backupID == "" {
-			return diag.Errorf("no backup found with the name %s", d.Get("name"))
-		}
+
+		backupID = foundBackup.ID
 	}
 
 	regionID := datasourceNewRegionalID(backupID, region)

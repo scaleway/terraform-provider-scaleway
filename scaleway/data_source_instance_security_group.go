@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -41,25 +40,26 @@ func dataSourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.
 
 	securityGroupID, ok := d.GetOk("security_group_id")
 	if !ok {
+		sgName := d.Get("name").(string)
 		res, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(d.Get("name")),
+			Name:    expandStringPtr(sgName),
 			Project: expandStringPtr(d.Get("project_id")),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, sg := range res.SecurityGroups {
-			if sg.Name == d.Get("name").(string) {
-				if securityGroupID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 security group found with the same name %s", d.Get("name")))
-				}
-				securityGroupID = sg.ID
-			}
+
+		foundSG, err := findExact(
+			res.SecurityGroups,
+			func(s *instance.SecurityGroup) bool { return s.Name == sgName },
+			sgName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if securityGroupID == "" {
-			return diag.FromErr(fmt.Errorf("no security group found with the name %s", d.Get("name")))
-		}
+
+		securityGroupID = foundSG.ID
 	}
 
 	zonedID := datasourceNewZonedID(securityGroupID, zone)

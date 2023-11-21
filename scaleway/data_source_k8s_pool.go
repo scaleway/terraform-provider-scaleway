@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,26 +42,27 @@ func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, 
 
 	poolID, ok := d.GetOk("pool_id")
 	if !ok {
+		poolName := d.Get("name").(string)
 		clusterID := expandRegionalID(d.Get("cluster_id"))
 		res, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 			Region:    region,
-			Name:      expandStringPtr(d.Get("name")),
+			Name:      expandStringPtr(poolName),
 			ClusterID: clusterID.ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, pool := range res.Pools {
-			if pool.Name == d.Get("name").(string) {
-				if poolID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 pool found with the same name %s", d.Get("name")))
-				}
-				poolID = pool.ID
-			}
+
+		foundPool, err := findExact(
+			res.Pools,
+			func(s *k8s.Pool) bool { return s.Name == poolName },
+			poolName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if poolID == "" {
-			return diag.FromErr(fmt.Errorf("no pool found with the name %s", d.Get("name")))
-		}
+
+		poolID = foundPool.ID
 	}
 
 	regionalizedID := datasourceNewRegionalID(poolID, region)

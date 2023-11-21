@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -47,9 +46,10 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 
 	secretID, ok := d.GetOk("secret_id")
 	if !ok {
+		secretName := d.Get("name").(string)
 		request := &secret.ListSecretsRequest{
 			Region: region,
-			Name:   scw.StringPtr(d.Get("name").(string)),
+			Name:   scw.StringPtr(secretName),
 		}
 
 		request.ProjectID = scw.StringPtr(projectID)
@@ -62,22 +62,16 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		for _, s := range res.Secrets {
-			if s.Status == secret.SecretStatusLocked {
-				continue
-			}
-
-			if s.Name == d.Get("name").(string) {
-				if secretID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 secret found with the same name %s", d.Get("name")))
-				}
-
-				secretID = newRegionalIDString(region, s.ID)
-			}
+		foundSecret, err := findExact(
+			res.Secrets,
+			func(s *secret.Secret) bool { return s.Name == secretName },
+			secretName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if res.TotalCount == 0 {
-			return diag.FromErr(fmt.Errorf("no secret found with the name %s", d.Get("name")))
-		}
+
+		secretID = foundSecret.ID
 	}
 
 	regionalID := datasourceNewRegionalID(secretID, region)
