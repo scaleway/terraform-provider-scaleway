@@ -12,10 +12,13 @@ Creates and manages Scaleway Kubernetes clusters. For more information, see [the
 ### Basic
 
 ```hcl
+resource "scaleway_vpc_private_network" "hedy" {}
+
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.24.3"
   cni     = "cilium"
+  private_network_id = scaleway_vpc_private_network.hedy.id
   delete_additional_resources = false
 }
 
@@ -52,12 +55,15 @@ For a detailed example of how to add or run Elastic Metal servers instead of ins
 ### With additional configuration
 
 ```hcl
+resource "scaleway_vpc_private_network" "hedy" {}
+
 resource "scaleway_k8s_cluster" "john" {
   name             = "john"
   description      = "my awesome cluster"
   version          = "1.24.3"
   cni              = "calico"
   tags             = ["i'm an awesome tag", "yay"]
+  private_network_id = scaleway_vpc_private_network.hedy.id
   delete_additional_resources = false
 
   autoscaler_config {
@@ -86,10 +92,13 @@ resource "scaleway_k8s_pool" "john" {
 ### With the kubernetes provider
 
 ```hcl
+resource "scaleway_vpc_private_network" "hedy" {}
+
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
   version = "1.24.3"
   cni     = "flannel"
+  private_network_id = scaleway_vpc_private_network.hedy.id
   delete_additional_resources = false
 }
 
@@ -124,11 +133,14 @@ It leads the `kubernetes` provider to start creating its objects, but the DNS en
 ### With the Helm provider
 
 ```hcl
+resource "scaleway_vpc_private_network" "hedy" {}
+
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
   version = "1.24.3"
   cni     = "flannel"
   delete_additional_resources = false
+  private_network_id = scaleway_vpc_private_network.hedy.id
 }
 
 resource "scaleway_k8s_pool" "john" {
@@ -229,6 +241,13 @@ The following arguments are supported:
 ~> **Important:** Setting this field to `true` means that you will lose all your cluster data and network configuration when you delete your cluster.
 If you prefer keeping it, you should instead set it as `false`.
 
+- `private_network_id` - (Required) The ID of the private network of the cluster.
+
+~> **Important:** Changes to this field will recreate a new resource.
+
+~> **Important:** Private Networks are now mandatory with Kapsule Clusters. If you have a legacy cluster (no `private_network_id` set),
+you can still set it now. In this case it will not destroy and recreate your cluster but migrate it to the Private Network.
+
 - `tags` - (Optional) The tags associated with the Kubernetes cluster.
 
 - `autoscaler_config` - (Optional) The configuration options for the [Kubernetes cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
@@ -283,13 +302,6 @@ If you prefer keeping it, you should instead set it as `false`.
     - `groups_prefix` - (Optional) Prefix prepended to group claims
 
     - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
-
-- `private_network_id` - (Optional) The ID of the private network of the cluster.
-
-~> **Important:** This field can be set at cluster creation or later to migrate to a Private Network.
-Any subsequent change after this field got set will prompt for cluster recreation.
-
-~> Also, you should only use **regional** Private Networks with Kapsule clusters, otherwise you will get an error saying that the Private Network can't be found.
 
 - `default_pool` - (Deprecated) See below.
 
