@@ -31,8 +31,8 @@ func testSweepJobDefinition(_ string) error {
 
 		for _, definition := range listJobDefinitions.JobDefinitions {
 			err := jobsAPI.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
-				JobDefinitionID: definition.JobDefinitionID,
-				Region:          region,
+				ID:     definition.ID,
+				Region: region,
 			})
 			if err != nil {
 				l.Debugf("sweeper: error (%s)", err)
@@ -60,12 +60,60 @@ func TestAccScalewayJobDefinition_Basic(t *testing.T) {
 						name = "test-jobs-job-definition-basic"
 						cpu_limit = 120
 						memory_limit = 256
+						region = "nl-ams"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayJobDefinitionExists(tt, "scaleway_job_definition.main"),
 					testCheckResourceAttrUUID("scaleway_job_definition.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-basic"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayJobDefinition_Timeout(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayJobDefinitionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-timeout"
+						cpu_limit = 120
+						memory_limit = 256
+						timeout = "20m"
+						region = "nl-ams"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					testCheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-timeout"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "timeout", "20m0s"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-timeout"
+						cpu_limit = 120
+						memory_limit = 256
+						timeout = "1h30m"
+						region = "nl-ams"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					testCheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-timeout"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "timeout", "1h30m0s"),
 				),
 			},
 		},
@@ -85,8 +133,8 @@ func testAccCheckScalewayJobDefinitionExists(tt *TestTools, n string) resource.T
 		}
 
 		_, err = api.GetJobDefinition(&jobs.GetJobDefinitionRequest{
-			JobDefinitionID: id,
-			Region:          region,
+			ID:     id,
+			Region: region,
 		})
 
 		if err != nil {
@@ -110,8 +158,8 @@ func testAccCheckScalewayJobDefinitionDestroy(tt *TestTools) resource.TestCheckF
 			}
 
 			err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
-				JobDefinitionID: id,
-				Region:          region,
+				ID:     id,
+				Region: region,
 			})
 
 			if err == nil {

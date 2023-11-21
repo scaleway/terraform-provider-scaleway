@@ -2,7 +2,9 @@ package scaleway
 
 import (
 	"context"
+	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -47,9 +49,11 @@ func resourceScalewayJobDefinition() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"timeout_in_seconds": {
-				Type:     schema.TypeInt,
-				Optional: true,
+			"timeout": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: diffSuppressFuncDuration,
 			},
 			"env": {
 				Type:     schema.TypeMap,
@@ -72,12 +76,7 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	var timeout *scw.Duration
-	if timeoutSeconds, ok := d.GetOk("timeout_in_seconds"); ok {
-		timeout = &scw.Duration{Seconds: int64(timeoutSeconds.(int))}
-	}
-
-	definition, err := api.CreateJobDefinition(&jobs.CreateJobDefinitionRequest{
+	req := &jobs.CreateJobDefinitionRequest{
 		Region:               region,
 		Name:                 expandOrGenerateString(d.Get("name").(string), "job"),
 		CPULimit:             uint32(d.Get("cpu_limit").(int)),
@@ -87,13 +86,28 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 		ProjectID:            d.Get("project_id").(string),
 		EnvironmentVariables: expandMapStringString(d.Get("env")),
 		Description:          d.Get("description").(string),
-		JobTimeout:           timeout,
-	}, scw.WithContext(ctx))
+	}
+
+	if timeoutSeconds, ok := d.GetOk("timeout"); ok {
+		duration, err := time.ParseDuration(timeoutSeconds.(string))
+		if err != nil {
+			return diag.Diagnostics{{
+				Severity:      diag.Error,
+				Summary:       "Invalid timeout, expected Go duration format",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("timeout"),
+			}}
+		}
+
+		req.JobTimeout = scw.NewDurationFromTimeDuration(duration)
+	}
+
+	definition, err := api.CreateJobDefinition(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, definition.JobDefinitionID))
+	d.SetId(newRegionalIDString(region, definition.ID))
 
 	return resourceScalewayJobDefinitionRead(ctx, d, meta)
 }
@@ -105,8 +119,8 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	definition, err := api.GetJobDefinition(&jobs.GetJobDefinitionRequest{
-		JobDefinitionID: id,
-		Region:          region,
+		ID:     id,
+		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
@@ -123,7 +137,7 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("command", definition.Command)
 	_ = d.Set("env", flattenMap(definition.EnvironmentVariables))
 	_ = d.Set("description", definition.Description)
-	_ = d.Set("timeout_in_seconds", definition.JobTimeout)
+	_ = d.Set("timeout", definition.JobTimeout.ToTimeDuration().String())
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
 
@@ -137,8 +151,8 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	req := &jobs.UpdateJobDefinitionRequest{
-		Region:          region,
-		JobDefinitionID: id,
+		Region: region,
+		ID:     id,
 	}
 
 	if d.HasChange("name") {
@@ -169,8 +183,20 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 		req.Description = expandUpdatedStringPtr(d.Get("description"))
 	}
 
-	if d.HasChange("timeout_in_seconds") {
-		req.JobTimeout = &scw.Duration{Seconds: int64(d.Get("timeout_in_seconds").(int))}
+	if d.HasChange("timeout") {
+		if timeoutSeconds, ok := d.GetOk("timeout"); ok {
+			duration, err := time.ParseDuration(timeoutSeconds.(string))
+			if err != nil {
+				return diag.Diagnostics{{
+					Severity:      diag.Error,
+					Summary:       "Invalid timeout, expected Go duration format",
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("timeout"),
+				}}
+			}
+
+			req.JobTimeout = scw.NewDurationFromTimeDuration(duration)
+		}
 	}
 
 	if _, err := api.UpdateJobDefinition(req, scw.WithContext(ctx)); err != nil {
@@ -187,8 +213,8 @@ func resourceScalewayJobDefinitionDelete(ctx context.Context, d *schema.Resource
 	}
 
 	err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
-		Region:          region,
-		JobDefinitionID: id,
+		Region: region,
+		ID:     id,
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
