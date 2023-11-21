@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -19,6 +20,16 @@ import (
 	"github.com/nats-io/nats.go"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	defaultMNQQueueTimeout       = 5 * time.Minute
+	defaultMNQQueueRetryInterval = 5 * time.Second
+
+	DefaultQueueMaximumMessageSize            = 262_144 // 256 KiB.
+	DefaultQueueMessageRetentionPeriod        = 345_600 // 4 days.
+	DefaultQueueReceiveMessageWaitTimeSeconds = 0
+	DefaultQueueVisibilityTimeout             = 30
 )
 
 // SQSClientWithRegion_alpha
