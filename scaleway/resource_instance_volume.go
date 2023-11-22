@@ -48,15 +48,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				Description:   "The size of the volume in gigabyte",
-				ConflictsWith: []string{"from_snapshot_id", "from_volume_id"},
-			},
-			"from_volume_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Create a copy of an existing volume",
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"from_snapshot_id", "size_in_gb"},
+				ConflictsWith: []string{"from_snapshot_id"},
 			},
 			"from_snapshot_id": {
 				Type:          schema.TypeString,
@@ -64,7 +56,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				ForceNew:      true,
 				Description:   "Create a volume based on a image",
 				ValidateFunc:  validationUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"from_volume_id", "size_in_gb"},
+				ConflictsWith: []string{"size_in_gb"},
 			},
 			"server_id": {
 				Type:        schema.TypeString,
@@ -83,7 +75,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			"project_id":      projectIDSchema(),
 			"zone":            zoneSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("from_volume_id", "from_snapshot_id"),
+		CustomizeDiff: customizeDiffLocalityCheck("from_snapshot_id"),
 	}
 }
 
@@ -107,10 +99,6 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 	if size, ok := d.GetOk("size_in_gb"); ok {
 		volumeSizeInBytes := scw.Size(uint64(size.(int)) * gb)
 		createVolumeRequest.Size = &volumeSizeInBytes
-	}
-
-	if volumeID, ok := d.GetOk("from_volume_id"); ok {
-		createVolumeRequest.BaseVolume = expandStringPtr(expandID(volumeID))
 	}
 
 	if snapshotID, ok := d.GetOk("from_snapshot_id"); ok {
@@ -162,9 +150,8 @@ func resourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("type", res.Volume.VolumeType.String())
 	_ = d.Set("tags", res.Volume.Tags)
 
-	_, fromVolume := d.GetOk("from_volume_id")
 	_, fromSnapshot := d.GetOk("from_snapshot_id")
-	if !fromSnapshot && !fromVolume {
+	if !fromSnapshot {
 		_ = d.Set("size_in_gb", int(res.Volume.Size/scw.GB))
 	}
 
