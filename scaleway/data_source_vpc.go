@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -61,8 +60,9 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 	} else {
 		vpcID, ok = d.GetOk("vpc_id")
 		if !ok {
+			vpcName := d.Get("name").(string)
 			request := &vpc.ListVPCsRequest{
-				Name:           expandStringPtr(d.Get("name").(string)),
+				Name:           expandStringPtr(vpcName),
 				Region:         region,
 				ProjectID:      expandStringPtr(d.Get("project_id")),
 				OrganizationID: expandStringPtr(d.Get("organization_id")),
@@ -73,17 +73,16 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 				return diag.FromErr(err)
 			}
 
-			for _, v := range res.Vpcs {
-				if v.Name == d.Get("name").(string) {
-					if vpcID != "" {
-						return diag.FromErr(fmt.Errorf("more than 1 VPC found with the same name %s", d.Get("name")))
-					}
-					vpcID = newRegionalIDString(region, v.ID)
-				}
+			foundVPC, err := findExact(
+				res.Vpcs,
+				func(s *vpc.VPC) bool { return s.Name == vpcName },
+				vpcName,
+			)
+			if err != nil {
+				return diag.FromErr(err)
 			}
-			if res.TotalCount == 0 {
-				return diag.FromErr(fmt.Errorf("no VPC found with the name %s", d.Get("name")))
-			}
+
+			vpcID = foundVPC.ID
 		}
 	}
 

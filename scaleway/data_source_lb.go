@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -46,21 +45,26 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	lbID, ok := d.GetOk("lb_id")
 	if !ok { // Get LB by name.
+		lbName := d.Get("name").(string)
 		res, err := api.ListLBs(&lbSDK.ZonedAPIListLBsRequest{
 			Zone:      zone,
-			Name:      expandStringPtr(d.Get("name")),
+			Name:      expandStringPtr(lbName),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.LBs) == 0 {
-			return diag.FromErr(fmt.Errorf("no lbs found with the name %s", d.Get("name")))
+
+		foundLB, err := findExact(
+			res.LBs,
+			func(s *lbSDK.LB) bool { return s.Name == lbName },
+			lbName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if len(res.LBs) > 1 {
-			return diag.FromErr(fmt.Errorf("%d lbs found with the same name %s", len(res.LBs), d.Get("name")))
-		}
-		lbID = res.LBs[0].ID
+
+		lbID = foundLB.ID
 	}
 
 	err = d.Set("release_ip", false)

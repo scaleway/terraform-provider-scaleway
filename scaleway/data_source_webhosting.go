@@ -42,13 +42,12 @@ func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	/*	var vpcID interface{}
-		var ok bool*/
 	webhostingID, ok := d.GetOk("webhosting_id")
-	if !ok { // Get IP by region and IP address.
+	if !ok {
+		hostingDomain := d.Get("domain").(string)
 		res, err := api.ListHostings(&webhosting.ListHostingsRequest{
 			Region:         region,
-			Domain:         expandStringPtr(d.Get("domain")),
+			Domain:         expandStringPtr(hostingDomain),
 			ProjectID:      expandStringPtr(d.Get("project_id")),
 			OrganizationID: expandStringPtr(d.Get("organization_id")),
 		}, scw.WithContext(ctx))
@@ -56,17 +55,16 @@ func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
-		for _, hosting := range res.Hostings {
-			if hosting.Domain == d.Get("domain").(string) {
-				if webhostingID != "" {
-					return diag.Errorf("more than 1 hosting found with the same domain %s", d.Get("domain"))
-				}
-				webhostingID = hosting.ID
-			}
+		foundDomain, err := findExact(
+			res.Hostings,
+			func(s *webhosting.Hosting) bool { return s.Domain == hostingDomain },
+			hostingDomain,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if webhostingID == "" {
-			return diag.Errorf("no hosting found with the domain %s", d.Get("domain"))
-		}
+
+		webhostingID = foundDomain.ID
 	}
 
 	regionalID := datasourceNewRegionalID(webhostingID, region)

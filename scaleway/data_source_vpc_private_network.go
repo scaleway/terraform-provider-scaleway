@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,32 +39,26 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 
 	privateNetworkID, ok := d.GetOk("private_network_id")
 	if !ok {
+		pnName := d.Get("name").(string)
 		res, err := vpcAPI.ListPrivateNetworks(
 			&vpc.ListPrivateNetworksRequest{
-				Name:   expandStringPtr(d.Get("name").(string)),
+				Name:   expandStringPtr(pnName),
 				Region: region,
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if res.TotalCount == 0 {
-			return diag.FromErr(
-				fmt.Errorf(
-					"no private network found with the name %s",
-					d.Get("name"),
-				),
-			)
+
+		foundPN, err := findExact(
+			res.PrivateNetworks,
+			func(s *vpc.PrivateNetwork) bool { return s.Name == pnName },
+			pnName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if res.TotalCount > 1 {
-			return diag.FromErr(
-				fmt.Errorf(
-					"%d private networks found with the name %s",
-					res.TotalCount,
-					d.Get("name"),
-				),
-			)
-		}
-		privateNetworkID = res.PrivateNetworks[0].ID
+
+		privateNetworkID = foundPN.ID
 	}
 
 	regionalID := datasourceNewRegionalID(privateNetworkID, region)

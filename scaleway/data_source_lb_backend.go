@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,21 +39,26 @@ func dataSourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData
 
 	backID, ok := d.GetOk("backend_id")
 	if !ok { // Get LB by name.
+		backendName := d.Get("name").(string)
 		res, err := api.ListBackends(&lbSDK.ZonedAPIListBackendsRequest{
 			Zone: zone,
-			Name: expandStringPtr(d.Get("name")),
+			Name: expandStringPtr(backendName),
 			LBID: expandID(d.Get("lb_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Backends) == 0 {
-			return diag.FromErr(fmt.Errorf("no backends found with the name %s", d.Get("name")))
+
+		foundBackend, err := findExact(
+			res.Backends,
+			func(s *lbSDK.Backend) bool { return s.Name == backendName },
+			backendName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if len(res.Backends) > 1 {
-			return diag.FromErr(fmt.Errorf("%d backend found with the same name %s", len(res.Backends), d.Get("name")))
-		}
-		backID = res.Backends[0].ID
+
+		backID = foundBackend.ID
 	}
 	zonedID := datasourceNewZonedID(backID, zone)
 	d.SetId(zonedID)
