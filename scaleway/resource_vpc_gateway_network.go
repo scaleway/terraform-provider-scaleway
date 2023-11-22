@@ -79,6 +79,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			"ipam_config": {
 				Type:          schema.TypeList,
 				Optional:      true,
+				Computed:      true,
 				Description:   "Auto-configure the Gateway Network using Scaleway's IPAM (IP address management service)",
 				ConflictsWith: []string{"dhcp_id", "static_address"},
 				Elem: &schema.Resource{
