@@ -185,6 +185,12 @@ func resourceScalewayRdbInstance() *schema.Resource {
 					},
 				},
 			},
+			"disable_public_endpoint": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether the instance should have a public endpoint if it has a Private Network attached",
+			},
 			// Computed
 			"endpoint_ip": {
 				Type:        schema.TypeString,
@@ -299,6 +305,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		createReq.Tags = expandStrings(rawTag)
 	}
 
+	// Init Endpoints
 	pn, pnExist := d.GetOk("private_network")
 	if pnExist {
 		createReq.InitEndpoints, err = expandPrivateNetwork(pn, pnExist)
@@ -306,7 +313,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 	} else {
-		createReq.InitEndpoints = expandLoadBalancer()
+		createReq.InitEndpoints = append(createReq.InitEndpoints, expandLoadBalancer())
 	}
 
 	if size, ok := d.GetOk("volume_size_in_gb"); ok {
@@ -365,6 +372,27 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		})
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	// Remove public endpoint if disabled
+	if disabled := d.Get("disable_public_endpoint"); disabled.(bool) {
+		// retrieve state
+		res, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		for _, endpoint := range res.Endpoints {
+			if endpoint.LoadBalancer == nil {
+				continue
+			}
+			err = rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
+				Region:     region,
+				EndpointID: endpoint.ID,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -439,7 +467,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	if pnExist {
 		_ = d.Set("private_network", pnI)
 	}
-	_ = d.Set("load_balancer", flattenLoadBalancer(res.Endpoints))
+	lbI, lbExists := flattenLoadBalancer(res.Endpoints)
+	_ = d.Set("load_balancer", lbI)
+	_ = d.Set("disable_public_endpoint", !lbExists)
 
 	return nil
 }
@@ -682,6 +712,40 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 				_, err := rdbAPI.CreateEndpoint(
 					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
 					scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
+	// Remove public endpoint if disabled
+	if d.HasChanges("disable_public_endpoint") {
+		// retrieve state
+		res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		disabled, set := d.GetOk("disable_public_endpoint")
+
+		if !disabled.(bool) || !set {
+			_, err = rdbAPI.CreateEndpoint(&rdb.CreateEndpointRequest{
+				Region:       region,
+				InstanceID:   ID,
+				EndpointSpec: expandLoadBalancer(),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			for _, endpoint := range res.Endpoints {
+				if endpoint.LoadBalancer == nil {
+					continue
+				}
+				err = rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
+					Region:     region,
+					EndpointID: endpoint.ID,
+				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)
 				}
