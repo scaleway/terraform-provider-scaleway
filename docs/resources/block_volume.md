@@ -22,7 +22,7 @@ resource "scaleway_block_volume" "block_volume" {
 
 The following arguments are supported:
 
-- `iops` - (Optional) The maximum IO/s expected, must match available options.
+- `iops` - (Required) The maximum IO/s expected, must match available options.
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
 - `size_in_gb` - (Optional) The size of the volume. Only one of `size_in_gb`, and `snapshot_id` should be specified.
 - `snapshot_id` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `snapshot_id` should be specified.

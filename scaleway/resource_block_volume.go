@@ -35,8 +35,7 @@ func resourceScalewayBlockVolume() *schema.Resource {
 			},
 			"iops": {
 				Type:        schema.TypeInt,
-				Computed:    true,
-				Optional:    true,
+				Required:    true,
 				Description: "The maximum IO/s expected, must match available options",
 				ForceNew:    true,
 			},
