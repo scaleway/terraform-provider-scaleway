@@ -16,10 +16,6 @@ const (
 	blockVolumeType     = instance.VolumeServerVolumeType("sbs_volume")
 )
 
-func blockAPI(meta interface{}) *block.API {
-	return block.NewAPI(meta.(*Meta).scwClient)
-}
-
 // blockAPIWithZone returns a new block API and the zone for a Create request
 func blockAPIWithZone(d *schema.ResourceData, m interface{}) (*block.API, scw.Zone, error) {
 	meta := m.(*Meta)
