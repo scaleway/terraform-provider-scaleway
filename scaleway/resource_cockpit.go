@@ -130,6 +130,10 @@ func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, me
 
 	res, err := waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutRead))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -195,21 +199,23 @@ func resourceScalewayCockpitDelete(ctx context.Context, d *schema.ResourceData, 
 
 	_, err = waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
 	_, err = api.DeactivateCockpit(&cockpit.DeactivateCockpitRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
-	if err != nil {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		if !is404Error(err) {
-			return diag.FromErr(err)
-		}
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
 	}
 
 	return nil
