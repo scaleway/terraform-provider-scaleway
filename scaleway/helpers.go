@@ -329,6 +329,11 @@ func is409Error(err error) bool {
 	return isHTTPCodeError(err, http.StatusConflict) || errors.As(err, &transientStateError)
 }
 
+// is404Error returns true if err is an HTTP 410 error
+func is410Error(err error) bool {
+	return isHTTPCodeError(err, http.StatusGone)
+}
+
 // organizationIDSchema returns a standard schema for a organization_id
 func organizationIDSchema() *schema.Schema {
 	return &schema.Schema{

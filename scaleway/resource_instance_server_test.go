@@ -1970,3 +1970,49 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayInstanceServer_BlockExternal(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_block_volume" "volume" {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						additional_volume_ids = [scaleway_block_volume.volume.id]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "volume" {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+				),
+			},
+		},
+	})
+}
