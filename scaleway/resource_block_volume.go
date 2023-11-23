@@ -134,8 +134,11 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	_ = d.Set("name", volume.Name)
-	_ = d.Set("iops", volume.Specs.PerfIops)
-	_ = d.Set("size_in_gb", volume.Size/scw.GB)
+
+	if volume.Specs != nil {
+		_ = d.Set("iops", flattenUint32Ptr(volume.Specs.PerfIops))
+	}
+	_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("project_id", volume.ProjectID)
 	_ = d.Set("tags", volume.Tags)
