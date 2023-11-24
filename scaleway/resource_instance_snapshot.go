@@ -77,11 +77,13 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 						"bucket": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "Bucket containing qcow",
 						},
 						"key": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "Key of the qcow file in the specified bucket",
 						},
 					},
