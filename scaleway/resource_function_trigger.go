@@ -56,24 +56,28 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"namespace_id": {
 							Optional:         true,
+							ForceNew:         true,
 							Type:             schema.TypeString,
 							Description:      "ID of the mnq namespace",
 							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
 						"queue": {
 							Required:    true,
+							ForceNew:    true,
 							Type:        schema.TypeString,
 							Description: "Name of the queue",
 						},
 						"project_id": {
 							Computed:    true,
 							Optional:    true,
+							ForceNew:    true,
 							Type:        schema.TypeString,
 							Description: "Project ID of the project where the mnq sqs exists, defaults to provider project_id",
 						},
 						"region": {
 							Computed:    true,
 							Optional:    true,
+							ForceNew:    true,
 							Type:        schema.TypeString,
 							Description: "Region where the mnq sqs exists, defaults to function's region",
 						},
@@ -91,24 +95,28 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"account_id": {
 							Optional:         true,
+							ForceNew:         true,
 							Type:             schema.TypeString,
 							Description:      "ID of the mnq nats account",
 							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
 						"subject": {
 							Required:    true,
+							ForceNew:    true,
 							Type:        schema.TypeString,
 							Description: "Subject to listen to",
 						},
 						"project_id": {
 							Computed:    true,
 							Optional:    true,
+							ForceNew:    true,
 							Type:        schema.TypeString,
 							Description: "Project ID of the project where the mnq sqs exists, defaults to provider project_id",
 						},
 						"region": {
 							Computed:    true,
 							Optional:    true,
+							ForceNew:    true,
 							Type:        schema.TypeString,
 							Description: "Region where the mnq sqs exists, defaults to function's region",
 						},

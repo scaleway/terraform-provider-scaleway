@@ -80,6 +80,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 						"certificate_chain": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "The full PEM-formatted certificate chain",
 						},
 					},
