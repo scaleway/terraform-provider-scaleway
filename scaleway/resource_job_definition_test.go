@@ -60,6 +60,7 @@ func TestAccScalewayJobDefinition_Basic(t *testing.T) {
 						name = "test-jobs-job-definition-basic"
 						cpu_limit = 120
 						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
 						region = "nl-ams"
 					}
 				`,
@@ -88,6 +89,7 @@ func TestAccScalewayJobDefinition_Timeout(t *testing.T) {
 						name = "test-jobs-job-definition-timeout"
 						cpu_limit = 120
 						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
 						timeout = "20m"
 						region = "nl-ams"
 					}
@@ -105,6 +107,7 @@ func TestAccScalewayJobDefinition_Timeout(t *testing.T) {
 						name = "test-jobs-job-definition-timeout"
 						cpu_limit = 120
 						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
 						timeout = "1h30m"
 						region = "nl-ams"
 					}
