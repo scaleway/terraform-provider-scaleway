@@ -33,7 +33,7 @@ resource "scaleway_object_bucket" "main" {
 }
 
 resource "scaleway_object_bucket_policy" "main" {
-    bucket = scaleway_object_bucket.main.name
+    bucket = scaleway_object_bucket.main.id
     policy = jsonencode(
     {
         "Version" = "2012-10-17",

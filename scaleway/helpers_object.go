@@ -30,6 +30,9 @@ const (
 	defaultObjectBucketTimeout = 10 * time.Minute
 
 	maxObjectVersionDeletionWorkers = 8
+
+	objectTestsMainRegion      = "nl-ams"
+	objectTestsSecondaryRegion = "pl-waw"
 )
 
 func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {
@@ -64,6 +67,18 @@ func newS3ClientFromMeta(meta *Meta) (*s3.S3, error) {
 	}
 
 	return newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+}
+
+func newS3ClientFromMetaForceRegion(meta *Meta, region string) (*s3.S3, error) {
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	secretKey, _ := meta.scwClient.GetSecretKey()
+
+	projectID, _ := meta.scwClient.GetDefaultProjectID()
+	if projectID != "" {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+
+	return newS3Client(meta.httpClient, region, accessKey, secretKey)
 }
 
 func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
@@ -161,6 +176,23 @@ func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name s
 		return nil, "", "", "", err
 	}
 	return s3Client, scw.Region(region), name, outerID, err
+}
+
+func s3ClientForceRegion(d *schema.ResourceData, m interface{}, region string) (*s3.S3, error) {
+	meta := m.(*Meta)
+
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	if projectID, _, err := extractProjectID(d, meta); err == nil {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+	secretKey, _ := meta.scwClient.GetSecretKey()
+
+	s3Client, err := newS3Client(meta.httpClient, region, accessKey, secretKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return s3Client, err
 }
 
 func accessKeyWithProjectID(accessKey string, projectID string) string {
