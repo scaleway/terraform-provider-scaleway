@@ -793,6 +793,17 @@ func expandMapStringStringPtr(data interface{}) map[string]*string {
 	return m
 }
 
+func expandMapStringString(data any) map[string]string {
+	if data == nil {
+		return nil
+	}
+	m := make(map[string]string)
+	for k, v := range data.(map[string]interface{}) {
+		m[k] = v.(string)
+	}
+	return m
+}
+
 func errorCheck(err error, message string) bool {
 	return strings.Contains(err.Error(), message)
 }
