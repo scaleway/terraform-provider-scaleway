@@ -131,8 +131,8 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_ = d.Set("name", definition.Name)
-	_ = d.Set("cpu_limit", definition.CPULimit)
-	_ = d.Set("memory_limit", definition.MemoryLimit)
+	_ = d.Set("cpu_limit", int(definition.CPULimit))
+	_ = d.Set("memory_limit", int(definition.MemoryLimit))
 	_ = d.Set("image_uri", definition.ImageURI)
 	_ = d.Set("command", definition.Command)
 	_ = d.Set("env", flattenMap(definition.EnvironmentVariables))
