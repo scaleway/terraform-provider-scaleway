@@ -33,6 +33,8 @@ const (
 
 	objectTestsMainRegion      = "nl-ams"
 	objectTestsSecondaryRegion = "pl-waw"
+
+	errCodeForbidden = "Forbidden"
 )
 
 func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {

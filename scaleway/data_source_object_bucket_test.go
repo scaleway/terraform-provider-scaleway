@@ -12,20 +12,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccScalewayDataSourceObjectStorage_Basic(t *testing.T) {
+func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
-	// resourceName := "data.scaleway_object_bucket.main"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_object_bucket" "base-01" {
 					name = "%s"
+					region = "%s"
 					tags = {
 						foo = "bar"
 					}
@@ -34,8 +34,9 @@ func TestAccScalewayDataSourceObjectStorage_Basic(t *testing.T) {
 				data "scaleway_object_bucket" "selected" {
 					name = scaleway_object_bucket.base-01.name
 				}
-				`, bucketName),
+				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket.selected", "name", bucketName),
 				),
 			},
@@ -43,7 +44,7 @@ func TestAccScalewayDataSourceObjectStorage_Basic(t *testing.T) {
 	})
 }
 
-func TestAccScalewayDataSourceObjectStorage_ProjectIDAllowed(t *testing.T) {
+func TestAccScalewayDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
@@ -60,7 +61,7 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDAllowed(t *testing.T) {
 			func(s *terraform.State) error {
 				return terminateFakeSideProject()
 			},
-			testAccCheckScalewayObjectDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			// Create a bucket from the main provider into the side project and read it from the side provider
@@ -70,6 +71,7 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDAllowed(t *testing.T) {
 					resource "scaleway_object_bucket" "base" {
 						name = "%[1]s"
 						project_id = "%[2]s"
+						region = "%[3]s"
 					}
 
 					data "scaleway_object_bucket" "selected" {
@@ -79,8 +81,10 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDAllowed(t *testing.T) {
 				`,
 					bucketName,
 					project.ID,
+					objectTestsMainRegion,
 				),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base", false),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket.selected", "name", bucketName),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket.selected", "project_id", project.ID),
 				),
@@ -89,7 +93,7 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDAllowed(t *testing.T) {
 	})
 }
 
-func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
+func TestAccScalewayDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
@@ -106,7 +110,7 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 			func(s *terraform.State) error {
 				return terminateFakeSideProject()
 			},
-			testAccCheckScalewayObjectDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			// The side provider should not be able to read the bucket from the main project
@@ -114,6 +118,7 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "base" {
 						name = "%[1]s"
+						region = "%[3]s"
 					}
 
 					data "scaleway_object_bucket" "selected" {
@@ -123,7 +128,9 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 				`,
 					bucketName,
 					project.ID,
+					objectTestsMainRegion,
 				),
+				Check:       testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base", false),
 				ExpectError: regexp.MustCompile("failed getting Object Storage bucket"),
 			},
 		},

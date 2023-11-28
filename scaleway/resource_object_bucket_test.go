@@ -65,9 +65,9 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketBasic, bucketSecondary, bucketMainRegion, objectBucketTestSecondaryRegion, objectBucketTestMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01"),
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.secondary-bucket-01"),
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-01"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.secondary-bucket-01", true),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-01", true),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "name", bucketBasic),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "acl", testBucketACL),
@@ -104,8 +104,8 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketBasic, testBucketUpdatedACL, bucketSecondary, objectTestsSecondaryRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01"),
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.secondary-bucket-01"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.secondary-bucket-01", true),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "name", bucketBasic),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "acl", testBucketUpdatedACL),
@@ -152,7 +152,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 					}
 				`, bucketLifecycle, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
 					testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
@@ -186,7 +186,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 					}
 				`, bucketLifecycle, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
 					testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
@@ -267,7 +267,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 					}
 				`, bucketLifecycle, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
 					testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
@@ -315,7 +315,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 					}
 				`, bucketLifecycle, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
 					testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
@@ -338,7 +338,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 					}
 				`, bucketLifecycle, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
 					testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
@@ -367,7 +367,7 @@ func TestAccScalewayObjectBucket_ObjectLock(t *testing.T) {
 					}
 				`, bucketObjectLock, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.object-locked-bucket"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.object-locked-bucket", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "name", bucketObjectLock),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "object_lock_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "versioning.0.enabled", "true"),
@@ -387,7 +387,7 @@ func TestAccScalewayObjectBucket_ObjectLock(t *testing.T) {
 					}
 				`, bucketObjectLock, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.object-locked-bucket"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.object-locked-bucket", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "name", bucketObjectLock),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "object_lock_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "versioning.0.enabled", "true"),
@@ -486,6 +486,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
+						region = %[2]q
 						cors_rule {
 							allowed_headers = ["*"]
 							allowed_methods = ["PUT", "POST"]
@@ -493,9 +494,9 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName),
+					}`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, resourceName, true),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
 						[]*s3.CORSRule{
@@ -514,6 +515,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
+						region = %[2]q
 						cors_rule {
 							allowed_headers = ["*"]
 							allowed_methods = ["PUT", "POST", "GET"]
@@ -521,9 +523,9 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName),
+					}`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, resourceName, true),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
 						[]*s3.CORSRule{
@@ -542,6 +544,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
+						region = %[2]q
 						cors_rule {
 							allowed_headers = ["*"]
 							allowed_methods = ["PUT", "POST"]
@@ -549,8 +552,9 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName), Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, resourceName, true),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
 						[]*s3.CORSRule{
@@ -606,6 +610,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
+						region = %[2]q
 						cors_rule {
 							allowed_headers = ["*"]
 							allowed_methods = ["PUT", "POST"]
@@ -613,9 +618,9 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName),
+					}`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, resourceName, true),
 					deleteBucketCors(tt, resourceName),
 				),
 				ExpectNonEmptyPlan: true,
@@ -639,6 +644,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
+						region = %[2]q
 						cors_rule {
 							allowed_headers = ["*"]
 							allowed_methods = ["PUT", "POST"]
@@ -646,7 +652,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName),
+					}`, bucketName, objectTestsMainRegion),
 				ExpectError: regexp.MustCompile("error putting S3 CORS"),
 			},
 		},
@@ -728,7 +734,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 	}
 }
 
-func testAccCheckScalewayObjectBucketExistsForceRegion(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketExistsForceRegion(tt *TestTools, n string, shouldBeAllowed bool) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs := state.RootModule().Resources[n]
 		if rs == nil {
@@ -746,7 +752,6 @@ func testAccCheckScalewayObjectBucketExistsForceRegion(tt *TestTools, n string) 
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
-
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no ID is set")
 		}
@@ -754,8 +759,10 @@ func testAccCheckScalewayObjectBucketExistsForceRegion(tt *TestTools, n string) 
 		_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
-
 		if err != nil {
+			if !shouldBeAllowed && isS3Err(err, errCodeForbidden, errCodeForbidden) {
+				return nil
+			}
 			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				return fmt.Errorf("s3 bucket not found")
 			}
@@ -810,13 +817,14 @@ func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
+						region = %[2]q
 						force_destroy = true
 						versioning {
 							enabled = true
 						}
-					}`, bucketName),
+					}`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, resourceName, true),
 					addObjectToBucket(tt, resourceName),
 				),
 			},
@@ -824,7 +832,7 @@ func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
 	})
 }
 
-func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -835,7 +843,8 @@ func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) res
 			return fmt.Errorf("no ID is set")
 		}
 
-		s3Client, err := newS3ClientFromMeta(tt.Meta)
+		bucketRegion := rs.Primary.Attributes["region"]
+		s3Client, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
