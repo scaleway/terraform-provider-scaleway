@@ -94,7 +94,7 @@ resource "scaleway_object_bucket" "main"{
       }
       
       transition {
-        days          = 0
+        days          = 1
         storage_class = "GLACIER"
       }
   }
