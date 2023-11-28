@@ -31,8 +31,8 @@ func testSweepJobDefinition(_ string) error {
 
 		for _, definition := range listJobDefinitions.JobDefinitions {
 			err := jobsAPI.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
-				ID:     definition.ID,
-				Region: region,
+				JobDefinitionID: definition.ID,
+				Region:          region,
 			})
 			if err != nil {
 				l.Debugf("sweeper: error (%s)", err)
@@ -136,8 +136,8 @@ func testAccCheckScalewayJobDefinitionExists(tt *TestTools, n string) resource.T
 		}
 
 		_, err = api.GetJobDefinition(&jobs.GetJobDefinitionRequest{
-			ID:     id,
-			Region: region,
+			JobDefinitionID: id,
+			Region:          region,
 		})
 
 		if err != nil {
@@ -161,8 +161,8 @@ func testAccCheckScalewayJobDefinitionDestroy(tt *TestTools) resource.TestCheckF
 			}
 
 			err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
-				ID:     id,
-				Region: region,
+				JobDefinitionID: id,
+				Region:          region,
 			})
 
 			if err == nil {
