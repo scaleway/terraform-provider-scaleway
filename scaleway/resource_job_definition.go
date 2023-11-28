@@ -119,8 +119,8 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	definition, err := api.GetJobDefinition(&jobs.GetJobDefinitionRequest{
-		ID:     id,
-		Region: region,
+		JobDefinitionID: id,
+		Region:          region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
@@ -151,8 +151,8 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	req := &jobs.UpdateJobDefinitionRequest{
-		Region: region,
-		ID:     id,
+		Region:          region,
+		JobDefinitionID: id,
 	}
 
 	if d.HasChange("name") {
@@ -213,8 +213,8 @@ func resourceScalewayJobDefinitionDelete(ctx context.Context, d *schema.Resource
 	}
 
 	err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
-		Region: region,
-		ID:     id,
+		Region:          region,
+		JobDefinitionID: id,
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
