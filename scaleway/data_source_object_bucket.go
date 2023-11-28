@@ -30,7 +30,17 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	bucket := d.Get("name").(string)
+	regionalID := expandRegionalID(d.Get("name"))
+	bucket := regionalID.ID
+	bucketRegion := regionalID.Region
+
+	if bucketRegion != "" && bucketRegion != region {
+		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		region = bucketRegion
+	}
 
 	input := &s3.HeadBucketInput{
 		Bucket: aws.String(bucket),

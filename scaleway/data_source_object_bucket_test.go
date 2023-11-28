@@ -16,6 +16,8 @@ func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
+	objectBucketTestDefaultRegion := "fr-par" // find a way to make this dynamic and fetch the client's default region
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -31,14 +33,53 @@ func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
 					}
 				}
 
-				data "scaleway_object_bucket" "selected" {
+				data "scaleway_object_bucket" "by-id" {
+					name = scaleway_object_bucket.base-01.id
+				}
+				`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					resource.TestCheckResourceAttr("data.scaleway_object_bucket.by-id", "name", bucketName),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_object_bucket" "base-01" {
+					name = "%s"
+					region = "%s"
+					tags = {
+						foo = "bar"
+					}
+				}
+
+				data "scaleway_object_bucket" "by-name" {
+					name = scaleway_object_bucket.base-01.name
+				}
+				`, bucketName, objectBucketTestDefaultRegion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					resource.TestCheckResourceAttr("data.scaleway_object_bucket.by-name", "name", bucketName),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_object_bucket" "base-01" {
+					name = "%s"
+					region = "%s"
+					tags = {
+						foo = "bar"
+					}
+				}
+
+				data "scaleway_object_bucket" "by-name" {
 					name = scaleway_object_bucket.base-01.name
 				}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
-					resource.TestCheckResourceAttr("data.scaleway_object_bucket.selected", "name", bucketName),
+					resource.TestCheckResourceAttr("data.scaleway_object_bucket.by-name", "name", bucketName),
 				),
+				ExpectError: regexp.MustCompile("failed getting Object Storage bucket"),
 			},
 		},
 	})
@@ -75,7 +116,7 @@ func TestAccScalewayDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 					}
 
 					data "scaleway_object_bucket" "selected" {
-						name = scaleway_object_bucket.base.name
+						name = scaleway_object_bucket.base.id
 						provider = side
 					}
 				`,
@@ -122,7 +163,7 @@ func TestAccScalewayDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 					}
 
 					data "scaleway_object_bucket" "selected" {
-						name = scaleway_object_bucket.base.name
+						name = scaleway_object_bucket.base.id
 						provider = side
 					}
 				`,

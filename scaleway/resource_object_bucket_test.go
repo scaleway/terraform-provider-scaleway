@@ -586,8 +586,8 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 			if !ok {
 				return fmt.Errorf("not found: %s", n)
 			}
-
-			conn, err := newS3ClientFromMeta(tt.Meta)
+			bucketRegion := rs.Primary.Attributes["region"]
+			conn, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion)
 			if err != nil {
 				return err
 			}
@@ -665,7 +665,8 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 
 		rs := s.RootModule().Resources[n]
 		bucketName := rs.Primary.Attributes["name"]
-		s3Client, err := newS3ClientFromMeta(tt.Meta)
+		bucketRegion := rs.Primary.Attributes["region"]
+		s3Client, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -785,8 +786,8 @@ func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
 			if !ok {
 				return fmt.Errorf("not found: %s", n)
 			}
-
-			conn, err := newS3ClientFromMeta(tt.Meta)
+			bucketRegion := rs.Primary.Attributes["region"]
+			conn, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion)
 			if err != nil {
 				return err
 			}
