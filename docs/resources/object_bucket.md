@@ -120,7 +120,7 @@ The following arguments are supported:
 * `tags` - (Optional) A list of tags (key / value) for the bucket.
 
 * ~> **Important:** The Scaleway console does not support `key/value` tags yet, so only the tags' values will be displayed.
-But keep in mind that if you make any change to your bucket's tags using the console, it will overwrite them with the format `value/value`.
+Keep in mind that if you make any change to your bucket's tags using the console, it will overwrite them with the format `value/value`.
 
 * `acl` - (Optional)(Deprecated) The canned ACL you want to apply to the bucket.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
