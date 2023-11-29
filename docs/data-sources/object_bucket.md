@@ -35,7 +35,7 @@ data "scaleway_object_bucket" "selected" {
 
 ## Argument Reference
 
-- `name` - (Required) The bucket name, or its ID (`{region}/{name}`)
+- `name` - (Required) The bucket name, or its terraform's ID (`{region}/{name}`)
 - `object_lock_enabled` - (Optional) Enable object lock on the bucket. Defaults to `false`. Updating this field will force creating a new bucket.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
