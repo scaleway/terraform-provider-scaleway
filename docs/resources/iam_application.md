@@ -20,8 +20,9 @@ resource "scaleway_iam_application" "main" {
 
 The following arguments are supported:
 
-- `name` - .The name of the iam application.
-- `description` - The description of the iam application.
+- `name` - (Optional) The name of the iam application.
+- `description` - (Optional) The description of the iam application.
+- `tags` - (Optional) The tags associated with the application.
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the application is associated with.
 
 ## Attributes Reference

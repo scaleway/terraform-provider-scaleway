@@ -107,6 +107,14 @@ func resourceScalewayIamPolicy() *schema.Resource {
 					},
 				},
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the policy",
+			},
 		},
 	}
 }
@@ -123,6 +131,7 @@ func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData
 		ApplicationID:  expandStringPtr(d.Get("application_id")),
 		NoPrincipal:    expandBoolPtr(getBool(d, "no_principal")),
 		OrganizationID: d.Get("organization_id").(string),
+		Tags:           expandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -151,6 +160,7 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("updated_at", flattenTime(pol.UpdatedAt))
 	_ = d.Set("organization_id", pol.OrganizationID)
 	_ = d.Set("editable", pol.Editable)
+	_ = d.Set("tags", flattenSliceString(pol.Tags))
 
 	if pol.UserID != nil {
 		_ = d.Set("user_id", flattenStringPtr(pol.UserID))
@@ -192,6 +202,10 @@ func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData
 	if d.HasChange("description") {
 		hasUpdated = true
 		req.Description = expandUpdatedStringPtr(d.Get("description"))
+	}
+	if d.HasChange("tags") {
+		hasUpdated = true
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 	if d.HasChange("user_id") {
 		hasUpdated = true

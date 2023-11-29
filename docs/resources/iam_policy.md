@@ -76,8 +76,9 @@ resource "scaleway_iam_policy" "iam_tf_storage_policy" {
 
 The following arguments are supported:
 
-- `name` - .The name of the iam policy.
-- `description` - The description of the iam policy.
+- `name` - (Optional) The name of the iam policy.
+- `description` - (Optional) The description of the iam policy.
+- `tags` - (Optional) The tags associated with the iam policy.
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the policy is associated with.
 - `user_id` - ID of the User the policy will be linked to
 - `group_id` - ID of the Group the policy will be linked to

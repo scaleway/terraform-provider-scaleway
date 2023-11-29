@@ -63,6 +63,8 @@ resource "scaleway_iam_group" "with_users" {
 
 - `description` - (Optional) The description of the IAM group.
 
+- `tags` - (Optional) The tags associated with the group.
+
 - `application_ids` - (Optional) The list of IDs of the applications attached to the group.
 
 - `user_ids` - (Optional) The list of IDs of the users attached to the group.

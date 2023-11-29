@@ -46,6 +46,14 @@ func resourceScalewayIamApplication() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not the application is editable.",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the application",
+			},
 			"organization_id": organizationIDOptionalSchema(),
 		},
 	}
@@ -57,6 +65,7 @@ func resourceScalewayIamApplicationCreate(ctx context.Context, d *schema.Resourc
 		Name:           expandOrGenerateString(d.Get("name"), "application"),
 		Description:    d.Get("description").(string),
 		OrganizationID: d.Get("organization_id").(string),
+		Tags:           expandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -85,6 +94,7 @@ func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("updated_at", flattenTime(app.UpdatedAt))
 	_ = d.Set("organization_id", app.OrganizationID)
 	_ = d.Set("editable", app.Editable)
+	_ = d.Set("tags", flattenSliceString(app.Tags))
 
 	return nil
 }
@@ -104,6 +114,10 @@ func resourceScalewayIamApplicationUpdate(ctx context.Context, d *schema.Resourc
 	}
 	if d.HasChange("description") {
 		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		hasChanged = true
+	}
+	if d.HasChange("tags") {
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
