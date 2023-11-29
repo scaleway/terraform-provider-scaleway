@@ -94,7 +94,7 @@ resource "scaleway_object_bucket" "main"{
       }
       
       transition {
-        days          = 0
+        days          = 1
         storage_class = "GLACIER"
       }
   }
@@ -118,6 +118,10 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the bucket.
 * `tags` - (Optional) A list of tags (key / value) for the bucket.
+
+* ~> **Important:** The Scaleway console does not support `key/value` tags yet, so only the tags' values will be displayed.
+Keep in mind that if you make any change to your bucket's tags using the console, it will overwrite them with the format `value/value`.
+
 * `acl` - (Optional)(Deprecated) The canned ACL you want to apply to the bucket.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
 * `versioning` - (Optional) A state of [versioning](https://docs.aws.amazon.com/AmazonS3/latest/dev/Versioning.html) (documented below)

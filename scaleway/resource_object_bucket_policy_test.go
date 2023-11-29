@@ -82,7 +82,7 @@ func TestAccScalewayObjectBucketPolicy_Basic(t *testing.T) {
 			{
 				Config: tfConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.bucket"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.bucket", true),
 					resource.TestCheckResourceAttrPair("scaleway_object_bucket_policy.bucket", "region", "scaleway_object_bucket.bucket", "region"),
 					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
 				),
@@ -168,7 +168,7 @@ func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 			{
 				Config: tfConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.bucket"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.bucket", true),
 					resource.TestCheckResourceAttrPair("scaleway_object_bucket_policy.bucket", "region", "scaleway_object_bucket.bucket", "region"),
 					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
 				),
