@@ -16,7 +16,7 @@ func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
-	objectBucketTestDefaultRegion := "fr-par" // find a way to make this dynamic and fetch the client's default region
+	objectBucketTestDefaultRegion, _ := tt.Meta.scwClient.GetDefaultRegion()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
