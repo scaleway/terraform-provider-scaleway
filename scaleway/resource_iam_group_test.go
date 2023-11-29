@@ -58,12 +58,16 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 				Config: `
 						resource "scaleway_iam_group" "main_basic" {
 							name = "tf_tests_iam_group_basic"
+							tags = ["tf_tests", "tests"]
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", ""),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.0", "tf_tests"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.1", "tests"),
 				),
 			},
 			{
@@ -71,12 +75,15 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 						resource "scaleway_iam_group" "main_basic" {
 							name = "tf_tests_iam_group_basic"
 							description = "basic description"
+							tags = ["tf_tests"]
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", "basic description"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.0", "tf_tests"),
 				),
 			},
 			{
@@ -84,12 +91,14 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 						resource "scaleway_iam_group" "main_basic" {
 							name = "tf_tests_iam_group_basic_renamed"
 							description = "basic description"
+							tags = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic_renamed"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", "basic description"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "0"),
 				),
 			},
 			{
@@ -97,24 +106,28 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 						resource "scaleway_iam_group" "main_basic" {
 							name = "tf_tests_iam_group_basic_renamed"
 							description = "this is another description"
+							tags = ["tf_tests"]
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic_renamed"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", "this is another description"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.0", "tf_tests"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_group" "main" {
+						resource "scaleway_iam_group" "main_basic" {
 							name = "tf_tests_iam_group_basic_renamed"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main", "name", "tf_tests_iam_group_basic_renamed"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main", "description", ""),
+					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic_renamed"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", ""),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "0"),
 				),
 			},
 		},
