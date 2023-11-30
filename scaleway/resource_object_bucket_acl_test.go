@@ -28,7 +28,6 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						acl = "private"
-						region = %[2]q
 					}
 					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -47,7 +46,6 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						acl = "public-read"
-						region = %[2]q
 					}
 					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -81,7 +79,6 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 				
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
-						region = %[3]q
 						access_control_policy {
 						  	grant {
 								grantee {
@@ -119,7 +116,6 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 				
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
-						region = %[4]q
 						access_control_policy {
 						  	grant {
 								grantee {
@@ -184,7 +180,6 @@ func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
 				
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
-						region = "%[3]s"
 						expected_bucket_owner = "%[2]s"
 						access_control_policy {
 						  grant {
