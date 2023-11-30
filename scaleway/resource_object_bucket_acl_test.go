@@ -22,16 +22,17 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "main" {
 						name = "%s"
-						region = "nl-ams"
+						region = "%s"
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						acl = "private"
-						region = "nl-ams"
+						region = %[2]q
 					}
-					`, testBucketName),
+					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "private"),
 				),
@@ -40,16 +41,17 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "main" {
 						name = "%s"
-						region = "nl-ams"
+						region = "%s"
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						acl = "public-read"
-						region = "nl-ams"
+						region = %[2]q
 					}
-					`, testBucketName),
+					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "public-read"),
 				),
@@ -74,10 +76,12 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "main" {
 						name = "%[1]s"
+						region = "%[3]s"
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
+						region = %[3]q
 						access_control_policy {
 						  	grant {
 								grantee {
@@ -100,7 +104,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 						  	}
 						}
 					}
-					`, testBucketName, ownerID),
+					`, testBucketName, ownerID, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
@@ -110,10 +114,12 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "main" {
 						name = "%[1]s"
+						region = "%[4]s"
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
+						region = %[4]q
 						access_control_policy {
 						  	grant {
 								grantee {
@@ -144,7 +150,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 						  	}
 						}
 					}
-				`, testBucketName, ownerID, ownerIDChild),
+				`, testBucketName, ownerID, ownerIDChild, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
@@ -173,10 +179,12 @@ func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "main" {
 						name = "%[1]s"
+						region = "%[3]s"
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
+						region = "%[3]s"
 						expected_bucket_owner = "%[2]s"
 						access_control_policy {
 						  grant {
@@ -200,8 +208,9 @@ func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
 						  }
 						}
 					}
-					`, testBucketName, ownerID),
+					`, testBucketName, ownerID, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 				),
 			},
