@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -11,7 +12,7 @@ import (
 func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-acl-basic")
+	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-basic")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -26,12 +27,12 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
-						bucket = scaleway_object_bucket.main.name
+						bucket = scaleway_object_bucket.main.id
 						acl = "private"
 					}
 					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "private"),
 				),
@@ -44,12 +45,12 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
-						bucket = scaleway_object_bucket.main.name
+						bucket = scaleway_object_bucket.main.id
 						acl = "public-read"
 					}
 					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "public-read"),
 				),
@@ -61,7 +62,7 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-acl-grantee")
+	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-grantee")
 
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	ownerIDChild := "50ab77d5-56bd-4981-a118-4e0fa5309b59"
@@ -78,7 +79,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
-						bucket = scaleway_object_bucket.main.name
+						bucket = scaleway_object_bucket.main.id
 						access_control_policy {
 						  	grant {
 								grantee {
@@ -103,7 +104,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 					}
 					`, testBucketName, ownerID, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 				),
 			},
@@ -115,7 +116,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
-						bucket = scaleway_object_bucket.main.name
+						bucket = scaleway_object_bucket.main.id
 						access_control_policy {
 						  	grant {
 								grantee {
@@ -148,7 +149,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 					}
 				`, testBucketName, ownerID, ownerIDChild, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 				),
 			},
@@ -164,7 +165,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-acl-grantee-owner")
+	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-owner")
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -179,7 +180,7 @@ func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
 					}
 				
 					resource "scaleway_object_bucket_acl" "main" {
-						bucket = scaleway_object_bucket.main.name
+						bucket = scaleway_object_bucket.main.id
 						expected_bucket_owner = "%[2]s"
 						access_control_policy {
 						  grant {
@@ -205,8 +206,56 @@ func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
 					}
 					`, testBucketName, ownerID, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main"),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayObjectBucketACL_WithBucketName(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-name")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+					}
+				
+					resource "scaleway_object_bucket_acl" "main" {
+						bucket = scaleway_object_bucket.main.name
+						acl = "public-read"
+
+					}
+					`, testBucketName, objectTestsMainRegion),
+				ExpectError: regexp.MustCompile("error putting Object Storage ACL: NoSuchBucket: The specified bucket does not exist"),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+					}
+				
+					resource "scaleway_object_bucket_acl" "main" {
+						bucket = scaleway_object_bucket.main.name
+						acl = "public-read"
+						region = "%[2]s"
+					}
+					`, testBucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "public-read"),
 				),
 			},
 		},
