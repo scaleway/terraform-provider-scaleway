@@ -17,7 +17,7 @@ const (
 	resourceTestName = "scaleway_object_bucket_website_configuration.test"
 )
 
-func TestAccObjectBucketWebsiteConfiguration_basic(t *testing.T) {
+func TestAccScalewayObjectBucketWebsiteConfiguration_Basic(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
@@ -28,12 +28,16 @@ func TestAccObjectBucketWebsiteConfiguration_basic(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckBucketWebsiteConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 			  		resource "scaleway_object_bucket" "test" {
 						name = %[1]q
+						region = %[2]q
 						acl  = "public-read"
 						tags = {
 							TestName = "TestAccSCW_WebsiteConfig_basic"
@@ -46,9 +50,10 @@ func TestAccObjectBucketWebsiteConfiguration_basic(t *testing.T) {
 						  suffix = "index.html"
 						}
 				  	}
-				`, rName),
+				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
@@ -65,7 +70,7 @@ func TestAccObjectBucketWebsiteConfiguration_basic(t *testing.T) {
 	})
 }
 
-func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
+func TestAccScalewayObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
@@ -76,12 +81,16 @@ func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckBucketWebsiteConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 			  		resource "scaleway_object_bucket" "test" {
 						name = %[1]q
+						region = %[2]q
 						acl  = "public-read"
 						tags = {
 							TestName = "TestAccSCW_WebsiteConfig_basic"
@@ -116,9 +125,10 @@ func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 						  suffix = "index.html"
 						}
 				  	}
-				`, rName),
+				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
@@ -136,7 +146,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 	})
 }
 
-func TestAccObjectBucketWebsiteConfiguration_update(t *testing.T) {
+func TestAccScalewayObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
@@ -147,12 +157,16 @@ func TestAccObjectBucketWebsiteConfiguration_update(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckBucketWebsiteConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 			  		resource "scaleway_object_bucket" "test" {
 						name = %[1]q
+						region = %[2]q
 						acl  = "public-read"
 						tags = {
 							TestName = "TestAccSCW_WebsiteConfig_basic"
@@ -165,15 +179,17 @@ func TestAccObjectBucketWebsiteConfiguration_update(t *testing.T) {
 						  suffix = "index.html"
 						}
 				  	}
-				`, rName),
+				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 			  		resource "scaleway_object_bucket" "test" {
 						name = %[1]q
+						region = %[2]q
 						acl  = "public-read"
 						tags = {
 							TestName = "TestAccSCW_WebsiteConfig_basic"
@@ -190,9 +206,10 @@ func TestAccObjectBucketWebsiteConfiguration_update(t *testing.T) {
 							key = "error.html"
 						}
 				  	}
-				`, rName),
+				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
@@ -209,7 +226,7 @@ func TestAccObjectBucketWebsiteConfiguration_update(t *testing.T) {
 	})
 }
 
-func testAccCheckBucketWebsiteConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn, err := newS3ClientFromMeta(tt.Meta)
 		if err != nil {
@@ -246,7 +263,7 @@ func testAccCheckBucketWebsiteConfigurationDestroy(tt *TestTools) resource.TestC
 	}
 }
 
-func testAccCheckBucketWebsiteConfigurationExists(tt *TestTools, resourceName string) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs := s.RootModule().Resources[resourceName]
 		if rs == nil {
