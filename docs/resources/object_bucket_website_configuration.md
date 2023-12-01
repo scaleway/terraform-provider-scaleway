@@ -17,7 +17,7 @@ resource "scaleway_object_bucket" "main" {
 }
 
 resource "scaleway_object_bucket_website_configuration" "main" {
-    bucket = scaleway_object_bucket.main.name
+    bucket = scaleway_object_bucket.main.id
     index_document {
       suffix = "index.html"
     }
@@ -55,7 +55,7 @@ resource "scaleway_object_bucket_policy" "main" {
 }
 
 resource "scaleway_object_bucket_website_configuration" "main" {
-    bucket = scaleway_object_bucket.main.name
+    bucket = scaleway_object_bucket.main.id
     index_document {
       suffix = "index.html"
     }
@@ -69,7 +69,7 @@ The following arguments are supported:
 * `bucket` - (Required, Forces new resource) The name of the bucket.
 * `index_document` - (Required) The name of the index document for the website [detailed below](#index_document).
 * `error_document` - (Optional) The name of the error document for the website [detailed below](#error_document).
-* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
+* `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 ## index_document
 

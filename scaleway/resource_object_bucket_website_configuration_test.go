@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -40,12 +41,12 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Basic(t *testing.T) {
 						region = %[2]q
 						acl  = "public-read"
 						tags = {
-							TestName = "TestAccSCW_WebsiteConfig_basic"
+							TestName = "TestAccScalewayObjectBucketWebsiteConfiguration_Basic"
 						}
 					}
 				
 				  	resource "scaleway_object_bucket_website_configuration" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						index_document {
 						  suffix = "index.html"
 						}
@@ -93,12 +94,12 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 						region = %[2]q
 						acl  = "public-read"
 						tags = {
-							TestName = "TestAccSCW_WebsiteConfig_basic"
+							TestName = "TestAccScalewayObjectBucketWebsiteConfiguration_WithPolicy"
 						}
 					}
 
 					resource "scaleway_object_bucket_policy" "main" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						policy = jsonencode(
 						{
 							"Version" = "2012-10-17",
@@ -120,7 +121,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 					}
 				
 				  	resource "scaleway_object_bucket_website_configuration" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						index_document {
 						  suffix = "index.html"
 						}
@@ -169,12 +170,12 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 						region = %[2]q
 						acl  = "public-read"
 						tags = {
-							TestName = "TestAccSCW_WebsiteConfig_basic"
+							TestName = "TestAccScalewayObjectBucketWebsiteConfiguration_Update"
 						}
 					}
 
 				  	resource "scaleway_object_bucket_website_configuration" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						index_document {
 						  suffix = "index.html"
 						}
@@ -192,12 +193,12 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 						region = %[2]q
 						acl  = "public-read"
 						tags = {
-							TestName = "TestAccSCW_WebsiteConfig_basic"
+							TestName = "TestAccScalewayObjectBucketWebsiteConfiguration_Update"
 						}
 					}
 
 				  	resource "scaleway_object_bucket_website_configuration" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						index_document {
 						  suffix = "index.html"
 						}
@@ -226,6 +227,64 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 	})
 }
 
+func TestAccScalewayObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T) {
+	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
+	resourceName := resourceTestName
+
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+			  		resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						region = %[2]q
+						acl  = "public-read"
+					}
+				
+				  	resource "scaleway_object_bucket_website_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						index_document {
+						  suffix = "index.html"
+						}
+				  	}
+				`, rName, objectTestsMainRegion),
+				ExpectError: regexp.MustCompile("couldn't read bucket: NoSuchBucket: The specified bucket does not exist"),
+			},
+			{
+				Config: fmt.Sprintf(`
+			  		resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						region = %[2]q
+						acl  = "public-read"
+					}
+				
+				  	resource "scaleway_object_bucket_website_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						region = %[2]q
+						index_document {
+						  suffix = "index.html"
+						}
+				  	}
+				`, rName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn, err := newS3ClientFromMeta(tt.Meta)
@@ -238,7 +297,16 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) 
 				continue
 			}
 
-			bucket := expandID(rs.Primary.ID)
+			regionalID := expandRegionalID(rs.Primary.ID)
+			bucket := regionalID.ID
+			bucketRegion := regionalID.Region
+
+			if bucketRegion != "" && bucketRegion.String() != *conn.Config.Region {
+				conn, err = newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion.String())
+				if err != nil {
+					return err
+				}
+			}
 
 			input := &s3.GetBucketWebsiteInput{
 				Bucket: aws.String(bucket),
@@ -284,7 +352,16 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *TestTools, r
 			return fmt.Errorf("resource (%s) ID not set", resourceName)
 		}
 
-		bucket := expandID(rs.Primary.ID)
+		regionalID := expandRegionalID(rs.Primary.ID)
+		bucket := regionalID.ID
+		bucketRegion := regionalID.Region
+
+		if bucketRegion != "" && bucketRegion.String() != *conn.Config.Region {
+			conn, err = newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion.String())
+			if err != nil {
+				return err
+			}
+		}
 
 		input := &s3.GetBucketWebsiteInput{
 			Bucket: aws.String(bucket),
