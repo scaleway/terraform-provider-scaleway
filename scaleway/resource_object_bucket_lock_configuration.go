@@ -25,11 +25,12 @@ func resourceObjectLockConfiguration() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"bucket": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringLenBetween(1, 63),
-				Description:  "The bucket name.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validation.StringLenBetween(1, 63),
+				Description:      "The bucket's name or regional ID.",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"rule": {
 				Type:     schema.TypeList,

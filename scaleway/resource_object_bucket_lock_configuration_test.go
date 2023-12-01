@@ -27,12 +27,16 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayBucketLockConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayBucketLockConfigurationDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "test" {
 						name = %[1]q
+						region = %[2]q
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
@@ -41,12 +45,12 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket_acl" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						acl = "public-read"
 					}
 
 					resource "scaleway_object_bucket_lock_configuration" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						rule {
 							default_retention {
 								mode = "GOVERNANCE"
@@ -54,9 +58,10 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 							}
 						}
 					}
-				`, rName),
+				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
@@ -68,6 +73,7 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "test" {
 						name = %[1]q
+						region = %[2]q
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
@@ -89,9 +95,10 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 							}
 						}
 					}
-				`, rName),
+				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
@@ -119,12 +126,16 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayBucketLockConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayBucketLockConfigurationDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "test" {
 						name = %[1]q
+						region = %[2]q
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
@@ -133,12 +144,12 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket_acl" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						acl = "public-read"
 					}
 
 				  	resource "scaleway_object_bucket_lock_configuration" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						rule {
 							default_retention {
 								mode = "GOVERNANCE"
@@ -146,15 +157,17 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 							}
 						}
 				  	}
-				`, rName),
+				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "test" {
 						name = %[1]q
+						region = %[2]q
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
@@ -163,12 +176,12 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket_acl" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						acl = "public-read"
 					}
 
 				  	resource "scaleway_object_bucket_lock_configuration" "test" {
-						bucket = scaleway_object_bucket.test.name
+						bucket = scaleway_object_bucket.test.id
 						rule {
 							default_retention {
 								mode = "COMPLIANCE"
@@ -176,9 +189,10 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 							}
 						}
 				  	}
-				`, rName),
+				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),

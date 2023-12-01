@@ -42,7 +42,7 @@ You should [contact Scaleway support](https://console.scaleway.com/support/ticke
 
 The following arguments are supported:
 
-- `bucket` - (Required, Forces new resource) The name of the bucket.
+- `bucket` - (Required, Forces new resource) The name of the bucket, or its Terraform ID.
 
 - `rule` - (Optional) Specifies the Object Lock rule for the specified object.
 
@@ -54,7 +54,7 @@ The following arguments are supported:
 
         - `years` - (Optional) The number of years that you want to specify for the default retention period.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 ## Attributes Reference
 
