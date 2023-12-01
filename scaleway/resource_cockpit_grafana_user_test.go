@@ -63,15 +63,12 @@ func testSweepCockpitGrafanaUser(_ string) error {
 	})
 }
 
-const (
-	grafanaTestUsername = "testuser"
-)
-
 func TestAccScalewayCockpitGrafanaUser_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_grafana_user_basic"
+	grafanaTestUsername := "testuserbasic"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -111,6 +108,7 @@ func TestAccScalewayCockpitGrafanaUser_Update(t *testing.T) {
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_grafana_user_update"
+	grafanaTestUsername := "testuserupdate"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -174,6 +172,7 @@ func TestAccScalewayCockpitGrafanaUser_NonExistentCockpit(t *testing.T) {
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_grafana_user_non_existent_cockpit"
+	grafanaTestUsername := "testnonexistentuser"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
