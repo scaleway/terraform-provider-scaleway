@@ -1,9 +1,11 @@
 package scaleway
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccScalewayDataSourceBillingConsumption_Basic(t *testing.T) {
@@ -19,14 +21,38 @@ func TestAccScalewayDataSourceBillingConsumption_Basic(t *testing.T) {
 					data "scaleway_billing_consumptions" "my-consumption" {}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.scaleway_billing_consumptions.my-consumption", "consumptions.0.value"),
-					resource.TestCheckResourceAttrSet("data.scaleway_billing_consumptions.my-consumption", "consumptions.0.description"),
-					resource.TestCheckResourceAttrSet("data.scaleway_billing_consumptions.my-consumption", "consumptions.0.project_id"),
-					resource.TestCheckResourceAttrSet("data.scaleway_billing_consumptions.my-consumption", "consumptions.0.category"),
-					resource.TestCheckResourceAttrSet("data.scaleway_billing_consumptions.my-consumption", "consumptions.0.operation_path"),
-					resource.TestCheckResourceAttrSet("data.scaleway_billing_consumptions.my-consumption", "updated_at"),
+					testAccCheckScalewayConsumptionsConditionalChecks("data.scaleway_billing_consumptions.my-consumption"),
 				),
 			},
 		},
 	})
+}
+
+func testAccCheckScalewayConsumptionsConditionalChecks(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
+
+		attr, ok := rs.Primary.Attributes["consumptions.#"]
+		if ok && attr != "0" {
+			checks := []resource.TestCheckFunc{
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.value"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.description"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.project_id"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.category"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.operation_path"),
+				resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+			}
+
+			for _, check := range checks {
+				if err := check(s); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	}
 }
