@@ -30,8 +30,7 @@ func resourceScalewaySDBSQLDatabase() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				ForceNew:    true,
-				Computed:    true,
-				Optional:    true,
+				Required:    true,
 				Description: "The database name",
 			},
 			"max_cpu": {
@@ -66,7 +65,7 @@ func resourceScalewayServerlessSQLDBDatabaseCreate(ctx context.Context, d *schem
 	database, err := api.CreateDatabase(&serverless_sqldb.CreateDatabaseRequest{
 		Region:       region,
 		ProjectID:    d.Get("project_id").(string),
-		Name:         expandOrGenerateString(d.Get("name").(string), "database"),
+		Name:         d.Get("name").(string),
 		CPUMin:       uint32(d.Get("min_cpu").(int)),
 		CPUMax:       uint32(d.Get("max_cpu").(int)),
 		FromBackupID: nil,
