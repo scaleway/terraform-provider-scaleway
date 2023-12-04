@@ -158,6 +158,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_user":                            resourceScalewayRdbUser(),
 				"scaleway_rdb_read_replica":                    resourceScalewayRdbReadReplica(),
 				"scaleway_redis_cluster":                       resourceScalewayRedisCluster(),
+				"scaleway_sdb_sql_database":                    resourceScalewaySDBSQLDatabase(),
 				"scaleway_object":                              resourceScalewayObject(),
 				"scaleway_object_bucket":                       resourceScalewayObjectBucket(),
 				"scaleway_object_bucket_acl":                   resourceScalewayObjectBucketACL(),
