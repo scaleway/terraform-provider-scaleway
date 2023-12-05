@@ -32,7 +32,7 @@ resource scaleway_iam_application "app" {
   name = "my app"
 }
 
-resource scaleway_iam_policy "db_read_only" {
+resource scaleway_iam_policy "db_access" {
   name = "my policy"
   description = "gives app access to serverless database in project"
   application_id = scaleway_iam_application.app.id
@@ -68,10 +68,10 @@ The following arguments are supported:
 
 - `name` - (Required) Name of the database (e.g. `my-new-database`).
 
-    ~> **Important:** Updates to `name` will recreate the Database.
+    ~> **Important:** Updates to `name` will recreate the database.
 
-- `min_cpu` - (Optional) The minimum number of CPU units for your Database. Defaults to 0.
-- `max_cpu` - (Optional) The maximum number of CPU units for your Database. Defaults to 15.
+- `min_cpu` - (Optional) The minimum number of CPU units for your database. Defaults to 0.
+- `max_cpu` - (Optional) The maximum number of CPU units for your database. Defaults to 15.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
 
