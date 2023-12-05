@@ -276,7 +276,7 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 		req.Arch = instance.Arch(d.Get("architecture").(string))
 	}
 	if d.HasChange("public") {
-		req.Public = *expandBoolPtr(getBool(d, "public"))
+		req.Public = expandBoolPtr(getBool(d, "public"))
 	}
 	req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 
@@ -293,31 +293,20 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		req.ExtraVolumes = expandInstanceImageExtraVolumesTemplates(snapResponses)
+		req.ExtraVolumes = expandInstanceImageExtraVolumesUpdateTemplates(snapResponses)
 	} else {
-		volTemplate := map[string]*instance.VolumeTemplate{}
+		volTemplate := map[string]*instance.VolumeImageUpdateTemplate{}
 		for key, vol := range image.Image.ExtraVolumes {
-			volTemplate[key] = &instance.VolumeTemplate{
-				ID:         vol.ID,
-				Name:       vol.Name,
-				Size:       vol.Size,
-				VolumeType: vol.VolumeType,
+			volTemplate[key] = &instance.VolumeImageUpdateTemplate{
+				ID: vol.ID,
 			}
 		}
 		req.ExtraVolumes = volTemplate
 	}
 
-	// Fill in computed fields
-	req.FromServer = image.Image.FromServer
-	req.CreationDate = image.Image.CreationDate
-	req.ModificationDate = image.Image.ModificationDate
-
 	// Ensure that no field is empty in request
 	if req.Name == nil {
 		req.Name = &image.Image.Name
-	}
-	if req.RootVolume == nil {
-		req.RootVolume = image.Image.RootVolume
 	}
 	if req.Arch == "" {
 		req.Arch = image.Image.Arch

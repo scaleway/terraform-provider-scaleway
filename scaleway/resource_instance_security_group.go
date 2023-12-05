@@ -265,8 +265,8 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 		SecurityGroupID:       ID,
 		Stateful:              scw.BoolPtr(d.Get("stateful").(bool)),
 		Description:           expandStringPtr(description),
-		InboundDefaultPolicy:  &inboundDefaultPolicy,
-		OutboundDefaultPolicy: &outboundDefaultPolicy,
+		InboundDefaultPolicy:  inboundDefaultPolicy,
+		OutboundDefaultPolicy: outboundDefaultPolicy,
 		Tags:                  scw.StringsPtr([]string{}),
 	}
 
