@@ -3,9 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -175,25 +173,11 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 		input.AccessControlPolicy = expandBucketACLAccessControlPolicy(v.([]interface{}))
 	}
 
-	if os.Getenv("TF_ACC") == "1" {
-		out, err := conn.PutBucketAclWithContext(ctx, input)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %s", err))
-		}
-		tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
-	} else {
-		out, err := retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.PutBucketAclOutput]{
-			Timeout:  d.Timeout(schema.TimeoutCreate),
-			Interval: 5 * time.Second,
-			Function: func() (*s3.PutBucketAclOutput, error) {
-				return conn.PutBucketAclWithContext(ctx, input)
-			},
-		})
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %s", err))
-		}
-		tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
+	out, err := conn.PutBucketAclWithContext(ctx, input)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %s", err))
 	}
+	tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
 
 	d.SetId(BucketACLCreateResourceID(region, bucket, acl))
 
