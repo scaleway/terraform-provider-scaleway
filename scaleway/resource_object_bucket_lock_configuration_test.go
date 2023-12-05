@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -137,7 +138,7 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 						name = %[1]q
 						region = %[2]q
 						tags = {
-							TestName = "TestAccSCW_LockConfig_basic"
+							TestName = "TestAccSCW_LockConfig_update"
 						}
 
 						object_lock_enabled = true
@@ -209,19 +210,103 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 	})
 }
 
+func TestAccScalewayObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
+	rName := sdkacctest.RandomWithPrefix(LockResourcePrefix)
+	resourceName := lockResourceTestName
+
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayBucketLockConfigurationDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						region = %[2]q
+						tags = {
+							TestName = "TestAccSCW_LockConfig_WithBucketName"
+						}
+
+						object_lock_enabled = true
+					}
+
+					resource "scaleway_object_bucket_acl" "test" {
+						bucket = scaleway_object_bucket.test.id
+						acl = "public-read"
+					}
+
+					resource "scaleway_object_bucket_lock_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						rule {
+							default_retention {
+								mode = "GOVERNANCE"
+								days = 1
+							}
+						}
+					}
+				`, rName, objectTestsMainRegion),
+				ExpectError: regexp.MustCompile("NoSuchBucket: The specified bucket does not exist"),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						region = %[2]q
+						tags = {
+							TestName = "TestAccSCW_LockConfig_WithBucketName"
+						}
+
+						object_lock_enabled = true
+					}
+
+					resource "scaleway_object_bucket_acl" "test" {
+						bucket = scaleway_object_bucket.test.id
+						acl = "public-read"
+					}
+
+					resource "scaleway_object_bucket_lock_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						region = %[2]q
+						rule {
+							default_retention {
+								mode = "GOVERNANCE"
+								days = 1
+							}
+						}
+					}
+				`, rName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLockConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayBucketLockConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn, err := newS3ClientFromMeta(tt.Meta)
-		if err != nil {
-			return err
-		}
-
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_object_bucket_lock_configuration" {
 				continue
 			}
 
-			bucket := expandID(rs.Primary.ID)
+			regionalID := expandRegionalID(rs.Primary.ID)
+			bucketRegion := regionalID.Region
+			bucket := regionalID.ID
+			conn, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion.String())
+			if err != nil {
+				return err
+			}
 
 			input := &s3.GetObjectLockConfigurationInput{
 				Bucket: aws.String(bucket),
@@ -253,11 +338,6 @@ func testAccCheckBucketLockConfigurationExists(tt *TestTools, resourceName strin
 			return fmt.Errorf("resource not found")
 		}
 
-		conn, err := newS3ClientFromMeta(tt.Meta)
-		if err != nil {
-			return err
-		}
-
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("not found: %s", resourceName)
@@ -267,7 +347,13 @@ func testAccCheckBucketLockConfigurationExists(tt *TestTools, resourceName strin
 			return fmt.Errorf("resource (%s) ID not set", resourceName)
 		}
 
-		bucket := expandID(rs.Primary.ID)
+		regionalID := expandRegionalID(rs.Primary.ID)
+		bucketRegion := regionalID.Region
+		bucket := regionalID.ID
+		conn, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion.String())
+		if err != nil {
+			return err
+		}
 
 		input := &s3.GetObjectLockConfigurationInput{
 			Bucket: aws.String(bucket),

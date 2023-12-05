@@ -31,7 +31,7 @@ const (
 
 	maxObjectVersionDeletionWorkers = 8
 
-	objectTestsMainRegion      = "fr-par"
+	objectTestsMainRegion      = "nl-ams"
 	objectTestsSecondaryRegion = "pl-waw"
 
 	errCodeForbidden = "Forbidden"
