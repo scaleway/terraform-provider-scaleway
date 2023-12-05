@@ -21,7 +21,8 @@ resource scaleway_sdb_sql_database "database" {
 
 ### With IAM Token
 
-This example create an application in IAM and a token to use it to connect to the DATABASE
+This example creates an [IAM application](https://www.scaleway.com/en/docs/identity-and-access-management/iam/concepts/#application) and a secret key used to connect to the DATABASE.
+For more information, see [How to connect to a Serverless SQL Database](https://www.scaleway.com/en/docs/serverless/sql-databases/how-to/connect-to-a-database/)
 
 ```hcl
 data scaleway_account_project "default" {
