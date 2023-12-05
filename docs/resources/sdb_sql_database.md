@@ -84,7 +84,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-RDB Database can be imported using the `{region}/{id}`, e.g.
+Serverless SQL Database can be imported using the `{region}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_sdb_sql_database.database fr-par/11111111-1111-1111-1111-111111111111
