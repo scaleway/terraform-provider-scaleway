@@ -108,11 +108,6 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		Bucket: scw.StringPtr(bucket),
 	})
 	if err != nil {
-		//if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
-		//	tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
-		//	d.SetId("")
-		//	return nil
-		//}
 		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
 	}
 
