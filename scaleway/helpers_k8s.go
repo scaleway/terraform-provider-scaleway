@@ -124,7 +124,10 @@ func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Regi
 		return err
 	}
 
-	return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusDeleted)
+	if cluster.Status != k8s.ClusterStatusDeleted {
+		return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusDeleted)
+	}
+	return nil
 }
 
 func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string, timeout time.Duration) (*k8s.Pool, error) {
