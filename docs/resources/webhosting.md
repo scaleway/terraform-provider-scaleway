@@ -1,5 +1,5 @@
 ---
-subcategory: "Webhosting"
+subcategory: "Web hosting"
 page_title: "Scaleway: scaleway_webhosting"
 ---
 
