@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -856,13 +855,7 @@ func testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt *TestTools,
 			Bucket: expandStringPtr(bucketRegionalID.ID),
 		}
 
-		_, err = retryWhenAWSErrCodeEquals(context.Background(), []string{ErrCodeNoSuchLifecycleConfiguration}, &RetryWhenConfig[*s3.GetBucketLifecycleConfigurationOutput]{
-			Timeout:  defaultObjectBucketTimeout,
-			Interval: 5 * time.Second,
-			Function: func() (*s3.GetBucketLifecycleConfigurationOutput, error) {
-				return s3Client.GetBucketLifecycleConfiguration(input)
-			},
-		})
+		_, err = s3Client.GetBucketLifecycleConfiguration(input)
 		if err != nil {
 			if err == ErrRetryWhenTimeout {
 				return fmt.Errorf("object Storage Bucket Replication Configuration for bucket (%s) not found", rs.Primary.ID)
