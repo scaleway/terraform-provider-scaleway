@@ -188,7 +188,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 			"disable_public_endpoint": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Description: "Whether the instance should have a public endpoint if it has a Private Network attached",
 			},
 			// Computed
