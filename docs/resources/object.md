@@ -16,7 +16,7 @@ resource "scaleway_object_bucket" "some_bucket" {
 }
 
 resource scaleway_object "some_file" {
-  bucket = scaleway_object_bucket.some_bucket.name
+  bucket = scaleway_object_bucket.some_bucket.id
   key = "object_path"
   
   file = "myfile"
@@ -29,7 +29,7 @@ resource scaleway_object "some_file" {
 
 The following arguments are supported:
 
-* `bucket` - (Required) The name of the bucket.
+* `bucket` - (Required) The name of the bucket, or its Terraform ID.
 * `key` - (Required) The path of the object.
 * `file` - (Optional) The name of the file to upload, defaults to an empty file. Only one of `file`, `content` or `content_base64` can be defined.
 * `content` - (Optional) The content of the file to upload. Only one of `file`, `content` or `content_base64` can be defined.
@@ -39,7 +39,7 @@ The following arguments are supported:
 * `visibility` - (Optional) Visibility of the object, `public-read` or `private`
 * `metadata` - (Optional) Map of metadata used for the object, keys must be lowercase
 * `tags` - (Optional) Map of tags
-* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
+* `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 ## Attributes Reference
 

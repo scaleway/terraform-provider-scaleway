@@ -33,9 +33,10 @@ func resourceScalewayObject() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"bucket": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the bucket",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The bucket's name or regional ID.",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"key": {
 				Type:        schema.TypeString,
@@ -113,7 +114,18 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
-	bucket := d.Get("bucket").(string)
+	regionalID := expandRegionalID(d.Get("bucket"))
+	bucket := regionalID.ID
+	bucketRegion := regionalID.Region
+
+	if bucketRegion != "" && bucketRegion != region {
+		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		region = bucketRegion
+	}
+
 	key := d.Get("key").(string)
 
 	req := &s3.PutObjectInput{
@@ -177,10 +189,13 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
 
+	bucketUpdated := expandRegionalID(d.Get("bucket")).ID
+	keyUpdated := d.Get("key").(string)
+
 	if d.HasChanges("file", "hash") {
 		req := &s3.PutObjectInput{
-			Bucket:       expandStringPtr(d.Get("bucket")),
-			Key:          expandStringPtr(d.Get("key")),
+			Bucket:       expandStringPtr(bucketUpdated),
+			Key:          expandStringPtr(keyUpdated),
 			StorageClass: expandStringPtr(d.Get("storage_class")),
 			Metadata:     expandMapStringStringPtr(d.Get("metadata")),
 			ACL:          expandStringPtr(d.Get("visibility").(string)),
@@ -198,8 +213,8 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 		_, err = s3Client.PutObjectWithContext(ctx, req)
 	} else {
 		_, err = s3Client.CopyObjectWithContext(ctx, &s3.CopyObjectInput{
-			Bucket:       expandStringPtr(d.Get("bucket")),
-			Key:          expandStringPtr(d.Get("key")),
+			Bucket:       expandStringPtr(bucketUpdated),
+			Key:          expandStringPtr(keyUpdated),
 			StorageClass: expandStringPtr(d.Get("storage_class")),
 			CopySource:   scw.StringPtr(fmt.Sprintf("%s/%s", bucket, key)),
 			Metadata:     expandMapStringStringPtr(d.Get("metadata")),
@@ -222,7 +237,7 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("tags") {
 		_, err := s3Client.PutObjectTaggingWithContext(ctx, &s3.PutObjectTaggingInput{
-			Bucket: expandStringPtr(d.Get("bucket")),
+			Bucket: expandStringPtr(bucketUpdated),
 			Key:    expandStringPtr(key),
 			Tagging: &s3.Tagging{
 				TagSet: expandObjectBucketTags(d.Get("tags")),
@@ -233,7 +248,7 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	d.SetId(newRegionalIDString(region, objectID(d.Get("bucket").(string), d.Get("key").(string))))
+	d.SetId(newRegionalIDString(region, objectID(bucketUpdated, keyUpdated)))
 
 	return resourceScalewayObjectCreate(ctx, d, meta)
 }
@@ -256,7 +271,7 @@ func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	_ = d.Set("region", region)
-	_ = d.Set("bucket", bucket)
+	_ = d.Set("bucket", newRegionalIDString(region, bucket))
 	_ = d.Set("key", key)
 
 	for k, v := range obj.Metadata {
