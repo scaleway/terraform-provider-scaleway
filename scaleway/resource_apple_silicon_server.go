@@ -38,7 +38,8 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
-					AppleSiliconM1Type,
+					AppleSiliconTypeM1M,
+					AppleSiliconTypeM2L,
 				}, false),
 			},
 			// Computed

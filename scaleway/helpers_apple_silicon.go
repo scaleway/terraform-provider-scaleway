@@ -15,7 +15,8 @@ const (
 )
 
 const (
-	AppleSiliconM1Type = "M1-M"
+	AppleSiliconTypeM1M = "M1-M"
+	AppleSiliconTypeM2L = "M2-L"
 )
 
 // asAPIWithZone returns a new apple silicon API and the zone
