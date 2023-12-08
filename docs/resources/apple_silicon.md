@@ -43,8 +43,7 @@ In addition to all above arguments, the following attributes are exported:
 
 ~> **Important:** Apple Silicon servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `state` - The state of the server. Check the possible values on
-  our [sdk](https://github.com/scaleway/scaleway-sdk-go/blob/master/api/applesilicon/v1alpha1/applesilicon_sdk.go#L103).
+- `state` - The state of the server.
 - `ip` - IPv4 address of the server (IPv4 address).
 - `vnc_url` - URL of the VNC.
 - `created_at` - The date and time of the creation of the Apple Silicon server.
@@ -57,5 +56,5 @@ In addition to all above arguments, the following attributes are exported:
 Instance servers can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_apple_silicon.server fr-par-1/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_apple_silicon_server.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```
