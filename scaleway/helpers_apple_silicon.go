@@ -14,11 +14,6 @@ const (
 	defaultAppleSiliconServerRetryInterval = 5 * time.Second
 )
 
-const (
-	AppleSiliconTypeM1M = "M1-M"
-	AppleSiliconTypeM2L = "M2-L"
-)
-
 // asAPIWithZone returns a new apple silicon API and the zone
 func asAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, scw.Zone, error) {
 	meta := m.(*Meta)
