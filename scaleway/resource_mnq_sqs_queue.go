@@ -28,7 +28,7 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultMNQQueueTimeout),
 			Delete:  schema.DefaultTimeout(defaultMNQQueueTimeout),
 			Default: schema.DefaultTimeout(defaultMNQQueueTimeout),
-		}, SchemaVersion: 0,
+		}, SchemaVersion: 1,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:          schema.TypeString,
@@ -46,7 +46,7 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 				Description:   "Creates a unique name beginning with the specified prefix. Conflicts with name.",
 				ConflictsWith: []string{"name"},
 			},
-			"endpoint": {
+			"sqs_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "http://sqs-sns.mnq.{region}.scw.cloud",
@@ -115,6 +115,13 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 			},
 		},
 		CustomizeDiff: resourceMNQQueueCustomizeDiff,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    resourceMNQSQSQueueResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourceMNQSQSQueueStateUpgradeV0,
+			},
+		},
 	}
 }
 
