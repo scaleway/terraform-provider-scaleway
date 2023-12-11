@@ -124,16 +124,6 @@ func splitNATSJWTAndSeed(credentials string) (string, string, error) {
 
 const SQSFIFOQueueNameSuffix = ".fifo"
 
-// SQSAttributesToResourceMap_alpha : Deprecated, remove with mnq v1alpha1
-var SQSAttributesToResourceMap_alpha = map[string]string{ //nolint: revive,stylecheck
-	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
-	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
-	sqs.QueueAttributeNameFifoQueue:                     "sqs.0.fifo_queue",
-	sqs.QueueAttributeNameContentBasedDeduplication:     "sqs.0.content_based_deduplication",
-	sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds: "sqs.0.receive_wait_time_seconds",
-	sqs.QueueAttributeNameVisibilityTimeout:             "sqs.0.visibility_timeout_seconds",
-}
-
 var SQSAttributesToResourceMap = map[string]string{
 	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
 	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
@@ -147,7 +137,7 @@ var SQSAttributesToResourceMap = map[string]string{
 func getSQSAttributeNames() []*string {
 	var attributeNames []*string
 
-	for attribute := range SQSAttributesToResourceMap_alpha {
+	for attribute := range SQSAttributesToResourceMap {
 		attributeNames = append(attributeNames, aws.String(attribute))
 	}
 

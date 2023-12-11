@@ -56,7 +56,7 @@ func TestAccScalewayMNQSNS_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayMNQSNSTopicDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayMNQSNSDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -105,7 +105,7 @@ func testAccCheckScalewayMNQSNSExists(tt *TestTools, n string) resource.TestChec
 	}
 }
 
-func testAccCheckScalewayMNQSNSTopicDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayMNQSNSDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sns" {
