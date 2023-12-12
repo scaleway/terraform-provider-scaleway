@@ -45,7 +45,7 @@ func TestAccScalewayObject_Basic(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
@@ -65,7 +65,7 @@ func TestAccScalewayObject_Basic(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
@@ -85,7 +85,7 @@ func TestAccScalewayObject_Basic(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
@@ -125,7 +125,7 @@ func TestAccScalewayObject_Hash(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
@@ -146,7 +146,7 @@ func TestAccScalewayObject_Hash(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
@@ -185,7 +185,7 @@ func TestAccScalewayObject_Move(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file")),
 			},
 			{
@@ -204,7 +204,7 @@ func TestAccScalewayObject_Move(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file")),
 			},
 		},
@@ -244,7 +244,7 @@ func TestAccScalewayObject_StorageClass(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "storage_class", "ONEZONE_IA"),
 				),
@@ -267,7 +267,7 @@ func TestAccScalewayObject_StorageClass(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "storage_class", "STANDARD"),
 				),
@@ -311,7 +311,7 @@ func TestAccScalewayObject_Metadata(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "metadata.key", "value"),
 				),
@@ -337,7 +337,7 @@ func TestAccScalewayObject_Metadata(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "metadata.key", "other_value"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "metadata.other_key", "VALUE"),
@@ -379,7 +379,7 @@ func TestAccScalewayObject_Tags(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "tags.key", "value"),
 				),
@@ -402,7 +402,7 @@ func TestAccScalewayObject_Tags(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "tags.key", "other_value"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "tags.other_key", "VALUE"),
@@ -442,7 +442,7 @@ func TestAccScalewayObject_Visibility(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "visibility", "public-read"),
 				),
@@ -462,7 +462,7 @@ func TestAccScalewayObject_Visibility(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					resource.TestCheckResourceAttr("scaleway_object.file", "visibility", "private"),
 				),
@@ -501,7 +501,7 @@ func TestAccScalewayObject_State(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
@@ -528,7 +528,7 @@ func TestAccScalewayObject_State(t *testing.T) {
 				ResourceName:  "scaleway_object.file_imported",
 				ImportStateId: fmt.Sprintf("%s/%s/myfile", objectTestsMainRegion, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file_imported"),
 					resource.TestCheckResourceAttrPair("scaleway_object.file_imported", "id", "scaleway_object.file", "id"),
@@ -571,7 +571,7 @@ func TestAccScalewayObject_ByContent(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion, fileContentStep1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.by-content"),
 					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", fileContentStep1),
 				),
@@ -590,7 +590,7 @@ func TestAccScalewayObject_ByContent(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion, fileContentStep2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.by-content"),
 					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", fileContentStep2),
 				),
@@ -631,7 +631,7 @@ func TestAccScalewayObject_ByContentBase64(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion, fileContentStep1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.by-content-base64"),
 					resource.TestCheckResourceAttr("scaleway_object.by-content-base64", "content_base64", fileEncodedStep1),
 				),
@@ -650,7 +650,7 @@ func TestAccScalewayObject_ByContentBase64(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion, fileContentStep2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.by-content-base64"),
 					resource.TestCheckResourceAttr("scaleway_object.by-content-base64", "content_base64", fileEncodedStep2),
 				),
@@ -723,7 +723,7 @@ func TestAccScalewayObject_WithBucketName(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
@@ -743,7 +743,7 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 		bucketRegion := regionalID.Region.String()
 		bucketName := regionalID.ID
 
-		s3Client, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion)
+		s3Client, err := newS3ClientFromMeta(tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -774,18 +774,20 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 
 func testAccCheckScalewayObjectDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		s3Client, err := newS3ClientFromMeta(tt.Meta)
-		if err != nil {
-			return err
-		}
-
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway" {
 				continue
 			}
 
-			bucketName := rs.Primary.Attributes["bucket"]
+			regionalID := expandRegionalID(rs.Primary.Attributes["bucket"])
+			bucketRegion := regionalID.Region.String()
+			bucketName := regionalID.ID
 			key := rs.Primary.Attributes["key"]
+
+			s3Client, err := newS3ClientFromMeta(tt.Meta, bucketRegion)
+			if err != nil {
+				return err
+			}
 
 			_, err = s3Client.GetObject(&s3.GetObjectInput{
 				Bucket: scw.StringPtr(bucketName),

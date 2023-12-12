@@ -62,7 +62,7 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
@@ -99,7 +99,7 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
@@ -161,7 +161,7 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 				),
 			},
 			{
@@ -193,7 +193,7 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
@@ -285,7 +285,7 @@ func TestAccScalewayObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 				),
 			},
@@ -303,7 +303,7 @@ func testAccCheckScalewayBucketLockConfigurationDestroy(tt *TestTools) resource.
 			regionalID := expandRegionalID(rs.Primary.ID)
 			bucketRegion := regionalID.Region
 			bucket := regionalID.ID
-			conn, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion.String())
+			conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
 			if err != nil {
 				return err
 			}
@@ -350,7 +350,7 @@ func testAccCheckBucketLockConfigurationExists(tt *TestTools, resourceName strin
 		regionalID := expandRegionalID(rs.Primary.ID)
 		bucketRegion := regionalID.Region
 		bucket := regionalID.ID
-		conn, err := newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion.String())
+		conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
 		if err != nil {
 			return err
 		}

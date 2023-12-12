@@ -58,8 +58,7 @@ func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (
 	return s3.New(s), nil
 }
 
-func newS3ClientFromMeta(meta *Meta) (*s3.S3, error) {
-	region, _ := meta.scwClient.GetDefaultRegion()
+func newS3ClientFromMeta(meta *Meta, region string) (*s3.S3, error) {
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
 
@@ -68,16 +67,9 @@ func newS3ClientFromMeta(meta *Meta) (*s3.S3, error) {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 
-	return newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
-}
-
-func newS3ClientFromMetaForceRegion(meta *Meta, region string) (*s3.S3, error) {
-	accessKey, _ := meta.scwClient.GetAccessKey()
-	secretKey, _ := meta.scwClient.GetSecretKey()
-
-	projectID, _ := meta.scwClient.GetDefaultProjectID()
-	if projectID != "" {
-		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	if region == "" {
+		defaultRegion, _ := meta.scwClient.GetDefaultRegion()
+		region = defaultRegion.String()
 	}
 
 	return newS3Client(meta.httpClient, region, accessKey, secretKey)
