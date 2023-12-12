@@ -18,8 +18,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -589,4 +591,32 @@ func normalizeOwnerID(id *string) *string {
 	}
 
 	return &tab[0]
+}
+
+func addErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, awsResourceNotFoundCode string) (bool, bool) {
+	switch {
+	case isS3Err(err, s3.ErrCodeNoSuchBucket, ""):
+		*diags = append(*diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Bucket not found",
+			Detail:   "Got 404 error while reading bucket, removing from state",
+		})
+		return false, false
+	case isS3Err(err, awsResourceNotFoundCode, ""):
+		return true, false
+	case isS3Err(err, ErrCodeAccessDenied, ""):
+		*diags = append(*diags, diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       fmt.Sprintf("Cannot read bucket %s: Forbidden", resource),
+			Detail:        fmt.Sprintf("Got 403 error while reading bucket %s, please check your IAM permissions and your bucket policy", resource),
+			AttributePath: cty.GetAttrPath(resource),
+		})
+		return true, true
+	default:
+		*diags = append(*diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Errorf("couldn't read bucket %s: %w", resource, err).Error(),
+		})
+		return true, true
+	}
 }
