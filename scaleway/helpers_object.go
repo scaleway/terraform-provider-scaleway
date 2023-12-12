@@ -402,9 +402,9 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 			})
 		}
 
-		errors := pool.CloseAndWait()
-		if len(errors) > 0 {
-			globalErr = multierror.Append(nil, errors...)
+		errs := pool.CloseAndWait()
+		if len(errs) > 0 {
+			globalErr = multierror.Append(nil, errs...)
 			return false
 		}
 
@@ -435,9 +435,9 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 			})
 		}
 
-		errors := pool.CloseAndWait()
-		if len(errors) > 0 {
-			globalErr = multierror.Append(nil, errors...)
+		errs := pool.CloseAndWait()
+		if len(errs) > 0 {
+			globalErr = multierror.Append(nil, errs...)
 			return false
 		}
 
