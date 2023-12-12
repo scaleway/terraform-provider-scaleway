@@ -53,7 +53,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Basic(t *testing.T) {
 				  	}
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
@@ -128,7 +128,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 				  	}
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
@@ -182,7 +182,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 				  	}
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 				),
 			},
@@ -209,7 +209,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 				  	}
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
@@ -277,7 +277,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T
 				  	}
 				`, rName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.test", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.test", true),
 					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 				),
 			},
@@ -287,11 +287,6 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T
 
 func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn, err := newS3ClientFromMeta(tt.Meta)
-		if err != nil {
-			return err
-		}
-
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_object_bucket_website_configuration" {
 				continue
@@ -301,11 +296,9 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) 
 			bucket := regionalID.ID
 			bucketRegion := regionalID.Region
 
-			if bucketRegion != "" && bucketRegion.String() != *conn.Config.Region {
-				conn, err = newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion.String())
-				if err != nil {
-					return err
-				}
+			conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
+			if err != nil {
+				return err
 			}
 
 			input := &s3.GetBucketWebsiteInput{
@@ -338,11 +331,6 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *TestTools, r
 			return fmt.Errorf("resource not found")
 		}
 
-		conn, err := newS3ClientFromMeta(tt.Meta)
-		if err != nil {
-			return err
-		}
-
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("not found: %s", resourceName)
@@ -356,11 +344,9 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *TestTools, r
 		bucket := regionalID.ID
 		bucketRegion := regionalID.Region
 
-		if bucketRegion != "" && bucketRegion.String() != *conn.Config.Region {
-			conn, err = newS3ClientFromMetaForceRegion(tt.Meta, bucketRegion.String())
-			if err != nil {
-				return err
-			}
+		conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
+		if err != nil {
+			return err
 		}
 
 		input := &s3.GetBucketWebsiteInput{

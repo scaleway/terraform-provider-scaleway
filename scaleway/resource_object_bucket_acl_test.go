@@ -32,7 +32,7 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 					}
 					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "private"),
 				),
@@ -50,7 +50,7 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 					}
 					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "public-read"),
 				),
@@ -104,7 +104,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 					}
 					`, testBucketName, ownerID, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 				),
 			},
@@ -149,7 +149,7 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 					}
 				`, testBucketName, ownerID, ownerIDChild, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 				),
 			},
@@ -206,7 +206,7 @@ func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
 					}
 					`, testBucketName, ownerID, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 				),
 			},
@@ -253,7 +253,7 @@ func TestAccScalewayObjectBucketACL_WithBucketName(t *testing.T) {
 					}
 					`, testBucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "public-read"),
 				),
