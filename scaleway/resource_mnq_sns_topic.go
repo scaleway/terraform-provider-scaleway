@@ -134,7 +134,7 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, region, err := SNSClientWithRegion(d, meta)
+	snsClient, _, err := SNSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,7 +159,7 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("region", region)
 
 	for k, v := range schemaAttributes {
-		_ = d.Set(k, v)
+		_ = d.Set(k, v) // lintignore: R001
 	}
 
 	return nil

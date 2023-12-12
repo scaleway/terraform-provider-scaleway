@@ -97,7 +97,7 @@ func resourceMNQSQSQueueResourceV0() *schema.Resource {
 	}
 }
 
-func resourceMNQSQSQueueStateUpgradeV0(_ context.Context, rawState map[string]any, meta any) (map[string]any, error) {
+func resourceMNQSQSQueueStateUpgradeV0(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
 	rawState["sqs_endpoint"] = rawState["endpoint"]
 
 	return rawState, nil
