@@ -128,7 +128,7 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("topic id is nil on creation")
 	}
 
-	d.SetId(composeMNQQueueID(region, projectID, topicName))
+	d.SetId(composeMNQID(region, projectID, topicName))
 
 	return resourceScalewayMNQSNSTopicRead(ctx, d, meta)
 }
@@ -139,13 +139,13 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQQueueID(d.Id())
+	region, projectID, topicName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
 	topicAttributes, err := snsClient.GetTopicAttributesWithContext(ctx, &sns.GetTopicAttributesInput{
-		TopicArn: scw.StringPtr(buildSNSARN(region.String(), projectID, topicName)),
+		TopicArn: scw.StringPtr(composeSNSARN(region.String(), projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -171,12 +171,12 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQQueueID(d.Id())
+	region, projectID, topicName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
-	topicARN := buildSNSARN(region.String(), projectID, topicName)
+	topicARN := composeSNSARN(region.String(), projectID, topicName)
 
 	changedAttributes := []string(nil)
 	for attributeName, schemaName := range SNSTopicAttributesToResourceMap {
@@ -218,13 +218,13 @@ func resourceScalewayMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQQueueID(d.Id())
+	region, projectID, topicName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = snsClient.DeleteTopicWithContext(ctx, &sns.DeleteTopicInput{
-		TopicArn: scw.StringPtr(buildSNSARN(region.String(), projectID, topicName)),
+		TopicArn: scw.StringPtr(composeSNSARN(region.String(), projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)

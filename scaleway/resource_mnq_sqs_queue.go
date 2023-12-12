@@ -177,7 +177,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to create SQS Queue: %s", err)
 	}
 
-	d.SetId(composeMNQQueueID(region, projectID, queueName))
+	d.SetId(composeMNQID(region, projectID, queueName))
 
 	return resourceScalewayMNQSQSQueueRead(ctx, d, meta)
 }
@@ -188,7 +188,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	region, projectID, queueName, err := decomposeMNQQueueID(d.Id())
+	region, projectID, queueName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,7 +237,7 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -277,7 +277,7 @@ func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

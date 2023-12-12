@@ -295,21 +295,3 @@ func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ 
 
 	return nil
 }
-
-func composeMNQQueueID(region scw.Region, namespaceID string, queueName string) string {
-	return fmt.Sprintf("%s/%s/%s", region, namespaceID, queueName)
-}
-
-func decomposeMNQQueueID(id string) (region scw.Region, namespaceID string, name string, err error) {
-	parts := strings.Split(id, "/")
-	if len(parts) != 3 {
-		return "", "", "", fmt.Errorf("invalid ID format: %q", id)
-	}
-
-	region, err = scw.ParseRegion(parts[0])
-	if err != nil {
-		return "", "", "", err
-	}
-
-	return region, parts[1], parts[2], nil
-}

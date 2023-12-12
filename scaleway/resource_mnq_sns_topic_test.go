@@ -59,7 +59,7 @@ func testAccCheckScalewayMNQSNSTopicExists(tt *TestTools, n string) resource.Tes
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		region, projectID, topicName, err := decomposeMNQQueueID(rs.Primary.ID)
+		region, projectID, topicName, err := decomposeMNQID(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("failed to parse id: %w", err)
 		}
@@ -70,7 +70,7 @@ func testAccCheckScalewayMNQSNSTopicExists(tt *TestTools, n string) resource.Tes
 		}
 
 		_, err = snsClient.GetTopicAttributes(&sns.GetTopicAttributesInput{
-			TopicArn: scw.StringPtr(buildSNSARN(region.String(), projectID, topicName)),
+			TopicArn: scw.StringPtr(composeSNSARN(region.String(), projectID, topicName)),
 		})
 		if err != nil {
 			return err
@@ -87,7 +87,7 @@ func testAccCheckScalewayMNQSNSTopicDestroy(tt *TestTools) resource.TestCheckFun
 				continue
 			}
 
-			region, projectID, topicName, err := decomposeMNQQueueID(rs.Primary.ID)
+			region, projectID, topicName, err := decomposeMNQID(rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("failed to parse id: %w", err)
 			}
@@ -98,7 +98,7 @@ func testAccCheckScalewayMNQSNSTopicDestroy(tt *TestTools) resource.TestCheckFun
 			}
 
 			_, err = snsClient.GetTopicAttributes(&sns.GetTopicAttributesInput{
-				TopicArn: scw.StringPtr(buildSNSARN(region.String(), projectID, topicName)),
+				TopicArn: scw.StringPtr(composeSNSARN(region.String(), projectID, topicName)),
 			})
 			if err != nil {
 				if tfawserr.ErrCodeEquals(err, "AccessDeniedException") {
