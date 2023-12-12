@@ -106,7 +106,7 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	attributes, err := snsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema)
+	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -151,7 +151,7 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := snsAttributesToResourceData(topicAttributes.Attributes, resourceScalewayMNQSNSTopic().Schema)
+	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,7 +185,7 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	attributes, err := snsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema)
+	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}

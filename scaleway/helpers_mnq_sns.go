@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -85,89 +84,6 @@ var (
 		"RedrivePolicy": "redrive_policy",
 	}
 )
-
-// Sets a specific SNS attribute from the resource data
-func snsResourceDataToAttribute(snsAttributes map[string]*string, snsAttribute string, resourceValue interface{}, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
-	resourceSchema := resolveSchemaPath(resourcePath, resourceSchemas)
-	if resourceSchema == nil {
-		return fmt.Errorf("unable to resolve schema for %s", resourcePath)
-	}
-
-	// Only set writable attributes
-	if !resourceSchema.Optional && !resourceSchema.Required {
-		return nil
-	}
-
-	var s string
-	switch resourceSchema.Type {
-	case schema.TypeBool:
-		s = strconv.FormatBool(resourceValue.(bool))
-	case schema.TypeInt:
-		s = strconv.Itoa(resourceValue.(int))
-	case schema.TypeString:
-		s = resourceValue.(string)
-	default:
-		return fmt.Errorf("unsupported type %s for %s", resourceSchema.Type, resourcePath)
-	}
-
-	snsAttributes[snsAttribute] = &s
-	return nil
-}
-
-// snsResourceDataToAttributes returns a map of attributes from SNS Topic resource
-func snsResourceDataToAttributes(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema) (map[string]*string, error) {
-	attributes := make(map[string]*string)
-
-	for attribute, resourcePath := range SQSAttributesToResourceMap {
-		if v, ok := d.GetOk(resourcePath); ok {
-			err := snsResourceDataToAttribute(attributes, attribute, v, resourcePath, resourceSchemas)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return attributes, nil
-}
-
-// Sets a specific resource data from the SQS attribute
-func snsAttributeToResourceData(values map[string]interface{}, value string, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
-	resourceSchema := resolveSchemaPath(resourcePath, resourceSchemas)
-	if resourceSchema == nil {
-		return fmt.Errorf("unable to resolve schema for %s", resourcePath)
-	}
-
-	switch resourceSchema.Type {
-	case schema.TypeBool:
-		b, _ := strconv.ParseBool(value)
-		setResourceValue(values, resourcePath, b, resourceSchemas)
-	case schema.TypeInt:
-		i, _ := strconv.Atoi(value)
-		setResourceValue(values, resourcePath, i, resourceSchemas)
-	case schema.TypeString:
-		setResourceValue(values, resourcePath, value, resourceSchemas)
-	default:
-		return fmt.Errorf("unsupported type %s for %s", resourceSchema.Type, resourcePath)
-	}
-
-	return nil
-}
-
-// snsAttributesToResourceData returns a map of valid values for a terraform schema from a topic attributes map
-func snsAttributesToResourceData(attributes map[string]*string, resourceSchemas map[string]*schema.Schema) (map[string]interface{}, error) {
-	values := make(map[string]interface{})
-
-	for attribute, resourcePath := range SNSTopicAttributesToResourceMap {
-		if value, ok := attributes[attribute]; ok && value != nil {
-			err := snsAttributeToResourceData(values, *value, resourcePath, resourceSchemas)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return values, nil
-}
 
 func resourceMNQSNSTopicName(name interface{}, prefix interface{}, isSQS bool, isSQSFifo bool) string {
 	if value, ok := name.(string); ok && value != "" {

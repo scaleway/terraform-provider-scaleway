@@ -156,7 +156,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 	isFifo := d.Get("fifo_queue").(bool)
 	queueName := resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
-	attributes, err := sqsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema)
+	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -214,7 +214,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("failed to get the SQS Queue attributes: %s", err)
 	}
 
-	values, err := sqsAttributesToResourceData(queueAttributes.Attributes, resourceScalewayMNQSQSQueue().Schema)
+	values, err := awsAttributesToResourceData(queueAttributes.Attributes, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.Errorf("failed to convert SQS Queue attributes to resource data: %s", err)
 	}
@@ -255,7 +255,7 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
-	attributes, err := sqsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema)
+	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}

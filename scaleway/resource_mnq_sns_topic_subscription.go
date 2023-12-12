@@ -100,8 +100,7 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	// TODO
-	attributes, err := snsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema)
+	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -141,8 +140,7 @@ func resourceScalewayMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	// TODO
-	schemaAttributes, err := snsAttributesToResourceData(subAttributes.Attributes, resourceScalewayMNQSNSTopic().Schema)
+	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, resourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
