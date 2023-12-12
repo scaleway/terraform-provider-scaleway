@@ -44,7 +44,7 @@ func SNSClientWithRegionAndID(d *schema.ResourceData, m interface{}, regionalID 
 		return nil, "", "", err
 	}
 
-	endpoint := d.Get("endpoint").(string)
+	endpoint := d.Get("sns_endpoint").(string)
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
@@ -75,11 +75,14 @@ func newSNSClient(httpClient *http.Client, region string, endpoint string, acces
 }
 
 var (
-	SNSAttributesToResourceMap = map[string]string{
+	SNSTopicAttributesToResourceMap = map[string]string{
 		"ContentBasedDeduplication": "content_based_deduplication",
 		"FifoTopic":                 "fifo_topic",
 		"Owner":                     "owner",
 		"TopicArn":                  "arn",
+	}
+	SNSTopicSubscriptionAttributesToResourceMap = map[string]string{
+		"RedrivePolicy": "redrive_policy",
 	}
 )
 
@@ -154,7 +157,7 @@ func snsAttributeToResourceData(values map[string]interface{}, value string, res
 func snsAttributesToResourceData(attributes map[string]*string, resourceSchemas map[string]*schema.Schema) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
 
-	for attribute, resourcePath := range SNSAttributesToResourceMap {
+	for attribute, resourcePath := range SNSTopicAttributesToResourceMap {
 		if value, ok := attributes[attribute]; ok && value != nil {
 			err := snsAttributeToResourceData(values, *value, resourcePath, resourceSchemas)
 			if err != nil {

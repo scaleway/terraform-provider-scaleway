@@ -128,19 +128,24 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("topic id is nil on creation")
 	}
 
-	d.SetId(newRegionalIDString(region, *output.TopicArn))
+	d.SetId(composeMNQQueueID(region, projectID, topicName))
 
 	return resourceScalewayMNQSNSTopicRead(ctx, d, meta)
 }
 
 func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, region, id, err := SNSClientWithRegionAndID(d, meta, d.Id())
+	snsClient, region, err := SNSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	region, projectID, topicName, err := decomposeMNQQueueID(d.Id())
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
+	}
+
 	topicAttributes, err := snsClient.GetTopicAttributesWithContext(ctx, &sns.GetTopicAttributesInput{
-		TopicArn: scw.StringPtr(id),
+		TopicArn: scw.StringPtr(buildSNSARN(region.String(), projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -161,13 +166,20 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, id, err := SNSClientWithRegionAndID(d, meta, d.Id())
+	snsClient, _, err := SNSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	region, projectID, topicName, err := decomposeMNQQueueID(d.Id())
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
+	}
+
+	topicARN := buildSNSARN(region.String(), projectID, topicName)
+
 	changedAttributes := []string(nil)
-	for attributeName, schemaName := range SNSAttributesToResourceMap {
+	for attributeName, schemaName := range SNSTopicAttributesToResourceMap {
 		if d.HasChange(schemaName) {
 			changedAttributes = append(changedAttributes, attributeName)
 		}
@@ -189,7 +201,7 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 			_, err := snsClient.SetTopicAttributes(&sns.SetTopicAttributesInput{
 				AttributeName:  scw.StringPtr(attributeName),
 				AttributeValue: attributeValue,
-				TopicArn:       scw.StringPtr(id),
+				TopicArn:       &topicARN,
 			})
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("failed to set attribute %q: %w", attributeName, err))
@@ -201,13 +213,18 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, id, err := SNSClientWithRegionAndID(d, meta, d.Id())
+	snsClient, _, err := SNSClientWithRegion(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	region, projectID, topicName, err := decomposeMNQQueueID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = snsClient.DeleteTopicWithContext(ctx, &sns.DeleteTopicInput{
-		TopicArn: scw.StringPtr(id),
+		TopicArn: scw.StringPtr(buildSNSARN(region.String(), projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)

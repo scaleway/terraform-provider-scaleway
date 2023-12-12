@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -75,4 +77,12 @@ func mnqSNSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SnsAPI, sc
 	}
 
 	return api, region, ID, nil
+}
+
+func buildARN(region string, subject string, projectID string, resourceName string) string {
+	return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s", region, subject, projectID, resourceName)
+}
+
+func buildSNSARN(region string, projectID string, resourceName string) string {
+	return buildARN(region, "sns", projectID, resourceName)
 }

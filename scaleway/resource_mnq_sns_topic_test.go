@@ -59,15 +59,18 @@ func testAccCheckScalewayMNQSNSTopicExists(tt *TestTools, n string) resource.Tes
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		regionalID := expandRegionalID(rs.Primary.ID)
+		region, projectID, topicName, err := decomposeMNQQueueID(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("failed to parse id: %w", err)
+		}
 
-		snsClient, err := newSNSClient(tt.Meta.httpClient, regionalID.Region.String(), rs.Primary.Attributes["endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		snsClient, err := newSNSClient(tt.Meta.httpClient, region.String(), rs.Primary.Attributes["endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
 
 		_, err = snsClient.GetTopicAttributes(&sns.GetTopicAttributesInput{
-			TopicArn: scw.StringPtr(regionalID.ID),
+			TopicArn: scw.StringPtr(buildSNSARN(region.String(), projectID, topicName)),
 		})
 		if err != nil {
 			return err
@@ -84,9 +87,9 @@ func testAccCheckScalewayMNQSNSTopicDestroy(tt *TestTools) resource.TestCheckFun
 				continue
 			}
 
-			_, region, id, err := mnqSNSAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			region, projectID, topicName, err := decomposeMNQQueueID(rs.Primary.ID)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to parse id: %w", err)
 			}
 
 			snsClient, err := newSNSClient(tt.Meta.httpClient, region.String(), rs.Primary.Attributes["endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
@@ -95,7 +98,7 @@ func testAccCheckScalewayMNQSNSTopicDestroy(tt *TestTools) resource.TestCheckFun
 			}
 
 			_, err = snsClient.GetTopicAttributes(&sns.GetTopicAttributesInput{
-				TopicArn: scw.StringPtr(id),
+				TopicArn: scw.StringPtr(buildSNSARN(region.String(), projectID, topicName)),
 			})
 			if err != nil {
 				if tfawserr.ErrCodeEquals(err, "AccessDeniedException") {
