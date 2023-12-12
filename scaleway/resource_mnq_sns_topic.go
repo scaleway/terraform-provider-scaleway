@@ -37,7 +37,7 @@ func resourceScalewayMNQSNSTopic() *schema.Resource {
 				Description:   "Creates a unique name beginning with the specified prefix.",
 				ConflictsWith: []string{"name"},
 			},
-			"endpoint": {
+			"sns_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "https://sqs-sns.mnq.{region}.scw.cloud",
@@ -145,7 +145,7 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	topicAttributes, err := snsClient.GetTopicAttributesWithContext(ctx, &sns.GetTopicAttributesInput{
-		TopicArn: scw.StringPtr(composeSNSARN(region.String(), projectID, topicName)),
+		TopicArn: scw.StringPtr(composeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -176,7 +176,7 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
-	topicARN := composeSNSARN(region.String(), projectID, topicName)
+	topicARN := composeSNSARN(region, projectID, topicName)
 
 	changedAttributes := []string(nil)
 	for attributeName, schemaName := range SNSTopicAttributesToResourceMap {
@@ -224,7 +224,7 @@ func resourceScalewayMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_, err = snsClient.DeleteTopicWithContext(ctx, &sns.DeleteTopicInput{
-		TopicArn: scw.StringPtr(composeSNSARN(region.String(), projectID, topicName)),
+		TopicArn: scw.StringPtr(composeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)

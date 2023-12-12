@@ -99,11 +99,11 @@ func decomposeMNQID(id string) (region scw.Region, projectID string, name string
 	return region, parts[1], parts[2], nil
 }
 
-func composeARN(region string, subject string, projectID string, resourceName string) string {
-	return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s", region, subject, projectID, resourceName)
+func composeARN(region scw.Region, subject string, projectID string, resourceName string) string {
+	return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s", subject, region, projectID, resourceName)
 }
 
-func composeSNSARN(region string, projectID string, resourceName string) string {
+func composeSNSARN(region scw.Region, projectID string, resourceName string) string {
 	return composeARN(region, "sns", projectID, resourceName)
 }
 
