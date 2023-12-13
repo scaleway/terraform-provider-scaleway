@@ -524,7 +524,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	corsResponse, err := s3Client.GetBucketCorsWithContext(ctx, &s3.GetBucketCorsInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
-
 	if err != nil {
 		if bucketFound, _ := addErrorDiagnostic(&diags, err, "CORS configuration", ErrCodeNoSuchCORSConfiguration); !bucketFound {
 			d.SetId("")
