@@ -24,7 +24,7 @@ func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.R
 		return nil, "", err
 	}
 
-	endpoint := d.Get("endpoint").(string)
+	endpoint := d.Get("sns_endpoint").(string)
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
