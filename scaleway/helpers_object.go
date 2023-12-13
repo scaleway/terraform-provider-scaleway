@@ -593,7 +593,7 @@ func normalizeOwnerID(id *string) *string {
 	return &tab[0]
 }
 
-func addErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, awsResourceNotFoundCode string) (bool, bool) {
+func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, awsResourceNotFoundCode string) (bucketFound bool, resourceFound bool) {
 	switch {
 	case isS3Err(err, s3.ErrCodeNoSuchBucket, ""):
 		*diags = append(*diags, diag.Diagnostic{
@@ -602,16 +602,33 @@ func addErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, aws
 			Detail:   "Got 404 error while reading bucket, removing from state",
 		})
 		return false, false
+
 	case isS3Err(err, awsResourceNotFoundCode, ""):
 		return true, false
+
 	case isS3Err(err, ErrCodeAccessDenied, ""):
-		*diags = append(*diags, diag.Diagnostic{
-			Severity:      diag.Warning,
-			Summary:       fmt.Sprintf("Cannot read bucket %s: Forbidden", resource),
-			Detail:        fmt.Sprintf("Got 403 error while reading bucket %s, please check your IAM permissions and your bucket policy", resource),
-			AttributePath: cty.GetAttrPath(resource),
-		})
+		d := diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("Cannot read bucket %s: Forbidden", resource),
+			Detail:   fmt.Sprintf("Got 403 error while reading bucket %s, please check your IAM permissions and your bucket policy", resource),
+		}
+
+		attributes := map[string]string{
+			"acl":                       "acl",
+			"object lock configuration": "object_lock_enabled",
+			"objects":                   "",
+			"tags":                      "tags",
+			"CORS configuration":        "cors_rule",
+			"versioning":                "versioning",
+			"lifecycle configuration":   "lifecycle_rule",
+		}
+		if attributeName, ok := attributes[resource]; ok {
+			d.AttributePath = cty.GetAttrPath(attributeName)
+		}
+
+		*diags = append(*diags, d)
 		return true, true
+
 	default:
 		*diags = append(*diags, diag.Diagnostic{
 			Severity: diag.Error,

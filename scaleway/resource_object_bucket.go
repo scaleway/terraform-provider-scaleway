@@ -459,7 +459,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
-		if bucketFound, _ := addErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
 			return diags
 		}
 	}
@@ -470,7 +470,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
-		bucketFound, objectLockFound := addErrorDiagnostic(&diags, err, "object lock configuration", ErrCodeObjectLockConfigurationNotFoundError)
+		bucketFound, objectLockFound := addReadBucketErrorDiagnostic(&diags, err, "object lock configuration", ErrCodeObjectLockConfigurationNotFoundError)
 		if !bucketFound {
 			d.SetId("")
 			return diags
@@ -495,7 +495,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if bucketFound, _ := addErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
 			d.SetId("")
 			return diags
 		}
@@ -507,7 +507,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if bucketFound, _ := addErrorDiagnostic(&diags, err, "tags", ErrCodeNoSuchTagSet); !bucketFound {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "tags", ErrCodeNoSuchTagSet); !bucketFound {
 			d.SetId("")
 			return diags
 		}
@@ -525,7 +525,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if bucketFound, _ := addErrorDiagnostic(&diags, err, "CORS configuration", ErrCodeNoSuchCORSConfiguration); !bucketFound {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "CORS configuration", ErrCodeNoSuchCORSConfiguration); !bucketFound {
 			d.SetId("")
 			return diags
 		}
@@ -538,7 +538,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if bucketFound, _ := addErrorDiagnostic(&diags, err, "versioning", ""); !bucketFound {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "versioning", ""); !bucketFound {
 			d.SetId("")
 			return diags
 		}
@@ -550,7 +550,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if bucketFound, _ := addErrorDiagnostic(&diags, err, "lifecycle configuration", ErrCodeNoSuchLifecycleConfiguration); !bucketFound {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "lifecycle configuration", ErrCodeNoSuchLifecycleConfiguration); !bucketFound {
 			d.SetId("")
 			return diags
 		}
