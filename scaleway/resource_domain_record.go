@@ -13,6 +13,20 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+var changeKeys = []string{
+	"geo_ip",
+	"name",
+	"data",
+	"priority",
+	"ttl",
+	"type",
+	"http_service",
+	"weighted",
+	"view",
+	"dns_zone",
+	"keep_empty_zone",
+}
+
 func resourceScalewayDomainRecord() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDomainRecordCreate,
@@ -412,6 +426,10 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	if !d.HasChanges(changeKeys...) {
+		return resourceScalewayDomainRecordRead(ctx, d, meta)
+	}
+
 	domainAPI := newDomainAPI(meta)
 
 	req := &domain.UpdateDNSZoneRecordsRequest{
@@ -419,53 +437,17 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 		ReturnAllRecords: scw.BoolPtr(false),
 	}
 
-	record := &domain.Record{Name: d.Get("name").(string)}
-	hasChange := false
-	if d.HasChanges("geo_ip") {
-		if geoIP, ok := d.GetOk("geo_ip"); ok {
-			record.GeoIPConfig = expandDomainGeoIPConfig(d.Get("data").(string), geoIP, ok)
-		}
-		hasChange = true
-	}
-
-	if d.HasChange("name") {
-		record.Name = d.Get("name").(string)
-		hasChange = true
-	}
-
-	if d.HasChange("data") {
-		record.Data = d.Get("data").(string)
-		hasChange = true
-	}
-
-	if d.HasChange("priority") {
-		record.Priority = uint32(d.Get("priority").(int))
-		hasChange = true
-	}
-
-	if d.HasChange("ttl") {
-		record.TTL = uint32(d.Get("ttl").(int))
-		hasChange = true
-	}
-
-	if d.HasChange("type") {
-		record.Type = domain.RecordType(d.Get("type").(string))
-		hasChange = true
-	}
-
-	if d.HasChanges("http_service") {
-		record.HTTPServiceConfig = expandDomainHTTPService(d.GetOk("http_service"))
-		hasChange = true
-	}
-
-	if d.HasChanges("weighted") {
-		record.WeightedConfig = expandDomainWeighted(d.GetOk("weighted"))
-		hasChange = true
-	}
-
-	if d.HasChanges("view") {
-		record.ViewConfig = expandDomainView(d.GetOk("view"))
-		hasChange = true
+	geoIP, okGeoIP := d.GetOk("geo_ip")
+	record := &domain.Record{
+		Name:              d.Get("name").(string),
+		Data:              d.Get("data").(string),
+		Priority:          uint32(d.Get("priority").(int)),
+		TTL:               uint32(d.Get("ttl").(int)),
+		Type:              domain.RecordType(d.Get("type").(string)),
+		GeoIPConfig:       expandDomainGeoIPConfig(d.Get("data").(string), geoIP, okGeoIP),
+		HTTPServiceConfig: expandDomainHTTPService(d.GetOk("http_service")),
+		WeightedConfig:    expandDomainWeighted(d.GetOk("weighted")),
+		ViewConfig:        expandDomainView(d.GetOk("view")),
 	}
 
 	req.Changes = []*domain.RecordChange{
@@ -477,16 +459,14 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 		},
 	}
 
-	if hasChange || d.HasChanges("dns_zone", "keep_empty_zone") {
-		_, err := domainAPI.UpdateDNSZoneRecords(req)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err := domainAPI.UpdateDNSZoneRecords(req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-		_, err = waitForDNSRecordExist(ctx, domainAPI, d.Get("dns_zone").(string), record.Name, record.Type, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = waitForDNSRecordExist(ctx, domainAPI, d.Get("dns_zone").(string), record.Name, record.Type, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayDomainRecordRead(ctx, d, meta)
