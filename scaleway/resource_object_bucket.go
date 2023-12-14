@@ -6,9 +6,7 @@ import (
 	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -452,6 +450,8 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	var diags diag.Diagnostics
+
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
 
@@ -459,7 +459,9 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
+			return diags
+		}
 	}
 	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
@@ -468,15 +470,13 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
-		switch {
-		case isS3Err(err, ErrCodeObjectLockConfigurationNotFoundError, ""):
-			_ = d.Set("object_lock_enabled", false)
-		case isS3Err(err, s3.ErrCodeNoSuchBucket, ""):
-			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucketName))
+		bucketFound, objectLockFound := addReadBucketErrorDiagnostic(&diags, err, "object lock configuration", ErrCodeObjectLockConfigurationNotFoundError)
+		if !bucketFound {
 			d.SetId("")
-			return nil
-		default:
-			return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+			return diags
+		}
+		if !objectLockFound {
+			_ = d.Set("object_lock_enabled", false)
 		}
 	} else if objectLockConfiguration.ObjectLockConfiguration != nil {
 		_ = d.Set("object_lock_enabled", true)
@@ -495,12 +495,10 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
-			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucketName))
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
 			d.SetId("")
-			return nil
+			return diags
 		}
-		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
 	}
 
 	var tagsSet []*s3.Tag
@@ -509,8 +507,9 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if s3err, ok := err.(awserr.Error); !ok || s3err.Code() != ErrCodeNoSuchTagSet {
-			return diag.FromErr(fmt.Errorf("couldn't read tags from bucket: %s", err))
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "tags", ErrCodeNoSuchTagSet); !bucketFound {
+			d.SetId("")
+			return diags
 		}
 	} else {
 		tagsSet = tagsResponse.TagSet
@@ -525,9 +524,11 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	corsResponse, err := s3Client.GetBucketCorsWithContext(ctx, &s3.GetBucketCorsInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
-
-	if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
-		return diag.FromErr(fmt.Errorf("error getting S3 Bucket CORS configuration: %s", err))
+	if err != nil {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "CORS configuration", ErrCodeNoSuchCORSConfiguration); !bucketFound {
+			d.SetId("")
+			return diags
+		}
 	}
 
 	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
@@ -537,7 +538,10 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "versioning", ""); !bucketFound {
+			d.SetId("")
+			return diags
+		}
 	}
 	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
 
@@ -545,8 +549,11 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	lifecycle, err := s3Client.GetBucketLifecycleConfigurationWithContext(ctx, &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
-	if err != nil && !tfawserr.ErrMessageContains(err, ErrCodeNoSuchLifecycleConfiguration, "") {
-		return diag.FromErr(err)
+	if err != nil {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "lifecycle configuration", ErrCodeNoSuchLifecycleConfiguration); !bucketFound {
+			d.SetId("")
+			return diags
+		}
 	}
 
 	lifecycleRules := make([]map[string]interface{}, 0)
@@ -632,10 +639,13 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 	if err := d.Set("lifecycle_rule", lifecycleRules); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting lifecycle_rule: %s", err))
+		return append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("error setting lifecycle_rule: %s", err),
+		})
 	}
 
-	return nil
+	return diags
 }
 
 func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
