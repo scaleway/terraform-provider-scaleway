@@ -49,7 +49,7 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 			"sqs_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "https://sqs-sns.mnq.{region}.scw.cloud",
+				Default:     "https://sqs.mnq.{region}.scaleway.com",
 				Description: "The sqs endpoint",
 			},
 			"access_key": {

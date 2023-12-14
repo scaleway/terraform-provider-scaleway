@@ -99,12 +99,70 @@ func decomposeMNQID(id string) (region scw.Region, projectID string, name string
 	return region, parts[1], parts[2], nil
 }
 
-func composeARN(region scw.Region, subject string, projectID string, resourceName string) string {
-	return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s", subject, region, projectID, resourceName)
+type ARN struct {
+	Subject         string
+	Region          scw.Region
+	ProjectID       string
+	ResourceName    string
+	ExtraResourceID string
+}
+
+func (a ARN) String() string {
+	if a.ExtraResourceID == "" {
+		return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s", a.Subject, a.Region, a.ProjectID, a.ResourceName)
+	} else {
+		return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s:%s", a.Subject, a.Region, a.ProjectID, a.ResourceName, a.ExtraResourceID)
+	}
+}
+
+// decomposeARN decompose an arn with a potential extra-resource-id
+// example: arn:scw:sns:fr-par:project-d4730602-0495-4bb6-bb94-de3a9b000660:test-mnq-sns-topic-basic:b9f52ee5-fa03-42ad-9065-587e3e22efd9
+// the last id may be omitted
+func decomposeARN(arn string) (*ARN, error) {
+	elems := strings.Split(arn, ":")
+	if len(elems) < 6 || len(elems) > 7 {
+		return nil, fmt.Errorf("wrong number of parts in arn, expected 6 or 7, got %d", len(elems))
+	}
+
+	if elems[0] != "arn" {
+		return nil, fmt.Errorf("expected part 0 to be \"arn\", got %q", elems[0])
+	}
+	if elems[1] != "scw" {
+		return nil, fmt.Errorf("expected part 1 to be \"scw\", got %q", elems[1])
+	}
+	region, err := scw.ParseRegion(elems[3])
+	if err != nil {
+		return nil, fmt.Errorf("expected part 2 to be a valid region: %w", err)
+	}
+	projectID, found := strings.CutPrefix(elems[4], "project-")
+	if !found {
+		return nil, fmt.Errorf("expected part 3 to have format \"project-{uuid}\"")
+	}
+
+	a := &ARN{
+		Subject:      elems[0],
+		Region:       region,
+		ProjectID:    projectID,
+		ResourceName: elems[5],
+	}
+	if len(elems) == 7 {
+		a.ExtraResourceID = elems[6]
+	}
+
+	return a, nil
+}
+
+func composeARN(subject string, region scw.Region, projectID string, resourceName string) string {
+	return ARN{
+		Subject:      subject,
+		Region:       region,
+		ProjectID:    projectID,
+		ResourceName: resourceName,
+	}.String()
 }
 
 func composeSNSARN(region scw.Region, projectID string, resourceName string) string {
-	return composeARN(region, "sns", projectID, resourceName)
+	return composeARN("sns", region, projectID, resourceName)
 }
 
 // Set the value inside values at the resource path (e.g. a.0.b sets b's value)

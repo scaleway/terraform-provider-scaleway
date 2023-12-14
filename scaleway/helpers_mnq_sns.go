@@ -36,11 +36,16 @@ func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.R
 	return snsClient, region, err
 }
 
-func SNSClientWithRegionAndID(d *schema.ResourceData, m interface{}, regionalID string) (*sns.SNS, scw.Region, string, error) {
+func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID string) (*sns.SNS, scw.Region, error) {
 	meta := m.(*Meta)
-	region, ID, err := parseRegionalID(regionalID)
+
+	tab := strings.SplitN(regionalID, "/", 2)
+	if len(tab) != 2 {
+		return nil, "", fmt.Errorf("invalid ID format, expected parts separated by slashes")
+	}
+	region, err := scw.ParseRegion(tab[0])
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", fmt.Errorf("invalid region in id: %w", err)
 	}
 
 	endpoint := d.Get("sns_endpoint").(string)
@@ -49,10 +54,10 @@ func SNSClientWithRegionAndID(d *schema.ResourceData, m interface{}, regionalID 
 
 	snsClient, err := newSNSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", err
 	}
 
-	return snsClient, region, ID, err
+	return snsClient, region, err
 }
 
 func newSNSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sns.SNS, error) {
@@ -71,6 +76,30 @@ func newSNSClient(httpClient *http.Client, region string, endpoint string, acces
 	}
 
 	return sns.New(s), nil
+}
+
+func composeMNQSubscriptionID(region scw.Region, projectID string, topicName string, subscriptionID string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", region, projectID, topicName, subscriptionID)
+}
+
+func decomposeMNQSubscriptionID(id string) (arn *ARN, err error) {
+	parts := strings.Split(id, "/")
+	if len(parts) != 4 {
+		return nil, fmt.Errorf("invalid ID format: %q", id)
+	}
+
+	region, err := scw.ParseRegion(parts[0])
+	if err != nil {
+		return nil, err
+	}
+
+	return &ARN{
+		Subject:         "sns",
+		Region:          region,
+		ProjectID:       parts[1],
+		ResourceName:    parts[2],
+		ExtraResourceID: parts[3],
+	}, nil
 }
 
 var (

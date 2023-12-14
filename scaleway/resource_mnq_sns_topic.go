@@ -40,7 +40,7 @@ func resourceScalewayMNQSNSTopic() *schema.Resource {
 			"sns_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "https://sqs-sns.mnq.{region}.scw.cloud",
+				Default:     "https://sns.mnq.{region}.scaleway.com",
 				Description: "SNS endpoint",
 			},
 			"access_key": {
