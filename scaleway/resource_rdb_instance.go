@@ -82,6 +82,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
+				Computed:    true,
 				Description: "Identifier for the first user of the database instance",
 			},
 			"password": {
@@ -423,11 +424,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
-	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
-	_ = d.Set("password", d.Get("password").(string))   // password are immutable
-	if len(res.Tags) > 0 {
-		_ = d.Set("tags", flattenSliceString(res.Tags))
-	}
+	_ = d.Set("tags", flattenSliceString(res.Tags))
 	if res.Endpoint != nil {
 		_ = d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
 		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
@@ -443,6 +440,26 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
+
+	// set user and password
+	if user, ok := d.GetOk("user_name"); ok {
+		_ = d.Set("user_name", user.(string))
+	} else {
+		users, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
+			Region:     region,
+			InstanceID: res.ID,
+		}, scw.WithContext(ctx), scw.WithAllPages())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		for _, u := range users.Users {
+			if u.IsAdmin {
+				_ = d.Set("user_name", u.Name)
+				break
+			}
+		}
+	}
+	_ = d.Set("password", d.Get("password").(string))
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
