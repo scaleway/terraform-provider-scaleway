@@ -189,7 +189,7 @@ func resourceScalewayMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.
 	_ = d.Set("arn", arn.String())
 
 	for k, v := range schemaAttributes {
-		_ = d.Set(k, v)
+		_ = d.Set(k, v) // lintignore: R001
 	}
 
 	return nil

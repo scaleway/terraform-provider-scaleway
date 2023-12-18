@@ -62,6 +62,7 @@ func exceptionsCassettesCases() map[string]struct{} {
 		"testdata/document-db-privilege-basic.cassette.yaml":     {},
 		"testdata/mnqsqs-already-activated.cassette.yaml":        {},
 		"testdata/mnqsns-topic-basic.cassette.yaml":              {},
+		"testdata/mnqsns-topic-subscription-basic.cassette.yaml": {},
 	}
 }
 
