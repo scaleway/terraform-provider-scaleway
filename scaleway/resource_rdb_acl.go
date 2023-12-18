@@ -101,18 +101,17 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id").(string))
-	_, err = waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutRead))
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	res, err := api.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
+	res, err := rdbAPI.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: instanceID,
 	}, scw.WithContext(ctx))
