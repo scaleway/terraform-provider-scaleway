@@ -139,7 +139,7 @@ func TestAccScalewayDataSourceIPAMIP_RDB(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-ipam-ip-rdb"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-14"
 						is_ha_cluster = false
