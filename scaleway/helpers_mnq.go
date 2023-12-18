@@ -110,9 +110,8 @@ type ARN struct {
 func (a ARN) String() string {
 	if a.ExtraResourceID == "" {
 		return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s", a.Subject, a.Region, a.ProjectID, a.ResourceName)
-	} else {
-		return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s:%s", a.Subject, a.Region, a.ProjectID, a.ResourceName, a.ExtraResourceID)
 	}
+	return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s:%s", a.Subject, a.Region, a.ProjectID, a.ResourceName, a.ExtraResourceID)
 }
 
 // decomposeARN decompose an arn with a potential extra-resource-id
