@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -276,9 +277,6 @@ func resourceScalewayK8SCluster() *schema.Resource {
 						if err != nil {
 							return err
 						}
-
-					default:
-						return fmt.Errorf("unknown cluster type %q", clusterType)
 					}
 				}
 				return nil
@@ -325,6 +323,8 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	// Create cluster
 	////
 
+	var diags diag.Diagnostics
+
 	description, ok := d.GetOk("description")
 	if !ok {
 		description = ""
@@ -333,6 +333,14 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	clusterType, ok := d.GetOk("type")
 	if !ok {
 		clusterType = ""
+	}
+
+	if !slices.ContainsFunc([]string{"kapsule", "multicloud"}, func(s string) bool { return strings.HasPrefix(clusterType.(string), s) }) {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unexpected cluster type",
+			Detail:   fmt.Sprintf("The expected cluster type is one of %v, but got %s", []string{"kapsule", "multicloud", "kapsule-dedicated-*", "multicloud-dedicated-*"}, clusterType.(string)),
+		})
 	}
 
 	req := &k8s.CreateClusterRequest{
@@ -441,7 +449,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		// if one auto upgrade attribute is set, they all must be set.
 		// if none is set, auto upgrade attributes will be computed.
 		if !(okAutoUpgradeDay && okAutoUpgradeStartHour) {
-			return diag.FromErr(fmt.Errorf("all field or zero field of auto_upgrade must be set"))
+			return append(diag.FromErr(fmt.Errorf("all field or zero field of auto_upgrade must be set")), diags...)
 		}
 	}
 
@@ -464,13 +472,13 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
 	if versionIsOnlyMinor != clusterAutoUpgradeEnabled {
-		return diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrade enabled"))
+		return append(diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrade enabled")), diags...)
 	}
 
 	if versionIsOnlyMinor {
 		version, err = k8sGetLatestVersionFromMinor(ctx, k8sAPI, region, version)
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diag.FromErr(err), diags...)
 		}
 	}
 
@@ -486,7 +494,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	res, err := k8sAPI.CreateCluster(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diag.FromErr(err), diags...)
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
@@ -498,10 +506,10 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		_, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diag.FromErr(err), diags...)
 	}
 
-	return resourceScalewayK8SClusterRead(ctx, d, meta)
+	return append(resourceScalewayK8SClusterRead(ctx, d, meta), diags...)
 }
 
 func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -617,6 +625,16 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
+	var diags diag.Diagnostics
+
+	if !slices.ContainsFunc([]string{"kapsule", "multicloud"}, func(s string) bool { return strings.HasPrefix(d.Get("type").(string), s) }) {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unexpected cluster type",
+			Detail:   fmt.Sprintf("The expected cluster type is one of %v, but got %s", []string{"kapsule", "multicloud", "kapsule-dedicated-*", "multicloud-dedicated-*"}, d.Get("type").(string)),
+		})
+	}
+
 	canUpgrade := false
 
 	////
@@ -674,13 +692,13 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
 	if versionIsOnlyMinor != autoupgradeEnabled {
-		return diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrades enabled"))
+		return append(diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrades enabled")), diags...)
 	}
 
 	if versionIsOnlyMinor {
 		version, err = k8sGetLatestVersionFromMinor(ctx, k8sAPI, region, version)
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diag.FromErr(err), diags...)
 		}
 	}
 
@@ -693,7 +711,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			Region:    region,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diag.FromErr(err), diags...)
 		}
 
 		if clusterResp.Version == version {
@@ -794,12 +812,12 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		actual, planned := d.GetChange("private_network_id")
 		if planned == "" && actual != "" {
 			// It's not possible to remove the private network anymore
-			return diag.FromErr(fmt.Errorf("it is only possible to change the private network attached to the cluster, but not to remove it"))
+			return append(diag.FromErr(fmt.Errorf("it is only possible to change the private network attached to the cluster, but not to remove it")), diags...)
 		}
 		if actual == "" {
 			err = migrateToPrivateNetworkCluster(ctx, d, meta)
 			if err != nil {
-				return diag.FromErr(err)
+				return append(diag.FromErr(err), diags...)
 			}
 		}
 	}
@@ -809,12 +827,12 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	////
 	_, err = k8sAPI.UpdateCluster(updateRequest, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diag.FromErr(err), diags...)
 	}
 
 	_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diag.FromErr(err), diags...)
 	}
 
 	////
@@ -829,16 +847,16 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 		_, err = k8sAPI.UpgradeCluster(upgradeRequest)
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diag.FromErr(err), diags...)
 		}
 
 		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diag.FromErr(err), diags...)
 		}
 	}
 
-	return resourceScalewayK8SClusterRead(ctx, d, meta)
+	return append(resourceScalewayK8SClusterRead(ctx, d, meta), diags...)
 }
 
 func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
