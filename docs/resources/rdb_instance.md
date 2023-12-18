@@ -24,25 +24,6 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
-### Example With IPAM
-
-```hcl
-resource "scaleway_vpc_private_network" "pn" {}
-
-resource "scaleway_rdb_instance" "main" {
-  name           = "test-rdb"
-  node_type      = "DB-DEV-S"
-  engine         = "PostgreSQL-11"
-  is_ha_cluster  = true
-  disable_backup = true
-  user_name      = "my_initial_user"
-  password       = "thiZ_is_v&ry_s3cret"
-  private_network {
-    pn_id = scaleway_vpc_private_network.pn.id
-  }
-}
-```
-
 ### Example with Settings
 
 ```hcl
@@ -79,37 +60,56 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
-### Example with custom private network
+### Examples of endpoints configuration
+
+RDB Instances can have a maximum of 1 public endpoint and 1 private endpoint. It can have both, or none.
+
+#### 1 static private network endpoint
 
 ```hcl
-# VPC PRIVATE NETWORK
 resource "scaleway_vpc_private_network" "pn" {
-  name = "my_private_network"
   ipv4_subnet {
     subnet = "172.16.20.0/22"
   }
 }
 
-# RDB INSTANCE CONNECTED ON A CUSTOM PRIVATE NETWORK
 resource "scaleway_rdb_instance" "main" {
-  name              = "test-rdb"
   node_type         = "db-dev-s"
   engine            = "PostgreSQL-11"
-  is_ha_cluster     = false
-  disable_backup    = true
-  user_name         = "my_initial_user"
-  password          = "thiZ_is_v&ry_s3cret"
-  region            = "fr-par"
-  tags              = ["terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn"]
-  volume_type       = "bssd"
-  volume_size_in_gb = 10
   private_network {
-    ip_net = "172.16.20.4/22" # IP address within a given IP network
     pn_id  = scaleway_vpc_private_network.pn.id
+    ip_net = "172.16.20.4/22"   # IP address within a given IP network
+    (enable_ipam = false)
   }
-  disable_public_endpoint = true
 }
 ```
+
+#### 1 IPAM private network endpoint + 1 public endpoint
+
+```hcl
+resource "scaleway_vpc_private_network" "pn" {}
+
+resource "scaleway_rdb_instance" "main" {
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-11"
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn.id
+    (enable_ipam = true)
+  }
+  load_balancer {}
+}
+```
+
+#### Default: 1 public endpoint
+
+```hcl
+resource "scaleway_rdb_instance" "main" {
+  node_type         = "db-dev-s"
+  engine            = "PostgreSQL-11"
+}  
+```
+
+-> If nothing is defined, your instance will have a default public load-balancer endpoint
 
 ## Arguments Reference
 
@@ -145,6 +145,16 @@ and if you are using `bssd` storage, you should increase the volume size before 
 
 - `name` - (Optional) The name of the Database Instance.
 
+- `tags` - (Optional) The tags associated with the Database Instance.
+
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions)
+  in which the Database Instance should be created.
+
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the Database
+  Instance is associated with.
+
+### Backups
+
 - `disable_backup` - (Optional) Disable automated backup for the database instance.
 
 - `backup_schedule_frequency` - (Optional) Backup schedule frequency in hours.
@@ -153,40 +163,32 @@ and if you are using `bssd` storage, you should increase the volume size before 
 
 - `backup_same_region` - (Optional) Boolean to store logical backups in the same region as the database instance.
 
+### Settings
+
+- `settings` - (Optional) Map of engine settings to be set. Using this option will override default config.
+
 - `init_settings` - (Optional) Map of engine settings to be set at database initialisation.
 
 ~> **Important:** Updates to `init_settings` will recreate the Database Instance.
 
-- `settings` - (Optional) Map of engine settings to be set. Using this option will override default config.
+Please consult the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@v1.0.0-beta.9/api/rdb/v1#EngineVersion) to list all available `settings` and `init_settings` for the `node_type` of your convenience.
 
-- `tags` - (Optional) The tags associated with the Database Instance.
+### Endpoints
 
-- `disable_public_endpoint` - (Optional) Disable the default public endpoint
+- `private_network` - List of private networks endpoints of the database instance.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
-  in which the Database Instance should be created.
-
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database
-  Instance is associated with.
-
-## Settings
-
-Please consult
-the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@v1.0.0-beta.9/api/rdb/v1#EngineVersion) to list all
-available `settings` and `init_settings` on your `node_type` of your convenient.
-
-## Private Network
-
-~> **Important:** Updates to `private_network` will recreate the attachment Instance.
-
-~> **NOTE:** Please calculate your host IP.
-using [cirhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, lets IPAM service
+    - `pn_id` - (Required) The ID of the private network.
+    - `enable_ipam` - (Optional) Whether the endpoint should be configured with IPAM. Defaults to `false` if `ip_net` is defined, `true` otherwise.
+    - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation.
+    The IP network address within the private subnet is determined by the IP Address Management (IPAM) service if not set.
+  
+~> **NOTE:** Please calculate your host IP using [cidrhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, let IPAM service
 handle the host IP on the network.
 
-- `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a
-  CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
-  service if not set.
-- `pn_id` - (Required) The ID of the private network.
+~> **Important:** Updates to `private_network` will recreate the Instance's endpoint
+
+- `load_balancer` - (Optional) List of load balancer endpoints of the database instance. A load-balancer endpoint will be set by default if no private network is.
+This block must be defined if you want a public endpoint in addition to your private endpoint.
 
 ## Attributes Reference
 
