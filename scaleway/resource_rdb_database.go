@@ -165,6 +165,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("owner", database.Owner)
 	_ = d.Set("managed", database.Managed)
 	_ = d.Set("size", database.Size.String())
+	_ = d.Set("region", region)
 
 	return nil
 }
