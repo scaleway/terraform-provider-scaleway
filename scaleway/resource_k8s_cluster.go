@@ -337,9 +337,10 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	if !slices.ContainsFunc([]string{"kapsule", "multicloud"}, func(s string) bool { return strings.HasPrefix(clusterType.(string), s) }) {
 		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Unexpected cluster type",
-			Detail:   fmt.Sprintf("The expected cluster type is one of %v, but got %s", []string{"kapsule", "multicloud", "kapsule-dedicated-*", "multicloud-dedicated-*"}, clusterType.(string)),
+			Severity:      diag.Warning,
+			Summary:       "Unexpected cluster type",
+			Detail:        fmt.Sprintf("The expected cluster type is one of %v, but got %s", []string{"kapsule", "multicloud", "kapsule-dedicated-*", "multicloud-dedicated-*"}, clusterType.(string)),
+			AttributePath: cty.GetAttrPath("type"),
 		})
 	}
 
@@ -629,9 +630,10 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 
 	if !slices.ContainsFunc([]string{"kapsule", "multicloud"}, func(s string) bool { return strings.HasPrefix(d.Get("type").(string), s) }) {
 		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Unexpected cluster type",
-			Detail:   fmt.Sprintf("The expected cluster type is one of %v, but got %s", []string{"kapsule", "multicloud", "kapsule-dedicated-*", "multicloud-dedicated-*"}, d.Get("type").(string)),
+			Severity:      diag.Warning,
+			Summary:       "Unexpected cluster type",
+			Detail:        fmt.Sprintf("The expected cluster type is one of %v, but got %s", []string{"kapsule", "multicloud", "kapsule-dedicated-*", "multicloud-dedicated-*"}, d.Get("type").(string)),
+			AttributePath: cty.GetAttrPath("type"),
 		})
 	}
 
