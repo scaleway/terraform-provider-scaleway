@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
@@ -335,7 +334,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		clusterType = ""
 	}
 
-	if !slices.ContainsFunc([]string{"kapsule", "multicloud"}, func(s string) bool { return strings.HasPrefix(clusterType.(string), s) }) {
+	if !strings.HasPrefix(d.Get("type").(string), "kapsule") && !strings.HasPrefix(d.Get("type").(string), "multicloud") {
 		diags = append(diags, diag.Diagnostic{
 			Severity:      diag.Warning,
 			Summary:       "Unexpected cluster type",
@@ -628,7 +627,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 
 	var diags diag.Diagnostics
 
-	if !slices.ContainsFunc([]string{"kapsule", "multicloud"}, func(s string) bool { return strings.HasPrefix(d.Get("type").(string), s) }) {
+	if !strings.HasPrefix(d.Get("type").(string), "kapsule") && !strings.HasPrefix(d.Get("type").(string), "multicloud") {
 		diags = append(diags, diag.Diagnostic{
 			Severity:      diag.Warning,
 			Summary:       "Unexpected cluster type",
