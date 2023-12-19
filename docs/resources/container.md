@@ -84,7 +84,9 @@ The following arguments are optional:
 
 - `port` - (Optional) The port to expose the container. Defaults to 8080.
 
-- `deploy` - (Optional) Boolean controlling whether the container is on a production environment.
+- `deploy` - (Optional) If true, triggers a deployment on container creation and updates.
+
+- `triggers` - (Optional) Map of strings, if changed, triggers an update, can be paired with `deploy` to trigger a deployment
 
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/#configuration-restrictions) section.
 

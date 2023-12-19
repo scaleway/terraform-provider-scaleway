@@ -154,7 +154,7 @@ func resourceScalewayContainer() *schema.Resource {
 			"deploy": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "This allows you to control your production environment",
+				Description: "If true, triggers a deployment on container creation and updates.",
 				Default:     false,
 			},
 			"http_option": {
@@ -166,6 +166,15 @@ func resourceScalewayContainer() *schema.Resource {
 					container.ContainerHTTPOptionEnabled.String(),
 					container.ContainerHTTPOptionRedirected.String(),
 				}, false),
+			},
+			"triggers": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Computed:    true,
+				Description: "If changed, triggers an update, can be paired with deploy to trigger a deployment",
 			},
 			// computed
 			"status": {
@@ -277,6 +286,7 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("deploy", scw.BoolPtr(*expandBoolPtr(d.Get("deploy"))))
 	_ = d.Set("http_option", co.HTTPOption)
 	_ = d.Set("region", co.Region.String())
+	_ = d.Set("triggers", d.Get("triggers"))
 
 	return nil
 }
