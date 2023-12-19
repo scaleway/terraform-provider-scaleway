@@ -44,7 +44,7 @@ The following arguments are supported:
 
 - `name_prefix` - (Optional) Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 
-- `sqs_endpoint` - (Optional) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `http://sqs-sns.mnq.{region}.scw.cloud`.
+- `sqs_endpoint` - (Optional) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `https://sqs.mnq.{region}.scaleway.com`.
 
 - `access_key` - (Required) The access key of the SQS queue.
 
