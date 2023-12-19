@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	sns "github.com/aws/aws-sdk-go/service/sns"
@@ -46,6 +47,83 @@ func TestAccScalewayMNQSNSTopic_Basic(t *testing.T) {
 					testAccCheckScalewayMNQSNSTopicExists(tt, "scaleway_mnq_sns_topic.main"),
 					testCheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "name", "test-mnq-sns-topic-basic"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_account_project main {}
+
+					resource scaleway_mnq_sns main {
+						project_id = scaleway_account_project.main.id
+					}
+
+					resource scaleway_mnq_sns_credentials main {
+						project_id = scaleway_mnq_sns.main.project_id
+						permissions {
+							can_manage = true
+						}
+					}
+
+					resource scaleway_mnq_sns_topic main {
+						project_id = scaleway_mnq_sns.main.project_id
+						name = "test-mnq-sns-topic-basic.fifo"
+						access_key = scaleway_mnq_sns_credentials.main.access_key
+						secret_key = scaleway_mnq_sns_credentials.main.secret_key
+						fifo_topic = true
+						content_based_deduplication = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayMNQSNSTopicExists(tt, "scaleway_mnq_sns_topic.main"),
+					testCheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "name", "test-mnq-sns-topic-basic.fifo"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "content_based_deduplication", "true"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "fifo_topic", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_sns_topic.main", "arn"),
+				),
+			},
+			{
+				Config: `
+						resource scaleway_account_project main {}
+
+						resource scaleway_mnq_sns main {
+							project_id = scaleway_account_project.main.id
+						}
+
+						resource scaleway_mnq_sns_credentials main {
+							project_id = scaleway_mnq_sns.main.project_id
+							permissions {
+								can_manage = true
+							}
+						}
+
+						resource scaleway_mnq_sns_topic main {
+							project_id = scaleway_mnq_sns.main.project_id
+							name_prefix = "test-mnq-sns-topic-basic"
+							access_key = scaleway_mnq_sns_credentials.main.access_key
+							secret_key = scaleway_mnq_sns_credentials.main.secret_key
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayMNQSNSTopicExists(tt, "scaleway_mnq_sns_topic.main"),
+					testCheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
+					func(state *terraform.State) error {
+						topic, exists := state.RootModule().Resources["scaleway_mnq_sns_topic.main"]
+						if !exists {
+							return fmt.Errorf("failed to find resource")
+						}
+						name, exists := topic.Primary.Attributes["name"]
+						if !exists {
+							return fmt.Errorf("failed to find atttribute")
+						}
+
+						if !strings.HasPrefix(name, "test-mnq-sns-topic-basic") {
+							return fmt.Errorf("invalid name %q", name)
+						}
+
+						return nil
+					},
+					resource.TestCheckResourceAttrSet("scaleway_mnq_sns_topic.main", "arn"),
 				),
 			},
 		},

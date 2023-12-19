@@ -26,6 +26,7 @@ func resourceScalewayMNQSNSTopic() *schema.Resource {
 				Type:          schema.TypeString,
 				Computed:      true,
 				Optional:      true,
+				ForceNew:      true,
 				Description:   "Name of the SNS Topic.",
 				ConflictsWith: []string{"name_prefix"},
 			},
@@ -156,6 +157,7 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("name", topicName)
 	_ = d.Set("region", region)
 
 	for k, v := range schemaAttributes {
