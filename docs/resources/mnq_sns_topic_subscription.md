@@ -63,9 +63,9 @@ The following arguments are supported:
 - `sns_endpoint` - (Optional) The endpoint of the SNS service. Can contain a {region} placeholder. Defaults to `https://sns.mnq.{region}.scaleway.com`.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions)
-  in which sns will be enabled.
+  in which sns is enabled.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the sns will be enabled for.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the sns is enabled for.
 
 ## Attributes Reference
 
