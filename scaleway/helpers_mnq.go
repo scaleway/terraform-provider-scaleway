@@ -114,7 +114,7 @@ func (a ARN) String() string {
 	return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s:%s", a.Subject, a.Region, a.ProjectID, a.ResourceName, a.ExtraResourceID)
 }
 
-// decomposeARN decompose an arn with a potential extra-resource-id
+// decomposeARN decomposes an arn with a potential extra-resource-id
 // example: arn:scw:sns:fr-par:project-d4730602-0495-4bb6-bb94-de3a9b000660:test-mnq-sns-topic-basic:b9f52ee5-fa03-42ad-9065-587e3e22efd9
 // the last id may be omitted
 func decomposeARN(arn string) (*ARN, error) {
