@@ -597,6 +597,21 @@ func expandInstanceImageExtraVolumesTemplates(snapshots []*instance.GetSnapshotR
 	return volTemplates
 }
 
+func expandInstanceImageExtraVolumesUpdateTemplates(snapshots []*instance.GetSnapshotResponse) map[string]*instance.VolumeImageUpdateTemplate {
+	volTemplates := map[string]*instance.VolumeImageUpdateTemplate{}
+	if snapshots == nil {
+		return volTemplates
+	}
+	for i, snapshot := range snapshots {
+		snap := snapshot.Snapshot
+		volTemplate := &instance.VolumeImageUpdateTemplate{
+			ID: snap.ID,
+		}
+		volTemplates[strconv.Itoa(i+1)] = volTemplate
+	}
+	return volTemplates
+}
+
 func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone) interface{} {
 	volumesFlat := []map[string]interface{}(nil)
 	for _, volume := range volumes {

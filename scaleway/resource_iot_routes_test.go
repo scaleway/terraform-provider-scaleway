@@ -118,7 +118,7 @@ func TestAccScalewayIotRoute_S3(t *testing.T) {
 						}
 						`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.minimal"),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.minimal", true),
 					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
 					testAccCheckScalewayIotRouteExists(tt, "scaleway_iot_route.default"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "id"),

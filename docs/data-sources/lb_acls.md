@@ -51,5 +51,5 @@ In addition to all arguments above, the following attributes are exported:
         - `ip_subnet` - A list of matched IPs or CIDR v4/v6 addresses of the client of the session.
         - `http_filter` - The matched HTTP filter.
         - `http_filter_value` - The possible values matched for a given HTTP filter.
-        - `http_value_option` - A list of possible values for the HTTP filter based on the HTTP header.
+        - `http_filter_option` - A list of possible values for the HTTP filter based on the HTTP header.
         - `invert` -  The condition will be of type "unless" if invert is set to `true`

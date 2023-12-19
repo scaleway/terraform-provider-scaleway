@@ -82,6 +82,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
+				Computed:    true,
 				Description: "Identifier for the first user of the database instance",
 			},
 			"password": {
@@ -146,6 +147,12 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							DiffSuppressFunc: diffSuppressFuncLocality,
 							Description:      "The private network ID",
 						},
+						"enable_ipam": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Whether or not the private network endpoint should be configured with IPAM",
+						},
 						// Computed
 						"endpoint_id": {
 							Type:        schema.TypeString,
@@ -184,12 +191,6 @@ func resourceScalewayRdbInstance() *schema.Resource {
 						"zone": zoneSchema(),
 					},
 				},
-			},
-			"disable_public_endpoint": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Whether the instance should have a public endpoint if it has a Private Network attached",
 			},
 			// Computed
 			"endpoint_ip": {
@@ -234,6 +235,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 			},
 			"load_balancer": {
 				Type:        schema.TypeList,
+				Optional:    true,
 				Computed:    true,
 				Description: "Load balancer of the database instance",
 				Elem: &schema.Resource{
@@ -306,13 +308,17 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Init Endpoints
-	pn, pnExist := d.GetOk("private_network")
-	if pnExist {
-		createReq.InitEndpoints, err = expandPrivateNetwork(pn, pnExist)
+	if pn, pnExist := d.GetOk("private_network"); pnExist {
+		enableIpam := true
+		if _, ipNetSet := d.GetOk("private_network.0.ip_net"); ipNetSet {
+			enableIpam = false
+		}
+		createReq.InitEndpoints, err = expandPrivateNetwork(pn, pnExist, enableIpam)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-	} else {
+	}
+	if _, lbExists := d.GetOk("load_balancer"); lbExists {
 		createReq.InitEndpoints = append(createReq.InitEndpoints, expandLoadBalancer())
 	}
 
@@ -375,27 +381,6 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	// Remove public endpoint if disabled
-	if disabled := d.Get("disable_public_endpoint"); disabled.(bool) {
-		// retrieve state
-		res, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		for _, endpoint := range res.Endpoints {
-			if endpoint.LoadBalancer == nil {
-				continue
-			}
-			err = rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
-				Region:     region,
-				EndpointID: endpoint.ID,
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
 	return resourceScalewayRdbInstanceRead(ctx, d, meta)
 }
 
@@ -423,11 +408,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
-	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
-	_ = d.Set("password", d.Get("password").(string))   // password are immutable
-	if len(res.Tags) > 0 {
-		_ = d.Set("tags", flattenSliceString(res.Tags))
-	}
+	_ = d.Set("tags", flattenSliceString(res.Tags))
 	if res.Endpoint != nil {
 		_ = d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
 		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
@@ -443,6 +424,26 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
+
+	// set user and password
+	if user, ok := d.GetOk("user_name"); ok {
+		_ = d.Set("user_name", user.(string))
+	} else {
+		users, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
+			Region:     region,
+			InstanceID: res.ID,
+		}, scw.WithContext(ctx), scw.WithAllPages())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		for _, u := range users.Users {
+			if u.IsAdmin {
+				_ = d.Set("user_name", u.Name)
+				break
+			}
+		}
+	}
+	_ = d.Set("password", d.Get("password").(string))
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
@@ -463,13 +464,16 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
 
 	// set endpoints
-	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)
-	if pnExist {
+	enableIpam, err := isIpamEndpoint(res, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints, enableIpam); pnExist {
 		_ = d.Set("private_network", pnI)
 	}
-	lbI, lbExists := flattenLoadBalancer(res.Endpoints)
-	_ = d.Set("load_balancer", lbI)
-	_ = d.Set("disable_public_endpoint", !lbExists)
+	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
+		_ = d.Set("load_balancer", lbI)
+	}
 
 	return nil
 }
@@ -682,6 +686,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
+		// delete old endpoint
 		for _, e := range res.Endpoints {
 			if e.PrivateNetwork != nil {
 				err := rdbAPI.DeleteEndpoint(
@@ -694,17 +699,25 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 				}
 			}
 		}
-
 		// retrieve state
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		// set new endpoints
+		// set new endpoint
 		pn, pnExist := d.GetOk("private_network")
 		if pnExist {
-			privateEndpoints, err := expandPrivateNetwork(pn, pnExist)
+			// "enable_ipam" is not readable from the API, so we just read the user's config
+			enableIpam := true
+			if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() {
+				pnRawConfig := rawConfig.AsValueMap()["private_network"].AsValueSlice()[0].AsValueMap()
+				if !pnRawConfig["enable_ipam"].IsNull() && pnRawConfig["enable_ipam"].False() ||
+					!pnRawConfig["ip_net"].IsNull() {
+					enableIpam = false
+				}
+			}
+
+			privateEndpoints, err := expandPrivateNetwork(pn, pnExist, enableIpam)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -718,37 +731,38 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			}
 		}
 	}
-
-	// Remove public endpoint if disabled
-	if d.HasChanges("disable_public_endpoint") {
+	if d.HasChanges("load_balancer") {
 		// retrieve state
 		res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		disabled, set := d.GetOk("disable_public_endpoint")
-
-		if !disabled.(bool) || !set {
-			_, err = rdbAPI.CreateEndpoint(&rdb.CreateEndpointRequest{
+		// delete old endpoint
+		for _, e := range res.Endpoints {
+			if e.LoadBalancer != nil {
+				err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
+					EndpointID: e.ID,
+					Region:     region,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					diag.FromErr(err)
+				}
+			}
+		}
+		// retrieve state
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		// set new endpoint
+		if _, lbExists := d.GetOk("load_balancer"); lbExists {
+			_, err := rdbAPI.CreateEndpoint(&rdb.CreateEndpointRequest{
 				Region:       region,
 				InstanceID:   ID,
 				EndpointSpec: expandLoadBalancer(),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
-			}
-		} else {
-			for _, endpoint := range res.Endpoints {
-				if endpoint.LoadBalancer == nil {
-					continue
-				}
-				err = rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
-					Region:     region,
-					EndpointID: endpoint.ID,
-				}, scw.WithContext(ctx))
-				if err != nil {
-					return diag.FromErr(err)
-				}
 			}
 		}
 	}

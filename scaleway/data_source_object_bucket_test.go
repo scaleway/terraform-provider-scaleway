@@ -38,7 +38,7 @@ func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
 				}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket.by-id", "name", bucketName),
 				),
 			},
@@ -57,7 +57,7 @@ func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
 				}
 				`, bucketName, objectBucketTestDefaultRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket.by-name", "name", bucketName),
 				),
 			},
@@ -76,7 +76,7 @@ func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
 				}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket.by-name", "name", bucketName),
 				),
 				ExpectError: regexp.MustCompile("failed getting Object Storage bucket"),
@@ -125,7 +125,7 @@ func TestAccScalewayDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 					objectTestsMainRegion,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base", false),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base", false),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket.selected", "name", bucketName),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket.selected", "project_id", project.ID),
 				),
@@ -171,7 +171,7 @@ func TestAccScalewayDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 					project.ID,
 					objectTestsMainRegion,
 				),
-				Check:       testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.base", false),
+				Check:       testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.base", false),
 				ExpectError: regexp.MustCompile("failed getting Object Storage bucket"),
 			},
 		},

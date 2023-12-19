@@ -79,7 +79,7 @@ func TestAccScalewayDataSourceObjectBucketPolicy_Basic(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExistsForceRegion(tt, "scaleway_object_bucket.main", true),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket_policy.selected", "bucket", objectTestsMainRegion+"/"+bucketName),
 					resource.TestCheckResourceAttrSet("data.scaleway_object_bucket_policy.selected", "policy"),
 					testAccCheckDataSourcePolicyIsEquivalent("data.scaleway_object_bucket_policy.selected", expectedPolicyText),

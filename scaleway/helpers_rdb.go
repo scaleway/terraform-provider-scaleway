@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -108,7 +109,7 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 	}, scw.WithContext(ctx))
 }
 
-func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, error) {
+func expandPrivateNetwork(data interface{}, exist bool, enableIpam bool) ([]*rdb.EndpointSpec, error) {
 	if data == nil || !exist {
 		return nil, nil
 	}
@@ -116,20 +117,22 @@ func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, er
 	var res []*rdb.EndpointSpec
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
-		ipNet := r["ip_net"].(string)
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: expandID(r["pn_id"].(string)),
 			},
 		}
-		if len(ipNet) > 0 {
-			ip, err := expandIPNet(r["ip_net"].(string))
-			if err != nil {
-				return res, err
-			}
-			spec.PrivateNetwork.ServiceIP = &ip
-		} else {
+		if enableIpam {
 			spec.PrivateNetwork.IpamConfig = &rdb.EndpointSpecPrivateNetworkIpamConfig{}
+		} else {
+			ipNet := r["ip_net"].(string)
+			if len(ipNet) > 0 {
+				ip, err := expandIPNet(r["ip_net"].(string))
+				if err != nil {
+					return res, err
+				}
+				spec.PrivateNetwork.ServiceIP = &ip
+			}
 		}
 		res = append(res, spec)
 	}
@@ -143,7 +146,7 @@ func expandLoadBalancer() *rdb.EndpointSpec {
 	}
 }
 
-func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
+func flattenPrivateNetwork(endpoints []*rdb.Endpoint, enableIpam bool) (interface{}, bool) {
 	pnI := []map[string]interface{}(nil)
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork != nil {
@@ -165,6 +168,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				"ip_net":      serviceIP,
 				"pn_id":       pnRegionalID,
 				"hostname":    flattenStringPtr(endpoint.Hostname),
+				"enable_ipam": enableIpam,
 			})
 			return pnI, true
 		}
@@ -316,4 +320,27 @@ func rdbPrivilegeUpgradeV1SchemaType() cty.Type {
 	return cty.Object(map[string]cty.Type{
 		"id": cty.String,
 	})
+}
+
+func isIpamEndpoint(instance *rdb.Instance, meta interface{}) (bool, error) {
+	ipamAPI := ipam.NewAPI(meta.(*Meta).scwClient)
+
+	ips, err := ipamAPI.ListIPs(&ipam.ListIPsRequest{
+		Region:       instance.Region,
+		ResourceID:   &instance.ID,
+		ResourceType: "rdb_instance",
+		IsIPv6:       scw.BoolPtr(false),
+	}, scw.WithAllPages())
+	if err != nil {
+		return false, fmt.Errorf("could not list IPs: %w", err)
+	}
+
+	switch ips.TotalCount {
+	case 1:
+		return true, nil
+	case 0:
+		return false, nil
+	default:
+		return false, fmt.Errorf("expected no more than 1 IP for instance, got %d", ips.TotalCount)
+	}
 }

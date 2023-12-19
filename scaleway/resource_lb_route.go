@@ -66,7 +66,7 @@ func resourceScalewayLbRoute() *schema.Resource {
 }
 
 func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+	lbAPI, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -100,7 +100,7 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, route.ID))
+	d.SetId(newZonedIDString(frontZone, route.ID))
 
 	return resourceScalewayLbRouteRead(ctx, d, meta)
 }

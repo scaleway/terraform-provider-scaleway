@@ -16,7 +16,7 @@ require (
 	github.com/nats-io/jwt/v2 v2.5.3
 	github.com/nats-io/nats.go v1.31.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.21.0.20231128131307-c646e1e0b2cd
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.21.0.20231204153107-ba77e0471cea
 	github.com/stretchr/testify v1.8.4
 )
 
@@ -71,10 +71,10 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.14.1 // indirect
-	golang.org/x/crypto v0.15.0 // indirect
+	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect

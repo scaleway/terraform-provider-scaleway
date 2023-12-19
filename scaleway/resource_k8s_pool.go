@@ -144,6 +144,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "System volume type of the nodes composing the pool",
 				ValidateFunc: validation.StringInSlice([]string{
 					k8s.PoolVolumeTypeBSSD.String(),
@@ -154,6 +155,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "The size of the system volume of the nodes in gigabyte",
 			},
 			"public_ip_disabled": {
@@ -378,6 +380,10 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("version", pool.Version)
 	_ = d.Set("min_size", int(pool.MinSize))
 	_ = d.Set("max_size", int(pool.MaxSize))
+	_ = d.Set("root_volume_type", pool.RootVolumeType)
+	if pool.RootVolumeSize != nil {
+		_ = d.Set("root_volume_size_in_gb", int(*pool.RootVolumeSize)/1e9)
+	}
 	_ = d.Set("tags", pool.Tags)
 	_ = d.Set("container_runtime", pool.ContainerRuntime)
 	_ = d.Set("created_at", pool.CreatedAt.Format(time.RFC3339))
@@ -385,6 +391,7 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("nodes", nodes)
 	_ = d.Set("status", pool.Status)
 	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
+	_ = d.Set("region", region)
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)

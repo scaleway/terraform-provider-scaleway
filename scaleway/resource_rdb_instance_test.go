@@ -201,7 +201,7 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-instance-settings"
 						node_type = "db-dev-s"
 						disable_backup = true
 						engine = %q
@@ -283,7 +283,7 @@ func TestAccScalewayRdbInstance_Capitalize(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-instance-capitalize"
 						node_type = "DB-DEV-S"
 						engine = %q
 						is_ha_cluster = false
@@ -330,7 +330,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-private-network"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -366,7 +366,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-private-network"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -438,7 +438,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-private-network"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -468,7 +468,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-private-network"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -495,18 +495,11 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayRdbInstanceDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_vpc_private_network pn01 {
-						name = "my_private_network"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", "my_private_network"),
-				),
-			},
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_private_network pn01 {
@@ -514,7 +507,7 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-private-network-update"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -530,14 +523,95 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn01"),
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn01", "id"),
 				),
 			},
+			// Change PN but keep ipam config
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+					}
+					resource scaleway_vpc_private_network pn02 {
+						name = "my_second_private_network"
+					}
+			
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-private-network-update"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+						private_network {
+							pn_id = "${scaleway_vpc_private_network.pn02.id}"
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn01"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn02"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn02", "id"),
+				),
+			},
+			// Keep PN but change ipam config -> static
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network"
+					}
+					resource scaleway_vpc_private_network pn02 {
+						name = "my_second_private_network"
+					}
+			
+					locals {
+						ip_address  = cidrhost(scaleway_vpc_private_network.pn02.ipv4_subnet.0.subnet, 4)
+						cidr_prefix = split("/", scaleway_vpc_private_network.pn02.ipv4_subnet.0.subnet)[1]
+					}
+			
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-private-network-update"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10`, latestEngineVersion) + `
+						private_network {
+							ip_net = format("%s/%s", local.ip_address, local.cidr_prefix)
+							pn_id  = scaleway_vpc_private_network.pn02.id
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn02"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn02", "id"),
+				),
+			},
+			// Change PN but keep static config
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network"
+					}
+					resource scaleway_vpc_private_network pn02 {
+						name = "my_second_private_network"
 					}
 
 					locals {
@@ -546,7 +620,7 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-private-network-update"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -562,8 +636,42 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn01"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn02"),
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn01", "id"),
+				),
+			},
+			// Keep PN but change static config -> ipam
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network"
+					}
+			
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-private-network-update"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10`, latestEngineVersion) + `
+						private_network {
+							pn_id  = scaleway_vpc_private_network.pn01.id
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn01"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn01", "id"),
 				),
 			},
 		},
@@ -625,7 +733,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-private-network-dhcp"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -655,7 +763,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-private-network-dhcp"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -687,7 +795,7 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance main {
-						name                      = "test-rdb"
+						name                      = "test-rdb-instance-backup-schedule"
 						node_type                 = "db-dev-s"
 						engine                    = %q
 						is_ha_cluster             = false
@@ -727,7 +835,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-instance-volume"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -746,7 +854,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-instance-volume"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
@@ -769,7 +877,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 	})
 }
 
-func TestAccScalewayRdbInstance_DisablePublicEndpoint(t *testing.T) {
+func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -782,92 +890,90 @@ func TestAccScalewayRdbInstance_DisablePublicEndpoint(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc_private_network" "disable_public_endpoint" {
-						name = "test-rdb-disable-public-endpoint"
+					resource "scaleway_vpc_private_network" "test_endpoints" {
+						name = "test-rdb-endpoints"
 					}
 
-					resource "scaleway_rdb_instance" "disable_public_endpoint" {
-						name = "test-rdb-disable-public-endpoint"
+					resource "scaleway_rdb_instance" "test_endpoints" {
+						name = "test-rdb-endpoints"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_instance", "disable_public_endpoint" ]
-						disable_public_endpoint = true
+						tags = [ "terraform-test", "scaleway_rdb_instance", "test_endpoints" ]
 						private_network {
-							pn_id = scaleway_vpc_private_network.disable_public_endpoint.id
+							pn_id = scaleway_vpc_private_network.test_endpoints.id
 						}
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.disable_public_endpoint"),
-					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.disable_public_endpoint"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "disable_public_endpoint", "true"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "load_balancer.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "private_network.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.disable_public_endpoint", "private_network.0.pn_id", "scaleway_vpc_private_network.disable_public_endpoint", "id"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "endpoint_ip", ""),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "endpoint_port", "0"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.test_endpoints"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.test_endpoints"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_endpoints", "private_network.0.pn_id", "scaleway_vpc_private_network.test_endpoints", "id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "load_balancer.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "endpoint_ip", ""),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "endpoint_port", "0"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc_private_network" "disable_public_endpoint" {
-						name = "test-rdb-disable-public-endpoint"
+					resource "scaleway_vpc_private_network" "test_endpoints" {
+						name = "test-rdb-endpoints"
 					}
 
-					resource "scaleway_rdb_instance" "disable_public_endpoint" {
-						name = "test-rdb-disable-public-endpoint"
+					resource "scaleway_rdb_instance" "test_endpoints" {
+						name = "test-rdb-endpoints"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_instance", "disable_public_endpoint" ]
+						tags = [ "terraform-test", "scaleway_rdb_instance", "test_endpoints" ]
 						private_network {
-							pn_id = scaleway_vpc_private_network.disable_public_endpoint.id
+							pn_id = scaleway_vpc_private_network.test_endpoints.id
 						}
+						load_balancer {}
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.disable_public_endpoint"),
-					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.disable_public_endpoint"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "disable_public_endpoint", "false"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "load_balancer.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "private_network.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.disable_public_endpoint", "private_network.0.pn_id", "scaleway_vpc_private_network.disable_public_endpoint", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.disable_public_endpoint", "endpoint_ip"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.disable_public_endpoint", "endpoint_port"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.test_endpoints"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.test_endpoints"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_endpoints", "private_network.0.pn_id", "scaleway_vpc_private_network.test_endpoints", "id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc_private_network" "disable_public_endpoint" {
-						name = "test-rdb-disable-public-endpoint"
+					resource "scaleway_vpc_private_network" "test_endpoints" {
+						name = "test-rdb-endpoints"
 					}
 
-					resource "scaleway_rdb_instance" "disable_public_endpoint" {
-						name = "test-rdb-disable-public-endpoint"
+					resource "scaleway_rdb_instance" "test_endpoints" {
+						name = "test-rdb-endpoints"
 						node_type = "db-dev-s"
 						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_instance", "disable_public_endpoint" ]
-						disable_public_endpoint = true
+						tags = [ "terraform-test", "scaleway_rdb_instance", "test_endpoints" ]
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.disable_public_endpoint"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "disable_public_endpoint", "true"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "load_balancer.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "private_network.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "endpoint_ip", ""),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.disable_public_endpoint", "endpoint_port", "0"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.test_endpoints"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "0"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"),
 				),
 			},
 		},
