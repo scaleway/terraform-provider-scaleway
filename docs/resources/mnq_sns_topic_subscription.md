@@ -22,7 +22,7 @@ resource scaleway_mnq_sns_credentials main {
   permissions {
     can_manage = true
     can_publish = true
-	can_receive = true
+  can_receive = true
   }
 }
 
