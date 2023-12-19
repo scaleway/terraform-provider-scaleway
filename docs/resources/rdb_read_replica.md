@@ -70,9 +70,9 @@ The following arguments are supported:
       CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
       service if not set.
 
-- `same_zone` - (Defaults to `false`) Defines whether to create the replica in the same availability zone as the main instance nodes or not.
+- `same_zone` - (Defaults to `true`) Defines whether to create the replica in the same availability zone as the main instance nodes or not.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the Database read replica should be created.
 
 ## Attributes Reference
