@@ -14,13 +14,7 @@ our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/refere
 ### Basic
 
 ```hcl
-// For default project in default region
 resource "scaleway_mnq_sns" "main" {}
-
-// For specific project in default region
-resource "scaleway_mnq_sns" "for_project" {
-  project_id = scaleway_account_project.main.id
-}
 
 resource scaleway_mnq_sns_credentials main {
   project_id = scaleway_mnq_sns.main.project_id

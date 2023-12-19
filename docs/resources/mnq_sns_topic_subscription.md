@@ -17,11 +17,6 @@ our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/refere
 // For default project in default region
 resource "scaleway_mnq_sns" "main" {}
 
-// For specific project in default region
-resource "scaleway_mnq_sns" "for_project" {
-  project_id = scaleway_account_project.main.id
-}
-
 resource scaleway_mnq_sns_credentials main {
   project_id = scaleway_mnq_sns.main.project_id
   permissions {
@@ -38,7 +33,7 @@ resource "scaleway_mnq_sns_topic" "topic" {
   secret_key = scaleway_mnq_sns_credentials.main.secret_key
 }
 
-resource s"caleway_mnq_sns_topic_subscription main {
+resource scaleway_mnq_sns_topic_subscription main {
   project_id = scaleway_mnq_sns.main.project_id
   access_key = scaleway_mnq_sns_credentials.main.access_key
   secret_key = scaleway_mnq_sns_credentials.main.secret_key

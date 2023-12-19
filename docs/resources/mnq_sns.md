@@ -13,13 +13,22 @@ our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/refere
 
 ### Basic
 
+Activate SNS for default project
+
 ```hcl
-// For default project in default region
-resource "scaleway_mnq_sns" "main" {}
+resource scaleway_mnq_sns "main" {}
+```
+
+Activate SNS for a specific project
+
+```hcl
+data scaleway_account_project project {
+  name = "default"
+}
 
 // For specific project in default region
-resource "scaleway_mnq_sns" "for_project" {
-  project_id = scaleway_account_project.main.id
+resource scaleway_mnq_sns "for_project" {
+  project_id = data.scaleway_account_project.project.id
 }
 ```
 
