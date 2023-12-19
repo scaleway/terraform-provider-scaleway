@@ -110,7 +110,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 	_ = d.Set("visibility", image.Visibility.String())
 	_ = d.Set("size", int(image.Size))
 	_ = d.Set("tags", image.Tags)
-	_ = d.Set("updated_at", image.UpdatedAt)
+	_ = d.Set("updated_at", flattenTime(image.UpdatedAt))
 
 	return nil
 }
