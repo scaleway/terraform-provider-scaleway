@@ -44,7 +44,7 @@ func TestAccScalewayMNQSNSTopicSubscription_Basic(t *testing.T) {
 						secret_key = scaleway_mnq_sns_credentials.main.secret_key
 					}
 					
-					resource scaleway_mnq_sns_topic_subscription main {
+					resource scaleway_mnq_sns_topic_subscription by_id {
 						project_id = scaleway_mnq_sns.main.project_id
 						access_key = scaleway_mnq_sns_credentials.main.access_key
 						secret_key = scaleway_mnq_sns_credentials.main.secret_key
@@ -52,12 +52,26 @@ func TestAccScalewayMNQSNSTopicSubscription_Basic(t *testing.T) {
 						protocol = "http"
 						endpoint = "http://scaleway.com"
 					}
+
+					resource scaleway_mnq_sns_topic_subscription by_arn {
+						project_id = scaleway_mnq_sns.main.project_id
+						access_key = scaleway_mnq_sns_credentials.main.access_key
+						secret_key = scaleway_mnq_sns_credentials.main.secret_key
+						topic_arn = scaleway_mnq_sns_topic.main.arn
+						protocol = "http"
+						endpoint = "http://scaleway.com"
+					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayMNQSNSTopicSubscriptionExists(tt, "scaleway_mnq_sns_topic_subscription.main"),
-					testCheckResourceAttrUUID("scaleway_mnq_sns_topic_subscription.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.main", "protocol", "http"),
-					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.main", "endpoint", "http://scaleway.com"),
+					testAccCheckScalewayMNQSNSTopicSubscriptionExists(tt, "scaleway_mnq_sns_topic_subscription.by_id"),
+					testCheckResourceAttrUUID("scaleway_mnq_sns_topic_subscription.by_id", "id"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_id", "protocol", "http"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_id", "endpoint", "http://scaleway.com"),
+
+					testAccCheckScalewayMNQSNSTopicSubscriptionExists(tt, "scaleway_mnq_sns_topic_subscription.by_arn"),
+					testCheckResourceAttrUUID("scaleway_mnq_sns_topic_subscription.by_arn", "id"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_arn", "protocol", "http"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_arn", "endpoint", "http://scaleway.com"),
 				),
 			},
 		},
