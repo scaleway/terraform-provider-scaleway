@@ -54,9 +54,9 @@ The following arguments are supported:
 
 - `topic_arn` - (Optional) The ARN of the topic. Either `topic_id` or `topic_arn` is required.
 
-- `access_key` - (Optional) The access key of the SNS topic.
+- `access_key` - (Optional) The access key of the SNS credentials.
 
-- `secret_key` - (Optional) The secret key of the SNS topic.
+- `secret_key` - (Optional) The secret key of the SNS credentials.
 
 - `redrive_policy` - (Optional) Activate JSON Redrive Policy.
 

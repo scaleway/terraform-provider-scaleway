@@ -40,9 +40,9 @@ The following arguments are supported:
 
 - `name_prefix` - (Optional) Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 
-- `access_key` - (Optional) The access key of the SNS topic.
+- `access_key` - (Optional) The access key of the SNS credentials.
 
-- `secret_key` - (Optional) The secret key of the SNS topic.
+- `secret_key` - (Optional) The secret key of the SNS credentials.
 
 - `content_based_deduplication` - (Optional) Specifies whether to enable content-based deduplication.
 
