@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -144,7 +143,7 @@ func expandPrivateNetworks(data interface{}) ([]*lbSDK.PrivateNetwork, error) {
 		rawPn := pn.(map[string]interface{})
 		privateNetwork := &lbSDK.PrivateNetwork{}
 		privateNetwork.PrivateNetworkID = expandID(rawPn["private_network_id"].(string))
-		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig {
+		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig && len(staticConfig.([]interface{})) > 0 {
 			privateNetwork.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
 		} else {
 			privateNetwork.DHCPConfig = expandLbPrivateNetworkDHCPConfig(rawPn["dhcp_config"])
@@ -617,14 +616,10 @@ func lbPrivateNetworkSetHash(v interface{}) int {
 		buf.WriteString(expandID(pnID))
 	}
 
-	if staticConfig, ok := m["static_config"]; ok {
+	if staticConfig, ok := m["static_config"]; ok && len(staticConfig.([]interface{})) > 0 {
 		for _, item := range staticConfig.([]interface{}) {
 			buf.WriteString(item.(string))
 		}
-	}
-
-	if dhcpConfig, ok := m["dhcp_config"]; ok {
-		buf.WriteString(strconv.FormatBool(dhcpConfig.(bool)))
 	}
 
 	return StringHashcode(buf.String())
