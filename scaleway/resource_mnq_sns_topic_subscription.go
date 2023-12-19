@@ -74,10 +74,6 @@ func resourceScalewayMNQSNSTopicSubscription() *schema.Resource {
 				Description: "JSON Redrive policy",
 				ForceNew:    true,
 			},
-			"owner": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"arn": {
 				Type:     schema.TypeString,
 				Computed: true,
