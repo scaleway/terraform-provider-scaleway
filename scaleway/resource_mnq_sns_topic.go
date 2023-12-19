@@ -69,12 +69,14 @@ func resourceScalewayMNQSNSTopic() *schema.Resource {
 				Description: "Whether the topic is a FIFO topic. If true, the topic name must end with .fifo",
 			},
 			"owner": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Owner of the SNS topic, should have format 'project-${project_id}'",
 			},
 			"arn": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}'",
 			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),

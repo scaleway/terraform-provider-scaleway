@@ -75,8 +75,9 @@ func resourceScalewayMNQSNSTopicSubscription() *schema.Resource {
 				ForceNew:    true,
 			},
 			"arn": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}:${subscription_id}'",
 			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
