@@ -13,13 +13,21 @@ our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/refere
 
 ### Basic
 
-```hcl
-// For default project in default region
-resource "scaleway_mnq_sqs" "main" {}
+Activate SQS for default project
 
-// For specific project in default region
+```hcl
+resource "scaleway_mnq_sqs" "main" {}
+```
+
+Activate SQS for a specific project
+
+```hcl
+data scaleway_account_project project {
+  name = "default"
+}
+
 resource "scaleway_mnq_sqs" "for_project" {
-  project_id = scaleway_account_project.main.id
+  project_id = data.scaleway_account_project.project.id
 }
 ```
 

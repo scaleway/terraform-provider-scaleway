@@ -21,8 +21,8 @@ resource scaleway_mnq_sqs_credentials main {
   name = "sqs-credentials"
 
   permissions {
-    can_manage = false
-    can_receive = true
+    can_manage = true
+    can_receive = false
     can_publish = false
   }
 }
@@ -30,7 +30,7 @@ resource scaleway_mnq_sqs_credentials main {
 resource scaleway_mnq_sqs_queue main {
   project_id = scaleway_mnq_sqs.main.project_id
   name = "my-queue"
-  endpoint = scaleway_mnq_sqs.main.endpoint
+  sqs_endpoint = scaleway_mnq_sqs.main.endpoint
   access_key = scaleway_mnq_sqs_credentials.main.access_key
   secret_key = scaleway_mnq_sqs_credentials.main.secret_key
 }
@@ -44,7 +44,7 @@ The following arguments are supported:
 
 - `name_prefix` - (Optional) Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 
-- `endpoint` - (Required) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `http://sqs-sns.mnq.{region}.scw.cloud`.
+- `sqs_endpoint` - (Optional) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `https://sqs.mnq.{region}.scaleway.com`.
 
 - `access_key` - (Required) The access key of the SQS queue.
 
