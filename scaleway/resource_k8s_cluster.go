@@ -334,7 +334,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		clusterType = ""
 	}
 
-	if !strings.HasPrefix(d.Get("type").(string), "kapsule") && !strings.HasPrefix(d.Get("type").(string), "multicloud") {
+	if clusterType != "" && !strings.HasPrefix(clusterType.(string), "kapsule") && !strings.HasPrefix(clusterType.(string), "multicloud") {
 		diags = append(diags, diag.Diagnostic{
 			Severity:      diag.Warning,
 			Summary:       "Unexpected cluster type",
