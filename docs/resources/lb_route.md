@@ -3,7 +3,7 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_route"
 ---
 
-# scaleway_lb_route
+# Resource: scaleway_lb_route
 
 Creates and manages Scaleway Load-Balancer Routes.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-route).

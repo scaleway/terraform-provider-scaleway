@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_nats_credentials"
 ---
 
-# scaleway_mnq_nats_credentials
+# Resource: scaleway_mnq_nats_credentials
 
 Creates and manages Scaleway Messaging and queuing Nats Credentials.
 For further information please check

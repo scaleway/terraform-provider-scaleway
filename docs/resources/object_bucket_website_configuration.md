@@ -3,7 +3,7 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_website_configuration"
 ---
 
-# scaleway_object_bucket_website_configuration
+# Resource: scaleway_object_bucket_website_configuration
 
 Provides an Object bucket website configuration resource.
 For more information, see [Hosting Websites on Object bucket](https://www.scaleway.com/en/docs/storage/object/how-to/use-bucket-website/).

@@ -3,7 +3,7 @@ subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_flexible_ip"
 ---
 
-# scaleway_flexible_ip
+# Resource: scaleway_flexible_ip
 
 Creates and manages Scaleway flexible IPs.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/flexible-ip/api).

@@ -3,7 +3,7 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway"
 ---
 
-# scaleway_vpc_public_gateway
+# Resource: scaleway_vpc_public_gateway
 
 Creates and manages Scaleway VPC Public Gateway.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1).

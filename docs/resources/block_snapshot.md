@@ -3,7 +3,7 @@ subcategory: "Block"
 page_title: "Scaleway: scaleway_block_snapshot"
 ---
 
-# scaleway_block_snapshot
+# Resource: scaleway_block_snapshot
 
 Creates and manages Scaleway Block Snapshots.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/block/).

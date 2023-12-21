@@ -3,7 +3,7 @@ subcategory: "IPAM"
 page_title: "Scaleway: scaleway_ipam_ip"
 ---
 
-# scaleway_ipam_ip
+# Resource: scaleway_ipam_ip
 
 Books and manages Scaleway IPAM IPs.
 

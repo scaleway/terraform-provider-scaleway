@@ -3,7 +3,7 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_placement_group"
 ---
 
-# scaleway_instance_placement_group
+# Resource: scaleway_instance_placement_group
 
 Creates and manages Compute Instance Placement Groups. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653).
 

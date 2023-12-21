@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sqs"
 ---
 
-# scaleway_mnq_sqs
+# Resource: scaleway_mnq_sqs
 
 Activate Scaleway Messaging and queuing SQS for a project.
 For further information please check

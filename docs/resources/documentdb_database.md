@@ -3,7 +3,7 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_database"
 ---
 
-# scaleway_documentdb_database
+# Resource: scaleway_documentdb_database
 
 Creates and manages Scaleway DocumentDB database.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db).

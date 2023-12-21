@@ -3,7 +3,7 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_api_key"
 ---
 
-# scaleway_iam_api_key
+# Resource: scaleway_iam_api_key
 
 Creates and manages Scaleway IAM API Keys. For more information, please
 check [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#api-keys-3665ae)

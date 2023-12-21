@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sns_credentials"
 ---
 
-# scaleway_mnq_sns_credentials
+# Resource: scaleway_mnq_sns_credentials
 
 Creates and manages Scaleway Messaging and queuing SNS Credentials.
 For further information please check

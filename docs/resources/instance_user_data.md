@@ -3,7 +3,7 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_user_data"
 ---
 
-# scaleway_instance_user_data
+# Resource: scaleway_instance_user_data
 
 Creates and manages Scaleway Compute Instance User Data values.
 

@@ -3,7 +3,7 @@ subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_flexible_ip_mac_address"
 ---
 
-# scaleway_flexible_ip_mac_address
+# Resource: scaleway_flexible_ip_mac_address
 
 Creates and manages Scaleway Flexible IP Mac Addresses.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/flexible-ip/api).

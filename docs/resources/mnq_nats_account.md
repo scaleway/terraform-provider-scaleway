@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_nats_account"
 ---
 
-# scaleway_mnq_nats_account
+# Resource: scaleway_mnq_nats_account
 
 Creates and manages Scaleway Messaging and queuing Nats Accounts.
 For further information please check

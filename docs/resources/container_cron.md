@@ -3,7 +3,7 @@ subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_cron"
 ---
 
-# scaleway_container_cron
+# Resource: scaleway_container_cron
 
 Creates and manages Scaleway Container Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
 

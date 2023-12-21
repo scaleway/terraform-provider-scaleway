@@ -3,7 +3,7 @@ subcategory: "Account"
 page_title: "Scaleway: scaleway_account_ssh_key"
 ---
 
-# scaleway_account_ssh_key
+# Resource: scaleway_account_ssh_key
 
 Manages user SSH keys to access servers provisioned on Scaleway.
 

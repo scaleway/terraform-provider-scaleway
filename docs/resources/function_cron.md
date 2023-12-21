@@ -3,7 +3,7 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_cron"
 ---
 
-# scaleway_function_cron
+# Resource: scaleway_function_cron
 
 Creates and manages Scaleway Function Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
 

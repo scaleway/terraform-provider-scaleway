@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sns"
 ---
 
-# scaleway_mnq_sns
+# Resource: scaleway_mnq_sns
 
 Activate Scaleway Messaging and queuing SNS for a project.
 For further information please check

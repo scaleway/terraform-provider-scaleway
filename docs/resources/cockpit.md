@@ -3,7 +3,7 @@ subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit"
 ---
 
-# scaleway_cockpit
+# Resource: scaleway_cockpit
 
 Creates and manages Scaleway Cockpit.
 

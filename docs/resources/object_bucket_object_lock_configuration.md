@@ -3,7 +3,7 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_lock_configuration"
 ---
 
-# scaleway_object_bucket_lock_configuration
+# Resource: scaleway_object_bucket_lock_configuration
 
 Provides an Object bucket lock configuration resource.
 For more information, see [Setting up object lock](https://www.scaleway.com/en/docs/storage/object/api-cli/object-lock/).

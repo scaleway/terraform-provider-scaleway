@@ -3,7 +3,7 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_privilege"
 ---
 
-# scaleway_documentdb_privilege
+# Resource: scaleway_documentdb_privilege
 
 Create and manage Scaleway DocumentDB database privilege.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).

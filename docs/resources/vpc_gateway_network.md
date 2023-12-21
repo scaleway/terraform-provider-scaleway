@@ -3,7 +3,7 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_gateway_network"
 ---
 
-# scaleway_vpc_gateway_network
+# Resource: scaleway_vpc_gateway_network
 
 Creates and manages Scaleway VPC Public Gateway Network.
 It allows attaching Private Networks to the VPC Public Gateway and your DHCP config

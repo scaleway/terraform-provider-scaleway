@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sqs_queue"
 ---
 
-# scaleway_mnq_sqs_queue
+# Resource: scaleway_mnq_sqs_queue
 
 Creates and manages Scaleway Messaging and queuing SQS Queues.
 For further information please check

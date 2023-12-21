@@ -3,7 +3,7 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function"
 ---
 
-# scaleway_function
+# Resource: scaleway_function
 
 Creates and manages Scaleway Functions.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).

@@ -3,7 +3,7 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp_reservation"
 ---
 
-# scaleway_vpc_public_gateway_dhcp_reservation
+# Resource: scaleway_vpc_public_gateway_dhcp_reservation
 
 Creates and manages the [Scaleway DHCP Reservations](https://www.scaleway.com/en/docs/network/vpc/concepts/#dhcp).
 

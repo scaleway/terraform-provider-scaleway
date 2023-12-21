@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sns_topic"
 ---
 
-# scaleway_mnq_sns_topic
+# Resource: scaleway_mnq_sns_topic
 
 Manage Scaleway Messaging and queuing SNS Topics.
 For further information please check

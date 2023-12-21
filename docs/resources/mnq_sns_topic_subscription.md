@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sns_topic_subscription"
 ---
 
-# scaleway_mnq_sns_topic_subscription
+# Resource: scaleway_mnq_sns_topic_subscription
 
 Manage Scaleway Messaging and queuing SNS Topic Subscriptions.
 For further information please check

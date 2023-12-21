@@ -3,7 +3,7 @@ subcategory: "Containers"
 page_title: "Scaleway: scaleway_container"
 ---
 
-# scaleway_container
+# Resource: scaleway_container
 
 Creates and manages Scaleway Container.
 

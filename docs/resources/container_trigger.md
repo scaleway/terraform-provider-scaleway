@@ -3,7 +3,7 @@ subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_trigger"
 ---
 
-# scaleway_container_trigger
+# Resource: scaleway_container_trigger
 
 Creates and manages Scaleway Container Triggers.
 For more information see [the documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-triggers).

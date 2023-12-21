@@ -3,7 +3,7 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_security_group"
 ---
 
-# scaleway_instance_security_group
+# Resource: scaleway_instance_security_group
 
 Creates and manages Scaleway Compute Instance security groups. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89).
 

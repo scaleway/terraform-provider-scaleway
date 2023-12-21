@@ -3,7 +3,7 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc"
 ---
 
-# scaleway_vpc
+# Resource: scaleway_vpc
 
 Creates and manages Scaleway Virtual Private Clouds.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/).

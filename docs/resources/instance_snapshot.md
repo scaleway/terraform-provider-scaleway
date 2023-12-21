@@ -3,7 +3,7 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_snapshot"
 ---
 
-# scaleway_instance_snapshot
+# Resource: scaleway_instance_snapshot
 
 Creates and manages Scaleway Compute Snapshots.
 For more information,

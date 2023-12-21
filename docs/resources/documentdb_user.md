@@ -3,7 +3,7 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_user"
 ---
 
-# scaleway_documentdb_user
+# Resource: scaleway_documentdb_user
 
 Creates and manages Scaleway Database DocumentDB Users.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).

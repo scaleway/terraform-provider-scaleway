@@ -3,7 +3,7 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object"
 ---
 
-# scaleway_object
+# Resource: scaleway_object
 
 Creates and manages Scaleway object storage objects.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).

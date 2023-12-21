@@ -3,7 +3,7 @@ subcategory: "Jobs"
 page_title: "Scaleway: scaleway_job_definition"
 ---
 
-# scaleway_job_definition
+# Resource: scaleway_job_definition
 
 Creates and manages a Scaleway Serverless Job Definition. For more information, see [the documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/jobs/v1alpha1).
 

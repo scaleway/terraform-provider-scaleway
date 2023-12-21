@@ -3,7 +3,7 @@ subcategory: "Block"
 page_title: "Scaleway: scaleway_block_volume"
 ---
 
-# scaleway_block_volume
+# Resource: scaleway_block_volume
 
 Creates and manages Scaleway Block Volumes.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/block/).

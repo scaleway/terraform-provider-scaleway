@@ -3,7 +3,7 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_domain"
 ---
 
-# scaleway_function_domain
+# Resource: scaleway_function_domain
 
 Creates and manages Scaleway Function Domain bindings.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).

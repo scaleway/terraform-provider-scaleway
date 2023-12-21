@@ -3,7 +3,7 @@ subcategory: "Account"
 page_title: "Scaleway: scaleway_account_project"
 ---
 
-# scaleway_account_project
+# Resource: scaleway_account_project
 
 Manages organization's projects on Scaleway.
 

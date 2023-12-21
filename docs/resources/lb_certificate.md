@@ -3,7 +3,7 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_certificate"
 ---
 
-# scaleway_lb_certificate
+# Resource: scaleway_lb_certificate
 
 Creates and manages Scaleway Load-Balancer Certificates.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-certificate).

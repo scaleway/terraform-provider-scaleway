@@ -3,7 +3,7 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_user"
 ---
 
-# scaleway_rdb_user
+# Resource: scaleway_rdb_user
 
 Creates and manages Scaleway Database Users.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).

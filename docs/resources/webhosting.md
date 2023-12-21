@@ -3,7 +3,7 @@ subcategory: "Web hosting"
 page_title: "Scaleway: scaleway_webhosting"
 ---
 
-# scaleway_webhosting
+# Resource: scaleway_webhosting
 
 Creates and manages Scaleway Web Hostings.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/webhosting/).

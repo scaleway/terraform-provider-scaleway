@@ -3,7 +3,7 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket"
 ---
 
-# scaleway_object_bucket
+# Resource: scaleway_object_bucket
 
 Creates and manages Scaleway object storage buckets.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).

@@ -3,7 +3,7 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_token"
 ---
 
-# scaleway_function_token
+# Resource: scaleway_function_token
 
 Creates and manages Scaleway Function Token.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/#tokens-26b085).

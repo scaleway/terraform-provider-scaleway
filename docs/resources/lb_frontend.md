@@ -3,7 +3,7 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_frontend"
 ---
 
-# scaleway_lb_frontend
+# Resource: scaleway_lb_frontend
 
 Creates and manages Scaleway Load-Balancer Frontends. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
 

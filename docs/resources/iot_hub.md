@@ -3,7 +3,7 @@ subcategory: "IoT Hub"
 page_title: "Scaleway: scaleway_iot_hub"
 ---
 
-# scaleway_iot_hub
+# Resource: scaleway_iot_hub
 
 -> **Note:** This terraform resource is currently in beta and might include breaking change in future releases.
 

@@ -3,7 +3,7 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_ssh_key"
 ---
 
-# scaleway_iam_ssh_key
+# Resource: scaleway_iam_ssh_key
 
 Creates and manages Scaleway IAM SSH Keys.
 For more information,

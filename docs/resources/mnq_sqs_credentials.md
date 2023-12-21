@@ -3,7 +3,7 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sqs_credentials"
 ---
 
-# scaleway_mnq_sqs_credentials
+# Resource: scaleway_mnq_sqs_credentials
 
 Creates and manages Scaleway Messaging and queuing SQS Credentials.
 For further information please check

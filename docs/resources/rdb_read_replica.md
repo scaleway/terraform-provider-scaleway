@@ -3,7 +3,7 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_read_replica"
 ---
 
-# scaleway_rdb_read_replica
+# Resource: scaleway_rdb_read_replica
 
 Creates and manages Scaleway Database read replicas.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).

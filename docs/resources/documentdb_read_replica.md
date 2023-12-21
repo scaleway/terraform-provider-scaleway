@@ -3,7 +3,7 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_read_replica"
 ---
 
-# scaleway_documentdb_read_replica
+# Resource: scaleway_documentdb_read_replica
 
 Creates and manages Scaleway DocumentDB Database read replicas.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).

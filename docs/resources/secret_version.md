@@ -3,7 +3,7 @@ subcategory: "Secrets"
 page_title: "Scaleway: scaleway_secret_version"
 ---
 
-# scaleway_secret
+# Resource: scaleway_secret
 
 Creates and manages Scaleway Secret Versions.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/secret_manager/api/v1alpha1/#secret-versions-079501).

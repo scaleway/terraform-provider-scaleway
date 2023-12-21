@@ -3,7 +3,7 @@ subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_domain"
 ---
 
-# scaleway_container_domain
+# Resource: scaleway_container_domain
 
 Creates and manages Scaleway Container domain name bindings.
 You can check our [containers guide](https://www.scaleway.com/en/docs/compute/containers/how-to/add-a-custom-domain-to-a-container/) for further information.

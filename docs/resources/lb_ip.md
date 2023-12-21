@@ -3,7 +3,7 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_ip"
 ---
 
-# scaleway_lb_ip
+# Resource: scaleway_lb_ip
 
 Creates and manages Scaleway Load-Balancers IPs.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-ip-addresses).

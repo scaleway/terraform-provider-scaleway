@@ -3,7 +3,7 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_policy"
 ---
 
-# scaleway_iam_policy
+# Resource: scaleway_iam_policy
 
 Creates and manages Scaleway IAM Policies. For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#policies-54b8a7).
 
