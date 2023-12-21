@@ -74,11 +74,3 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the queue with format `{region/{project-id}/{queue-name}`
 
 - `url` - The URL of the queue.
-
-## Import
-
-SQS queues can be imported using the `{region}/{project-id}/{queue-name}`, e.g.
-
-```bash
-$ terraform import scaleway_mnq_sqs_queue.main fr-par/11111111111111111111111111111111/my-queue
-```
