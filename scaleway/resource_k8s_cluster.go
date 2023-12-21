@@ -156,7 +156,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			"delete_additional_resources": {
 				Type:        schema.TypeBool,
 				Required:    true,
-				Description: "Delete additional resources like block volumes and loadbalancers on cluster deletion",
+				Description: "Delete additional resources like block volumes, load-balancers and the private network (if empty) on cluster deletion",
 			},
 			"private_network_id": {
 				Type:             schema.TypeString,
