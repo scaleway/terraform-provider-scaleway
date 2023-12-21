@@ -217,6 +217,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_iam_ssh_key":                         dataSourceScalewayIamSSHKey(),
 				"scaleway_iam_user":                            dataSourceScalewayIamUser(),
 				"scaleway_instance_ip":                         dataSourceScalewayInstanceIP(),
+				"scaleway_instance_placement_group":            dataSourceScalewayInstancePlacementGroup(),
 				"scaleway_instance_private_nic":                dataSourceScalewayInstancePrivateNIC(),
 				"scaleway_instance_security_group":             dataSourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_server":                     dataSourceScalewayInstanceServer(),
