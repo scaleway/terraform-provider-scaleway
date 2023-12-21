@@ -43,7 +43,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Job Definition.
 ~> **Important:** Serverless Jobs Definition's IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111

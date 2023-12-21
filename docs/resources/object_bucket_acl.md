@@ -112,7 +112,7 @@ The `grantee` configuration block supports the following arguments:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The `region`,`bucket` and `acl` separated by (`/`).
 

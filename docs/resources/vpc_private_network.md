@@ -56,7 +56,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the private network.
 - `ipv4_subnet` - The IPv4 subnet associated with the private network.

@@ -42,7 +42,7 @@ resource scaleway_iam_user user {
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the user (UUID format).
 - `email` - The email of the user

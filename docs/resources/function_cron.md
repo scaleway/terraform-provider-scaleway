@@ -53,7 +53,7 @@ The following arguments are required:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The function CRON's ID.
 

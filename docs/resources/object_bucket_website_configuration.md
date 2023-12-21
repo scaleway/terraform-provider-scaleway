@@ -79,7 +79,7 @@ The `index_document` configuration block supports the following arguments:
 
 ~> **Important:** The suffix must not be empty and must not include a slash character. The routing is not supported.
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attribute is exported:
 
 * `id` - The region and bucket separated by a slash (/)
 * `website_domain` - The domain of the website endpoint. This is used to create DNS alias [records](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/).

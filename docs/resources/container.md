@@ -92,7 +92,7 @@ Note that if you want to use your own configuration, you must consult our config
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The container's ID.
 

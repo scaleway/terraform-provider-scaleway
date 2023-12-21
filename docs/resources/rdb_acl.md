@@ -42,7 +42,7 @@ The `acl_rules` block supports:
 
 ## Attributes Reference
 
-All arguments above are exported.
+No additional attributes are exported.
 
 ## Import
 

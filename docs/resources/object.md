@@ -43,7 +43,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attribute is exported:
 
 * `id` - The path of the object, including bucket name.
 

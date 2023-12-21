@@ -175,7 +175,7 @@ The `versioning` object supports the following:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attribute is exported:
 
 * `id` - The unique name of the bucket.
 

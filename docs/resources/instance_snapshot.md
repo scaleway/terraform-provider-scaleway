@@ -88,7 +88,7 @@ Updates to this field will recreate a new resource.
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the snapshot.
 
