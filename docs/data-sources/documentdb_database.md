@@ -1,6 +1,5 @@
 ---
 subcategory: "Databases"
-layout: "scaleway"
 page_title: "Scaleway: scaleway_documentdb_database"
 ---
 
