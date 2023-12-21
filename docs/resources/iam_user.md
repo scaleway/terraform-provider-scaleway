@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_iam_user" "basic" {
   email = "test@test.com"
 }
@@ -20,7 +20,7 @@ resource "scaleway_iam_user" "basic" {
 
 ### Multiple users
 
-```hcl
+```terraform
 locals {
   users = toset([
     "test@test.com",

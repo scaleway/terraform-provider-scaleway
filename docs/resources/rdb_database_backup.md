@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Basic
 
-```hcl
+```terraform
 resource scaleway_rdb_database_backup "main" {
   instance_id = data.scaleway_rdb_instance.main.id
   database_name = data.scaleway_rdb_database.main.name
@@ -21,7 +21,7 @@ resource scaleway_rdb_database_backup "main" {
 
 ### With expiration
 
-```hcl
+```terraform
 resource scaleway_rdb_database_backup "main" {
   instance_id = data.scaleway_rdb_instance.main.id
   database_name = data.scaleway_rdb_database.main.name

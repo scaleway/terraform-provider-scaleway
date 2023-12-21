@@ -10,7 +10,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc_public_gateway_dhcp" "main" {
     subnet = "192.168.1.0/24"
 }

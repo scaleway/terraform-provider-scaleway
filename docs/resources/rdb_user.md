@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Basic
 
-```hcl
+```terraform
 resource "random_password" "db_password" {
   length  = 16
   special = true

@@ -12,7 +12,7 @@ For more information see [the documentation](https://developers.scaleway.com/en/
 
 ### Basic
 
-```hcl
+```terraform
 resource scaleway_container_namespace main {
   name = "test-container-token-ns"
 }

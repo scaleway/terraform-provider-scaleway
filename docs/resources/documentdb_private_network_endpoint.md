@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ### Example Basic
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn" {
   name = "my_private_network"
 }

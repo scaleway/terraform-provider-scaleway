@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/n
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_domain_record" "www" {
   dns_zone = "domain.tld"
   name     = "www"
@@ -50,7 +50,7 @@ resource "scaleway_domain_record" "mx2" {
 
 ### With dynamic records
 
-```hcl
+```terraform
 resource "scaleway_domain_record" "geo_ip" {
   dns_zone = "domain.tld"
   name     = "images"
@@ -127,7 +127,7 @@ resource "scaleway_domain_record" "weighted" {
 
 ### Create an instance and add records with the new instance IP
 
-```hcl
+```terraform
 variable "project_id" {
   type        = string
   description = "Your project ID."

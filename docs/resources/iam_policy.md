@@ -13,7 +13,7 @@ Creates and manages Scaleway IAM Policies. For more information, see [the docume
 
 ### Create a policy for an organization's project
 
-```hcl
+```terraform
 provider scaleway {
   organization_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
@@ -39,7 +39,7 @@ resource scaleway_iam_policy "object_read_only" {
 
 ### Create a policy for all current and future projects in an organization
 
-```hcl
+```terraform
 resource scaleway_iam_application "app" {
   name = "my app"
 }
@@ -57,7 +57,7 @@ resource scaleway_iam_policy "object_read_only" {
 
 ### Create a permission for multiple users using a group
 
-```hcl
+```terraform
 locals {
   users = [
     "user1@mail.com",

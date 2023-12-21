@@ -12,7 +12,7 @@ For more information see [the documentation](https://developers.scaleway.com/en/
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_tem_domain" "main" {
   accept_tos = true
   name       = "example.com"
@@ -21,7 +21,7 @@ resource "scaleway_tem_domain" "main" {
 
 ### Add the required records to your DNS zone
 
-```hcl
+```terraform
 variable "domain_name" {
   type    = string
 }

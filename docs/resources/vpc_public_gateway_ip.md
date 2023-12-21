@@ -10,7 +10,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_domain_record" "tf_A" {
     dns_zone = "example.com"
     name     = "tf"

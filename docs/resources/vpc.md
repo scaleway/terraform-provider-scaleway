@@ -10,7 +10,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/n
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
     name = "my-vpc"
     tags = ["demo", "terraform"]

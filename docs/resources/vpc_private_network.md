@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn_priv" {
     name = "subnet_demo"
     tags = ["demo", "terraform"]
@@ -21,7 +21,7 @@ resource "scaleway_vpc_private_network" "pn_priv" {
 
 ### With subnets
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn_priv" {
     name = "subnet_demo"
     tags = ["demo", "terraform"]

@@ -10,7 +10,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_block_volume" "block_volume" {
     iops       = 5000
     name       = "some-volume-name"

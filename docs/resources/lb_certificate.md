@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ### Let's Encrypt
 
-```hcl
+```terraform
 resource "scaleway_lb_certificate" "cert01" {
   lb_id = scaleway_lb.lb01.id
   name  = "cert1"
@@ -33,7 +33,7 @@ resource "scaleway_lb_certificate" "cert01" {
 
 ### Custom Certificate
 
-```hcl
+```terraform
 resource "scaleway_lb_certificate" "cert01" {
   lb_id = scaleway_lb.lb01.id
   name  = "custom-cert"

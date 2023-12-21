@@ -12,7 +12,7 @@ You can check our [containers guide](https://www.scaleway.com/en/docs/compute/co
 
 ### Simple
 
-```hcl
+```terraform
 resource scaleway_container app {}
 
 resource scaleway_container_domain "app" {
@@ -23,7 +23,7 @@ resource scaleway_container_domain "app" {
 
 ### Complete example with domain
 
-```hcl
+```terraform
 resource scaleway_container_namespace main {
     name = "my-ns-test"
     description = "test container"

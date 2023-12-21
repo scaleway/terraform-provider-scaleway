@@ -13,7 +13,7 @@ Creates and manages Scaleway IoT Hub Instances. For more information, see [the d
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_iot_hub" "main" {
     name         = "test-iot"
     product_plan = "plan_shared"
@@ -27,7 +27,7 @@ resource "scaleway_iot_device" "main" {
 
 ### With custom certificate
 
-```hcl
+```terraform
 resource "scaleway_iot_hub" "main" {
     name         = "test-iot"
     product_plan = "plan_shared"

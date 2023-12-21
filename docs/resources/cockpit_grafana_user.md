@@ -11,7 +11,7 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 
 ## Example Usage
 
-```hcl
+```terraform
 // Get the cockpit of the default project
 data "scaleway_cockpit" "main" {}
 

@@ -10,7 +10,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "main" {
   name           = "rdb"
   node_type      = "DB-DEV-S"

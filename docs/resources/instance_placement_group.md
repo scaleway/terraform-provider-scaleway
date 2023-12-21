@@ -9,7 +9,7 @@ Creates and manages Compute Instance Placement Groups. For more information, see
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_placement_group" "availability_group" {}
 ```
 

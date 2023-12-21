@@ -16,7 +16,7 @@ Creates and manages Scaleway IoT Routes. For more information, see the following
 
 ### Database Route
 
-```hcl
+```terraform
 resource "scaleway_iot_route" "main" {
 	name   = "default"
 	hub_id = scaleway_iot_hub.main.id
@@ -61,7 +61,7 @@ resource "scaleway_rdb_instance" "iot" {
 
 ### S3 Route
 
-```hcl
+```terraform
 resource "scaleway_iot_route" "main" {
 	name   = "main"
 	hub_id = scaleway_iot_hub.main.id
@@ -87,7 +87,7 @@ resource "scaleway_object_bucket" "main" {
 
 ### Rest Route
 
-```hcl
+```terraform
 resource "scaleway_iot_route" "main" {
 	name   = "main"
 	hub_id = scaleway_iot_hub.main.id

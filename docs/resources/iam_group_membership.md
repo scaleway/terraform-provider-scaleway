@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Application Membership
 
-```hcl
+```terraform
 resource "scaleway_iam_group" "group" {
   name                = "my_group"
   external_membership = true
@@ -30,7 +30,7 @@ resource "scaleway_iam_group_membership" "member" {
 
 ### Users membership
 
-```hcl
+```terraform
 locals {
   users = toset([
     "user1@mail.com",

@@ -11,7 +11,7 @@ Books and manages Scaleway IPAM IPs.
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
   name = "my vpc"
 }
@@ -32,7 +32,7 @@ resource "scaleway_ipam_ip" "ip01" {
 
 ### Request a specific IPv4
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
   name = "my vpc"
 }
@@ -54,7 +54,7 @@ resource "scaleway_ipam_ip" "ip01" {
 
 ### Request an IPv6
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
   name = "my vpc"
 }

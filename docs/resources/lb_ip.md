@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_lb_ip" "ip" {
     reverse = "my-reverse.com"
 }

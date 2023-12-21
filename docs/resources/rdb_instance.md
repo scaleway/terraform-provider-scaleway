@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Example Basic
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "main" {
   name           = "test-rdb"
   node_type      = "DB-DEV-S"
@@ -26,7 +26,7 @@ resource "scaleway_rdb_instance" "main" {
 
 ### Example with Settings
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "main" {
   name           = "test-rdb"
   node_type      = "db-dev-s"
@@ -45,7 +45,7 @@ resource "scaleway_rdb_instance" "main" {
 
 ### Example with backup schedule
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "main" {
   name          = "test-rdb"
   node_type     = "DB-DEV-S"
@@ -66,7 +66,7 @@ RDB Instances can have a maximum of 1 public endpoint and 1 private endpoint. It
 
 #### 1 static private network endpoint
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn" {
   ipv4_subnet {
     subnet = "172.16.20.0/22"
@@ -86,7 +86,7 @@ resource "scaleway_rdb_instance" "main" {
 
 #### 1 IPAM private network endpoint + 1 public endpoint
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_rdb_instance" "main" {
@@ -102,7 +102,7 @@ resource "scaleway_rdb_instance" "main" {
 
 #### Default: 1 public endpoint
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "main" {
   node_type         = "db-dev-s"
   engine            = "PostgreSQL-11"

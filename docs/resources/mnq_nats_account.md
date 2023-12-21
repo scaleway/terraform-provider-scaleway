@@ -13,7 +13,7 @@ our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/refere
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_mnq_nats_account" "main" {
   name = "nats-account"
 }

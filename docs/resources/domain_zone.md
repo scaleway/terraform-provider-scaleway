@@ -11,7 +11,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/n
 ## Example Usage
 
 
-```hcl
+```terraform
 resource "scaleway_domain_zone" "test" {
   domain    = "scaleway-terraform.com"
   subdomain = "test"

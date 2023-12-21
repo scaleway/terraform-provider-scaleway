@@ -13,7 +13,7 @@ our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/refere
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_mnq_sns" "main" {}
 
 resource scaleway_mnq_sns_credentials main {

@@ -19,7 +19,7 @@ About cloud-init documentation please check this [link](https://cloudinit.readth
 
 ### Basic
 
-```hcl
+```terraform
 variable user_data {
   type = map
   default = {

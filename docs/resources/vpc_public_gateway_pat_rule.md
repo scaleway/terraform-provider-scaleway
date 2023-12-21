@@ -10,7 +10,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc_public_gateway" "pg01" {
   type = "VPC-GW-S"
 }

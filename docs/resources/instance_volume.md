@@ -10,7 +10,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "server_volume" {
     type       = "l_ssd"
     name       = "some-volume-name"

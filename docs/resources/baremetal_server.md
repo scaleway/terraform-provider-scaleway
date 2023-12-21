@@ -11,7 +11,7 @@ Creates and manages Scaleway Compute Baremetal servers. For more information, se
 
 ### Basic
 
-```hcl
+```terraform
 data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
@@ -26,7 +26,7 @@ resource "scaleway_baremetal_server" "base" {
 
 ### With option
 
-```hcl
+```terraform
 data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
@@ -70,7 +70,7 @@ resource "scaleway_baremetal_server" "base" {
 
 ### With private network
 
-```hcl
+```terraform
 data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
@@ -113,7 +113,7 @@ resource "scaleway_baremetal_server" "base" {
 
 ### Without install config
 
-```hcl
+```terraform
 data "scaleway_baremetal_offer" "my_offer" {
   zone = "fr-par-2"
   name = "EM-B112X-SSD"

@@ -12,7 +12,7 @@ For more information see [the documentation](https://developers.scaleway.com/en/
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_registry_namespace" "main" {
   name        = "main-cr"
   description = "Main container registry"

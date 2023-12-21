@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_iam_group" "basic" {
   name            = "iam_group_basic"
   description     = "basic description"
@@ -23,7 +23,7 @@ resource "scaleway_iam_group" "basic" {
 
 ### With applications
 
-```hcl
+```terraform
 resource "scaleway_iam_application" "app" {}
 
 resource "scaleway_iam_group" "with_app" {
@@ -37,7 +37,7 @@ resource "scaleway_iam_group" "with_app" {
 
 ### With users
 
-```hcl
+```terraform
 locals {
   users = toset([
     "user1@mail.com",

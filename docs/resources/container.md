@@ -15,7 +15,7 @@ You can check also our [containers guide](https://www.scaleway.com/en/docs/compu
 
 ## Example Usage
 
-```hcl
+```terraform
 resource scaleway_container_namespace main {
     name = "my-ns-test"
     description = "test container"

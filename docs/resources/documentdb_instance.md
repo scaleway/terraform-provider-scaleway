@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ### Example Basic
 
-```hcl
+```terraform
 resource "scaleway_documentdb_instance" "main" {
   name              = "test-documentdb-instance-basic"
   node_type         = "docdb-play2-pico"

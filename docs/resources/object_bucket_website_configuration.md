@@ -10,7 +10,7 @@ For more information, see [Hosting Websites on Object bucket](https://www.scalew
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
     name = "MyBucket"
     acl  = "public-read"
@@ -26,7 +26,7 @@ resource "scaleway_object_bucket_website_configuration" "main" {
 
 ## Example Usage with `policy`
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
     name = "MyBucket"
     acl  = "public-read"

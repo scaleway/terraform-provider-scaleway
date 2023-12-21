@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_flexible_ip" "main" {}
 
 resource "scaleway_flexible_ip_mac_address" "main" {
@@ -23,7 +23,7 @@ resource "scaleway_flexible_ip_mac_address" "main" {
 
 ### Duplicate on many other flexible IPs
 
-```hcl
+```terraform
 data "scaleway_baremetal_offer" "my_offer" {
   name = "EM-B112X-SSD"
 }

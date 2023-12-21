@@ -10,7 +10,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_documentdb_privilege" "main" {
   instance_id   = "11111111-1111-1111-1111-111111111111"
   user_name     = "my-db-user"

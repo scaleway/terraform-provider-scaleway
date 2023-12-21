@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_documentdb_database" "main" {
   instance_id    = "11111111-1111-1111-1111-111111111111"
   name           = "my-new-database"

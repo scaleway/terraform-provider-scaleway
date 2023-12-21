@@ -15,13 +15,13 @@ our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/refere
 
 Activate SQS for default project
 
-```hcl
+```terraform
 resource "scaleway_mnq_sqs" "main" {}
 ```
 
 Activate SQS for a specific project
 
-```hcl
+```terraform
 data scaleway_account_project project {
   name = "default"
 }

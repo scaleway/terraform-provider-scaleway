@@ -15,7 +15,7 @@ our [functions cron api documentation](https://developers.scaleway.com/en/produc
 
 ## Example Usage
 
-```hcl
+```terraform
 resource scaleway_function_namespace main {
     name = "test-cron"
 }

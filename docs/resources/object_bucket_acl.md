@@ -14,7 +14,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/s
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
 }
@@ -27,7 +27,7 @@ resource "scaleway_object_bucket_acl" "main" {
 
 ## Example Usage with Grants
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
     name = "your-bucket"
 }

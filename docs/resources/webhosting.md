@@ -10,7 +10,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ## Example Usage
 
-```hcl
+```terraform
 data "scaleway_webhosting_offer" "by_name" {
   name = "lite"
 }

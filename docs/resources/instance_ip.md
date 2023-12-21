@@ -9,7 +9,7 @@ Creates and manages Scaleway Compute Instance IPs. For more information, see [th
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "server_ip" {}
 ```
 

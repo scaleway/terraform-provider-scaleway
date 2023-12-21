@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/s
 
 ### Example Usage with an IAM user
 
-```hcl
+```terraform
 # Project ID
 data "scaleway_account_project" "default" {
   name = "default"
@@ -59,7 +59,7 @@ resource "scaleway_object_bucket_policy" "policy" {
 
 #### Creating a bucket and delegating read access to an application
 
-```hcl
+```terraform
 # Project ID
 data "scaleway_account_project" "default" {
   name = "default"
@@ -111,7 +111,7 @@ resource "scaleway_object_bucket_policy" "policy" {
 
 #### Reading the bucket with the application
 
-```hcl
+```terraform
 data "scaleway_iam_application" "reading-app" {
   name = "reading-app"
 }
@@ -134,7 +134,7 @@ data scaleway_object_bucket bucket {
 
 ### Example with AWS provider
 
-```hcl
+```terraform
 # AWS provider configuration (with Scaleway credentials)
 provider "aws" {
   shared_config_files      = ["/home/user/.aws/config"]
@@ -181,7 +181,7 @@ data "aws_iam_policy_document" "policy" {
 
 ### Example with deprecated version 2012-10-17
 
-```hcl
+```terraform
 # Project ID
 data "scaleway_account_project" "default" {
   name = "default"

@@ -10,7 +10,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/o
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
 }

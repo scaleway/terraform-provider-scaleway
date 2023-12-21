@@ -10,7 +10,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/o
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
   tags = {
@@ -21,7 +21,7 @@ resource "scaleway_object_bucket" "some_bucket" {
 
 ### Creating the bucket in a specific project
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
   project_id = "11111111-1111-1111-1111-111111111111"
@@ -30,7 +30,7 @@ resource "scaleway_object_bucket" "some_bucket" {
 
 ### Using object lifecycle
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main"{
   name = "mybuckectid"
   region = "fr-par"

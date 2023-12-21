@@ -11,7 +11,7 @@ Creates and manages a Scaleway Serverless Job Definition. For more information, 
 
 ### Basic
 
-```hcl
+```terraform
 resource scaleway_job_definition main {
   name = "testjob"
   cpu_limit = 140

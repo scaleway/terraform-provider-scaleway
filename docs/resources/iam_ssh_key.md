@@ -11,7 +11,7 @@ see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1al
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_iam_ssh_key" "main" {
   name       = "main"
   public_key = "<YOUR-PUBLIC-SSH-KEY>"

@@ -11,16 +11,16 @@ see [the documentation](https://developers.scaleway.com/en/products/instance/api
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_snapshot" "main" {
     name       = "some-snapshot-name"
     volume_id  = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
-## Example with Unified type
+## Example Usage with Unified type
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "main" {
     type       = "l_ssd"
     size_in_gb = 10
@@ -47,7 +47,7 @@ resource "scaleway_instance_snapshot" "main" {
 
 ## Import a local qcow2 file
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "bucket" {
   name = "snapshot-qcow-import"
 }

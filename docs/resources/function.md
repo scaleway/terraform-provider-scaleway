@@ -12,7 +12,7 @@ For more information see [the documentation](https://developers.scaleway.com/en/
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_function_namespace" "main" {
   name        = "main-function-namespace"
   description = "Main function namespace"
@@ -30,7 +30,7 @@ resource scaleway_function main {
 
 You create a zip of your function (ex: `zip function.zip -r go.mod go.sum handler.go`)
 
-```hcl
+```terraform
 resource "scaleway_function_namespace" "main" {
   name        = "main-function-namespace"
   description = "Main function namespace"

@@ -10,7 +10,7 @@ check [the documentation](https://developers.scaleway.com/en/products/iam/api/v1
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_iam_application" "ci_cd" {
   name = "My application"
 }

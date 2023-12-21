@@ -19,7 +19,7 @@ For more step-by-step instructions on how to setup the networks on the external 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_iot_network" "main" {
 	name   = "main"
 	hub_id = scaleway_iot_hub.main.id

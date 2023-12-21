@@ -11,7 +11,7 @@ Creates and manages Scaleway Load-Balancer Frontends. For more information, see 
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_lb_frontend" "frontend01" {
   lb_id        = scaleway_lb.lb01.id
   backend_id   = scaleway_lb_backend.backend01.id
@@ -22,7 +22,7 @@ resource "scaleway_lb_frontend" "frontend01" {
 
 ## With Certificate
 
-```hcl
+```terraform
 resource scaleway_lb_ip ip01 {}
 
 resource scaleway_lb lb01 {
@@ -60,7 +60,7 @@ resource scaleway_lb_frontend frt01 {
 
 ## With ACLs
 
-```hcl
+```terraform
 resource "scaleway_lb_frontend" "frontend01" {
   lb_id        = scaleway_lb.lb01.id
   backend_id   = scaleway_lb_backend.backend01.id

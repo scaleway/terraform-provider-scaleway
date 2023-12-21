@@ -11,7 +11,7 @@ Creates and manages Scaleway Compute Instance security groups. For more informat
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "allow_all" {
 }
 
@@ -39,7 +39,7 @@ resource "scaleway_instance_security_group" "web" {
 
 ### Web server with banned IP and restricted internet access
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "web" {
   inbound_default_policy  = "drop" # By default we drop incoming traffic that do not match any inbound_rule.
   outbound_default_policy = "drop" # By default we drop outgoing traffic that do not match any outbound_rule.
@@ -71,7 +71,7 @@ resource "scaleway_instance_security_group" "web" {
 
 If you use terraform >= 0.12.6, you can leverage the [`for_each`](https://www.terraform.io/docs/configuration/resources.html#for_each-multiple-resource-instances-defined-by-a-map-or-set-of-strings) feature with this resource.
 
-```hcl
+```terraform
 locals {
   trusted = ["192.168.0.1", "192.168.0.2", "192.168.0.3"]
 }

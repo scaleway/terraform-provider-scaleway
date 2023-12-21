@@ -20,7 +20,7 @@ our [containers cron api documentation](https://developers.scaleway.com/en/produ
 
 ## Example Usage
 
-```hcl
+```terraform
 resource scaleway_container_namespace main {
 }
 

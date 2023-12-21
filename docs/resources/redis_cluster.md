@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_redis_cluster" "main" {
   name         = "test_redis_basic"
   version      = "6.2.6"
@@ -32,7 +32,7 @@ resource "scaleway_redis_cluster" "main" {
 
 ### With settings
 
-```hcl
+```terraform
 resource "scaleway_redis_cluster" "main" {
   name      = "test_redis_basic"
   version   = "6.2.6"
@@ -49,7 +49,7 @@ resource "scaleway_redis_cluster" "main" {
 
 ### With a private network
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn" {
   name = "private-network"
 }
@@ -131,7 +131,7 @@ keep in mind that you cannot downgrade a Redis Cluster so setting a smaller `clu
 - Cluster mode (`cluster_size` > 1) : you can define a single private network as you create your cluster, you won't be
   able to edit or detach it afterward, unless you create another cluster. Your `service_ips` must be listed as follows:
 
-```hcl
+```terraform
   service_ips = [
   "10.12.1.10/20",
   "10.12.1.11/20",

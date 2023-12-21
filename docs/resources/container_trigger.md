@@ -12,7 +12,7 @@ For more information see [the documentation](https://www.scaleway.com/en/develop
 
 ### SQS
 
-```hcl
+```terraform
 resource scaleway_container_trigger main {
   container_id = scaleway_container.main.id
   name = "my-trigger"
@@ -27,7 +27,7 @@ resource scaleway_container_trigger main {
 
 ### Nats
 
-```hcl
+```terraform
 resource scaleway_container_trigger main {
   container_id = scaleway_container.main.id
   name = "my-trigger"

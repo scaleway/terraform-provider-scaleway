@@ -13,7 +13,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Create a gateway network with IPAM config
 
-```hcl
+```terraform
 resource scaleway_vpc vpc01 {
   name = "my vpc"
 }
@@ -43,7 +43,7 @@ resource scaleway_vpc_gateway_network main {
 
 ### Create a gateway network with a booked IPAM IP
 
-```hcl
+```terraform
 resource scaleway_vpc vpc01 {
   name = "my vpc"
 }
@@ -81,7 +81,7 @@ resource scaleway_vpc_gateway_network main {
 
 ### Create a gateway network with DHCP
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn01" {
   name = "pn_test_network"
 }
@@ -111,7 +111,7 @@ resource "scaleway_vpc_gateway_network" "main" {
 
 ### Create a gateway network with a static IP address
 
-```hcl
+```terraform
 resource scaleway_vpc_private_network pn01 {
   name = "pn_test_network"
 }

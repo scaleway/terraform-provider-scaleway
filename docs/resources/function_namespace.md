@@ -12,7 +12,7 @@ For more information see [the documentation](https://developers.scaleway.com/en/
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_function_namespace" "main" {
   name        = "main-function-namespace"
   description = "Main function namespace"

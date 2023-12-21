@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "instance" {
   name           = "test-rdb-rr-update"
   node_type      = "db-dev-s"
@@ -32,7 +32,7 @@ resource scaleway_rdb_read_replica "replica" {
 
 ### Private network
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "instance" {
   name           = "rdb_instance"
   node_type      = "db-dev-s"

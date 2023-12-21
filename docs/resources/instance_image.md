@@ -12,7 +12,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ### From a volume
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "volume" {
   type       	= "b_ssd"
   size_in_gb 	= 20
@@ -30,7 +30,7 @@ resource "scaleway_instance_image" "volume_image" {
 
 ### From a server
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "server" {
   image = "ubuntu_jammy"
   type 	= "DEV1-S"
@@ -48,7 +48,7 @@ resource "scaleway_instance_image" "server_image" {
 
 ### With additional volumes
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "server" {
   image = "ubuntu_jammy"
   type 	= "DEV1-S"

@@ -14,7 +14,7 @@ For more information, see [Setting up object lock](https://www.scaleway.com/en/d
 
 Please note that `object_lock_enabled` must be set to `true` before configuring the lock.
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
     name = "MyBucket"
     acl  = "public-read"

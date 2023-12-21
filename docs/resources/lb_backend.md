@@ -12,7 +12,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_lb_backend" "backend01" {
   lb_id            = scaleway_lb.lb01.id
   name             = "backend01"
@@ -23,7 +23,7 @@ resource "scaleway_lb_backend" "backend01" {
 
 ### With HTTP Health Check
 
-```hcl
+```terraform
 resource "scaleway_lb_backend" "backend01" {
   lb_id            = scaleway_lb.lb01.id
   name             = "backend01"

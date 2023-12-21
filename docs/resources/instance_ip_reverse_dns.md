@@ -11,7 +11,7 @@ Please check our [guide](https://www.scaleway.com/en/docs/compute/instances/how-
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "server_ip" {}
 
 resource "scaleway_domain_record" "tf_A" {

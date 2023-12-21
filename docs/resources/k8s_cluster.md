@@ -11,7 +11,7 @@ Creates and manages Scaleway Kubernetes clusters. For more information, see [the
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "hedy" {}
 
 resource "scaleway_k8s_cluster" "jack" {
@@ -32,7 +32,7 @@ resource "scaleway_k8s_pool" "john" {
 
 ### Multicloud
 
-```hcl
+```terraform
 resource "scaleway_k8s_cluster" "henry" {
   name = "henry"
   type = "multicloud"
@@ -54,7 +54,7 @@ For a detailed example of how to add or run Elastic Metal servers instead of ins
 
 ### With additional configuration
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "hedy" {}
 
 resource "scaleway_k8s_cluster" "john" {
@@ -91,7 +91,7 @@ resource "scaleway_k8s_pool" "john" {
 
 ### With the kubernetes provider
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "hedy" {}
 
 resource "scaleway_k8s_cluster" "joy" {
@@ -132,7 +132,7 @@ It leads the `kubernetes` provider to start creating its objects, but the DNS en
 
 ### With the Helm provider
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "hedy" {}
 
 resource "scaleway_k8s_cluster" "joy" {
@@ -345,7 +345,7 @@ $ terraform import scaleway_k8s_cluster.mycluster fr-par/11111111-1111-1111-1111
 
 Before:
 
-```hcl
+```terraform
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.18.0"
@@ -360,7 +360,7 @@ resource "scaleway_k8s_cluster" "jack" {
 
 After:
 
-```hcl
+```terraform
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.18.0"

@@ -11,7 +11,7 @@ Creates and manages Scaleway Load-Balancer ACLs. For more information, see [the 
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_lb_acl" "acl01" {
   frontend_id  = scaleway_lb_frontend.frt01.id
   name         = "acl01"

@@ -13,7 +13,7 @@ Please check our [FAQ - Instances](https://www.scaleway.com/en/docs/faq/instance
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_server" "web" {
@@ -25,7 +25,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With additional volumes and tags
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
   type = "b_ssd"
@@ -47,7 +47,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With a reserved IP
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "ip" {}
 
 resource "scaleway_instance_server" "web" {
@@ -62,7 +62,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With security group
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "www" {
   inbound_default_policy = "drop"
   outbound_default_policy = "accept"
@@ -99,7 +99,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With user data and cloud-init
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "web" {
   type  = "DEV1-S"
   image = "ubuntu_jammy"
@@ -113,7 +113,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With private network
 
-```hcl
+```terraform
 resource scaleway_vpc_private_network pn01 {
     name = "private_network_instance"
 }
@@ -132,7 +132,7 @@ resource "scaleway_instance_server" "base" {
 
 #### Resized block volume with installed image
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "image" {
   type = "PRO2-XXS"
   image = "ubuntu_jammy"
@@ -145,7 +145,7 @@ resource "scaleway_instance_server" "image" {
 
 #### From snapshot
 
-```hcl
+```terraform
 data "scaleway_instance_snapshot" "snapshot" {
   name = "my_snapshot"
 }

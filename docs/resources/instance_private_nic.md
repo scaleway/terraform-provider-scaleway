@@ -12,7 +12,7 @@ Creates and manages Scaleway Instance Private NICs. For more information, see
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_instance_private_nic" "pnic01" {
     server_id          = "fr-par-1/11111111-1111-1111-1111-111111111111"
     private_network_id = "fr-par-1/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
@@ -21,7 +21,7 @@ resource "scaleway_instance_private_nic" "pnic01" {
 
 ### With zone
 
-```hcl
+```terraform
 resource scaleway_vpc_private_network pn01 {
   name = "private_network_instance"
   zone = "fr-par-2"
