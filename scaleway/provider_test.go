@@ -202,7 +202,8 @@ func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.R
 
 	err = json.Unmarshal([]byte(cassetteRequest.Body), &cassetteJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err)) // lintignore: R009
+		// actualRequest contains JSON but cassette may not contain JSON, this doesn't match in this case
+		return false
 	}
 
 	// Remove keys that should be ignored during compare
