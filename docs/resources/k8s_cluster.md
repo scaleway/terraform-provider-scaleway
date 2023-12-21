@@ -237,7 +237,7 @@ The following arguments are supported:
 - `cni` - (Required) The Container Network Interface (CNI) for the Kubernetes cluster.
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `delete_additional_resources` - (Required) Delete additional resources like block volumes, loadbalancers and the cluster private network (if empty) that were created in Kubernetes on cluster deletion.
+- `delete_additional_resources` - (Required) Delete additional resources like block volumes, load-balancers and the cluster's private network (if empty) that were created in Kubernetes on cluster deletion.
 ~> **Important:** Setting this field to `true` means that you will lose all your cluster data and network configuration when you delete your cluster.
 If you prefer keeping it, you should instead set it as `false`.
 
