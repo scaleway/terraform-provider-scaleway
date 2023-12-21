@@ -37,6 +37,24 @@ resource scaleway_iam_policy "object_read_only" {
 }
 ```
 
+### Create a policy for all current and future projects in an organization
+
+```hcl
+resource scaleway_iam_application "app" {
+  name = "my app"
+}
+
+resource scaleway_iam_policy "object_read_only" {
+  name = "my policy"
+  description = "gives app readonly access to object storage in project"
+  application_id = scaleway_iam_application.app.id
+  rule {
+    organization_id = scaleway_iam_application.app.organization_id
+    permission_set_names = ["ObjectStorageReadOnly"]
+  }
+}
+```
+
 ### Create a permission for multiple users using a group
 
 ```hcl
@@ -88,7 +106,7 @@ The following arguments are supported:
 ~> **Important** Only one of `user_id`, `group_id`, `application_id` and `no_principal`  may be set.
 
 - `rule` - List of rules in the policy.
-    - `organization_id` - ID of organization scoped to the rule.
+    - `organization_id` - ID of organization scoped to the rule, this can be used to create a rule for all projects in an organization.
     - `project_ids` - List of project IDs scoped to the rule.
 
   ~> **Important** One of `organization_id` or `project_ids`  must be set per rule.
