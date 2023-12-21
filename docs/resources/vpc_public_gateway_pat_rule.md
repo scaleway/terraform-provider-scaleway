@@ -40,7 +40,7 @@ resource "scaleway_vpc_public_gateway_pat_rule" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

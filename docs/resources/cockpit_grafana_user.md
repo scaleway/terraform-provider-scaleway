@@ -25,7 +25,7 @@ resource "scaleway_cockpit_grafana_user" "main" {
 ```
 
 
-## Arguments Reference
+## Argument Reference
 
 - `login` - (Required) The login of the grafana user.
 - `role` - (Required) The role of the grafana user. Must be `editor` or `viewer`.

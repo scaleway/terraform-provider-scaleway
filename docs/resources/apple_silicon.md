@@ -19,7 +19,7 @@ resource scaleway_apple_silicon_server server {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

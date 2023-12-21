@@ -36,7 +36,7 @@ resource scaleway_function_token function {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

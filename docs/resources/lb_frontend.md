@@ -145,7 +145,7 @@ resource "scaleway_lb_frontend" "frontend01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

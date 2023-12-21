@@ -28,7 +28,7 @@ resource "scaleway_vpc_public_gateway_ip_reverse_dns" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

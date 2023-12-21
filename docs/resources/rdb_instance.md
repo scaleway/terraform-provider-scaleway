@@ -111,7 +111,7 @@ resource "scaleway_rdb_instance" "main" {
 
 -> If nothing is defined, your instance will have a default public load-balancer endpoint
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

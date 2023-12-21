@@ -26,7 +26,7 @@ resource "scaleway_secret_version" "v1" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

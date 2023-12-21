@@ -92,7 +92,7 @@ resource "scaleway_instance_security_group" "dummy" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

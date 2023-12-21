@@ -32,7 +32,7 @@ resource "scaleway_k8s_pool" "bill" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

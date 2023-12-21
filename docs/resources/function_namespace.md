@@ -19,7 +19,7 @@ resource "scaleway_function_namespace" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

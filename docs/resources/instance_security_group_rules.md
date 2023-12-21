@@ -99,7 +99,7 @@ resource "scaleway_instance_security_group_rules" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

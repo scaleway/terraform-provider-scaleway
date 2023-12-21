@@ -90,7 +90,7 @@ resource "scaleway_iam_policy" "iam_tf_storage_policy" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

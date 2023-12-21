@@ -75,7 +75,7 @@ resource "scaleway_instance_image" "image" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

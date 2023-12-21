@@ -53,7 +53,7 @@ resource "scaleway_instance_server" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 

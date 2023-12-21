@@ -46,7 +46,7 @@ resource "scaleway_iot_device" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

@@ -46,7 +46,7 @@ resource "grafana_folder" "test_folder" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
 - `plan` - (Optional) Name or ID of the plan to use.

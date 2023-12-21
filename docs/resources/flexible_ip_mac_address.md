@@ -56,7 +56,7 @@ resource "scaleway_flexible_ip_mac_address" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

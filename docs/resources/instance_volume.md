@@ -18,7 +18,7 @@ resource "scaleway_instance_volume" "server_volume" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

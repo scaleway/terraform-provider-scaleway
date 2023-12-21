@@ -26,7 +26,7 @@ resource scaleway_job_definition main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

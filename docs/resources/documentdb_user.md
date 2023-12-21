@@ -26,7 +26,7 @@ resource "scaleway_documentdb_user" "db_admin" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

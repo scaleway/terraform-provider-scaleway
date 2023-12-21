@@ -42,7 +42,7 @@ resource "scaleway_cockpit_token" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 - `name` - (Required) The name of the token.
 - `scopes` - (Optional) Allowed scopes.

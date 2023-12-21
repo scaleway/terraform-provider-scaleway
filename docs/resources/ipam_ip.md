@@ -74,7 +74,7 @@ resource "scaleway_ipam_ip" "ip01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

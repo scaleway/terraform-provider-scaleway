@@ -13,7 +13,7 @@ Creates and manages Compute Instance Placement Groups. For more information, see
 resource "scaleway_instance_placement_group" "availability_group" {}
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

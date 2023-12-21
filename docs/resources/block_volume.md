@@ -18,7 +18,7 @@ resource "scaleway_block_volume" "block_volume" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

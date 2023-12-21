@@ -32,7 +32,7 @@ resource scaleway_mnq_sns "for_project" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

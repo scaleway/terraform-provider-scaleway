@@ -23,7 +23,7 @@ resource "scaleway_webhosting" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

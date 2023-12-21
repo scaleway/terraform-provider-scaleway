@@ -107,7 +107,7 @@ resource "scaleway_iot_hub" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 ~> **Important:** Updates to any value will recreate the IoT Route.
 

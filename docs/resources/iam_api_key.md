@@ -21,7 +21,7 @@ resource "scaleway_iam_api_key" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

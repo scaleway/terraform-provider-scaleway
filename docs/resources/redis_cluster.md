@@ -73,7 +73,7 @@ resource "scaleway_redis_cluster" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

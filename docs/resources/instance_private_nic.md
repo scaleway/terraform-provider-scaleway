@@ -40,7 +40,7 @@ resource "scaleway_instance_private_nic" "pnic01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 

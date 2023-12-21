@@ -126,7 +126,7 @@ resource "scaleway_baremetal_server" "base" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

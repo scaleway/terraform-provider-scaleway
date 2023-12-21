@@ -40,7 +40,7 @@ resource scaleway_function_trigger main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

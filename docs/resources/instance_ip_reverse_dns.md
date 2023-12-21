@@ -29,7 +29,7 @@ resource "scaleway_instance_ip_reverse_dns" "reverse" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

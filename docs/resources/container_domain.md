@@ -59,7 +59,7 @@ resource scaleway_container_domain "app" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 

@@ -33,7 +33,7 @@ resource "scaleway_documentdb_read_replica" "replica" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

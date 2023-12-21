@@ -67,7 +67,7 @@ resource "scaleway_instance_snapshot" "snapshot" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

@@ -25,7 +25,7 @@ resource scaleway_vpc_public_gateway_ip main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

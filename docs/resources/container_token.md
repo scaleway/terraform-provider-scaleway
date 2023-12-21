@@ -33,7 +33,7 @@ resource scaleway_container_token container {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

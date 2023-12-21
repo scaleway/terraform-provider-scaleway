@@ -109,7 +109,7 @@ resource scaleway_lb main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

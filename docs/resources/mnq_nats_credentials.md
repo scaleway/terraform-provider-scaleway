@@ -23,7 +23,7 @@ resource "scaleway_mnq_nats_credentials" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

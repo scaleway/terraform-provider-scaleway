@@ -17,7 +17,7 @@ resource "scaleway_block_snapshot" "block_snapshot" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

@@ -28,7 +28,7 @@ resource scaleway_mnq_sqs_credentials main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

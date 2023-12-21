@@ -17,7 +17,7 @@ resource "scaleway_vpc" "vpc01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

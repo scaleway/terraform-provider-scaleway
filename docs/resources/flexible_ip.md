@@ -66,7 +66,7 @@ resource "scaleway_flexible_ip" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

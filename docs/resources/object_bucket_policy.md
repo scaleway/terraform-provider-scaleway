@@ -216,7 +216,7 @@ resource "scaleway_object_bucket_policy" "policy" {
 
 **NB:** To configure the AWS provider with Scaleway credentials, please visit this [tutorial](https://www.scaleway.com/en/docs/storage/object/api-cli/object-storage-aws-cli/).
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

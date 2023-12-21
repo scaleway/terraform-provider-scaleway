@@ -43,7 +43,7 @@ resource scaleway_mnq_sns_topic_subscription main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

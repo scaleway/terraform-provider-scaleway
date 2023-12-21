@@ -38,7 +38,7 @@ resource "scaleway_vpc_private_network" "pn_priv" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

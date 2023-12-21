@@ -72,7 +72,7 @@ resource "scaleway_lb_route" "rt01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

@@ -27,7 +27,7 @@ resource "scaleway_documentdb_private_network_endpoint" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

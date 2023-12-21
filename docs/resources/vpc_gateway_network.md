@@ -130,7 +130,7 @@ resource scaleway_vpc_gateway_network main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

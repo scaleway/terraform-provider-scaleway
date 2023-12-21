@@ -46,7 +46,7 @@ resource scaleway_container main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 

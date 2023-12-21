@@ -31,7 +31,7 @@ resource "scaleway_mnq_sqs" "for_project" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

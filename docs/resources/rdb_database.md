@@ -19,7 +19,7 @@ resource "scaleway_rdb_database" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

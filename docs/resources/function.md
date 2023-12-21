@@ -48,7 +48,7 @@ resource scaleway_function main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

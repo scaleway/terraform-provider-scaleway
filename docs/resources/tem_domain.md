@@ -51,7 +51,7 @@ resource "scaleway_domain_record" "mx" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

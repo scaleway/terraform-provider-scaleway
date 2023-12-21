@@ -16,7 +16,7 @@ resource "scaleway_iam_application" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

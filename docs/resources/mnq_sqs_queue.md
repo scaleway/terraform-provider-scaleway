@@ -36,7 +36,7 @@ resource scaleway_mnq_sqs_queue main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

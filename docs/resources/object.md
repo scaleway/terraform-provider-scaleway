@@ -24,7 +24,7 @@ resource scaleway_object "some_file" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 
 The following arguments are supported:

@@ -111,7 +111,7 @@ resource "scaleway_object_bucket" "main"{
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 
 The following arguments are supported:

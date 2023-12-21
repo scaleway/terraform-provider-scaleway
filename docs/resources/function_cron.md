@@ -41,7 +41,7 @@ resource scaleway_function_cron func {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 

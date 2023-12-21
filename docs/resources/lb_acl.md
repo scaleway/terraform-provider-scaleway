@@ -27,7 +27,7 @@ resource "scaleway_lb_acl" "acl01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

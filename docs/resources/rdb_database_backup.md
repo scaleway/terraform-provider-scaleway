@@ -29,7 +29,7 @@ resource scaleway_rdb_database_backup "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

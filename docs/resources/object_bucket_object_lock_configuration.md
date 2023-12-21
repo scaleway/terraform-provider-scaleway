@@ -38,7 +38,7 @@ resource "scaleway_object_bucket_lock_configuration" "main" {
 
 You should [contact Scaleway support](https://console.scaleway.com/support/tickets/create) to enable object lock on an existing bucket.
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

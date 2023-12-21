@@ -61,7 +61,7 @@ resource scaleway_vpc_public_gateway_dhcp_reservation main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

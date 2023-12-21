@@ -31,7 +31,7 @@ resource "scaleway_mnq_sns_topic" "topic" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

@@ -24,7 +24,7 @@ resource "scaleway_documentdb_instance" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

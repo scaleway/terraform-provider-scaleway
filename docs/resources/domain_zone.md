@@ -18,7 +18,7 @@ resource "scaleway_domain_zone" "test" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

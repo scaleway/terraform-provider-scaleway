@@ -42,7 +42,7 @@ resource "scaleway_instance_server" "server" { // Will use scaleway_account_proj
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

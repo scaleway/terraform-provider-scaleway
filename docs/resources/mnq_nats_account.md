@@ -19,7 +19,7 @@ resource "scaleway_mnq_nats_account" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

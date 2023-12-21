@@ -18,7 +18,7 @@ resource "scaleway_lb_ip" "ip" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

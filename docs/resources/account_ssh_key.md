@@ -18,7 +18,7 @@ resource "scaleway_account_ssh_key" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

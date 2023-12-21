@@ -52,7 +52,7 @@ resource scaleway_container_cron main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 

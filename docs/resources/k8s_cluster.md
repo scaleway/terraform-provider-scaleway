@@ -216,7 +216,7 @@ resource "helm_release" "nginx_ingress" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
