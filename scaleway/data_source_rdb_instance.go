@@ -39,16 +39,11 @@ func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceDa
 
 	instanceID, ok := d.GetOk("instance_id")
 	if !ok { // Get instance by region and name.
-		var projectID *string
-		if projectIDRaw, filterByProject := d.GetOk("project_id"); filterByProject {
-			projectID = scw.StringPtr(projectIDRaw.(string))
-		}
-
 		instanceName := d.Get("name").(string)
 		res, err := api.ListInstances(&rdb.ListInstancesRequest{
 			Region:    region,
 			Name:      scw.StringPtr(instanceName),
-			ProjectID: projectID,
+			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
