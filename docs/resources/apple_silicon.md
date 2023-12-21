@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_apple_silicon"
 Creates and manages Scaleway Apple silicon M1. For more information,
 see [the documentation](https://www.scaleway.com/en/docs/compute/apple-silicon/concepts).
 
-## Examples
+## Example Usage
 
 ### Basic
 

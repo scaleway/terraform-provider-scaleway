@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_domain_record"
 Creates and manages Scaleway Domain record.  
 For more information, see [the documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/).
 
-## Examples
+## Example Usage
 
 ### Basic
 

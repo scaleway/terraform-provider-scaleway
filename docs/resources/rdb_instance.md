@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_rdb_instance"
 Creates and manages Scaleway Database Instances.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
-## Examples
+## Example Usage
 
 ### Example Basic
 

@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_block_volume"
 Creates and manages Scaleway Block Volumes.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/block/).
 
-## Example
+## Example Usage
 
 ```hcl
 resource "scaleway_block_volume" "block_volume" {

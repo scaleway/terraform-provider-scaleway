@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_lb_backend"
 Creates and manages Scaleway Load-Balancer Backends.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-backends).
 
-## Examples
+## Example Usage
 
 ### Basic
 

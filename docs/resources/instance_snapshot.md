@@ -9,7 +9,7 @@ Creates and manages Scaleway Compute Snapshots.
 For more information,
 see [the documentation](https://developers.scaleway.com/en/products/instance/api/#snapshots-756fae).
 
-## Example
+## Example Usage
 
 ```hcl
 resource "scaleway_instance_snapshot" "main" {

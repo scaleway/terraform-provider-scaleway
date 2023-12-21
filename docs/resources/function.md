@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_function"
 Creates and manages Scaleway Functions.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 

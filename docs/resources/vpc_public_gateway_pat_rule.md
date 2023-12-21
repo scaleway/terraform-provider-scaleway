@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_pat_rule"
 Creates and manages Scaleway VPC Public Gateway PAT (Port Address Translation).
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1#pat-rules-e75d10).
 
-## Example
+## Example Usage
 
 ```hcl
 resource "scaleway_vpc_public_gateway" "pg01" {

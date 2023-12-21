@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_vpc"
 Creates and manages Scaleway Virtual Private Clouds.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/).
 
-## Example
+## Example Usage
 
 ```hcl
 resource "scaleway_vpc" "vpc01" {

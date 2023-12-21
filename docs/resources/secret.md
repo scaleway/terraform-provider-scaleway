@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_secret"
 Creates and manages Scaleway Secrets.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/secret_manager/api/v1alpha1/).
 
-## Examples
+## Example Usage
 
 ### Basic
 

@@ -9,7 +9,7 @@ page_title: "Scaleway: scaleway_iot_hub"
 
 Creates and manages Scaleway IoT Hub Instances. For more information, see [the documentation](https://developers.scaleway.com/en/products/iot/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 

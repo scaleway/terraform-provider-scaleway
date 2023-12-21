@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_instance_image"
 Creates and manages Scaleway Compute Images.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#images-41389b).
 
-## Example
+## Example Usage
 
 ### From a volume
 

@@ -9,7 +9,7 @@ Creates and manages Scaleway VPC Public Gateway Network.
 It allows attaching Private Networks to the VPC Public Gateway and your DHCP config
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#step-3-attach-private-networks-to-the-vpc-public-gateway).
 
-## Example
+## Example Usage
 
 ### Create a gateway network with IPAM config
 

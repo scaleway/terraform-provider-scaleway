@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_block_snapshot"
 Creates and manages Scaleway Block Snapshots.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/block/).
 
-## Example
+## Example Usage
 
 ```hcl
 resource "scaleway_block_snapshot" "block_snapshot" {

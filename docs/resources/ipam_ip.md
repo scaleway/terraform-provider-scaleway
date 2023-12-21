@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_ipam_ip"
 
 Books and manages Scaleway IPAM IPs.
 
-## Example
+## Example Usage
 
 ### Basic
 

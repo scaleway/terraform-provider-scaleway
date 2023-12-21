@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_lb_route"
 Creates and manages Scaleway Load-Balancer Routes.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-route).
 
-## Examples
+## Example Usage
 
 ### With SNI for direction to TCP backends
 

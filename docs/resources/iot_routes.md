@@ -12,7 +12,7 @@ Creates and manages Scaleway IoT Routes. For more information, see the following
 - [API documentation](https://developers.scaleway.com/en/products/iot/api).
 - [Product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-route/)
 
-## Examples
+## Example Usage
 
 ### Database Route
 

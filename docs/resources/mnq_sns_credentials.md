@@ -9,7 +9,7 @@ Creates and manages Scaleway Messaging and queuing SNS Credentials.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sns-overview/)
 
-## Examples
+## Example Usage
 
 ### Basic
 

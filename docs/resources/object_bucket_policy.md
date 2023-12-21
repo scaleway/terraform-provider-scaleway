@@ -10,7 +10,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/s
 
 ## Example Usage
 
-### Example with an IAM user
+### Example Usage with an IAM user
 
 ```hcl
 # Project ID

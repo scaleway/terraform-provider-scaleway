@@ -24,7 +24,7 @@ resource "scaleway_object_bucket_website_configuration" "main" {
 }
 ```
 
-## Example with `policy`
+## Example Usage with `policy`
 
 ```hcl
 resource "scaleway_object_bucket" "main" {

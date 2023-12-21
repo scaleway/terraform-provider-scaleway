@@ -25,7 +25,7 @@ resource "scaleway_object_bucket_acl" "main" {
 }
 ```
 
-## Example with Grants
+## Example Usage with Grants
 
 ```hcl
 resource "scaleway_object_bucket" "main" {

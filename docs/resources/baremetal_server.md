@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_baremetal_server"
 
 Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 

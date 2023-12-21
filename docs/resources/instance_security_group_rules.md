@@ -11,7 +11,7 @@ This resource can be used to externalize rules from a `scaleway_instance_securit
 
 ~> **Warning:** In order to guaranty rules order in a given security group only one scaleway_instance_security_group_rules is allowed per security group.
 
-## Examples
+## Example Usage
 
 ### Basic
 

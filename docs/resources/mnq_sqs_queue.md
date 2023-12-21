@@ -9,7 +9,7 @@ Creates and manages Scaleway Messaging and queuing SQS Queues.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/how-to/create-manage-queues/)
 
-## Examples
+## Example Usage
 
 ### Basic
 

@@ -9,7 +9,7 @@ Creates and manages Scaleway Compute Instance servers. For more information, see
 
 Please check our [FAQ - Instances](https://www.scaleway.com/en/docs/faq/instances).
 
-## Examples
+## Example Usage
 
 ### Basic
 

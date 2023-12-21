@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_k8s_pool"
 
 Creates and manages Scaleway Kubernetes cluster pools. For more information, see [the documentation](https://developers.scaleway.com/en/products/k8s/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 

@@ -17,7 +17,7 @@ For more step-by-step instructions on how to setup the networks on the external 
 - [Configuring the Sigfox backend](https://www.scaleway.com/en/docs/scaleway-iothub-networks/#-Configuring-the-Sigfox-backend)
 - [Using the Rest Network](https://www.scaleway.com/en/docs/scaleway-iothub-networks/#-Using-the-Rest-Network)
 
-## Examples
+## Example Usage
 
 ```hcl
 resource "scaleway_iot_network" "main" {

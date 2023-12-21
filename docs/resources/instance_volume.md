@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_instance_volume"
 Creates and manages Scaleway Compute Instance Volumes.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39).
 
-## Example
+## Example Usage
 
 ```hcl
 resource "scaleway_instance_volume" "server_volume" {
