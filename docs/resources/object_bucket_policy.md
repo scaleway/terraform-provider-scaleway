@@ -224,6 +224,10 @@ The following arguments are supported:
 * `policy` - (Required) The policy document. This is a JSON formatted string. For more information about building AWS IAM policy documents with Terraform, see the [AWS IAM Policy Document Guide](https://learn.hashicorp.com/tutorials/terraform/aws-iam-policy?_ga=2.164714495.1557487853.1659960650-563504983.1635944492).
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
+~> **Important:** The `project_id` attribute has a particular behavior with s3 products because the s3 API is scoped by project.
+If you are using a project different from the default one, you have to specify the `project_id` for every child resource of the bucket,
+like bucket policies. Otherwise, Terraform will try to create the child resource with the default project ID and you will get a 403 error.
+
 ~> **Important:** The [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) data source may be used, so long as it specifies a principal.
 
 ## Attributes Reference
