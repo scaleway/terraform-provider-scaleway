@@ -71,6 +71,10 @@ The following arguments are supported:
 * `error_document` - (Optional) The name of the error document for the website [detailed below](#error_document).
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
+~> **Important:** The `project_id` attribute has a particular behavior with s3 products because the s3 API is scoped by project.
+If you are using a project different from the default one, you have to specify the `project_id` for every child resource of the bucket,
+like bucket website configurations. Otherwise, Terraform will try to create the child resource with the default project ID and you will get a 403 error.
+
 ### index_document
 
 The `index_document` configuration block supports the following arguments:
@@ -97,8 +101,15 @@ The error_document configuration block supports the following arguments:
 
 ## Import
 
-Website configuration Bucket can be imported using the `{region}/{bucketName}` identifier, e.g.
+Bucket website configurations can be imported using the `{region}/{bucketName}` identifier, e.g.
 
 ```bash
 $ terraform import scaleway_object_bucket_website_configuration.some_bucket fr-par/some-bucket
+```
+
+~> **Important:** The `project_id` attribute has a particular behavior with s3 products because the s3 API is scoped by project.
+If you are using a project different from the default one, you have to specify the project ID at the end of the import command.
+
+```bash
+$ terraform import scaleway_object_bucket_website_configuration.some_bucket fr-par/some-bucket@xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
 ```
