@@ -871,7 +871,7 @@ func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceDat
 	////
 	// Delete Cluster
 	////
-	_, err = k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
+	cluster, err := k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
 		Region:                  region,
 		ClusterID:               clusterID,
 		WithAdditionalResources: deleteAdditionalResources,
@@ -883,7 +883,7 @@ func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitK8SClusterStatus(ctx, k8sAPI, cluster, k8s.ClusterStatusDeleted, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
