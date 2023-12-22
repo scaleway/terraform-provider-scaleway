@@ -3,17 +3,17 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_ip"
 ---
 
-# scaleway_instance_ip
+# Resource: scaleway_instance_ip
 
 Creates and manages Scaleway Compute Instance IPs. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#ips-268151).
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "server_ip" {}
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the IP.
 

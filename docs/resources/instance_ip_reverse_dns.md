@@ -3,7 +3,7 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_ip_reverse_dns"
 ---
 
-# scaleway_instance_ip_reverse_dns
+# Resource: scaleway_instance_ip_reverse_dns
 
 Manages Scaleway Compute Instance IPs Reverse DNS.
 
@@ -11,7 +11,7 @@ Please check our [guide](https://www.scaleway.com/en/docs/compute/instances/how-
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "server_ip" {}
 
 resource "scaleway_domain_record" "tf_A" {
@@ -29,7 +29,7 @@ resource "scaleway_instance_ip_reverse_dns" "reverse" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -39,7 +39,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the IP for which the reverse DNS is configured.
 

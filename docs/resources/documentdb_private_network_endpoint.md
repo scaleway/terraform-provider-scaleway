@@ -3,16 +3,16 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_private_network_endpoint"
 ---
 
-# scaleway_documentdb_private_network_endpoint
+# Resource: scaleway_documentdb_private_network_endpoint
 
 Creates and manages Scaleway Database Private Network Endpoint.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
 
-## Examples
+## Example Usage
 
 ### Example Basic
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn" {
   name = "my_private_network"
 }
@@ -27,7 +27,7 @@ resource "scaleway_documentdb_private_network_endpoint" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

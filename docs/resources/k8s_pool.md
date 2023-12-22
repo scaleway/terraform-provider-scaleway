@@ -3,15 +3,15 @@ subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_pool"
 ---
 
-# scaleway_k8s_pool
+# Resource: scaleway_k8s_pool
 
 Creates and manages Scaleway Kubernetes cluster pools. For more information, see [the documentation](https://developers.scaleway.com/en/products/k8s/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.24.3"
@@ -32,7 +32,7 @@ resource "scaleway_k8s_pool" "bill" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -90,7 +90,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the pool.
 
@@ -117,7 +117,7 @@ Please note that a pool belongs to only one cluster, in the same region.`region`
 
 If you are working with cluster type `multicloud` please set the `zone` where your placement group is e.g:
 
-```hcl
+```terraform
 resource "scaleway_instance_placement_group" "placement_group" { 
   name        = "pool-placement-group"
   policy_type = "max_availability"
@@ -171,7 +171,7 @@ To migrate your application with as little downtime as possible we recommend usi
 
 If you want to have a new pool created when a variable changes, you can use a name derived from node type such as:
 
-```hcl
+```terraform
 resource "scaleway_k8s_pool" "kubernetes_cluster_workers_1" {
   cluster_id    = scaleway_k8s_cluster.kubernetes_cluster.id
   name          = "${var.kubernetes_cluster_id}_${var.node_type}_1"

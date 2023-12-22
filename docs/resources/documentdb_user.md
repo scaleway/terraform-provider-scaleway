@@ -3,16 +3,16 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_user"
 ---
 
-# scaleway_documentdb_user
+# Resource: scaleway_documentdb_user
 
 Creates and manages Scaleway Database DocumentDB Users.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "random_password" "db_password" {
   length  = 16
   special = true
@@ -26,7 +26,7 @@ resource "scaleway_documentdb_user" "db_admin" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

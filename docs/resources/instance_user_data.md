@@ -3,7 +3,7 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_user_data"
 ---
 
-# scaleway_instance_user_data
+# Resource: scaleway_instance_user_data
 
 Creates and manages Scaleway Compute Instance User Data values.
 
@@ -15,11 +15,11 @@ For more information about [user_data](https://developers.scaleway.com/en/produc
 
 About cloud-init documentation please check this [link](https://cloudinit.readthedocs.io/en/latest/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 variable user_data {
   type = map
   default = {
@@ -53,7 +53,7 @@ resource "scaleway_instance_server" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 
@@ -69,7 +69,7 @@ The following arguments are required:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the instance's user data.
 

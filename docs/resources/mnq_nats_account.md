@@ -3,23 +3,23 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_nats_account"
 ---
 
-# scaleway_mnq_nats_account
+# Resource: scaleway_mnq_nats_account
 
 Creates and manages Scaleway Messaging and queuing Nats Accounts.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/nats-overview/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_mnq_nats_account" "main" {
   name = "nats-account"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -46,5 +46,5 @@ In addition to all arguments above, the following attributes are exported:
 Namespaces can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_mnq_namespace.main fr-par/11111111111111111111111111111111
+$ terraform import scaleway_mnq_nats_account.main fr-par/11111111111111111111111111111111
 ```

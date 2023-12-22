@@ -3,16 +3,16 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_read_replica"
 ---
 
-# scaleway_documentdb_read_replica
+# Resource: scaleway_documentdb_read_replica
 
 Creates and manages Scaleway DocumentDB Database read replicas.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource scaleway_documentdb_read_replica "replica" {
   instance_id     = "11111111-1111-1111-1111-111111111111"
   direct_access {}
@@ -21,7 +21,7 @@ resource scaleway_documentdb_read_replica "replica" {
 
 ### Private network
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_documentdb_read_replica" "replica" {
@@ -33,7 +33,7 @@ resource "scaleway_documentdb_read_replica" "replica" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

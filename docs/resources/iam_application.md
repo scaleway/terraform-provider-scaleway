@@ -3,20 +3,20 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_application"
 ---
 
-# scaleway_iam_application
+# Resource: scaleway_iam_application
 
 Creates and manages Scaleway IAM Applications. For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#applications-83ce5e).
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_iam_application" "main" {
   name        = "My application"
   description = "a description"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -27,7 +27,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the application.
 - `created_at` - The date and time of the creation of the application.

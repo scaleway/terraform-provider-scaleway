@@ -3,16 +3,16 @@ subcategory: "Secrets"
 page_title: "Scaleway: scaleway_secret"
 ---
 
-# scaleway_secret
+# Resource: scaleway_secret
 
 Creates and manages Scaleway Secrets.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/secret_manager/api/v1alpha1/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_secret" "main" {
   name        = "foo"
   description = "barr"
@@ -20,7 +20,7 @@ resource "scaleway_secret" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

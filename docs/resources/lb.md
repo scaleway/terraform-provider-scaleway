@@ -3,16 +3,16 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb"
 ---
 
-# scaleway_lb
+# Resource: scaleway_lb
 
 Creates and manages Scaleway Load-Balancers.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_lb_ip" "main" {
   zone = "fr-par-1"
 }
@@ -26,7 +26,7 @@ resource "scaleway_lb" "base" {
 
 ### Private LB
 
-```hcl
+```terraform
 
 resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.main.id
@@ -38,7 +38,7 @@ resource "scaleway_lb" "base" {
 
 ### Multiple configurations
 
-```hcl
+```terraform
 ### IP for Public Gateway
 resource "scaleway_vpc_public_gateway_ip" "main" {
 }
@@ -109,7 +109,7 @@ resource scaleway_lb main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -164,7 +164,7 @@ When upgrading to v1.15.0, you will need to create a new `scaleway_lb_ip` resour
 
 For instance, if you had the following:
 
-```hcl
+```terraform
 resource "scaleway_lb" "main" {
   zone = "fr-par-1"
   type   = "LB-S"
@@ -173,7 +173,7 @@ resource "scaleway_lb" "main" {
 
 You will need to update it to:
 
-```hcl
+```terraform
 resource "scaleway_lb_ip" "main" {
 }
 
@@ -187,7 +187,7 @@ resource "scaleway_lb" "main" {
 
 ## Private Network with static config
 
-```hcl
+```terraform
 resource scaleway_lb_ip main {
 }
 

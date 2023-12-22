@@ -3,17 +3,17 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_gateway_network"
 ---
 
-# scaleway_vpc_gateway_network
+# Resource: scaleway_vpc_gateway_network
 
 Creates and manages Scaleway VPC Public Gateway Network.
 It allows attaching Private Networks to the VPC Public Gateway and your DHCP config
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#step-3-attach-private-networks-to-the-vpc-public-gateway).
 
-## Example
+## Example Usage
 
 ### Create a gateway network with IPAM config
 
-```hcl
+```terraform
 resource scaleway_vpc vpc01 {
   name = "my vpc"
 }
@@ -43,7 +43,7 @@ resource scaleway_vpc_gateway_network main {
 
 ### Create a gateway network with a booked IPAM IP
 
-```hcl
+```terraform
 resource scaleway_vpc vpc01 {
   name = "my vpc"
 }
@@ -81,7 +81,7 @@ resource scaleway_vpc_gateway_network main {
 
 ### Create a gateway network with DHCP
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn01" {
   name = "pn_test_network"
 }
@@ -111,7 +111,7 @@ resource "scaleway_vpc_gateway_network" "main" {
 
 ### Create a gateway network with a static IP address
 
-```hcl
+```terraform
 resource scaleway_vpc_private_network pn01 {
   name = "pn_test_network"
 }
@@ -130,7 +130,7 @@ resource scaleway_vpc_gateway_network main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -148,7 +148,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the gateway network.
 

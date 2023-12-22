@@ -3,16 +3,16 @@ subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_flexible_ip_mac_address"
 ---
 
-# scaleway_flexible_ip_mac_address
+# Resource: scaleway_flexible_ip_mac_address
 
 Creates and manages Scaleway Flexible IP Mac Addresses.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/flexible-ip/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_flexible_ip" "main" {}
 
 resource "scaleway_flexible_ip_mac_address" "main" {
@@ -23,7 +23,7 @@ resource "scaleway_flexible_ip_mac_address" "main" {
 
 ### Duplicate on many other flexible IPs
 
-```hcl
+```terraform
 data "scaleway_baremetal_offer" "my_offer" {
   name = "EM-B112X-SSD"
 }
@@ -56,7 +56,7 @@ resource "scaleway_flexible_ip_mac_address" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

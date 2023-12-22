@@ -3,7 +3,7 @@ subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_cron"
 ---
 
-# scaleway_container_cron
+# Resource: scaleway_container_cron
 
 Creates and manages Scaleway Container Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
 
@@ -20,7 +20,7 @@ our [containers cron api documentation](https://developers.scaleway.com/en/produ
 
 ## Example Usage
 
-```hcl
+```terraform
 resource scaleway_container_namespace main {
 }
 
@@ -52,7 +52,7 @@ resource scaleway_container_cron main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 
@@ -64,7 +64,7 @@ The following arguments are required:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The container CRON's ID.
 

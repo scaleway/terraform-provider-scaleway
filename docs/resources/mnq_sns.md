@@ -3,25 +3,25 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sns"
 ---
 
-# scaleway_mnq_sns
+# Resource: scaleway_mnq_sns
 
 Activate Scaleway Messaging and queuing SNS for a project.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sns-overview/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
 Activate SNS for default project
 
-```hcl
+```terraform
 resource scaleway_mnq_sns "main" {}
 ```
 
 Activate SNS for a specific project
 
-```hcl
+```terraform
 data scaleway_account_project project {
   name = "default"
 }
@@ -32,7 +32,7 @@ resource scaleway_mnq_sns "for_project" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

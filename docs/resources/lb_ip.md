@@ -3,22 +3,22 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_ip"
 ---
 
-# scaleway_lb_ip
+# Resource: scaleway_lb_ip
 
 Creates and manages Scaleway Load-Balancers IPs.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-ip-addresses).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_lb_ip" "ip" {
     reverse = "my-reverse.com"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

@@ -3,7 +3,7 @@ subcategory: "Containers"
 page_title: "Scaleway: scaleway_container"
 ---
 
-# scaleway_container
+# Resource: scaleway_container
 
 Creates and manages Scaleway Container.
 
@@ -15,7 +15,7 @@ You can check also our [containers guide](https://www.scaleway.com/en/docs/compu
 
 ## Example Usage
 
-```hcl
+```terraform
 resource scaleway_container_namespace main {
     name = "my-ns-test"
     description = "test container"
@@ -46,7 +46,7 @@ resource scaleway_container main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 
@@ -92,7 +92,7 @@ Note that if you want to use your own configuration, you must consult our config
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The container's ID.
 

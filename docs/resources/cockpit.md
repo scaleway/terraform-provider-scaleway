@@ -3,7 +3,7 @@ subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit"
 ---
 
-# scaleway_cockpit
+# Resource: scaleway_cockpit
 
 Creates and manages Scaleway Cockpit.
 
@@ -13,13 +13,13 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 
 ### Activate Cockpit in the default project
 
-```hcl
+```terraform
 resource "scaleway_cockpit" "main" {}
 ```
 
 ### Activate Cockpit in a specific project
 
-```hcl
+```terraform
 resource "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
 }
@@ -27,7 +27,7 @@ resource "scaleway_cockpit" "main" {
 
 ### Use the Grafana Terraform provider
 
-```hcl
+```terraform
 resource "scaleway_cockpit" "main" {}
 
 resource "scaleway_cockpit_grafana_user" "main" {
@@ -46,7 +46,7 @@ resource "grafana_folder" "test_folder" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
 - `plan` - (Optional) Name or ID of the plan to use.

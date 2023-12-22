@@ -3,16 +3,16 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_route"
 ---
 
-# scaleway_lb_route
+# Resource: scaleway_lb_route
 
 Creates and manages Scaleway Load-Balancer Routes.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-route).
 
-## Examples
+## Example Usage
 
 ### With SNI for direction to TCP backends
 
-```hcl
+```terraform
 resource "scaleway_lb_ip" "ip01" {}
 
 resource "scaleway_lb" "lb01" {
@@ -43,7 +43,7 @@ resource "scaleway_lb_route" "rt01" {
 
 ### With host-header for direction to HTTP backends
 
-```hcl
+```terraform
 resource "scaleway_lb_ip" "ip01" {}
 
 resource "scaleway_lb" "lb01" {
@@ -72,7 +72,7 @@ resource "scaleway_lb_route" "rt01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

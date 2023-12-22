@@ -3,14 +3,14 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_website_configuration"
 ---
 
-# scaleway_object_bucket_website_configuration
+# Resource: scaleway_object_bucket_website_configuration
 
 Provides an Object bucket website configuration resource.
 For more information, see [Hosting Websites on Object bucket](https://www.scaleway.com/en/docs/storage/object/how-to/use-bucket-website/).
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
     name = "MyBucket"
     acl  = "public-read"
@@ -24,9 +24,9 @@ resource "scaleway_object_bucket_website_configuration" "main" {
 }
 ```
 
-## Example with `policy`
+## Example Usage with `policy`
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
     name = "MyBucket"
     acl  = "public-read"
@@ -62,7 +62,7 @@ resource "scaleway_object_bucket_website_configuration" "main" {
 }
 ```
 
-## Attributes Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -71,7 +71,7 @@ The following arguments are supported:
 * `error_document` - (Optional) The name of the error document for the website [detailed below](#error_document).
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
-## index_document
+### index_document
 
 The `index_document` configuration block supports the following arguments:
 
@@ -79,7 +79,9 @@ The `index_document` configuration block supports the following arguments:
 
 ~> **Important:** The suffix must not be empty and must not include a slash character. The routing is not supported.
 
-In addition to all above arguments, the following attribute is exported:
+## Attributes Reference
+
+In addition to all arguments above, the following attribute is exported:
 
 * `id` - The region and bucket separated by a slash (/)
 * `website_domain` - The domain of the website endpoint. This is used to create DNS alias [records](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/).

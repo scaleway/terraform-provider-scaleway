@@ -3,15 +3,15 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_security_group"
 ---
 
-# scaleway_instance_security_group
+# Resource: scaleway_instance_security_group
 
 Creates and manages Scaleway Compute Instance security groups. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "allow_all" {
 }
 
@@ -39,7 +39,7 @@ resource "scaleway_instance_security_group" "web" {
 
 ### Web server with banned IP and restricted internet access
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "web" {
   inbound_default_policy  = "drop" # By default we drop incoming traffic that do not match any inbound_rule.
   outbound_default_policy = "drop" # By default we drop outgoing traffic that do not match any outbound_rule.
@@ -71,7 +71,7 @@ resource "scaleway_instance_security_group" "web" {
 
 If you use terraform >= 0.12.6, you can leverage the [`for_each`](https://www.terraform.io/docs/configuration/resources.html#for_each-multiple-resource-instances-defined-by-a-map-or-set-of-strings) feature with this resource.
 
-```hcl
+```terraform
 locals {
   trusted = ["192.168.0.1", "192.168.0.2", "192.168.0.3"]
 }
@@ -92,7 +92,7 @@ resource "scaleway_instance_security_group" "dummy" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -141,7 +141,7 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the security group.
 

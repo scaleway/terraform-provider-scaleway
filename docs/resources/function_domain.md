@@ -3,16 +3,16 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_domain"
 ---
 
-# scaleway_function_domain
+# Resource: scaleway_function_domain
 
 Creates and manages Scaleway Function Domain bindings.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_function_domain" "main" {
   function_id = scaleway_function.main.id
   hostname    = "example.com"
@@ -34,7 +34,7 @@ resource scaleway_function main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -46,7 +46,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The function domain's ID.
 

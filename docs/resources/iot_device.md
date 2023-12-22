@@ -1,20 +1,19 @@
 ---
 subcategory: "IoT Hub"
-layout: "scaleway"
 page_title: "Scaleway: scaleway_iot_device"
 ---
 
-# scaleway_iot_device
+# Resource: scaleway_iot_device
 
 -> **Note:** This terraform resource is currently in beta and might include breaking change in future releases.
 
 Creates and manages Scaleway IoT Hub Instances. For more information, see [the documentation](https://developers.scaleway.com/en/products/iot/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_iot_hub" "main" {
     name         = "test-iot"
     product_plan = "plan_shared"
@@ -28,7 +27,7 @@ resource "scaleway_iot_device" "main" {
 
 ### With custom certificate
 
-```hcl
+```terraform
 resource "scaleway_iot_hub" "main" {
     name         = "test-iot"
     product_plan = "plan_shared"
@@ -47,7 +46,7 @@ resource "scaleway_iot_device" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

@@ -3,17 +3,17 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sqs_queue"
 ---
 
-# scaleway_mnq_sqs_queue
+# Resource: scaleway_mnq_sqs_queue
 
 Creates and manages Scaleway Messaging and queuing SQS Queues.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/how-to/create-manage-queues/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_mnq_sqs" "main" {}
 
 resource scaleway_mnq_sqs_credentials main {
@@ -36,7 +36,7 @@ resource scaleway_mnq_sqs_queue main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

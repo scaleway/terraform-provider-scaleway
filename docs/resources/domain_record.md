@@ -3,16 +3,16 @@ subcategory: "Domains and DNS"
 page_title: "Scaleway: scaleway_domain_record"
 ---
 
-# scaleway_domain_record
+# Resource: scaleway_domain_record
 
 Creates and manages Scaleway Domain record.  
 For more information, see [the documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_domain_record" "www" {
   dns_zone = "domain.tld"
   name     = "www"
@@ -50,7 +50,7 @@ resource "scaleway_domain_record" "mx2" {
 
 ### With dynamic records
 
-```hcl
+```terraform
 resource "scaleway_domain_record" "geo_ip" {
   dns_zone = "domain.tld"
   name     = "images"
@@ -127,7 +127,7 @@ resource "scaleway_domain_record" "weighted" {
 
 ### Create an instance and add records with the new instance IP
 
-```hcl
+```terraform
 variable "project_id" {
   type        = string
   description = "Your project ID."
@@ -179,7 +179,7 @@ resource "scaleway_domain_record" "web_alias" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -225,7 +225,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the record.
 

@@ -3,23 +3,23 @@ subcategory: "Apple Silicon"
 page_title: "Scaleway: scaleway_apple_silicon"
 ---
 
-# scaleway_apple_silicon
+# Resource: scaleway_apple_silicon
 
 Creates and manages Scaleway Apple silicon M1. For more information,
 see [the documentation](https://www.scaleway.com/en/docs/compute/apple-silicon/concepts).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource scaleway_apple_silicon_server server {
     name = "test-m1"
     type = "M1-M"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the server.
 

@@ -3,7 +3,7 @@ subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit_grafana_user"
 ---
 
-# scaleway_cockpit
+# Resource: scaleway_cockpit_grafana_user
 
 Creates and manages Scaleway Cockpit Grafana Users.
 
@@ -11,7 +11,7 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 
 ## Example Usage
 
-```hcl
+```terraform
 // Get the cockpit of the default project
 data "scaleway_cockpit" "main" {}
 
@@ -25,7 +25,7 @@ resource "scaleway_cockpit_grafana_user" "main" {
 ```
 
 
-## Arguments Reference
+## Argument Reference
 
 - `login` - (Required) The login of the grafana user.
 - `role` - (Required) The role of the grafana user. Must be `editor` or `viewer`.

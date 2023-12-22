@@ -3,16 +3,16 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_user"
 ---
 
-# scaleway_iam_user
+# Resource: scaleway_iam_user
 
 Creates and manages Scaleway IAM Users.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/iam/#path-users-list-users-of-an-organization).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_iam_user" "basic" {
   email = "test@test.com"
 }
@@ -20,7 +20,7 @@ resource "scaleway_iam_user" "basic" {
 
 ### Multiple users
 
-```hcl
+```terraform
 locals {
   users = toset([
     "test@test.com",
@@ -42,7 +42,7 @@ resource scaleway_iam_user user {
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the user (UUID format).
 - `email` - The email of the user

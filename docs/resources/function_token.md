@@ -3,16 +3,16 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_token"
 ---
 
-# scaleway_function_token
+# Resource: scaleway_function_token
 
 Creates and manages Scaleway Function Token.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/#tokens-26b085).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource scaleway_function_namespace main {
   name = "test-function-token-ns"
 }
@@ -36,7 +36,7 @@ resource scaleway_function_token function {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

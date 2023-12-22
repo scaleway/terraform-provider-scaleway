@@ -1,10 +1,9 @@
 ---
 subcategory: "IoT Hub"
-layout: "scaleway"
-page_title: "Scaleway: scaleway_iot_routes"
+page_title: "Scaleway: scaleway_iot_route"
 ---
 
-# scaleway_iot_routes
+# Resource: scaleway_iot_route
 
 -> **Note:** This terraform resource is currently in beta and might include breaking change in future releases.
 
@@ -13,11 +12,11 @@ Creates and manages Scaleway IoT Routes. For more information, see the following
 - [API documentation](https://developers.scaleway.com/en/products/iot/api).
 - [Product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-route/)
 
-## Examples
+## Example Usage
 
 ### Database Route
 
-```hcl
+```terraform
 resource "scaleway_iot_route" "main" {
 	name   = "default"
 	hub_id = scaleway_iot_hub.main.id
@@ -62,7 +61,7 @@ resource "scaleway_rdb_instance" "iot" {
 
 ### S3 Route
 
-```hcl
+```terraform
 resource "scaleway_iot_route" "main" {
 	name   = "main"
 	hub_id = scaleway_iot_hub.main.id
@@ -88,7 +87,7 @@ resource "scaleway_object_bucket" "main" {
 
 ### Rest Route
 
-```hcl
+```terraform
 resource "scaleway_iot_route" "main" {
 	name   = "main"
 	hub_id = scaleway_iot_hub.main.id
@@ -108,7 +107,7 @@ resource "scaleway_iot_hub" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 ~> **Important:** Updates to any value will recreate the IoT Route.
 

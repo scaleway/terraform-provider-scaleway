@@ -3,16 +3,16 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_certificate"
 ---
 
-# scaleway_lb_certificate
+# Resource: scaleway_lb_certificate
 
 Creates and manages Scaleway Load-Balancer Certificates.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-certificate).
 
-## Examples
+## Example Usage
 
 ### Let's Encrypt
 
-```hcl
+```terraform
 resource "scaleway_lb_certificate" "cert01" {
   lb_id = scaleway_lb.lb01.id
   name  = "cert1"
@@ -33,7 +33,7 @@ resource "scaleway_lb_certificate" "cert01" {
 
 ### Custom Certificate
 
-```hcl
+```terraform
 resource "scaleway_lb_certificate" "cert01" {
   lb_id = scaleway_lb.lb01.id
   name  = "custom-cert"
@@ -45,7 +45,7 @@ EOF
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
