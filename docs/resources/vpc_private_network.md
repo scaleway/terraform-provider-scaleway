@@ -3,16 +3,16 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_private_network"
 ---
 
-# scaleway_vpc_private_network
+# Resource: scaleway_vpc_private_network
 
 Creates and manages Scaleway VPC Private Networks.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc/api/#private-networks-ac2df4).
 
-## Example
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn_priv" {
     name = "subnet_demo"
     tags = ["demo", "terraform"]
@@ -21,7 +21,7 @@ resource "scaleway_vpc_private_network" "pn_priv" {
 
 ### With subnets
 
-```hcl
+```terraform
 resource "scaleway_vpc_private_network" "pn_priv" {
     name = "subnet_demo"
     tags = ["demo", "terraform"]
@@ -38,7 +38,7 @@ resource "scaleway_vpc_private_network" "pn_priv" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -56,7 +56,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the private network.
 - `ipv4_subnet` - The IPv4 subnet associated with the private network.

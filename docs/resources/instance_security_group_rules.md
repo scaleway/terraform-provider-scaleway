@@ -3,7 +3,7 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_security_group_rules"
 ---
 
-# scaleway_instance_security_group_rules
+# Resource: scaleway_instance_security_group_rules
 
 Creates and manages Scaleway Compute Instance security group rules. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89).
 
@@ -11,11 +11,11 @@ This resource can be used to externalize rules from a `scaleway_instance_securit
 
 ~> **Warning:** In order to guaranty rules order in a given security group only one scaleway_instance_security_group_rules is allowed per security group.
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "sg01" {
   external_rules = true
 }
@@ -36,7 +36,7 @@ You can use [`for_each` syntax](https://www.terraform.io/language/expressions/dy
 Let's suppose that your inbound default policy is to drop, but you want to build a list of exceptions to accept.
 Create a local containing your exceptions (`locals.trusted`) and use the `for_each` syntax in a [dynamic block](https://www.terraform.io/docs/configuration/expressions/dynamic-blocks.html):
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "main" {
   description = "test"
   name        = "terraform test"
@@ -69,7 +69,7 @@ resource "scaleway_instance_security_group_rules" "main" {
 You can also use object to assign IP and port in the same time.
 In your locals, you can use [objects](https://www.terraform.io/docs/configuration/types.html#structural-types) to encapsulate several values that will be used later on in the loop:
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "main" {
   description             = "test"
   name                    = "terraform test"
@@ -99,7 +99,7 @@ resource "scaleway_instance_security_group_rules" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -129,7 +129,7 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the security group.
 

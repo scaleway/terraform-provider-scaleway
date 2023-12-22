@@ -3,16 +3,16 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_trigger"
 ---
 
-# scaleway_function_trigger
+# Resource: scaleway_function_trigger
 
 Creates and manages Scaleway Function Triggers.
 For more information see [the documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-triggers).
 
-## Examples
+## Example Usage
 
 ### SQS
 
-```hcl
+```terraform
 resource scaleway_function_trigger main {
   function_id = scaleway_function.main.id
   name = "my-trigger"
@@ -27,7 +27,7 @@ resource scaleway_function_trigger main {
 
 ### Nats
 
-```hcl
+```terraform
 resource scaleway_function_trigger main {
   container_id = scaleway_container.main.id
   name = "my-trigger"
@@ -40,7 +40,7 @@ resource scaleway_function_trigger main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

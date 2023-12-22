@@ -3,16 +3,16 @@ subcategory: "Secrets"
 page_title: "Scaleway: scaleway_secret_version"
 ---
 
-# scaleway_secret
+# Resource: scaleway_secret_version
 
 Creates and manages Scaleway Secret Versions.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/secret_manager/api/v1alpha1/#secret-versions-079501).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_secret" "main" {
   name        = "foo"
   description = "barr"
@@ -26,7 +26,7 @@ resource "scaleway_secret_version" "v1" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -36,7 +36,7 @@ The following arguments are supported:
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the resource exists.
 
-## Data
+### Data
 
 Note: The `data` should be a base64 encoded string when sent from the API. **It is already handled by the provider so you don't need to encode it yourself.**
 
@@ -62,5 +62,5 @@ The Secret Version can be imported using the `{region}/{id}/{revision}`, e.g.
 ~> **Important:** Be aware if you import with revision `latest` you will overwrite the version you used before.
 
 ```bash
-$ terraform import scaleway_secret.main fr-par/11111111-1111-1111-1111-111111111111/2
+$ terraform import scaleway_secret_version.main fr-par/11111111-1111-1111-1111-111111111111/2
 ```

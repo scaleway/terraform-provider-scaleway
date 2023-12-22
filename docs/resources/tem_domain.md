@@ -3,16 +3,16 @@ subcategory: "Transactional Email"
 page_title: "Scaleway: scaleway_tem_domain"
 ---
 
-# scaleway_tem_domain
+# Resource: scaleway_tem_domain
 
 Creates and manages Scaleway Transactional Email Domains.
 For more information see [the documentation](https://developers.scaleway.com/en/products/transactional_email/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_tem_domain" "main" {
   accept_tos = true
   name       = "example.com"
@@ -21,7 +21,7 @@ resource "scaleway_tem_domain" "main" {
 
 ### Add the required records to your DNS zone
 
-```hcl
+```terraform
 variable "domain_name" {
   type    = string
 }
@@ -51,7 +51,7 @@ resource "scaleway_domain_record" "mx" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -67,7 +67,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Transaction Email Domain.
 

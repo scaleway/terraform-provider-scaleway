@@ -3,16 +3,16 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_acl"
 ---
 
-# scaleway_rdb_acl
+# Resource: scaleway_rdb_acl
 
 Creates and manages Scaleway Database instance authorized IPs.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api/#acl-rules-allowed-ips).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_rdb_acl" "main" {
   instance_id = scaleway_rdb_instance.main.id
   acl_rules {
@@ -22,7 +22,7 @@ resource "scaleway_rdb_acl" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -42,7 +42,7 @@ The `acl_rules` block supports:
 
 ## Attributes Reference
 
-All arguments above are exported.
+No additional attributes are exported.
 
 ## Import
 

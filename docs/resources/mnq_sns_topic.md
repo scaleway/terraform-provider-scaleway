@@ -3,17 +3,17 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sns_topic"
 ---
 
-# scaleway_mnq_sns_topic
+# Resource: scaleway_mnq_sns_topic
 
 Manage Scaleway Messaging and queuing SNS Topics.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sns-overview/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_mnq_sns" "main" {}
 
 resource scaleway_mnq_sns_credentials main {
@@ -31,7 +31,7 @@ resource "scaleway_mnq_sns_topic" "topic" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

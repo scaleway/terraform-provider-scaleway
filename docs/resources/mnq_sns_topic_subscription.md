@@ -3,17 +3,17 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sns_topic_subscription"
 ---
 
-# scaleway_mnq_sns_topic_subscription
+# Resource: scaleway_mnq_sns_topic_subscription
 
 Manage Scaleway Messaging and queuing SNS Topic Subscriptions.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sns-overview/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 // For default project in default region
 resource "scaleway_mnq_sns" "main" {}
 
@@ -43,7 +43,7 @@ resource scaleway_mnq_sns_topic_subscription main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

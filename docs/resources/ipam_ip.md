@@ -3,15 +3,15 @@ subcategory: "IPAM"
 page_title: "Scaleway: scaleway_ipam_ip"
 ---
 
-# scaleway_ipam_ip
+# Resource: scaleway_ipam_ip
 
 Books and manages Scaleway IPAM IPs.
 
-## Example
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
   name = "my vpc"
 }
@@ -32,7 +32,7 @@ resource "scaleway_ipam_ip" "ip01" {
 
 ### Request a specific IPv4
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
   name = "my vpc"
 }
@@ -54,7 +54,7 @@ resource "scaleway_ipam_ip" "ip01" {
 
 ### Request an IPv6
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
   name = "my vpc"
 }
@@ -74,7 +74,7 @@ resource "scaleway_ipam_ip" "ip01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -90,7 +90,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the IP in IPAM.
 - `resource` - The IP resource.

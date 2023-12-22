@@ -3,15 +3,15 @@ subcategory: "Account"
 page_title: "Scaleway: scaleway_account_project"
 ---
 
-# scaleway_account_project
+# Resource: scaleway_account_project
 
 Manages organization's projects on Scaleway.
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_account_project" "project" {
   name = "project"
 }
@@ -22,7 +22,7 @@ resource "scaleway_account_project" "project" {
 If you want to use as default a project created in terraform you can use a temporary provider alias.
 This project can then be used to configure your default provider.
 
-```hcl
+```terraform
 provider "scaleway" {
   alias = "tmp"
 }
@@ -42,7 +42,7 @@ resource "scaleway_instance_server" "server" { // Will use scaleway_account_proj
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -52,7 +52,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the project (UUID format).
 - `created_at` - The Project creation time.

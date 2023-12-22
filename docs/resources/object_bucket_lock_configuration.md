@@ -3,7 +3,7 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_lock_configuration"
 ---
 
-# scaleway_object_bucket_lock_configuration
+# Resource: scaleway_object_bucket_lock_configuration
 
 Provides an Object bucket lock configuration resource.
 For more information, see [Setting up object lock](https://www.scaleway.com/en/docs/storage/object/api-cli/object-lock/).
@@ -14,7 +14,7 @@ For more information, see [Setting up object lock](https://www.scaleway.com/en/d
 
 Please note that `object_lock_enabled` must be set to `true` before configuring the lock.
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
     name = "MyBucket"
     acl  = "public-read"
@@ -38,7 +38,7 @@ resource "scaleway_object_bucket_lock_configuration" "main" {
 
 You should [contact Scaleway support](https://console.scaleway.com/support/tickets/create) to enable object lock on an existing bucket.
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -58,7 +58,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Object bucket lock configuration.
 

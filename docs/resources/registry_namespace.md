@@ -3,16 +3,16 @@ subcategory: "Container Registry"
 page_title: "Scaleway: scaleway_registry_namespace"
 ---
 
-# scaleway_registry_namespace
+# Resource: scaleway_registry_namespace
 
 Creates and manages Scaleway Container Registry.
 For more information see [the documentation](https://developers.scaleway.com/en/products/registry/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_registry_namespace" "main" {
   name        = "main-cr"
   description = "Main container registry"
@@ -20,7 +20,7 @@ resource "scaleway_registry_namespace" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

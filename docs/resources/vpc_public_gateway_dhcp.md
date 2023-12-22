@@ -3,20 +3,20 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp"
 ---
 
-# scaleway_vpc_public_gateway_dhcp
+# Resource: scaleway_vpc_public_gateway_dhcp
 
 Creates and manages Scaleway VPC Public Gateway DHCP.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#dhcp-c05544).
 
-## Example
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc_public_gateway_dhcp" "main" {
     subnet = "192.168.1.0/24"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -38,7 +38,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the public gateway DHCP config.
 

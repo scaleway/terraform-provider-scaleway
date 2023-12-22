@@ -3,14 +3,14 @@ subcategory: "Block"
 page_title: "Scaleway: scaleway_block_volume"
 ---
 
-# scaleway_block_volume
+# Resource: scaleway_block_volume
 
 Creates and manages Scaleway Block Volumes.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/block/).
 
-## Example
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_block_volume" "block_volume" {
     iops       = 5000
     name       = "some-volume-name"
@@ -18,7 +18,7 @@ resource "scaleway_block_volume" "block_volume" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -32,7 +32,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the volume.
 

@@ -3,16 +3,16 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_policy"
 ---
 
-# scaleway_object_bucket_policy
+# Resource: scaleway_object_bucket_policy
 
 Creates and manages Scaleway object storage bucket policy.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-policy/).
 
 ## Example Usage
 
-### Example with an IAM user
+### Example Usage with an IAM user
 
-```hcl
+```terraform
 # Project ID
 data "scaleway_account_project" "default" {
   name = "default"
@@ -59,7 +59,7 @@ resource "scaleway_object_bucket_policy" "policy" {
 
 #### Creating a bucket and delegating read access to an application
 
-```hcl
+```terraform
 # Project ID
 data "scaleway_account_project" "default" {
   name = "default"
@@ -111,7 +111,7 @@ resource "scaleway_object_bucket_policy" "policy" {
 
 #### Reading the bucket with the application
 
-```hcl
+```terraform
 data "scaleway_iam_application" "reading-app" {
   name = "reading-app"
 }
@@ -134,7 +134,7 @@ data scaleway_object_bucket bucket {
 
 ### Example with AWS provider
 
-```hcl
+```terraform
 # AWS provider configuration (with Scaleway credentials)
 provider "aws" {
   shared_config_files      = ["/home/user/.aws/config"]
@@ -181,7 +181,7 @@ data "aws_iam_policy_document" "policy" {
 
 ### Example with deprecated version 2012-10-17
 
-```hcl
+```terraform
 # Project ID
 data "scaleway_account_project" "default" {
   name = "default"
@@ -216,7 +216,7 @@ resource "scaleway_object_bucket_policy" "policy" {
 
 **NB:** To configure the AWS provider with Scaleway credentials, please visit this [tutorial](https://www.scaleway.com/en/docs/storage/object/api-cli/object-storage-aws-cli/).
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -228,7 +228,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attribute is exported:
 
 * `id` - The ID of the policy, which is the ID of the bucket.
 

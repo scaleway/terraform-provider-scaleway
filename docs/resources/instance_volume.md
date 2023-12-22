@@ -3,14 +3,14 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_volume"
 ---
 
-# scaleway_instance_volume
+# Resource: scaleway_instance_volume
 
 Creates and manages Scaleway Compute Instance Volumes.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39).
 
-## Example
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "server_volume" {
     type       = "l_ssd"
     name       = "some-volume-name"
@@ -18,7 +18,7 @@ resource "scaleway_instance_volume" "server_volume" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -32,7 +32,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the volume.
 

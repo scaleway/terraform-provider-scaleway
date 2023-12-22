@@ -3,14 +3,14 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_api_key"
 ---
 
-# scaleway_iam_api_key
+# Resource: scaleway_iam_api_key
 
 Creates and manages Scaleway IAM API Keys. For more information, please
 check [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#api-keys-3665ae)
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_iam_application" "ci_cd" {
   name = "My application"
 }
@@ -21,7 +21,7 @@ resource "scaleway_iam_api_key" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the API key, which is the access key.
 - `created_at` - The date and time of the creation of the iam api key.

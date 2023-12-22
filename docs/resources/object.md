@@ -3,14 +3,14 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object"
 ---
 
-# scaleway_object
+# Resource: scaleway_object
 
 Creates and manages Scaleway object storage objects.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
 }
@@ -24,7 +24,7 @@ resource scaleway_object "some_file" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 
 The following arguments are supported:
@@ -43,7 +43,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attribute is exported:
 
 * `id` - The path of the object, including bucket name.
 

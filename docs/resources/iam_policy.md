@@ -3,7 +3,7 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_policy"
 ---
 
-# scaleway_iam_policy
+# Resource: scaleway_iam_policy
 
 Creates and manages Scaleway IAM Policies. For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#policies-54b8a7).
 
@@ -13,7 +13,7 @@ Creates and manages Scaleway IAM Policies. For more information, see [the docume
 
 ### Create a policy for an organization's project
 
-```hcl
+```terraform
 provider scaleway {
   organization_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
@@ -39,7 +39,7 @@ resource scaleway_iam_policy "object_read_only" {
 
 ### Create a policy for all current and future projects in an organization
 
-```hcl
+```terraform
 resource scaleway_iam_application "app" {
   name = "my app"
 }
@@ -57,7 +57,7 @@ resource scaleway_iam_policy "object_read_only" {
 
 ### Create a permission for multiple users using a group
 
-```hcl
+```terraform
 locals {
   users = [
     "user1@mail.com",
@@ -90,7 +90,7 @@ resource "scaleway_iam_policy" "iam_tf_storage_policy" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -121,7 +121,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the policy.
 - `created_at` - The date and time of the creation of the policy.

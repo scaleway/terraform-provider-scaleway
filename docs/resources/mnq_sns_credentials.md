@@ -3,17 +3,17 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sns_credentials"
 ---
 
-# scaleway_mnq_sns_credentials
+# Resource: scaleway_mnq_sns_credentials
 
 Creates and manages Scaleway Messaging and queuing SNS Credentials.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sns-overview/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_mnq_sns" "main" {}
 
 resource scaleway_mnq_sns_credentials main {
@@ -28,7 +28,7 @@ resource scaleway_mnq_sns_credentials main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

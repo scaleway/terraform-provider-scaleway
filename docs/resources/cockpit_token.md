@@ -3,7 +3,7 @@ subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit_token"
 ---
 
-# scaleway_cockpit
+# Resource: scaleway_cockpit_token
 
 Creates and manages Scaleway Cockpit Tokens.
 
@@ -11,7 +11,7 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 
 ## Example Usage
 
-```hcl
+```terraform
 // Get the cockpit of the default project
 data "scaleway_cockpit" "main" {}
 
@@ -23,7 +23,7 @@ resource "scaleway_cockpit_token" "main" {
 }
 ```
 
-```hcl
+```terraform
 // Get the cockpit of the default project
 data "scaleway_cockpit" "main" {}
 
@@ -42,7 +42,7 @@ resource "scaleway_cockpit_token" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 - `name` - (Required) The name of the token.
 - `scopes` - (Optional) Allowed scopes.

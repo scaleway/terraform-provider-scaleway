@@ -3,7 +3,7 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_cron"
 ---
 
-# scaleway_function_cron
+# Resource: scaleway_function_cron
 
 Creates and manages Scaleway Function Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
 
@@ -15,7 +15,7 @@ our [functions cron api documentation](https://developers.scaleway.com/en/produc
 
 ## Example Usage
 
-```hcl
+```terraform
 resource scaleway_function_namespace main {
     name = "test-cron"
 }
@@ -41,7 +41,7 @@ resource scaleway_function_cron func {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 
@@ -53,7 +53,7 @@ The following arguments are required:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The function CRON's ID.
 

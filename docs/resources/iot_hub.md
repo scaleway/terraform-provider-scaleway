@@ -1,27 +1,26 @@
 ---
 subcategory: "IoT Hub"
-layout: "scaleway"
 page_title: "Scaleway: scaleway_iot_hub"
 ---
 
-# scaleway_iot_hub
+# Resource: scaleway_iot_hub
 
 -> **Note:** This terraform resource is currently in beta and might include breaking change in future releases.
 
 Creates and manages Scaleway IoT Hub Instances. For more information, see [the documentation](https://developers.scaleway.com/en/products/iot/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_iot_hub" "main" {
     name = "test-iot"
     product_plan = "plan_shared"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

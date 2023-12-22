@@ -3,17 +3,17 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sqs_queue"
 ---
 
-# scaleway_mnq_sqs_queue
+# Resource: scaleway_mnq_sqs_queue
 
 Creates and manages Scaleway Messaging and queuing SQS Queues.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/how-to/create-manage-queues/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_mnq_sqs" "main" {}
 
 resource scaleway_mnq_sqs_credentials main {
@@ -36,7 +36,7 @@ resource scaleway_mnq_sqs_queue main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -74,11 +74,3 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the queue with format `{region/{project-id}/{queue-name}`
 
 - `url` - The URL of the queue.
-
-## Import
-
-SQS queues can be imported using the `{region}/{project-id}/{queue-name}`, e.g.
-
-```bash
-$ terraform import scaleway_mnq_sqs_queue.main fr-par/11111111111111111111111111111111/my-queue
-```

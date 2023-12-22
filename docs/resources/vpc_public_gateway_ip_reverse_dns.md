@@ -3,14 +3,14 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway_ip_reverse_dns"
 ---
 
-# scaleway_vpc_public_gateway_ip_reverse_dns
+# Resource: scaleway_vpc_public_gateway_ip_reverse_dns
 
 Manages Scaleway VPC Public Gateways IPs reverse DNS.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#ips-268151).
 
-## Example
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc_public_gateway_ip" "main" {}
 
 resource "scaleway_domain_record" "tf_A" {
@@ -28,7 +28,7 @@ resource "scaleway_vpc_public_gateway_ip_reverse_dns" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -38,7 +38,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the public gateway IP for which the reverse DNS is configured.
 
