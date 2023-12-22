@@ -131,8 +131,8 @@ The Scaleway provider offers three ways of providing these credentials.
 The following methods are supported, in this priority order:
 
 1. [Environment variables](#environment-variables)
-1. [Static credentials](#static-credentials)
-1. [Shared configuration file](#shared-configuration-file)
+2. [Static credentials](#static-credentials)
+3. [Shared configuration file](#shared-configuration-file)
 
 ### Environment variables
 
@@ -154,7 +154,7 @@ $ terraform plan
 
 ### Static credentials
 
-!> **Warning**: Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.
+~> **Warning**: Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.
 
 Static credentials can be provided by adding `access_key` and `secret_key` attributes in-line in the Scaleway provider block:
 
