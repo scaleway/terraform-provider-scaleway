@@ -8,6 +8,7 @@ page_title: "Scaleway: scaleway_mnq_nats_account"
 Creates and manages Scaleway Messaging and queuing Nats Accounts.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/nats-overview/)
+To use Scaleway's provider with official nats jetstream provider, check out the [corresponding guide](../guides/mnq_with_nats_terraform_provider.md)
 
 ## Example Usage
 
