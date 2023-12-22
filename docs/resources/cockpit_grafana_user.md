@@ -3,7 +3,7 @@ subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit_grafana_user"
 ---
 
-# Resource: scaleway_cockpit
+# Resource: scaleway_cockpit_grafana_user
 
 Creates and manages Scaleway Cockpit Grafana Users.
 

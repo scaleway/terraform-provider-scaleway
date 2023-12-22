@@ -73,6 +73,10 @@ resource "scaleway_iam_group" "with_users" {
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the group is associated with.
 
+## Attributes Reference
+
+No additional attributes are exported.
+
 ## Import
 
 IAM groups can be imported using the `{id}`, e.g.

@@ -18,7 +18,7 @@ resource "scaleway_instance_snapshot" "main" {
 }
 ```
 
-## Example Usage with Unified type
+### Example with Unified type snapshot
 
 ```terraform
 resource "scaleway_instance_volume" "main" {
@@ -45,7 +45,7 @@ resource "scaleway_instance_snapshot" "main" {
 }
 ```
 
-## Import a local qcow2 file
+### Example importing a local qcow2 file
 
 ```terraform
 resource "scaleway_object_bucket" "bucket" {

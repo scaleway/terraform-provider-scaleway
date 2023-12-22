@@ -3,7 +3,7 @@ subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit_token"
 ---
 
-# Resource: scaleway_cockpit
+# Resource: scaleway_cockpit_token
 
 Creates and manages Scaleway Cockpit Tokens.
 

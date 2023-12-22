@@ -46,5 +46,5 @@ In addition to all arguments above, the following attributes are exported:
 Namespaces can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_mnq_namespace.main fr-par/11111111111111111111111111111111
+$ terraform import scaleway_mnq_nats_account.main fr-par/11111111111111111111111111111111
 ```

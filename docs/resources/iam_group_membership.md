@@ -65,6 +65,10 @@ resource "scaleway_iam_group_membership" "members" {
 
 - ~> Only one of `application_id` or `user_id` must be specified
 
+## Attributes Reference
+
+No additional attributes are exported.
+
 ## Import
 
 IAM group memberships can be imported using two format:

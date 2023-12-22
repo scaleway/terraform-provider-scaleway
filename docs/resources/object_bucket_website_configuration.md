@@ -62,7 +62,7 @@ resource "scaleway_object_bucket_website_configuration" "main" {
 }
 ```
 
-## Attributes Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -71,13 +71,15 @@ The following arguments are supported:
 * `error_document` - (Optional) The name of the error document for the website [detailed below](#error_document).
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
-## index_document
+### index_document
 
 The `index_document` configuration block supports the following arguments:
 
 * `suffix` - (Required) A suffix that is appended to a request that is for a directory on the website endpoint.
 
 ~> **Important:** The suffix must not be empty and must not include a slash character. The routing is not supported.
+
+## Attributes Reference
 
 In addition to all arguments above, the following attribute is exported:
 

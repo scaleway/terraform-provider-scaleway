@@ -1,9 +1,9 @@
 ---
 subcategory: "IoT Hub"
-page_title: "Scaleway: scaleway_iot_routes"
+page_title: "Scaleway: scaleway_iot_route"
 ---
 
-# Resource: scaleway_iot_routes
+# Resource: scaleway_iot_route
 
 -> **Note:** This terraform resource is currently in beta and might include breaking change in future releases.
 
