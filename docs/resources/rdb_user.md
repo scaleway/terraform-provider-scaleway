@@ -3,16 +3,16 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_user"
 ---
 
-# scaleway_rdb_user
+# Resource: scaleway_rdb_user
 
 Creates and manages Scaleway Database Users.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "random_password" "db_password" {
   length  = 16
   special = true
@@ -26,7 +26,7 @@ resource "scaleway_rdb_user" "db_admin" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

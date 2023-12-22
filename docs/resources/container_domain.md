@@ -3,7 +3,7 @@ subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_domain"
 ---
 
-# scaleway_container_domain
+# Resource: scaleway_container_domain
 
 Creates and manages Scaleway Container domain name bindings.
 You can check our [containers guide](https://www.scaleway.com/en/docs/compute/containers/how-to/add-a-custom-domain-to-a-container/) for further information.
@@ -12,7 +12,7 @@ You can check our [containers guide](https://www.scaleway.com/en/docs/compute/co
 
 ### Simple
 
-```hcl
+```terraform
 resource scaleway_container app {}
 
 resource scaleway_container_domain "app" {
@@ -23,7 +23,7 @@ resource scaleway_container_domain "app" {
 
 ### Complete example with domain
 
-```hcl
+```terraform
 resource scaleway_container_namespace main {
     name = "my-ns-test"
     description = "test container"
@@ -59,7 +59,7 @@ resource scaleway_container_domain "app" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are required:
 

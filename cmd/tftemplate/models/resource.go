@@ -15,6 +15,8 @@ type ResourceTemplate struct {
 	ResourceCleanLow       string // namespace
 	ResourceHCL            string // function_namespace
 	API                    string // function
+
+	SupportWaiters bool // If resource have waiters
 }
 
 func isUpper(letter uint8) bool {

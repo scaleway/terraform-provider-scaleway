@@ -79,6 +79,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			"ipam_config": {
 				Type:          schema.TypeList,
 				Optional:      true,
+				Computed:      true,
 				Description:   "Auto-configure the Gateway Network using Scaleway's IPAM (IP address management service)",
 				ConflictsWith: []string{"dhcp_id", "static_address"},
 				Elem: &schema.Resource{
@@ -87,6 +88,14 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "Defines whether the default route is enabled on that Gateway Network",
+						},
+						"ipam_ip_id": {
+							Type:             schema.TypeString,
+							Optional:         true,
+							Computed:         true,
+							Description:      "Use this IPAM-booked IP ID as the Gateway's IP in this Private Network",
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
 					},
 				},
@@ -218,6 +227,10 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		_ = d.Set("enable_dhcp", enableDHCP)
 	}
 
+	if ipamConfig := gatewayNetwork.IpamConfig; ipamConfig != nil {
+		_ = d.Set("ipam_config", flattenIpamConfig(ipamConfig))
+	}
+
 	var cleanUpDHCPValue bool
 	cleanUpDHCP, cleanUpDHCPExist := d.GetOk("cleanup_dhcp")
 	if cleanUpDHCPExist {
@@ -273,7 +286,7 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		updateRequest.DHCPID = &dhcpID
 	}
 	if d.HasChange("ipam_config") {
-		updateRequest.IpamConfig = expandIpamConfig(d.Get("ipam_config"))
+		updateRequest.IpamConfig = expandUpdateIpamConfig(d.Get("ipam_config"))
 	}
 	if d.HasChange("static_address") {
 		staticAddress, staticAddressExist := d.GetOk("static_address")

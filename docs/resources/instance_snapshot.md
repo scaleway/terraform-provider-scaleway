@@ -3,24 +3,24 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_snapshot"
 ---
 
-# scaleway_instance_snapshot
+# Resource: scaleway_instance_snapshot
 
 Creates and manages Scaleway Compute Snapshots.
 For more information,
 see [the documentation](https://developers.scaleway.com/en/products/instance/api/#snapshots-756fae).
 
-## Example
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_instance_snapshot" "main" {
     name       = "some-snapshot-name"
     volume_id  = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
-## Example with Unified type
+### Example with Unified type snapshot
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "main" {
     type       = "l_ssd"
     size_in_gb = 10
@@ -45,9 +45,9 @@ resource "scaleway_instance_snapshot" "main" {
 }
 ```
 
-## Import a local qcow2 file
+### Example importing a local qcow2 file
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "bucket" {
   name = "snapshot-qcow-import"
 }
@@ -67,7 +67,7 @@ resource "scaleway_instance_snapshot" "snapshot" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -88,7 +88,7 @@ Updates to this field will recreate a new resource.
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the snapshot.
 

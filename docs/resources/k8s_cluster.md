@@ -3,19 +3,22 @@ subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_cluster"
 ---
 
-# scaleway_k8s_cluster
+# Resource: scaleway_k8s_cluster
 
 Creates and manages Scaleway Kubernetes clusters. For more information, see [the documentation](https://developers.scaleway.com/en/products/k8s/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
+resource "scaleway_vpc_private_network" "hedy" {}
+
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.24.3"
   cni     = "cilium"
+  private_network_id = scaleway_vpc_private_network.hedy.id
   delete_additional_resources = false
 }
 
@@ -29,7 +32,7 @@ resource "scaleway_k8s_pool" "john" {
 
 ### Multicloud
 
-```hcl
+```terraform
 resource "scaleway_k8s_cluster" "henry" {
   name = "henry"
   type = "multicloud"
@@ -51,13 +54,16 @@ For a detailed example of how to add or run Elastic Metal servers instead of ins
 
 ### With additional configuration
 
-```hcl
+```terraform
+resource "scaleway_vpc_private_network" "hedy" {}
+
 resource "scaleway_k8s_cluster" "john" {
   name             = "john"
   description      = "my awesome cluster"
   version          = "1.24.3"
   cni              = "calico"
   tags             = ["i'm an awesome tag", "yay"]
+  private_network_id = scaleway_vpc_private_network.hedy.id
   delete_additional_resources = false
 
   autoscaler_config {
@@ -85,11 +91,14 @@ resource "scaleway_k8s_pool" "john" {
 
 ### With the kubernetes provider
 
-```hcl
+```terraform
+resource "scaleway_vpc_private_network" "hedy" {}
+
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
   version = "1.24.3"
   cni     = "flannel"
+  private_network_id = scaleway_vpc_private_network.hedy.id
   delete_additional_resources = false
 }
 
@@ -123,12 +132,15 @@ It leads the `kubernetes` provider to start creating its objects, but the DNS en
 
 ### With the Helm provider
 
-```hcl
+```terraform
+resource "scaleway_vpc_private_network" "hedy" {}
+
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
   version = "1.24.3"
   cni     = "flannel"
   delete_additional_resources = false
+  private_network_id = scaleway_vpc_private_network.hedy.id
 }
 
 resource "scaleway_k8s_pool" "john" {
@@ -204,7 +216,7 @@ resource "helm_release" "nginx_ingress" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -225,9 +237,16 @@ The following arguments are supported:
 - `cni` - (Required) The Container Network Interface (CNI) for the Kubernetes cluster.
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `delete_additional_resources` - (Required) Delete additional resources like block volumes, loadbalancers and the cluster private network (if empty) that were created in Kubernetes on cluster deletion.
+- `delete_additional_resources` - (Required) Delete additional resources like block volumes, load-balancers and the cluster's private network (if empty) that were created in Kubernetes on cluster deletion.
 ~> **Important:** Setting this field to `true` means that you will lose all your cluster data and network configuration when you delete your cluster.
 If you prefer keeping it, you should instead set it as `false`.
+
+- `private_network_id` - (Required) The ID of the private network of the cluster.
+
+~> **Important:** Changes to this field will recreate a new resource.
+
+~> **Important:** Private Networks are now mandatory with Kapsule Clusters. If you have a legacy cluster (no `private_network_id` set),
+you can still set it now. In this case it will not destroy and recreate your cluster but migrate it to the Private Network.
 
 - `tags` - (Optional) The tags associated with the Kubernetes cluster.
 
@@ -284,13 +303,6 @@ If you prefer keeping it, you should instead set it as `false`.
 
     - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
 
-- `private_network_id` - (Optional) The ID of the private network of the cluster.
-
-~> **Important:** This field can be set at cluster creation or later to migrate to a Private Network.
-Any subsequent change after this field got set will prompt for cluster recreation.
-
-~> Also, you should only use **regional** Private Networks with Kapsule clusters, otherwise you will get an error saying that the Private Network can't be found.
-
 - `default_pool` - (Deprecated) See below.
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
@@ -300,7 +312,7 @@ Any subsequent change after this field got set will prompt for cluster recreatio
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the cluster.
 
@@ -333,7 +345,7 @@ $ terraform import scaleway_k8s_cluster.mycluster fr-par/11111111-1111-1111-1111
 
 Before:
 
-```hcl
+```terraform
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.18.0"
@@ -348,7 +360,7 @@ resource "scaleway_k8s_cluster" "jack" {
 
 After:
 
-```hcl
+```terraform
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.18.0"

@@ -3,7 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 	"time"
 
@@ -324,7 +324,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("failed to fetch cluster certificate: %w", err))
 		}
 
-		certificateContent, err := ioutil.ReadAll(certificate.Content)
+		certificateContent, err := io.ReadAll(certificate.Content)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to read cluster certificate: %w", err))
 		}

@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -24,6 +23,7 @@ func dataSourceScalewayRDBInstance() *schema.Resource {
 		ConflictsWith: []string{"name"},
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 	}
+	dsSchema["project_id"].Optional = true
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBInstanceRead,
@@ -39,24 +39,26 @@ func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceDa
 
 	instanceID, ok := d.GetOk("instance_id")
 	if !ok { // Get instance by region and name.
+		instanceName := d.Get("name").(string)
 		res, err := api.ListInstances(&rdb.ListInstancesRequest{
-			Region: region,
-			Name:   scw.StringPtr(d.Get("name").(string)),
+			Region:    region,
+			Name:      scw.StringPtr(instanceName),
+			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, instance := range res.Instances {
-			if instance.Name == d.Get("name").(string) {
-				if instanceID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 instance found with the same name %s", d.Get("name")))
-				}
-				instanceID = instance.ID
-			}
+
+		foundInstance, err := findExact(
+			res.Instances,
+			func(s *rdb.Instance) bool { return s.Name == instanceName },
+			instanceName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if instanceID == "" {
-			return diag.FromErr(fmt.Errorf("no instance found with the name %s", d.Get("name")))
-		}
+
+		instanceID = foundInstance.ID
 	}
 
 	regionalID := datasourceNewRegionalID(instanceID, region)

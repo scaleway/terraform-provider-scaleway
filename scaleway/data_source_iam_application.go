@@ -41,25 +41,25 @@ func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.Resourc
 	appID, appIDExists := d.GetOk("application_id")
 
 	if !appIDExists {
+		applicationName := d.Get("name").(string)
 		res, err := api.ListApplications(&iam.ListApplicationsRequest{
-			OrganizationID: getOrganizationID(meta, d),
-			Name:           expandStringPtr(d.Get("name")),
+			OrganizationID: flattenStringPtr(getOrganizationID(meta, d)).(string),
+			Name:           expandStringPtr(applicationName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		for _, app := range res.Applications {
-			if app.Name == d.Get("name").(string) {
-				if appID != "" {
-					return diag.Errorf("more than 1 application found with the same name %s", d.Get("name"))
-				}
-				appID = app.ID
-			}
+		foundApp, err := findExact(
+			res.Applications,
+			func(s *iam.Application) bool { return s.Name == applicationName },
+			applicationName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if appID == "" {
-			return diag.Errorf("no application found with the name %s", d.Get("name"))
-		}
+
+		appID = foundApp.ID
 	}
 
 	d.SetId(appID.(string))

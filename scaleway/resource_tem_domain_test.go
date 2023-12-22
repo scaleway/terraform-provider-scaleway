@@ -30,6 +30,10 @@ func testSweepTemDomain(_ string) error {
 		}
 
 		for _, ns := range listDomains.Domains {
+			if ns.Name == "test.scaleway-terraform.com" {
+				l.Debugf("sweeper: skipping deletion of domain %s", ns.Name)
+				continue
+			}
 			_, err := temAPI.RevokeDomain(&tem.RevokeDomainRequest{
 				DomainID: ns.ID,
 				Region:   region,

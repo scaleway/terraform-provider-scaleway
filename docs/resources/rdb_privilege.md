@@ -3,14 +3,14 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_privilege"
 ---
 
-# scaleway_rdb_privilege
+# Resource: scaleway_rdb_privilege
 
 Create and manage Scaleway RDB database privilege.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api/#user-and-permissions).
 
-## Example usage
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "main" {
   name           = "rdb"
   node_type      = "DB-DEV-S"

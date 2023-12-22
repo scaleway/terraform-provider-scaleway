@@ -3,16 +3,16 @@ subcategory: "Transactional Email"
 page_title: "Scaleway: scaleway_tem_domain"
 ---
 
-# scaleway_tem_domain
+# Resource: scaleway_tem_domain
 
 Creates and manages Scaleway Transactional Email Domains.
 For more information see [the documentation](https://developers.scaleway.com/en/products/transactional_email/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_tem_domain" "main" {
   accept_tos = true
   name       = "example.com"
@@ -21,7 +21,7 @@ resource "scaleway_tem_domain" "main" {
 
 ### Add the required records to your DNS zone
 
-```hcl
+```terraform
 variable "domain_name" {
   type    = string
 }
@@ -51,7 +51,7 @@ resource "scaleway_domain_record" "mx" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -67,7 +67,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Transaction Email Domain.
 
@@ -88,6 +88,27 @@ In addition to all above arguments, the following attributes are exported:
 - `spf_config` - The snippet of the SPF record that should be registered in the DNS zone.
 
 - `dkim_config` - The DKIM public key, as should be recorded in the DNS zone.
+
+- `smtp_host` - The SMTP host to use to send emails.
+
+- `smtp_port_unsecure` - The SMTP port to use to send emails.
+
+- `smtp_port` - The SMTP port to use to send emails over TLS.
+
+- `smtp_port_alternative` - The SMTP port to use to send emails over TLS.
+
+- `smtps_port` - The SMTPS port to use to send emails over TLS Wrapper.
+
+- `smtps_port_alternative` - The SMTPS port to use to send emails over TLS Wrapper.
+
+- `mx_blackhole` - The Scaleway's blackhole MX server to use if you do not have one.
+
+- `reputation` - The domain's reputation.
+    - `status` - The status of the domain's reputation.
+    - `score` - A range from 0 to 100 that determines your domain's reputation score.
+    - `scored_at` - The time and date the score was calculated.
+    - `previous_score` - The previously-calculated domain's reputation score.
+    - `previous_scored_at` - The time and date the previous reputation score was calculated.
 
 ## Import
 

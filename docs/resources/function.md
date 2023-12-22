@@ -3,16 +3,16 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function"
 ---
 
-# scaleway_function
+# Resource: scaleway_function
 
 Creates and manages Scaleway Functions.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_function_namespace" "main" {
   name        = "main-function-namespace"
   description = "Main function namespace"
@@ -30,7 +30,7 @@ resource scaleway_function main {
 
 You create a zip of your function (ex: `zip function.zip -r go.mod go.sum handler.go`)
 
-```hcl
+```terraform
 resource "scaleway_function_namespace" "main" {
   name        = "main-function-namespace"
   description = "Main function namespace"
@@ -48,7 +48,7 @@ resource scaleway_function main {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

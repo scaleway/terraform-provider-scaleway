@@ -1,16 +1,16 @@
 ---
-subcategory: "Webhosting"
+subcategory: "Web hosting"
 page_title: "Scaleway: scaleway_webhosting"
 ---
 
-# scaleway_webhosting
+# Resource: scaleway_webhosting
 
 Creates and manages Scaleway Web Hostings.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/webhosting/).
 
-## Example
+## Example Usage
 
-```hcl
+```terraform
 data "scaleway_webhosting_offer" "by_name" {
   name = "lite"
 }
@@ -23,7 +23,7 @@ resource "scaleway_webhosting" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the hosting.
 

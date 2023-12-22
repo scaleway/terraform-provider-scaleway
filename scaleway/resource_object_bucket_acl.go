@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -117,11 +116,12 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 				}, false),
 			},
 			"bucket": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringLenBetween(1, 63),
-				Description:  "The bucket name.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validation.StringLenBetween(1, 63),
+				Description:      "The bucket's name or regional ID.",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"expected_bucket_owner": {
 				Type:         schema.TypeString,
@@ -142,7 +142,18 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	bucket := expandID(d.Get("bucket").(string))
+	regionalID := expandRegionalID(d.Get("bucket"))
+	bucket := regionalID.ID
+	bucketRegion := regionalID.Region
+
+	if bucketRegion != "" && bucketRegion != region {
+		conn, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		region = bucketRegion
+	}
+
 	expectedBucketOwner := d.Get("expected_bucket_owner").(string)
 	acl := d.Get("acl").(string)
 
@@ -162,13 +173,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 		input.AccessControlPolicy = expandBucketACLAccessControlPolicy(v.([]interface{}))
 	}
 
-	out, err := retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.PutBucketAclOutput]{
-		Timeout:  d.Timeout(schema.TimeoutCreate),
-		Interval: 5 * time.Second,
-		Function: func() (*s3.PutBucketAclOutput, error) {
-			return conn.PutBucketAclWithContext(ctx, input)
-		},
-	})
+	out, err := conn.PutBucketAclWithContext(ctx, input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %s", err))
 	}

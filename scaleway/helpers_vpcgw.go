@@ -127,12 +127,48 @@ func retryUpdateGatewayReverseDNS(ctx context.Context, api *vpcgw.API, req *vpcg
 	}
 }
 
-func expandIpamConfig(raw interface{}) *vpcgw.IpamConfig {
+func expandIpamConfig(raw interface{}) *vpcgw.CreateGatewayNetworkRequestIpamConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	return &vpcgw.IpamConfig{
+
+	ipamConfig := &vpcgw.CreateGatewayNetworkRequestIpamConfig{
 		PushDefaultRoute: rawMap["push_default_route"].(bool),
+	}
+
+	if ipamIPID, ok := rawMap["ipam_ip_id"].(string); ok && ipamIPID != "" {
+		ipamConfig.IpamIPID = scw.StringPtr(expandRegionalID(ipamIPID).ID)
+	}
+
+	return ipamConfig
+}
+
+func expandUpdateIpamConfig(raw interface{}) *vpcgw.UpdateGatewayNetworkRequestIpamConfig {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+
+	updateIpamConfig := &vpcgw.UpdateGatewayNetworkRequestIpamConfig{
+		PushDefaultRoute: scw.BoolPtr(rawMap["push_default_route"].(bool)),
+	}
+
+	if ipamIPID, ok := rawMap["ipam_ip_id"].(string); ok && ipamIPID != "" {
+		updateIpamConfig.IpamIPID = scw.StringPtr(expandRegionalID(ipamIPID).ID)
+	}
+
+	return updateIpamConfig
+}
+
+func flattenIpamConfig(config *vpcgw.IpamConfig) interface{} {
+	if config == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"push_default_route": config.PushDefaultRoute,
+			"ipam_ip_id":         config.IpamIPID,
+		},
 	}
 }

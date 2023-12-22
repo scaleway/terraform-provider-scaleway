@@ -1,10 +1,9 @@
 ---
 subcategory: "IoT Hub"
-layout: "scaleway"
 page_title: "Scaleway: scaleway_iot_network"
 ---
 
-# scaleway_iot_network
+# Resource: scaleway_iot_network
 
 -> **Note:** This terraform resource is currently in beta and might include breaking change in future releases.
 
@@ -18,9 +17,9 @@ For more step-by-step instructions on how to setup the networks on the external 
 - [Configuring the Sigfox backend](https://www.scaleway.com/en/docs/scaleway-iothub-networks/#-Configuring-the-Sigfox-backend)
 - [Using the Rest Network](https://www.scaleway.com/en/docs/scaleway-iothub-networks/#-Using-the-Rest-Network)
 
-## Examples
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_iot_network" "main" {
 	name   = "main"
 	hub_id = scaleway_iot_hub.main.id
@@ -32,7 +31,7 @@ resource "scaleway_iot_hub" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 ~> **Important:** Updates to any value will recreate the IoT Route.
 

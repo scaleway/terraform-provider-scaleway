@@ -329,6 +329,11 @@ func is409Error(err error) bool {
 	return isHTTPCodeError(err, http.StatusConflict) || errors.As(err, &transientStateError)
 }
 
+// is404Error returns true if err is an HTTP 410 error
+func is410Error(err error) bool {
+	return isHTTPCodeError(err, http.StatusGone)
+}
+
 // organizationIDSchema returns a standard schema for a organization_id
 func organizationIDSchema() *schema.Schema {
 	return &schema.Schema{
@@ -788,6 +793,17 @@ func expandMapStringStringPtr(data interface{}) map[string]*string {
 	return m
 }
 
+func expandMapStringString(data any) map[string]string {
+	if data == nil {
+		return nil
+	}
+	m := make(map[string]string)
+	for k, v := range data.(map[string]interface{}) {
+		m[k] = v.(string)
+	}
+	return m
+}
+
 func errorCheck(err error, message string) bool {
 	return strings.Contains(err.Error(), message)
 }
@@ -1136,4 +1152,54 @@ func testAccCheckScalewayResourceIDChanged(resourceName string, resourceID *stri
 		*resourceID = rs.Primary.ID
 		return nil
 	}
+}
+
+// testAccCheckScalewayResourceRawIDMatches asserts the equality of IDs from two specified attributes of two Scaleway resources.
+func testAccCheckScalewayResourceRawIDMatches(res1, attr1, res2, attr2 string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs1, ok1 := s.RootModule().Resources[res1]
+		if !ok1 {
+			return fmt.Errorf("not found: %s", res1)
+		}
+
+		rs2, ok2 := s.RootModule().Resources[res2]
+		if !ok2 {
+			return fmt.Errorf("not found: %s", res2)
+		}
+
+		id1 := expandID(rs1.Primary.Attributes[attr1])
+		id2 := expandID(rs2.Primary.Attributes[attr2])
+
+		if id1 != id2 {
+			return fmt.Errorf("ID mismatch: %s from resource %s does not match ID %s from resource %s", id1, res1, id2, res2)
+		}
+
+		return nil
+	}
+}
+
+// findExact finds the first element in 'slice' matching the condition defined by 'finder'.
+// It returns the first matching element and an error if either no match is found or multiple matches are found.
+func findExact[T any](slice []T, finder func(T) bool, searchName string) (T, error) { //nolint:ireturn
+	var found T
+	var foundFlag bool
+
+	for _, elem := range slice {
+		if finder(elem) {
+			if foundFlag {
+				// More than one element found with the same search name
+				var zero T
+				return zero, fmt.Errorf("multiple elements found with the name %s", searchName)
+			}
+			found = elem
+			foundFlag = true
+		}
+	}
+
+	if !foundFlag {
+		var zero T
+		return zero, fmt.Errorf("no element found with the name %s", searchName)
+	}
+
+	return found, nil
 }

@@ -144,6 +144,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "System volume type of the nodes composing the pool",
 				ValidateFunc: validation.StringInSlice([]string{
 					k8s.PoolVolumeTypeBSSD.String(),
@@ -154,6 +155,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "The size of the system volume of the nodes in gigabyte",
 			},
 			"public_ip_disabled": {
@@ -303,12 +305,8 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	waitForCluster := false
-
-	if cluster.Status == k8s.ClusterStatusPoolRequired {
-		waitForCluster = true
-	} else if cluster.Status == k8s.ClusterStatusCreating {
-		_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
+	if cluster.Status == k8s.ClusterStatusCreating {
+		_, err = waitK8SClusterStatus(ctx, k8sAPI, cluster, k8s.ClusterStatusReady, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -328,11 +326,9 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	if waitForCluster {
-		_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayK8SPoolRead(ctx, d, meta)
@@ -378,6 +374,10 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("version", pool.Version)
 	_ = d.Set("min_size", int(pool.MinSize))
 	_ = d.Set("max_size", int(pool.MaxSize))
+	_ = d.Set("root_volume_type", pool.RootVolumeType)
+	if pool.RootVolumeSize != nil {
+		_ = d.Set("root_volume_size_in_gb", int(*pool.RootVolumeSize)/1e9)
+	}
 	_ = d.Set("tags", pool.Tags)
 	_ = d.Set("container_runtime", pool.ContainerRuntime)
 	_ = d.Set("created_at", pool.CreatedAt.Format(time.RFC3339))
@@ -385,6 +385,7 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("nodes", nodes)
 	_ = d.Set("status", pool.Status)
 	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
+	_ = d.Set("region", region)
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
@@ -481,6 +482,16 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	_, err = k8sAPI.DeletePool(req, scw.WithContext(ctx))
+	if err != nil {
+		if !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
+	_, err = k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
+		PoolID: poolID,
+		Region: region,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if !is404Error(err) {
 			return diag.FromErr(err)

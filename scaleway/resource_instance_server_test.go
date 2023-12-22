@@ -1549,6 +1549,7 @@ func TestAccScalewayInstanceServer_RoutedIPEnable(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "main" {
+						name  = "tf-tests-instance-server-routedip"
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
 						state = "stopped"
@@ -1561,6 +1562,7 @@ func TestAccScalewayInstanceServer_RoutedIPEnable(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "main" {
+						name  = "tf-tests-instance-server-routedip"
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
 						routed_ip_enabled = true
@@ -1589,6 +1591,7 @@ func TestAccScalewayInstanceServer_RoutedIPEnableWithIP(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name  = "tf-tests-instance-server-routedip-enable-with-ip"
 						ip_id = scaleway_instance_ip.main.id
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
@@ -1605,6 +1608,7 @@ func TestAccScalewayInstanceServer_RoutedIPEnableWithIP(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name  = "tf-tests-instance-server-routedip-enable-with-ip"
 						ip_id = scaleway_instance_ip.main.id
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
@@ -1635,6 +1639,7 @@ func TestAccScalewayInstanceServer_IPs(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-server-ips"
 						ip_ids = [scaleway_instance_ip.ip1.id]
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
@@ -1658,6 +1663,7 @@ func TestAccScalewayInstanceServer_IPs(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-server-ips"
 						ip_ids = [scaleway_instance_ip.ip1.id, scaleway_instance_ip.ip2.id]
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
@@ -1682,6 +1688,7 @@ func TestAccScalewayInstanceServer_IPs(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-server-ips"
 						ip_ids = [scaleway_instance_ip.ip2.id]
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
@@ -1711,6 +1718,7 @@ func TestAccScalewayInstanceServer_IPRemoved(t *testing.T) {
 					resource "scaleway_instance_ip" "main" {}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-server-ip-removed"
 						ip_id = scaleway_instance_ip.main.id
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
@@ -1728,6 +1736,7 @@ func TestAccScalewayInstanceServer_IPRemoved(t *testing.T) {
 					resource "scaleway_instance_ip" "main" {}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-server-ip-removed"
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
 						state = "stopped"
@@ -1757,6 +1766,7 @@ func TestAccScalewayInstanceServer_IPsRemoved(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-server-ips-removed"
 						ip_ids = [scaleway_instance_ip.main.id]
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
@@ -1776,6 +1786,7 @@ func TestAccScalewayInstanceServer_IPsRemoved(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-server-ips-removed"
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
 						state = "stopped"
@@ -1955,6 +1966,52 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 					resource "scaleway_iam_api_key" "key" {
 						application_id = scaleway_iam_application.app.id
 					}`, project.OrganizationID),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_BlockExternal(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_block_volume" "volume" {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						additional_volume_ids = [scaleway_block_volume.volume.id]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "volume" {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+				),
 			},
 		},
 	})

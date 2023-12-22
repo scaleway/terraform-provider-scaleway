@@ -21,7 +21,12 @@ func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.minimal"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigMinimal(latestK8SVersion, false),
@@ -37,6 +42,7 @@ func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.2", "default"),
+					testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.default", "scaleway_vpc_private_network.minimal"),
 				),
 			},
 			{
@@ -53,13 +59,17 @@ func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.2", "minimal"),
+					testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.default", "scaleway_vpc_private_network.minimal"),
+					testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.minimal", "scaleway_vpc_private_network.minimal"),
 				),
 			},
 			{
 				Config: testAccCheckScalewayK8SPoolConfigMinimal(latestK8SVersion, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.default"),
 					testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.minimal"),
+					testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.default", "scaleway_vpc_private_network.minimal"),
 				),
 			},
 		},
@@ -73,7 +83,12 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.minimal"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigWait(latestK8SVersion, false, 0),
@@ -143,11 +158,18 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.placement_group"),
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.placement_group_2"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigPlacementGroup(latestK8SVersion),
@@ -199,7 +221,11 @@ func TestAccScalewayK8SCluster_PoolUpgradePolicy(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.upgrade_policy"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigUpgradePolicy(latestK8SVersion, 2, 3),
@@ -250,7 +276,11 @@ func TestAccScalewayK8SCluster_PoolKubeletArgs(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.kubelet_args"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigKubeletArgs(latestK8SVersion, 1337),
@@ -285,7 +315,11 @@ func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.zone"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigZone(latestK8SVersion, "fr-par-2"),
@@ -310,7 +344,11 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.pool"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -374,59 +412,6 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 	})
 }
 
-func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-				resource "scaleway_vpc" "vpc" {
-				  name       = "test-k8s-private-network"
-				}
-				resource "scaleway_vpc_private_network" "pn" {
-				  name       = "test-k8s-private-network"
-				  vpc_id = scaleway_vpc.vpc.id
-				}
-
-				resource "scaleway_k8s_cluster" "cluster_with_pn" {
-				  name = "test-k8s-private-network"
-				  version = "%s"
-				  cni     = "cilium"
-				  private_network_id = scaleway_vpc_private_network.pn.id
-				  tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
-				  delete_additional_resources = true
-				  depends_on = [scaleway_vpc_private_network.pn]
-				}
-
-				resource "scaleway_k8s_pool" "pool_with_pn" {
-				  cluster_id          = scaleway_k8s_cluster.cluster_with_pn.id
-				  name                = "pool"
-				  node_type           = "gp1_xs"
-				  size                = 2
-				  autoscaling         = false
-				  autohealing         = true
-				  wait_for_pool_ready = true
-				  depends_on 		  = [scaleway_vpc_private_network.pn]
-				}`, latestK8SVersion),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.cluster_with_pn"),
-					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
-					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.pool_with_pn"),
-					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.cluster_with_pn", "scaleway_vpc_private_network.pn"),
-					testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.cluster_with_pn", "scaleway_k8s_pool.pool_with_pn", "scaleway_vpc_private_network.pn"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -436,7 +421,14 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.public_ip"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -456,7 +448,7 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 			
 				resource "scaleway_k8s_pool" "public_ip" {
 				  cluster_id          = scaleway_k8s_cluster.public_ip.id
-				  name                = "pool"
+				  name                = "test-k8s-public-ip"
 				  node_type           = "gp1_xs"
 				  size                = 1
 				  autoscaling         = false
@@ -505,7 +497,7 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 
 				resource "scaleway_k8s_pool" "public_ip" {
 				  cluster_id          = scaleway_k8s_cluster.public_ip.id
-				  name                = "pool"
+				  name                = "test-k8s-public-ip"
 				  node_type           = "gp1_xs"
 				  size                = 1
 				  autoscaling         = false
@@ -551,12 +543,7 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 		}
 		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			if strings.Contains(err.Error(), "bad region format") {
-				_, _, pnID, err = vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-				if err != nil {
-					return err
-				}
-			}
+			return err
 		}
 
 		nodes, err := k8sAPI.ListNodes(&k8s.ListNodesRequest{

@@ -3,23 +3,23 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_database"
 ---
 
-# scaleway_documentdb_database
+# Resource: scaleway_documentdb_database
 
 Creates and manages Scaleway DocumentDB database.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_documentdb_database" "main" {
   instance_id    = "11111111-1111-1111-1111-111111111111"
   name           = "my-new-database"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

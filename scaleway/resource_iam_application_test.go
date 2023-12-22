@@ -27,7 +27,7 @@ func testSweepIamApplication(_ string) error {
 		}
 
 		listApps, err := api.ListApplications(&iam.ListApplicationsRequest{
-			OrganizationID: &orgID,
+			OrganizationID: orgID,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list applications: %w", err)
@@ -60,12 +60,16 @@ func TestAccScalewayIamApplication_Basic(t *testing.T) {
 						resource "scaleway_iam_application" "main" {
 							name = "tf_tests_app_basic"
 							description = "a description"
+							tags = ["tf_tests", "tests"]
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamApplicationExists(tt, "scaleway_iam_application.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "name", "tf_tests_app_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "description", "a description"),
+					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.0", "tf_tests"),
+					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.1", "tests"),
 				),
 			},
 			{
@@ -73,12 +77,14 @@ func TestAccScalewayIamApplication_Basic(t *testing.T) {
 						resource "scaleway_iam_application" "main" {
 							name = "tf_tests_app_basic_rename"
 							description = "another description"
+							tags = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamApplicationExists(tt, "scaleway_iam_application.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "name", "tf_tests_app_basic_rename"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "description", "another description"),
+					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.#", "0"),
 				),
 			},
 		},

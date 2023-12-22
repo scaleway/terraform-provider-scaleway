@@ -1,8 +1,6 @@
 package scaleway
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 )
@@ -51,6 +49,10 @@ func dataSourceScalewayRegistryImage() *schema.Resource {
 				},
 				Description: "The tags associated with the registry image",
 			},
+			"updated_at": {
+				Computed: true,
+				Type:     schema.TypeString,
+			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -71,21 +73,25 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 		if d.Get("namespace_id") != "" {
 			namespaceID = expandStringPtr(expandID(d.Get("namespace_id")))
 		}
+		imageName := d.Get("name").(string)
 		res, err := api.ListImages(&registry.ListImagesRequest{
 			Region:      region,
-			Name:        expandStringPtr(d.Get("name")),
+			Name:        expandStringPtr(imageName),
 			NamespaceID: namespaceID,
 		})
 		if err != nil {
 			return err
 		}
-		if len(res.Images) == 0 {
-			return fmt.Errorf("no images found with the name %s", d.Get("name"))
+		foundImage, err := findExact(
+			res.Images,
+			func(s *registry.Image) bool { return s.Name == imageName },
+			imageName,
+		)
+		if err != nil {
+			return err
 		}
-		if len(res.Images) > 1 {
-			return fmt.Errorf("%d images found with the same name %s", len(res.Images), d.Get("name"))
-		}
-		image = res.Images[0]
+
+		image = foundImage
 	} else {
 		res, err := api.GetImage(&registry.GetImageRequest{
 			Region:  region,
@@ -104,6 +110,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 	_ = d.Set("visibility", image.Visibility.String())
 	_ = d.Set("size", int(image.Size))
 	_ = d.Set("tags", image.Tags)
+	_ = d.Set("updated_at", flattenTime(image.UpdatedAt))
 
 	return nil
 }

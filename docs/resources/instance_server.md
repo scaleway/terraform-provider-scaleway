@@ -3,17 +3,17 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_server"
 ---
 
-# scaleway_instance_server
+# Resource: scaleway_instance_server
 
 Creates and manages Scaleway Compute Instance servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#servers-8bf7d7).
 
 Please check our [FAQ - Instances](https://www.scaleway.com/en/docs/faq/instances).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_server" "web" {
@@ -25,7 +25,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With additional volumes and tags
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
   type = "b_ssd"
@@ -47,7 +47,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With a reserved IP
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "ip" {}
 
 resource "scaleway_instance_server" "web" {
@@ -62,7 +62,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With security group
 
-```hcl
+```terraform
 resource "scaleway_instance_security_group" "www" {
   inbound_default_policy = "drop"
   outbound_default_policy = "accept"
@@ -99,7 +99,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With user data and cloud-init
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "web" {
   type  = "DEV1-S"
   image = "ubuntu_jammy"
@@ -113,7 +113,7 @@ resource "scaleway_instance_server" "web" {
 
 ### With private network
 
-```hcl
+```terraform
 resource scaleway_vpc_private_network pn01 {
     name = "private_network_instance"
 }
@@ -132,7 +132,7 @@ resource "scaleway_instance_server" "base" {
 
 #### Resized block volume with installed image
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "image" {
   type = "PRO2-XXS"
   image = "ubuntu_jammy"
@@ -145,7 +145,7 @@ resource "scaleway_instance_server" "image" {
 
 #### From snapshot
 
-```hcl
+```terraform
 data "scaleway_instance_snapshot" "snapshot" {
   name = "my_snapshot"
 }
@@ -163,7 +163,7 @@ resource "scaleway_instance_server" "from_snapshot" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -263,7 +263,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the server.
 

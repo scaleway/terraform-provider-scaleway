@@ -86,34 +86,6 @@ func TestAccScalewayInstanceVolume_Basic(t *testing.T) {
 	})
 }
 
-func TestAccScalewayInstanceVolume_FromVolume(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "test1" {
-						type       = "l_ssd"
-						size_in_gb = 20
-					}
-			
-					resource "scaleway_instance_volume" "test2" {
-						type           = "l_ssd"
-						from_volume_id = "${scaleway_instance_volume.test1.id}"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.test1"),
-					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.test2"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccScalewayInstanceVolume_DifferentNameGenerated(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -177,7 +149,6 @@ func TestAccScalewayInstanceVolume_ResizeBlock(t *testing.T) {
 }
 
 func TestAccScalewayInstanceVolume_ResizeNotBlock(t *testing.T) {
-	t.Skip("Skipping Expected error provoking acceptance test fail")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

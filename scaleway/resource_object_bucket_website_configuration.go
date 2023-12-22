@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -27,11 +26,12 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"bucket": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringLenBetween(1, 63),
-				Description:  "The bucket name.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validation.StringLenBetween(1, 63),
+				Description:      "The bucket's name or regional ID.",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"index_document": {
 				Type:     schema.TypeList,
@@ -84,7 +84,17 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	bucket := expandID(d.Get("bucket").(string))
+	regionalID := expandRegionalID(d.Get("bucket"))
+	bucket := regionalID.ID
+	bucketRegion := regionalID.Region
+
+	if bucketRegion != "" && bucketRegion != region {
+		conn, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		region = bucketRegion
+	}
 
 	websiteConfig := &s3.WebsiteConfiguration{
 		IndexDocument: expandBucketWebsiteConfigurationIndexDocument(d.Get("index_document").([]interface{})),
@@ -98,11 +108,6 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		Bucket: scw.StringPtr(bucket),
 	})
 	if err != nil {
-		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
-			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
-			d.SetId("")
-			return nil
-		}
 		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
 	}
 
@@ -111,13 +116,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		WebsiteConfiguration: websiteConfig,
 	}
 
-	_, err = retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.PutBucketWebsiteOutput]{
-		Timeout:  d.Timeout(schema.TimeoutCreate),
-		Interval: 5 * time.Second,
-		Function: func() (*s3.PutBucketWebsiteOutput, error) {
-			return conn.PutBucketWebsiteWithContext(ctx, input)
-		},
-	})
+	_, err = conn.PutBucketWebsiteWithContext(ctx, input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) website configuration: %w", bucket, err))
 	}

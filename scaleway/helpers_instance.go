@@ -12,8 +12,9 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -137,8 +138,8 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	return apiState, nil
 }
 
-func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState) error {
-	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
+func reachState(ctx context.Context, api *InstanceBlockAPI, zone scw.Zone, serverID string, toState instance.ServerState) error {
+	response, err := api.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: serverID,
 	}, scw.WithContext(ctx))
@@ -167,8 +168,17 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 
 	// We need to check that all volumes are ready
 	for _, volume := range response.Server.Volumes {
-		if volume.State != instance.VolumeServerStateAvailable {
-			_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+		if volume.VolumeType == blockVolumeType {
+			_, err := api.blockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
+				VolumeID:      volume.ID,
+				Zone:          zone,
+				RetryInterval: DefaultWaitRetryInterval,
+			})
+			if err != nil {
+				return err
+			}
+		} else if volume.State != instance.VolumeServerStateAvailable {
+			_, err = api.WaitForVolume(&instance.WaitForVolumeRequest{
 				Zone:          zone,
 				VolumeID:      volume.ID,
 				RetryInterval: DefaultWaitRetryInterval,
@@ -180,7 +190,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 	}
 
 	for _, a := range actions {
-		err = instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+		err = api.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 			ServerID:      serverID,
 			Action:        a,
 			Zone:          zone,
@@ -256,10 +266,20 @@ func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[st
 		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
 		// TODO: Fix once instance accept volume type in the schema validation
 		case v.ID != nil:
-			v = &instance.VolumeServerTemplate{
-				ID:   v.ID,
-				Name: v.Name,
-				Boot: v.Boot,
+			if strings.HasPrefix(string(v.VolumeType), "sbs") {
+				// If volume is from SBS api, the type must be passed
+				// This rules come from instance API and may not be documented
+				v = &instance.VolumeServerTemplate{
+					ID:         v.ID,
+					Boot:       v.Boot,
+					VolumeType: v.VolumeType,
+				}
+			} else {
+				v = &instance.VolumeServerTemplate{
+					ID:   v.ID,
+					Name: v.Name,
+					Boot: v.Boot,
+				}
 			}
 		// For the root volume (index 0) if the size is 0, it is considered as a volume created from an image.
 		// The size is not passed to the API, so it's computed by the API
@@ -292,15 +312,19 @@ func preparePrivateNIC(
 		zonedID, pnExist := r["pn_id"]
 		privateNetworkID := expandID(zonedID.(string))
 		if pnExist {
+			region, err := server.Zone.Region()
+			if err != nil {
+				return nil, err
+			}
 			currentPN, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
 				PrivateNetworkID: expandID(privateNetworkID),
-				Zone:             server.Zone,
+				Region:           region,
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return nil, err
 			}
 			query := &instance.CreatePrivateNICRequest{
-				Zone:             currentPN.Zone,
+				Zone:             server.Zone,
 				ServerID:         server.ID,
 				PrivateNetworkID: currentPN.ID,
 			}
@@ -573,6 +597,21 @@ func expandInstanceImageExtraVolumesTemplates(snapshots []*instance.GetSnapshotR
 	return volTemplates
 }
 
+func expandInstanceImageExtraVolumesUpdateTemplates(snapshots []*instance.GetSnapshotResponse) map[string]*instance.VolumeImageUpdateTemplate {
+	volTemplates := map[string]*instance.VolumeImageUpdateTemplate{}
+	if snapshots == nil {
+		return volTemplates
+	}
+	for i, snapshot := range snapshots {
+		snap := snapshot.Snapshot
+		volTemplate := &instance.VolumeImageUpdateTemplate{
+			ID: snap.ID,
+		}
+		volTemplates[strconv.Itoa(i+1)] = volTemplate
+	}
+	return volTemplates
+}
+
 func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone) interface{} {
 	volumesFlat := []map[string]interface{}(nil)
 	for _, volume := range volumes {
@@ -685,4 +724,37 @@ func instanceIPHasMigrated(d *schema.ResourceData) bool {
 	}
 
 	return false
+}
+
+func instanceServerAdditionalVolumeTemplate(api *InstanceBlockAPI, zone scw.Zone, volumeID string) (*instance.VolumeServerTemplate, error) {
+	vol, err := api.GetVolume(&instance.GetVolumeRequest{
+		Zone:     zone,
+		VolumeID: expandID(volumeID),
+	})
+	if err == nil {
+		return &instance.VolumeServerTemplate{
+			ID:         &vol.Volume.ID,
+			Name:       &vol.Volume.Name,
+			VolumeType: vol.Volume.VolumeType,
+			Size:       &vol.Volume.Size,
+		}, nil
+	}
+	if !is404Error(err) {
+		return nil, err
+	}
+
+	blockVol, err := api.blockAPI.GetVolume(&block.GetVolumeRequest{
+		Zone:     zone,
+		VolumeID: expandID(volumeID),
+	})
+	if err == nil {
+		return &instance.VolumeServerTemplate{
+			ID:         &blockVol.ID,
+			Name:       &blockVol.Name,
+			VolumeType: "sbs_volume",
+			Size:       &blockVol.Size,
+		}, nil
+	}
+
+	return nil, err
 }

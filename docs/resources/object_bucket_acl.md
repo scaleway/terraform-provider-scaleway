@@ -3,7 +3,7 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_acl"
 ---
 
-# scaleway_object_bucket_acl
+# Resource: scaleway_object_bucket_acl
 
 Creates and manages Scaleway object storage bucket ACL.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/storage/object/concepts/#access-control-list-(acl)).
@@ -14,26 +14,26 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/s
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
 }
 
 resource "scaleway_object_bucket_acl" "main" {
-  bucket = scaleway_object_bucket.main.name
+  bucket = scaleway_object_bucket.main.id
   acl = "private"
 }
 ```
 
-## Example with Grants
+## Example Usage with Grants
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
     name = "your-bucket"
 }
 
 resource "scaleway_object_bucket_acl" "main" {
-    bucket = scaleway_object_bucket.main.name
+    bucket = scaleway_object_bucket.main.id
     access_control_policy {
       grant {
         grantee {
@@ -58,16 +58,16 @@ resource "scaleway_object_bucket_acl" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
-* `bucket` - (Required) The name of the bucket.
+* `bucket` - (Required) The name of the bucket, or its Terraform ID.
 * `acl` - (Optional) The canned ACL you want to apply to the bucket.
 * `access_control_policy` - (Optional, Conflicts with acl) A configuration block that sets the ACL permissions for an object per grantee documented below.
 * `expected_bucket_owner` - (Optional, Forces new resource) The project ID of the expected bucket owner.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
-* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
+* `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 
 ## The ACL
@@ -112,7 +112,7 @@ The `grantee` configuration block supports the following arguments:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The `region`,`bucket` and `acl` separated by (`/`).
 

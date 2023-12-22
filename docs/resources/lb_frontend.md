@@ -3,15 +3,15 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_frontend"
 ---
 
-# scaleway_lb_frontend
+# Resource: scaleway_lb_frontend
 
 Creates and manages Scaleway Load-Balancer Frontends. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
 
-## Examples Usage
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_lb_frontend" "frontend01" {
   lb_id        = scaleway_lb.lb01.id
   backend_id   = scaleway_lb_backend.backend01.id
@@ -22,7 +22,7 @@ resource "scaleway_lb_frontend" "frontend01" {
 
 ## With Certificate
 
-```hcl
+```terraform
 resource scaleway_lb_ip ip01 {}
 
 resource scaleway_lb lb01 {
@@ -60,7 +60,7 @@ resource scaleway_lb_frontend frt01 {
 
 ## With ACLs
 
-```hcl
+```terraform
 resource "scaleway_lb_frontend" "frontend01" {
   lb_id        = scaleway_lb.lb01.id
   backend_id   = scaleway_lb_backend.backend01.id
@@ -122,7 +122,7 @@ resource "scaleway_lb_frontend" "frontend01" {
     match {
       http_filter       = "http_header_match"
       http_filter_value = "foo"
-      http_value_option = "bar"
+      http_filter_option = "bar"
     }
   }
 
@@ -145,7 +145,7 @@ resource "scaleway_lb_frontend" "frontend01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -198,7 +198,7 @@ The following arguments are supported:
     - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
       Keep in mind that in the case of `http_header_match` the HTTP header field name is case-insensitive.
 
-    - `http_value_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
+    - `http_filter_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
 
     - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
   

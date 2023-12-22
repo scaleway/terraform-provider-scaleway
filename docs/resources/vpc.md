@@ -3,21 +3,21 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc"
 ---
 
-# scaleway_vpc
+# Resource: scaleway_vpc
 
 Creates and manages Scaleway Virtual Private Clouds.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/).
 
-## Example
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
     name = "my-vpc"
     tags = ["demo", "terraform"]
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the VPC.
 - `is_default` - Defines whether the VPC is the default one for its Project.

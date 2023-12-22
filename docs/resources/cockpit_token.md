@@ -3,7 +3,7 @@ subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit_token"
 ---
 
-# scaleway_cockpit
+# Resource: scaleway_cockpit_token
 
 Creates and manages Scaleway Cockpit Tokens.
 
@@ -11,7 +11,7 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 
 ## Example Usage
 
-```hcl
+```terraform
 // Get the cockpit of the default project
 data "scaleway_cockpit" "main" {}
 
@@ -23,7 +23,7 @@ resource "scaleway_cockpit_token" "main" {
 }
 ```
 
-```hcl
+```terraform
 // Get the cockpit of the default project
 data "scaleway_cockpit" "main" {}
 
@@ -42,24 +42,26 @@ resource "scaleway_cockpit_token" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
-- `name` - (Required) The name of the token
-- `scopes` - (Optional) Allowed scopes
-    - `query_metrics` - (Defaults to `false`) Query metrics
-    - `write_metrics` - (Defaults to `true`) Write metrics
-    - `setup_metrics_rules` - (Defaults to `false`) Setup metrics rules
-    - `query_logs` - (Defaults to `false`) Query logs
-    - `write_logs` - (Defaults to `true`) Write logs
-    - `setup_logs_rules` - (Defaults to `false`) Setup logs rules
-    - `setup_alerts` - (Defaults to `false`) Setup alerts
+- `name` - (Required) The name of the token.
+- `scopes` - (Optional) Allowed scopes.
+    - `query_metrics` - (Defaults to `false`) Query metrics.
+    - `write_metrics` - (Defaults to `true`) Write metrics.
+    - `setup_metrics_rules` - (Defaults to `false`) Setup metrics rules.
+    - `query_logs` - (Defaults to `false`) Query logs.
+    - `write_logs` - (Defaults to `true`) Write logs.
+    - `setup_logs_rules` - (Defaults to `false`) Setup logs rules.
+    - `setup_alerts` - (Defaults to `false`) Setup alerts.
+    - `query_traces` - (Defaults to `false`) Query traces.
+    - `write_traces` - (Defaults to `false`) Write traces.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `secret_key` - The secret key of the token
+- `secret_key` - The secret key of the token.
 
 ## Import
 

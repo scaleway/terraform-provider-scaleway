@@ -65,6 +65,14 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the application",
+			},
 			"organization_id": organizationIDOptionalSchema(),
 		},
 	}
@@ -76,6 +84,7 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 		OrganizationID: d.Get("organization_id").(string),
 		Name:           expandOrGenerateString(d.Get("name"), "group"),
 		Description:    d.Get("description").(string),
+		Tags:           expandStrings(d.Get("tags")),
 	}
 	group, err := api.CreateGroup(req, scw.WithContext(ctx))
 	if err != nil {
@@ -118,6 +127,7 @@ func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("created_at", flattenTime(group.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(group.UpdatedAt))
 	_ = d.Set("organization_id", group.OrganizationID)
+	_ = d.Set("tags", flattenSliceString(group.Tags))
 
 	if !d.Get("external_membership").(bool) {
 		_ = d.Set("user_ids", group.UserIDs)
@@ -137,11 +147,12 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "description") {
+	if d.HasChanges("name", "description", "tags") {
 		_, err = api.UpdateGroup(&iam.UpdateGroupRequest{
 			GroupID:     group.ID,
 			Name:        expandUpdatedStringPtr(d.Get("name")),
 			Description: expandUpdatedStringPtr(d.Get("description")),
+			Tags:        expandUpdatedStringsPtr(d.Get("tags")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

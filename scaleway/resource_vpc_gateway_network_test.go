@@ -184,7 +184,10 @@ func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
+			testAccCheckScalewayIPAMIPDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -225,8 +228,52 @@ func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "zone"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "static_address"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "ipam_config.0.push_default_route", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_dhcp", "true"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc vpc01 {
+						name = "my vpc"
+					}
+
+					resource scaleway_vpc_private_network pn01 {
+						name = "pn_test_network"
+						ipv4_subnet {
+							subnet = "172.16.64.0/22"
+						}
+						vpc_id = scaleway_vpc.vpc01.id
+					}
+
+					resource scaleway_vpc_public_gateway pg01 {
+						name = "foobar"
+						type = "VPC-GW-S"
+					}
+
+					resource "scaleway_ipam_ip" "ip01" {
+					  address = "172.16.64.7/22"
+					  source {
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}
+
+					resource scaleway_vpc_gateway_network main {
+						gateway_id = scaleway_vpc_public_gateway.pg01.id
+						private_network_id = scaleway_vpc_private_network.pn01.id
+						enable_masquerade = true
+						ipam_config {
+							push_default_route = true
+							ipam_ip_id = scaleway_ipam_ip.ip01.id
+						}					
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "ipam_config.0.push_default_route", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id"),
+					testAccCheckScalewayResourceRawIDMatches("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id", "scaleway_ipam_ip.ip01", "id"),
 				),
 			},
 		},

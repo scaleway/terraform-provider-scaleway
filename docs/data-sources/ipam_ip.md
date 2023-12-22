@@ -67,7 +67,7 @@ data "scaleway_ipam_ip" "by_name" {
 
 - `resource` - (Optional) Filter by resource ID, type or name. If specified, `type` is required, and at least one of `id` or `name` must be set.
     - `id` - The ID of the resource that the IP is bound to.
-    - `type` - The type of the resource to get the IP from. [Documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@v1.0.0-beta.21.0.20231020161050-699490ebeefd/api/ipam/v1#pkg-constants) with type list.
+    - `type` - The type of the resource to get the IP from. [Documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/ipam/v1#pkg-constants) with type list.
     - `name` - The name of the resource to get the IP from.
 
 - `mac_address` - (Optional) The Mac Address linked to the IP.

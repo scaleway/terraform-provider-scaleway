@@ -21,9 +21,10 @@ func resourceScalewayMNQNatsCredentials() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "ID of the nats account",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "ID of the nats account",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -81,6 +82,7 @@ func resourceScalewayMNQNatsCredentialsRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("account_id", credentials.NatsAccountID)
 	_ = d.Set("name", credentials.Name)
 	_ = d.Set("region", region)
 

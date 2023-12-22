@@ -126,7 +126,10 @@ func TestAccScalewayK8SCluster_Basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterConfigMinimal(previousK8SVersion),
@@ -179,7 +182,10 @@ func TestAccScalewayK8SCluster_Autoscaling(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterConfigAutoscaler(latestK8SVersion),
@@ -252,7 +258,10 @@ func TestAccScalewayK8SCluster_OIDC(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterConfigOIDC(latestK8SVersion),
@@ -319,7 +328,10 @@ func TestAccScalewayK8SCluster_AutoUpgrade(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterAutoUpgrade(false, "any", 0, previousK8SVersion),
@@ -398,7 +410,10 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkLinked(latestK8SVersion),
@@ -460,7 +475,10 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				// 1 : Start with a mutualized Kapsule cluster
@@ -613,12 +631,7 @@ func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, 
 
 		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			if strings.Contains(err.Error(), "bad region format") {
-				_, _, pnID, err = vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-				if err != nil {
-					return err
-				}
-			}
+			return err
 		}
 
 		if clusterPNID == nil {

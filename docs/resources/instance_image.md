@@ -3,16 +3,16 @@ subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_image"
 ---
 
-# scaleway_instance_image
+# Resource: scaleway_instance_image
 
 Creates and manages Scaleway Compute Images.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#images-41389b).
 
-## Example
+## Example Usage
 
 ### From a volume
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "volume" {
   type       	= "b_ssd"
   size_in_gb 	= 20
@@ -30,7 +30,7 @@ resource "scaleway_instance_image" "volume_image" {
 
 ### From a server
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "server" {
   image = "ubuntu_jammy"
   type 	= "DEV1-S"
@@ -48,7 +48,7 @@ resource "scaleway_instance_image" "server_image" {
 
 ### With additional volumes
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "server" {
   image = "ubuntu_jammy"
   type 	= "DEV1-S"
@@ -75,7 +75,7 @@ resource "scaleway_instance_image" "image" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -93,7 +93,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the image.
 

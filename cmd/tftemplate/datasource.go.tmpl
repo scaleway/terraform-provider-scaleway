@@ -21,6 +21,7 @@ func dataSourceScaleway{{.Resource}}() *schema.Resource {
         ConflictsWith: []string{"name"},
         ValidateFunc:  validationUUIDorUUIDWithLocality(),
     }
+    dsSchema["project_id"].Optional = true
     
     return &schema.Resource{
         ReadContext: dataSourceScaleway{{.Resource}}Read,

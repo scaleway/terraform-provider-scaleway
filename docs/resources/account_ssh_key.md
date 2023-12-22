@@ -3,7 +3,7 @@ subcategory: "Account"
 page_title: "Scaleway: scaleway_account_ssh_key"
 ---
 
-# scaleway_account_ssh_key
+# Resource: scaleway_account_ssh_key
 
 Manages user SSH keys to access servers provisioned on Scaleway.
 
@@ -11,14 +11,14 @@ Manages user SSH keys to access servers provisioned on Scaleway.
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_account_ssh_key" "main" {
     name 	   = "main"
     public_key = "<YOUR-PUBLIC-SSH-KEY>"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the SSH key (UUID format).
 - `organization_id` - The organization ID the SSH key is associated with.

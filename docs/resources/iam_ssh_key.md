@@ -3,7 +3,7 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_ssh_key"
 ---
 
-# scaleway_iam_ssh_key
+# Resource: scaleway_iam_ssh_key
 
 Creates and manages Scaleway IAM SSH Keys.
 For more information,
@@ -11,7 +11,7 @@ see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1al
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_iam_ssh_key" "main" {
   name       = "main"
   public_key = "<YOUR-PUBLIC-SSH-KEY>"
@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the SSH public key.
 - `fingerprint` - The fingerprint of the iam SSH key.

@@ -3,16 +3,16 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_group"
 ---
 
-# scaleway_iam_group
+# Resource: scaleway_iam_group
 
 Creates and manages Scaleway IAM Groups.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#groups-f592eb).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_iam_group" "basic" {
   name            = "iam_group_basic"
   description     = "basic description"
@@ -23,7 +23,7 @@ resource "scaleway_iam_group" "basic" {
 
 ### With applications
 
-```hcl
+```terraform
 resource "scaleway_iam_application" "app" {}
 
 resource "scaleway_iam_group" "with_app" {
@@ -37,7 +37,7 @@ resource "scaleway_iam_group" "with_app" {
 
 ### With users
 
-```hcl
+```terraform
 locals {
   users = toset([
     "user1@mail.com",
@@ -63,6 +63,8 @@ resource "scaleway_iam_group" "with_users" {
 
 - `description` - (Optional) The description of the IAM group.
 
+- `tags` - (Optional) The tags associated with the group.
+
 - `application_ids` - (Optional) The list of IDs of the applications attached to the group.
 
 - `user_ids` - (Optional) The list of IDs of the users attached to the group.
@@ -70,6 +72,10 @@ resource "scaleway_iam_group" "with_users" {
 - `external_membership` - (Optional) Manage membership externally. This make the resource ignore user_ids and application_ids. Should be used when using [iam_group_membership](iam_group_membership.md)
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the group is associated with.
+
+## Attributes Reference
+
+No additional attributes are exported.
 
 ## Import
 

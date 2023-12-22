@@ -3,23 +3,23 @@ subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_namespace"
 ---
 
-# scaleway_function_namespace
+# Resource: scaleway_function_namespace
 
 Creates and manages Scaleway Function Namespace.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_function_namespace" "main" {
   name        = "main-function-namespace"
   description = "Main function namespace"
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

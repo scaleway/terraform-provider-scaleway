@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -37,9 +36,6 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 				Description: "Type of the server",
 				Required:    true,
 				ForceNew:    true,
-				ValidateFunc: validation.StringInSlice([]string{
-					AppleSiliconM1Type,
-				}, false),
 			},
 			// Computed
 			"ip": {

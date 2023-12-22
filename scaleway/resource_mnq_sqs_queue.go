@@ -28,7 +28,7 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultMNQQueueTimeout),
 			Delete:  schema.DefaultTimeout(defaultMNQQueueTimeout),
 			Default: schema.DefaultTimeout(defaultMNQQueueTimeout),
-		}, SchemaVersion: 0,
+		}, SchemaVersion: 1,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:          schema.TypeString,
@@ -46,10 +46,10 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 				Description:   "Creates a unique name beginning with the specified prefix. Conflicts with name.",
 				ConflictsWith: []string{"name"},
 			},
-			"endpoint": {
+			"sqs_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "http://sqs-sns.mnq.{region}.scw.cloud",
+				Default:     "https://sqs.mnq.{region}.scaleway.com",
 				Description: "The sqs endpoint",
 			},
 			"access_key": {
@@ -114,6 +114,14 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 				Description: "The URL of the queue",
 			},
 		},
+		CustomizeDiff: resourceMNQQueueCustomizeDiff,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    resourceMNQSQSQueueResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourceMNQSQSQueueStateUpgradeV0,
+			},
+		},
 	}
 }
 
@@ -148,7 +156,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 	isFifo := d.Get("fifo_queue").(bool)
 	queueName := resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
-	attributes, err := sqsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema)
+	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -169,7 +177,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to create SQS Queue: %s", err)
 	}
 
-	d.SetId(composeMNQQueueID(region, projectID, queueName))
+	d.SetId(composeMNQID(region, projectID, queueName))
 
 	return resourceScalewayMNQSQSQueueRead(ctx, d, meta)
 }
@@ -180,7 +188,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	region, projectID, queueName, err := decomposeMNQQueueID(d.Id())
+	region, projectID, queueName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -206,7 +214,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("failed to get the SQS Queue attributes: %s", err)
 	}
 
-	values, err := sqsAttributesToResourceData(queueAttributes.Attributes, resourceScalewayMNQSQSQueue().Schema)
+	values, err := awsAttributesToResourceData(queueAttributes.Attributes, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.Errorf("failed to convert SQS Queue attributes to resource data: %s", err)
 	}
@@ -229,7 +237,7 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -247,7 +255,7 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
-	attributes, err := sqsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema)
+	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -269,7 +277,7 @@ func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQQueueID(d.Id())
+	_, _, queueName, err := decomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

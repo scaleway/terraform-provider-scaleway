@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -30,9 +30,10 @@ func resourceScalewayObjectBucketPolicy() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"bucket": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The bucket name.",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The bucket's name or regional ID.",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"policy": {
 				Type:             schema.TypeString,
@@ -52,8 +53,18 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	bucket := expandID(d.Get("bucket"))
+	regionalID := expandRegionalID(d.Get("bucket"))
+	bucket := regionalID.ID
+	bucketRegion := regionalID.Region
 	tflog.Debug(ctx, fmt.Sprintf("bucket name: %s", bucket))
+
+	if bucketRegion != "" && bucketRegion != region {
+		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		region = bucketRegion
+	}
 
 	policy, err := structure.NormalizeJsonString(d.Get("policy").(string))
 	if err != nil {
@@ -67,13 +78,13 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 		Policy: scw.StringPtr(policy),
 	}
 
-	err = resource.RetryContext(ctx, 1*time.Minute, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, 1*time.Minute, func() *retry.RetryError {
 		_, err := s3Client.PutBucketPolicyWithContext(ctx, params)
 		if tfawserr.ErrCodeEquals(err, "MalformedPolicy") {
-			return resource.RetryableError(err)
+			return retry.RetryableError(err)
 		}
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})
@@ -97,7 +108,8 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	bucket := expandID(d.Id())
+	regionalID := expandRegionalID(d.Id())
+	bucket := regionalID.ID
 
 	_ = d.Set("region", region)
 
@@ -132,7 +144,7 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("bucket", bucket); err != nil {
+	if err := d.Set("bucket", regionalID.String()); err != nil {
 		return diag.FromErr(err)
 	}
 

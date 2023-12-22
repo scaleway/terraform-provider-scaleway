@@ -3,16 +3,16 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_read_replica"
 ---
 
-# scaleway_rdb_read_replica
+# Resource: scaleway_rdb_read_replica
 
 Creates and manages Scaleway Database read replicas.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "instance" {
   name           = "test-rdb-rr-update"
   node_type      = "db-dev-s"
@@ -32,7 +32,7 @@ resource scaleway_rdb_read_replica "replica" {
 
 ### Private network
 
-```hcl
+```terraform
 resource "scaleway_rdb_instance" "instance" {
   name           = "rdb_instance"
   node_type      = "db-dev-s"
@@ -54,7 +54,7 @@ resource "scaleway_rdb_read_replica" "replica" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -70,7 +70,9 @@ The following arguments are supported:
       CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
       service if not set.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
+- `same_zone` - (Defaults to `true`) Defines whether to create the replica in the same availability zone as the main instance nodes or not.
+
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the Database read replica should be created.
 
 ## Attributes Reference

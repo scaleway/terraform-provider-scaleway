@@ -3,17 +3,17 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sqs_queue"
 ---
 
-# scaleway_mnq_sqs_queue
+# Resource: scaleway_mnq_sqs_queue
 
 Creates and manages Scaleway Messaging and queuing SQS Queues.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/how-to/create-manage-queues/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_mnq_sqs" "main" {}
 
 resource scaleway_mnq_sqs_credentials main {
@@ -21,8 +21,8 @@ resource scaleway_mnq_sqs_credentials main {
   name = "sqs-credentials"
 
   permissions {
-    can_manage = false
-    can_receive = true
+    can_manage = true
+    can_receive = false
     can_publish = false
   }
 }
@@ -30,13 +30,13 @@ resource scaleway_mnq_sqs_credentials main {
 resource scaleway_mnq_sqs_queue main {
   project_id = scaleway_mnq_sqs.main.project_id
   name = "my-queue"
-  endpoint = scaleway_mnq_sqs.main.endpoint
+  sqs_endpoint = scaleway_mnq_sqs.main.endpoint
   access_key = scaleway_mnq_sqs_credentials.main.access_key
   secret_key = scaleway_mnq_sqs_credentials.main.secret_key
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -44,7 +44,7 @@ The following arguments are supported:
 
 - `name_prefix` - (Optional) Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 
-- `endpoint` - (Required) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `http://sqs-sns.mnq.{region}.scw.cloud`.
+- `sqs_endpoint` - (Optional) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `https://sqs.mnq.{region}.scaleway.com`.
 
 - `access_key` - (Required) The access key of the SQS queue.
 
@@ -74,11 +74,3 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the queue with format `{region/{project-id}/{queue-name}`
 
 - `url` - The URL of the queue.
-
-## Import
-
-SQS queues can be imported using the `{region}/{project-id}/{queue-name}`, e.g.
-
-```bash
-$ terraform import scaleway_mnq_sqs_queue.main fr-par/11111111111111111111111111111111/my-queue
-```

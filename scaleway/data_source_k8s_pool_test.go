@@ -16,16 +16,25 @@ func TestAccScalewayDataSourceK8SPool_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "main" {
+						name = "test-data-source-pool"
+					}
+
 					resource "scaleway_k8s_cluster" "main" {
 					  	name 	= "%s"
 						version = "%s"
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_pool", "basic" ]
 						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.main.id
 					}
 					
 					resource "scaleway_k8s_pool" "default" {
@@ -38,12 +47,17 @@ func TestAccScalewayDataSourceK8SPool_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "main" {
+						name = "test-data-source-pool"
+					}
+
 					resource "scaleway_k8s_cluster" "main" {
 					  	name 	= "%s"
 						version = "%s"
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_cluster", "basic" ]
 						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.main.id
 					}
 
 					resource "scaleway_k8s_pool" "default" {

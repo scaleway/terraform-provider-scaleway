@@ -3,14 +3,14 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket"
 ---
 
-# scaleway_object_bucket
+# Resource: scaleway_object_bucket
 
 Creates and manages Scaleway object storage buckets.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
   tags = {
@@ -21,7 +21,7 @@ resource "scaleway_object_bucket" "some_bucket" {
 
 ### Creating the bucket in a specific project
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
   project_id = "11111111-1111-1111-1111-111111111111"
@@ -30,7 +30,7 @@ resource "scaleway_object_bucket" "some_bucket" {
 
 ### Using object lifecycle
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main"{
   name = "mybuckectid"
   region = "fr-par"
@@ -94,7 +94,7 @@ resource "scaleway_object_bucket" "main"{
       }
       
       transition {
-        days          = 0
+        days          = 1
         storage_class = "GLACIER"
       }
   }
@@ -111,13 +111,17 @@ resource "scaleway_object_bucket" "main"{
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 
 The following arguments are supported:
 
 * `name` - (Required) The name of the bucket.
 * `tags` - (Optional) A list of tags (key / value) for the bucket.
+
+* ~> **Important:** The Scaleway console does not support `key/value` tags yet, so only the tags' values will be displayed.
+Keep in mind that if you make any change to your bucket's tags using the console, it will overwrite them with the format `value/value`.
+
 * `acl` - (Optional)(Deprecated) The canned ACL you want to apply to the bucket.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
 * `versioning` - (Optional) A state of [versioning](https://docs.aws.amazon.com/AmazonS3/latest/dev/Versioning.html) (documented below)
@@ -171,7 +175,7 @@ The `versioning` object supports the following:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attribute is exported:
 
 * `id` - The unique name of the bucket.
 

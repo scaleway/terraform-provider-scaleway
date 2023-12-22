@@ -3,15 +3,15 @@ subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_acl"
 ---
 
-# scaleway_lb_acl
+# Resource: scaleway_lb_acl
 
 Creates and manages Scaleway Load-Balancer ACLs. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-acls).
 
-## Examples Usage
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_lb_acl" "acl01" {
   frontend_id  = scaleway_lb_frontend.frt01.id
   name         = "acl01"
@@ -27,7 +27,7 @@ resource "scaleway_lb_acl" "acl01" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -62,7 +62,7 @@ The following arguments are supported:
     - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
       Keep in mind that in the case of `http_header_match` the HTTP header field name is case-insensitive.
 
-    - `http_value_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
+    - `http_filter_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
 
     - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
 

@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,21 +39,26 @@ func dataSourceScalewayLbCertificateRead(ctx context.Context, d *schema.Resource
 
 	crtID, ok := d.GetOk("certificate_id")
 	if !ok { // Get LB by name.
+		certificateName := d.Get("name").(string)
 		res, err := api.ListCertificates(&lbSDK.ZonedAPIListCertificatesRequest{
 			Zone: zone,
-			Name: expandStringPtr(d.Get("name")),
+			Name: expandStringPtr(certificateName),
 			LBID: expandID(d.Get("lb_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Certificates) == 0 {
-			return diag.FromErr(fmt.Errorf("no certificates found with the name %s", d.Get("name")))
+
+		foundCertificate, err := findExact(
+			res.Certificates,
+			func(s *lbSDK.Certificate) bool { return s.Name == certificateName },
+			certificateName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if len(res.Certificates) > 1 {
-			return diag.FromErr(fmt.Errorf("%d certificate found with the same name %s", len(res.Certificates), d.Get("name")))
-		}
-		crtID = res.Certificates[0].ID
+
+		crtID = foundCertificate.ID
 	}
 	zonedID := datasourceNewZonedID(crtID, zone)
 	d.SetId(zonedID)

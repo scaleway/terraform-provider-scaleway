@@ -102,6 +102,20 @@ func resourceScalewayCockpitTokenScopes() *schema.Resource {
 				ForceNew:    true,
 				Description: "Setup alerts",
 			},
+			"query_traces": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Query traces",
+			},
+			"write_traces": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Write traces",
+			},
 		},
 	}
 }
@@ -126,6 +140,8 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 			WriteLogs:         schema["write_logs"].Default.(bool),
 			SetupLogsRules:    schema["setup_logs_rules"].Default.(bool),
 			SetupAlerts:       schema["setup_alerts"].Default.(bool),
+			QueryTraces:       schema["query_traces"].Default.(bool),
+			WriteTraces:       schema["write_traces"].Default.(bool),
 		}
 	}
 

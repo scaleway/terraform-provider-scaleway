@@ -3,27 +3,35 @@ subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_sqs"
 ---
 
-# scaleway_mnq_sqs
+# Resource: scaleway_mnq_sqs
 
 Activate Scaleway Messaging and queuing SQS for a project.
 For further information please check
 our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sqs-overview/)
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
-// For default project in default region
-resource "scaleway_mnq_sqs" "main" {}
+Activate SQS for default project
 
-// For specific project in default region
+```terraform
+resource "scaleway_mnq_sqs" "main" {}
+```
+
+Activate SQS for a specific project
+
+```terraform
+data scaleway_account_project project {
+  name = "default"
+}
+
 resource "scaleway_mnq_sqs" "for_project" {
-  project_id = scaleway_account_project.main.id
+  project_id = data.scaleway_account_project.project.id
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

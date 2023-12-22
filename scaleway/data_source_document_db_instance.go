@@ -36,25 +36,26 @@ func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Res
 
 	instanceID, instanceIDExists := d.GetOk("instance_id")
 	if !instanceIDExists {
+		instanceName := d.Get("name").(string)
 		res, err := api.ListInstances(&documentdb.ListInstancesRequest{
 			Region:    region,
-			Name:      expandStringPtr(d.Get("name")),
+			Name:      expandStringPtr(instanceName),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, instance := range res.Instances {
-			if instance.Name == d.Get("name").(string) {
-				if instanceID != "" {
-					return diag.Errorf("more than 1 instance found with the same name %s", d.Get("name"))
-				}
-				instanceID = instance.ID
-			}
+
+		foundRawInstance, err := findExact(
+			res.Instances,
+			func(s *documentdb.Instance) bool { return s.Name == instanceName },
+			instanceName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if instanceID == "" {
-			return diag.Errorf("no instance found with the name %s", d.Get("name"))
-		}
+
+		instanceID = foundRawInstance.ID
 	}
 
 	regionID := datasourceNewRegionalID(instanceID, region)

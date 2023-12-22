@@ -241,11 +241,64 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 			testAccCheckScalewayLbBackendDestroy(tt),
 			testAccCheckScalewayObjectDestroy(tt),
 			testAccCheckScalewayObjectBucketDestroy(tt),
-			testAccCheckBucketWebsiteConfigurationDestroy(tt),
+			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
+			  		resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						acl  = "public-read"
+						tags = {
+							TestName = "TestAccSCW_WebsiteConfig_basic"
+						}
+					}
+
+					resource scaleway_object "some_file" {
+						bucket = scaleway_object_bucket.test.name
+						key = "index.html"
+						file = "testfixture/index.html"
+						visibility = "public-read"
+					}
+				
+				  	resource "scaleway_object_bucket_website_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						index_document {
+							suffix = "index.html"
+						}
+						error_document {
+							key = "error.html"
+						}
+				  	}
+				`, rName),
+			},
+			{
+				Config: fmt.Sprintf(`
+			  		resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						acl  = "public-read"
+						tags = {
+							TestName = "TestAccSCW_WebsiteConfig_basic"
+						}
+					}
+
+					resource scaleway_object "some_file" {
+						bucket = scaleway_object_bucket.test.name
+						key = "index.html"
+						file = "testfixture/index.html"
+						visibility = "public-read"
+					}
+				
+				  	resource "scaleway_object_bucket_website_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						index_document {
+							suffix = "index.html"
+						}
+						error_document {
+							key = "error.html"
+						}
+				  	}
+
 					resource scaleway_lb_ip ip01 {}
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
@@ -263,7 +316,7 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 						proxy_protocol = "none"
 						server_ips = [ scaleway_instance_ip.ip01.address ]
 					}
-				`,
+				`, rName),
 				Check: testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
 			},
 			{
@@ -313,7 +366,7 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 					}
 				`, rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt, resourceName),
 					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr(resourceName, "website_endpoint", rName+".s3-website.fr-par.scw.cloud"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_backend.bkd01", "failover_host"),

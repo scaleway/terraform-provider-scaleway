@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -86,17 +86,17 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 
 	var user *rdb.User
 	//  wrapper around StateChangeConf that will just retry write on database
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		currentUser, errCreateUser := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
 			if is409Error(errCreateUser) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, ins.ID, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
-					return resource.NonRetryableError(errWait)
+					return retry.NonRetryableError(errWait)
 				}
-				return resource.RetryableError(errCreateUser)
+				return retry.RetryableError(errCreateUser)
 			}
-			return resource.NonRetryableError(errCreateUser)
+			return retry.NonRetryableError(errCreateUser)
 		}
 		// set database information
 		user = currentUser
@@ -203,7 +203,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		errDeleteUser := rdbAPI.DeleteUser(&rdb.DeleteUserRequest{
 			Region:     region,
 			InstanceID: instanceID,
@@ -213,11 +213,11 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 			if is409Error(errDeleteUser) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
-					return resource.NonRetryableError(errWait)
+					return retry.NonRetryableError(errWait)
 				}
-				return resource.RetryableError(errDeleteUser)
+				return retry.RetryableError(errDeleteUser)
 			}
-			return resource.NonRetryableError(errDeleteUser)
+			return retry.NonRetryableError(errDeleteUser)
 		}
 		// set database information
 		return nil

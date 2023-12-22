@@ -3,14 +3,14 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway_pat_rule"
 ---
 
-# scaleway_vpc_public_gateway_pat_rule
+# Resource: scaleway_vpc_public_gateway_pat_rule
 
 Creates and manages Scaleway VPC Public Gateway PAT (Port Address Translation).
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1#pat-rules-e75d10).
 
-## Example
+## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc_public_gateway" "pg01" {
   type = "VPC-GW-S"
 }
@@ -40,7 +40,7 @@ resource "scaleway_vpc_public_gateway_pat_rule" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -53,7 +53,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the public gateway PAT rule.
 

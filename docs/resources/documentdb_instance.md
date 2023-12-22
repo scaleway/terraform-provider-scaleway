@@ -3,16 +3,16 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_documentdb_instance"
 ---
 
-# scaleway_documentdb_instance
+# Resource: scaleway_documentdb_instance
 
 Creates and manages Scaleway Database Instances.
 For more information, see [the documentation](https://www.scaleway.com/en/developers/api/document_db/).
 
-## Examples
+## Example Usage
 
 ### Example Basic
 
-```hcl
+```terraform
 resource "scaleway_documentdb_instance" "main" {
   name              = "test-documentdb-instance-basic"
   node_type         = "docdb-play2-pico"
@@ -24,7 +24,7 @@ resource "scaleway_documentdb_instance" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

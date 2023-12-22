@@ -1,6 +1,5 @@
 ---
 subcategory: "Databases"
-layout: "scaleway"
 page_title: "Scaleway: scaleway_rdb_instance"
 ---
 
@@ -35,6 +34,8 @@ output "load_balancer_ip_addr" {
 
 - `instance_id` - (Optional) The RDB instance ID.
   Only one of `name` and `instance_id` should be specified.
+
+- `project_id` - (Optional) The ID of the project the RDB instance is in. Can be used to filter instances when using `name`.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the RDB instance exists.
 

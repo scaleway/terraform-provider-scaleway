@@ -3,16 +3,16 @@ subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_group_membership"
 ---
 
-# scaleway_iam_group_membership
+# Resource: scaleway_iam_group_membership
 
 Add members to an IAM group.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#groups-f592eb).
 
-## Examples
+## Example Usage
 
 ### Application Membership
 
-```hcl
+```terraform
 resource "scaleway_iam_group" "group" {
   name                = "my_group"
   external_membership = true
@@ -30,7 +30,7 @@ resource "scaleway_iam_group_membership" "member" {
 
 ### Users membership
 
-```hcl
+```terraform
 locals {
   users = toset([
     "user1@mail.com",
@@ -64,6 +64,10 @@ resource "scaleway_iam_group_membership" "members" {
 - `user_id` - (Optional) The ID of the user that will be added to the group
 
 - ~> Only one of `application_id` or `user_id` must be specified
+
+## Attributes Reference
+
+No additional attributes are exported.
 
 ## Import
 

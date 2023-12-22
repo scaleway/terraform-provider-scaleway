@@ -3,15 +3,15 @@ subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_baremetal_server"
 ---
 
-# scaleway_baremetal_server
+# Resource: scaleway_baremetal_server
 
 Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
@@ -26,7 +26,7 @@ resource "scaleway_baremetal_server" "base" {
 
 ### With option
 
-```hcl
+```terraform
 data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
@@ -70,7 +70,7 @@ resource "scaleway_baremetal_server" "base" {
 
 ### With private network
 
-```hcl
+```terraform
 data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
@@ -113,7 +113,7 @@ resource "scaleway_baremetal_server" "base" {
 
 ### Without install config
 
-```hcl
+```terraform
 data "scaleway_baremetal_offer" "my_offer" {
   zone = "fr-par-2"
   name = "EM-B112X-SSD"
@@ -126,7 +126,7 @@ resource "scaleway_baremetal_server" "base" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -162,7 +162,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the server.
 

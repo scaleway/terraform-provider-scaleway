@@ -115,6 +115,45 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Computed:    true,
 				Description: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPortAlternative),
 			},
+			"mx_blackhole": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Scaleway's blackhole MX server to use",
+			},
+			"reputation": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The domain's reputation",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Status of the domain's reputation",
+						},
+						"score": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "A range from 0 to 100 that determines your domain's reputation score",
+						},
+						"scored_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Time and date the score was calculated",
+						},
+						"previous_score": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The previously-calculated domain's reputation score",
+						},
+						"previous_scored_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Time and date the previous reputation score was calculated",
+						},
+					},
+				},
+			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
 		},
@@ -176,6 +215,8 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("smtp_port_alternative", tem.SMTPPortAlternative)
 	_ = d.Set("smtps_port", tem.SMTPSPort)
 	_ = d.Set("smtps_port_alternative", tem.SMTPSPortAlternative)
+	_ = d.Set("mx_blackhole", tem.MXBlackhole)
+	_ = d.Set("reputation", flattenDomainReputation(domain.Reputation))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
 

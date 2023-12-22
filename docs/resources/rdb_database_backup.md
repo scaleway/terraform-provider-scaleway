@@ -3,16 +3,16 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_database_backup"
 ---
 
-# scaleway_rdb_database_backup
+# Resource: scaleway_rdb_database_backup
 
 Creates and manages Scaleway RDB database backup.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
-## Examples
+## Example Usage
 
 ### Basic
 
-```hcl
+```terraform
 resource scaleway_rdb_database_backup "main" {
   instance_id = data.scaleway_rdb_instance.main.id
   database_name = data.scaleway_rdb_database.main.name
@@ -21,7 +21,7 @@ resource scaleway_rdb_database_backup "main" {
 
 ### With expiration
 
-```hcl
+```terraform
 resource scaleway_rdb_database_backup "main" {
   instance_id = data.scaleway_rdb_instance.main.id
   database_name = data.scaleway_rdb_database.main.name
@@ -29,7 +29,7 @@ resource scaleway_rdb_database_backup "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 

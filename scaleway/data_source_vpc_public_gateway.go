@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -44,32 +43,26 @@ func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resou
 
 	publicGatewayID, ok := d.GetOk("public_gateway_id")
 	if !ok {
+		gwName := d.Get("name").(string)
 		res, err := vpcgwAPI.ListGateways(
 			&vpcgw.ListGatewaysRequest{
-				Name: expandStringPtr(d.Get("name").(string)),
+				Name: expandStringPtr(gwName),
 				Zone: zone,
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if res.TotalCount == 0 {
-			return diag.FromErr(
-				fmt.Errorf(
-					"no public gateway found with the name %s",
-					d.Get("name"),
-				),
-			)
+
+		foundGW, err := findExact(
+			res.Gateways,
+			func(s *vpcgw.Gateway) bool { return s.Name == gwName },
+			gwName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if res.TotalCount > 1 {
-			return diag.FromErr(
-				fmt.Errorf(
-					"%d public gateways found with the name %s",
-					res.TotalCount,
-					d.Get("name"),
-				),
-			)
-		}
-		publicGatewayID = res.Gateways[0].ID
+
+		publicGatewayID = foundGW.ID
 	}
 
 	zonedID := datasourceNewZonedID(publicGatewayID, zone)

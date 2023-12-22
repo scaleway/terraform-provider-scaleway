@@ -53,3 +53,18 @@ func waitForTemDomain(ctx context.Context, api *tem.API, region scw.Region, id s
 
 	return domain, err
 }
+
+func flattenDomainReputation(reputation *tem.DomainReputation) interface{} {
+	if reputation == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"status":             reputation.Status.String(),
+			"score":              reputation.Score,
+			"scored_at":          flattenTime(reputation.ScoredAt),
+			"previous_score":     flattenUint32Ptr(reputation.PreviousScore),
+			"previous_scored_at": flattenTime(reputation.PreviousScoredAt),
+		},
+	}
+}

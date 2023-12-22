@@ -3,20 +3,20 @@ subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object"
 ---
 
-# scaleway_object
+# Resource: scaleway_object
 
 Creates and manages Scaleway object storage objects.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
 }
 
 resource scaleway_object "some_file" {
-  bucket = scaleway_object_bucket.some_bucket.name
+  bucket = scaleway_object_bucket.some_bucket.id
   key = "object_path"
   
   file = "myfile"
@@ -24,12 +24,12 @@ resource scaleway_object "some_file" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 
 The following arguments are supported:
 
-* `bucket` - (Required) The name of the bucket.
+* `bucket` - (Required) The name of the bucket, or its Terraform ID.
 * `key` - (Required) The path of the object.
 * `file` - (Optional) The name of the file to upload, defaults to an empty file. Only one of `file`, `content` or `content_base64` can be defined.
 * `content` - (Optional) The content of the file to upload. Only one of `file`, `content` or `content_base64` can be defined.
@@ -39,11 +39,11 @@ The following arguments are supported:
 * `visibility` - (Optional) Visibility of the object, `public-read` or `private`
 * `metadata` - (Optional) Map of metadata used for the object, keys must be lowercase
 * `tags` - (Optional) Map of tags
-* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
+* `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all arguments above, the following attribute is exported:
 
 * `id` - The path of the object, including bucket name.
 

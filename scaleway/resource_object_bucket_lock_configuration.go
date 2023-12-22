@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -25,11 +24,12 @@ func resourceObjectLockConfiguration() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"bucket": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringLenBetween(1, 63),
-				Description:  "The bucket name.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validation.StringLenBetween(1, 63),
+				Description:      "The bucket's name or regional ID.",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"rule": {
 				Type:     schema.TypeList,
@@ -82,7 +82,17 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	bucket := expandID(d.Get("bucket").(string))
+	regionalID := expandRegionalID(d.Get("bucket"))
+	bucket := regionalID.ID
+	bucketRegion := regionalID.Region
+
+	if bucketRegion != "" && bucketRegion != region {
+		conn, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		region = bucketRegion
+	}
 
 	input := &s3.PutObjectLockConfigurationInput{
 		Bucket: aws.String(bucket),
@@ -92,13 +102,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		},
 	}
 
-	_, err = retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.PutObjectLockConfigurationOutput]{
-		Timeout:  d.Timeout(schema.TimeoutCreate),
-		Interval: 5 * time.Second,
-		Function: func() (*s3.PutObjectLockConfigurationOutput, error) {
-			return conn.PutObjectLockConfigurationWithContext(ctx, input)
-		},
-	})
+	_, err = conn.PutObjectLockConfigurationWithContext(ctx, input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err))
 	}
