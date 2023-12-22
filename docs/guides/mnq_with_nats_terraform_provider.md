@@ -1,5 +1,4 @@
 ---
-subcategory: "Messaging and Queuing"
 page_title: "Using Scaleway Messaging and Queuing service with NATS Terraform provider"
 ---
 
