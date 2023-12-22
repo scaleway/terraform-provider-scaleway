@@ -305,12 +305,8 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	waitForCluster := false
-
-	if cluster.Status == k8s.ClusterStatusPoolRequired {
-		waitForCluster = true
-	} else if cluster.Status == k8s.ClusterStatusCreating {
-		_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
+	if cluster.Status == k8s.ClusterStatusCreating {
+		_, err = waitK8SClusterStatus(ctx, k8sAPI, cluster, k8s.ClusterStatusReady, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -330,11 +326,9 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	if waitForCluster {
-		_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayK8SPoolRead(ctx, d, meta)
