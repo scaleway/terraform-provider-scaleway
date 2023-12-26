@@ -28,7 +28,6 @@ data "scaleway_documentdb_load_balancer_endpoint" "my_endpoint" {
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the DocumentDB endpoint exists.
 - `project_id` - (Optional) The ID of the project the DocumentDB endpoint is associated with.
 
-
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
