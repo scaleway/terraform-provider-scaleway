@@ -31,6 +31,7 @@ data "scaleway_vpc_public_gateway" "pg_test_by_id" {
 - `name` - (Required) Exact name of the public gateway.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the public gateway should be created.
+- `project_id` - (Optional) The ID of the project the public gateway is associated with.
 
 ## Attributes Reference
 

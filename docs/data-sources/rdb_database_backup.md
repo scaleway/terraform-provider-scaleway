@@ -34,7 +34,9 @@ data scaleway_rdb_database_backup find_by_id {
 - `name` - (Optional) The name of the RDB instance.
   Only one of the `name` and `backup_id` should be specified.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Backup is associated with.
+
+- `project_id` - (Optional) The ID of the project the Database Backup is associated with.
 
 ## Attributes Reference
 

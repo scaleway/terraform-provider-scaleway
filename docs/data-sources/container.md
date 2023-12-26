@@ -44,6 +44,8 @@ The following arguments are required:
 
 - `namespace_id` - (Required) The container namespace ID of the container.
 
+- `project_id` - (Optional) The ID of the project the container is associated with.
+
 ~> **Important** Updates to `name` will recreate the container.
 
 ## Attributes Reference

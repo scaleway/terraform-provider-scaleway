@@ -12,7 +12,7 @@ import (
 func dataSourceScalewayIotHub() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIotHub().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"hub_id"}
 	dsSchema["hub_id"] = &schema.Schema{

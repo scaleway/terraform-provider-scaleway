@@ -29,6 +29,12 @@ func dataSourceScalewayContainer() *schema.Resource {
 		Description:  "The ID of the Container namespace",
 		ValidateFunc: validationUUIDorUUIDWithLocality(),
 	}
+	dsSchema["project_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  "The ID of the project to filter the Container",
+		ValidateFunc: validationUUID(),
+	}
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayContainerRead,
@@ -50,6 +56,7 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 			Region:      region,
 			Name:        expandStringPtr(containerName),
 			NamespaceID: expandID(namespaceID),
+			ProjectID:   expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

@@ -12,7 +12,7 @@ func dataSourceScalewayDocumentDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayDocumentDBInstance().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["instance_id"] = &schema.Schema{
 		Type:          schema.TypeString,

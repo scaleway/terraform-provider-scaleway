@@ -29,6 +29,8 @@ data "scaleway_instance_security_group" "my_key" {
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group exists.
 
+- `project_id` - (Optional) The ID of the project the security group is associated with.
+
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
@@ -38,8 +40,6 @@ In addition to all above arguments, the following attributes are exported:
 ~> **Important:** Instance security groups' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `organization_id` - The ID of the organization the security group is associated with.
-
-- `project_id` - The ID of the project the security group is associated with.
 
 - `inbound_default_policy` - The default policy on incoming traffic. Possible values are: `accept` or `drop`.
 

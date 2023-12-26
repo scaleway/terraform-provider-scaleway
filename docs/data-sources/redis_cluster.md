@@ -31,7 +31,7 @@ data "scaleway_redis_cluster" "my_cluster" {
 
 - `zone` - (Default to [provider](../index.md) `region`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
 
-- `project_id` - (Default to [provider](../index.md) `project_id`)
+- `project_id` - (Optional) The ID of the project the Redis cluster is associated with.
 
 ## Attributes Reference
 

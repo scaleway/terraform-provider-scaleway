@@ -27,6 +27,7 @@ func dataSourceScalewayLbIP() *schema.Resource {
 		ConflictsWith: []string{"ip_address"},
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 	}
+	dsSchema["project_id"].Optional = true
 
 	return &schema.Resource{
 		ReadContext:   dataSourceScalewayLbIPRead,

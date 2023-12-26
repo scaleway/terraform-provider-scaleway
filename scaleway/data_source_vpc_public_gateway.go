@@ -14,7 +14,7 @@ func dataSourceScalewayVPCPublicGateway() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPublicGateway().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"public_gateway_id"}
 	dsSchema["public_gateway_id"] = &schema.Schema{
@@ -46,8 +46,9 @@ func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resou
 		gwName := d.Get("name").(string)
 		res, err := vpcgwAPI.ListGateways(
 			&vpcgw.ListGatewaysRequest{
-				Name: expandStringPtr(gwName),
-				Zone: zone,
+				Name:      expandStringPtr(gwName),
+				Zone:      zone,
+				ProjectID: expandStringPtr(d.Get("project_id")),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

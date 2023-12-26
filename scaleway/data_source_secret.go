@@ -48,15 +48,12 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 	if !ok {
 		secretName := d.Get("name").(string)
 		request := &secret.ListSecretsRequest{
-			Region: region,
-			Name:   scw.StringPtr(secretName),
+			Region:         region,
+			Name:           expandStringPtr(secretName),
+			ProjectID:      expandStringPtr(projectID),
+			OrganizationID: expandStringPtr(d.Get("organization_id")),
 		}
 
-		request.ProjectID = scw.StringPtr(projectID)
-
-		if organizationIDRaw, ok := d.GetOk("organization_id"); ok {
-			request.OrganizationID = scw.StringPtr(organizationIDRaw.(string))
-		}
 		res, err := api.ListSecrets(request, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

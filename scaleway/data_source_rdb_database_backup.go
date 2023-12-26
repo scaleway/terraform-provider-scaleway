@@ -22,6 +22,12 @@ func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
 		ConflictsWith: []string{"name", "instance_id"},
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 	}
+	dsSchema["project_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  "The ID of the project to filter the Backup",
+		ValidateFunc: validationUUID(),
+	}
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBDatabaseBackupRead,

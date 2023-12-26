@@ -14,7 +14,7 @@ func dataSourceScalewayK8SCluster() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayK8SCluster().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 	delete(dsSchema, "delete_additional_resources")
 
 	dsSchema["name"].ConflictsWith = []string{"cluster_id"}

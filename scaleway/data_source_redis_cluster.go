@@ -14,7 +14,7 @@ func dataSourceScalewayRedisCluster() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRedisCluster().Schema)
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"cluster_id"}
 	dsSchema["cluster_id"] = &schema.Schema{

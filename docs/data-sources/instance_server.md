@@ -29,6 +29,8 @@ data "scaleway_instance_server" "my_key" {
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
 
+- `project_id` - (Optional) The ID of the project the instance server is associated with.
+
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
@@ -43,8 +45,6 @@ You find all the available types on the [pricing page](https://www.scaleway.com/
 - `image` - The UUID and the label of the base image used by the server.
 
 - `organization_id` - The ID of the organization the server is associated with.
-
-- `project_id` - The ID of the project the server is associated with.
 
 - `tags` - The tags associated with the server.
 

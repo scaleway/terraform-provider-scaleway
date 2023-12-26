@@ -14,7 +14,7 @@ func dataSourceScalewayInstanceSnapshot() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceSnapshot().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["snapshot_id"] = &schema.Schema{
 		Type:          schema.TypeString,

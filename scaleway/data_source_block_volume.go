@@ -12,7 +12,7 @@ func dataSourceScalewayBlockVolume() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayBlockVolume().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["volume_id"] = &schema.Schema{
 		Type:          schema.TypeString,

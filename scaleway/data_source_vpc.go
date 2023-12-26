@@ -49,6 +49,7 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 		request := &vpc.ListVPCsRequest{
 			IsDefault: expandBoolPtr(d.Get("is_default").(bool)),
 			Region:    region,
+			ProjectID: expandStringPtr(d.Get("project_id")),
 		}
 
 		res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))

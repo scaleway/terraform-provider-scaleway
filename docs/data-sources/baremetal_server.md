@@ -27,6 +27,7 @@ data "scaleway_baremetal_server" "by_id" {
 
 - `name` - (Optional) The server name. Only one of `name` and `server_id` should be specified.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
+- `project_id` - (Optional) The ID of the project the baremetal server is associated with.
 
 ## Attributes Reference
 

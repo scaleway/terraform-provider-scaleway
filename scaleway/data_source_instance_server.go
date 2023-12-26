@@ -14,7 +14,7 @@ func dataSourceScalewayInstanceServer() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceServer().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"server_id"}
 	dsSchema["server_id"] = &schema.Schema{

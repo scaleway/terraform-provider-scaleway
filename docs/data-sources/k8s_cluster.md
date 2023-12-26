@@ -29,6 +29,8 @@ data "scaleway_k8s_cluster" "my_key" {
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster exists.
 
+- `project_id` - (Optional) The ID of the project the cluster is associated with.
+
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
@@ -104,6 +106,3 @@ In addition to all above arguments, the following attributes are exported:
 - `region` - The [region](../guides/regions_and_zones.md#regions) in which the cluster is.
 
 - `organization_id` - The ID of the organization the cluster is associated with.
-
-- `project_id` - The ID of the project the cluster is associated with.
-

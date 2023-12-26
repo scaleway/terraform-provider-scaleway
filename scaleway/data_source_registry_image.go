@@ -78,6 +78,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 			Region:      region,
 			Name:        expandStringPtr(imageName),
 			NamespaceID: namespaceID,
+			ProjectID:   expandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return err

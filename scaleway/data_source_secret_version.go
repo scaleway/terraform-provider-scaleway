@@ -36,6 +36,12 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 		Sensitive:   true,
 		Description: "The payload of the secret version",
 	}
+	dsSchema["project_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  "The ID of the project to filter the secret version",
+		ValidateFunc: validationUUID(),
+	}
 
 	return &schema.Resource{
 		ReadContext: datasourceSchemaFromResourceVersionSchema,
@@ -58,6 +64,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			Region:     region,
 			SecretName: d.Get("secret_name").(string),
 			Revision:   d.Get("revision").(string),
+			ProjectID:  expandStringPtr(d.Get("project_id")),
 		}
 
 		res, err := api.AccessSecretVersionByName(request, scw.WithContext(ctx))

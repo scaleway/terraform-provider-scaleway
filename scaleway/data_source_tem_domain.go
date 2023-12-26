@@ -15,7 +15,7 @@ func dataSourceScalewayTemDomain() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayTemDomain().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"domain_id"}
 	dsSchema["domain_id"] = &schema.Schema{
