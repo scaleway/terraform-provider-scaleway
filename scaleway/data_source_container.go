@@ -13,7 +13,7 @@ func dataSourceScalewayContainer() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayContainer().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	addOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"container_id"}
 	dsSchema["container_id"] = &schema.Schema{
@@ -28,6 +28,12 @@ func dataSourceScalewayContainer() *schema.Resource {
 		Required:     true,
 		Description:  "The ID of the Container namespace",
 		ValidateFunc: validationUUIDorUUIDWithLocality(),
+	}
+	dsSchema["project_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  "The ID of the project to filter the Container",
+		ValidateFunc: validationUUID(),
 	}
 
 	return &schema.Resource{

@@ -12,7 +12,7 @@ func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbDatabaseBackup().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "instance_id", "project_id")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "instance_id")
 
 	dsSchema["instance_id"].RequiredWith = []string{"name"}
 	dsSchema["backup_id"] = &schema.Schema{
@@ -21,6 +21,12 @@ func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
 		Description:   "The ID of the Backup",
 		ConflictsWith: []string{"name", "instance_id"},
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+	}
+	dsSchema["project_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  "The ID of the project to filter the Backup",
+		ValidateFunc: validationUUID(),
 	}
 
 	return &schema.Resource{

@@ -16,7 +16,7 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewaySecretVersion().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "region", "revision", "project_id")
+	addOptionalFieldsToSchema(dsSchema, "region", "revision")
 	dsSchema["secret_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
@@ -35,6 +35,12 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 		Computed:    true,
 		Sensitive:   true,
 		Description: "The payload of the secret version",
+	}
+	dsSchema["project_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  "The ID of the project to filter the secret version",
+		ValidateFunc: validationUUID(),
 	}
 
 	return &schema.Resource{
