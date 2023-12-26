@@ -23,8 +23,8 @@ data "scaleway_vpc_private_network" "my_id" {
 
 ## Argument Reference
 
-* `name` - (Optional) Name of the private network. One of `name` and `private_network_id` should be specified.
-* `private_network_id` - (Optional) ID of the private network. One of `name` and `private_network_id` should be specified.
+- `name` - (Optional) Name of the private network. One of `name` and `private_network_id` should be specified.
+- `private_network_id` - (Optional) ID of the private network. One of `name` and `private_network_id` should be specified.
 - `project_id` - (Optional) The ID of the project the private network is associated with.
 
 ## Attributes Reference
