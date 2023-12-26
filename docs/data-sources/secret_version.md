@@ -62,6 +62,8 @@ The following arguments are supported:
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the resource exists.
 
+- `project_id` - (Optional) The ID of the project the Secret version is associated with.
+
 ## Data
 
 Note: This Data Source give you **access** to the secret payload encoded en base64.

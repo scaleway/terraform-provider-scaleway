@@ -32,7 +32,7 @@ data "scaleway_iot_hub" "my_hub" {
 
 - `region` - (Default to [provider](../index.md) `region`) The [region](../guides/regions_and_zones.md#zones) in which the hub exists.
 
-- `project_id` - (Default to [provider](../index.md) `project_id`)
+- `project_id` - (Optional) The ID of the project the hub is associated with.
 
 ## Attributes Reference
 

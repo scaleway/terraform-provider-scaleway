@@ -33,6 +33,8 @@ The following arguments are supported:
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
+- `project_id` - (Optional) The ID of the project the LB IP associated with.
+
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:

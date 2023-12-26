@@ -14,7 +14,7 @@ func dataSourceScalewayVPCPrivateNetwork() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPrivateNetwork().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name")
+	addOptionalFieldsToSchema(dsSchema, "name", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"private_network_id"}
 	dsSchema["private_network_id"] = &schema.Schema{
@@ -42,8 +42,9 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 		pnName := d.Get("name").(string)
 		res, err := vpcAPI.ListPrivateNetworks(
 			&vpc.ListPrivateNetworksRequest{
-				Name:   expandStringPtr(pnName),
-				Region: region,
+				Name:      expandStringPtr(pnName),
+				Region:    region,
+				ProjectID: expandStringPtr(d.Get("project_id")),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

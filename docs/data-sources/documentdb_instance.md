@@ -33,6 +33,9 @@ data "scaleway_documentdb_instance" "db" {
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the DocumentDB instance is in.
 
+- `project_id` - (Optional) The ID of the project the DocumentDB instance is associated with.
+
+
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:

@@ -27,6 +27,8 @@ data "scaleway_lb" "by_id" {
 
 - `ip_id` - (Optional) The load balancer IP ID.
 
+- `project_id` - (Optional) The ID of the project the LB is associated with.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -40,7 +42,5 @@ In addition to all arguments above, the following attributes are exported:
 - `type` - The type of the load-balancer.
 
 - `tags` - The tags associated with the load-balancer.
-
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the LB is associated with.
 
 - `zone` -  (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the LB exists.

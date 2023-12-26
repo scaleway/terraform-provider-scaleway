@@ -12,7 +12,7 @@ import (
 func dataSourceScalewayIamSSHKey() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIamSSKKey().Schema)
-	addOptionalFieldsToSchema(dsSchema, "name")
+	addOptionalFieldsToSchema(dsSchema, "name", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"ssh_key_id"}
 	dsSchema["ssh_key_id"] = &schema.Schema{

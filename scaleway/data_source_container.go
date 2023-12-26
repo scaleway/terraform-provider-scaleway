@@ -13,7 +13,7 @@ func dataSourceScalewayContainer() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayContainer().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"container_id"}
 	dsSchema["container_id"] = &schema.Schema{
@@ -50,6 +50,7 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 			Region:      region,
 			Name:        expandStringPtr(containerName),
 			NamespaceID: expandID(namespaceID),
+			ProjectID:   expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

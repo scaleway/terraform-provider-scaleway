@@ -13,7 +13,7 @@ func dataSourceScalewayContainerNamespace() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayContainerNamespace().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"namespace_id"}
 	dsSchema["namespace_id"] = &schema.Schema{
@@ -40,8 +40,9 @@ func dataSourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Res
 	if !ok {
 		namespaceName := d.Get("name").(string)
 		res, err := api.ListNamespaces(&container.ListNamespacesRequest{
-			Region: region,
-			Name:   expandStringPtr(namespaceName),
+			Region:    region,
+			Name:      expandStringPtr(namespaceName),
+			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

@@ -14,7 +14,7 @@ func dataSourceScalewayBaremetalServer() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayBaremetalServer().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"server_id"}
 	dsSchema["server_id"] = &schema.Schema{
@@ -41,8 +41,9 @@ func dataSourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resour
 	if !ok { // Get server by zone and name.
 		serverName := d.Get("name").(string)
 		res, err := api.ListServers(&baremetal.ListServersRequest{
-			Zone: zone,
-			Name: scw.StringPtr(serverName),
+			Zone:      zone,
+			Name:      scw.StringPtr(serverName),
+			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
