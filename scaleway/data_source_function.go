@@ -19,7 +19,7 @@ func dataSourceScalewayFunction() *schema.Resource {
 		Computed:    true,
 	}
 
-	addOptionalFieldsToSchema(dsSchema, "name", "function_id", "project_id")
+	addOptionalFieldsToSchema(dsSchema, "name", "function_id", "project_id", "region")
 	fixDatasourceSchemaFlags(dsSchema, true, "namespace_id")
 
 	return &schema.Resource{
