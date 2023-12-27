@@ -28,7 +28,9 @@ func TestAccScalewayMNQSQSQueue_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_account_project main {}
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_queue_basic"
+					}
 
 					resource scaleway_mnq_sqs main {
 						project_id = scaleway_account_project.main.id
@@ -57,7 +59,9 @@ func TestAccScalewayMNQSQSQueue_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_account_project main {}
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_queue_basic"
+					}
 
 					resource scaleway_mnq_sqs main {
 						project_id = scaleway_account_project.main.id
