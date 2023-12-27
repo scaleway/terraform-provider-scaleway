@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/stretchr/testify/assert"
 )
 
 // isTestResource returns true if given resource identifier is from terraform test
@@ -18,7 +19,7 @@ func isTestResource(identifier string) bool {
 	return len(identifier) >= len("tf_test") &&
 		strings.HasPrefix(identifier, "tf") &&
 		(identifier[2] == '_' || identifier[2] == '-') &&
-		identifier[3:6] == "test"
+		identifier[3:7] == "test"
 }
 
 func TestMain(m *testing.M) {
@@ -87,4 +88,8 @@ func sharedS3ClientForRegion(region scw.Region) (*s3.S3, error) {
 		return nil, err
 	}
 	return newS3ClientFromMeta(meta, region.String())
+}
+
+func TestIsTestResource(t *testing.T) {
+	assert.True(t, isTestResource("tf_tests_mnq_sqs_queue_default_project"))
 }
