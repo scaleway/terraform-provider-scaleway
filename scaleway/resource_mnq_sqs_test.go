@@ -61,7 +61,9 @@ func TestAccScalewayMNQSQS_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_account_project main {}
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_basic"
+					}
 
 					resource scaleway_mnq_sqs main {
 						project_id = scaleway_account_project.main.id
@@ -88,7 +90,9 @@ func TestAccScalewayMNQSQS_AlreadyActivated(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_account_project main {}
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_already_activated"
+					}
 
 					resource scaleway_mnq_sqs main {
 						project_id = scaleway_account_project.main.id
@@ -97,7 +101,9 @@ func TestAccScalewayMNQSQS_AlreadyActivated(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_account_project main {}
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_already_activated"
+					}
 
 					resource scaleway_mnq_sqs main {
 						project_id = scaleway_account_project.main.id

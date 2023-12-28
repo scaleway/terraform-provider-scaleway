@@ -56,7 +56,9 @@ func TestAccScalewayMNQSQSCredentials_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_account_project main {}
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_credentials_basic"
+					}
 
 					resource scaleway_mnq_sqs main {
 						project_id = scaleway_account_project.main.id
@@ -77,7 +79,9 @@ func TestAccScalewayMNQSQSCredentials_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_account_project main {}
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_credentials_basic"
+					}
 
 					resource scaleway_mnq_sqs main {
 						project_id = scaleway_account_project.main.id
@@ -102,7 +106,9 @@ func TestAccScalewayMNQSQSCredentials_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_account_project main {}
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_credentials_basic"
+					}
 
 					resource scaleway_mnq_sqs main {
 						project_id = scaleway_account_project.main.id
