@@ -843,6 +843,7 @@ func testAccCheckScalewayK8SClusterTypeChange(clusterType, cni, version string) 
 		config = `
 resource "scaleway_vpc_private_network" "type-change" {
   name       = "test-type-change"
+  region = "nl-ams"
 }`
 	}
 
@@ -851,6 +852,7 @@ resource "scaleway_k8s_cluster" "type-change" {
 	type = "%s"
 	cni = "%s"
 	version = "%s"
+	region = "nl-ams"
 	name = "test-type-change"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "type-change" ]
 	delete_additional_resources = false`, clusterType, cni, version)
