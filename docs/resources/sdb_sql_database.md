@@ -3,7 +3,7 @@ subcategory: "Databases"
 page_title: "Scaleway: scaleway_sdb_sql_database"
 ---
 
-# scaleway_sdb_sql_database
+# Resource: scaleway_sdb_sql_database
 
 Creates and manages Scaleway Serverless SQL Databases. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/serverless-databases/).
 
