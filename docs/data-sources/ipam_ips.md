@@ -32,7 +32,7 @@ resource "scaleway_vpc_private_network" "pn01" {
 }
 
 resource "scaleway_redis_cluster" "redis01" {
-  name         = "test_redis_endpoints"
+  name         = "my_redis_cluster"
   version      = "7.0.5"
   node_type    = "RED1-XS"
   user_name    = "my_initial_user"
