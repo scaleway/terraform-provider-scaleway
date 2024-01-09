@@ -63,7 +63,7 @@ output "database_connection_string" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
