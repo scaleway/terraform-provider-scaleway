@@ -31,9 +31,10 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Id of the rdb instance to replicate",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "Id of the rdb instance to replicate",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"same_zone": {
 				Type:        schema.TypeBool,
@@ -197,8 +198,10 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("direct_access", directAccess)
 	_ = d.Set("private_network", privateNetwork)
 
+	regionStr := region.String()
 	_ = d.Set("same_zone", rr.SameZone)
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", regionStr)
+	_ = d.Set("instance_id", regionStr+"/"+rr.InstanceID)
 
 	return nil
 }
