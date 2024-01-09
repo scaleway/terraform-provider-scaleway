@@ -100,8 +100,8 @@ func resourceScalewayServerlessSQLDBDatabaseRead(ctx context.Context, d *schema.
 	}
 
 	_ = d.Set("name", database.Name)
-	_ = d.Set("max_cpu", database.CPUMax)
-	_ = d.Set("min_cpu", database.CPUMin)
+	_ = d.Set("max_cpu", int(database.CPUMax))
+	_ = d.Set("min_cpu", int(database.CPUMin))
 	_ = d.Set("endpoint", database.Endpoint)
 	_ = d.Set("region", database.Region)
 	_ = d.Set("project_id", database.ProjectID)

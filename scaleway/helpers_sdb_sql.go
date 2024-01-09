@@ -39,13 +39,13 @@ func serverlessSQLdbAPIWithRegionAndID(m interface{}, regionalID string) (*serve
 	return sdbAPI, region, ID, nil
 }
 
-func waitForServerlessSQLDBDatabase(ctx context.Context, serverless_sqldbAPI *serverless_sqldb.API, region scw.Region, id string, timeout time.Duration) (*serverless_sqldb.Database, error) {
+func waitForServerlessSQLDBDatabase(ctx context.Context, sdbAPI *serverless_sqldb.API, region scw.Region, id string, timeout time.Duration) (*serverless_sqldb.Database, error) {
 	retryInterval := defaultFunctionRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	database, err := serverless_sqldbAPI.WaitForDatabase(&serverless_sqldb.WaitForDatabaseRequest{
+	database, err := sdbAPI.WaitForDatabase(&serverless_sqldb.WaitForDatabaseRequest{
 		Region:        region,
 		DatabaseID:    id,
 		RetryInterval: &retryInterval,

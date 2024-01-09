@@ -19,9 +19,9 @@ func init() {
 
 func testSweepServerlessSQLDBDatabase(_ string) error {
 	return sweepRegions((&serverless_sqldb.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		serverless_sqldbAPI := serverless_sqldb.NewAPI(scwClient)
+		sdbAPI := serverless_sqldb.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the serverless sql database in (%s)", region)
-		listServerlessSQLDBDatabases, err := serverless_sqldbAPI.ListDatabases(
+		listServerlessSQLDBDatabases, err := sdbAPI.ListDatabases(
 			&serverless_sqldb.ListDatabasesRequest{
 				Region: region,
 			}, scw.WithAllPages())
@@ -30,7 +30,7 @@ func testSweepServerlessSQLDBDatabase(_ string) error {
 		}
 
 		for _, database := range listServerlessSQLDBDatabases.Databases {
-			_, err := serverless_sqldbAPI.DeleteDatabase(&serverless_sqldb.DeleteDatabaseRequest{
+			_, err := sdbAPI.DeleteDatabase(&serverless_sqldb.DeleteDatabaseRequest{
 				DatabaseID: database.ID,
 				Region:     region,
 			})
