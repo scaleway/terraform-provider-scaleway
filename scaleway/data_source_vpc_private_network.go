@@ -17,12 +17,19 @@ func dataSourceScalewayVPCPrivateNetwork() *schema.Resource {
 	addOptionalFieldsToSchema(dsSchema, "name", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"private_network_id"}
+	dsSchema["vpc_id"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "The ID of the vpc to which the private network belongs to",
+		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ConflictsWith: []string{"private_network_id"},
+	}
 	dsSchema["private_network_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the private network",
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		ConflictsWith: []string{"name", "vpc_id"},
 	}
 
 	return &schema.Resource{
@@ -50,9 +57,11 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 			return diag.FromErr(err)
 		}
 
+		vpcID, hasVpcIDFilter := d.GetOk("vpc_id")
+
 		foundPN, err := findExact(
 			res.PrivateNetworks,
-			func(s *vpc.PrivateNetwork) bool { return s.Name == pnName },
+			func(s *vpc.PrivateNetwork) bool { return s.Name == pnName && (!hasVpcIDFilter || s.VpcID == vpcID) },
 			pnName,
 		)
 		if err != nil {
