@@ -500,24 +500,15 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 			},
 			{
 				// 3 : Upgrade to an even bigger dedicated Kapsule --> should migrate
-				Config: testAccCheckScalewayK8SClusterTypeChange("kapsule-dedicated-16", "cilium", latestK8SVersion),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule-dedicated-16"),
-					testAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
-				),
-			},
-			{
-				// 4 : Downgrade to a smaller dedicated Kapsule --> should recreate
 				Config: testAccCheckScalewayK8SClusterTypeChange("kapsule-dedicated-8", "cilium", latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule-dedicated-8"),
-					testAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
+					testAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 			{
-				// 5 : Change to a dedicated Kosmos --> should recreate
+				// 4 : Change to a dedicated Kosmos --> should recreate
 				Config: testAccCheckScalewayK8SClusterTypeChange("multicloud-dedicated-4", "kilo", latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
@@ -526,12 +517,21 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 				),
 			},
 			{
-				// 6 : Upgrade to a bigger dedicated Kosmos --> should migrate
+				// 5 : Upgrade to a bigger dedicated Kosmos --> should migrate
 				Config: testAccCheckScalewayK8SClusterTypeChange("multicloud-dedicated-8", "kilo", latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud-dedicated-8"),
 					testAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+				),
+			},
+			{
+				// 6 : Downgrade to a smaller dedicated Kosmos --> should recreate
+				Config: testAccCheckScalewayK8SClusterTypeChange("multicloud-dedicated-4", "kilo", latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud-dedicated-4"),
+					testAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 			{
