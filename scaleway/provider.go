@@ -228,6 +228,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_iot_hub":                             dataSourceScalewayIotHub(),
 				"scaleway_iot_device":                          dataSourceScalewayIotDevice(),
 				"scaleway_ipam_ip":                             dataSourceScalewayIPAMIP(),
+				"scaleway_ipam_ips":                            dataSourceScalewayIPAMIPs(),
 				"scaleway_k8s_cluster":                         dataSourceScalewayK8SCluster(),
 				"scaleway_k8s_pool":                            dataSourceScalewayK8SPool(),
 				"scaleway_k8s_version":                         dataSourceScalewayK8SVersion(),
