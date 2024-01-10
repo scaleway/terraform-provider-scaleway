@@ -78,6 +78,11 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the IP",
 			},
+			"attached": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Defines whether to filter only for IPs which are attached to a resource",
+			},
 			"zonal":           zoneSchema(),
 			"region":          regionSchema(),
 			"project_id":      projectIDSchema(),
@@ -116,16 +121,16 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	req := &ipam.ListIPsRequest{
-		Region:         region,
-		ProjectID:      expandStringPtr(d.Get("project_id")),
-		Zonal:          expandStringPtr(d.Get("zonal")),
-		Attached:       expandBoolPtr(d.Get("attached")),
-		ResourceID:     expandStringPtr(expandLastID(d.Get("resource.0.id"))),
-		ResourceType:   ipam.ResourceType(d.Get("resource.0.type").(string)),
-		ResourceName:   expandStringPtr(d.Get("resource.0.name").(string)),
-		MacAddress:     expandStringPtr(d.Get("mac_address")),
-		Tags:           expandStrings(d.Get("tags")),
-		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		Region:           region,
+		ProjectID:        expandStringPtr(d.Get("project_id")),
+		Zonal:            expandStringPtr(d.Get("zonal")),
+		ResourceID:       expandStringPtr(expandLastID(d.Get("resource.0.id"))),
+		ResourceType:     ipam.ResourceType(d.Get("resource.0.type").(string)),
+		ResourceName:     expandStringPtr(d.Get("resource.0.name").(string)),
+		MacAddress:       expandStringPtr(d.Get("mac_address")),
+		Tags:             expandStrings(d.Get("tags")),
+		OrganizationID:   expandStringPtr(d.Get("organization_id")),
+		PrivateNetworkID: expandStringPtr(d.Get("private_network_id")),
 	}
 
 	switch d.Get("type").(string) {
@@ -140,6 +145,11 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 			Detail:        "Expected ipv4 or ipv6",
 			AttributePath: cty.GetAttrPath("type"),
 		}}
+	}
+
+	attached, attachedExists := d.GetOk("attached")
+	if attachedExists {
+		req.Attached = expandBoolPtr(attached)
 	}
 
 	resp, err := api.ListIPs(req, scw.WithAllPages(), scw.WithContext(ctx))
