@@ -52,16 +52,15 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 				Name:      expandStringPtr(pnName),
 				Region:    region,
 				ProjectID: expandStringPtr(d.Get("project_id")),
+				VpcID:     expandStringPtr(expandID(d.Get("vpc_id"))),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		vpcID, hasVpcIDFilter := d.GetOk("vpc_id")
-
 		foundPN, err := findExact(
 			res.PrivateNetworks,
-			func(s *vpc.PrivateNetwork) bool { return s.Name == pnName && (!hasVpcIDFilter || s.VpcID == vpcID) },
+			func(s *vpc.PrivateNetwork) bool { return s.Name == pnName },
 			pnName,
 		)
 		if err != nil {

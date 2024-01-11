@@ -73,3 +73,90 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_Basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "vpc-01"
+					}
+
+					resource "scaleway_vpc" "vpc02" {
+					  name = "vpc-02"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  name = "my-pn"
+					  vpc_id = scaleway_vpc.vpc01.id
+					}
+
+					resource "scaleway_vpc_private_network" "pn02" {
+					  name = "my-pn"
+					  vpc_id = scaleway_vpc.vpc02.id
+					}
+				`,
+			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "vpc-01"
+					}
+
+					resource "scaleway_vpc" "vpc02" {
+					  name = "vpc-02"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  name = "my-pn"
+					  vpc_id = scaleway_vpc.vpc01.id
+					}
+
+					resource "scaleway_vpc_private_network" "pn02" {
+					  name = "my-pn"
+					  vpc_id = scaleway_vpc.vpc02.id
+					}
+
+					data "scaleway_vpc_private_network" "by_vpc_id" {
+						name = "${scaleway_vpc_private_network.pn01.name}"
+						vpc_id = "${scaleway_vpc.vpc01.id}"
+					}
+
+					data "scaleway_vpc_private_network" "by_vpc_id_2" {
+						name = "${scaleway_vpc_private_network.pn02.name}"
+						vpc_id = "${scaleway_vpc.vpc02.id}"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn01"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_private_network.by_vpc_id", "name",
+						"scaleway_vpc_private_network.pn01", "name"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_private_network.by_vpc_id", "vpc_id",
+						"scaleway_vpc_private_network.pn01", "vpc_id"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_private_network.by_vpc_id", "vpc_id",
+						"scaleway_vpc.vpc01", "id"),
+
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn02"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_private_network.by_vpc_id_2", "name",
+						"scaleway_vpc_private_network.pn02", "name"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_private_network.by_vpc_id_2", "vpc_id",
+						"scaleway_vpc_private_network.pn02", "vpc_id"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_private_network.by_vpc_id_2", "vpc_id",
+						"scaleway_vpc.vpc02", "id"),
+				),
+			},
+		},
+	})
+}
