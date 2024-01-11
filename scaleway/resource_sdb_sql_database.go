@@ -163,7 +163,7 @@ func resourceScalewayServerlessSQLDBDatabaseDelete(ctx context.Context, d *schem
 	}
 
 	_, err = waitForServerlessSQLDBDatabase(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !is403Error(err) {
 		return diag.FromErr(err)
 	}
 

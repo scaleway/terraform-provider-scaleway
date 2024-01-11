@@ -162,7 +162,7 @@ func testAccCheckScalewayServerlessSQLDBDatabaseDestroy(tt *TestTools) resource.
 				return fmt.Errorf("serverless_sql database (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !is403Error(err) {
 				return err
 			}
 		}
