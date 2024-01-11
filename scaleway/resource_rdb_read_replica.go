@@ -201,7 +201,7 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 	regionStr := region.String()
 	_ = d.Set("same_zone", rr.SameZone)
 	_ = d.Set("region", regionStr)
-	_ = d.Set("instance_id", regionStr+"/"+rr.InstanceID)
+	_ = d.Set("instance_id", newRegionalIDString(region, rr.InstanceID))
 
 	return nil
 }
