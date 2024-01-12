@@ -85,20 +85,20 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-tests-vpc-resource1"
+					  name = "TestAccScalewayResourceVPC_Basic01"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-tests-vpc-resource2"
+					  name = "TestAccScalewayResourceVPC_Basic02"
 					}
 					
 					resource "scaleway_vpc_private_network" "pn01" {
-					  name = "my-pn"
+					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic01"
 					  vpc_id = scaleway_vpc.vpc01.id
 					}
 
 					resource "scaleway_vpc_private_network" "pn02" {
-					  name = "my-pn"
+					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic02"
 					  vpc_id = scaleway_vpc.vpc02.id
 					}
 				`,
@@ -106,20 +106,20 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-tests-vpc-resource1"
+					  name = "TestAccScalewayResourceVPC_Basic01"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-tests-vpc-resource2"
+					  name = "TestAccScalewayResourceVPC_Basic02"
 					}
 					
 					resource "scaleway_vpc_private_network" "pn01" {
-					  name = "my-pn"
+					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic01"
 					  vpc_id = scaleway_vpc.vpc01.id
 					}
 
 					resource "scaleway_vpc_private_network" "pn02" {
-					  name = "my-pn"
+					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic02"
 					  vpc_id = scaleway_vpc.vpc02.id
 					}
 
