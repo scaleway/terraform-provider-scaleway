@@ -85,11 +85,11 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "vpc-01"
+					  name = "tf-tests-vpc-resource1"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "vpc-02"
+					  name = "tf-tests-vpc-resource2"
 					}
 					
 					resource "scaleway_vpc_private_network" "pn01" {
@@ -106,11 +106,11 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "vpc-01"
+					  name = "tf-tests-vpc-resource1"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "vpc-02"
+					  name = "tf-tests-vpc-resource2"
 					}
 					
 					resource "scaleway_vpc_private_network" "pn01" {
