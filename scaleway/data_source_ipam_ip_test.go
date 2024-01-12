@@ -169,3 +169,45 @@ func TestAccScalewayDataSourceIPAMIP_RDB(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayDataSourceIPAMIP_ID(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "my vpc"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  vpc_id = scaleway_vpc.vpc01.id
+					  ipv4_subnet {
+						subnet = "172.16.32.0/22"
+					  }
+					}
+					
+					resource "scaleway_ipam_ip" "ip01" {
+					  address = "172.16.32.5/22"
+					  source {
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}
+					
+					data "scaleway_ipam_ip" "by_id" {
+					  ipam_ip_id = scaleway_ipam_ip.ip01.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_ipam_ip.by_id", "address", "172.16.32.5"),
+					resource.TestCheckResourceAttr("data.scaleway_ipam_ip.by_id", "address_cidr", "172.16.32.5/22"),
+					resource.TestCheckResourceAttrPair("data.scaleway_ipam_ip.by_id", "ipam_ip_id", "scaleway_ipam_ip.ip01", "id"),
+				),
+			},
+		},
+	})
+}
