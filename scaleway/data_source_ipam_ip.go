@@ -65,6 +65,21 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Optional:      true,
 				Description:   "IP Type (ipv4, ipv6)",
 				ConflictsWith: []string{"ipam_ip_id"},
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					switch i.(string) {
+					case "ipv4":
+						return nil
+					case "ipv6":
+						return nil
+					default:
+						return diag.Diagnostics{{
+							Severity:      diag.Error,
+							Summary:       "Invalid IP Type",
+							Detail:        "Expected ipv4 or ipv6",
+							AttributePath: cty.GetAttrPath("type"),
+						}}
+					}
+				},
 			},
 			"tags": {
 				Type: schema.TypeList,
