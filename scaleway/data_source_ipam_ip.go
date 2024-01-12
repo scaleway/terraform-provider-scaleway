@@ -107,7 +107,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	var address, addressCidr string
-	IpID, ok := d.GetOk("ipam_ip_id")
+	IPID, ok := d.GetOk("ipam_ip_id")
 	if !ok {
 		resources, resourcesOk := d.GetOk("resource")
 		if resourcesOk {
@@ -174,7 +174,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		ip := resp.IPs[0]
-		IpID = ip.ID
+		IPID = ip.ID
 
 		address = ip.Address.IP.String()
 		addressCidr, err = flattenIPNet(ip.Address)
@@ -184,7 +184,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	} else {
 		res, err := api.GetIP(&ipam.GetIPRequest{
 			Region: region,
-			IPID:   expandID(IpID.(string)),
+			IPID:   expandID(IPID.(string)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -197,7 +197,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	d.SetId(IpID.(string))
+	d.SetId(IPID.(string))
 	_ = d.Set("address", address)
 	_ = d.Set("address_cidr", addressCidr)
 

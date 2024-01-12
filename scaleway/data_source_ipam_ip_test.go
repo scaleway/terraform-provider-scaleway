@@ -176,7 +176,7 @@ func TestAccScalewayDataSourceIPAMIP_ID(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
