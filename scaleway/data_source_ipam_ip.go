@@ -122,6 +122,8 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	var address, addressCidr string
+	var ip scw.IPNet
+
 	IPID, ok := d.GetOk("ipam_ip_id")
 	if !ok {
 		resources, resourcesOk := d.GetOk("resource")
@@ -188,14 +190,8 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(fmt.Errorf("more than one ip found with given filter"))
 		}
 
-		ip := resp.IPs[0]
-		IPID = ip.ID
-
-		address = ip.Address.IP.String()
-		addressCidr, err = flattenIPNet(ip.Address)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		ip = resp.IPs[0].Address
+		IPID = resp.IPs[0].ID
 	} else {
 		res, err := api.GetIP(&ipam.GetIPRequest{
 			Region: region,
@@ -205,11 +201,13 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		address = res.Address.IP.String()
-		addressCidr, err = flattenIPNet(res.Address)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		ip = res.Address
+	}
+
+	address = ip.IP.String()
+	addressCidr, err = flattenIPNet(ip)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(IPID.(string))
