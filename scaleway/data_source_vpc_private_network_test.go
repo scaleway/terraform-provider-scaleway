@@ -93,12 +93,12 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 					}
 					
 					resource "scaleway_vpc_private_network" "pn01" {
-					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic01"
+					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic"
 					  vpc_id = scaleway_vpc.vpc01.id
 					}
 
 					resource "scaleway_vpc_private_network" "pn02" {
-					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic02"
+					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic"
 					  vpc_id = scaleway_vpc.vpc02.id
 					}
 				`,
@@ -114,12 +114,12 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 					}
 					
 					resource "scaleway_vpc_private_network" "pn01" {
-					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic01"
+					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic"
 					  vpc_id = scaleway_vpc.vpc01.id
 					}
 
 					resource "scaleway_vpc_private_network" "pn02" {
-					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic02"
+					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic"
 					  vpc_id = scaleway_vpc.vpc02.id
 					}
 
