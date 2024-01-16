@@ -29,6 +29,7 @@ resource scaleway_function main {
 }
 
 resource scaleway_function_cron main {
+    name = "test-cron"
     function_id = scaleway_function.main.id
     schedule = "0 0 * * *"
     args = jsonencode({test = "scw"})
@@ -50,6 +51,7 @@ The following arguments are required:
 - `function_id` - (Required) The function ID to link with your cron.
 - `args`   - (Required) The key-value mapping to define arguments that will be passed to your function’s event object
   during
+- `name` - (Optional) The name of the cron. If not provided, the name is generated.
 
 ## Attributes Reference
 
