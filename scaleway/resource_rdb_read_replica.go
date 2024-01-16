@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -99,7 +98,14 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 							Description:  "The IP network address within the private subnet",
 							Optional:     true,
 							Computed:     true,
+							AtLeastOneOf: []string{"private_network.0.enable_ipam"},
 							ValidateFunc: validation.IsCIDR,
+						},
+						"enable_ipam": {
+							Type:         schema.TypeBool,
+							Optional:     true,
+							AtLeastOneOf: []string{"private_network.0.service_ip"},
+							Description:  "Whether or not the private network endpoint should be configured with IPAM",
 						},
 						"zone": {
 							Type:        schema.TypeString,
@@ -152,7 +158,11 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 	if directAccess := expandReadReplicaEndpointsSpecDirectAccess(d.Get("direct_access")); directAccess != nil {
 		endpointSpecs = append(endpointSpecs, directAccess)
 	}
-	if pn, err := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network")); err != nil || pn != nil {
+	enableIpam := true
+	if _, ipSet := d.GetOk("private_network.0.service_ip"); ipSet {
+		enableIpam = false
+	}
+	if pn, err := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"), enableIpam); err != nil || pn != nil {
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -194,7 +204,11 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	directAccess, privateNetwork := flattenReadReplicaEndpoints(rr.Endpoints)
+	enableIpam, err := isIpamEndpoint(rr, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	directAccess, privateNetwork := flattenReadReplicaEndpoints(rr.Endpoints, enableIpam)
 	_ = d.Set("direct_access", directAccess)
 	_ = d.Set("private_network", privateNetwork)
 
@@ -214,7 +228,7 @@ func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	// verify resource is ready
-	_, err = waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+	rr, err := waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -226,35 +240,59 @@ func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.Resourc
 	newEndpoints := []*rdb.ReadReplicaEndpointSpec(nil)
 
 	if d.HasChange("direct_access") {
-		_, directAccessExists := d.GetOk("direct_access")
-		tflog.Debug(ctx, "direct_access", map[string]interface{}{
-			"exists": directAccessExists,
-		})
-		if !directAccessExists {
-			err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
-				Region:     region,
-				EndpointID: expandID(d.Get("direct_access.0.endpoint_id")),
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
+		// delete old endpoint
+		for _, e := range rr.Endpoints {
+			if e.DirectAccess != nil {
+				err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
+					Region:     region,
+					EndpointID: e.ID,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
-		} else {
-			newEndpoints = append(newEndpoints, expandReadReplicaEndpointsSpecDirectAccess(d.Get("direct_access")))
+		}
+		// retrieve state
+		rr, err = waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		// create a new one if defined
+		if directAccess, directAccessExists := d.GetOk("direct_access"); directAccessExists {
+			newEndpoints = append(newEndpoints, expandReadReplicaEndpointsSpecDirectAccess(directAccess))
 		}
 	}
 
 	if d.HasChange("private_network") {
-		_, privateNetworkExists := d.GetOk("private_network")
-		if !privateNetworkExists {
-			err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
-				Region:     region,
-				EndpointID: expandID(d.Get("private_network.0.endpoint_id")),
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
+		// delete old endpoint
+		for _, e := range rr.Endpoints {
+			if e.PrivateNetwork != nil {
+				err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
+					Region:     region,
+					EndpointID: e.ID,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
-		} else {
-			pnEndpoint, err := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"))
+		}
+		// retrieve state
+		_, err = waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		// create a new one if defined
+		if pn, pnExists := d.GetOk("private_network"); pnExists {
+			// "enable_ipam" is not readable from the API, so we just read the user's config
+			enableIpam := true
+			if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() {
+				pnRawConfig := rawConfig.AsValueMap()["private_network"].AsValueSlice()[0].AsValueMap()
+				if !pnRawConfig["enable_ipam"].IsNull() && pnRawConfig["enable_ipam"].False() ||
+					!pnRawConfig["service_ip"].IsNull() {
+					enableIpam = false
+				}
+			}
+			pnEndpoint, err := expandReadReplicaEndpointsSpecPrivateNetwork(pn, enableIpam)
 			if err != nil {
 				return diag.FromErr(err)
 			}

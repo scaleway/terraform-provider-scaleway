@@ -220,7 +220,7 @@ func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadRepli
 }
 
 // expandReadReplicaEndpointsSpecPrivateNetwork expand read-replica private network endpoints from schema to specs
-func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadReplicaEndpointSpec, error) {
+func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, enableIpam bool) (*rdb.ReadReplicaEndpointSpec, error) {
 	if data == nil || len(data.([]interface{})) == 0 {
 		return nil, nil
 	}
@@ -230,26 +230,28 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadRe
 	rawEndpoint := data.(map[string]interface{})
 
 	endpoint := new(rdb.ReadReplicaEndpointSpec)
-
-	serviceIP := rawEndpoint["service_ip"].(string)
 	endpoint.PrivateNetwork = &rdb.ReadReplicaEndpointSpecPrivateNetwork{
 		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
 	}
-	if len(serviceIP) > 0 {
-		ipNet, err := expandIPNet(serviceIP)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
-		}
-		endpoint.PrivateNetwork.ServiceIP = &ipNet
-	} else {
+
+	if enableIpam {
 		endpoint.PrivateNetwork.IpamConfig = &rdb.ReadReplicaEndpointSpecPrivateNetworkIpamConfig{}
+	} else {
+		serviceIP := rawEndpoint["service_ip"].(string)
+		if len(serviceIP) > 0 {
+			ipNet, err := expandIPNet(serviceIP)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
+			}
+			endpoint.PrivateNetwork.ServiceIP = &ipNet
+		}
 	}
 
 	return endpoint, nil
 }
 
 // flattenReadReplicaEndpoints flatten read-replica endpoints to directAccess and privateNetwork
-func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, privateNetwork interface{}) {
+func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (directAccess, privateNetwork interface{}) {
 	for _, endpoint := range endpoints {
 		rawEndpoint := map[string]interface{}{
 			"endpoint_id": endpoint.ID,
@@ -270,6 +272,7 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
+			rawEndpoint["enable_ipam"] = enableIpam
 			privateNetwork = rawEndpoint
 		}
 	}
@@ -322,15 +325,23 @@ func rdbPrivilegeUpgradeV1SchemaType() cty.Type {
 	})
 }
 
-func isIpamEndpoint(instance *rdb.Instance, meta interface{}) (bool, error) {
+func isIpamEndpoint(resource interface{}, meta interface{}) (bool, error) {
 	ipamAPI := ipam.NewAPI(meta.(*Meta).scwClient)
-
-	ips, err := ipamAPI.ListIPs(&ipam.ListIPsRequest{
-		Region:       instance.Region,
-		ResourceID:   &instance.ID,
+	request := &ipam.ListIPsRequest{
 		ResourceType: "rdb_instance",
 		IsIPv6:       scw.BoolPtr(false),
-	}, scw.WithAllPages())
+	}
+
+	switch res := resource.(type) {
+	case *rdb.Instance:
+		request.Region = res.Region
+		request.ResourceID = &res.ID
+	case *rdb.ReadReplica:
+		request.Region = res.Region
+		request.ResourceID = &res.InstanceID
+	}
+
+	ips, err := ipamAPI.ListIPs(request, scw.WithAllPages())
 	if err != nil {
 		return false, fmt.Errorf("could not list IPs: %w", err)
 	}
