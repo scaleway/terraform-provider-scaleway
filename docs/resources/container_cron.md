@@ -31,7 +31,7 @@ resource scaleway_container main {
 
 resource scaleway_container_cron main {
     container_id = scaleway_container.main.id
-    name = "my-container-name"
+    name = "my-cron-name"
     schedule = "5 4 1 * *" #cron at 04:05 on day-of-month 1
     args = jsonencode(
     {
@@ -55,17 +55,15 @@ resource scaleway_container_cron main {
 
 ## Argument Reference
 
-The following arguments are required:
+The following arguments are supported:
 
 - `schedule` - (Required) Cron format string, e.g. @hourly, as schedule time of its jobs to be created and
   executed.
 - `container_id` - (Required) The container ID to link with your cron.
 - `args`   - (Required) The key-value mapping to define arguments that will be passed to your container’s event object
   during
-
-The following arguments are supported:
-
-- `name` - (Optional) The name of the container
+- `name`   - (Optional) The name of the container cron. If not provided, the name is generated.
+  during
 
 ## Attributes Reference
 

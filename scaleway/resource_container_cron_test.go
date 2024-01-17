@@ -29,7 +29,7 @@ func TestAccScalewayContainerCron_Basic(t *testing.T) {
 					}
 
 					resource scaleway_container_cron main {
-						name = "hello"
+						name = "tf-tests-container-cron-basic"
 						container_id = scaleway_container.main.id
 						schedule = "5 4 * * *" #cron at 04:05
 						args = jsonencode({test = "scw"})
@@ -39,7 +39,7 @@ func TestAccScalewayContainerCron_Basic(t *testing.T) {
 					testAccCheckScalewayContainerCronExists(tt, "scaleway_container_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "schedule", "5 4 * * *"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "args", "{\"test\":\"scw\"}"),
-					resource.TestCheckResourceAttr("scaleway_container_cron.main", "name", "hello"),
+					resource.TestCheckResourceAttr("scaleway_container_cron.main", "name", "tf-tests-container-cron-basic"),
 				),
 			},
 			{
@@ -53,7 +53,7 @@ func TestAccScalewayContainerCron_Basic(t *testing.T) {
 					}
 
 					resource scaleway_container_cron main {
-						name = "salut"
+						name = "tf-tests-container-cron-basic-changed"
 						container_id = scaleway_container.main.id
 						schedule = "5 4 * * *" #cron at 04:05
 						args = jsonencode({test = "scw"})
@@ -63,7 +63,7 @@ func TestAccScalewayContainerCron_Basic(t *testing.T) {
 					testAccCheckScalewayContainerCronExists(tt, "scaleway_container_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "schedule", "5 4 * * *"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "args", "{\"test\":\"scw\"}"),
-					resource.TestCheckResourceAttr("scaleway_container_cron.main", "name", "salut"),
+					resource.TestCheckResourceAttr("scaleway_container_cron.main", "name", "tf-tests-container-cron-basic-changed"),
 				),
 			},
 		},
