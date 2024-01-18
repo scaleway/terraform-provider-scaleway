@@ -229,6 +229,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the record.
 
+- `fqdn` - The FQDN of the record.
+
 ~> **Important:** Domain records' IDs are of the form `{dns_zone}/{id}`, e.g. `subdomain.domain.tld/11111111-1111-1111-1111-111111111111`
 
 ## Multiple records
