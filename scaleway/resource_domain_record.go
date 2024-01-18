@@ -251,6 +251,11 @@ func resourceScalewayDomainRecord() *schema.Resource {
 					},
 				},
 			},
+			"fqdn": {
+				Type:        schema.TypeString,
+				Description: "The FQDN of the record",
+				Computed:    true,
+			},
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -318,7 +323,6 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(recordID)
 	tflog.Debug(ctx, fmt.Sprintf("record ID[%s]", recordID))
-
 	return resourceScalewayDomainRecordRead(ctx, d, meta)
 }
 
@@ -421,7 +425,11 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("weighted", flattenDomainWeighted(record.WeightedConfig))
 	_ = d.Set("view", flattenDomainView(record.ViewConfig))
 	_ = d.Set("project_id", projectID)
-
+	if record.Name == "" || record.Name == "@" {
+		_ = d.Set("fqdn", dnsZone)
+	} else {
+		_ = d.Set("fqdn", fmt.Sprintf("%s.%s", record.Name, dnsZone))
+	}
 	return nil
 }
 
