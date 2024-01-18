@@ -84,7 +84,7 @@ This should be your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`).
 Your secret key (previously known as _token_) must be set in `SCW_SECRET_KEY` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
 
 Terraform can also read standard [Scaleway configuration files](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md).
-By doing so, you can use the same configuration between different tools such as the [CLI](https://github.com/scaleway/scaleway-cli) or [Packer](https://www.packer.io/docs/builders/scaleway).
+By doing so, you can use the same configuration between different tools such as the [CLI](https://github.com/scaleway/scaleway-cli) or [Packer](https://developer.hashicorp.com/packer/integrations/scaleway/scaleway).
 
 #### Resolution order
 
