@@ -51,6 +51,12 @@ func resourceScalewayContainerCron() *schema.Resource {
 				Computed:    true,
 				Description: "Cron job status.",
 			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Cron job name",
+			},
 			"region": regionSchema(),
 		},
 	}
@@ -73,6 +79,7 @@ func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.Resource
 		ContainerID: containerID,
 		Region:      region,
 		Schedule:    schedule,
+		Name:        expandStringPtr(d.Get("name")),
 		Args:        &jsonObj,
 	}
 
@@ -117,6 +124,7 @@ func resourceScalewayContainerCronRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("schedule", cron.Schedule)
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
+	_ = d.Set("name", cron.Name)
 
 	return nil
 }
@@ -146,6 +154,11 @@ func resourceScalewayContainerCronUpdate(ctx context.Context, d *schema.Resource
 		}
 		shouldUpdate = true
 		req.Args = &jsonObj
+	}
+
+	if d.HasChange("name") {
+		req.Name = scw.StringPtr(d.Get("name").(string))
+		shouldUpdate = true
 	}
 
 	if shouldUpdate {
