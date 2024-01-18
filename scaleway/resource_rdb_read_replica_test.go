@@ -128,7 +128,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 					}
 
 					resource "scaleway_rdb_read_replica" "replica" {
-  						instance_id = scaleway_rdb_instance.instance.id
+						instance_id = scaleway_rdb_instance.instance.id
 						direct_access {}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
@@ -168,6 +168,149 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.endpoint_id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.#", "0"),
+				),
+			},
+			// Keep PN but change static config -> ipam
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance instance {
+						name = "test-rdb-rr-update"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {}
+
+					resource "scaleway_rdb_read_replica" "replica" {
+  						instance_id = scaleway_rdb_instance.instance.id
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pn.id
+							enable_ipam = true
+						}
+					}`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "private_network.0.private_network_id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.0.enable_ipam", "true"),
+				),
+			},
+			// Change PN but keep ipam config
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance instance {
+						name = "test-rdb-rr-update"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+					}
+			
+					resource "scaleway_vpc_private_network" "pn" {}
+					resource "scaleway_vpc_private_network" "pn2" {}
+			
+					resource "scaleway_rdb_read_replica" "replica" {
+						instance_id = scaleway_rdb_instance.instance.id
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pn2.id
+							enable_ipam = true
+						}
+					}`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "private_network.0.private_network_id", "scaleway_vpc_private_network.pn2", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.0.enable_ipam", "true"),
+				),
+			},
+			// Keep PN but change ipam config -> static
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance instance {
+						name = "test-rdb-rr-update"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+					}
+			
+					resource "scaleway_vpc_private_network" "pn" {}
+					resource "scaleway_vpc_private_network" "pn2" {}
+			
+					resource "scaleway_rdb_read_replica" "replica" {
+						instance_id = scaleway_rdb_instance.instance.id
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pn2.id
+							service_ip = "10.12.1.0/20"
+						}
+					}`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "private_network.0.private_network_id", "scaleway_vpc_private_network.pn2", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.0.enable_ipam", "false"),
+				),
+			},
+			// Change PN but keep static config
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance instance {
+						name = "test-rdb-rr-update"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+					}
+			
+					resource "scaleway_vpc_private_network" "pn" {}
+					resource "scaleway_vpc_private_network" "pn2" {}
+			
+					resource "scaleway_rdb_read_replica" "replica" {
+						instance_id = scaleway_rdb_instance.instance.id
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pn.id
+							service_ip = "10.12.1.0/20"
+						}
+					}`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "private_network.0.private_network_id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.0.enable_ipam", "false"),
 				),
 			},
 		},
@@ -262,6 +405,7 @@ func TestAccScalewayRdbReadReplica_DifferentZone(t *testing.T) {
 						region = scaleway_rdb_instance.different_zone.region
 						private_network {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
+							enable_ipam = true
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
@@ -295,6 +439,7 @@ func TestAccScalewayRdbReadReplica_DifferentZone(t *testing.T) {
 						same_zone = true
 						private_network {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
+							enable_ipam = true
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
@@ -328,6 +473,7 @@ func TestAccScalewayRdbReadReplica_DifferentZone(t *testing.T) {
 						same_zone = false
 						private_network {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
+							enable_ipam = true
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
