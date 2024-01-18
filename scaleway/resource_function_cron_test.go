@@ -69,6 +69,7 @@ func TestAccScalewayFunctionCron_Basic(t *testing.T) {
 					}
 
 					resource scaleway_function_cron main {
+						name = "tf-tests-cron-basic"
 						function_id = scaleway_function.main.id
 						schedule = "0 0 * * *"
 						args = jsonencode({})
@@ -77,6 +78,73 @@ func TestAccScalewayFunctionCron_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "0 0 * * *"),
+					resource.TestCheckResourceAttr("scaleway_function_cron.main", "name", "tf-tests-cron-basic"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayFunctionCron_NameUpdate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionCronDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_function_namespace main {
+						name = "tf-tests-function-cron-name-update"
+					}
+
+					resource scaleway_function main {
+						name = "tf-tests-function-cron-name-update"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node14"
+						privacy = "private"
+						handler = "handler.handle"
+					}
+
+					resource scaleway_function_cron main {
+						name = "tf-tests-function-cron-name-update"
+						function_id = scaleway_function.main.id
+						schedule = "0 0 * * *"
+						args = jsonencode({})
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.main"),
+					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "0 0 * * *"),
+					resource.TestCheckResourceAttr("scaleway_function_cron.main", "name", "tf-tests-function-cron-name-update"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {
+						name = "tf-tests-function-cron-name-update"
+					}
+
+					resource scaleway_function main {
+						name = "tf-tests-function-cron-name-update"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node14"
+						privacy = "private"
+						handler = "handler.handle"
+					}
+
+					resource scaleway_function_cron main {
+						name = "name-changed"
+						function_id = scaleway_function.main.id
+						schedule = "0 0 * * *"
+						args = jsonencode({test = "scw"})
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.main"),
+					resource.TestCheckResourceAttr("scaleway_function_cron.main", "name", "name-changed"),
 				),
 			},
 		},
@@ -107,6 +175,7 @@ func TestAccScalewayFunctionCron_WithArgs(t *testing.T) {
 					}
 
 					resource scaleway_function_cron main {
+						name = "tf-tests-cron-with-args"
 						function_id = scaleway_function.main.id
 						schedule = "0 0 * * *"
 						args = jsonencode({test = "scw"})
@@ -116,6 +185,7 @@ func TestAccScalewayFunctionCron_WithArgs(t *testing.T) {
 					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "0 0 * * *"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "args", "{\"test\":\"scw\"}"),
+					resource.TestCheckResourceAttr("scaleway_function_cron.main", "name", "tf-tests-cron-with-args"),
 				),
 			},
 		},
