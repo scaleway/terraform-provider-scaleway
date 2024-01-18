@@ -64,6 +64,9 @@ func TestAccScalewayIotHub_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "device_count", "0"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "connected_device_count", "0"),
+					// If the plan is shared, there is no CQTT CA, so it should be empty
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca_url", ""),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca", ""),
 				),
 			},
 			{
@@ -81,6 +84,8 @@ func TestAccScalewayIotHub_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "connected_device_count", "0"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "enabled", "false"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "product_plan", "plan_shared"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca_url", ""),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca", ""),
 				),
 			},
 		},
@@ -108,6 +113,25 @@ func TestAccScalewayIotHub_Dedicated(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "device_count", "0"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "connected_device_count", "0"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca_url", "https://iot.s3.nl-ams.scw.cloud/certificates/fr-par/iot-hub-ca.pem"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "mqtt_ca"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iot_hub" "minimal" {
+							name = "minimal"
+							product_plan = "plan_dedicated"
+						}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "product_plan", "plan_dedicated"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "status", iot.HubStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "device_count", "0"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "connected_device_count", "0"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca_url", "https://iot.s3.nl-ams.scw.cloud/certificates/fr-par/iot-hub-ca.pem"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "mqtt_ca"),
 				),
 			},
 		},
