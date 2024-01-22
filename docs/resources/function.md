@@ -95,6 +95,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Functions' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
+- `namespace_id` - The namespace ID the function is associated with.
 - `domain_name` - The native domain name of the function
 - `organization_id` - The organization ID the function is associated with.
 - `cpu_limit` - The CPU limit in mCPU for your function. More infos on resources [here](https://developers.scaleway.com/en/products/functions/api/#functions)

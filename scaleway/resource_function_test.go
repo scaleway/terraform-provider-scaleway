@@ -72,6 +72,8 @@ func TestAccScalewayFunction_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node14"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "privacy", "private"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "handler", "handler.handle"),
+					resource.TestCheckResourceAttrSet("scaleway_function.main", "namespace_id"),
+					resource.TestCheckResourceAttrSet("scaleway_function.main", "region"),
 				),
 			},
 		},

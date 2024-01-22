@@ -52,6 +52,8 @@ The following arguments are required:
 - `args`   - (Required) The key-value mapping to define arguments that will be passed to your function’s event object
   during
 - `name` - (Optional) The name of the cron. If not provided, the name is generated.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
+  in where the job was created.
 
 ## Attributes Reference
 
@@ -61,8 +63,6 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Function CRONs' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
-  in where the job was created.
 - `status` - The cron status.
 
 ## Import

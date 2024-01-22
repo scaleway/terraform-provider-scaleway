@@ -32,10 +32,11 @@ func resourceScalewayFunction() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"namespace_id": {
-				Type:        schema.TypeString,
-				Description: "The namespace ID associated with this function",
-				Required:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "The namespace ID associated with this function",
+				Required:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"name": {
 				Type:         schema.TypeString,
@@ -293,6 +294,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("timeout", f.Timeout.Seconds)
 	_ = d.Set("domain_name", f.DomainName)
 	_ = d.Set("http_option", f.HTTPOption)
+	_ = d.Set("namespace_id", f.NamespaceID)
 
 	return diags
 }

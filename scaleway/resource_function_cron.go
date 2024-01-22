@@ -127,7 +127,7 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
-
+	_ = d.Set("region", region.String())
 	return nil
 }
 
