@@ -109,11 +109,26 @@ resource "scaleway_k8s_pool" "john" {
   size       = 1
 }
 
+########################################################
+# Authentication method for an IAM user
+data "scaleway_iam_user" "george" {
+  email = "user@scaleway.com"
+}
+resource "scaleway_iam_api_key" "ada" {
+  user_id = data.scaleway_iam_user.george.id
+}
+# Authentication method for an IAM application
+resource "scaleway_iam_application" "albert" {}
+resource "scaleway_iam_api_key" "ada" {
+  application_id = data.scaleway_iam_user.albert.id
+}
+########################################################
+
 resource "null_resource" "kubeconfig" {
   depends_on = [scaleway_k8s_pool.john] # at least one pool here
   triggers = {
     host                   = scaleway_k8s_cluster.joy.kubeconfig[0].host
-    token                  = scaleway_k8s_cluster.joy.kubeconfig[0].token
+    token                  = scaleway_iam_api_key.ada.secret_key
     cluster_ca_certificate = scaleway_k8s_cluster.joy.kubeconfig[0].cluster_ca_certificate
   }
 }
@@ -150,11 +165,26 @@ resource "scaleway_k8s_pool" "john" {
   size       = 1
 }
 
+########################################################
+# Authentication method for an IAM user
+data "scaleway_iam_user" "george" {
+  email = "user@scaleway.com"
+}
+resource "scaleway_iam_api_key" "ada" {
+  user_id = data.scaleway_iam_user.george.id
+}
+# Authentication method for an IAM application
+resource "scaleway_iam_application" "albert" {}
+resource "scaleway_iam_api_key" "ada" {
+  application_id = data.scaleway_iam_user.albert.id
+}
+########################################################
+
 resource "null_resource" "kubeconfig" {
   depends_on = [scaleway_k8s_pool.john] # at least one pool here
   triggers = {
     host                   = scaleway_k8s_cluster.joy.kubeconfig[0].host
-    token                  = scaleway_k8s_cluster.joy.kubeconfig[0].token
+    token                  = scaleway_iam_api_key.ada.secret_key
     cluster_ca_certificate = scaleway_k8s_cluster.joy.kubeconfig[0].cluster_ca_certificate
   }
 }
@@ -350,6 +380,7 @@ resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.18.0"
   cni     = "cilium"
+  delete_additional_resources = true
 
   default_pool {
     node_type = "DEV1-M"
@@ -365,6 +396,7 @@ resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.18.0"
   cni     = "cilium"
+  delete_additional_resources = true
 }
 
 resource "scaleway_k8s_pool" "default" {
