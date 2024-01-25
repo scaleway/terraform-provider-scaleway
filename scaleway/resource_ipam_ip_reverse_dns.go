@@ -123,7 +123,7 @@ func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("hostname") || d.HasChange("address") {
+	if d.HasChanges("hostname", "address") {
 		reverse := &ipam.Reverse{
 			Hostname: d.Get("hostname").(string),
 			Address:  scw.IPPtr(net.ParseIP(d.Get("address").(string))),
@@ -150,7 +150,6 @@ func resourceScalewayIPAMIPReverseDNSDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	// Unset the reverses dns on the IP
 	updateReverseReq := &ipam.UpdateIPRequest{
 		Region:   region,
 		IPID:     ID,
