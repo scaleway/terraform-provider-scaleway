@@ -154,7 +154,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 			MacAddress:       expandStringPtr(d.Get("mac_address")),
 			Tags:             expandStrings(d.Get("tags")),
 			OrganizationID:   expandStringPtr(d.Get("organization_id")),
-			PrivateNetworkID: expandStringPtr(d.Get("private_network_id")),
+			PrivateNetworkID: expandStringPtr(expandID(d.Get("private_network_id"))),
 		}
 
 		ipType, ipTypeExist := d.GetOk("type")
