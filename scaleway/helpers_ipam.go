@@ -3,11 +3,16 @@ package scaleway
 import (
 	"net"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
+)
+
+const (
+	defaultIPAMIPReverseDNSTimeout = 10 * time.Minute
 )
 
 // ipamAPIWithRegion returns a new ipam API and the region
@@ -91,6 +96,25 @@ func flattenIPResource(resource *ipam.Resource) interface{} {
 			"name":        flattenStringPtr(resource.Name),
 		},
 	}
+}
+
+func flattenIPReverse(reverse *ipam.Reverse) interface{} {
+	if reverse == nil {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"hostname": reverse.Hostname,
+		"address":  flattenIPPtr(reverse.Address),
+	}
+}
+
+func flattenIPReverses(reverses []*ipam.Reverse) interface{} {
+	rawReverses := make([]interface{}, 0, len(reverses))
+	for _, reverse := range reverses {
+		rawReverses = append(rawReverses, flattenIPReverse(reverse))
+	}
+	return rawReverses
 }
 
 func checkSubnetIDInFlattenedSubnets(subnetID string, flattenedSubnets interface{}) bool {
