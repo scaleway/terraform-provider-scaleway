@@ -98,6 +98,9 @@ In addition to all arguments above, the following attributes are exported:
     - `type` - The type of resource the IP is attached to.
     - `name` - The name of the resource the IP is attached to.
     - `mac_address` - The MAC Address of the resource the IP is attached to.
+- `reverses` - The reverses DNS for this IP.
+    - `hostname` The reverse domain name.
+    - `address` The IP corresponding to the hostname.
 - `created_at` - Date and time of IP's creation (RFC 3339 format).
 - `updated_at` - Date and time of IP's last update (RFC 3339 format).
 - `zone` - The zone of the IP.

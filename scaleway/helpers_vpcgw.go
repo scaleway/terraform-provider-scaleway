@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -93,22 +92,6 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 	return dhcpEntries, err
 }
 
-func isGatewayReverseDNSResolveError(err error) bool {
-	invalidArgError := &scw.InvalidArgumentsError{}
-
-	if !errors.As(err, &invalidArgError) {
-		return false
-	}
-
-	for _, fields := range invalidArgError.Details {
-		if fields.ArgumentName == "reverse" {
-			return true
-		}
-	}
-
-	return false
-}
-
 func retryUpdateGatewayReverseDNS(ctx context.Context, api *vpcgw.API, req *vpcgw.UpdateIPRequest, timeout time.Duration) error {
 	timeoutChannel := time.After(timeout)
 
@@ -116,7 +99,7 @@ func retryUpdateGatewayReverseDNS(ctx context.Context, api *vpcgw.API, req *vpcg
 		select {
 		case <-time.After(defaultVPCGatewayRetry):
 			_, err := api.UpdateIP(req, scw.WithContext(ctx))
-			if err != nil && isGatewayReverseDNSResolveError(err) {
+			if err != nil && isIPReverseDNSResolveError(err) {
 				continue
 			}
 			return err

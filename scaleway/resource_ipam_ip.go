@@ -107,6 +107,25 @@ func resourceScalewayIPAMIP() *schema.Resource {
 					},
 				},
 			},
+			"reverses": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reverses DNS for this IP",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"hostname": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The reverse domain name",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP corresponding to the hostname",
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -229,6 +248,7 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
 	}
+	_ = d.Set("reverses", flattenIPReverses(res.Reverses))
 
 	return nil
 }
