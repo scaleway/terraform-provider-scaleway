@@ -39,10 +39,12 @@ func testAccCheckScalewayConsumptionsConditionalChecks(resourceName string) reso
 		if ok && attr != "0" {
 			checks := []resource.TestCheckFunc{
 				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.value"),
-				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.description"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.product_name"),
 				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.project_id"),
-				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.category"),
-				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.operation_path"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.category_name"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.sku"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.unit"),
+				resource.TestCheckResourceAttrSet(resourceName, "consumptions.0.billed_quantity"),
 				resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
 			}
 

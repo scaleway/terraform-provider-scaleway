@@ -1,7 +1,7 @@
 package scaleway
 
 import (
-	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2alpha1"
+	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2beta1"
 )
 
 // billingAPI returns a new billing API.

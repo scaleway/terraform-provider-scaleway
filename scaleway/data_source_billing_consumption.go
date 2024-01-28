@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2alpha1"
+	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -16,30 +16,46 @@ func dataSourceScalewayBillingConsumptions() *schema.Resource {
 		ReadContext: dataSourceScalewayBillingConsumptionsRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 			"consumptions": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"value": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Monetary value of the consumption",
 						},
-						"description": {
-							Computed: true,
-							Type:     schema.TypeString,
+						"product_name": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The product name",
+						},
+						"category_name": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Name of consumption category",
+						},
+						"sku": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Unique identifier of the product",
+						},
+						"unit": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Unit of consumed quantity",
+						},
+						"billed_quantity": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Consumed quantity",
 						},
 						"project_id": {
-							Computed: true,
-							Type:     schema.TypeString,
-						},
-						"category": {
-							Computed: true,
-							Type:     schema.TypeString,
-						},
-						"operation_path": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Project ID of the consumption",
 						},
 					},
 				},
@@ -55,8 +71,11 @@ func dataSourceScalewayBillingConsumptions() *schema.Resource {
 func dataSourceScalewayBillingConsumptionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := billingAPI(meta)
 
-	res, err := api.GetConsumption(&billing.GetConsumptionRequest{
-		OrganizationID: d.Get("organization_id").(string),
+	res, err := api.ListConsumptions(&billing.ListConsumptionsRequest{
+		CategoryName:   expandStringPtr(d.Get("category_name")),
+		BillingPeriod:  expandStringPtr(d.Get("billing_period")),
+		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		ProjectID:      expandStringPtr(d.Get("project_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -66,10 +85,12 @@ func dataSourceScalewayBillingConsumptionsRead(ctx context.Context, d *schema.Re
 	for _, consumption := range res.Consumptions {
 		rawConsumption := make(map[string]interface{})
 		rawConsumption["value"] = consumption.Value.String()
-		rawConsumption["description"] = consumption.Description
+		rawConsumption["product_name"] = consumption.ProductName
 		rawConsumption["project_id"] = consumption.ProjectID
-		rawConsumption["category"] = consumption.Category
-		rawConsumption["operation_path"] = consumption.OperationPath
+		rawConsumption["category_name"] = consumption.CategoryName
+		rawConsumption["sku"] = consumption.Sku
+		rawConsumption["unit"] = consumption.Unit
+		rawConsumption["billed_quantity"] = consumption.BilledQuantity
 
 		consumptions = append(consumptions, rawConsumption)
 	}
