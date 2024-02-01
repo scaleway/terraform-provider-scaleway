@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -105,7 +104,7 @@ func TestAccScalewayMNQSQSQueue_DefaultProject(t *testing.T) {
 	project, err := accountAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
 		Name: "tf_tests_mnq_sqs_queue_default_project",
 	})
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	projectID = project.ID
 

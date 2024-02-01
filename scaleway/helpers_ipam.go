@@ -1,3 +1,4 @@
+//nolint:dupword
 package scaleway
 
 import (

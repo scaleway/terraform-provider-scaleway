@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccScalewayRdbDatabase_Basic(t *testing.T) {
@@ -144,18 +145,16 @@ func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database stri
 }
 
 func TestResourceScalewayRdbDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
-	assert := assert.New(t)
 	region, _, _, err := resourceScalewayRdbDatabaseParseID("notandid")
-	assert.Error(err)
-	assert.Empty(region)
-	assert.Equal("can't parse user resource id: notandid", err.Error())
+	require.Error(t, err)
+	assert.Empty(t, region)
+	assert.Equal(t, "can't parse user resource id: notandid", err.Error())
 }
 
 func TestResourceScalewayRdbDatabaseParseID(t *testing.T) {
-	assert := assert.New(t)
 	region, instanceID, dbname, err := resourceScalewayRdbDatabaseParseID("region/instanceid/dbname")
-	assert.NoError(err)
-	assert.Equal(scw.Region("region"), region)
-	assert.Equal("instanceid", instanceID)
-	assert.Equal("dbname", dbname)
+	require.NoError(t, err)
+	assert.Equal(t, scw.Region("region"), region)
+	assert.Equal(t, "instanceid", instanceID)
+	assert.Equal(t, "dbname", dbname)
 }

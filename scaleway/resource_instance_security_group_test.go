@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -23,11 +23,11 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	ipnetZero, err := expandIPNet("0.0.0.0/0")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ipnetOne, err := expandIPNet("1.1.1.1")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ipnetTest, err := expandIPNet("8.8.8.8")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -175,9 +175,9 @@ func TestAccScalewayInstanceSecurityGroup_ICMP(t *testing.T) {
 	defer tt.Cleanup()
 
 	ipnetZero, err := expandIPNet("0.0.0.0/0")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ipnetTest, err := expandIPNet("8.8.8.8")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -288,7 +288,7 @@ func TestAccScalewayInstanceSecurityGroup_WithNoPort(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	ipnetZero, err := expandIPNet("0.0.0.0/0")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -323,7 +323,7 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	ipnetZero, err := expandIPNet("0.0.0.0/0")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

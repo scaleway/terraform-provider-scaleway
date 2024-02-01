@@ -30,7 +30,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 		Type:        schema.TypeBool,
 		Optional:    true,
 		Default:     false,
-		Description: "Wait the the mac address in dhcp entries",
+		Description: "Wait the MAC address in dhcp entries",
 	}
 
 	// Set 'Optional' schema elements

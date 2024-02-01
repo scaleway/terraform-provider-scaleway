@@ -11,7 +11,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/dnaeon/go-vcr/cassette"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const testDirectory = "testdata/"
@@ -33,12 +33,12 @@ func getTestFiles() (map[string]struct{}, error) {
 
 func TestAccScalewayCassettes_Validator(t *testing.T) {
 	files, err := getTestFiles()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for name := range files {
 		c, err := cassette.Load(fmt.Sprintf("%s%s", testDirectory, name))
-		assert.NoError(t, err)
-		assert.NoError(t, checkErrorCode(c))
+		require.NoError(t, err)
+		require.NoError(t, checkErrorCode(c))
 	}
 }
 
