@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -209,7 +210,7 @@ func testAccCheckRdbPrivilegeExists(tt *TestTools, instance string, database str
 		}
 
 		if len(databases.Privileges) != 1 {
-			return fmt.Errorf("no privilege found")
+			return errors.New("no privilege found")
 		}
 
 		return nil

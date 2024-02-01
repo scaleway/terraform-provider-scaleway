@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"testing"
@@ -493,7 +494,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 			}
 
 			if errorMessage.Error != "" {
-				return fmt.Errorf(errorMessage.Error)
+				return errors.New(errorMessage.Error)
 			}
 		}
 
@@ -524,7 +525,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 			}
 
 			if errorMessage.Error != "" {
-				return fmt.Errorf(errorMessage.Error)
+				return errors.New(errorMessage.Error)
 			}
 		}
 

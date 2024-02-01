@@ -2,8 +2,8 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -82,7 +82,7 @@ func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.Res
 	}
 
 	_ = d.Set("password", grafanaUser.Password)
-	d.SetId(cockpitIDWithProjectID(projectID, fmt.Sprintf("%d", grafanaUser.ID)))
+	d.SetId(cockpitIDWithProjectID(projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)))
 	return resourceScalewayCockpitGrafanaUserRead(ctx, d, meta)
 }
 

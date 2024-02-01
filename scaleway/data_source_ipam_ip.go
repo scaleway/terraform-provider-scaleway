@@ -2,12 +2,12 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -184,10 +184,10 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 		if len(resp.IPs) == 0 {
-			return diag.FromErr(fmt.Errorf("no ip found with given filters"))
+			return diag.FromErr(errors.New("no ip found with given filters"))
 		}
 		if len(resp.IPs) > 1 {
-			return diag.FromErr(fmt.Errorf("more than one ip found with given filter"))
+			return diag.FromErr(errors.New("more than one ip found with given filter"))
 		}
 
 		ip = resp.IPs[0].Address

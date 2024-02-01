@@ -3,6 +3,7 @@ package scaleway
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -770,7 +771,7 @@ func testAccCheckScalewayRedisCertificateIsValid(name string) resource.TestCheck
 		}
 		pemCert, hasCert := rs.Primary.Attributes["certificate"]
 		if !hasCert {
-			return fmt.Errorf("could not find certificate in schema")
+			return errors.New("could not find certificate in schema")
 		}
 		cert, _ := pem.Decode([]byte(pemCert))
 		_, err := x509.ParseCertificate(cert.Bytes)

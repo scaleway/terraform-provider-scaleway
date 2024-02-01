@@ -198,7 +198,7 @@ func functionDeploy(ctx context.Context, functionAPI *function.API, region scw.R
 		FunctionID: functionID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return fmt.Errorf("failed to deploy function")
+		return errors.New("failed to deploy function")
 	}
 	return nil
 }

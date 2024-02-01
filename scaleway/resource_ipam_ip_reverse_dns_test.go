@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -11,7 +12,7 @@ import (
 func TestAccScalewayIPAMIPReverseDNS_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testDNSZone := fmt.Sprintf("tf-reverse-ipam.%s", testDomain)
+	testDNSZone := "tf-reverse-ipam." + testDomain
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -99,6 +100,6 @@ func testCheckResourceAttrExpectedIPAddress(resourceName string) resource.TestCh
 			expectedIPAddress := output.Value.(string)
 			return resource.TestCheckResourceAttr(resourceName, "address", expectedIPAddress)(s)
 		}
-		return fmt.Errorf("calculated_ip_address output not set or is nil")
+		return errors.New("calculated_ip_address output not set or is nil")
 	}
 }

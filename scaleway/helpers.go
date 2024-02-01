@@ -211,7 +211,7 @@ type terraformResourceData interface {
 }
 
 // ErrZoneNotFound is returned when no zone can be detected
-var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions and zones. For more information, refer to https://www.terraform.io/docs/providers/scaleway/guides/regions_and_zones.html")
+var ErrZoneNotFound = errors.New("could not detect zone. Scaleway uses regions and zones. For more information, refer to https://www.terraform.io/docs/providers/scaleway/guides/regions_and_zones.html")
 
 // extractZone will try to guess the zone from the following:
 //   - zone field of the resource data
@@ -231,7 +231,7 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 }
 
 // ErrRegionNotFound is returned when no region can be detected
-var ErrRegionNotFound = fmt.Errorf("could not detect region")
+var ErrRegionNotFound = errors.New("could not detect region")
 
 // extractRegion will try to guess the region from the following:
 //   - region field of the resource data
@@ -273,7 +273,7 @@ func extractRegionWithDefault(d terraformResourceData, meta *Meta, defaultRegion
 }
 
 // ErrProjectIDNotFound is returned when no region can be detected
-var ErrProjectIDNotFound = fmt.Errorf("could not detect project id")
+var ErrProjectIDNotFound = errors.New("could not detect project id")
 
 // extractProjectID will try to guess the project id from the following:
 //   - project_id field of the resource data
@@ -980,7 +980,7 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 		locality := getLocality(diff, i.(*Meta))
 
 		if locality == "" {
-			return fmt.Errorf("missing locality zone or region to check IDs")
+			return errors.New("missing locality zone or region to check IDs")
 		}
 
 		for _, key := range keys {
@@ -1128,7 +1128,7 @@ func testAccCheckScalewayResourceIDPersisted(resourceName string, resourceID *st
 			return fmt.Errorf("resource was not found: %s", resourceName)
 		}
 		if *resourceID != "" && *resourceID != rs.Primary.ID {
-			return fmt.Errorf("resource ID changed when it should have persisted")
+			return errors.New("resource ID changed when it should have persisted")
 		}
 		*resourceID = rs.Primary.ID
 		return nil
@@ -1140,14 +1140,14 @@ func testAccCheckScalewayResourceIDPersisted(resourceName string, resourceID *st
 func testAccCheckScalewayResourceIDChanged(resourceName string, resourceID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if resourceID == nil || *resourceID == "" {
-			return fmt.Errorf("resourceID was not set")
+			return errors.New("resourceID was not set")
 		}
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", resourceName)
 		}
 		if *resourceID == rs.Primary.ID {
-			return fmt.Errorf("resource ID persisted when it should have changed")
+			return errors.New("resource ID persisted when it should have changed")
 		}
 		*resourceID = rs.Primary.ID
 		return nil

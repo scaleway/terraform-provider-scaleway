@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -35,14 +36,14 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "Accept the Scaleway Terms of Service",
-				ValidateFunc: func(i interface{}, k string) (warnings []string, errors []error) {
+				ValidateFunc: func(i interface{}, k string) (warnings []string, errs []error) {
 					v := i.(bool)
 					if !v {
-						errors = append(errors, fmt.Errorf("you must accept the Scaleway Terms of Service to use this service"))
-						return warnings, errors
+						errs = append(errs, errors.New("you must accept the Scaleway Terms of Service to use this service"))
+						return warnings, errs
 					}
 
-					return warnings, errors
+					return warnings, errs
 				},
 			},
 			"status": {

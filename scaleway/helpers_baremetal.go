@@ -3,6 +3,7 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -370,7 +371,7 @@ func customDiffBaremetalPrivateNetworkOption() func(ctx context.Context, diff *s
 		}
 
 		if okPrivateNetwork && !isPrivateNetworkOption {
-			return fmt.Errorf("private network option needs to be enabled in order to attach a private network")
+			return errors.New("private network option needs to be enabled in order to attach a private network")
 		}
 
 		return nil

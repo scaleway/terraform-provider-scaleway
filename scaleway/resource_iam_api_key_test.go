@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -25,7 +26,7 @@ func testSweepIamAPIKey(_ string) error {
 
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {
-			return fmt.Errorf("missing organizationID")
+			return errors.New("missing organizationID")
 		}
 
 		listAPIKeys, err := api.ListAPIKeys(&iam.ListAPIKeysRequest{

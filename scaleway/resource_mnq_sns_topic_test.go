@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -116,11 +117,11 @@ func TestAccScalewayMNQSNSTopic_Basic(t *testing.T) {
 					func(state *terraform.State) error {
 						topic, exists := state.RootModule().Resources["scaleway_mnq_sns_topic.main"]
 						if !exists {
-							return fmt.Errorf("failed to find resource")
+							return errors.New("failed to find resource")
 						}
 						name, exists := topic.Primary.Attributes["name"]
 						if !exists {
-							return fmt.Errorf("failed to find atttribute")
+							return errors.New("failed to find atttribute")
 						}
 
 						if !strings.HasPrefix(name, "test-mnq-sns-topic-basic") {

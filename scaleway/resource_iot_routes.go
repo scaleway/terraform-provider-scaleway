@@ -2,12 +2,12 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -211,32 +211,32 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if _, ok := d.GetOk(iot.RouteRouteTypeS3.String()); ok {
-		prefixKey := fmt.Sprintf("%s.0", iot.RouteRouteTypeS3.String())
+		prefixKey := iot.RouteRouteTypeS3.String() + ".0"
 		req.S3Config = &iot.CreateRouteRequestS3Config{
-			BucketRegion: d.Get(fmt.Sprintf("%s.bucket_region", prefixKey)).(string),
-			BucketName:   d.Get(fmt.Sprintf("%s.bucket_name", prefixKey)).(string),
-			ObjectPrefix: d.Get(fmt.Sprintf("%s.object_prefix", prefixKey)).(string),
-			Strategy:     iot.RouteS3ConfigS3Strategy(d.Get(fmt.Sprintf("%s.strategy", prefixKey)).(string)),
+			BucketRegion: d.Get(prefixKey + ".bucket_region").(string),
+			BucketName:   d.Get(prefixKey + ".bucket_name").(string),
+			ObjectPrefix: d.Get(prefixKey + ".object_prefix").(string),
+			Strategy:     iot.RouteS3ConfigS3Strategy(d.Get(prefixKey + ".strategy").(string)),
 		}
 	} else if _, ok := d.GetOk(iot.RouteRouteTypeRest.String()); ok {
-		prefixKey := fmt.Sprintf("%s.0", iot.RouteRouteTypeRest.String())
+		prefixKey := iot.RouteRouteTypeRest.String() + ".0"
 		req.RestConfig = &iot.CreateRouteRequestRestConfig{
-			Verb:    iot.RouteRestConfigHTTPVerb(d.Get(fmt.Sprintf("%s.verb", prefixKey)).(string)),
-			URI:     d.Get(fmt.Sprintf("%s.uri", prefixKey)).(string),
-			Headers: extractRestHeaders(d, fmt.Sprintf("%s.headers", prefixKey)),
+			Verb:    iot.RouteRestConfigHTTPVerb(d.Get(prefixKey + ".verb").(string)),
+			URI:     d.Get(prefixKey + ".uri").(string),
+			Headers: extractRestHeaders(d, prefixKey+".headers"),
 		}
 	} else if _, ok := d.GetOk(iot.RouteRouteTypeDatabase.String()); ok {
-		prefixKey := fmt.Sprintf("%s.0", iot.RouteRouteTypeDatabase.String())
+		prefixKey := iot.RouteRouteTypeDatabase.String() + ".0"
 		req.DbConfig = &iot.CreateRouteRequestDatabaseConfig{
-			Host:     d.Get(fmt.Sprintf("%s.host", prefixKey)).(string),
-			Port:     uint32(d.Get(fmt.Sprintf("%s.port", prefixKey)).(int)),
-			Dbname:   d.Get(fmt.Sprintf("%s.dbname", prefixKey)).(string),
-			Username: d.Get(fmt.Sprintf("%s.username", prefixKey)).(string),
-			Password: d.Get(fmt.Sprintf("%s.password", prefixKey)).(string),
-			Query:    d.Get(fmt.Sprintf("%s.query", prefixKey)).(string),
+			Host:     d.Get(prefixKey + ".host").(string),
+			Port:     uint32(d.Get(prefixKey + ".port").(int)),
+			Dbname:   d.Get(prefixKey + ".dbname").(string),
+			Username: d.Get(prefixKey + ".username").(string),
+			Password: d.Get(prefixKey + ".password").(string),
+			Query:    d.Get(prefixKey + ".query").(string),
 		}
 	} else {
-		return diag.FromErr(fmt.Errorf("no route type have been chosen"))
+		return diag.FromErr(errors.New("no route type have been chosen"))
 	}
 
 	res, err := iotAPI.CreateRoute(req, scw.WithContext(ctx))
@@ -287,7 +287,7 @@ func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m
 			"dbname":   response.DbConfig.Dbname,
 			"username": response.DbConfig.Username,
 			// Password is never returned. To avoid password getting erased, take it back.
-			"password": d.Get(fmt.Sprintf("%s.0.password", iot.RouteRouteTypeDatabase.String())),
+			"password": d.Get(iot.RouteRouteTypeDatabase.String() + ".0.password"),
 		}}
 		_ = d.Set("database", conf)
 	case iot.RouteRouteTypeRest:

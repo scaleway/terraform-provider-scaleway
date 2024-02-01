@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
@@ -328,7 +329,7 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *TestTools, r
 	return func(s *terraform.State) error {
 		rs := s.RootModule().Resources[resourceName]
 		if rs == nil {
-			return fmt.Errorf("resource not found")
+			return errors.New("resource not found")
 		}
 
 		rs, ok := s.RootModule().Resources[resourceName]

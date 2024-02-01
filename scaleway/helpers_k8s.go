@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -43,7 +44,7 @@ func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 func k8sGetMinorVersionFromFull(version string) (string, error) {
 	versionSplit := strings.Split(version, ".")
 	if len(versionSplit) != 3 {
-		return "", fmt.Errorf("version is not a full x.y.z version") // shoud never happen
+		return "", errors.New("version is not a full x.y.z version") // shoud never happen
 	}
 
 	return versionSplit[0] + "." + versionSplit[1], nil

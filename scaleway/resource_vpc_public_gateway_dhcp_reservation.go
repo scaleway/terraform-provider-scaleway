@@ -2,7 +2,7 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net"
 	"time"
 
@@ -82,7 +82,7 @@ func resourceScalewayVPCPublicGatewayDHCPCReservationCreate(ctx context.Context,
 
 	ip := net.ParseIP(d.Get("ip_address").(string))
 	if ip == nil {
-		return diag.FromErr(fmt.Errorf("could not parse ip_address"))
+		return diag.FromErr(errors.New("could not parse ip_address"))
 	}
 
 	macAddress, err := net.ParseMAC(d.Get("mac_address").(string))
@@ -155,7 +155,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservationUpdate(ctx context.Context, 
 	if d.HasChanges("ip_address") {
 		ip := net.ParseIP(d.Get("ip_address").(string))
 		if ip == nil {
-			return diag.FromErr(fmt.Errorf("could not parse ip_address"))
+			return diag.FromErr(errors.New("could not parse ip_address"))
 		}
 
 		gatewayNetworkID := expandID(d.Get("gateway_network_id"))

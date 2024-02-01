@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -293,7 +294,7 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
 	idRaw, exist := rawState["id"]
 	if !exist {
-		return nil, fmt.Errorf("upgrade: id not exist")
+		return nil, errors.New("upgrade: id not exist")
 	}
 
 	idParts := strings.Split(idRaw.(string), "/")

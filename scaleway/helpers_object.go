@@ -467,7 +467,7 @@ func transitionHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
 	}
 	if v, ok := m["storage_class"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
+		buf.WriteString(v.(string) + "-")
 	}
 	return StringHashcode(buf.String())
 }

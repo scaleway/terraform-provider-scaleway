@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -179,7 +180,7 @@ func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ 
 
 	contentBasedDeduplication := d.Get("content_based_deduplication").(bool)
 	if !isSQSFifo && contentBasedDeduplication {
-		return fmt.Errorf("content-based deduplication can only be set for FIFO queue")
+		return errors.New("content-based deduplication can only be set for FIFO queue")
 	}
 
 	if !nameRegex.MatchString(name) {

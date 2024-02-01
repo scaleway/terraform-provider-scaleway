@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -135,7 +136,7 @@ func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database stri
 		}
 
 		if len(databases.Databases) != 1 {
-			return fmt.Errorf("no database found")
+			return errors.New("no database found")
 		}
 
 		return nil

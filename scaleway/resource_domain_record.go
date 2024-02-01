@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -363,11 +364,11 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 		recordTypeRaw, recordTypeExist := d.GetOk("type")
 		if !recordTypeExist {
-			return diag.FromErr(fmt.Errorf("record type not found"))
+			return diag.FromErr(errors.New("record type not found"))
 		}
 		recordType := domain.RecordType(recordTypeRaw.(string))
 		if recordType == domain.RecordTypeUnknown {
-			return diag.FromErr(fmt.Errorf("record type unknow"))
+			return diag.FromErr(errors.New("record type unknow"))
 		}
 
 		idRecord := expandID(d.Id())

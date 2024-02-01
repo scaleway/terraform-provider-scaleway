@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
@@ -196,7 +197,7 @@ func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]inte
 
 	ID, exist := rawState["id"]
 	if !exist {
-		return nil, fmt.Errorf("upgrade: id not exist")
+		return nil, errors.New("upgrade: id not exist")
 	}
 	rawState["id"], err = vpcPrivateNetworkUpgradeV1ZonalToRegionalID(ID.(string))
 	if err != nil {
