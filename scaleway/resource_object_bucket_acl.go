@@ -208,7 +208,7 @@ func expandBucketACLAccessControlPolicy(l []interface{}) *s3.AccessControlPolicy
 }
 
 func expandBucketACLAccessControlPolicyGrants(l []interface{}) []*s3.Grant {
-	var grants []*s3.Grant
+	grants := make([]*s3.Grant, 0, len(l))
 
 	for _, tfMapRaw := range l {
 		tfMap, ok := tfMapRaw.(map[string]interface{})
@@ -297,7 +297,7 @@ func flattenBucketACLAccessControlPolicy(output *s3.GetBucketAclOutput) []interf
 }
 
 func flattenBucketACLAccessControlPolicyGrants(grants []*s3.Grant) []interface{} {
-	var results []interface{}
+	results := make([]interface{}, 0, len(grants))
 
 	for _, grant := range grants {
 		if grant == nil {

@@ -56,7 +56,7 @@ func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
 
 func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	rawRule := i.(map[string]interface{})
-	var res []*rdb.InstanceSetting
+	res := make([]*rdb.InstanceSetting, 0, len(rawRule))
 	for key, value := range rawRule {
 		res = append(res, &rdb.InstanceSetting{
 			Name:  key,
@@ -114,7 +114,7 @@ func expandPrivateNetwork(data interface{}, exist bool, enableIpam bool) ([]*rdb
 		return nil, nil
 	}
 
-	var res []*rdb.EndpointSpec
+	res := make([]*rdb.EndpointSpec, 0, len(data.([]interface{})))
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
 		spec := &rdb.EndpointSpec{

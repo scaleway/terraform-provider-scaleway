@@ -3,6 +3,7 @@ linters:
   # Run golangci-lint linters to see the list of all linters
   # Please keep them sorted alphabetically
   enable:
+    - asasalint # check for pass []any as any in variadic func(...any) [fast: false, auto-fix: false]
     - asciicheck # Simple linter to check that your code does not contain non-ASCII identifiers [fast: true, auto-fix: false]
     - bidichk # Checks for dangerous unicode character sequences [fast: true, auto-fix: false]
     - bodyclose # checks whether HTTP response body is closed successfully [fast: false, auto-fix: false]
@@ -44,6 +45,7 @@ linters:
     - noctx # noctx finds sending http request without context.Context [fast: false, auto-fix: false]
     - nolintlint # Reports ill-formed or insufficient nolint directives [fast: true, auto-fix: false]
     - nosprintfhostport # Checks for misuse of Sprintf to construct a host with port in a URL. [fast: true, auto-fix: false]
+    - prealloc # Finds slice declarations that could potentially be pre-allocated [fast: true, auto-fix: false]
     - predeclared # find code that shadows one of Go's predeclared identifiers [fast: true, auto-fix: false]
     - promlinter # Check Prometheus metrics naming via promlint [fast: true, auto-fix: false]
     - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint. [fast: false, auto-fix: false]

@@ -88,7 +88,7 @@ func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 }
 
 func expandBaremetalPrivateNetworks(pn interface{}) []string {
-	var privateNetworkIDs []string
+	privateNetworkIDs := make([]string, 0, len(pn.(*schema.Set).List()))
 
 	for _, op := range pn.(*schema.Set).List() {
 		rawPN := op.(map[string]interface{})

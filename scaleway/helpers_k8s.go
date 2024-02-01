@@ -152,7 +152,7 @@ func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, p
 
 // convert a list of nodes to a list of map
 func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
-	var result []map[string]interface{}
+	result := make([]map[string]interface{}, 0, len(res.Nodes))
 	for _, node := range res.Nodes {
 		n := make(map[string]interface{})
 		n["name"] = node.Name

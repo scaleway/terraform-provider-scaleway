@@ -82,12 +82,13 @@ func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*insta
 
 // orderVolumes return an ordered slice based on the volume map key "0", "1", "2",...
 func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
-	var indexes []string
+	indexes := make([]string, 0, len(v))
 	for index := range v {
 		indexes = append(indexes, index)
 	}
 	sort.Strings(indexes)
-	var orderedVolumes []*instance.Volume
+
+	orderedVolumes := make([]*instance.Volume, 0, len(indexes))
 	for _, index := range indexes {
 		orderedVolumes = append(orderedVolumes, v[index])
 	}
@@ -96,12 +97,13 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 
 // sortVolumeServer return an ordered slice based on the volume map key "0", "1", "2",...
 func sortVolumeServer(v map[string]*instance.VolumeServer) []*instance.VolumeServer {
-	var indexes []string
+	indexes := make([]string, 0, len(v))
 	for index := range v {
 		indexes = append(indexes, index)
 	}
 	sort.Strings(indexes)
-	var sortedVolumes []*instance.VolumeServer
+
+	sortedVolumes := make([]*instance.VolumeServer, 0, len(indexes))
 	for _, index := range indexes {
 		sortedVolumes = append(sortedVolumes, v[index])
 	}

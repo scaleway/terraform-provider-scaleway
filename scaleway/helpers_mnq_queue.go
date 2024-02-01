@@ -134,7 +134,7 @@ var SQSAttributesToResourceMap = map[string]string{
 
 // Returns all managed SQS attribute names
 func getSQSAttributeNames() []*string {
-	var attributeNames []*string
+	attributeNames := make([]*string, 0, len(SQSAttributesToResourceMap))
 
 	for attribute := range SQSAttributesToResourceMap {
 		attributeNames = append(attributeNames, aws.String(attribute))

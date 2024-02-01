@@ -377,21 +377,21 @@ func zoneSchema() *schema.Schema {
 }
 
 func allZones() []string {
-	var allZones []string
+	zones := make([]string, 0, len(scw.AllZones))
 	for _, z := range scw.AllZones {
-		allZones = append(allZones, z.String())
+		zones = append(zones, z.String())
 	}
 
-	return allZones
+	return zones
 }
 
 func allRegions() []string {
-	var allRegions []string
+	regions := make([]string, 0, len(scw.AllRegions))
 	for _, z := range scw.AllRegions {
-		allRegions = append(allRegions, z.String())
+		regions = append(regions, z.String())
 	}
 
-	return allRegions
+	return regions
 }
 
 // regionSchema returns a standard schema for a zone
@@ -487,7 +487,7 @@ func expandStringWithDefault(data interface{}, defaultValue string) string {
 }
 
 func expandStrings(data interface{}) []string {
-	var stringSlice []string
+	stringSlice := make([]string, 0, len(data.([]interface{})))
 	for _, s := range data.([]interface{}) {
 		// zero-value is nil, ["foo", ""]
 		if s == nil {
@@ -499,7 +499,7 @@ func expandStrings(data interface{}) []string {
 }
 
 func expandStringsPtr(data interface{}) *[]string {
-	var stringSlice []string
+	stringSlice := make([]string, 0, len(data.([]interface{})))
 	if _, ok := data.([]interface{}); !ok || data == nil {
 		return nil
 	}
@@ -534,7 +534,7 @@ func expandUpdatedStringsPtr(data interface{}) *[]string {
 }
 
 func expandSliceIDsPtr(rawIDs interface{}) *[]string {
-	var stringSlice []string
+	stringSlice := make([]string, 0, len(rawIDs.([]interface{})))
 	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
 		return &stringSlice
 	}
@@ -545,7 +545,7 @@ func expandSliceIDsPtr(rawIDs interface{}) *[]string {
 }
 
 func expandStringsOrEmpty(data interface{}) []string {
-	var stringSlice []string
+	stringSlice := make([]string, 0, len(data.([]interface{})))
 	if _, ok := data.([]interface{}); !ok || data == nil {
 		return stringSlice
 	}
