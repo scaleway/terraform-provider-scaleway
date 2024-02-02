@@ -127,9 +127,9 @@ and if you are using `bssd` storage, you should increase the volume size before 
 
 ~> **Important:** Updates to `engine` will recreate the Database Instance.
 
-- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd` or `lssd`).
+- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd`, `lssd` or `sbs_5k`).
 
-- `volume_size_in_gb` - (Optional) Volume size (in GB) when `volume_type` is set to `bssd`.
+- `volume_size_in_gb` - (Optional) Volume size (in GB). Cannot be used when `volume_type` is set to `lssd`.
 
 ~> **Important:** Once your instance reaches `disk_full` status, you should increase the volume size before making any other change to your instance.
 
