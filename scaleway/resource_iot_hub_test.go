@@ -64,7 +64,7 @@ func TestAccScalewayIotHub_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "device_count", "0"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "connected_device_count", "0"),
-					// If the plan is shared, there is no CQTT CA, so it should be empty
+					// If the plan is shared, there is no MQTT CA, so it should be empty
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca_url", ""),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca", ""),
 				),
