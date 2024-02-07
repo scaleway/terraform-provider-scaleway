@@ -19,6 +19,7 @@ data "scaleway_billing_consumptions" "my-consumption" {
 ## Argument Reference
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the consumption list is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the consumption list is associated with.
 
 ## Attributes Reference
 
@@ -26,8 +27,10 @@ In addition to all arguments above, the following attributes are exported:
 
 - `consumptions` - List of found consumptions
     - `value` - The monetary value of the consumption.
-    - `description` - The description of the consumption.
+    - `product_name` - The product name.
+    - `category_name` - The name of the consumption category.
+    - `sku` - The unique identifier of the product.
+    - `unit` - The unit of consumed quantity.
+    - `billed_quantity` - The consumed quantity.
     - `project_id` - The project ID of the consumption.
-    - `category` - The category of the consumption.
-    - `operation_path` - The unique identifier of the product.
 - `updated_at` - The last consumption update date.

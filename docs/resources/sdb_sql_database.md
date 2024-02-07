@@ -19,7 +19,7 @@ resource scaleway_sdb_sql_database "database" {
 }
 ```
 
-### With IAM Token
+### With IAM Application
 
 This example creates an [IAM application](https://www.scaleway.com/en/docs/identity-and-access-management/iam/concepts/#application) and a secret key used to connect to the DATABASE.
 For more information, see [How to connect to a Serverless SQL Database](https://www.scaleway.com/en/docs/serverless/sql-databases/how-to/connect-to-a-database/)
@@ -39,7 +39,7 @@ resource scaleway_iam_policy "db_access" {
   application_id = scaleway_iam_application.app.id
   rule {
     project_ids = [data.scaleway_account_project.default.id]
-    permission_set_names = ["ServerlessDatabaseFullAccess"]
+    permission_set_names = ["ServerlessSQLDatabaseReadWrite"]
   }
 }
 
@@ -60,6 +60,7 @@ output "database_connection_string" {
     scaleway_iam_api_key.api_key.secret_key,
     trimprefix(scaleway_sdb_sql_database.database.endpoint, "postgres://"),
   )
+  sensitive = true
 }
 ```
 

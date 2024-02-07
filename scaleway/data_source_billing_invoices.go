@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2alpha1"
+	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -36,36 +36,84 @@ func dataSourceScalewayBillingInvoices() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Invoice ID",
+						},
+						"organization_name": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Organization name",
 						},
 						"start_date": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Start date of the billing period",
+						},
+						"stop_date": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Stop date of the billing period",
+						},
+						"billing_period": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Billing period of the invoice in the YYYY-MM format",
 						},
 						"issued_date": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Date when the invoice was sent to the customer",
 						},
 						"due_date": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Payment time limit, set according to the Organization's payment conditions",
 						},
 						"total_untaxed": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Total amount of the invoice, untaxed",
 						},
 						"total_taxed": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Total amount of the invoice, taxed",
+						},
+						"total_tax": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The total tax amount of the invoice",
+						},
+						"total_discount": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The total discount amount of the invoice",
+						},
+						"total_undiscount": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The total amount of the invoice before applying the discount",
 						},
 						"invoice_type": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Type of invoice, either periodic or purchase",
+						},
+						"state": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The state of the invoice",
 						},
 						"number": {
-							Computed: true,
-							Type:     schema.TypeInt,
+							Computed:    true,
+							Type:        schema.TypeInt,
+							Description: "The invoice number",
+						},
+						"seller_name": {
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The name of the seller (Scaleway)",
 						},
 					},
 				},
@@ -79,10 +127,10 @@ func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.Resour
 	api := billingAPI(meta)
 
 	res, err := api.ListInvoices(&billing.ListInvoicesRequest{
-		OrganizationID: expandStringPtr(d.Get("organization_id")),
-		StartedAfter:   expandTimePtr(d.Get("started_after").(string)),
-		StartedBefore:  expandTimePtr(d.Get("started_before").(string)),
-		InvoiceType:    billing.InvoiceType(d.Get("invoice_type").(string)),
+		OrganizationID:           expandStringPtr(d.Get("organization_id")),
+		BillingPeriodStartAfter:  expandTimePtr(d.Get("started_after").(string)),
+		BillingPeriodStartBefore: expandTimePtr(d.Get("started_before").(string)),
+		InvoiceType:              billing.InvoiceType(d.Get("invoice_type").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -92,13 +140,21 @@ func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.Resour
 	for _, invoice := range res.Invoices {
 		rawInvoice := make(map[string]interface{})
 		rawInvoice["id"] = invoice.ID
+		rawInvoice["organization_name"] = invoice.OrganizationName
 		rawInvoice["start_date"] = flattenTime(invoice.StartDate)
+		rawInvoice["stop_date"] = flattenTime(invoice.StopDate)
+		rawInvoice["billing_period"] = flattenTime(invoice.BillingPeriod)
 		rawInvoice["issued_date"] = flattenTime(invoice.IssuedDate)
 		rawInvoice["due_date"] = flattenTime(invoice.DueDate)
 		rawInvoice["total_untaxed"] = invoice.TotalUntaxed.String()
 		rawInvoice["total_taxed"] = invoice.TotalTaxed.String()
-		rawInvoice["invoice_type"] = invoice.InvoiceType.String()
+		rawInvoice["total_tax"] = invoice.TotalTax.String()
+		rawInvoice["total_discount"] = invoice.TotalDiscount.String()
+		rawInvoice["total_undiscount"] = invoice.TotalUndiscount.String()
+		rawInvoice["invoice_type"] = invoice.Type.String()
+		rawInvoice["state"] = invoice.State
 		rawInvoice["number"] = invoice.Number
+		rawInvoice["seller_name"] = invoice.SellerName
 
 		invoices = append(invoices, rawInvoice)
 	}

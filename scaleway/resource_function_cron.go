@@ -43,6 +43,12 @@ func resourceScalewayFunctionCron() *schema.Resource {
 				Required:    true,
 				Description: "Functions arguments as json object to pass through during execution.",
 			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of the cron job.",
+			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -70,6 +76,7 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 		FunctionID: f.ID,
 		Schedule:   d.Get("schedule").(string),
 		Region:     region,
+		Name:       expandStringPtr(d.Get("name")),
 	}
 
 	if args, ok := d.GetOk("args"); ok {
@@ -112,7 +119,7 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("function_id", newRegionalID(region, cron.FunctionID).String())
 	_ = d.Set("schedule", cron.Schedule)
-
+	_ = d.Set("name", cron.Name)
 	args, err := scw.EncodeJSONObject(*cron.Args, scw.NoEscape)
 	if err != nil {
 		return diag.FromErr(err)
@@ -120,7 +127,7 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
-
+	_ = d.Set("region", region.String())
 	return nil
 }
 
@@ -139,8 +146,11 @@ func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceD
 		Region: region,
 		CronID: cron.ID,
 	}
-
 	shouldUpdate := false
+	if d.HasChange("name") {
+		req.Name = expandStringPtr(d.Get("name").(string))
+		shouldUpdate = true
+	}
 	if d.HasChange("schedule") {
 		req.Schedule = expandStringPtr(d.Get("schedule").(string))
 		shouldUpdate = true
