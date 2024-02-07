@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 	docker "github.com/docker/docker/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -456,7 +457,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 
 		accessKey, _ := meta.scwClient.GetAccessKey()
 		secretKey, _ := meta.scwClient.GetSecretKey()
-		authConfig := types.AuthConfig{
+		authConfig := registry.AuthConfig{
 			ServerAddress: ns.RegistryEndpoint,
 			Username:      accessKey,
 			Password:      secretKey,

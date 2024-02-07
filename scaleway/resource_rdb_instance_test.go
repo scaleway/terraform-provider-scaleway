@@ -877,6 +877,124 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRdbInstance_SBSVolume(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-play2-pico"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "sdb-volume" ]
+						volume_type = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_5k"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-play2-pico"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
+						volume_type = "sbs_5k"
+						volume_size_in_gb = 20
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_5k"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "20"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayRdbInstance_ChangeVolumeType(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-play2-pico"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "sdb-volume" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "bssd"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-play2-pico"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
+						volume_type = "sbs_5k"
+						volume_size_in_gb = 20
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_5k"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "20"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

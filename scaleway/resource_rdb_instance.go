@@ -125,14 +125,16 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					rdb.VolumeTypeLssd.String(),
 					rdb.VolumeTypeBssd.String(),
+					rdb.VolumeTypeSbs5k.String(),
 				}, false),
 				Description: "Type of volume where data are stored",
 			},
 			"volume_size_in_gb": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Volume size (in GB) when volume_type is not lssd",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				Description:  "Volume size (in GB) when volume_type is not lssd",
+				ValidateFunc: validation.IntDivisibleBy(5),
 			},
 			"private_network": {
 				Type:        schema.TypeList,
@@ -324,8 +326,8 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if size, ok := d.GetOk("volume_size_in_gb"); ok {
-		if createReq.VolumeType != rdb.VolumeTypeBssd {
-			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
+		if createReq.VolumeType == rdb.VolumeTypeLssd {
+			return diag.FromErr(fmt.Errorf("volume_size_in_gb should not be used with volume_type %s", rdb.VolumeTypeLssd.String()))
 		}
 		createReq.VolumeSize = scw.Size(uint64(size.(int)) * uint64(scw.GB))
 	}
@@ -504,7 +506,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	// Volume type and size
 	if d.HasChanges("volume_type", "volume_size_in_gb") {
 		switch volType {
-		case rdb.VolumeTypeBssd:
+		case rdb.VolumeTypeBssd, rdb.VolumeTypeSbs5k:
 			if d.HasChange("volume_type") {
 				upgradeInstanceRequests = append(upgradeInstanceRequests,
 					rdb.UpgradeInstanceRequest{
