@@ -2,8 +2,10 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -99,6 +101,16 @@ func resourceScalewayIotHub() *schema.Resource {
 				Computed:    true,
 				Description: "The endpoint to connect the devices to",
 			},
+			"mqtt_ca_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The url of the MQTT ca",
+			},
+			"mqtt_ca": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The MQTT certificat content",
+			},
 			"device_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -118,7 +130,6 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	req := &iot.CreateHubRequest{
 		Region:      region,
 		Name:        expandOrGenerateString(d.Get("name"), "hub"),
@@ -189,6 +200,8 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 	}
+	MQTTUrl := computeIotHubCaURL(req.ProductPlan, region)
+	_ = d.Set("mqtt_ca_url", MQTTUrl)
 
 	return resourceScalewayIotHubRead(ctx, d, meta)
 }
@@ -226,6 +239,18 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("disable_events", response.DisableEvents)
 	_ = d.Set("events_topic_prefix", response.EventsTopicPrefix)
 	_ = d.Set("device_auto_provisioning", response.EnableDeviceAutoProvisioning)
+	_ = d.Set("mqtt_ca_url", computeIotHubCaURL(response.ProductPlan, region))
+	mqttURL := d.Get("mqtt_ca_url")
+	mqttCa, err := computeIotHubMQTTCa(ctx, fmt.Sprintf("%v", mqttURL), meta)
+	if err != nil {
+		_ = diag.Diagnostic{
+			Severity:      diag.Warning,
+			AttributePath: cty.GetAttrPath("mqtt_ca"),
+			Summary:       "Error while fetching the MQTT certificate.",
+			Detail:        err.Error(),
+		}
+	}
+	_ = d.Set("mqtt_ca", mqttCa)
 
 	return nil
 }
