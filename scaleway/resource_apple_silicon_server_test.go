@@ -87,7 +87,6 @@ func testAccCheckScalewayAppleSiliconExists(tt *TestTools, n string) resource.Te
 			ServerID: ID,
 			Zone:     zone,
 		})
-
 		if err != nil {
 			return err
 		}

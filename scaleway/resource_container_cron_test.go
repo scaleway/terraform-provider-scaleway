@@ -153,7 +153,6 @@ func testAccCheckScalewayContainerCronExists(tt *TestTools, n string) resource.T
 			CronID: id,
 			Region: region,
 		})
-
 		if err != nil {
 			return err
 		}

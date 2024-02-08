@@ -389,7 +389,6 @@ func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestC
 			ContainerID: id,
 			Region:      region,
 		})
-
 		if err != nil {
 			return err
 		}

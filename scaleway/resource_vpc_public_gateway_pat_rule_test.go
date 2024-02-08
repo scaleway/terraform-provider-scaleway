@@ -196,7 +196,6 @@ func testAccCheckScalewayVPCPublicGatewayPATRuleExists(tt *TestTools, n string) 
 			PatRuleID: ID,
 			Zone:      zone,
 		})
-
 		if err != nil {
 			return err
 		}

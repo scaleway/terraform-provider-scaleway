@@ -193,7 +193,6 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 			FrontendID: ID,
 			Zone:       zone,
 		})
-
 		if err != nil {
 			return err
 		}

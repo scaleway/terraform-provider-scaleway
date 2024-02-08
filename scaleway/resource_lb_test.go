@@ -768,7 +768,6 @@ func testAccCheckScalewayLbExists(tt *TestTools, n string) resource.TestCheckFun
 			LBID: ID,
 			Zone: zone,
 		})
-
 		if err != nil {
 			return err
 		}

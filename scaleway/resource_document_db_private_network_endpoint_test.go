@@ -263,7 +263,6 @@ func testAccCheckScalewayDocumentDBInstanceEndpointExists(tt *TestTools, n strin
 			EndpointID: id,
 			Region:     region,
 		})
-
 		if err != nil {
 			return err
 		}

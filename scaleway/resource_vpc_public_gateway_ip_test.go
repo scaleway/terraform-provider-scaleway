@@ -143,7 +143,6 @@ func testAccCheckScalewayVPCPublicGatewayIPExists(tt *TestTools, n string) resou
 			IPID: ID,
 			Zone: zone,
 		})
-
 		if err != nil {
 			return err
 		}

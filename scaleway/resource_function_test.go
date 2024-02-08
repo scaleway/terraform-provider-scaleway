@@ -369,7 +369,6 @@ func testAccCheckScalewayFunctionExists(tt *TestTools, n string) resource.TestCh
 			FunctionID: id,
 			Region:     region,
 		})
-
 		if err != nil {
 			return err
 		}

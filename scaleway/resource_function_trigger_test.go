@@ -240,7 +240,6 @@ func testAccCheckScalewayFunctionTriggerExists(tt *TestTools, n string) resource
 			TriggerID: id,
 			Region:    region,
 		})
-
 		if err != nil {
 			return err
 		}

@@ -113,7 +113,6 @@ func testAccCheckScalewayLbRouteExists(tt *TestTools, n string) resource.TestChe
 			RouteID: ID,
 			Zone:    zone,
 		})
-
 		if err != nil {
 			return err
 		}

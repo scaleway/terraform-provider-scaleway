@@ -88,7 +88,6 @@ func testAccCheckScalewayK8SVersionExists(tt *TestTools, n string) resource.Test
 			Region:      region,
 			VersionName: name,
 		})
-
 		if err != nil {
 			return err
 		}

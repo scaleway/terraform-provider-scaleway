@@ -128,7 +128,6 @@ func testAccCheckScalewayBlockVolumeExists(tt *TestTools, n string) resource.Tes
 			VolumeID: id,
 			Zone:     zone,
 		})
-
 		if err != nil {
 			return err
 		}

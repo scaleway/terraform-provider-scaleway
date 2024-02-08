@@ -162,7 +162,6 @@ func testAccCheckScalewayVPCExists(tt *TestTools, n string) resource.TestCheckFu
 			VpcID:  ID,
 			Region: region,
 		})
-
 		if err != nil {
 			return err
 		}

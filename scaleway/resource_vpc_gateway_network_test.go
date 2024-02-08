@@ -296,7 +296,6 @@ func testAccCheckScalewayVPCGatewayNetworkExists(tt *TestTools, n string) resour
 			GatewayNetworkID: ID,
 			Zone:             zone,
 		})
-
 		if err != nil {
 			return err
 		}

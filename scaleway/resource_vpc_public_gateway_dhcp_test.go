@@ -177,7 +177,6 @@ func testAccCheckScalewayVPCPublicGatewayDHCPExists(tt *TestTools, n string) res
 			DHCPID: ID,
 			Zone:   zone,
 		})
-
 		if err != nil {
 			return err
 		}

@@ -135,7 +135,6 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 	}
 
 	policyToSet, err = structure.NormalizeJsonString(policyToSet)
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("policy (%s) is an invalid JSON: %w", policyToSet, err))
 	}

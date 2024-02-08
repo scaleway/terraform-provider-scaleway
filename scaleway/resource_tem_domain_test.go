@@ -117,7 +117,6 @@ func testAccCheckScalewayTemDomainExists(tt *TestTools, n string) resource.TestC
 			DomainID: id,
 			Region:   region,
 		})
-
 		if err != nil {
 			return err
 		}

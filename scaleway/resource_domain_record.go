@@ -536,7 +536,6 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 		DNSZone:   d.Get("dns_zone").(string),
 		ProjectID: d.Get("project_id").(string),
 	})
-
 	if err != nil {
 		if is404Error(err) || is403Error(err) {
 			return nil

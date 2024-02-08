@@ -100,7 +100,6 @@ func testAccCheckScalewayWebhostingExists(tt *TestTools, n string) resource.Test
 			HostingID: id,
 			Region:    region,
 		})
-
 		if err != nil {
 			return err
 		}

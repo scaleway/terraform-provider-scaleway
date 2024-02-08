@@ -151,7 +151,6 @@ func testAccCheckScalewayMNQSNSCredentialsExists(tt *TestTools, n string) resour
 			SnsCredentialsID: id,
 			Region:           region,
 		})
-
 		if err != nil {
 			return err
 		}

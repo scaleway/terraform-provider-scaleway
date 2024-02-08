@@ -543,7 +543,6 @@ func testAccCheckScalewayInstanceSecurityGroupExists(tt *TestTools, n string) re
 			SecurityGroupID: ID,
 			Zone:            zone,
 		})
-
 		if err != nil {
 			return err
 		}

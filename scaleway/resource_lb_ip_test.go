@@ -126,7 +126,6 @@ func testAccCheckScalewayLbIPExists(tt *TestTools, n string) resource.TestCheckF
 			IPID: ID,
 			Zone: zone,
 		})
-
 		if err != nil {
 			return err
 		}

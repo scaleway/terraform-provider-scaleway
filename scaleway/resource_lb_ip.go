@@ -151,7 +151,6 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		ip = res
 		return nil
 	})
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -221,7 +220,6 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		ip = res
 		return nil
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

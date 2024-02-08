@@ -789,7 +789,6 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		Region:     region,
 		InstanceID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

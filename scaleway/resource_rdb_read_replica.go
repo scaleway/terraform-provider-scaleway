@@ -339,7 +339,6 @@ func resourceScalewayRdbReadReplicaDelete(ctx context.Context, d *schema.Resourc
 		Region:        region,
 		ReadReplicaID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

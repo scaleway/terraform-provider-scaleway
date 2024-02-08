@@ -436,7 +436,6 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	_, err = conn.PutBucketAclWithContext(ctx, input)
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating object bucket ACL (%s): %w", d.Id(), err))
 	}

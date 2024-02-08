@@ -92,7 +92,6 @@ func testAccCheckScalewayDocumentDBInstanceExists(tt *TestTools, n string) resou
 			InstanceID: id,
 			Region:     region,
 		})
-
 		if err != nil {
 			return err
 		}

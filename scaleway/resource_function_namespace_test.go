@@ -190,7 +190,6 @@ func testAccCheckScalewayFunctionNamespaceExists(tt *TestTools, n string) resour
 			NamespaceID: id,
 			Region:      region,
 		})
-
 		if err != nil {
 			return err
 		}

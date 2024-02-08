@@ -762,7 +762,6 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 			Bucket: scw.StringPtr(bucketName),
 			Key:    scw.StringPtr(key),
 		})
-
 		if err != nil {
 			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				return errors.New("s3 object not found")

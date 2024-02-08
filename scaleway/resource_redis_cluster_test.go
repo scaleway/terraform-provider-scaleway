@@ -695,7 +695,6 @@ func testAccCheckScalewayRedisExists(tt *TestTools, n string) resource.TestCheck
 			ClusterID: ID,
 			Zone:      zone,
 		})
-
 		if err != nil {
 			return err
 		}

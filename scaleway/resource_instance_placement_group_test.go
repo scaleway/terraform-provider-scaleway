@@ -189,7 +189,6 @@ func testAccCheckScalewayInstancePlacementGroupExists(tt *TestTools, n string) r
 			Zone:             zone,
 			PlacementGroupID: ID,
 		})
-
 		if err != nil {
 			return err
 		}
