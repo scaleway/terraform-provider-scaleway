@@ -53,6 +53,8 @@ In addition to all arguments above, the following attributes are exported:
 - `endpoint` - The MQTT network endpoint to connect MQTT devices to.
 - `device_count` - The number of registered devices in the Hub.
 - `connected_device_count` - The current number of connected devices in the Hub.
+- `mqtt_ca_url` - The MQTT ca url
+- `mqtt_ca` - The MQTT certificat content
 
 
 ## Import
