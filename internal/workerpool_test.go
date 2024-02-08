@@ -26,7 +26,7 @@ func TestWorkerPoolSimple(t *testing.T) {
 
 	errs := pool.CloseAndWait()
 
-	assert.Len(t, len(errs), 1)
+	assert.Len(t, errs, 1)
 	assert.Equal(t, "error", errs[0].Error())
 }
 
@@ -50,7 +50,7 @@ func TestWorkerPoolWaitTime(t *testing.T) {
 
 	errs := pool.CloseAndWait()
 
-	assert.Len(t, len(errs), 1)
+	assert.Len(t, errs, 1)
 	assert.Equal(t, "error", errs[0].Error())
 }
 
@@ -74,7 +74,7 @@ func TestWorkerPoolWaitTimeMultiple(t *testing.T) {
 
 	errs := pool.CloseAndWait()
 
-	assert.Len(t, len(errs), iterations/2)
+	assert.Len(t, errs, iterations/2)
 
 	for i := 0; i < iterations; i++ {
 		if i%2 == 0 {
