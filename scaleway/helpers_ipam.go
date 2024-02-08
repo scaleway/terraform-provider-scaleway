@@ -2,6 +2,7 @@
 package scaleway
 
 import (
+	"fmt"
 	"net"
 	"strings"
 	"time"
@@ -151,4 +152,31 @@ func diffSuppressFuncStandaloneIPandCIDR(_, oldValue, newValue string, _ *schema
 	}
 
 	return false
+}
+
+func validateStandaloneIPorDefaultCIDR() func(interface{}, string) ([]string, []error) {
+	return func(val interface{}, key string) (warns []string, errs []error) {
+		ip, isString := val.(string)
+		if !isString {
+			return nil, []error{fmt.Errorf("invalid input for key '%s': not a string", key)}
+		}
+
+		// Check if it's a standalone IP address
+		if net.ParseIP(ip) != nil {
+			return
+		}
+
+		// Check if it's an IP with CIDR notation
+		_, ipNet, err := net.ParseCIDR(ip)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%q is not a valid IP address or CIDR notation: %s", key, ip))
+			return
+		}
+		ones, _ := ipNet.Mask.Size()
+		if (ipNet.IP.To4() != nil && ones != 32) || (ipNet.IP.To16() != nil && ipNet.IP.To4() == nil && ones != 128) {
+			errs = append(errs, fmt.Errorf("%q must be a /32 CIDR notation for IPv4 or /128 for IPv6: %s", key, ip))
+		}
+
+		return
+	}
 }

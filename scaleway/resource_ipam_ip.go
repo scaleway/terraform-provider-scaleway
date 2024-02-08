@@ -29,7 +29,7 @@ func resourceScalewayIPAMIP() *schema.Resource {
 				Computed:         true,
 				ForceNew:         true,
 				Description:      "Request a specific IP in the requested source pool",
-				ValidateFunc:     validateStandaloneIPorCIDR(),
+				ValidateFunc:     validateStandaloneIPorDefaultCIDR(),
 				DiffSuppressFunc: diffSuppressFuncStandaloneIPandCIDR,
 			},
 			"source": {

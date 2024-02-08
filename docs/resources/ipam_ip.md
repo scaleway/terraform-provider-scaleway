@@ -45,7 +45,7 @@ resource "scaleway_vpc_private_network" "pn01" {
 }
 
 resource "scaleway_ipam_ip" "ip01" {
-  address = "172.16.32.7/22"
+  address = "172.16.32.7"
   source {
     private_network_id = scaleway_vpc_private_network.pn01.id
   }

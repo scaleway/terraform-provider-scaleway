@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -122,7 +123,7 @@ func TestAccScalewayIPAMIP_WithStandaloneAddress(t *testing.T) {
 	})
 }
 
-func TestAccScalewayIPAMIP_WithCIDRAddress(t *testing.T) {
+func TestAccScalewayIPAMIP_WithDefaultCIDR(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -144,7 +145,7 @@ func TestAccScalewayIPAMIP_WithCIDRAddress(t *testing.T) {
 					}
 
 					resource scaleway_ipam_ip ip01 {
-					 address = "172.16.32.5/22"
+					 address = "172.16.32.5/32"
 					 source {
 						private_network_id = scaleway_vpc_private_network.pn01.id
 					  }
@@ -221,6 +222,40 @@ func TestAccScalewayIPAMIP_WithTags(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "tags.1", "ipam"),
 					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "tags.2", "updated"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayIPAMIP_WithoutDefaultCIDR(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc vpc01 {
+						name = "my vpc"
+					}
+
+					resource scaleway_vpc_private_network pn01 {
+						vpc_id = scaleway_vpc.vpc01.id
+						ipv4_subnet {
+							subnet = "172.16.32.0/22"
+						}
+					}
+
+					resource scaleway_ipam_ip ip01 {
+					 address = "172.16.32.5/22"
+					 source {
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}
+				`,
+				ExpectError: regexp.MustCompile("\".+\" must be a /32 CIDR notation for IPv4 or /128 for IPv6: .+"),
 			},
 		},
 	})
