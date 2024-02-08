@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -29,7 +30,7 @@ func resourceScalewayIPAMIP() *schema.Resource {
 				Computed:         true,
 				ForceNew:         true,
 				Description:      "Request a specific IP in the requested source pool",
-				ValidateFunc:     validateStandaloneIPorDefaultCIDR(),
+				ValidateFunc:     validation.IsIPAddress,
 				DiffSuppressFunc: diffSuppressFuncStandaloneIPandCIDR,
 			},
 			"source": {
