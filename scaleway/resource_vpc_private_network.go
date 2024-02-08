@@ -300,7 +300,6 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 
 		return nil
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

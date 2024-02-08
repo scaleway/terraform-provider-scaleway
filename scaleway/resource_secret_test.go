@@ -129,7 +129,6 @@ func testAccCheckScalewaySecretExists(tt *TestTools, n string) resource.TestChec
 			SecretID: id,
 			Region:   region,
 		})
-
 		if err != nil {
 			return err
 		}

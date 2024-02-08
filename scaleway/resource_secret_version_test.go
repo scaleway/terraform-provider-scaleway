@@ -129,7 +129,6 @@ func testAccCheckScalewaySecretVersionExists(tt *TestTools, n string) resource.T
 			Region:   region,
 			Revision: revision,
 		})
-
 		if err != nil {
 			return err
 		}

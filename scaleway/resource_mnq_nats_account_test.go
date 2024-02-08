@@ -86,7 +86,6 @@ func testAccCheckScalewayMNQNatsAccountExists(tt *TestTools, n string) resource.
 			NatsAccountID: id,
 			Region:        region,
 		})
-
 		if err != nil {
 			return err
 		}

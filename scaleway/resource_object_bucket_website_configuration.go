@@ -211,7 +211,6 @@ func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.Res
 	}
 
 	_, err = conn.PutBucketWebsiteWithContext(ctx, input)
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating Object bucket website configuration (%s): %w", d.Id(), err))
 	}

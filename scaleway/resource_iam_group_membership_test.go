@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -175,7 +176,7 @@ func testAccCheckScalewayIamGroupMembershipApplicationInGroup(tt *TestTools, n s
 		}
 
 		if !foundInGroup {
-			return fmt.Errorf("application not found in group")
+			return errors.New("application not found in group")
 		}
 
 		return nil
@@ -222,7 +223,7 @@ func testAccCheckScalewayIamGroupMembershipUserInGroup(tt *TestTools, n string, 
 		}
 
 		if !foundInGroup {
-			return fmt.Errorf("user not found in group")
+			return errors.New("user not found in group")
 		}
 
 		return nil

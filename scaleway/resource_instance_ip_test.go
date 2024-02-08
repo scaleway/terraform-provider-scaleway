@@ -318,7 +318,6 @@ func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.T
 			IP:   ID,
 			Zone: zone,
 		})
-
 		if err != nil {
 			return err
 		}

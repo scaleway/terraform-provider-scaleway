@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -249,11 +250,11 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 				oldSize := uint64(oldSizeInterface.(int))
 				newSize := uint64(newSizeInterface.(int))
 				if newSize < oldSize {
-					return diag.FromErr(fmt.Errorf("volume_size_in_gb cannot be decreased"))
+					return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
 				}
 
 				if newSize%5 != 0 {
-					return diag.FromErr(fmt.Errorf("volume_size_in_gb must be a multiple of 5"))
+					return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
 				}
 
 				upgradeRequests = append(upgradeRequests,

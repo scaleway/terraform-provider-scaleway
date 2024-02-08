@@ -235,7 +235,7 @@ func testAccCheckScalewayDocumentDBInstanceEndpointDestroy(tt *TestTools) resour
 			})
 
 			if err == nil {
-				return fmt.Errorf("documentdb documentdb instance endpoint (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("documentdb instance endpoint (%s) still exists", rs.Primary.ID)
 			}
 
 			if !is404Error(err) {
@@ -263,7 +263,6 @@ func testAccCheckScalewayDocumentDBInstanceEndpointExists(tt *TestTools, n strin
 			EndpointID: id,
 			Region:     region,
 		})
-
 		if err != nil {
 			return err
 		}

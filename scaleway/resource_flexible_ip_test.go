@@ -340,7 +340,6 @@ func testAccCheckScalewayFlexibleIPExists(tt *TestTools, name string) resource.T
 			FipID: ID,
 			Zone:  zone,
 		})
-
 		if err != nil {
 			return err
 		}

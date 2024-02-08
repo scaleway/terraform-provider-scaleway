@@ -170,7 +170,6 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	_, err = conn.PutObjectLockConfigurationWithContext(ctx, input)
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating Object bucket lock configuration (%s): %w", d.Id(), err))
 	}

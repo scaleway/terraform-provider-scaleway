@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -101,7 +102,7 @@ func testAccCheckRdbUserExists(tt *TestTools, instance string, user string) reso
 		}
 
 		if len(users.Users) != 1 {
-			return fmt.Errorf("no user found")
+			return errors.New("no user found")
 		}
 
 		return nil

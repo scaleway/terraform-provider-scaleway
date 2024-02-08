@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -166,7 +167,7 @@ func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.Resour
 		d.Get("organization_id").(string))
 
 	hashedConstraints := sha256.Sum256([]byte(constraints))
-	d.SetId(fmt.Sprintf("%x", hashedConstraints))
+	d.SetId(hex.EncodeToString(hashedConstraints[:]))
 	_ = d.Set("invoices", invoices)
 
 	return nil

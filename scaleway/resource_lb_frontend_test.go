@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -192,7 +193,6 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 			FrontendID: ID,
 			Zone:       zone,
 		})
-
 		if err != nil {
 			return err
 		}
@@ -543,7 +543,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("resource id is not set")
+			return errors.New("resource id is not set")
 		}
 
 		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
@@ -562,7 +562,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 
 		// verify that the count of api acl is the same as we are expecting it to be
 		if len(expectedAcls) != len(resACL.ACLs) {
-			return fmt.Errorf("acl count is wrong")
+			return errors.New("acl count is wrong")
 		}
 		// convert them to map indexed by the acl index
 		aclMap := make(map[int32]*lbSDK.ACL)

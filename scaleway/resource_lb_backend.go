@@ -84,7 +84,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"sticky_sessions_cookie_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Cookie name for for sticky sessions",
+				Description: "Cookie name for sticky sessions",
 			},
 			"server_ips": {
 				Type: schema.TypeList,

@@ -240,7 +240,6 @@ func testAccCheckScalewayInstanceSnapShotExists(tt *TestTools, n string) resourc
 			Zone:       zone,
 			SnapshotID: ID,
 		})
-
 		if err != nil {
 			return err
 		}

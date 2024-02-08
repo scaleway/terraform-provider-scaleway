@@ -242,7 +242,6 @@ func testAccCheckScalewayIPAMIPExists(tt *TestTools, n string) resource.TestChec
 			IPID:   ID,
 			Region: region,
 		})
-
 		if err != nil {
 			return err
 		}

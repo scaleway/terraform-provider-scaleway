@@ -16,7 +16,7 @@ const (
 )
 
 type ErrorRegistryMessage struct {
-	Error string
+	Error string `json:"error"`
 }
 
 // registryAPIWithRegion returns a new container registry API and the region.

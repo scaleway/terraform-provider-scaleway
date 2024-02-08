@@ -249,7 +249,7 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 }
 
 func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interface{}) ([]map[string]interface{}, []error) {
-	var res []map[string]interface{}
+	res := make([]map[string]interface{}, 0, len(dataFromSchema))
 	var errors []error
 	ruleMap := make(map[string]*rdb.ACLRule)
 	for _, rule := range rules {
@@ -300,7 +300,7 @@ func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*
 }
 
 func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
-	var res []map[string]interface{}
+	res := make([]map[string]interface{}, 0, len(rules))
 	for _, rule := range rules {
 		r := map[string]interface{}{
 			"ip":          rule.IP.String(),

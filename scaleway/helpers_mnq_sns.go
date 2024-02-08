@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -41,7 +42,7 @@ func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID
 
 	tab := strings.SplitN(regionalID, "/", 2)
 	if len(tab) != 2 {
-		return nil, "", fmt.Errorf("invalid ID format, expected parts separated by slashes")
+		return nil, "", errors.New("invalid ID format, expected parts separated by slashes")
 	}
 	region, err := scw.ParseRegion(tab[0])
 	if err != nil {
@@ -150,7 +151,7 @@ func resourceMNQSSNSTopicCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 
 	contentBasedDeduplication := d.Get("content_based_deduplication").(bool)
 	if !isFifoTopic && contentBasedDeduplication {
-		return fmt.Errorf("content-based deduplication can only be set for FIFO topics")
+		return errors.New("content-based deduplication can only be set for FIFO topics")
 	}
 
 	if !nameRegex.MatchString(name) {

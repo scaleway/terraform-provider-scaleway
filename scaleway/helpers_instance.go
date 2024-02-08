@@ -82,12 +82,13 @@ func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*insta
 
 // orderVolumes return an ordered slice based on the volume map key "0", "1", "2",...
 func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
-	var indexes []string
+	indexes := make([]string, 0, len(v))
 	for index := range v {
 		indexes = append(indexes, index)
 	}
 	sort.Strings(indexes)
-	var orderedVolumes []*instance.Volume
+
+	orderedVolumes := make([]*instance.Volume, 0, len(indexes))
 	for _, index := range indexes {
 		orderedVolumes = append(orderedVolumes, v[index])
 	}
@@ -96,12 +97,13 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 
 // sortVolumeServer return an ordered slice based on the volume map key "0", "1", "2",...
 func sortVolumeServer(v map[string]*instance.VolumeServer) []*instance.VolumeServer {
-	var indexes []string
+	indexes := make([]string, 0, len(v))
 	for index := range v {
 		indexes = append(indexes, index)
 	}
 	sort.Strings(indexes)
-	var sortedVolumes []*instance.VolumeServer
+
+	sortedVolumes := make([]*instance.VolumeServer, 0, len(indexes))
 	for _, index := range indexes {
 		sortedVolumes = append(sortedVolumes, v[index])
 	}
@@ -118,9 +120,9 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	case instance.ServerStateRunning:
 		return InstanceServerStateStarted, nil
 	case instance.ServerStateLocked:
-		return "", fmt.Errorf("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
+		return "", errors.New("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
 	}
-	return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
+	return "", errors.New("server is in an invalid state, someone else might be executing action at the same time")
 }
 
 // serverStateExpand converts terraform state to an API state or return an error.
@@ -132,7 +134,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	}[rawState]
 
 	if !exist {
-		return "", fmt.Errorf("server is in a transient state, someone else might be executing another action at the same time")
+		return "", errors.New("server is in a transient state, someone else might be executing another action at the same time")
 	}
 
 	return apiState, nil
@@ -214,7 +216,7 @@ func getServerType(ctx context.Context, apiInstance *instance.API, zone scw.Zone
 		tflog.Warn(ctx, fmt.Sprintf("cannot get server types: %s", err))
 	} else {
 		if serverType == nil {
-			tflog.Warn(ctx, fmt.Sprintf("unrecognized server type: %s", commercialType))
+			tflog.Warn(ctx, "unrecognized server type: "+commercialType)
 		}
 		return serverType
 	}

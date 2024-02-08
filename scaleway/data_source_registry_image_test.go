@@ -72,7 +72,6 @@ func testAccCheckScalewayRegistryImageExists(tt *TestTools, n string) resource.T
 			ImageID: id,
 			Region:  region,
 		})
-
 		if err != nil {
 			return err
 		}

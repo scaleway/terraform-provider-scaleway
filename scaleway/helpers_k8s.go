@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -43,7 +44,7 @@ func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 func k8sGetMinorVersionFromFull(version string) (string, error) {
 	versionSplit := strings.Split(version, ".")
 	if len(versionSplit) != 3 {
-		return "", fmt.Errorf("version is not a full x.y.z version") // shoud never happen
+		return "", errors.New("version is not a full x.y.z version") // shoud never happen
 	}
 
 	return versionSplit[0] + "." + versionSplit[1], nil
@@ -152,7 +153,7 @@ func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, p
 
 // convert a list of nodes to a list of map
 func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
-	var result []map[string]interface{}
+	result := make([]map[string]interface{}, 0, len(res.Nodes))
 	for _, node := range res.Nodes {
 		n := make(map[string]interface{})
 		n["name"] = node.Name

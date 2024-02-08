@@ -25,7 +25,6 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -324,7 +323,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	}
 
 	return &http.Client{Transport: newRetryableTransportWithOptions(r, retryOptions)}, func() {
-		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
+		require.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
 }
 

@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -188,10 +189,10 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 
 	if d.HasChange("size_in_gb") {
 		if d.Get("type") != instance.VolumeVolumeTypeBSSD.String() {
-			return diag.FromErr(fmt.Errorf("only block volume can be resized"))
+			return diag.FromErr(errors.New("only block volume can be resized"))
 		}
 		if oldSize, newSize := d.GetChange("size_in_gb"); oldSize.(int) > newSize.(int) {
-			return diag.FromErr(fmt.Errorf("block volumes cannot be resized down"))
+			return diag.FromErr(errors.New("block volumes cannot be resized down"))
 		}
 
 		_, err = waitForInstanceVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
@@ -242,7 +243,7 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 	}
 
 	if volume.Server != nil {
-		return diag.FromErr(fmt.Errorf("volume is still attached to a server"))
+		return diag.FromErr(errors.New("volume is still attached to a server"))
 	}
 
 	deleteRequest := &instance.DeleteVolumeRequest{

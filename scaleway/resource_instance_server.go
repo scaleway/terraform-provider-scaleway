@@ -3,6 +3,7 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -812,7 +813,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				// We must be able to tell whether a volume is already present in the server or not
 				if volumeResp.Volume.Server != nil {
 					if volumeResp.Volume.VolumeType == instance.VolumeVolumeTypeLSSD && volumeResp.Volume.Server.ID != "" {
-						return diag.FromErr(fmt.Errorf("instance must be stopped to change local volumes"))
+						return diag.FromErr(errors.New("instance must be stopped to change local volumes"))
 					}
 				}
 			}
@@ -833,7 +834,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Null: true}
 		} else {
 			if !isStopped {
-				return diag.FromErr(fmt.Errorf("instance must be stopped to change placement group"))
+				return diag.FromErr(errors.New("instance must be stopped to change placement group"))
 			}
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Value: placementGroupID}
 		}
@@ -1270,7 +1271,7 @@ func resourceScalewayInstanceServerMigrate(ctx context.Context, d *schema.Resour
 		CommercialType: expandStringPtr(d.Get("type")),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to change server type server")
+		return errors.New("failed to change server type server")
 	}
 
 	err = reachState(ctx, api, zone, id, beginningState)

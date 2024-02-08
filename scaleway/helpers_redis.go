@@ -62,7 +62,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 	if data == nil {
 		return nil, nil
 	}
-	var epSpecs []*redis.EndpointSpec
+	epSpecs := make([]*redis.EndpointSpec, 0, len(data))
 
 	for _, rawPN := range data {
 		pn := rawPN.(map[string]interface{})

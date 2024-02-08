@@ -198,7 +198,6 @@ func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.Res
 		PrivateNicID: privateNICID,
 		Zone:         zone,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			return nil

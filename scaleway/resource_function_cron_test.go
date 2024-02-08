@@ -208,7 +208,6 @@ func testAccCheckScalewayFunctionCronExists(tt *TestTools, n string) resource.Te
 			CronID: id,
 			Region: region,
 		})
-
 		if err != nil {
 			return err
 		}

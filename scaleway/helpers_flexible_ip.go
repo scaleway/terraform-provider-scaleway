@@ -70,7 +70,7 @@ func flattenFlexibleIPMacAddress(mac *flexibleip.MACAddress) interface{} {
 }
 
 func expandServerIDs(data interface{}) []string {
-	var expandedIDs []string
+	expandedIDs := make([]string, 0, len(data.([]interface{})))
 	for _, s := range data.([]interface{}) {
 		if s == nil {
 			s = ""

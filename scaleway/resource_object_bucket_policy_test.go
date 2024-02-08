@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
@@ -254,7 +255,7 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
+			return errors.New("no ID is set")
 		}
 
 		bucketName := rs.Primary.Attributes["name"]

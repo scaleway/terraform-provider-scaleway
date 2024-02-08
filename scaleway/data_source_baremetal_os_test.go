@@ -64,7 +64,6 @@ func testAccCheckScalewayBaremetalOsExists(tt *TestTools, n string) resource.Tes
 			OsID: ID,
 			Zone: zone,
 		})
-
 		if err != nil {
 			return err
 		}

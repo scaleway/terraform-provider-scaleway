@@ -110,7 +110,6 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 		Domain:    domainName,
 		Subdomain: subdomainName,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is409Error(err) {
 			return resourceScalewayDomainZoneRead(ctx, d, meta)

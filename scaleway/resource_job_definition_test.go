@@ -136,7 +136,6 @@ func testAccCheckScalewayJobDefinitionExists(tt *TestTools, n string) resource.T
 			JobDefinitionID: id,
 			Region:          region,
 		})
-
 		if err != nil {
 			return err
 		}

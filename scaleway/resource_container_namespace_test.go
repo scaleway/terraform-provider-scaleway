@@ -206,7 +206,6 @@ func testAccCheckScalewayContainerNamespaceExists(tt *TestTools, n string) resou
 			NamespaceID: id,
 			Region:      region,
 		})
-
 		if err != nil {
 			return err
 		}

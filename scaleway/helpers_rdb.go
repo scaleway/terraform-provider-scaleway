@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -56,7 +57,7 @@ func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
 
 func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	rawRule := i.(map[string]interface{})
-	var res []*rdb.InstanceSetting
+	res := make([]*rdb.InstanceSetting, 0, len(rawRule))
 	for key, value := range rawRule {
 		res = append(res, &rdb.InstanceSetting{
 			Name:  key,
@@ -114,7 +115,7 @@ func expandPrivateNetwork(data interface{}, exist bool, enableIpam bool) ([]*rdb
 		return nil, nil
 	}
 
-	var res []*rdb.EndpointSpec
+	res := make([]*rdb.EndpointSpec, 0, len(data.([]interface{})))
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
 		spec := &rdb.EndpointSpec{
@@ -293,7 +294,7 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
 	idRaw, exist := rawState["id"]
 	if !exist {
-		return nil, fmt.Errorf("upgrade: id not exist")
+		return nil, errors.New("upgrade: id not exist")
 	}
 
 	idParts := strings.Split(idRaw.(string), "/")

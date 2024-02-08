@@ -132,7 +132,6 @@ func testAccCheckScalewayServerlessSQLDBDatabaseExists(tt *TestTools, n string) 
 			DatabaseID: id,
 			Region:     region,
 		})
-
 		if err != nil {
 			return err
 		}

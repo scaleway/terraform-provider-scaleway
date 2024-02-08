@@ -444,7 +444,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 		if err == nil {
 			profile.DefaultRegion = scw.StringPtr(region.String())
 		} else {
-			tflog.Debug(ctx, fmt.Sprintf("cannot guess region: %s", err.Error()))
+			tflog.Debug(ctx, "cannot guess region: "+err.Error())
 		}
 	}
 	return profile, nil

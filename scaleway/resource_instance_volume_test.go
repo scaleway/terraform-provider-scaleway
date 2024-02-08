@@ -243,7 +243,6 @@ func testAccCheckScalewayInstanceVolumeExists(tt *TestTools, n string) resource.
 			VolumeID: id,
 			Zone:     zone,
 		})
-
 		if err != nil {
 			return err
 		}

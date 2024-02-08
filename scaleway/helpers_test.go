@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -208,7 +209,7 @@ func TestIsHTTPCodeError(t *testing.T) {
 	assert.True(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusBadRequest))
 	assert.False(t, isHTTPCodeError(nil, http.StatusBadRequest))
 	assert.False(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusNotFound))
-	assert.False(t, isHTTPCodeError(fmt.Errorf("not an http error"), http.StatusNotFound))
+	assert.False(t, isHTTPCodeError(errors.New("not an http error"), http.StatusNotFound))
 }
 
 func TestIs404Error(t *testing.T) {

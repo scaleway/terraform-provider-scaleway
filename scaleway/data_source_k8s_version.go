@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -69,7 +70,7 @@ func dataSourceScalewayK8SVersionRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 		if len(res.Versions) == 0 {
-			return diag.FromErr(fmt.Errorf("could not find the latest version"))
+			return diag.FromErr(errors.New("could not find the latest version"))
 		}
 
 		version = res.Versions[0]

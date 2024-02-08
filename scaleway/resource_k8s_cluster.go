@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -238,7 +239,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
 				if okAutoUpgradeEnable && versionIsOnlyMinor != autoUpgradeEnable.(bool) {
-					return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
+					return errors.New("minor version x.y must be used with auto upgrade enabled")
 				}
 
 				return nil
@@ -252,7 +253,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 					// For Kosmos clusters
 					case strings.HasPrefix(clusterType, "multicloud"):
 						if planned != "" {
-							return fmt.Errorf("only Kapsule clusters support private networks")
+							return errors.New("only Kapsule clusters support private networks")
 						}
 
 					// For Kapsule clusters
@@ -449,7 +450,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		// if one auto upgrade attribute is set, they all must be set.
 		// if none is set, auto upgrade attributes will be computed.
 		if !(okAutoUpgradeDay && okAutoUpgradeStartHour) {
-			return append(diag.FromErr(fmt.Errorf("all field or zero field of auto_upgrade must be set")), diags...)
+			return append(diag.FromErr(errors.New("all field or zero field of auto_upgrade must be set")), diags...)
 		}
 	}
 
@@ -472,7 +473,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
 	if versionIsOnlyMinor != clusterAutoUpgradeEnabled {
-		return append(diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrade enabled")), diags...)
+		return append(diag.FromErr(errors.New("minor version x.y must be used with auto upgrade enabled")), diags...)
 	}
 
 	if versionIsOnlyMinor {
@@ -693,7 +694,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
 	if versionIsOnlyMinor != autoupgradeEnabled {
-		return append(diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrades enabled")), diags...)
+		return append(diag.FromErr(errors.New("minor version x.y must be used with auto upgrades enabled")), diags...)
 	}
 
 	if versionIsOnlyMinor {
@@ -813,7 +814,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		actual, planned := d.GetChange("private_network_id")
 		if planned == "" && actual != "" {
 			// It's not possible to remove the private network anymore
-			return append(diag.FromErr(fmt.Errorf("it is only possible to change the private network attached to the cluster, but not to remove it")), diags...)
+			return append(diag.FromErr(errors.New("it is only possible to change the private network attached to the cluster, but not to remove it")), diags...)
 		}
 		if actual == "" {
 			err = migrateToPrivateNetworkCluster(ctx, d, meta)

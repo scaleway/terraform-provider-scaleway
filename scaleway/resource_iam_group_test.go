@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -23,7 +24,7 @@ func testSweepIamGroup(_ string) error {
 
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {
-			return fmt.Errorf("missing organizationID")
+			return errors.New("missing organizationID")
 		}
 
 		listApps, err := api.ListGroups(&iam.ListGroupsRequest{

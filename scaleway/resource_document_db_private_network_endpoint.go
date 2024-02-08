@@ -184,7 +184,6 @@ func resourceScalewayDocumentDBInstanceEndpointUpdate(ctx context.Context, d *sc
 		}
 
 		_, err = waitForDocumentDBInstance(ctx, api, region, req.InstanceID, d.Timeout(schema.TimeoutCreate))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -203,7 +202,6 @@ func resourceScalewayDocumentDBInstanceEndpointDelete(ctx context.Context, d *sc
 		Region:     region,
 		EndpointID: id,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

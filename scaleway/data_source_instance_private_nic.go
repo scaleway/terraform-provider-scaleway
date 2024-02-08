@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -94,9 +95,9 @@ func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.Resourc
 		case len(privateNICs) == 1:
 			return privateNICs[0], nil
 		case len(privateNICs) == 0:
-			return nil, fmt.Errorf("found no private nic with given filters")
+			return nil, errors.New("found no private nic with given filters")
 		default:
-			return nil, fmt.Errorf("found more than one private nic with given filters")
+			return nil, errors.New("found more than one private nic with given filters")
 		}
 	}
 

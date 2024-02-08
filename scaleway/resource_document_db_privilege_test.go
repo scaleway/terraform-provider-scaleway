@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -212,7 +213,7 @@ func testAccCheckDocumentDBPrivilegeExists(tt *TestTools, instance string, datab
 		}
 
 		if len(databases.Privileges) != 1 {
-			return fmt.Errorf("no privilege found")
+			return errors.New("no privilege found")
 		}
 
 		return nil

@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -25,7 +26,7 @@ func testSweepIamPolicy(_ string) error {
 
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {
-			return fmt.Errorf("missing organizationID")
+			return errors.New("missing organizationID")
 		}
 
 		listPols, err := api.ListPolicies(&iam.ListPoliciesRequest{

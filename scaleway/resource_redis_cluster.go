@@ -520,7 +520,6 @@ func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceD
 		Zone:      zone,
 		ClusterID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

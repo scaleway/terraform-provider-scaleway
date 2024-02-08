@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -946,7 +947,7 @@ func testAccCheckScalewayInstancePrivateNICsExists(tt *TestTools, n string) reso
 		// check if private networks are present on server
 		for pnKey := range privateNetworksToCheckOnSchema {
 			if _, exist := privateNetworksOnServer[pnKey]; !exist {
-				return fmt.Errorf("private network does not exist")
+				return errors.New("private network does not exist")
 			}
 		}
 
@@ -997,7 +998,7 @@ func testAccCheckScalewayInstanceServerHasNewVolume(_ *TestTools, n string) reso
 
 		rootVolumeName, ok := rs.Primary.Attributes["root_volume.0.name"]
 		if !ok {
-			return fmt.Errorf("instance root_volume has no name")
+			return errors.New("instance root_volume has no name")
 		}
 
 		if strings.HasPrefix(rootVolumeName, "tf") {

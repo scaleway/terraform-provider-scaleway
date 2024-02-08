@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -72,7 +73,7 @@ func testAccCheckScalewayDocumentDBDatabaseExists(tt *TestTools, n string) resou
 		}
 
 		if len(resp.Databases) != 1 {
-			return fmt.Errorf("no database found")
+			return errors.New("no database found")
 		}
 
 		return nil

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -67,7 +68,7 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-basic.%s", testDomain)
+	testDNSZone := "test-basic." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_Basic: test dns zone: %s", testDNSZone)
 
 	name := "tf"
@@ -100,8 +101,8 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "name", ""),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "fqdn", testDNSZone),
 					testCheckResourceAttrUUID("scaleway_domain_record.tf_A", "id"),
 				),
@@ -123,8 +124,8 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "fqdn", name+"."+testDNSZone),
 					testCheckResourceAttrUUID("scaleway_domain_record.tf_A", "id"),
 				),
@@ -146,8 +147,8 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "data", dataUpdated),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "fqdn", name+"."+testDNSZone),
 					testCheckResourceAttrUUID("scaleway_domain_record.tf_A", "id"),
 				),
@@ -169,8 +170,8 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "data", dataUpdated),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", fmt.Sprint(ttlUpdated)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", fmt.Sprint(priorityUpdated)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", strconv.Itoa(ttlUpdated)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", strconv.Itoa(priorityUpdated)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "fqdn", name+"."+testDNSZone),
 					testCheckResourceAttrUUID("scaleway_domain_record.tf_A", "id"),
 				),
@@ -216,7 +217,7 @@ func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-basic2.%s", testDomain)
+	testDNSZone := "test-basic2." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_Basic: test dns zone: %s", testDNSZone)
 
 	recordType := "A"
@@ -271,8 +272,8 @@ func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "name", ""),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", strconv.Itoa(priority)),
 					testCheckResourceAttrUUID("scaleway_domain_record.tf_A", "id"),
 					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.aws_mx"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "dns_zone", testDNSZone),
@@ -294,7 +295,7 @@ func TestAccScalewayDomainRecord_Arobase(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-arobase.%s", testDomain)
+	testDNSZone := "test-arobase." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_Arobase: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -335,7 +336,7 @@ func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-geoip.%s", testDomain)
+	testDNSZone := "test-geoip." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_GeoIP: test dns zone: %s", testDNSZone)
 
 	name := "tf_geo_ip"
@@ -375,8 +376,8 @@ func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "geo_ip.0.matches.0.continents.0", "EU"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "geo_ip.0.matches.0.countries.0", "FR"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "geo_ip.0.matches.0.data", "1.2.3.4"),
@@ -411,8 +412,8 @@ func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "geo_ip.0.matches.0.continents.0", "EU"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "geo_ip.0.matches.0.continents.1", "AS"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_geo_ip", "geo_ip.0.matches.0.countries.0", "FR"),
@@ -431,7 +432,7 @@ func TestAccScalewayDomainRecord_HTTPService(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-httpservice.%s", testDomain)
+	testDNSZone := "test-httpservice." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_HTTPService: test dns zone: %s", testDNSZone)
 
 	name := "tf_http_service"
@@ -467,8 +468,8 @@ func TestAccScalewayDomainRecord_HTTPService(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.ips.0", "1.2.3.4"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.ips.1", "4.3.2.1"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.must_contain", "up"),
@@ -500,8 +501,8 @@ func TestAccScalewayDomainRecord_HTTPService(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.ips.0", "5.6.7.8"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.must_contain", "online"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.url", "http://mywebsite.com/healthcheck"),
@@ -518,7 +519,7 @@ func TestAccScalewayDomainRecord_View(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-view.%s", testDomain)
+	testDNSZone := "test-view." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_View: test dns zone: %s", testDNSZone)
 
 	name := "tf_view"
@@ -555,8 +556,8 @@ func TestAccScalewayDomainRecord_View(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "view.0.subnet", "100.0.0.0/16"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "view.0.data", "1.2.3.4"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "view.1.subnet", "100.1.0.0/16"),
@@ -591,8 +592,8 @@ func TestAccScalewayDomainRecord_View(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "view.0.subnet", "100.0.0.0/16"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "view.0.data", "1.2.3.4"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_view", "view.1.subnet", "90.1.0.0/32"),
@@ -610,7 +611,7 @@ func TestAccScalewayDomainRecord_Weighted(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-weighted.%s", testDomain)
+	testDNSZone := "test-weighted." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_Weighted: test dns zone: %s", testDNSZone)
 
 	name := "tf_weighted"
@@ -647,8 +648,8 @@ func TestAccScalewayDomainRecord_Weighted(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "weighted.0.ip", "1.2.3.4"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "weighted.0.weight", "1"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "weighted.1.ip", "4.3.2.1"),
@@ -683,8 +684,8 @@ func TestAccScalewayDomainRecord_Weighted(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "priority", strconv.Itoa(priority)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "weighted.0.ip", "1.2.3.4"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "weighted.0.weight", "2"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_weighted", "weighted.1.ip", "4.3.2.1"),
@@ -702,7 +703,7 @@ func TestAccScalewayDomainRecord_SRVZone(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-srv.%s", testDomain)
+	testDNSZone := "test-srv." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_SRVZone: test dns zone: %s", testDNSZone)
 
 	name := "_proxy-preproduction._tcp"
@@ -732,8 +733,8 @@ func TestAccScalewayDomainRecord_SRVZone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "priority", strconv.Itoa(priority)),
 					testCheckResourceAttrUUID("scaleway_domain_record.proxy_srv", "id"),
 				),
 			},
@@ -771,7 +772,7 @@ func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-basic-cname.%s", testDomain)
+	testDNSZone := "test-basic-cname." + testDomain
 	l.Debugf("TestAccScalewayDomainRecord_Basic: test dns zone: %s", testDNSZone)
 
 	name := "tf"
@@ -805,8 +806,8 @@ func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "data", data),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", strconv.Itoa(priority)),
 					testCheckResourceAttrUUID("scaleway_domain_record.tf_CNAME", "id"),
 				),
 			},
@@ -827,8 +828,8 @@ func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "data", dataUpdated),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", fmt.Sprint(ttl)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", strconv.Itoa(priority)),
 					testCheckResourceAttrUUID("scaleway_domain_record.tf_CNAME", "id"),
 				),
 			},
@@ -849,8 +850,8 @@ func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "type", recordType),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "data", dataUpdated),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", fmt.Sprint(ttlUpdated)),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", fmt.Sprint(priorityUpdated)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", strconv.Itoa(ttlUpdated)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", strconv.Itoa(priorityUpdated)),
 					testCheckResourceAttrUUID("scaleway_domain_record.tf_CNAME", "id"),
 				),
 			},

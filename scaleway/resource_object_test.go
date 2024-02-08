@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
@@ -735,7 +736,7 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 	return func(state *terraform.State) error {
 		rs := state.RootModule().Resources[n]
 		if rs == nil {
-			return fmt.Errorf("resource not found")
+			return errors.New("resource not found")
 		}
 		key := rs.Primary.Attributes["key"]
 
@@ -754,17 +755,16 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
+			return errors.New("no ID is set")
 		}
 
 		_, err = s3Client.GetObject(&s3.GetObjectInput{
 			Bucket: scw.StringPtr(bucketName),
 			Key:    scw.StringPtr(key),
 		})
-
 		if err != nil {
 			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
-				return fmt.Errorf("s3 object not found")
+				return errors.New("s3 object not found")
 			}
 			return err
 		}
@@ -801,7 +801,7 @@ func testAccCheckScalewayObjectDestroy(tt *TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("couldn't get object to verify if it stil exists: %s", err)
 			}
 
-			return fmt.Errorf("object should be deleted")
+			return errors.New("object should be deleted")
 		}
 		return nil
 	}

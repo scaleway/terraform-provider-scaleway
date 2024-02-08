@@ -2,14 +2,18 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	iotPolicySuffix = ".policy"
+	iotTopicsSuffix = ".topics"
 )
 
 func resourceScalewayIotDevice() *schema.Resource {
@@ -205,28 +209,28 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 		mf := &iot.DeviceMessageFilters{}
 
 		fqfn := "message_filters.0"
-		if _, ok := d.GetOk(fmt.Sprintf("%s.publish", fqfn)); ok {
-			fqfnS := fmt.Sprintf("%s.publish.0", fqfn)
+		if _, ok := d.GetOk(fqfn + ".publish"); ok {
+			fqfnS := fqfn + ".publish.0"
 			mfSet := iot.DeviceMessageFiltersRule{}
 
-			if policy, ok := d.GetOk(fmt.Sprintf("%s.policy", fqfnS)); ok {
+			if policy, ok := d.GetOk(fqfnS + iotPolicySuffix); ok {
 				mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(policy.(string))
 			}
-			if topics, ok := d.GetOk(fmt.Sprintf("%s.topics", fqfnS)); ok {
+			if topics, ok := d.GetOk(fqfnS + iotTopicsSuffix); ok {
 				mfSet.Topics = scw.StringsPtr(expandStringsOrEmpty(topics))
 			}
 
 			mf.Publish = &mfSet
 		}
 
-		if _, ok := d.GetOk(fmt.Sprintf("%s.subscribe", fqfn)); ok {
-			fqfnP := fmt.Sprintf("%s.subscribe.0", fqfn)
+		if _, ok := d.GetOk(fqfn + ".subscribe"); ok {
+			fqfnP := fqfn + ".subscribe.0"
 			mfSet := iot.DeviceMessageFiltersRule{}
 
-			if policy, ok := d.GetOk(fmt.Sprintf("%s.policy", fqfnP)); ok {
+			if policy, ok := d.GetOk(fqfnP + iotPolicySuffix); ok {
 				mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(policy.(string))
 			}
-			if topics, ok := d.GetOk(fmt.Sprintf("%s.topics", fqfnP)); ok {
+			if topics, ok := d.GetOk(fqfnP + iotTopicsSuffix); ok {
 				mfSet.Topics = scw.StringsPtr(expandStringsOrEmpty(topics))
 			}
 
@@ -372,28 +376,28 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 		mf := &iot.DeviceMessageFilters{}
 		updateRequest.MessageFilters = mf
 
-		if d.HasChange(fmt.Sprintf("%s.publish", fqfn)) {
-			fqfnS := fmt.Sprintf("%s.publish.0", fqfn)
+		if d.HasChange(fqfn + ".publish") {
+			fqfnS := fqfn + ".publish.0"
 			mfSet := iot.DeviceMessageFiltersRule{}
 			mf.Publish = &mfSet
 
 			mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(
-				d.Get(fmt.Sprintf("%s.policy", fqfnS)).(string))
+				d.Get(fqfnS + iotPolicySuffix).(string))
 
 			mfSet.Topics = scw.StringsPtr(
-				expandStringsOrEmpty(d.Get(fmt.Sprintf("%s.topics", fqfnS))))
+				expandStringsOrEmpty(d.Get(fqfnS + iotTopicsSuffix)))
 		}
 
-		if d.HasChange(fmt.Sprintf("%s.subscribe", fqfn)) {
-			fqfnP := fmt.Sprintf("%s.subscribe.0", fqfn)
+		if d.HasChange(fqfn + ".subscribe") {
+			fqfnP := fqfn + ".subscribe.0"
 			mfSet := iot.DeviceMessageFiltersRule{}
 			mf.Subscribe = &mfSet
 
 			mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(
-				d.Get(fmt.Sprintf("%s.policy", fqfnP)).(string))
+				d.Get(fqfnP + iotPolicySuffix).(string))
 
 			mfSet.Topics = scw.StringsPtr(
-				expandStringsOrEmpty(d.Get(fmt.Sprintf("%s.topics", fqfnP))))
+				expandStringsOrEmpty(d.Get(fqfnP + iotTopicsSuffix)))
 		}
 	}
 

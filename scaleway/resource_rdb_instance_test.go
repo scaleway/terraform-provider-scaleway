@@ -1114,7 +1114,6 @@ func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFu
 			InstanceID: ID,
 			Region:     region,
 		})
-
 		if err != nil {
 			return err
 		}

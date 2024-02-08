@@ -706,8 +706,8 @@ func validateInstallConfig(ctx context.Context, d *schema.ResourceData, meta int
 		if baremetalInstallAttributeMissing(installAttr.Field, d, installAttr.Attribute) {
 			diags = append(diags, diag.Diagnostic{
 				Severity:      diag.Error,
-				Summary:       fmt.Sprintf("%s attribute is required", installAttr.Attribute),
-				Detail:        fmt.Sprintf("%s is required for this os", installAttr.Attribute),
+				Summary:       installAttr.Attribute + " attribute is required",
+				Detail:        installAttr.Attribute + " is required for this os",
 				AttributePath: cty.GetAttrPath(installAttr.Attribute),
 			})
 		}

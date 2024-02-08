@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -56,7 +57,7 @@ func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Reso
 			return diag.FromErr(err)
 		}
 		if res.TotalCount == 0 {
-			return diag.FromErr(fmt.Errorf("no gateway network found with the filters"))
+			return diag.FromErr(errors.New("no gateway network found with the filters"))
 		}
 		if res.TotalCount > 1 {
 			return diag.FromErr(fmt.Errorf("%d gateway networks found with filters", res.TotalCount))

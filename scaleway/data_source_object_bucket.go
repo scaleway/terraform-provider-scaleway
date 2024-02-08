@@ -48,7 +48,6 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 
 	log.Printf("[DEBUG] Reading Object Storage bucket: %s", input)
 	_, err = s3Client.HeadBucketWithContext(ctx, input)
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed getting Object Storage bucket (%s): %w", bucket, err))
 	}

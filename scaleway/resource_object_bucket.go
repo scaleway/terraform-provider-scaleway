@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -210,7 +211,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 			if diff.Get("object_lock_enabled").(bool) {
 				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
-					return fmt.Errorf("versioning must be enabled when object lock is enabled")
+					return errors.New("versioning must be enabled when object lock is enabled")
 				}
 			}
 

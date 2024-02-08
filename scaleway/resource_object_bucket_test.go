@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -438,7 +439,7 @@ func testAccCheckScalewayObjectBucketDestroy(tt *TestTools) resource.TestCheckFu
 				return fmt.Errorf("couldn't get bucket to verify if it stil exists: %s", err)
 			}
 
-			return fmt.Errorf("bucket should be deleted")
+			return errors.New("bucket should be deleted")
 		}
 		return nil
 	}
@@ -689,7 +690,7 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 		}
 
 		if out == nil {
-			return fmt.Errorf("CORS Rules nil")
+			return errors.New("CORS Rules nil")
 		}
 
 		if !reflect.DeepEqual(out.CORSRules, corsRules) {
@@ -704,7 +705,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string, shouldBeAll
 	return func(state *terraform.State) error {
 		rs := state.RootModule().Resources[n]
 		if rs == nil {
-			return fmt.Errorf("resource not found")
+			return errors.New("resource not found")
 		}
 		bucketName := rs.Primary.Attributes["name"]
 		bucketRegion := rs.Primary.Attributes["region"]
@@ -719,7 +720,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string, shouldBeAll
 			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
+			return errors.New("no ID is set")
 		}
 
 		_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
@@ -730,7 +731,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string, shouldBeAll
 				return nil
 			}
 			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
-				return fmt.Errorf("s3 bucket not found")
+				return errors.New("s3 bucket not found")
 			}
 			return err
 		}
@@ -806,7 +807,7 @@ func testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt *TestTools,
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
+			return errors.New("no ID is set")
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]

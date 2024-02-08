@@ -3,6 +3,7 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -408,7 +409,7 @@ func lbUpgradeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interfa
 	// element id: upgrade
 	ID, exist := rawState["id"]
 	if !exist {
-		return nil, fmt.Errorf("upgrade: id not exist")
+		return nil, errors.New("upgrade: id not exist")
 	}
 	rawState["id"], err = lbUpgradeV1RegionalToZonedID(ID.(string))
 	if err != nil {

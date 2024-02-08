@@ -179,7 +179,6 @@ func testAccCheckScalewayContainerTriggerExists(tt *TestTools, n string) resourc
 			TriggerID: id,
 			Region:    region,
 		})
-
 		if err != nil {
 			return err
 		}

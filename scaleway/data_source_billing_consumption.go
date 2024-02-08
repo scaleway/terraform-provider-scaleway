@@ -3,7 +3,7 @@ package scaleway
 import (
 	"context"
 	"crypto/sha256"
-	"fmt"
+	"encoding/hex"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -96,7 +96,7 @@ func dataSourceScalewayBillingConsumptionsRead(ctx context.Context, d *schema.Re
 	}
 
 	hashedID := sha256.Sum256([]byte(d.Get("organization_id").(string)))
-	d.SetId(fmt.Sprintf("%x", hashedID))
+	d.SetId(hex.EncodeToString(hashedID[:]))
 	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
 	_ = d.Set("consumptions", consumptions)
 

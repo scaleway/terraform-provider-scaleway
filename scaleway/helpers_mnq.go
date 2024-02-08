@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -135,7 +136,7 @@ func decomposeARN(arn string) (*ARN, error) {
 	}
 	projectID, found := strings.CutPrefix(elems[4], "project-")
 	if !found {
-		return nil, fmt.Errorf("expected part 3 to have format \"project-{uuid}\"")
+		return nil, errors.New("expected part 3 to have format \"project-{uuid}\"")
 	}
 
 	a := &ARN{

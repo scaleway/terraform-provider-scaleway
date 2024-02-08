@@ -63,7 +63,6 @@ func testAccCheckScalewayBaremetalOptionExists(tt *TestTools, n string) resource
 			OptionID: ID,
 			Zone:     zone,
 		})
-
 		if err != nil {
 			return err
 		}

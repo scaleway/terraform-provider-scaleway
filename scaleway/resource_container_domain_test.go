@@ -13,7 +13,7 @@ func TestAccScalewayContainerDomain_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("container-basic.%s", testDomain)
+	testDNSZone := "container-basic." + testDomain
 	l.Debugf("TestAccScalewayContainerDomain_Basic: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{

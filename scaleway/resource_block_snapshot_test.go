@@ -92,7 +92,6 @@ func testAccCheckScalewayBlockSnapshotExists(tt *TestTools, n string) resource.T
 			SnapshotID: id,
 			Zone:       zone,
 		})
-
 		if err != nil {
 			return err
 		}

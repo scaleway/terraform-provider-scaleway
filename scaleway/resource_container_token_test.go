@@ -71,7 +71,6 @@ func testAccCheckScalewayContainerTokenExists(tt *TestTools, n string) resource.
 			TokenID: id,
 			Region:  region,
 		})
-
 		if err != nil {
 			return err
 		}

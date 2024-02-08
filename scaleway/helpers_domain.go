@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -45,7 +46,7 @@ func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []
 		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
 		if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
 			if currentRecord != nil {
-				return nil, fmt.Errorf("multiple records found with same type and data")
+				return nil, errors.New("multiple records found with same type and data")
 			}
 			currentRecord = r
 			break

@@ -35,7 +35,7 @@ func dataSourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Res
 	regionalID := expandRegionalID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
-	tflog.Debug(ctx, fmt.Sprintf("bucket name: %s", bucket))
+	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
 		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
@@ -46,7 +46,7 @@ func dataSourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Res
 	}
 	_ = d.Set("region", region)
 
-	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] SCW bucket policy, read for bucket: %s", d.Id()))
+	tflog.Debug(ctx, "[DEBUG] SCW bucket policy, read for bucket: "+d.Id())
 	policy, err := s3Client.GetBucketPolicyWithContext(ctx, &s3.GetBucketPolicyInput{
 		Bucket: aws.String(bucket),
 	})

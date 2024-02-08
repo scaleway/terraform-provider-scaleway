@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -235,7 +236,7 @@ func TestAccScalewayLbLb_Migrate(t *testing.T) {
 							return fmt.Errorf("resource not found: %s", "scaleway_lb.main")
 						}
 						if rs.Primary.ID != lbID {
-							return fmt.Errorf("LB id has changed")
+							return errors.New("LB id has changed")
 						}
 						return nil
 					},
@@ -767,7 +768,6 @@ func testAccCheckScalewayLbExists(tt *TestTools, n string) resource.TestCheckFun
 			LBID: ID,
 			Zone: zone,
 		})
-
 		if err != nil {
 			return err
 		}

@@ -3,6 +3,7 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -88,7 +89,7 @@ func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 }
 
 func expandBaremetalPrivateNetworks(pn interface{}) []string {
-	var privateNetworkIDs []string
+	privateNetworkIDs := make([]string, 0, len(pn.(*schema.Set).List()))
 
 	for _, op := range pn.(*schema.Set).List() {
 		rawPN := op.(map[string]interface{})
@@ -370,7 +371,7 @@ func customDiffBaremetalPrivateNetworkOption() func(ctx context.Context, diff *s
 		}
 
 		if okPrivateNetwork && !isPrivateNetworkOption {
-			return fmt.Errorf("private network option needs to be enabled in order to attach a private network")
+			return errors.New("private network option needs to be enabled in order to attach a private network")
 		}
 
 		return nil

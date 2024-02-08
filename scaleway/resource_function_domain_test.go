@@ -13,7 +13,7 @@ func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("function-basic.%s", testDomain)
+	testDNSZone := "function-basic." + testDomain
 	l.Debugf("TestAccScalewayContainerDomain_Basic: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -86,7 +86,6 @@ func testAccCheckScalewayFunctionDomainExists(tt *TestTools, n string) resource.
 			DomainID: id,
 			Region:   region,
 		})
-
 		if err != nil {
 			return err
 		}
