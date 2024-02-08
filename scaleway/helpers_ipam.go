@@ -154,6 +154,7 @@ func diffSuppressFuncStandaloneIPandCIDR(_, oldValue, newValue string, _ *schema
 	return false
 }
 
+// lintignore:V014
 func validateStandaloneIPorDefaultCIDR() func(interface{}, string) ([]string, []error) {
 	return func(val interface{}, key string) (warns []string, errs []error) {
 		ip, isString := val.(string)
