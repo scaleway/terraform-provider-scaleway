@@ -56,6 +56,7 @@ linters:
     - protogetter # Reports direct reads from proto message fields when getters should be used [fast: false, auto-fix: true]
     - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint. [fast: false, auto-fix: false]
     - rowserrcheck # checks whether Err of rows is checked successfully [fast: false, auto-fix: false]
+    - sloglint # ensure consistent code style when using log/slog [fast: false, auto-fix: false]
     - sqlclosecheck # Checks that sql.Rows and sql.Stmt are closed. [fast: false, auto-fix: false]
     - stylecheck # Stylecheck is a replacement for golint [fast: false, auto-fix: false]
     - tagliatelle # Checks the struct tags. [fast: true, auto-fix: false]
@@ -67,6 +68,7 @@ linters:
     - unconvert # Remove unnecessary type conversions [fast: false, auto-fix: false]
     - wastedassign # wastedassign finds wasted assignment statements. [fast: false, auto-fix: false]
     - whitespace # Tool for detection of leading and trailing whitespace [fast: true, auto-fix: true]
+    - zerologlint # Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg` [fast: false, auto-fix: false]
 
   disable:
     - cyclop # checks function and package cyclomatic complexity [fast: false, auto-fix: false]
@@ -91,7 +93,6 @@ linters:
     - staticcheck #(megacheck): Staticcheck is a go vet on steroids, applying a ton of static analysis checks [fast: false, auto-fix: false]
     - unused #(megacheck): Checks Go code for unused constants, variables, functions and types [fast: false, auto-fix: false]
     - varnamelen # checks that the length of a variable's name matches its scope [fast: false, auto-fix: false]
-    - wrapcheck # Checks that errors returned from external packages are wrapped [fast: false, auto-fix: false]
     - wsl # Whitespace Linter - Forces you to use empty lines! [fast: true, auto-fix: false]
 
 linters-settings:
