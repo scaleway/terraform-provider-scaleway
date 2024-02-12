@@ -510,9 +510,10 @@ func expandStringsPtr(data interface{}) *[]string {
 		}
 		stringSlice = append(stringSlice, s.(string))
 	}
-	if stringSlice == nil {
+	if len(stringSlice) == 0 {
 		return nil
 	}
+
 	return &stringSlice
 }
 
