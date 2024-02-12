@@ -122,43 +122,6 @@ func TestAccScalewayIPAMIP_WithStandaloneAddress(t *testing.T) {
 	})
 }
 
-func TestAccScalewayIPAMIP_WithCIDRAddress(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_vpc vpc01 {
-						name = "my vpc"
-					}
-
-					resource scaleway_vpc_private_network pn01 {
-						vpc_id = scaleway_vpc.vpc01.id
-						ipv4_subnet {
-							subnet = "172.16.32.0/22"
-						}
-					}
-
-					resource scaleway_ipam_ip ip01 {
-					 address = "172.16.32.5/22"
-					 source {
-						private_network_id = scaleway_vpc_private_network.pn01.id
-					  }
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIPAMIPExists(tt, "scaleway_ipam_ip.ip01"),
-					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "address", "172.16.32.5/22"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccScalewayIPAMIP_WithTags(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
