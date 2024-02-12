@@ -60,7 +60,7 @@ func waitForBlockVolume(ctx context.Context, blockAPI *block.API, zone scw.Zone,
 
 // customDiffCannotShrink set key to forceNew if value shrink
 func customDiffCannotShrink(key string) schema.CustomizeDiffFunc {
-	return customdiff.ForceNewIf(key, func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+	return customdiff.ForceNewIf(key, func(_ context.Context, d *schema.ResourceDiff, _ interface{}) bool {
 		oldValueI, newValueI := d.GetChange(key)
 		oldValue := oldValueI.(int)
 		newValue := newValueI.(int)

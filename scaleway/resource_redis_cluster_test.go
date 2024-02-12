@@ -410,7 +410,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.endpoint_id"),
 					testAccCheckScalewayRedisPrivateNetworksIpsAreEither("scaleway_redis_cluster.main", "10.12.1.0/20", "192.168.1.0/20"),
-					testAccCheckScalewayRedisPrivateNetworksIdsAreEither("scaleway_redis_cluster.main", "scaleway_vpc_private_network.pn", "scaleway_vpc_private_network.pn2"),
+					testAccCheckScalewayRedisPrivateNetworksIDsAreEither("scaleway_redis_cluster.main", "scaleway_vpc_private_network.pn", "scaleway_vpc_private_network.pn2"),
 				),
 			},
 			{
@@ -728,7 +728,7 @@ func testAccCheckScalewayRedisPrivateNetworksIpsAreEither(name string, possibili
 	}
 }
 
-func testAccCheckScalewayRedisPrivateNetworksIdsAreEither(name string, possibilities ...string) resource.TestCheckFunc {
+func testAccCheckScalewayRedisPrivateNetworksIDsAreEither(name string, possibilities ...string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[name]
 		if !ok {

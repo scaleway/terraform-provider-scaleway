@@ -36,7 +36,7 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "Accept the Scaleway Terms of Service",
-				ValidateFunc: func(i interface{}, k string) (warnings []string, errs []error) {
+				ValidateFunc: func(i interface{}, _ string) (warnings []string, errs []error) {
 					v := i.(bool)
 					if !v {
 						errs = append(errs, errors.New("you must accept the Scaleway Terms of Service to use this service"))

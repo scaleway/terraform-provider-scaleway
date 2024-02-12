@@ -60,7 +60,7 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayIamPolicyDestroy(tt),
@@ -133,7 +133,7 @@ func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayIamPolicyDestroy(tt),
@@ -198,7 +198,7 @@ func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayIamPolicyDestroy(tt),
@@ -300,7 +300,7 @@ func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayIamPolicyDestroy(tt),
@@ -390,7 +390,7 @@ func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayIamPolicyDestroy(tt),
@@ -455,7 +455,7 @@ func TestAccScalewayIamPolicy_ChangeRulePrincipal(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayIamPolicyDestroy(tt),

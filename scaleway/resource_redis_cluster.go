@@ -120,7 +120,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description:   "Private network specs details",
 				ConflictsWith: []string{"acl"},
 				Set:           redisPrivateNetworkSetHash,
-				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
 					// Check if the key is for the 'id' attribute
 					if strings.HasSuffix(k, "id") {
 						return expandID(oldValue) == expandID(newValue)

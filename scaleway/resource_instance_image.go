@@ -187,9 +187,9 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 		Public:     expandBoolPtr(d.Get("public")),
 	}
 
-	extraVolumesIds, volumesExist := d.GetOk("additional_volume_ids")
+	extraVolumesIDs, volumesExist := d.GetOk("additional_volume_ids")
 	if volumesExist {
-		snapResponses, err := getSnapshotsFromIds(ctx, extraVolumesIds.([]interface{}), instanceAPI)
+		snapResponses, err := getSnapshotsFromIDs(ctx, extraVolumesIDs.([]interface{}), instanceAPI)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -289,7 +289,7 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.HasChange("additional_volume_ids") {
-		snapResponses, err := getSnapshotsFromIds(ctx, d.Get("additional_volume_ids").([]interface{}), instanceAPI)
+		snapResponses, err := getSnapshotsFromIDs(ctx, d.Get("additional_volume_ids").([]interface{}), instanceAPI)
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -562,7 +562,7 @@ func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone,
 	return image, err
 }
 
-func getSnapshotsFromIds(ctx context.Context, snapIDs []interface{}, instanceAPI *instance.API) ([]*instance.GetSnapshotResponse, error) {
+func getSnapshotsFromIDs(ctx context.Context, snapIDs []interface{}, instanceAPI *instance.API) ([]*instance.GetSnapshotResponse, error) {
 	snapResponses := []*instance.GetSnapshotResponse(nil)
 	for _, snapID := range snapIDs {
 		zone, id, err := parseZonedID(snapID.(string))

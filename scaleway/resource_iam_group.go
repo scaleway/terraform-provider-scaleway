@@ -93,13 +93,13 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 
 	d.SetId(group.ID)
 
-	appIds := expandStrings(d.Get("application_ids").(*schema.Set).List())
-	userIds := expandStrings(d.Get("user_ids").(*schema.Set).List())
-	if !d.Get("external_membership").(bool) && (len(appIds) > 0 || len(userIds) > 0) {
+	appIDs := expandStrings(d.Get("application_ids").(*schema.Set).List())
+	userIDs := expandStrings(d.Get("user_ids").(*schema.Set).List())
+	if !d.Get("external_membership").(bool) && (len(appIDs) > 0 || len(userIDs) > 0) {
 		_, err := api.SetGroupMembers(&iam.SetGroupMembersRequest{
 			GroupID:        group.ID,
-			ApplicationIDs: appIds,
-			UserIDs:        userIds,
+			ApplicationIDs: appIDs,
+			UserIDs:        userIDs,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -160,12 +160,12 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if !d.Get("external_membership").(bool) && d.HasChanges("application_ids", "user_ids") {
-		appIds := expandStrings(d.Get("application_ids").(*schema.Set).List())
-		userIds := expandStrings(d.Get("user_ids").(*schema.Set).List())
-		if len(appIds) > 0 || len(userIds) > 0 {
+		appIDs := expandStrings(d.Get("application_ids").(*schema.Set).List())
+		userIDs := expandStrings(d.Get("user_ids").(*schema.Set).List())
+		if len(appIDs) > 0 || len(userIDs) > 0 {
 			_, err = api.SetGroupMembers(&iam.SetGroupMembersRequest{
-				ApplicationIDs: appIds,
-				UserIDs:        userIds,
+				ApplicationIDs: appIDs,
+				UserIDs:        userIDs,
 				GroupID:        group.ID,
 			}, scw.WithContext(ctx))
 			if err != nil {

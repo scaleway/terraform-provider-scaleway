@@ -61,7 +61,7 @@ func resourceScalewayInstanceIP() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 			// The only allowed change is
 			// nat -> routed_ipv4
 			if diff.HasChange("type") {

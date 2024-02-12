@@ -685,7 +685,7 @@ func flattenIPNet(ipNet scw.IPNet) (string, error) {
 }
 
 func validateDuration() schema.SchemaValidateFunc {
-	return func(i interface{}, s string) (strings []string, errors []error) {
+	return func(i interface{}, _ string) (strings []string, errors []error) {
 		str, isStr := i.(string)
 		if !isStr {
 			return nil, []error{fmt.Errorf("%v is not a string", i)}
@@ -835,7 +835,7 @@ func getBool(d *schema.ResourceData, key string) interface{} {
 // validateDate will validate that field is a valid ISO 8601
 // It is the same as RFC3339
 func validateDate() schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i interface{}, _ cty.Path) diag.Diagnostics {
 		date, isStr := i.(string)
 		if !isStr {
 			return diag.Errorf("%v is not a string", date)
@@ -882,7 +882,7 @@ func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
 }
 
 func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i interface{}, _ cty.Path) diag.Diagnostics {
 		m := expandMapStringStringPtr(i)
 		for k := range m {
 			if strings.ToLower(k) != k {
@@ -977,7 +977,7 @@ func getLocality(diff *schema.ResourceDiff, meta *Meta) string {
 // Should not be used on computed keys, if a computed key is going to change on zone/region change
 // this function will still block the terraform plan
 func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
-	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, i interface{}) error {
 		locality := getLocality(diff, i.(*Meta))
 
 		if locality == "" {

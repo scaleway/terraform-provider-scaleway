@@ -446,7 +446,7 @@ func testAccCheckScalewayObjectBucketDestroy(tt *TestTools) resource.TestCheckFu
 }
 
 func testSweepStorageObjectBucket(_ string) error {
-	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(scwClient *scw.Client, region scw.Region) error {
+	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(_ *scw.Client, region scw.Region) error {
 		s3client, err := sharedS3ClientForRegion(region)
 		if err != nil {
 			return fmt.Errorf("error getting client: %s", err)

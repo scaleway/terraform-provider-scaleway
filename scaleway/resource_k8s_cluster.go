@@ -232,7 +232,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 		},
 		CustomizeDiff: customdiff.All(
-			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 				autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
 
 				version := diff.Get("version").(string)
@@ -244,7 +244,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 
 				return nil
 			},
-			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 				if diff.HasChange("private_network_id") {
 					actual, planned := diff.GetChange("private_network_id")
 					clusterType := diff.Get("type").(string)
