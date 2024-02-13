@@ -31,3 +31,56 @@ func jobsAPIWithRegionAndID(m interface{}, regionalID string) (*jobs.API, scw.Re
 
 	return jobsAPI, region, ID, nil
 }
+
+type JobDefinitionCron struct {
+	Schedule string
+	Timezone string
+}
+
+func (c *JobDefinitionCron) ToCreateRequest() *jobs.CreateJobDefinitionRequestCronScheduleConfig {
+	if c == nil {
+		return nil
+	}
+
+	return &jobs.CreateJobDefinitionRequestCronScheduleConfig{
+		Schedule: c.Schedule,
+		Timezone: c.Timezone,
+	}
+}
+
+func (c *JobDefinitionCron) ToUpdateRequest() *jobs.UpdateJobDefinitionRequestCronScheduleConfig {
+	if c == nil {
+		return (&JobDefinitionCron{}).ToUpdateRequest() // Give an empty update request to delete cron
+	}
+
+	return &jobs.UpdateJobDefinitionRequestCronScheduleConfig{
+		Schedule: &c.Schedule,
+		Timezone: &c.Timezone,
+	}
+}
+
+func expandJobDefinitionCron(i any) *JobDefinitionCron {
+	rawList := i.([]any)
+	if len(rawList) == 0 {
+		return nil
+	}
+	rawCron := rawList[0].(map[string]any)
+
+	return &JobDefinitionCron{
+		Schedule: rawCron["schedule"].(string),
+		Timezone: rawCron["timezone"].(string),
+	}
+}
+
+func flattenJobDefinitionCron(cron *jobs.CronSchedule) []any {
+	if cron == nil {
+		return []any{}
+	}
+
+	return []any{
+		map[string]any{
+			"schedule": cron.Schedule,
+			"timezone": cron.Timezone,
+		},
+	}
+}
