@@ -22,7 +22,7 @@ func TestAccScalewayDataSourceIotDevice_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_iot_hub" "test" {
-						name = "test_iot_hub_datasource"
+						name = "test_iot_device_datasource"
 						product_plan = "plan_shared"
 					}
 
