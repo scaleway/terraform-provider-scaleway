@@ -350,7 +350,7 @@ func baremetalCompareOptions(slice1, slice2 []*baremetal.ServerOption) []*bareme
 
 // customDiffBaremetalPrivateNetworkOption checks that the private_network option has been set if there is a private_network
 func customDiffBaremetalPrivateNetworkOption() func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		var isPrivateNetworkOption bool
 
 		_, okPrivateNetwork := diff.GetOk("private_network")

@@ -138,7 +138,7 @@ func resourceScalewayWebhosting() *schema.Resource {
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 		},
-		CustomizeDiff: func(context context.Context, diff *schema.ResourceDiff, m interface{}) error {
+		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 			if diff.HasChange("tags") {
 				oldTagsInterface, newTagsInterface := diff.GetChange("tags")
 				oldTags := expandStrings(oldTagsInterface)

@@ -374,7 +374,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 		deletionWorkers = maxObjectVersionDeletionWorkers
 	}
 
-	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
+	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, _ bool) bool {
 		pool := internal.NewWorkerPool(deletionWorkers)
 
 		for _, objectVersion := range page.Versions {
@@ -419,7 +419,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 		return globalErr
 	}
 
-	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
+	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, _ bool) bool {
 		pool := internal.NewWorkerPool(deletionWorkers)
 
 		for _, deleteMarkerEntry := range page.DeleteMarkers {

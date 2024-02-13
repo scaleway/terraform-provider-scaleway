@@ -22,7 +22,7 @@ func TestAccScalewayDataSourceSecret_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewaySecretDestroy(tt),

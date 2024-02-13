@@ -125,7 +125,7 @@ func TestAccScalewayMNQSQSQueue_DefaultProject(t *testing.T) {
 		}(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayMNQSQSQueueDestroy(tt),
-			func(state *terraform.State) error {
+			func(_ *terraform.State) error {
 				return accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 					ProjectID: projectID,
 				})

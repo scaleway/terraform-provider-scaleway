@@ -99,7 +99,7 @@ func TestAccScalewayDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayObjectBucketDestroy(tt),
@@ -148,7 +148,7 @@ func TestAccScalewayDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayObjectBucketDestroy(tt),

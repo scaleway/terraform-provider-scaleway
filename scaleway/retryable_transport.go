@@ -34,7 +34,7 @@ func newRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 	}
 
 	// If ErrorHandler is not set, retryablehttp will wrap http errors
-	c.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+	c.ErrorHandler = func(resp *http.Response, err error, _ int) (*http.Response, error) {
 		// err is not nil if there was an error while performing request
 		// it should be passed, but do not create an error when request contains an error code
 		// http errors are handled by sdk coming after this transport

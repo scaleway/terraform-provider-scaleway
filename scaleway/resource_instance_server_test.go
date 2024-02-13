@@ -1839,7 +1839,7 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(s *terraform.State) error {
+			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
 			testAccCheckScalewayInstanceServerDestroy(tt),

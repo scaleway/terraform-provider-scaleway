@@ -65,7 +65,7 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Optional:      true,
 				Description:   "IP Type (ipv4, ipv6)",
 				ConflictsWith: []string{"ipam_ip_id"},
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+				ValidateDiagFunc: func(i interface{}, _ cty.Path) diag.Diagnostics {
 					switch i.(string) {
 					case "ipv4":
 						return nil
