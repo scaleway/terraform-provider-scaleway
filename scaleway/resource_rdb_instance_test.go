@@ -519,6 +519,7 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 						volume_size_in_gb = 10
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.pn01.id}"
+							enable_ipam = true
 						}
 					}
 				`, latestEngineVersion),
@@ -553,6 +554,7 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 						volume_size_in_gb = 10
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.pn02.id}"
+							enable_ipam = true
 						}
 					}
 				`, latestEngineVersion),
@@ -664,13 +666,14 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 						volume_size_in_gb = 10`, latestEngineVersion) + `
 						private_network {
 							pn_id  = scaleway_vpc_private_network.pn01.id
+							enable_ipam = true
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn01"),
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn01", "id"),
 				),
 			},
@@ -1023,6 +1026,7 @@ func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_rdb_instance", "test_endpoints" ]
 						private_network {
 							pn_id = scaleway_vpc_private_network.test_endpoints.id
+							enable_ipam = true
 						}
 					}
 				`, latestEngineVersion),
@@ -1054,6 +1058,7 @@ func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_rdb_instance", "test_endpoints" ]
 						private_network {
 							pn_id = scaleway_vpc_private_network.test_endpoints.id
+							enable_ipam = true
 						}
 						load_balancer {}
 					}

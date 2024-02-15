@@ -151,6 +151,7 @@ func TestAccScalewayDataSourceIPAMIP_RDB(t *testing.T) {
 						volume_size_in_gb = 10
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.main.id}"
+							enable_ipam = true
 						}
 					}
 

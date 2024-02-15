@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -98,14 +99,13 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 							Description:  "The IP network address within the private subnet",
 							Optional:     true,
 							Computed:     true,
-							AtLeastOneOf: []string{"private_network.0.enable_ipam"},
 							ValidateFunc: validation.IsCIDR,
 						},
 						"enable_ipam": {
-							Type:         schema.TypeBool,
-							Optional:     true,
-							AtLeastOneOf: []string{"private_network.0.service_ip"},
-							Description:  "Whether or not the private network endpoint should be configured with IPAM",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Whether or not the private network endpoint should be configured with IPAM",
 						},
 						"zone": {
 							Type:        schema.TypeString,
@@ -158,13 +158,14 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 	if directAccess := expandReadReplicaEndpointsSpecDirectAccess(d.Get("direct_access")); directAccess != nil {
 		endpointSpecs = append(endpointSpecs, directAccess)
 	}
-	enableIpam := true
-	if _, ipSet := d.GetOk("private_network.0.service_ip"); ipSet {
-		enableIpam = false
-	}
-	if pn, err := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"), enableIpam); err != nil || pn != nil {
-		if err != nil {
-			return diag.FromErr(err)
+
+	ipamConfig, staticConfig := getIPConfigCreate(d, "service_ip")
+	if pn, diags := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"), ipamConfig, staticConfig); err != nil || pn != nil {
+		if diags.HasError() {
+			return diags
+		}
+		for _, warning := range diags {
+			tflog.Warn(ctx, warning.Detail)
 		}
 		endpointSpecs = append(endpointSpecs, pn)
 	}
@@ -204,7 +205,7 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	enableIpam, err := isIpamEndpoint(rr, meta)
+	enableIpam, err := getIPAMConfigRead(rr, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -283,18 +284,13 @@ func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.Resourc
 		}
 		// create a new one if defined
 		if pn, pnExists := d.GetOk("private_network"); pnExists {
-			// "enable_ipam" is not readable from the API, so we just read the user's config
-			enableIpam := true
-			if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() {
-				pnRawConfig := rawConfig.AsValueMap()["private_network"].AsValueSlice()[0].AsValueMap()
-				if !pnRawConfig["enable_ipam"].IsNull() && pnRawConfig["enable_ipam"].False() ||
-					!pnRawConfig["service_ip"].IsNull() {
-					enableIpam = false
-				}
+			ipamConfig, staticConfig := getIPConfigUpdate(d, "service_ip")
+			pnEndpoint, diags := expandReadReplicaEndpointsSpecPrivateNetwork(pn, ipamConfig, staticConfig)
+			if diags.HasError() {
+				return diags
 			}
-			pnEndpoint, err := expandReadReplicaEndpointsSpecPrivateNetwork(pn, enableIpam)
-			if err != nil {
-				return diag.FromErr(err)
+			for _, warning := range diags {
+				tflog.Warn(ctx, warning.Detail)
 			}
 			newEndpoints = append(newEndpoints, pnEndpoint)
 		}

@@ -30,7 +30,7 @@ resource scaleway_rdb_read_replica "replica" {
 }
 ```
 
-### Private network
+### Private network with static endpoint
 
 ```terraform
 resource "scaleway_rdb_instance" "instance" {
@@ -49,7 +49,32 @@ resource "scaleway_rdb_read_replica" "replica" {
   instance_id = scaleway_rdb_instance.instance.id
   private_network {
     private_network_id = scaleway_vpc_private_network.pn.id
-    service_ip         = "192.168.1.254/24" // omit this attribute if private IP is determined by the IP Address Management (IPAM)
+    service_ip         = "192.168.1.254/24"
+    # enable_ipam = false
+  }
+}
+```
+
+### Private network with IPAM
+
+```terraform
+resource "scaleway_rdb_instance" "instance" {
+  name           = "rdb_instance"
+  node_type      = "db-dev-s"
+  engine         = "PostgreSQL-14"
+  is_ha_cluster  = false
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+resource "scaleway_vpc_private_network" "pn" {}
+
+resource "scaleway_rdb_read_replica" "replica" {
+  instance_id = scaleway_rdb_instance.instance.id
+  private_network {
+    private_network_id = scaleway_vpc_private_network.pn.id
+    enable_ipam = true
   }
 }
 ```
@@ -66,9 +91,8 @@ The following arguments are supported:
 
 - `private_network` - (Optional) Create an endpoint in a private network.
     - `private_network_id` - (Required) UUID of the private network to be connected to the read replica.
-    - `service_ip` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a
-      CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
-      service if not set.
+    - `service_ip` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
+    - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
 
 - `same_zone` - (Defaults to `true`) Defines whether to create the replica in the same availability zone as the main instance nodes or not.
 
@@ -96,6 +120,7 @@ they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-11111
     - `port` - TCP port of the endpoint.
     - `name` - Name of the endpoint.
     - `hostname` - Hostname of the endpoint. Only one of ip and hostname may be set.
+    - `enable_ipam` - Indicates whether the IP is managed by IPAM.
 
 ## Import
 
