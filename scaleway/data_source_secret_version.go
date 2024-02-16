@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1alpha1"
+	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -60,14 +60,30 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	var payloadSecretRaw []byte
 
 	if !existSecretID {
-		request := &secret.AccessSecretVersionByNameRequest{
-			Region:     region,
-			SecretName: d.Get("secret_name").(string),
-			Revision:   d.Get("revision").(string),
-			ProjectID:  expandStringPtr(d.Get("project_id")),
+		secretName := d.Get("secret_name").(string)
+		secrets, err := api.ListSecrets(&secret.ListSecretsRequest{
+			Region: region,
+			Name:   &secretName,
+		})
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
-		res, err := api.AccessSecretVersionByName(request, scw.WithContext(ctx))
+		secretByName := (*secret.Secret)(nil)
+		for _, s := range secrets.Secrets {
+			if s.Name == secretName {
+				if secretByName != nil {
+					return diag.Errorf("found multiple secret with the same name (%s)", secretName)
+				}
+				secretByName = s
+			}
+		}
+
+		res, err := api.AccessSecretVersion(&secret.AccessSecretVersionRequest{
+			Region:   region,
+			SecretID: secretByName.ID,
+			Revision: d.Get("revision").(string),
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

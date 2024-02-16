@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1alpha1"
+	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -167,7 +167,7 @@ func resourceScalewaySecretVersionDelete(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	_, err = api.DestroySecretVersion(&secret.DestroySecretVersionRequest{
+	err = api.DeleteSecretVersion(&secret.DeleteSecretVersionRequest{
 		Region:   region,
 		SecretID: id,
 		Revision: revision,
