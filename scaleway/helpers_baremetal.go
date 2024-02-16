@@ -227,6 +227,37 @@ func flattenBaremetalPrivateNetworks(region scw.Region, privateNetworks []*barem
 	return flattenedPrivateNetworks
 }
 
+func detachAllPrivateNetworkFromBaremetal(ctx context.Context, d *schema.ResourceData, m interface{}, serverID string) error {
+	privateNetworkAPI, zone, err := baremetalPrivateNetworkAPIWithZone(d, m)
+	if err != nil {
+		return err
+	}
+	listPrivateNetwork, err := privateNetworkAPI.ListServerPrivateNetworks(&baremetal.PrivateNetworkAPIListServerPrivateNetworksRequest{
+		Zone:     zone,
+		ServerID: &serverID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	for _, pn := range listPrivateNetwork.ServerPrivateNetworks {
+		err := privateNetworkAPI.DeleteServerPrivateNetwork(&baremetal.PrivateNetworkAPIDeleteServerPrivateNetworkRequest{
+			Zone:             zone,
+			ServerID:         serverID,
+			PrivateNetworkID: pn.PrivateNetworkID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = waitForBaremetalServerPrivateNetwork(ctx, privateNetworkAPI, zone, serverID, d.Timeout(schema.TimeoutDelete))
+	if err != nil && !is404Error(err) {
+		return err
+	}
+	return nil
+}
+
 func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
 	retryInterval := baremetalRetryInterval
 	if DefaultWaitRetryInterval != nil {
@@ -280,7 +311,6 @@ func waitForBaremetalServerPrivateNetwork(ctx context.Context, api *baremetal.Pr
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
-
 	serverPrivateNetwork, err := api.WaitForServerPrivateNetworks(&baremetal.WaitForServerPrivateNetworksRequest{
 		Zone:          zone,
 		ServerID:      serverID,
