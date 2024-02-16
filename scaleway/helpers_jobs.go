@@ -50,7 +50,10 @@ func (c *JobDefinitionCron) ToCreateRequest() *jobs.CreateJobDefinitionRequestCr
 
 func (c *JobDefinitionCron) ToUpdateRequest() *jobs.UpdateJobDefinitionRequestCronScheduleConfig {
 	if c == nil {
-		return (&JobDefinitionCron{}).ToUpdateRequest() // Give an empty update request to delete cron
+		return &jobs.UpdateJobDefinitionRequestCronScheduleConfig{
+			Schedule: nil,
+			Timezone: nil,
+		} // Send an empty update request to delete cron
 	}
 
 	return &jobs.UpdateJobDefinitionRequestCronScheduleConfig{
