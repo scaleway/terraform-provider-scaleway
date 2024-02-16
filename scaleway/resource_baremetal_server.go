@@ -637,6 +637,11 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
+	err = detachAllPrivateNetworkFromBaremetal(ctx, d, meta, zonedID.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_, err = baremetalAPI.DeleteServer(&baremetal.DeleteServerRequest{
 		Zone:     zonedID.Zone,
 		ServerID: zonedID.ID,

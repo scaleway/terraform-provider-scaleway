@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1alpha1"
+	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
