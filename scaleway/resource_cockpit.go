@@ -84,7 +84,7 @@ func resourceScalewayCockpit() *schema.Resource {
 						"push_logs_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Push url for grafana locki",
+							Description: "Push url for grafana loki",
 						},
 					},
 				},
