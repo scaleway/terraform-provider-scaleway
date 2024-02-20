@@ -13,6 +13,8 @@ import (
 
 const (
 	defaultCockpitTimeout = 5 * time.Minute
+	pathMetricsURL        = "/api/v1/push"
+	pathLogsURL           = "/loki/api/v1/push"
 )
 
 // cockpitAPI returns a new cockpit API.
@@ -65,6 +67,15 @@ func flattenCockpitEndpoints(endpoints *cockpit.CockpitEndpoints) []map[string]i
 			"alertmanager_url": endpoints.AlertmanagerURL,
 			"grafana_url":      endpoints.GrafanaURL,
 			"traces_url":       endpoints.TracesURL,
+		},
+	}
+}
+
+func createCockpitPushURL(endpoints *cockpit.CockpitEndpoints) []map[string]interface{} {
+	return []map[string]interface{}{
+		{
+			"push_metrics_url": endpoints.MetricsURL + pathMetricsURL,
+			"push_logs_url":    endpoints.LogsURL + pathLogsURL,
 		},
 	}
 }

@@ -85,6 +85,9 @@ func TestAccScalewayCockpit_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.alertmanager_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.grafana_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.traces_url"),
+					resource.TestCheckResourceAttr("scaleway_cockpit.main", "push_url.0.push_logs_url", "https://logs.cockpit.fr-par.scw.cloud/loki/api/v1/push"),
+					resource.TestCheckResourceAttr("scaleway_cockpit.main", "push_url.0.push_metrics_url", "https://metrics.cockpit.fr-par.scw.cloud/api/v1/push"),
+
 					resource.TestCheckResourceAttrPair("scaleway_cockpit.main", "project_id", "scaleway_account_project.project", "id"),
 				),
 			},
