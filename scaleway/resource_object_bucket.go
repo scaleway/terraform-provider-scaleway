@@ -463,8 +463,9 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
 			return diags
 		}
+	} else if acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 	}
-	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
 	// Get object_lock_enabled
 	objectLockConfiguration, err := s3Client.GetObjectLockConfigurationWithContext(ctx, &s3.GetObjectLockConfigurationInput{
