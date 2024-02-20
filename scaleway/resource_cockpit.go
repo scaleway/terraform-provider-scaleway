@@ -70,6 +70,25 @@ func resourceScalewayCockpit() *schema.Resource {
 					},
 				},
 			},
+			"push_url": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Push_url",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"push_metrics_url": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Push URL for metrics (Grafana Mimir)",
+						},
+						"push_logs_url": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Push URL for logs (Grafana Loki)",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -140,6 +159,7 @@ func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("plan_id", res.Plan.ID)
 	_ = d.Set("endpoints", flattenCockpitEndpoints(res.Endpoints))
+	_ = d.Set("push_url", createCockpitPushURL(res.Endpoints))
 
 	return nil
 }
