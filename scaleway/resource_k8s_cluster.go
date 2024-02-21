@@ -238,8 +238,11 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				version := diff.Get("version").(string)
 				versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
-				if okAutoUpgradeEnable && versionIsOnlyMinor != autoUpgradeEnable.(bool) {
-					return errors.New("minor version x.y must be used with auto upgrade enabled")
+				if okAutoUpgradeEnable && autoUpgradeEnable.(bool) && !versionIsOnlyMinor {
+					return errors.New("only minor version x.y can be used with auto upgrade enabled")
+				}
+				if versionIsOnlyMinor && !autoUpgradeEnable.(bool) {
+					return errors.New("minor version x.y must only be used with auto upgrade enabled")
 				}
 
 				return nil
@@ -472,8 +475,11 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	version := d.Get("version").(string)
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
-	if versionIsOnlyMinor != clusterAutoUpgradeEnabled {
-		return append(diag.FromErr(errors.New("minor version x.y must be used with auto upgrade enabled")), diags...)
+	if okAutoUpgradeEnable && autoUpgradeEnable.(bool) && !versionIsOnlyMinor {
+		return append(diag.FromErr(errors.New("only minor version x.y can be used with auto upgrade enabled")), diags...)
+	}
+	if versionIsOnlyMinor && !autoUpgradeEnable.(bool) {
+		return append(diag.FromErr(errors.New("minor version x.y must only be used with auto upgrade enabled")), diags...)
 	}
 
 	if versionIsOnlyMinor {
@@ -693,8 +699,11 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	version := d.Get("version").(string)
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
-	if versionIsOnlyMinor != autoupgradeEnabled {
-		return append(diag.FromErr(errors.New("minor version x.y must be used with auto upgrades enabled")), diags...)
+	if autoupgradeEnabled && !versionIsOnlyMinor {
+		return append(diag.FromErr(errors.New("only minor version x.y can be used with auto upgrade enabled")), diags...)
+	}
+	if versionIsOnlyMinor && !autoupgradeEnabled {
+		return append(diag.FromErr(errors.New("minor version x.y must only be used with auto upgrade enabled")), diags...)
 	}
 
 	if versionIsOnlyMinor {
