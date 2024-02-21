@@ -2,12 +2,14 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
@@ -203,7 +205,23 @@ func resourceScalewayRedisCluster() *schema.Resource {
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("private_network.#.id"),
+		CustomizeDiff: customdiff.All(
+			customizeDiffLocalityCheck("private_network.#.id"),
+			customizeDiffMigrateClusterSize(),
+		),
+	}
+}
+
+func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		oldSize, newSize := diff.GetChange("cluster_size")
+		if newSize == 2 {
+			return errors.New("cluster_size can be either 1 (standalone) ou >3 (cluster mode), not 2")
+		}
+		if oldSize == 1 && newSize != 1 {
+			return diff.ForceNew("cluster_size")
+		}
+		return nil
 	}
 }
 
