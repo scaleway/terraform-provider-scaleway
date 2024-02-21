@@ -457,7 +457,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	clusterAutoUpgradeEnabled := false
+	var clusterAutoUpgradeEnabled bool
 
 	if okAutoUpgradeDay && okAutoUpgradeEnable && okAutoUpgradeStartHour {
 		clusterAutoUpgradeEnabled = autoUpgradeEnable.(bool)
