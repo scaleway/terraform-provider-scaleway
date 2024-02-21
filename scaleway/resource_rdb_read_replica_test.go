@@ -76,7 +76,7 @@ func TestAccScalewayRdbReadReplica_PrivateNetwork(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "private-network" ]
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {}
@@ -124,7 +124,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "update" ]
 					}
 
 					resource "scaleway_rdb_read_replica" "replica" {
@@ -149,7 +149,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "update" ]
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {}
@@ -181,7 +181,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "update" ]
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {}
@@ -216,7 +216,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "update" ]
 					}
 			
 					resource "scaleway_vpc_private_network" "pn" {}
@@ -252,7 +252,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "update" ]
 					}
 			
 					resource "scaleway_vpc_private_network" "pn" {}
@@ -288,7 +288,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "update" ]
 					}
 			
 					resource "scaleway_vpc_private_network" "pn" {}
@@ -341,7 +341,7 @@ func TestAccScalewayRdbReadReplica_MultipleEndpoints(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+						tags = [ "terraform-test", "scaleway_rdb_read_replica", "multiple-endpoints" ]
 					}
 
 					resource "scaleway_vpc_private_network" "pn" {}
