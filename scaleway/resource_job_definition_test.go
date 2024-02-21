@@ -120,6 +120,79 @@ func TestAccScalewayJobDefinition_Timeout(t *testing.T) {
 	})
 }
 
+func TestAccScalewayJobDefinition_Cron(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayJobDefinitionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-cron"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						cron {
+							schedule = "5 4 1 * *"
+							timezone = "Europe/Paris"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					testCheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-cron"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cron.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cron.0.schedule", "5 4 1 * *"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cron.0.timezone", "Europe/Paris"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-cron"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						cron {
+							schedule = "5 5 * * *"
+							timezone = "America/Jamaica"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					testCheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-cron"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cron.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cron.0.schedule", "5 5 * * *"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cron.0.timezone", "America/Jamaica"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-cron"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					testCheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-cron"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cron.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayJobDefinitionExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

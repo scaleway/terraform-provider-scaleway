@@ -64,6 +64,25 @@ func resourceScalewayJobDefinition() *schema.Resource {
 				},
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
+			"cron": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"schedule": {
+							Type:         schema.TypeString,
+							Required:     true,
+							RequiredWith: []string{"cron.0"},
+						},
+						"timezone": {
+							Type:         schema.TypeString,
+							Required:     true,
+							RequiredWith: []string{"cron.0"},
+						},
+					},
+				},
+			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
 		},
@@ -86,6 +105,7 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 		ProjectID:            d.Get("project_id").(string),
 		EnvironmentVariables: expandMapStringString(d.Get("env")),
 		Description:          d.Get("description").(string),
+		CronSchedule:         expandJobDefinitionCron(d.Get("cron")).ToCreateRequest(),
 	}
 
 	if timeoutSeconds, ok := d.GetOk("timeout"); ok {
@@ -138,6 +158,7 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("env", flattenMap(definition.EnvironmentVariables))
 	_ = d.Set("description", definition.Description)
 	_ = d.Set("timeout", definition.JobTimeout.ToTimeDuration().String())
+	_ = d.Set("cron", flattenJobDefinitionCron(definition.CronSchedule))
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
 
@@ -197,6 +218,10 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 
 			req.JobTimeout = scw.NewDurationFromTimeDuration(duration)
 		}
+	}
+
+	if d.HasChange("cron") {
+		req.CronSchedule = expandJobDefinitionCron(d.Get("cron")).ToUpdateRequest()
 	}
 
 	if _, err := api.UpdateJobDefinition(req, scw.WithContext(ctx)); err != nil {
