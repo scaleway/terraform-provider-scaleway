@@ -201,7 +201,6 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 	} else {
 		res, err := api.GetIP(&ipam.GetIPRequest{
 			Region: region,
