@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -179,19 +180,27 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 			req.Attached = expandBoolPtr(attached)
 		}
 
-		resp, err := api.ListIPs(req, scw.WithAllPages(), scw.WithContext(ctx))
+		err = retry.RetryContext(ctx, defaultIPAMIPRetryInterval, func() *retry.RetryError {
+			resp, err := api.ListIPs(req, scw.WithAllPages(), scw.WithContext(ctx))
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			if len(resp.IPs) == 0 {
+				// Retry if no IPs are found
+				return retry.RetryableError(errors.New("no ip found with given filters"))
+			}
+			if len(resp.IPs) > 1 {
+				return retry.NonRetryableError(errors.New("more than one ip found with given filter"))
+			}
+
+			ip = resp.IPs[0].Address
+			IPID = resp.IPs[0].ID
+
+			return nil
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(resp.IPs) == 0 {
-			return diag.FromErr(errors.New("no ip found with given filters"))
-		}
-		if len(resp.IPs) > 1 {
-			return diag.FromErr(errors.New("more than one ip found with given filter"))
-		}
-
-		ip = resp.IPs[0].Address
-		IPID = resp.IPs[0].ID
 	} else {
 		res, err := api.GetIP(&ipam.GetIPRequest{
 			Region: region,
