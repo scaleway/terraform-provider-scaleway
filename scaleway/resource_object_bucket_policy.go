@@ -147,15 +147,19 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	var diags diag.Diagnostics
 	acl, err := s3Client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
+			return diags
+		}
+	} else if acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 	}
-	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
-	return nil
+	return diags
 }
 
 func resourceScalewayObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
