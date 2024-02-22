@@ -367,7 +367,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
-		RoutedIPEnabled:   expandBoolPtr(d.Get("routed_ip_enabled")),
+		RoutedIPEnabled:   expandBoolPtr(getBool(d, "routed_ip_enabled")),
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")

@@ -11,6 +11,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/dnaeon/go-vcr/cassette"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,7 +39,7 @@ func TestAccScalewayCassettes_Validator(t *testing.T) {
 	for name := range files {
 		c, err := cassette.Load(fmt.Sprintf("%s%s", testDirectory, name))
 		require.NoError(t, err)
-		require.NoError(t, checkErrorCode(c))
+		assert.NoError(t, checkErrorCode(c))
 	}
 }
 
