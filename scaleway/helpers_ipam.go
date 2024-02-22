@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	defaultIPAMIPRetryInterval     = 5 * time.Second
 	defaultIPAMIPReverseDNSTimeout = 10 * time.Minute
 )
 
