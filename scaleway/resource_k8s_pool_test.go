@@ -518,6 +518,78 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SCluster_PoolUpgrade(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	previousK8SVersion := testAccScalewayK8SClusterGetPreviousK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.pool"),
+			testAccCheckScalewayK8SClusterDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_vpc_private_network" "pool_upgrade" {}
+				
+				resource "scaleway_k8s_cluster" "pool_upgrade" {
+					name                        = "pool-upgrade"
+					type                        = "kapsule"
+					version                     = "%s"
+					cni                         = "cilium"
+					private_network_id          = scaleway_vpc_private_network.pool_upgrade.id
+					delete_additional_resources = false
+				}
+				
+				resource "scaleway_k8s_pool" "pool_upgrade" {
+					cluster_id = scaleway_k8s_cluster.pool_upgrade.id
+					name       = "pool-upgrade-pool-1"
+					node_type  = "gp1_xs"
+					size       = 1
+					wait_for_pool_ready = true
+				}`, previousK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					//resource.TestCheckResourceAttr("scaleway_k8s_cluster.pool_upgrade", "status", "ready"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.pool_upgrade", "version", previousK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.pool_upgrade", "status", "ready"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_vpc_private_network" "pool_upgrade" {}
+				
+				resource "scaleway_k8s_cluster" "pool_upgrade" {
+					name                        = "pool-upgrade"
+					type                        = "kapsule"
+					version                     = "%s"
+					cni                         = "cilium"
+					private_network_id          = scaleway_vpc_private_network.pool_upgrade.id
+					delete_additional_resources = false
+				}
+				
+				resource "scaleway_k8s_pool" "pool_upgrade" {
+					cluster_id = scaleway_k8s_cluster.pool_upgrade.id
+					name       = "pool-upgrade-pool-1"
+					node_type  = "gp1_xs"
+					size       = 1
+					wait_for_pool_ready = true
+				}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.pool_upgrade", "status", "ready"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.pool_upgrade", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.pool_upgrade", "status", "ready"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, clusterTFName, poolTFName, pnTFName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[clusterTFName]

@@ -865,6 +865,15 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return append(diag.FromErr(err), diags...)
 		}
+
+		if !strings.Contains(d.Get("type").(string), "multicloud") {
+			// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
+			// But if we are not, we can wait for the pool to be upgraded.
+			_, err = waitK8SClusterPool(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return append(diag.FromErr(err), diags...)
+			}
+		}
 	}
 
 	return append(resourceScalewayK8SClusterRead(ctx, d, meta), diags...)
