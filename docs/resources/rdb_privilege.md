@@ -26,20 +26,18 @@ resource "scaleway_rdb_database" "main" {
   name           = "database"
 }
 
-resource "scaleway_rdb_privilege" "main" {
-  instance_id   = scaleway_rdb_instance.main.id
-  user_name     = "my-db-user"
-  database_name = "my-db-name"
-  permission    = "all"
-
-  depends_on = [scaleway_rdb_user.main, scaleway_rdb_database.main]
-}
-
 resource "scaleway_rdb_user" "main" {
   instance_id = scaleway_rdb_instance.main.id
-  name        = "foobar"
+  name        = "my-db-user"
   password    = "thiZ_is_v&ry_s3cret"
   is_admin    = false
+}
+
+resource "scaleway_rdb_privilege" "main" {
+  instance_id   = scaleway_rdb_instance.main.id
+  user_name     = scaleway_rdb_user.main.name
+  database_name = scaleway_rdb_database.main.name
+  permission    = "all"
 }
 ```
 
