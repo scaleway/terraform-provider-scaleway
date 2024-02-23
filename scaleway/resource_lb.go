@@ -153,6 +153,12 @@ func resourceScalewayLb() *schema.Resource {
 				ForceNew:    true,
 				Description: "Defines whether to automatically assign a flexible public IP to the load balancer",
 			},
+			"assign_flexible_ipv6": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Defines whether to automatically assign a flexible public IPv6 to the load balancer",
+			},
 			"region":          regionComputedSchema(),
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
@@ -176,6 +182,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		Type:                  d.Get("type").(string),
 		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level"))),
 		AssignFlexibleIP:      expandBoolPtr(getBool(d, "assign_flexible_ip")),
+		AssignFlexibleIPv6:    expandBoolPtr(getBool(d, "assign_flexible_ipv6")),
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
