@@ -140,7 +140,7 @@ The `acl` block supports:
 The `private_network` block supports :
 
 - `id` - (Required) The UUID of the Private Network resource.
-- `service_ips` - (Required) Endpoint IPv4 addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). You must provide at least one IP per node.
+- `service_ips` - (Optional) Endpoint IPv4 addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). You must provide at least one IP per node.
   Keep in mind that in Cluster mode you cannot edit your Private Network after its creation so if you want to be able to
   scale your Cluster horizontally (adding nodes) later, you should provide more IPs than nodes.
   If not set, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.

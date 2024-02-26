@@ -218,7 +218,7 @@ func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
 		if newSize == 2 {
 			return errors.New("cluster_size can be either 1 (standalone) ou >3 (cluster mode), not 2")
 		}
-		if oldSize == 1 && newSize != 1 {
+		if oldSize == 1 && newSize != 1 || newSize.(int) < oldSize.(int) {
 			return diff.ForceNew("cluster_size")
 		}
 		return nil
