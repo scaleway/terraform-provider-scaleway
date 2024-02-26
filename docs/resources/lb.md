@@ -44,7 +44,7 @@ resource "scaleway_vpc_public_gateway_ip" "main" {
 }
 
 ### Scaleway Private Network
-resource scaleway_vpc_private_network main {
+resource "scaleway_vpc_private_network" "main" {
 }
 
 ### VPC Public Gateway Network
@@ -81,16 +81,20 @@ resource "scaleway_instance_server" "main" {
 }
 
 ### IP for LB IP
-resource scaleway_lb_ip main {
+resource "scaleway_lb_ip" "main" {
 }
 
 ### Scaleway Private Network
-resource scaleway_vpc_private_network "main" {
+resource "scaleway_vpc_private_network" "main" {
     name = "private network with static config"
 }
 
-### Scaleway Load Balancer
-resource scaleway_lb main {
+resource "scaleway_vpc_private_network" "second" {
+  name = "private network with DHCP config"
+}
+
+### Scaleway Load Balancer with multiple private_network
+resource "scaleway_lb" "main" {
     ip_id = scaleway_lb_ip.main.id
     name = "MyTest"
     type = "LB-S"
@@ -101,7 +105,7 @@ resource scaleway_lb main {
     }
 
     private_network {
-        private_network_id = scaleway_vpc_private_network.main.id
+        private_network_id = scaleway_vpc_private_network.second.id
         dhcp_config = true
     }
 
@@ -109,31 +113,70 @@ resource scaleway_lb main {
 }
 ```
 
+## Private Network with static config
+
+```terraform
+resource "scaleway_lb_ip" "main" {
+}
+
+resource "scaleway_vpc_private_network" "main" {
+    name = "MyTest"
+}
+
+resource "scaleway_lb" "main" {
+    ip_id = scaleway_lb_ip.main.id
+    name = "MyTest"
+    type = "LB-S"
+    release_ip = false
+    private_network {
+        private_network_id = scaleway_vpc_private_network.main.id
+        static_config = ["172.16.0.100"]
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
+
+- `assign_flexible_ip` - (Optional) Defines whether to automatically assign a flexible public IP to the load-balancer.
+
+- `description` - (Optional) The description of the load-balancer.
 
 - `ip_id` - (Optional) The ID of the associated LB IP. See below.
 
 ~> **Important:** Updates to `ip_id` will recreate the load-balancer.
 
-- `type` - (Required) The type of the load-balancer. Please check the [migration section](#migration) to upgrade the type.
-
-- `assign_flexible_ip` - (Optional) Defines whether to automatically assign a flexible public IP to the load-balancer.
-
 - `name` - (Optional) The name of the load-balancer.
 
-- `description` - (Optional) The description of the load-balancer.
+- `private_network` - (Optional) List of private network to connect with your load balancer. Private Network documented below.
 
-- `tags` - (Optional) The tags associated with the load-balancers.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
 
 - `release_ip` - (Defaults to false) The release_ip allow release the ip address associated with the load-balancers.
 
 - `ssl_compatibility_level` - (Optional) Enforces minimal SSL version (in SSL/TLS offloading context). Please check [possible values](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-load-balancer-create-a-load-balancer).
 
+- `tags` - (Optional) The tags associated with the load-balancers.
+
+- `type` - (Required) The type of the load-balancer. Please check the [migration section](#migration) to upgrade the type.
+
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the load-balancer.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
+
+### Argument documentation for private_network block
+
+- `private_network_id` - (Required) The ID of the Private Network to associate.
+
+- ~> **Important:** Updates to `private_network` will recreate the attachment.
+
+- `static_config` - (Optional) Define a local ip address of your choice for the load balancer instance. See below.
+
+- `dhcp_config` - (Optional) Set to true if you want to let DHCP assign IP addresses. See below.
+
+~> **Important:**  Only one of static_config and dhcp_config may be set.
+
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
 
 ## Attributes Reference
 
@@ -144,10 +187,19 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Load-Balancers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `ip_address` -  The load-balance public IP Address
+
 - `organization_id` - The organization ID the load-balancer is associated with.
+
+- `private_network` - List of private network to connect with your load balancer. Private Network documented below.
 
 ~> **Important:** `release_ip` will not be supported. This prevents the destruction of the IP from releasing a LBs.
 The `resource_lb_ip` will be the only resource that handles those IPs.
+
+### Attributes documentation for private_network block
+
+- `status` - The status of the private network connection.
+
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
 
 ## Migration
 
@@ -184,43 +236,6 @@ resource "scaleway_lb" "main" {
   release_ip = false
 }
 ```
-
-## Private Network with static config
-
-```terraform
-resource scaleway_lb_ip main {
-}
-
-resource scaleway_vpc_private_network main {
-    name = "MyTest"
-}
-
-resource scaleway_lb main {
-    ip_id = scaleway_lb_ip.main.id
-    name = "MyTest"
-    type = "LB-S"
-    release_ip = false
-    private_network {
-        private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100"]
-    }
-}
-```
-
-## Attributes Reference
-
-- `private_network_id` - (Required) The ID of the Private Network to associate.
-
-- ~> **Important:** Updates to `private_network` will recreate the attachment.
-
-- `static_config` - (Optional) Define a local ip address of your choice for the load balancer instance. See below.
-
-- `dhcp_config` - (Optional) Set to true if you want to let DHCP assign IP addresses. See below.
-
-~> **Important:**  Only one of static_config and dhcp_config may be set.
-
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
-
 
 ## Import
 
