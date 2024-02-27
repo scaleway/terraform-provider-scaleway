@@ -382,13 +382,13 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 }
 
 func customizeUserAgent(providerVersion string, terraformVersion string) string {
-	baseUserAgent := fmt.Sprintf("terraform-provider/%s terraform/%s", providerVersion, terraformVersion)
+	userAgent := fmt.Sprintf("terraform-provider/%s terraform/%s", providerVersion, terraformVersion)
 
 	if appendUserAgent := os.Getenv(appendUserAgentEnvVar); appendUserAgent != "" {
-		baseUserAgent += " " + appendUserAgent
+		userAgent += " " + appendUserAgent
 	}
 
-	return baseUserAgent
+	return userAgent
 }
 
 //gocyclo:ignore
