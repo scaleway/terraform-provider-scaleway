@@ -110,10 +110,11 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 	}, scw.WithContext(ctx))
 }
 
-func expandPrivateNetwork(data interface{}, exist bool, enableIpam bool) ([]*rdb.EndpointSpec, error) {
+func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, staticConfig *string) ([]*rdb.EndpointSpec, diag.Diagnostics) {
 	if data == nil || !exist {
 		return nil, nil
 	}
+	var diags diag.Diagnostics
 
 	res := make([]*rdb.EndpointSpec, 0, len(data.([]interface{})))
 	for _, pn := range data.([]interface{}) {
@@ -121,24 +122,30 @@ func expandPrivateNetwork(data interface{}, exist bool, enableIpam bool) ([]*rdb
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: expandID(r["pn_id"].(string)),
+				IpamConfig:       &rdb.EndpointSpecPrivateNetworkIpamConfig{},
 			},
 		}
-		if enableIpam {
-			spec.PrivateNetwork.IpamConfig = &rdb.EndpointSpecPrivateNetworkIpamConfig{}
-		} else {
-			ipNet := r["ip_net"].(string)
-			if len(ipNet) > 0 {
-				ip, err := expandIPNet(r["ip_net"].(string))
-				if err != nil {
-					return res, err
-				}
-				spec.PrivateNetwork.ServiceIP = &ip
+
+		if staticConfig != nil {
+			ip, err := expandIPNet(*staticConfig)
+			if err != nil {
+				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network ip_net (%s): %s", r["ip_net"], err))...)
 			}
+			spec.PrivateNetwork.ServiceIP = &ip
+			spec.PrivateNetwork.IpamConfig = nil
+			if ipamConfig != nil && *ipamConfig {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Detail:   "`ip_net` field is set so `enable_ipam` field will be ignored",
+				})
+			}
+		} else if ipamConfig == nil || !*ipamConfig {
+			return nil, diag.FromErr(errors.New("at least one of `ip_net` or `enable_ipam` (set to true) must be set"))
 		}
 		res = append(res, spec)
 	}
 
-	return res, nil
+	return res, diags
 }
 
 func expandLoadBalancer() *rdb.EndpointSpec {
@@ -221,7 +228,7 @@ func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadRepli
 }
 
 // expandReadReplicaEndpointsSpecPrivateNetwork expand read-replica private network endpoints from schema to specs
-func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, enableIpam bool) (*rdb.ReadReplicaEndpointSpec, error) {
+func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *bool, staticConfig *string) (*rdb.ReadReplicaEndpointSpec, diag.Diagnostics) {
 	if data == nil || len(data.([]interface{})) == 0 {
 		return nil, nil
 	}
@@ -229,26 +236,33 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, enableIpam b
 	data = data.([]interface{})[0]
 
 	rawEndpoint := data.(map[string]interface{})
+	var diags diag.Diagnostics
 
-	endpoint := new(rdb.ReadReplicaEndpointSpec)
-	endpoint.PrivateNetwork = &rdb.ReadReplicaEndpointSpecPrivateNetwork{
-		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
+	endpoint := &rdb.ReadReplicaEndpointSpec{
+		PrivateNetwork: &rdb.ReadReplicaEndpointSpecPrivateNetwork{
+			PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
+			IpamConfig:       &rdb.ReadReplicaEndpointSpecPrivateNetworkIpamConfig{},
+		},
 	}
 
-	if enableIpam {
-		endpoint.PrivateNetwork.IpamConfig = &rdb.ReadReplicaEndpointSpecPrivateNetworkIpamConfig{}
-	} else {
-		serviceIP := rawEndpoint["service_ip"].(string)
-		if len(serviceIP) > 0 {
-			ipNet, err := expandIPNet(serviceIP)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
-			}
-			endpoint.PrivateNetwork.ServiceIP = &ipNet
+	if staticConfig != nil {
+		ipNet, err := expandIPNet(*staticConfig)
+		if err != nil {
+			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network service_ip (%s): %s", rawEndpoint["service_ip"], err))...)
 		}
+		endpoint.PrivateNetwork.ServiceIP = &ipNet
+		endpoint.PrivateNetwork.IpamConfig = nil
+		if ipamConfig != nil && !*ipamConfig {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Detail:   "`service_ip` field is set so `enable_ipam` field will be ignored",
+			})
+		}
+	} else if ipamConfig == nil || !*ipamConfig {
+		return nil, diag.FromErr(errors.New("at least one of `service_ip` or `enable_ipam` (set to true) must be set"))
 	}
 
-	return endpoint, nil
+	return endpoint, diags
 }
 
 // flattenReadReplicaEndpoints flatten read-replica endpoints to directAccess and privateNetwork
@@ -326,20 +340,65 @@ func rdbPrivilegeUpgradeV1SchemaType() cty.Type {
 	})
 }
 
-func isIpamEndpoint(resource interface{}, meta interface{}) (bool, error) {
+func getIPConfigCreate(d *schema.ResourceData, ipFieldName string) (ipamConfig *bool, staticConfig *string) {
+	enableIpam, enableIpamSet := d.GetOk("private_network.0.enable_ipam")
+	if enableIpamSet {
+		ipamConfig = expandBoolPtr(enableIpam)
+	}
+	customIP, customIPSet := d.GetOk("private_network.0." + ipFieldName)
+	if customIPSet {
+		staticConfig = expandStringPtr(customIP)
+	}
+	return ipamConfig, staticConfig
+}
+
+// getIPConfigUpdate forces the provider to read the user's config instead of checking the state, because "enable_ipam" is not readable from the API
+func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *bool, staticConfig *string) {
+	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() {
+		pnRawConfig := rawConfig.AsValueMap()["private_network"].AsValueSlice()[0].AsValueMap()
+		if !pnRawConfig["enable_ipam"].IsNull() {
+			if pnRawConfig["enable_ipam"].False() {
+				ipamConfig = scw.BoolPtr(false)
+			} else {
+				ipamConfig = scw.BoolPtr(true)
+			}
+		}
+		if !pnRawConfig[ipFieldName].IsNull() {
+			value := pnRawConfig[ipFieldName].AsString()
+			staticConfig = &value
+		}
+	}
+	return ipamConfig, staticConfig
+}
+
+func getIPAMConfigRead(resource interface{}, meta interface{}) (bool, error) {
 	ipamAPI := ipam.NewAPI(meta.(*Meta).scwClient)
 	request := &ipam.ListIPsRequest{
 		ResourceType: "rdb_instance",
 		IsIPv6:       scw.BoolPtr(false),
 	}
+	var privateEndpoint *rdb.EndpointPrivateNetworkDetails
 
 	switch res := resource.(type) {
 	case *rdb.Instance:
 		request.Region = res.Region
 		request.ResourceID = &res.ID
+		for _, e := range res.Endpoints {
+			if e.PrivateNetwork != nil {
+				privateEndpoint = e.PrivateNetwork
+			}
+		}
 	case *rdb.ReadReplica:
 		request.Region = res.Region
 		request.ResourceID = &res.InstanceID
+		for _, e := range res.Endpoints {
+			if e.PrivateNetwork != nil {
+				privateEndpoint = e.PrivateNetwork
+			}
+		}
+	}
+	if privateEndpoint == nil {
+		return false, nil
 	}
 
 	ips, err := ipamAPI.ListIPs(request, scw.WithAllPages())
@@ -347,12 +406,10 @@ func isIpamEndpoint(resource interface{}, meta interface{}) (bool, error) {
 		return false, fmt.Errorf("could not list IPs: %w", err)
 	}
 
-	switch ips.TotalCount {
-	case 1:
-		return true, nil
-	case 0:
-		return false, nil
-	default:
-		return false, fmt.Errorf("expected no more than 1 IP for instance, got %d", ips.TotalCount)
+	for _, ip := range ips.IPs {
+		if ip.Address.String() == privateEndpoint.ServiceIP.String() {
+			return true, nil
+		}
 	}
+	return false, nil
 }
