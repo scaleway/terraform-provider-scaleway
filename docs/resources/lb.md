@@ -92,8 +92,32 @@ resource "scaleway_vpc_private_network" "main" {
 resource "scaleway_vpc_private_network" "second" {
   name = "private network with DHCP config"
 }
+```
+
+## Private Network with static config
+
+```terraform
+resource "scaleway_lb_ip" "main" {
+}
+
+resource "scaleway_vpc_private_network" "main" {
+    name = "MyTest"
+}
+
+resource "scaleway_lb" "main" {
+    ip_id = scaleway_lb_ip.main.id
+    name = "MyTest"
+    type = "LB-S"
+    private_network {
+        private_network_id = scaleway_vpc_private_network.main.id
+        static_config = ["172.16.0.100"]
+    }
+}
+```
 
 ### Scaleway Load Balancer with multiple private_network
+
+```terraform
 resource "scaleway_lb" "main" {
     ip_id = scaleway_lb_ip.main.id
     name = "MyTest"
@@ -113,28 +137,6 @@ resource "scaleway_lb" "main" {
 }
 ```
 
-## Private Network with static config
-
-```terraform
-resource "scaleway_lb_ip" "main" {
-}
-
-resource "scaleway_vpc_private_network" "main" {
-    name = "MyTest"
-}
-
-resource "scaleway_lb" "main" {
-    ip_id = scaleway_lb_ip.main.id
-    name = "MyTest"
-    type = "LB-S"
-    release_ip = false
-    private_network {
-        private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100"]
-    }
-}
-```
-
 ## Argument Reference
 
 The following arguments are supported:
@@ -149,7 +151,14 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the load-balancer.
 
-- `private_network` - (Optional) List of private network to connect with your load balancer. Private Network documented below.
+- `private_network` - (Optional) List of private network to connect with your load balancer.
+
+  ~> **Important:** Updates to `private_network` will recreate the attachment.
+    - `private_network_id` - (Required) The ID of the Private Network to associate.
+    - `static_config` - (Optional) Define a local ip address of your choice for the load balancer instance. See
+    - `dhcp_config` - (Optional) Set to true if you want to let DHCP assign IP addresses.
+  
+~> **Important:**  Only one of static_config and dhcp_config may be set.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
 
@@ -166,17 +175,7 @@ The following arguments are supported:
 
 ### Argument documentation for private_network block
 
-- `private_network_id` - (Required) The ID of the Private Network to associate.
 
-- ~> **Important:** Updates to `private_network` will recreate the attachment.
-
-- `static_config` - (Optional) Define a local ip address of your choice for the load balancer instance. See below.
-
-- `dhcp_config` - (Optional) Set to true if you want to let DHCP assign IP addresses. See below.
-
-~> **Important:**  Only one of static_config and dhcp_config may be set.
-
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
 
 ## Attributes Reference
 
@@ -190,16 +189,12 @@ In addition to all arguments above, the following attributes are exported:
 
 - `organization_id` - The organization ID the load-balancer is associated with.
 
-- `private_network` - List of private network to connect with your load balancer. Private Network documented below.
+- `private_network` - List of private network to connect with your load balancer.
+      - `status` - The status of the private network connection.
+      - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
 
 ~> **Important:** `release_ip` will not be supported. This prevents the destruction of the IP from releasing a LBs.
 The `resource_lb_ip` will be the only resource that handles those IPs.
-
-### Attributes documentation for private_network block
-
-- `status` - The status of the private network connection.
-
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
 
 ## Migration
 
