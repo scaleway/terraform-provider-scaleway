@@ -13,6 +13,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const appendUserAgentEnvVar = "TF_APPEND_USER_AGENT"
+
 var terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
 
 // ProviderConfig config can be used to provide additional config when creating provider.
@@ -358,7 +360,7 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 	// Create scaleway SDK client
 	////
 	opts := []scw.ClientOption{
-		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", version, config.terraformVersion)),
+		scw.WithUserAgent(customizeUserAgent(version, config.terraformVersion)),
 		scw.WithProfile(profile),
 	}
 
@@ -377,6 +379,16 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 		scwClient:  scwClient,
 		httpClient: httpClient,
 	}, nil
+}
+
+func customizeUserAgent(providerVersion string, terraformVersion string) string {
+	baseUserAgent := fmt.Sprintf("terraform-provider/%s terraform/%s", providerVersion, terraformVersion)
+
+	if appendUserAgent := os.Getenv(appendUserAgentEnvVar); appendUserAgent != "" {
+		baseUserAgent += " " + appendUserAgent
+	}
+
+	return baseUserAgent
 }
 
 //gocyclo:ignore

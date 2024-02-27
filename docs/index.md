@@ -254,6 +254,17 @@ If you want to configure the backend with environment var, you need to use `AWS_
 export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY
 export AWS_SECRET_ACCESS_KEY=$SCW_SECRET_KEY
 ```
+## Custom User-Agent Information
+
+The Scaleway Terraform Provider allows you to append custom information to the User-Agent header of HTTP requests made to the Scaleway API. This can be useful for tracking requests for auditing, logging, or analytics purposes.
+
+To append custom information to the User-Agent header, you can use the `TF_APPEND_USER_AGENT` environment variable. The value you set for this variable will be appended to the User-Agent header of all HTTP requests made by the provider.
+
+For example, to add custom information indicating the request is coming from a specific CI/CD job or system, you could set the environment variable as follows:
+
+```bash
+$ export TF_APPEND_USER_AGENT="CI/CD System XYZ Job #1234"
+```
 
 ## Debugging a deployment
 
