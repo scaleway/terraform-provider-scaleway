@@ -54,6 +54,11 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 			OrganizationID: expandStringPtr(d.Get("organization_id")),
 		}
 
+		rawPath, pathExist := d.GetOk("path")
+		if pathExist {
+			request.Path = expandStringPtr(rawPath)
+		}
+
 		res, err := api.ListSecrets(request, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
