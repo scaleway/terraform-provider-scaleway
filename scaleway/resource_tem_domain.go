@@ -111,6 +111,11 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Computed:    true,
 				Description: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPort),
 			},
+			"smtps_auth_user": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "SMTPS auth user refers to the identifier for a user authorized to send emails via SMTPS, ensuring secure email transmission",
+			},
 			"smtps_port_alternative": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -220,7 +225,7 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("reputation", flattenDomainReputation(domain.Reputation))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
-
+	_ = d.Set("smtps_auth_user", domain.ProjectID)
 	return nil
 }
 
