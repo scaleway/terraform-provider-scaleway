@@ -3,7 +3,7 @@ module github.com/scaleway/terraform-provider-scaleway/v2
 require (
 	github.com/aws/aws-sdk-go v1.50.9
 	github.com/dnaeon/go-vcr v1.2.0
-	github.com/docker/docker v25.0.2+incompatible
+	github.com/docker/docker v25.0.3+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/aws-sdk-go-base v1.1.0
