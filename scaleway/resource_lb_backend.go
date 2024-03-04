@@ -5,6 +5,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -616,9 +617,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		updateHCRequest.TCPConfig = expandLbHCTCP(d.Get("health_check_tcp"))
 	}
 
-	rawConfig := d.GetRawConfig().AsValueMap()
-	healthCheckPortValue, healthCheckPortExists := rawConfig["health_check_port"]
-	healthCheckPortSetByUser := healthCheckPortExists && !healthCheckPortValue.IsNull()
+	_, healthCheckPortSetByUser := getRawConfigForKey(d, "health_check_port", cty.Number)
 	if d.HasChange("forward_port") && !healthCheckPortSetByUser {
 		updateHCRequest.Port = int32(d.Get("forward_port").(int))
 	}
