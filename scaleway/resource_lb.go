@@ -303,7 +303,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 		lb, err := lbAPI.MigrateLB(migrateReq, scw.WithContext(ctx))
 		if err != nil {
-			diag.FromErr(fmt.Errorf("couldn't migrate load balancer on type: %s. error: %w", lb.Type, err))
+			diag.FromErr(fmt.Errorf("couldn't migrate load balancer on type %s: %w", migrateReq.Type, err))
 		}
 
 		_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutUpdate))
