@@ -67,7 +67,7 @@ func resourceScalewaySecret() *schema.Resource {
 				Optional:    true,
 				Description: "Location of the secret in the directory structure.",
 				Default:     "/",
-				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 					return filepath.Clean(oldValue) == filepath.Clean(newValue)
 				},
 			},
