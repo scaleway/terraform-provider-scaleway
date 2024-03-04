@@ -329,3 +329,12 @@ func retryCreateContainerDomain(ctx context.Context, containerAPI *container.API
 		}
 	}
 }
+
+func flattenContainerSecretEnvironmentVariables(secrets []*container.SecretHashedValue) map[string]any {
+	m := make(map[string]any, len(secrets))
+	for _, s := range secrets {
+		m[s.Key] = s.HashedValue
+	}
+
+	return m
+}
