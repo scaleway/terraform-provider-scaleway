@@ -113,6 +113,82 @@ func TestAccScalewaySecret_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewaySecret_Path(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewaySecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+				  name = "test-secret-path-secret"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-path-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+				  name = "test-secret-path-secret"
+                  path = "/test-secret-path"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-path-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/test-secret-path"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+				  name = "test-secret-path-secret"
+                  path = "/test-secret-path/"
+				}
+				`,
+				PlanOnly: true,
+			},
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+				  name = "test-secret-path-secret"
+                  path = "/test-secret-path-change/"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-path-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/test-secret-path-change"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+				  name = "test-secret-path-secret"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-path-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					testCheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewaySecretExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
