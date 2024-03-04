@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"path/filepath"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -64,8 +65,11 @@ func resourceScalewaySecret() *schema.Resource {
 			"path": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				Description: "Location of the secret in the directory structure.",
+				Default:     "/",
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					return filepath.Clean(oldValue) == filepath.Clean(newValue)
+				},
 			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
