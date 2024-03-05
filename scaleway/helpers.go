@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -760,6 +762,33 @@ func diffSuppressFuncIgnoreCaseAndHyphen(_, oldValue, newValue string, _ *schema
 // e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
 func diffSuppressFuncLocality(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	return expandID(oldValue) == expandID(newValue)
+}
+
+// diffSuppressFuncOrderDiff suppresses diffs for TypeList attributes when the only change is the order of elements.
+// https://github.com/hashicorp/terraform-plugin-sdk/issues/477#issuecomment-1238807249
+func diffSuppressFuncOrderDiff(k, _, _ string, d *schema.ResourceData) bool {
+	// Extract the base key path to the list attribute, ignoring the index and value parts.
+	lastDotIndex := strings.LastIndex(k, ".")
+	baseKey := k
+	if lastDotIndex != -1 {
+		baseKey = k[:lastDotIndex]
+	}
+
+	oldList, newList := d.GetChange(baseKey)
+	if oldList == nil || newList == nil {
+		return false
+	}
+
+	oldListSlice, newListSlice := oldList.([]interface{}), newList.([]interface{})
+	if len(oldListSlice) != len(newListSlice) {
+		return false // Different lengths means there's definitely a change.
+	}
+
+	oldListStr, newListStr := make([]string, len(oldListSlice)), make([]string, len(newListSlice))
+	sort.Strings(oldListStr)
+	sort.Strings(newListStr)
+
+	return reflect.DeepEqual(oldListStr, newListStr)
 }
 
 // TimedOut returns true if the error represents a "wait timed out" condition.

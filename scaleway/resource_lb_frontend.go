@@ -79,7 +79,8 @@ func resourceScalewayLbFrontend() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUIDorUUIDWithLocality(),
 				},
-				Description: "Collection of Certificate IDs related to the load balancer and domain",
+				Description:      "Collection of Certificate IDs related to the load balancer and domain",
+				DiffSuppressFunc: diffSuppressFuncOrderDiff,
 			},
 			"acl": {
 				Type:        schema.TypeList,
