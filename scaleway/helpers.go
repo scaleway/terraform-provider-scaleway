@@ -767,7 +767,7 @@ func diffSuppressFuncLocality(_, oldValue, newValue string, _ *schema.ResourceDa
 // diffSuppressFuncOrderDiff suppresses diffs for TypeList attributes when the only change is the order of elements.
 // https://github.com/hashicorp/terraform-plugin-sdk/issues/477#issuecomment-1238807249
 func diffSuppressFuncOrderDiff(k, _, _ string, d *schema.ResourceData) bool {
-	// Extract the base key path to the list attribute, ignoring the index and value parts.
+	// Extract the base key path to the list attribute, ignoring the index and value parts
 	lastDotIndex := strings.LastIndex(k, ".")
 	baseKey := k
 	if lastDotIndex != -1 {
@@ -781,10 +781,16 @@ func diffSuppressFuncOrderDiff(k, _, _ string, d *schema.ResourceData) bool {
 
 	oldListSlice, newListSlice := oldList.([]interface{}), newList.([]interface{})
 	if len(oldListSlice) != len(newListSlice) {
-		return false // Different lengths means there's definitely a change.
+		return false // Different lengths means there's definitely a change
 	}
 
 	oldListStr, newListStr := make([]string, len(oldListSlice)), make([]string, len(newListSlice))
+	for i, oldItem := range oldListSlice {
+		oldListStr[i] = fmt.Sprint(oldItem)
+	}
+	for j, newItem := range newListSlice {
+		newListStr[j] = fmt.Sprint(newItem)
+	}
 	sort.Strings(oldListStr)
 	sort.Strings(newListStr)
 
