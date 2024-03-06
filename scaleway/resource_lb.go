@@ -294,6 +294,11 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if d.HasChange("type") {
+		_, err = waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		lbType := d.Get("type").(string)
 		migrateReq := &lbSDK.ZonedAPIMigrateLBRequest{
 			Zone: zone,
@@ -303,7 +308,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 		lb, err := lbAPI.MigrateLB(migrateReq, scw.WithContext(ctx))
 		if err != nil {
-			diag.FromErr(fmt.Errorf("couldn't migrate load balancer on type %s: %w", migrateReq.Type, err))
+			return diag.FromErr(fmt.Errorf("couldn't migrate load balancer on type %s: %w", migrateReq.Type, err))
 		}
 
 		_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutUpdate))
