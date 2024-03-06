@@ -178,7 +178,6 @@ Please consult the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-g
 - `private_network` - List of private networks endpoints of the database instance.
 
     - `pn_id` - (Required) The ID of the private network.
-    - `enable_ipam` - (Optional) Whether the endpoint should be configured with IPAM. Defaults to `false` if `ip_net` is defined, `true` otherwise.
     - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
     - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
   
