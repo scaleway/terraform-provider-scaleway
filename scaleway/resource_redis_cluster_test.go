@@ -293,11 +293,7 @@ func TestAccScalewayRedisCluster_MigrateClusterSizeWithStaticEndpoint(t *testing
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {
-					ipv4_subnet {
-						subnet = "192.168.99.0/24"
-					}
-				}
+				resource scaleway_vpc_private_network private_network {}
 			
 				resource "scaleway_redis_cluster" "main" {
 				  name         = "test_redis_migrate_cluster_size_static"
@@ -331,11 +327,7 @@ func TestAccScalewayRedisCluster_MigrateClusterSizeWithStaticEndpoint(t *testing
 			},
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {
-					ipv4_subnet {
-						subnet = "192.168.99.0/24"
-					}
-				}
+				resource scaleway_vpc_private_network private_network {}
 
 				resource "scaleway_redis_cluster" "main" {
 				  name         = "test_redis_migrate_cluster_size_static"
@@ -377,11 +369,7 @@ func TestAccScalewayRedisCluster_MigrateClusterSizeWithStaticEndpoint(t *testing
 			},
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {
-					ipv4_subnet {
-						subnet = "192.168.99.0/24"
-					}
-				}
+				resource scaleway_vpc_private_network private_network {}
 
 				resource "scaleway_redis_cluster" "main" {
 				  name         = "test_redis_migrate_cluster_size_static"
