@@ -118,22 +118,73 @@ resource "scaleway_lb" "main" {
 ### Scaleway Load Balancer with multiple private_network
 
 ```terraform
-resource "scaleway_lb" "main" {
-    ip_id = scaleway_lb_ip.main.id
-    name = "MyTest"
-    type = "LB-S"
+### IP for Public Gateway
+resource "scaleway_vpc_public_gateway_ip" "main" {
+}
 
-    private_network {
-        private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100"]
-    }
+### Scaleway Private Network
+resource scaleway_vpc_private_network second {
+}
 
-    private_network {
-        private_network_id = scaleway_vpc_private_network.second.id
-        dhcp_config = true
-    }
+### VPC Public Gateway Network
+resource "scaleway_vpc_public_gateway" "main" {
+  name  = "tf-test-public-gw"
+  type  = "VPC-GW-S"
+  ip_id = scaleway_vpc_public_gateway_ip.main.id
+}
 
-    depends_on = [scaleway_vpc_public_gateway.main]
+### VPC Public Gateway Network DHCP config
+resource "scaleway_vpc_public_gateway_dhcp" "second" {
+  subnet = "10.0.0.0/24"
+}
+
+### VPC Gateway Network
+resource "scaleway_vpc_gateway_network" "main" {
+  gateway_id         = scaleway_vpc_public_gateway.main.id
+  private_network_id = scaleway_vpc_private_network.second.id
+  dhcp_id            = scaleway_vpc_public_gateway_dhcp.second.id
+  cleanup_dhcp       = true
+  enable_masquerade  = true
+}
+
+### Scaleway Instance
+resource "scaleway_instance_server" "main" {
+  name        = "Scaleway Terraform Provider"
+  type        = "DEV1-S"
+  image       = "debian_bullseye"
+  enable_ipv6 = false
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.second.id
+  }
+}
+
+### IP for LB IP
+resource scaleway_lb_ip main {
+}
+
+### Scaleway Private Network
+resource scaleway_vpc_private_network "main" {
+  name = "private network with static config"
+}
+
+### Scaleway Load Balancer
+resource scaleway_lb main {
+  ip_id = scaleway_lb_ip.main.id
+  name  = "MyTest"
+  type  = "LB-S"
+
+  private_network {
+    private_network_id = scaleway_vpc_private_network.second.id
+    static_config      = ["172.16.0.100"]
+  }
+
+  private_network {
+    private_network_id = scaleway_vpc_private_network.second.id
+    dhcp_config        = true
+  }
+
+  depends_on = [scaleway_vpc_public_gateway.main]
 }
 ```
 
