@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"path/filepath"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -61,6 +62,15 @@ func resourceScalewaySecret() *schema.Resource {
 				Computed:    true,
 				Description: "Date and time of secret's creation (RFC 3339 format)",
 			},
+			"path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Location of the secret in the directory structure.",
+				Default:     "/",
+				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+					return filepath.Clean(oldValue) == filepath.Clean(newValue)
+				},
+			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
 		},
@@ -87,6 +97,11 @@ func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m
 	rawDescription, descriptionExist := d.GetOk("description")
 	if descriptionExist {
 		secretCreateRequest.Description = expandStringPtr(rawDescription)
+	}
+
+	rawPath, pathExist := d.GetOk("path")
+	if pathExist {
+		secretCreateRequest.Path = expandStringPtr(rawPath)
 	}
 
 	secretResponse, err := api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
@@ -129,6 +144,7 @@ func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("version_count", int(secretResponse.VersionCount))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", secretResponse.ProjectID)
+	_ = d.Set("path", secretResponse.Path)
 
 	return nil
 }
@@ -158,6 +174,11 @@ func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("tags") {
 		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("path") {
+		updateRequest.Path = expandUpdatedStringPtr(d.Get("path"))
 		hasChanged = true
 	}
 

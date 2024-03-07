@@ -14,15 +14,16 @@ func dataSourceScalewaySecret() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewaySecret().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "path")
 
 	dsSchema["name"].ConflictsWith = []string{"secret_id"}
+	dsSchema["path"].ConflictsWith = []string{"secret_id"}
 	dsSchema["secret_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the secret",
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		ConflictsWith: []string{"name", "path"},
 	}
 	dsSchema["organization_id"] = organizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
@@ -52,6 +53,7 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 			Name:           expandStringPtr(secretName),
 			ProjectID:      expandStringPtr(projectID),
 			OrganizationID: expandStringPtr(d.Get("organization_id")),
+			Path:           expandStringPtr(d.Get("path")),
 		}
 
 		res, err := api.ListSecrets(request, scw.WithContext(ctx))
