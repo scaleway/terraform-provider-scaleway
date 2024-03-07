@@ -28,6 +28,18 @@ func resourceScalewaySecret() *schema.Resource {
 				Required:    true,
 				Description: "The secret name",
 			},
+			"path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "/",
+				Description: "The secret path",
+			},
+			"type": { // TODO: remove
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  secret.SecretTypeOpaque,
+				ForceNew: true,
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -77,6 +89,8 @@ func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		Name:      d.Get("name").(string),
+		Path:      expandStringPtr(d.Get("path")),
+		Type:      secret.SecretType(d.Get("type").(string)),
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
@@ -122,6 +136,8 @@ func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	_ = d.Set("name", secretResponse.Name)
+	_ = d.Set("path", secretResponse.Path)
+	_ = d.Set("type", secretResponse.Type)
 	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
 	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(secretResponse.UpdatedAt))
@@ -145,6 +161,11 @@ func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	hasChanged := false
+
+	if d.HasChange("path") {
+		updateRequest.Path = expandUpdatedStringPtr(d.Get("path"))
+		hasChanged = true
+	}
 
 	if d.HasChange("description") {
 		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
