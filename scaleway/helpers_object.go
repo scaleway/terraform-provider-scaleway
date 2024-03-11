@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
 )
 
 const (
@@ -375,7 +375,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 
 	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, _ bool) bool {
-		pool := internal.NewWorkerPool(deletionWorkers)
+		pool := workerpool.NewWorkerPool(deletionWorkers)
 
 		for _, objectVersion := range page.Versions {
 			objectVersion := objectVersion
@@ -420,7 +420,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 
 	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, _ bool) bool {
-		pool := internal.NewWorkerPool(deletionWorkers)
+		pool := workerpool.NewWorkerPool(deletionWorkers)
 
 		for _, deleteMarkerEntry := range page.DeleteMarkers {
 			deleteMarkerEntry := deleteMarkerEntry
