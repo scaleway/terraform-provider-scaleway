@@ -110,8 +110,9 @@ func resourceScalewayLbACL() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Optional:    true,
-							Description: "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
+							Optional:         true,
+							Description:      "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
+							DiffSuppressFunc: diffSuppressFunc32SubnetMask,
 						},
 						"http_filter": {
 							Type:     schema.TypeString,

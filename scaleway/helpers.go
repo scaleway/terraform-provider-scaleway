@@ -767,30 +767,42 @@ func diffSuppressFuncLocality(_, oldValue, newValue string, _ *schema.ResourceDa
 // diffSuppressFuncOrderDiff suppresses diffs for TypeList attributes when the only change is the order of elements.
 // https://github.com/hashicorp/terraform-plugin-sdk/issues/477#issuecomment-1238807249
 func diffSuppressFuncOrderDiff(k, _, _ string, d *schema.ResourceData) bool {
-	// Extract the base key path to the list attribute, ignoring the index and value parts
+	baseKey := extractBaseKey(k)
+	oldList, newList := getStringListsFromState(baseKey, d)
+
+	return compareStringListsIgnoringOrder(oldList, newList)
+}
+
+func extractBaseKey(k string) string {
 	lastDotIndex := strings.LastIndex(k, ".")
-	baseKey := k
 	if lastDotIndex != -1 {
-		baseKey = k[:lastDotIndex]
+		return k[:lastDotIndex]
 	}
 
-	oldList, newList := d.GetChange(baseKey)
-	if oldList == nil || newList == nil {
-		return false
+	return k
+}
+
+func getStringListsFromState(key string, d *schema.ResourceData) ([]string, []string) {
+	oldList, newList := d.GetChange(key)
+
+	oldListStr := make([]string, len(oldList.([]interface{})))
+	newListStr := make([]string, len(newList.([]interface{})))
+
+	for i, v := range oldList.([]interface{}) {
+		oldListStr[i] = fmt.Sprint(v)
+	}
+	for i, v := range newList.([]interface{}) {
+		newListStr[i] = fmt.Sprint(v)
 	}
 
-	oldListSlice, newListSlice := oldList.([]interface{}), newList.([]interface{})
-	if len(oldListSlice) != len(newListSlice) {
-		return false // Different lengths means there's definitely a change
+	return oldListStr, newListStr
+}
+
+func compareStringListsIgnoringOrder(oldListStr, newListStr []string) bool {
+	if len(oldListStr) != len(newListStr) {
+		return false // different lengths means there's definitely a change
 	}
 
-	oldListStr, newListStr := make([]string, len(oldListSlice)), make([]string, len(newListSlice))
-	for i, oldItem := range oldListSlice {
-		oldListStr[i] = fmt.Sprint(oldItem)
-	}
-	for j, newItem := range newListSlice {
-		newListStr[j] = fmt.Sprint(newItem)
-	}
 	sort.Strings(oldListStr)
 	sort.Strings(newListStr)
 

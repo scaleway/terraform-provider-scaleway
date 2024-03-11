@@ -625,3 +625,29 @@ func lbPrivateNetworkSetHash(v interface{}) int {
 
 	return StringHashcode(buf.String())
 }
+
+func diffSuppressFunc32SubnetMask(k, _, _ string, d *schema.ResourceData) bool {
+	baseKey := extractBaseKey(k)
+	oldList, newList := getStringListsFromState(baseKey, d)
+
+	oldList = normalizeIPSubnetList(oldList)
+	newList = normalizeIPSubnetList(newList)
+
+	return compareStringListsIgnoringOrder(oldList, newList)
+}
+
+func normalizeIPSubnetList(list []string) []string {
+	normalized := make([]string, len(list))
+	for i, ip := range list {
+		normalized[i] = normalizeIPSubnet(ip)
+	}
+
+	return normalized
+}
+
+func normalizeIPSubnet(ip string) string {
+	if strings.HasSuffix(ip, "/32") {
+		return strings.TrimSuffix(ip, "/32")
+	}
+	return ip
+}
