@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -21,7 +22,7 @@ func testSweepAccountProject(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		accountAPI := accountV3.NewProjectAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the project")
+		logging.L.Debugf("sweeper: destroying the project")
 
 		listProjects, err := accountAPI.ListProjects(&accountV3.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepJobDefinition(_ string) error {
 	return sweepRegions((&jobs.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		jobsAPI := jobs.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the jobs definitions in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the jobs definitions in (%s)", region)
 		listJobDefinitions, err := jobsAPI.ListJobDefinitions(
 			&jobs.ListJobDefinitionsRequest{
 				Region: region,
@@ -35,7 +36,7 @@ func testSweepJobDefinition(_ string) error {
 				Region:          region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting definition in sweeper: %s", err)
 			}

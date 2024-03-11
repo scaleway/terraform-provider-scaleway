@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepDocumentDBInstance(_ string) error {
 	return sweepRegions((&documentdb.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		api := documentdb.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the documentdb instances in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the documentdb instances in (%s)", region)
 		listInstances, err := api.ListInstances(
 			&documentdb.ListInstancesRequest{
 				Region: region,
@@ -35,7 +36,7 @@ func testSweepDocumentDBInstance(_ string) error {
 				Region:     region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting instance in sweeper: %s", err)
 			}

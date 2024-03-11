@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepFunctionNamespace(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := function.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the function namespaces in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the function namespaces in (%s)", region)
 		listNamespaces, err := functionAPI.ListNamespaces(
 			&function.ListNamespacesRequest{
 				Region: region,
@@ -35,7 +36,7 @@ func testSweepFunctionNamespace(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
 			}

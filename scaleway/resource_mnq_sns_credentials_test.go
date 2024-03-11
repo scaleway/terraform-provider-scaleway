@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepMNQSNSCredentials(_ string) error {
 	return sweepRegions((&mnq.SnsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		mnqAPI := mnq.NewSnsAPI(scwClient)
-		l.Debugf("sweeper: destroying the mnq sns credentials in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the mnq sns credentials in (%s)", region)
 		listSnsCredentials, err := mnqAPI.ListSnsCredentials(
 			&mnq.SnsAPIListSnsCredentialsRequest{
 				Region: region,
@@ -35,7 +36,7 @@ func testSweepMNQSNSCredentials(_ string) error {
 				Region:           region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting sns credentials in sweeper: %s", err)
 			}

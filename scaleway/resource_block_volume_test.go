@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepBlockVolume(_ string) error {
 	return sweepZones((&block.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
 		blockAPI := block.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the block volumes in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the block volumes in (%s)", zone)
 		listVolumes, err := blockAPI.ListVolumes(
 			&block.ListVolumesRequest{
 				Zone: zone,
@@ -35,7 +36,7 @@ func testSweepBlockVolume(_ string) error {
 				Zone:     zone,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting volume in sweeper: %s", err)
 			}

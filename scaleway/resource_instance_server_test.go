@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,10 +27,10 @@ func init() {
 func testSweepInstanceServer(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the instance server in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the instance server in (%s)", zone)
 		listServers, err := instanceAPI.ListServers(&instance.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
-			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
+			logging.L.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
 			return nil
 		}
 

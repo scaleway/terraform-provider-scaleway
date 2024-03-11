@@ -1,46 +1,46 @@
-package scaleway
+package logging
 
 import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	sdkLogger "github.com/scaleway/scaleway-sdk-go/logger"
+	"github.com/scaleway/scaleway-sdk-go/logger"
 )
 
-// logger is the implementation of the SDK Logger interface for this terraform plugin.
+// Logger is the implementation of the SDK Logger interface for this terraform plugin.
 //
 // cf. https://godoc.org/github.com/scaleway/scaleway-sdk-go/logger#Logger
-type logger struct{}
+type Logger struct{}
 
-// l is the global logger singleton
-var l = logger{}
+// L is the global Logger singleton
+var L = Logger{}
 
 // Debugf logs to the DEBUG log. Arguments are handled in the manner of fmt.Printf.
-func (l logger) Debugf(format string, args ...interface{}) {
+func (l Logger) Debugf(format string, args ...interface{}) {
 	log.Printf("[DEBUG] "+format, args...)
 }
 
 // Infof logs to the INFO log. Arguments are handled in the manner of fmt.Printf.
-func (l logger) Infof(format string, args ...interface{}) {
+func (l Logger) Infof(format string, args ...interface{}) {
 	log.Printf("[INFO] "+format, args...)
 }
 
 // Warningf logs to the WARNING log. Arguments are handled in the manner of fmt.Printf.
-func (l logger) Warningf(format string, args ...interface{}) {
+func (l Logger) Warningf(format string, args ...interface{}) {
 	log.Printf("[WARN] "+format, args...)
 }
 
 // Errorf logs to the ERROR log. Arguments are handled in the manner of fmt.Printf.
-func (l logger) Errorf(format string, args ...interface{}) {
+func (l Logger) Errorf(format string, args ...interface{}) {
 	log.Printf("[ERROR] "+format, args...)
 }
 
 // Printf logs to the DEBUG log. Arguments are handled in the manner of fmt.Printf.
-func (l logger) Printf(format string, args ...interface{}) {
+func (l Logger) Printf(format string, args ...interface{}) {
 	l.Debugf(format, args...)
 }
 
 // ShouldLog allow the SDK to log only in DEBUG or TRACE levels.
-func (l logger) ShouldLog(_ sdkLogger.LogLevel) bool {
+func (l Logger) ShouldLog(_ logger.LogLevel) bool {
 	return logging.IsDebugOrHigher()
 }

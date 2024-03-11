@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
@@ -154,7 +155,7 @@ func testAccCheckScalewayVPCPublicGatewayDHCPReservationExists(tt *TestTools, n 
 			return err
 		}
 
-		l.Debugf("reservation: ID: (%s) exist", entry.ID)
+		logging.L.Debugf("reservation: ID: (%s) exist", entry.ID)
 		return nil
 	}
 }

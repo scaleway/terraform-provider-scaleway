@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -458,7 +459,7 @@ func testSweepStorageObjectBucket(_ string) error {
 		}
 
 		for _, bucket := range listBucketResponse.Buckets {
-			l.Debugf("Deleting %q bucket", *bucket.Name)
+			logging.L.Debugf("Deleting %q bucket", *bucket.Name)
 			if strings.HasPrefix(*bucket.Name, "terraform-test") {
 				_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
 					Bucket: bucket.Name,

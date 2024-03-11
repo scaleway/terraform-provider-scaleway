@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepRDBDatabaseBackup(_ string) error {
 	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		rdbAPI := rdb.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the rdb database backups in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the rdb database backups in (%s)", region)
 		listBackups, err := rdbAPI.ListDatabaseBackups(&rdb.ListDatabaseBackupsRequest{
 			Region: region,
 		})

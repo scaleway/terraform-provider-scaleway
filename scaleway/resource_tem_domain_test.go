@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -22,7 +23,7 @@ func init() {
 func testSweepTemDomain(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		temAPI := tem.NewAPI(scwClient)
-		l.Debugf("sweeper: revoking the tem domains in (%s)", region)
+		logging.L.Debugf("sweeper: revoking the tem domains in (%s)", region)
 
 		listDomains, err := temAPI.ListDomains(&tem.ListDomainsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
@@ -31,7 +32,7 @@ func testSweepTemDomain(_ string) error {
 
 		for _, ns := range listDomains.Domains {
 			if ns.Name == "test.scaleway-terraform.com" {
-				l.Debugf("sweeper: skipping deletion of domain %s", ns.Name)
+				logging.L.Debugf("sweeper: skipping deletion of domain %s", ns.Name)
 				continue
 			}
 			_, err := temAPI.RevokeDomain(&tem.RevokeDomainRequest{
@@ -39,7 +40,7 @@ func testSweepTemDomain(_ string) error {
 				Region:   region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error revoking domain in sweeper: %s", err)
 			}

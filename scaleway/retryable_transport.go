@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 type retryableTransportOptions struct {
@@ -24,7 +25,7 @@ func newRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 	// Defaults
 	c.RetryMax = 3
 	c.RetryWaitMax = 2 * time.Minute
-	c.Logger = l
+	c.Logger = logging.L
 	c.RetryWaitMin = time.Second * 2
 	c.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
 		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {

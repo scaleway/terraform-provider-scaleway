@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 var testDockerIMG = "docker.io/library/nginx:alpine"
@@ -31,7 +32,7 @@ func init() {
 func testSweepContainer(_ string) error {
 	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		containerAPI := container.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the container in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the container in (%s)", region)
 		listNamespaces, err := containerAPI.ListContainers(
 			&container.ListContainersRequest{
 				Region: region,
@@ -46,7 +47,7 @@ func testSweepContainer(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting container in sweeper: %s", err)
 			}

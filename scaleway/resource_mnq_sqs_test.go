@@ -11,6 +11,7 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -25,7 +26,7 @@ func testSweepMNQSQS(_ string) error {
 		accountAPI := accountV3.NewProjectAPI(scwClient)
 		mnqAPI := mnq.NewSqsAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the mnq sqss in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the mnq sqss in (%s)", region)
 
 		listProjects, err := accountAPI.ListProjects(&accountV3.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
@@ -41,7 +42,7 @@ func testSweepMNQSQS(_ string) error {
 				ProjectID: project.ID,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 				return err
 			}
 		}

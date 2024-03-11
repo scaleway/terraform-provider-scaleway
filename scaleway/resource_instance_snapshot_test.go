@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepInstanceSnapshot(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := instance.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying instance snapshots in (%+v)", zone)
+		logging.L.Debugf("sweeper: destroying instance snapshots in (%+v)", zone)
 
 		listSnapshotsResponse, err := api.ListSnapshots(&instance.ListSnapshotsRequest{
 			Zone: zone,

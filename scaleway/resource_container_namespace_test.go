@@ -9,6 +9,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -22,7 +23,7 @@ func init() {
 func testSweepContainerNamespace(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		containerAPI := container.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the container namespaces in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the container namespaces in (%s)", region)
 		listNamespaces, err := containerAPI.ListNamespaces(
 			&container.ListNamespacesRequest{
 				Region: region,
@@ -37,7 +38,7 @@ func testSweepContainerNamespace(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
 			}

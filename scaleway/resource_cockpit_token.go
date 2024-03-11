@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func resourceScalewayCockpitToken() *schema.Resource {
@@ -145,7 +146,7 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	l.Debugf("Creating token %+v", scopes)
+	logging.L.Debugf("Creating token %+v", scopes)
 
 	res, err := api.CreateToken(&cockpit.CreateTokenRequest{
 		Name:      name,

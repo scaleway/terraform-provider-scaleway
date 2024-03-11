@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 const (
@@ -44,7 +45,7 @@ func testAccCheckScalewayRdbEngineGetLatestVersion(tt *TestTools, engineName str
 func testSweepRDBInstance(_ string) error {
 	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		rdbAPI := rdb.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the rdb instance in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the rdb instance in (%s)", region)
 		listInstances, err := rdbAPI.ListInstances(&rdb.ListInstancesRequest{
 			Region: region,
 		}, scw.WithAllPages())

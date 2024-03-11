@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -22,7 +23,7 @@ func testSweepVPCPrivateNetwork(_ string) error {
 	err := sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		vpcAPI := v2.NewAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the private network in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the private network in (%s)", region)
 
 		listPNResponse, err := vpcAPI.ListPrivateNetworks(&v2.ListPrivateNetworksRequest{
 			Region: region,

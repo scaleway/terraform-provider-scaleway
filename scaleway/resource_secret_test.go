@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -21,7 +22,7 @@ func testSweepSecret(_ string) error {
 	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		secretAPI := secret.NewAPI(scwClient)
 
-		l.Debugf("sweeper: deleting the secrets in (%s)", region)
+		logging.L.Debugf("sweeper: deleting the secrets in (%s)", region)
 
 		listSecrets, err := secretAPI.ListSecrets(&secret.ListSecretsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
@@ -34,7 +35,7 @@ func testSweepSecret(_ string) error {
 				Region:   region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting secret in sweeper: %s", err)
 			}

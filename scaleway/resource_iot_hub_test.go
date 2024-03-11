@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,10 +21,10 @@ func init() {
 func testSweepIotHub(_ string) error {
 	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		iotAPI := iot.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the iot hub in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the iot hub in (%s)", region)
 		listHubs, err := iotAPI.ListHubs(&iot.ListHubsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			l.Debugf("sweeper: destroying the iot hub in (%s)", region)
+			logging.L.Debugf("sweeper: destroying the iot hub in (%s)", region)
 			return fmt.Errorf("error listing hubs in (%s) in sweeper: %s", region, err)
 		}
 
