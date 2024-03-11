@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -76,7 +77,7 @@ func testSweepK8SCluster(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		k8sAPI := k8s.NewAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
 		listClusters, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing clusters in (%s) in sweeper: %s", region, err)

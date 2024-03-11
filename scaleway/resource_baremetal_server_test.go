@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
@@ -23,10 +24,10 @@ func init() {
 func testSweepBaremetalServer(_ string) error {
 	return sweepZones([]scw.Zone{scw.ZoneFrPar2}, func(scwClient *scw.Client, zone scw.Zone) error {
 		baremetalAPI := baremetal.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the baremetal server in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the baremetal server in (%s)", zone)
 		listServers, err := baremetalAPI.ListServers(&baremetal.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
-			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
+			logging.L.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
 			return nil
 		}
 

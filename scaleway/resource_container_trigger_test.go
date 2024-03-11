@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepContainerTrigger(_ string) error {
 	return sweepRegions((&container.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		containerAPI := container.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the container triggers in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the container triggers in (%s)", region)
 		listTriggers, err := containerAPI.ListTriggers(
 			&container.ListTriggersRequest{
 				Region: region,
@@ -35,7 +36,7 @@ func testSweepContainerTrigger(_ string) error {
 				Region:    region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting trigger in sweeper: %s", err)
 			}

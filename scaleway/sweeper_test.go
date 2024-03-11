@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,7 +35,7 @@ func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client, zone scw.Zone) e
 		}
 		err = f(client, zone)
 		if err != nil {
-			l.Warningf("error running sweepZones, ignoring: %s", err)
+			logging.L.Warningf("error running sweepZones, ignoring: %s", err)
 		}
 	}
 	return nil

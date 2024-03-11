@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepFunction(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := function.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the function in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the function in (%s)", region)
 		listFunctions, err := functionAPI.ListFunctions(
 			&function.ListFunctionsRequest{
 				Region: region,
@@ -35,7 +36,7 @@ func testSweepFunction(_ string) error {
 				Region:     region,
 			})
 			if err != nil && !is404Error(err) {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting functions in sweeper: %s", err)
 			}

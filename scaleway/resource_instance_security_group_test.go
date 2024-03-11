@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/stretchr/testify/require"
 )
 
@@ -587,13 +588,13 @@ func testAccCheckScalewayInstanceSecurityGroupDestroy(tt *TestTools) resource.Te
 func testSweepComputeInstanceSecurityGroup(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the security groups in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the security groups in (%s)", zone)
 
 		listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			l.Warningf("error listing security groups in sweeper: %s", err)
+			logging.L.Warningf("error listing security groups in sweeper: %s", err)
 			return nil
 		}
 

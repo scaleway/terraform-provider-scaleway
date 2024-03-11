@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -21,7 +22,7 @@ func init() {
 func testSweepComputeInstanceVolume(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the volumes in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the volumes in (%s)", zone)
 
 		listVolumesResponse, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
 			Zone: zone,

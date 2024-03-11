@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -22,7 +23,7 @@ func testSweepIamAPIKey(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		api := iam.NewAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the api keys")
+		logging.L.Debugf("sweeper: destroying the api keys")
 
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {

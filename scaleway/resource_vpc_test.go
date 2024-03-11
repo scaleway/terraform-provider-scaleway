@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -22,7 +23,7 @@ func testSweepVPC(_ string) error {
 	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		vpcAPI := vpc.NewAPI(scwClient)
 
-		l.Debugf("sweeper: deleting the VPCs in (%s)", region)
+		logging.L.Debugf("sweeper: deleting the VPCs in (%s)", region)
 
 		listVPCs, err := vpcAPI.ListVPCs(&vpc.ListVPCsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
@@ -38,7 +39,7 @@ func testSweepVPC(_ string) error {
 				Region: region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting VPC in sweeper: %s", err)
 			}

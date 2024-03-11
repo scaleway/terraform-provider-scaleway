@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 const SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
@@ -23,7 +24,7 @@ func testSweepIamSSHKey(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		iamAPI := iam.NewAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the SSH keys")
+		logging.L.Debugf("sweeper: destroying the SSH keys")
 
 		listSSHKeys, err := iamAPI.ListSSHKeys(&iam.ListSSHKeysRequest{}, scw.WithAllPages())
 		if err != nil {

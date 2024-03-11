@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 func testSweepRegistryNamespace(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		registryAPI := registry.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the registry namespaces in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the registry namespaces in (%s)", region)
 		listNamespaces, err := registryAPI.ListNamespaces(
 			&registry.ListNamespacesRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
@@ -33,7 +34,7 @@ func testSweepRegistryNamespace(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
 			}

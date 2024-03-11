@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
@@ -14,7 +15,7 @@ func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	testDNSZone := "function-basic." + testDomain
-	l.Debugf("TestAccScalewayContainerDomain_Basic: test dns zone: %s", testDNSZone)
+	logging.L.Debugf("TestAccScalewayContainerDomain_Basic: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
