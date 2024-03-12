@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	serverless_sqldb "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -32,7 +33,7 @@ func serverlessSQLdbAPIWithRegionAndID(m interface{}, regionalID string) (*serve
 	meta := m.(*Meta)
 	sdbAPI := serverless_sqldb.NewAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}

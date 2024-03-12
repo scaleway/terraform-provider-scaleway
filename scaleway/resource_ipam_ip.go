@@ -11,6 +11,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayIPAMIP() *schema.Resource {
@@ -77,7 +79,7 @@ func resourceScalewayIPAMIP() *schema.Resource {
 				},
 			},
 			"project_id": projectIDSchema(),
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			// Computed elements
 			"resource": {
 				Type:        schema.TypeList,
@@ -137,7 +139,7 @@ func resourceScalewayIPAMIP() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the IP",
 			},
-			"zone": zoneComputedSchema(),
+			"zone": zonal.ComputedSchema(),
 		},
 	}
 }
@@ -177,7 +179,7 @@ func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	return resourceScalewayIPAMIPRead(ctx, d, meta)
 }

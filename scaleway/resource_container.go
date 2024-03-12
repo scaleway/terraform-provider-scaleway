@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 const (
@@ -184,7 +186,7 @@ func resourceScalewayContainer() *schema.Resource {
 				Computed:    true,
 				Description: "The error description",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
@@ -195,7 +197,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	namespaceID := expandID(d.Get("namespace_id").(string))
+	namespaceID := locality.ExpandID(d.Get("namespace_id").(string))
 	// verify name space state
 	_, err = waitForContainerNamespace(ctx, api, region, namespaceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -236,7 +238,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	return resourceScalewayContainerRead(ctx, d, meta)
 }
@@ -257,7 +259,7 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	_ = d.Set("name", co.Name)
-	_ = d.Set("namespace_id", newRegionalID(region, co.NamespaceID).String())
+	_ = d.Set("namespace_id", regional.NewID(region, co.NamespaceID).String())
 	_ = d.Set("status", co.Status.String())
 	_ = d.Set("error_message", co.ErrorMessage)
 	_ = d.Set("environment_variables", flattenMap(co.EnvironmentVariables))
@@ -289,7 +291,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	_, err = waitForContainerNamespace(ctx, api, region, expandID(namespaceID), d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForContainerNamespace(ctx, api, region, locality.ExpandID(namespaceID), d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}

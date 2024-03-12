@@ -11,6 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -38,7 +41,7 @@ func redisAPIWithZone(d *schema.ResourceData, m interface{}) (*redis.API, scw.Zo
 
 // redisAPIWithZoneAndID returns a Redis API with zone and ID extracted from the state
 func redisAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string, error) {
-	zone, ID, err := parseZonedID(id)
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -67,7 +70,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 
 	for _, rawPN := range data {
 		pn := rawPN.(map[string]interface{})
-		pnID := expandID(pn["id"].(string))
+		pnID := locality.ExpandID(pn["id"].(string))
 		rawIPs := pn["service_ips"].([]interface{})
 		ips := []scw.IPNet(nil)
 		spec := &redis.EndpointSpecPrivateNetworkSpec{
@@ -154,7 +157,7 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 		if err != nil {
 			return diag.FromErr(err), false
 		}
-		pnRegionalID := newRegionalIDString(fetchRegion, pn.ID)
+		pnRegionalID := regional.NewIDString(fetchRegion, pn.ID)
 		serviceIps := []interface{}(nil)
 		for _, ip := range pn.ServiceIPs {
 			serviceIps = append(serviceIps, ip.String())
@@ -194,7 +197,7 @@ func redisPrivateNetworkSetHash(v interface{}) int {
 
 	m := v.(map[string]interface{})
 	if pnID, ok := m["id"]; ok {
-		buf.WriteString(expandID(pnID))
+		buf.WriteString(locality.ExpandID(pnID))
 	}
 
 	if serviceIPs, ok := m["service_ips"]; ok {

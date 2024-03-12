@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayFlexibleIPs() *schema.Resource {
@@ -97,7 +98,7 @@ func dataSourceScalewayFlexibleIPs() *schema.Resource {
 										Computed:    true,
 										Description: "The date on which the virtual MAC was last updated (RFC 3339 format)",
 									},
-									"zone": zoneSchema(),
+									"zone": zonal.Schema(),
 								},
 							},
 						},
@@ -109,13 +110,13 @@ func dataSourceScalewayFlexibleIPs() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
-						"zone":            zoneComputedSchema(),
+						"zone":            zonal.ComputedSchema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -141,7 +142,7 @@ func dataSourceScalewayFlexibleIPsRead(ctx context.Context, d *schema.ResourceDa
 	fips := []interface{}(nil)
 	for _, fip := range res.FlexibleIPs {
 		rawFip := make(map[string]interface{})
-		rawFip["id"] = newZonedID(fip.Zone, fip.ID).String()
+		rawFip["id"] = zonal.NewID(fip.Zone, fip.ID).String()
 		rawFip["organization_id"] = fip.OrganizationID
 		rawFip["project_id"] = fip.ProjectID
 		rawFip["description"] = fip.Description

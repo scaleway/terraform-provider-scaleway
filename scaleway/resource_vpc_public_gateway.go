@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayVPCPublicGateway() *schema.Resource {
@@ -82,7 +83,7 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				Computed:    true,
 			},
 			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -126,7 +127,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.IPID = expandStringPtr(expandZonedID(ipID).ID)
+		req.IPID = expandStringPtr(zonal.ExpandID(ipID).ID)
 	}
 
 	gateway, err := vpcgwAPI.CreateGateway(req, scw.WithContext(ctx))
@@ -134,7 +135,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, gateway.ID))
+	d.SetId(zonal.NewIDString(zone, gateway.ID))
 
 	// check err waiting process
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gateway.ID, d.Timeout(schema.TimeoutCreate))
@@ -170,7 +171,7 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("zone", gateway.Zone)
 	_ = d.Set("tags", gateway.Tags)
 	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
-	_ = d.Set("ip_id", newZonedID(gateway.Zone, gateway.IP.ID).String())
+	_ = d.Set("ip_id", zonal.NewID(gateway.Zone, gateway.IP.ID).String())
 	_ = d.Set("bastion_enabled", gateway.BastionEnabled)
 	_ = d.Set("bastion_port", int(gateway.BastionPort))
 	_ = d.Set("enable_smtp", gateway.SMTPEnabled)

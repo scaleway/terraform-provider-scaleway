@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceMNQSQSQueueResourceV0() *schema.Resource {
@@ -83,7 +84,7 @@ func resourceMNQSQSQueueResourceV0() *schema.Resource {
 				ValidateFunc: validation.IntBetween(1024, 262_144),
 				Description:  "The maximum size of a message. Should be in bytes.",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 
 			// Computed

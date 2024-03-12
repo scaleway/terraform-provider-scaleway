@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -122,9 +124,9 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the Public Gateway's connection to the Private Network",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
 	}
 }
 
@@ -134,7 +136,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	gatewayID := zonal.ExpandID(d.Get("gateway_id").(string)).ID
 
 	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -144,7 +146,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 	req := &vpcgw.CreateGatewayNetworkRequest{
 		Zone:             zone,
 		GatewayID:        gateway.ID,
-		PrivateNetworkID: expandRegionalID(d.Get("private_network_id").(string)).ID,
+		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
 		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
 		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
 		IpamConfig:       expandIpamConfig(d.Get("ipam_config")),
@@ -160,7 +162,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 
 	dhcpID, dhcpExist := d.GetOk("dhcp_id")
 	if dhcpExist {
-		dhcpZoned := expandZonedID(dhcpID.(string))
+		dhcpZoned := zonal.ExpandID(dhcpID.(string))
 		req.DHCPID = &dhcpZoned.ID
 	}
 
@@ -174,7 +176,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, gatewayNetwork.ID))
+	d.SetId(zonal.NewIDString(zone, gatewayNetwork.ID))
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -209,7 +211,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	if dhcp := gatewayNetwork.DHCP; dhcp != nil {
-		_ = d.Set("dhcp_id", newZonedID(zone, dhcp.ID).String())
+		_ = d.Set("dhcp_id", zonal.NewID(zone, dhcp.ID).String())
 	}
 
 	if staticAddress := gatewayNetwork.Address; staticAddress != nil {
@@ -248,8 +250,8 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())
-	_ = d.Set("private_network_id", newRegionalIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
+	_ = d.Set("gateway_id", zonal.NewID(zone, gatewayNetwork.GatewayID).String())
+	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
 	_ = d.Set("enable_masquerade", gatewayNetwork.EnableMasquerade)
 	_ = d.Set("cleanup_dhcp", cleanUpDHCPValue)
 	_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))
@@ -283,7 +285,7 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		updateRequest.EnableDHCP = expandBoolPtr(d.Get("enable_dhcp"))
 	}
 	if d.HasChange("dhcp_id") {
-		dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
+		dhcpID := zonal.ExpandID(d.Get("dhcp_id").(string)).ID
 		updateRequest.DHCPID = &dhcpID
 	}
 	if d.HasChange("ipam_config") {

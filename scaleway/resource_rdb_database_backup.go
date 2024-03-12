@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayRdbDatabaseBackup() *schema.Resource {
@@ -74,9 +76,9 @@ func resourceScalewayRdbDatabaseBackup() *schema.Resource {
 				Computed:    true,
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
@@ -90,7 +92,7 @@ func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.Reso
 
 	createReq := &rdb.CreateDatabaseBackupRequest{
 		Region:       region,
-		InstanceID:   expandID(instanceID),
+		InstanceID:   locality.ExpandID(instanceID),
 		DatabaseName: d.Get("database_name").(string),
 		Name:         expandOrGenerateString(d.Get("name"), "backup"),
 		ExpiresAt:    expandTimePtr(d.Get("expires_at")),
@@ -101,7 +103,7 @@ func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, dbBackup.ID))
+	d.SetId(regional.NewIDString(region, dbBackup.ID))
 
 	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, dbBackup.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -126,7 +128,7 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("instance_id", newRegionalID(region, dbBackup.InstanceID).String())
+	_ = d.Set("instance_id", regional.NewID(region, dbBackup.InstanceID).String())
 	_ = d.Set("name", dbBackup.Name)
 	_ = d.Set("database_name", dbBackup.DatabaseName)
 	_ = d.Set("instance_name", dbBackup.InstanceName)
@@ -136,7 +138,7 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 	_ = d.Set("size", flattenSize(dbBackup.Size))
 	_ = d.Set("region", dbBackup.Region)
 
-	d.SetId(newRegionalIDString(region, dbBackup.ID))
+	d.SetId(regional.NewIDString(region, dbBackup.ID))
 
 	return nil
 }

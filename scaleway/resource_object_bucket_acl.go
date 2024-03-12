@@ -13,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 const (
@@ -130,7 +132,7 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 				Description:  "The project ID as owner.",
 				ValidateFunc: validationUUID(),
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -142,7 +144,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
@@ -398,7 +400,7 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 	_ = d.Set("region", region)
 	_ = d.Set("project_id", normalizeOwnerID(output.Owner.ID))
-	_ = d.Set("bucket", expandID(bucket))
+	_ = d.Set("bucket", locality.ExpandID(bucket))
 
 	return nil
 }
@@ -407,9 +409,9 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, meta int
 // with the bucket name and optional organizationID and/or ACL.
 func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
 	if acl == "" {
-		return newRegionalIDString(region, bucket)
+		return regional.NewIDString(region, bucket)
 	}
-	return newRegionalIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
+	return regional.NewIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
 }
 
 func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
@@ -51,7 +52,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, 
 	reservationIDRaw, ok := d.GetOk("reservation_id")
 	if !ok {
 		var res *vpcgw.ListDHCPEntriesResponse
-		gatewayNetworkID := expandID(d.Get("gateway_network_id").(string))
+		gatewayNetworkID := locality.ExpandID(d.Get("gateway_network_id").(string))
 		macAddress := d.Get("mac_address").(string)
 
 		if d.Get("wait_for_dhcp").(bool) {

@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayContainerTrigger() *schema.Resource {
@@ -123,9 +125,9 @@ func resourceScalewayContainerTrigger() *schema.Resource {
 					},
 				},
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("container_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("container_id"),
 	}
 }
 
@@ -138,7 +140,7 @@ func resourceScalewayContainerTriggerCreate(ctx context.Context, d *schema.Resou
 	req := &container.CreateTriggerRequest{
 		Region:      region,
 		Name:        expandOrGenerateString(d.Get("name").(string), "trigger"),
-		ContainerID: expandID(d.Get("container_id")),
+		ContainerID: locality.ExpandID(d.Get("container_id")),
 		Description: expandStringPtr(d.Get("description")),
 	}
 
@@ -167,7 +169,7 @@ func resourceScalewayContainerTriggerCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, trigger.ID))
+	d.SetId(regional.NewIDString(region, trigger.ID))
 
 	_, err = waitForContainerTrigger(ctx, api, region, trigger.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

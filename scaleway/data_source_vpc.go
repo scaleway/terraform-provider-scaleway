@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewayVPC() *schema.Resource {
@@ -57,7 +58,7 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 			return diag.FromErr(err)
 		}
 
-		vpcID = newRegionalIDString(region, res.Vpcs[0].ID)
+		vpcID = regional.NewIDString(region, res.Vpcs[0].ID)
 	} else {
 		vpcID, ok = d.GetOk("vpc_id")
 		if !ok {

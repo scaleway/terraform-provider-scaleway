@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -98,11 +99,11 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the creation of the snapshot",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("volume_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("volume_id"),
 	}
 }
 
@@ -126,7 +127,7 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 	req.Tags = expandStringsPtr(d.Get("tags"))
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
-		req.VolumeID = scw.StringPtr(expandZonedID(volumeID).ID)
+		req.VolumeID = scw.StringPtr(zonal.ExpandID(volumeID).ID)
 	}
 
 	if _, isImported := d.GetOk("import"); isImported {
@@ -139,7 +140,7 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.Snapshot.ID))
+	d.SetId(zonal.NewIDString(zone, res.Snapshot.ID))
 
 	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
 		SnapshotID:    res.Snapshot.ID,

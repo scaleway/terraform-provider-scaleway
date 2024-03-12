@@ -4,12 +4,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func expandFunctionTriggerMnqSqsCreationConfig(i interface{}) *function.CreateTriggerRequestMnqSqsClientConfig {
 	m := i.(map[string]interface{})
 
-	mnqNamespaceID := expandID(m["namespace_id"].(string))
+	mnqNamespaceID := locality.ExpandID(m["namespace_id"].(string))
 
 	req := &function.CreateTriggerRequestMnqSqsClientConfig{
 		Queue:        m["queue"].(string),
@@ -28,10 +29,10 @@ func expandFunctionTriggerMnqNatsCreationConfig(i interface{}) *function.CreateT
 	m := i.(map[string]interface{})
 
 	return &function.CreateTriggerRequestMnqNatsClientConfig{
-		Subject:          expandID(m["subject"]),
+		Subject:          locality.ExpandID(m["subject"]),
 		MnqProjectID:     m["project_id"].(string),
 		MnqRegion:        m["region"].(string),
-		MnqNatsAccountID: expandID(m["account_id"]),
+		MnqNatsAccountID: locality.ExpandID(m["account_id"]),
 	}
 }
 

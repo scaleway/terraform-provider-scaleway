@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayInstanceSecurityGroup() *schema.Resource {
@@ -96,7 +98,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the security group",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -128,7 +130,7 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.SecurityGroup.ID))
+	d.SetId(zonal.NewIDString(zone, res.SecurityGroup.ID))
 
 	if d.Get("external_rules").(bool) {
 		return resourceScalewayInstanceSecurityGroupRead(ctx, d, meta)
@@ -180,7 +182,7 @@ func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.Re
 func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]interface{}, []interface{}, error) {
 	resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 		Zone:            zone,
-		SecurityGroupID: expandID(securityGroupID),
+		SecurityGroupID: locality.ExpandID(securityGroupID),
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		return nil, nil, err
@@ -242,7 +244,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	zone, ID, err := parseZonedID(d.Id())
+	zone, ID, err := zonal.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -345,7 +347,7 @@ func resourceScalewayInstanceSecurityGroupDelete(ctx context.Context, d *schema.
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	zone, ID, err := parseZonedID(d.Id())
+	zone, ID, err := zonal.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

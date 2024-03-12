@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -37,7 +39,7 @@ func containerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.
 	meta := m.(*Meta)
 	api := container.NewAPI(meta.scwClient)
 
-	region, id, err := parseRegionalID(id)
+	region, id, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -56,7 +58,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 
 	req := &container.CreateContainerRequest{
 		Region:      region,
-		NamespaceID: expandID(namespaceID),
+		NamespaceID: locality.ExpandID(namespaceID),
 		Name:        name,
 		Privacy:     container.ContainerPrivacy(privacyType.(string)),
 		Protocol:    container.ContainerProtocol(*expandStringPtr(protocol)),

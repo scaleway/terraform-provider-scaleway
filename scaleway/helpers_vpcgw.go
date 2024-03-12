@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -33,7 +35,7 @@ func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, stri
 	meta := m.(*Meta)
 	vpcgwAPI := vpcgw.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(id)
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -122,7 +124,7 @@ func expandIpamConfig(raw interface{}) *vpcgw.CreateGatewayNetworkRequestIpamCon
 	}
 
 	if ipamIPID, ok := rawMap["ipam_ip_id"].(string); ok && ipamIPID != "" {
-		ipamConfig.IpamIPID = scw.StringPtr(expandRegionalID(ipamIPID).ID)
+		ipamConfig.IpamIPID = scw.StringPtr(regional.ExpandID(ipamIPID).ID)
 	}
 
 	return ipamConfig
@@ -139,7 +141,7 @@ func expandUpdateIpamConfig(raw interface{}) *vpcgw.UpdateGatewayNetworkRequestI
 	}
 
 	if ipamIPID, ok := rawMap["ipam_ip_id"].(string); ok && ipamIPID != "" {
-		updateIpamConfig.IpamIPID = scw.StringPtr(expandRegionalID(ipamIPID).ID)
+		updateIpamConfig.IpamIPID = scw.StringPtr(regional.ExpandID(ipamIPID).ID)
 	}
 
 	return updateIpamConfig

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	serverless_sqldb "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewaySDBSQLDatabase() *schema.Resource {
@@ -50,7 +51,7 @@ func resourceScalewaySDBSQLDatabase() *schema.Resource {
 				Computed:    true,
 				Description: "endpoint of the database",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -74,7 +75,7 @@ func resourceScalewayServerlessSQLDBDatabaseCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, database.ID))
+	d.SetId(regional.NewIDString(region, database.ID))
 
 	_, err = waitForServerlessSQLDBDatabase(ctx, api, region, database.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

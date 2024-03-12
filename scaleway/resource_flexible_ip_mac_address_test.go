@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func TestAccScalewayFlexibleIPMACAddress_Basic(t *testing.T) {
@@ -212,7 +213,7 @@ func testAccCheckScalewayFlexibleIPAttachedMACAddress(tt *TestTools, fipResource
 			return err
 		}
 
-		if ip.MacAddress != nil && expandID(ip.MacAddress.ID) != expandID(macState.Primary.ID) {
+		if ip.MacAddress != nil && locality.ExpandID(ip.MacAddress.ID) != locality.ExpandID(macState.Primary.ID) {
 			return fmt.Errorf("IDs should be the same in %s and %s: %v is different than %v", fipResource, macResource, ip.MacAddress.ID, macState.Primary.ID)
 		}
 

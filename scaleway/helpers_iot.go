@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -32,7 +33,7 @@ func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, stri
 	meta := m.(*Meta)
 	iotAPI := iot.NewAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	return iotAPI, region, ID, err
 }
 

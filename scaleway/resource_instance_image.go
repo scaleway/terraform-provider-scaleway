@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -165,11 +166,11 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				},
 			},
 			// Common
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("root_volume_id", "additional_volume_ids.#"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("root_volume_id", "additional_volume_ids.#"),
 	}
 }
 
@@ -182,7 +183,7 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 	req := &instance.CreateImageRequest{
 		Zone:       zone,
 		Name:       expandOrGenerateString(d.Get("name"), "image"),
-		RootVolume: expandZonedID(d.Get("root_volume_id").(string)).ID,
+		RootVolume: zonal.ExpandID(d.Get("root_volume_id").(string)).ID,
 		Arch:       instance.Arch(d.Get("architecture").(string)),
 		Project:    expandStringPtr(d.Get("project_id")),
 		Public:     expandBoolPtr(d.Get("public")),
@@ -209,7 +210,7 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.Image.ID))
+	d.SetId(zonal.NewIDString(zone, res.Image.ID))
 
 	_, err = instanceAPI.WaitForImage(&instance.WaitForImageRequest{
 		ImageID:       res.Image.ID,
@@ -243,7 +244,7 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_ = d.Set("name", image.Image.Name)
-	_ = d.Set("root_volume_id", newZonedIDString(image.Image.Zone, image.Image.RootVolume.ID))
+	_ = d.Set("root_volume_id", zonal.NewIDString(image.Image.Zone, image.Image.RootVolume.ID))
 	_ = d.Set("architecture", image.Image.Arch)
 	_ = d.Set("additional_volumes", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes, zone))
 	_ = d.Set("tags", image.Image.Tags)

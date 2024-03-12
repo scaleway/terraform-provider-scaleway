@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewayObjectBucket() *schema.Resource {
@@ -30,7 +31,7 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("name"))
+	regionalID := regional.ExpandID(d.Get("name"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
@@ -60,7 +61,7 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 	}
 	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
-	bucketRegionalID := newRegionalIDString(region, bucket)
+	bucketRegionalID := regional.NewIDString(region, bucket)
 	d.SetId(bucketRegionalID)
 	return resourceScalewayObjectBucketRead(ctx, d, meta)
 }

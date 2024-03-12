@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayObject() *schema.Resource {
@@ -99,7 +100,7 @@ func resourceScalewayObject() *schema.Resource {
 					s3.ObjectCannedACLPublicRead,
 				}, false),
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -114,7 +115,7 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
@@ -175,7 +176,7 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	d.SetId(newRegionalIDString(region, objectID(bucket, key)))
+	d.SetId(regional.NewIDString(region, objectID(bucket, key)))
 
 	return resourceScalewayObjectRead(ctx, d, meta)
 }
@@ -189,7 +190,7 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
 
-	bucketUpdated := expandRegionalID(d.Get("bucket")).ID
+	bucketUpdated := regional.ExpandID(d.Get("bucket")).ID
 	keyUpdated := d.Get("key").(string)
 
 	if d.HasChanges("file", "hash") {
@@ -248,7 +249,7 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	d.SetId(newRegionalIDString(region, objectID(bucketUpdated, keyUpdated)))
+	d.SetId(regional.NewIDString(region, objectID(bucketUpdated, keyUpdated)))
 
 	return resourceScalewayObjectCreate(ctx, d, meta)
 }
@@ -271,7 +272,7 @@ func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	_ = d.Set("region", region)
-	_ = d.Set("bucket", newRegionalIDString(region, bucket))
+	_ = d.Set("bucket", regional.NewIDString(region, bucket))
 	_ = d.Set("key", key)
 
 	for k, v := range obj.Metadata {

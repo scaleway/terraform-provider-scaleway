@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewaySecret() *schema.Resource {
@@ -71,7 +72,7 @@ func resourceScalewaySecret() *schema.Resource {
 					return filepath.Clean(oldValue) == filepath.Clean(newValue)
 				},
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -109,7 +110,7 @@ func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, secretResponse.ID))
+	d.SetId(regional.NewIDString(region, secretResponse.ID))
 
 	return resourceScalewaySecretRead(ctx, d, meta)
 }

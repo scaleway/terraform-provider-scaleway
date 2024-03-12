@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayLbIP() *schema.Resource {
@@ -36,7 +38,7 @@ func resourceScalewayLbIP() *schema.Resource {
 				Computed:    true,
 				Description: "The reverse domain name for this IP",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 			// Computed
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -50,7 +52,7 @@ func resourceScalewayLbIP() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the load balancer attached to this IP, if any",
 			},
-			"region": regionComputedSchema(),
+			"region": regional.ComputedSchema(),
 		},
 	}
 }
@@ -77,7 +79,7 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	return resourceScalewayLbIPRead(ctx, d, meta)
 }

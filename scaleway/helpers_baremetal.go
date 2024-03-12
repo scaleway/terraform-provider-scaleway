@@ -10,6 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -33,15 +36,15 @@ func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API
 }
 
 // instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
-func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedID, error) {
+func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, error) {
 	meta := m.(*Meta)
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(id)
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, ZonedID{}, err
+		return nil, zonal.ID{}, err
 	}
-	return baremetalAPI, newZonedID(zone, ID), nil
+	return baremetalAPI, zonal.NewID(zone, ID), nil
 }
 
 // returns a new baremetal private network API and the zone for a Create request
@@ -57,15 +60,15 @@ func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (
 }
 
 // baremetalPrivateNetworkAPIWithZoneAndID returns a baremetal private network API with zone and ID extracted from the state
-func baremetalPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, ZonedID, error) {
+func baremetalPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, zonal.ID, error) {
 	meta := m.(*Meta)
 	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(id)
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, ZonedID{}, err
+		return nil, zonal.ID{}, err
 	}
-	return baremetalPrivateNetworkAPI, newZonedID(zone, ID), nil
+	return baremetalPrivateNetworkAPI, zonal.NewID(zone, ID), nil
 }
 
 func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
@@ -77,7 +80,7 @@ func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 		if optionExpiresAt, hasExpiresAt := rawOption["expires_at"]; hasExpiresAt {
 			option.ExpiresAt = expandTimePtr(optionExpiresAt)
 		}
-		id := expandID(rawOption["id"].(string))
+		id := locality.ExpandID(rawOption["id"].(string))
 		name := rawOption["name"].(string)
 
 		option.ID = id
@@ -94,7 +97,7 @@ func expandBaremetalPrivateNetworks(pn interface{}) []string {
 
 	for _, op := range pn.(*schema.Set).List() {
 		rawPN := op.(map[string]interface{})
-		id := expandID(rawPN["id"].(string))
+		id := locality.ExpandID(rawPN["id"].(string))
 		privateNetworkIDs = append(privateNetworkIDs, id)
 	}
 
@@ -206,7 +209,7 @@ func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) i
 	flattenedOptions := []map[string]interface{}(nil)
 	for _, option := range options {
 		flattenedOptions = append(flattenedOptions, map[string]interface{}{
-			"id":         newZonedID(zone, option.ID).String(),
+			"id":         zonal.NewID(zone, option.ID).String(),
 			"expires_at": flattenTime(option.ExpiresAt),
 			"name":       option.Name,
 		})
@@ -218,7 +221,7 @@ func flattenBaremetalPrivateNetworks(region scw.Region, privateNetworks []*barem
 	flattenedPrivateNetworks := []map[string]interface{}(nil)
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
-			"id":         newRegionalIDString(region, privateNetwork.PrivateNetworkID),
+			"id":         regional.NewIDString(region, privateNetwork.PrivateNetworkID),
 			"vlan":       flattenUint32Ptr(privateNetwork.Vlan),
 			"status":     privateNetwork.Status,
 			"created_at": flattenTime(privateNetwork.CreatedAt),
@@ -323,7 +326,7 @@ func waitForBaremetalServerPrivateNetwork(ctx context.Context, api *baremetal.Pr
 }
 
 func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremetalAPI *baremetal.API, installServerRequest *baremetal.InstallServerRequest) error {
-	installServerRequest.OsID = expandID(d.Get("os"))
+	installServerRequest.OsID = locality.ExpandID(d.Get("os"))
 	installServerRequest.SSHKeyIDs = expandStrings(d.Get("ssh_key_ids"))
 
 	_, err := baremetalAPI.InstallServer(installServerRequest, scw.WithContext(ctx))
@@ -414,7 +417,7 @@ func baremetalPrivateNetworkSetHash(v interface{}) int {
 
 	m := v.(map[string]interface{})
 	if pnID, ok := m["id"]; ok {
-		buf.WriteString(expandID(pnID))
+		buf.WriteString(locality.ExpandID(pnID))
 	}
 
 	return StringHashcode(buf.String())

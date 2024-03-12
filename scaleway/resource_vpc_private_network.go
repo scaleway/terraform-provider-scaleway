@@ -9,6 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayVPCPrivateNetwork() *schema.Resource {
@@ -159,9 +162,9 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				Deprecated:       "This field is deprecated and will be removed in the next major version, please use `region` instead",
-				ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
+				ValidateDiagFunc: locality.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -197,7 +200,7 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 	}
 
 	if _, ok := d.GetOk("vpc_id"); ok {
-		vpcID := expandRegionalID(d.Get("vpc_id").(string)).ID
+		vpcID := regional.ExpandID(d.Get("vpc_id").(string)).ID
 		req.VpcID = expandUpdatedStringPtr(vpcID)
 	}
 
@@ -214,7 +217,7 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, pn.ID))
+	d.SetId(regional.NewIDString(region, pn.ID))
 
 	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }
@@ -243,7 +246,7 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	_ = d.Set("name", pn.Name)
-	_ = d.Set("vpc_id", newRegionalIDString(region, pn.VpcID))
+	_ = d.Set("vpc_id", regional.NewIDString(region, pn.VpcID))
 	_ = d.Set("organization_id", pn.OrganizationID)
 	_ = d.Set("project_id", pn.ProjectID)
 	_ = d.Set("created_at", flattenTime(pn.CreatedAt))

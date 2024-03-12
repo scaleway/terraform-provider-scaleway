@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayRDBDatabase() *schema.Resource {
@@ -30,7 +31,7 @@ func dataSourceScalewayRDBDatabaseRead(ctx context.Context, d *schema.ResourceDa
 	instanceID, _ := d.GetOk("instance_id")
 	dbName, _ := d.GetOk("name")
 
-	_, _, err = parseLocalizedID(instanceID.(string))
+	_, _, err = locality.ParseLocalizedID(instanceID.(string))
 	if err != nil {
 		instanceID = datasourceNewRegionalID(instanceID, region)
 	}

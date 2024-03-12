@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -36,7 +37,7 @@ func documentDBAPIWithRegionAndID(m interface{}, regionalID string) (*documentdb
 	meta := m.(*Meta)
 	api := documentdb.NewAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}

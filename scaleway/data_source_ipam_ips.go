@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayIPAMIPs() *schema.Resource {
@@ -67,8 +69,8 @@ func dataSourceScalewayIPAMIPs() *schema.Resource {
 				Optional:    true,
 				Description: "IP Type (ipv4, ipv6) to filter for",
 			},
-			"zonal":           zoneSchema(),
-			"region":          regionSchema(),
+			"zonal":           zonal.Schema(),
+			"region":          regional.Schema(),
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 			// Computed
@@ -124,8 +126,8 @@ func dataSourceScalewayIPAMIPs() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
-						"region":     regionComputedSchema(),
-						"zone":       zoneComputedSchema(),
+						"region":     regional.ComputedSchema(),
+						"zone":       zonal.ComputedSchema(),
 						"project_id": projectIDSchema(),
 					},
 				},
@@ -188,7 +190,7 @@ func dataSourceScalewayIPAMIPsRead(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		rawIP := make(map[string]interface{})
-		rawIP["id"] = newRegionalIDString(region, ip.ID)
+		rawIP["id"] = regional.NewIDString(region, ip.ID)
 		rawIP["address"] = address
 		rawIP["resource"] = flattenIPResource(ip.Resource)
 		rawIP["tags"] = ip.Tags

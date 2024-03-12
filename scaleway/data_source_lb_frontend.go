@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayLbFrontend() *schema.Resource {
@@ -43,7 +44,7 @@ func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceDat
 		res, err := api.ListFrontends(&lbSDK.ZonedAPIListFrontendsRequest{
 			Zone: zone,
 			Name: expandStringPtr(frontName),
-			LBID: expandID(d.Get("lb_id")),
+			LBID: locality.ExpandID(d.Get("lb_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

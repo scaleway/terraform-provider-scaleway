@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -29,7 +30,7 @@ func waitForContainerTrigger(ctx context.Context, containerAPI *container.API, r
 func expandContainerTriggerMnqSqsCreationConfig(i interface{}) *container.CreateTriggerRequestMnqSqsClientConfig {
 	m := i.(map[string]interface{})
 
-	mnqNamespaceID := expandID(m["namespace_id"].(string))
+	mnqNamespaceID := locality.ExpandID(m["namespace_id"].(string))
 
 	req := &container.CreateTriggerRequestMnqSqsClientConfig{
 		Queue:        m["queue"].(string),
@@ -51,7 +52,7 @@ func expandContainerTriggerMnqNatsCreationConfig(i interface{}) *container.Creat
 		Subject:          m["subject"].(string),
 		MnqProjectID:     m["project_id"].(string),
 		MnqRegion:        m["region"].(string),
-		MnqNatsAccountID: expandID(m["account_id"]),
+		MnqNatsAccountID: locality.ExpandID(m["account_id"]),
 	}
 }
 

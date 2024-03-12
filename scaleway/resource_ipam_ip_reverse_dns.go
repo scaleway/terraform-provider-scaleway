@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayIPAMIPReverseDNS() *schema.Resource {
@@ -43,7 +45,7 @@ func resourceScalewayIPAMIPReverseDNS() *schema.Resource {
 				Description:  "The IP corresponding to the hostname",
 				ValidateFunc: validation.IsIPAddress,
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
@@ -56,13 +58,13 @@ func resourceScalewayIPAMIPReverseDNSCreate(ctx context.Context, d *schema.Resou
 
 	res, err := ipamAPI.GetIP(&ipam.GetIPRequest{
 		Region: region,
-		IPID:   expandID(d.Get("ipam_ip_id")),
+		IPID:   locality.ExpandID(d.Get("ipam_ip_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 	if hostname, ok := d.GetOk("hostname"); ok {
 		reverse := &ipam.Reverse{
 			Hostname: hostname.(string),

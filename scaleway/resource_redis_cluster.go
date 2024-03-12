@@ -14,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayRedisCluster() *schema.Resource {
@@ -125,7 +127,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
 					// Check if the key is for the 'id' attribute
 					if strings.HasSuffix(k, "id") {
-						return expandID(oldValue) == expandID(newValue)
+						return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
 					}
 					// For all other attributes, don't suppress the diff
 					return false
@@ -154,7 +156,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 							Computed:    true,
 							Description: "UUID of the endpoint to be connected to the cluster",
 						},
-						"zone": zoneComputedSchema(),
+						"zone": zonal.ComputedSchema(),
 					},
 				},
 			},
@@ -202,11 +204,11 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description: "The date and time of the last update of the Redis cluster",
 			},
 			// Common
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			"project_id": projectIDSchema(),
 		},
 		CustomizeDiff: customdiff.All(
-			customizeDiffLocalityCheck("private_network.#.id"),
+			CustomizeDiffLocalityCheck("private_network.#.id"),
 			customizeDiffMigrateClusterSize(),
 		),
 	}
@@ -280,7 +282,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

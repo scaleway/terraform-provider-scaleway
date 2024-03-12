@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayLbFrontends() *schema.Resource {
@@ -74,7 +75,7 @@ func dataSourceScalewayLbFrontends() *schema.Resource {
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -87,7 +88,7 @@ func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,9 +105,9 @@ func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceDa
 	frontends := []interface{}(nil)
 	for _, frontend := range res.Frontends {
 		rawFrontend := make(map[string]interface{})
-		rawFrontend["id"] = newZonedIDString(zone, frontend.ID)
+		rawFrontend["id"] = zonal.NewIDString(zone, frontend.ID)
 		rawFrontend["name"] = frontend.Name
-		rawFrontend["lb_id"] = newZonedIDString(zone, frontend.LB.ID)
+		rawFrontend["lb_id"] = zonal.NewIDString(zone, frontend.LB.ID)
 		rawFrontend["created_at"] = flattenTime(frontend.CreatedAt)
 		rawFrontend["update_at"] = flattenTime(frontend.UpdatedAt)
 		rawFrontend["inbound_port"] = frontend.InboundPort

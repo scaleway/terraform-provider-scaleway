@@ -19,10 +19,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 // Service information constants
@@ -31,175 +33,6 @@ const (
 	EndpointsID = ServiceName // ID to look up a service endpoint with.
 )
 
-// RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
-type RegionalID struct {
-	ID     string
-	Region scw.Region
-}
-
-func (z RegionalID) String() string {
-	return fmt.Sprintf("%s/%s", z.Region, z.ID)
-}
-
-func newRegionalID(region scw.Region, id string) RegionalID {
-	return RegionalID{
-		ID:     id,
-		Region: region,
-	}
-}
-
-func expandRegionalID(id interface{}) RegionalID {
-	regionalID := RegionalID{}
-	tab := strings.Split(id.(string), "/")
-	if len(tab) != 2 {
-		regionalID.ID = id.(string)
-	} else {
-		region, _ := scw.ParseRegion(tab[0])
-		regionalID.ID = tab[1]
-		regionalID.Region = region
-	}
-
-	return regionalID
-}
-
-// ZonedID represents an ID that is linked with a zone, eg fr-par-1/11111111-1111-1111-1111-111111111111
-type ZonedID struct {
-	ID   string
-	Zone scw.Zone
-}
-
-func (z ZonedID) String() string {
-	return fmt.Sprintf("%s/%s", z.Zone, z.ID)
-}
-
-func newZonedID(zone scw.Zone, id string) ZonedID {
-	return ZonedID{
-		ID:   id,
-		Zone: zone,
-	}
-}
-
-func expandZonedID(id interface{}) ZonedID {
-	zonedID := ZonedID{}
-	tab := strings.Split(id.(string), "/")
-	if len(tab) != 2 {
-		zonedID.ID = id.(string)
-	} else {
-		zone, _ := scw.ParseZone(tab[0])
-		zonedID.ID = tab[1]
-		zonedID.Zone = zone
-	}
-
-	return zonedID
-}
-
-// parseLocalizedID parses a localizedID and extracts the resource locality and id.
-func parseLocalizedID(localizedID string) (locality, id string, err error) {
-	tab := strings.Split(localizedID, "/")
-	if len(tab) != 2 {
-		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
-	}
-	return tab[0], tab[1], nil
-}
-
-// parseLocalizedNestedID parses a localizedNestedID and extracts the resource locality, the inner and outer id.
-func parseLocalizedNestedID(localizedID string) (locality string, innerID, outerID string, err error) {
-	tab := strings.Split(localizedID, "/")
-	if len(tab) < 3 {
-		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
-	}
-	return tab[0], tab[1], strings.Join(tab[2:], "/"), nil
-}
-
-// parseLocalizedNestedID parses a localizedNestedOwnerID and extracts the resource locality, the inner and outer id and owner.
-func parseLocalizedNestedOwnerID(localizedID string) (locality string, innerID, outerID string, err error) {
-	tab := strings.Split(localizedID, "/")
-	n := len(tab)
-	switch n {
-	case 2:
-		locality = tab[0]
-		innerID = tab[1]
-	case 3:
-		locality, innerID, outerID, err = parseLocalizedNestedID(localizedID)
-	default:
-		err = fmt.Errorf("cant parse localized id: %s", localizedID)
-	}
-
-	if err != nil {
-		return "", "", localizedID, err
-	}
-
-	return locality, innerID, outerID, nil
-}
-
-// parseZonedID parses a zonedID and extracts the resource zone and id.
-func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
-	locality, id, err := parseLocalizedID(zonedID)
-	if err != nil {
-		return zone, id, err
-	}
-
-	zone, err = scw.ParseZone(locality)
-	return
-}
-
-// parseZonedNestedID parses a zonedNestedID and extracts the resource zone ,inner and outer ID.
-func parseZonedNestedID(zonedNestedID string) (zone scw.Zone, outerID, innerID string, err error) {
-	locality, innerID, outerID, err := parseLocalizedNestedID(zonedNestedID)
-	if err != nil {
-		return
-	}
-
-	zone, err = scw.ParseZone(locality)
-	return
-}
-
-// expandID returns the id whether it is a localizedID or a raw ID.
-func expandID(id interface{}) string {
-	_, ID, err := parseLocalizedID(id.(string))
-	if err != nil {
-		return id.(string)
-	}
-	return ID
-}
-
-// parseRegionalID parses a regionalID and extracts the resource region and id.
-func parseRegionalID(regionalID string) (region scw.Region, id string, err error) {
-	locality, id, err := parseLocalizedID(regionalID)
-	if err != nil {
-		return
-	}
-
-	region, err = scw.ParseRegion(locality)
-	return
-}
-
-// parseRegionalNestedID parses a regionalNestedID and extracts the resource region, inner and outer ID.
-func parseRegionalNestedID(regionalNestedID string) (region scw.Region, outerID, innerID string, err error) {
-	locality, innerID, outerID, err := parseLocalizedNestedID(regionalNestedID)
-	if err != nil {
-		return
-	}
-
-	region, err = scw.ParseRegion(locality)
-	return
-}
-
-// newZonedIDString constructs a unique identifier based on resource zone and id
-func newZonedIDString(zone scw.Zone, id string) string {
-	return fmt.Sprintf("%s/%s", zone, id)
-}
-
-// newZonedNestedIDString constructs a unique identifier based on resource zone, inner and outer IDs
-func newZonedNestedIDString(zone scw.Zone, outerID, innerID string) string {
-	return fmt.Sprintf("%s/%s/%s", zone, outerID, innerID)
-}
-
-// newRegionalIDString constructs a unique identifier based on resource region and id
-func newRegionalIDString(region scw.Region, id string) string {
-	return fmt.Sprintf("%s/%s", region, id)
-}
-
 // terraformResourceData is an interface for *schema.ResourceData. (used for mock)
 type terraformResourceData interface {
 	HasChange(string) bool
@@ -207,9 +40,6 @@ type terraformResourceData interface {
 	Get(string) interface{}
 	Id() string
 }
-
-// ErrZoneNotFound is returned when no zone can be detected
-var ErrZoneNotFound = errors.New("could not detect zone. Scaleway uses regions and zones. For more information, refer to https://www.terraform.io/docs/providers/scaleway/guides/regions_and_zones.html")
 
 // extractZone will try to guess the zone from the following:
 //   - zone field of the resource data
@@ -225,11 +55,8 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 		return zone, nil
 	}
 
-	return "", ErrZoneNotFound
+	return "", zonal.ErrZoneNotFound
 }
-
-// ErrRegionNotFound is returned when no region can be detected
-var ErrRegionNotFound = errors.New("could not detect region")
 
 // extractRegion will try to guess the region from the following:
 //   - region field of the resource data
@@ -245,7 +72,7 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 		return region, nil
 	}
 
-	return "", ErrRegionNotFound
+	return "", regional.ErrRegionNotFound
 }
 
 // extractRegion will try to guess the region from the following:
@@ -267,7 +94,7 @@ func extractRegionWithDefault(d terraformResourceData, meta *Meta, defaultRegion
 		return region, nil
 	}
 
-	return "", ErrRegionNotFound
+	return "", regional.ErrRegionNotFound
 }
 
 // ErrProjectIDNotFound is returned when no region can be detected
@@ -359,82 +186,6 @@ func projectIDSchema() *schema.Schema {
 		ForceNew:     true,
 		Computed:     true,
 		ValidateFunc: validationUUID(),
-	}
-}
-
-// zoneSchema returns a standard schema for a zone
-func zoneSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:             schema.TypeString,
-		Description:      "The zone you want to attach the resource to",
-		Optional:         true,
-		ForceNew:         true,
-		Computed:         true,
-		ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
-	}
-}
-
-func allZones() []string {
-	zones := make([]string, 0, len(scw.AllZones))
-	for _, z := range scw.AllZones {
-		zones = append(zones, z.String())
-	}
-
-	return zones
-}
-
-func allRegions() []string {
-	regions := make([]string, 0, len(scw.AllRegions))
-	for _, z := range scw.AllRegions {
-		regions = append(regions, z.String())
-	}
-
-	return regions
-}
-
-// regionSchema returns a standard schema for a zone
-func regionSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:             schema.TypeString,
-		Description:      "The region you want to attach the resource to",
-		Optional:         true,
-		ForceNew:         true,
-		Computed:         true,
-		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions(), "region"),
-	}
-}
-
-// zoneComputedSchema returns a standard schema for a zone
-func zoneComputedSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The zone of the resource",
-		Computed:    true,
-	}
-}
-
-// regionComputedSchema returns a standard schema for a region
-func regionComputedSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The region of the resource",
-		Computed:    true,
-	}
-}
-
-// validateStringInSliceWithWarning helps to only returns warnings in case we got a non public locality passed
-func validateStringInSliceWithWarning(correctValues []string, field string) func(i interface{}, path cty.Path) diag.Diagnostics {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
-		_, rawErr := validation.StringInSlice(correctValues, true)(i, field)
-		var res diag.Diagnostics
-		for _, e := range rawErr {
-			res = append(res, diag.Diagnostic{
-				Severity:      diag.Warning,
-				Summary:       e.Error(),
-				AttributePath: path,
-			})
-		}
-		return res
 	}
 }
 
@@ -538,7 +289,7 @@ func expandSliceIDsPtr(rawIDs interface{}) *[]string {
 		return &stringSlice
 	}
 	for _, s := range rawIDs.([]interface{}) {
-		stringSlice = append(stringSlice, expandID(s.(string)))
+		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
 	}
 	return &stringSlice
 }
@@ -598,7 +349,7 @@ func flattenSliceString(s []string) interface{} {
 func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
 	res := []interface{}(nil)
 	for _, certificateID := range certificates {
-		res = append(res, newZonedIDString(zone, certificateID))
+		res = append(res, zonal.NewIDString(zone, certificateID))
 	}
 
 	return res
@@ -757,7 +508,7 @@ func diffSuppressFuncIgnoreCaseAndHyphen(_, oldValue, newValue string, _ *schema
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
 // e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
 func diffSuppressFuncLocality(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-	return expandID(oldValue) == expandID(newValue)
+	return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
 }
 
 // diffSuppressFuncOrderDiff suppresses diffs for TypeList attributes when the only change is the order of elements.
@@ -941,18 +692,6 @@ func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
 	}
 }
 
-// compareLocalities compare two localities
-// They are equal if they are the same or if one is a zone contained in a region
-func compareLocalities(loc1, loc2 string) bool {
-	if loc1 == loc2 {
-		return true
-	}
-	if strings.HasPrefix(loc1, loc2) || strings.HasPrefix(loc2, loc1) {
-		return true
-	}
-	return false
-}
-
 // expandListKeys return the list of keys for an attribute in a list
 // example for private-networks.#.id in a list of size 2
 // will return private-networks.0.id and private-networks.1.id
@@ -1001,16 +740,16 @@ func getLocality(diff *schema.ResourceDiff, meta *Meta) string {
 	return locality
 }
 
-// customizeDiffLocalityCheck create a function that will validate locality IDs stored in given keys
+// CustomizeDiffLocalityCheck create a function that will validate locality IDs stored in given keys
 // This locality IDs should have the same locality as the resource
 // It will search for zone or region in resource.
 // Should not be used on computed keys, if a computed key is going to change on zone/region change
 // this function will still block the terraform plan
-func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
+func CustomizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, i interface{}) error {
-		locality := getLocality(diff, i.(*Meta))
+		l := getLocality(diff, i.(*Meta))
 
-		if locality == "" {
+		if l == "" {
 			return errors.New("missing locality zone or region to check IDs")
 		}
 
@@ -1020,15 +759,15 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 				listKeys := expandListKeys(key, diff)
 
 				for _, listKey := range listKeys {
-					IDLocality, _, err := parseLocalizedID(diff.Get(listKey).(string))
-					if err == nil && !compareLocalities(IDLocality, locality) {
-						return fmt.Errorf("given %s %s has different locality than the resource %q", listKey, diff.Get(listKey), locality)
+					IDLocality, _, err := locality.ParseLocalizedID(diff.Get(listKey).(string))
+					if err == nil && !locality.CompareLocalities(IDLocality, l) {
+						return fmt.Errorf("given %s %s has different locality than the resource %q", listKey, diff.Get(listKey), l)
 					}
 				}
 			} else {
-				IDLocality, _, err := parseLocalizedID(diff.Get(key).(string))
-				if err == nil && !compareLocalities(IDLocality, locality) {
-					return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), locality)
+				IDLocality, _, err := locality.ParseLocalizedID(diff.Get(key).(string))
+				if err == nil && !locality.CompareLocalities(IDLocality, l) {
+					return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), l)
 				}
 			}
 		}
@@ -1144,8 +883,8 @@ func testAccCheckScalewayResourceRawIDMatches(res1, attr1, res2, attr2 string) r
 			return fmt.Errorf("not found: %s", res2)
 		}
 
-		id1 := expandID(rs1.Primary.Attributes[attr1])
-		id2 := expandID(rs2.Primary.Attributes[attr2])
+		id1 := locality.ExpandID(rs1.Primary.Attributes[attr1])
+		id2 := locality.ExpandID(rs2.Primary.Attributes[attr2])
 
 		if id1 != id2 {
 			return fmt.Errorf("ID mismatch: %s from resource %s does not match ID %s from resource %s", id1, res1, id2, res2)

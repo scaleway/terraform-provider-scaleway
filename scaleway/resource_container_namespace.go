@@ -9,6 +9,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayContainerNamespace() *schema.Resource {
@@ -79,7 +80,7 @@ func resourceScalewayContainerNamespace() *schema.Resource {
 				Description: "Destroy registry on deletion",
 				Deprecated:  "Registry namespace is automatically destroyed with namespace",
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -104,7 +105,7 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, ns.ID))
+	d.SetId(regional.NewIDString(region, ns.ID))
 
 	_, err = waitForContainerNamespace(ctx, api, region, ns.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

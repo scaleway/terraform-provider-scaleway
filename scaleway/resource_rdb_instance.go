@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayRdbInstance() *schema.Resource {
@@ -192,7 +194,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							Computed:    true,
 							Description: "Whether or not the private network endpoint should be configured with IPAM",
 						},
-						"zone": zoneSchema(),
+						"zone": zonal.Schema(),
 					},
 				},
 			},
@@ -275,11 +277,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				},
 			},
 			// Common
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("private_network.#.pn_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("private_network.#.pn_id"),
 	}
 }
 
@@ -339,7 +341,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation

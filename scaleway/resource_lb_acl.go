@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayLbACL() *schema.Resource {
@@ -168,7 +169,7 @@ func resourceScalewayLbACLCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	frontZone, frontID, err := parseZonedID(d.Get("frontend_id").(string))
+	frontZone, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -188,7 +189,7 @@ func resourceScalewayLbACLCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(frontZone, res.ID))
+	d.SetId(zonal.NewIDString(frontZone, res.ID))
 
 	return resourceScalewayLbACLRead(ctx, d, meta)
 }
@@ -211,7 +212,7 @@ func resourceScalewayLbACLRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("frontend_id", newZonedIDString(zone, acl.Frontend.ID))
+	_ = d.Set("frontend_id", zonal.NewIDString(zone, acl.Frontend.ID))
 	_ = d.Set("name", acl.Name)
 	_ = d.Set("description", acl.Description)
 	_ = d.Set("index", int(acl.Index))

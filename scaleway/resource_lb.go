@@ -12,6 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 const (
@@ -38,7 +41,7 @@ func resourceScalewayLb() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("ip_id", "private_network.#.private_network_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("ip_id", "private_network.#.private_network_id"),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -93,7 +96,7 @@ func resourceScalewayLb() *schema.Resource {
 				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
 					// Check if the key is for the 'private_network_id' attribute
 					if strings.HasSuffix(k, "private_network_id") {
-						return expandID(oldValue) == expandID(newValue)
+						return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
 					}
 					// For all other attributes, don't suppress the diff
 					return false
@@ -153,8 +156,8 @@ func resourceScalewayLb() *schema.Resource {
 				ForceNew:    true,
 				Description: "Defines whether to automatically assign a flexible public IP to the load balancer",
 			},
-			"region":          regionComputedSchema(),
-			"zone":            zoneSchema(),
+			"region":          regional.ComputedSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -169,7 +172,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
 		Zone:                  zone,
-		IPID:                  expandStringPtr(expandID(d.Get("ip_id"))),
+		IPID:                  expandStringPtr(locality.ExpandID(d.Get("ip_id"))),
 		ProjectID:             expandStringPtr(d.Get("project_id")),
 		Name:                  expandOrGenerateString(d.Get("name"), "lb"),
 		Description:           d.Get("description").(string),
@@ -189,7 +192,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, lb.ID))
+	d.SetId(zonal.NewIDString(zone, lb.ID))
 
 	// check err waiting process
 	_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))
@@ -251,7 +254,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 	_ = d.Set("type", strings.ToUpper(lb.Type))
 	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())
 	if len(lb.IP) > 0 {
-		_ = d.Set("ip_id", newZonedIDString(zone, lb.IP[0].ID))
+		_ = d.Set("ip_id", zonal.NewIDString(zone, lb.IP[0].ID))
 		_ = d.Set("ip_address", lb.IP[0].IPAddress)
 	}
 

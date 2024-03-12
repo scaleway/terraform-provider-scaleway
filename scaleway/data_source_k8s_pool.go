@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewayK8SPool() *schema.Resource {
@@ -43,7 +44,7 @@ func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, 
 	poolID, ok := d.GetOk("pool_id")
 	if !ok {
 		poolName := d.Get("name").(string)
-		clusterID := expandRegionalID(d.Get("cluster_id"))
+		clusterID := regional.ExpandID(d.Get("cluster_id"))
 		res, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 			Region:    region,
 			Name:      expandStringPtr(poolName),

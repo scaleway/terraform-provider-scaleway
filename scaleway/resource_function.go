@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayFunction() *schema.Resource {
@@ -152,11 +153,11 @@ func resourceScalewayFunction() *schema.Resource {
 				Computed:    true,
 				Description: "The native function domain name.",
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("namespace_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("namespace_id"),
 	}
 }
 
@@ -166,7 +167,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, namespace, err := parseRegionalID(d.Get("namespace_id").(string))
+	_, namespace, err := regional.ParseID(d.Get("namespace_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,7 +238,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 		})
 	}
 
-	d.SetId(newRegionalIDString(region, f.ID))
+	d.SetId(regional.NewIDString(region, f.ID))
 
 	_, err = waitForFunction(ctx, api, region, f.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

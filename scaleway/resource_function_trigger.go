@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayFunctionTrigger() *schema.Resource {
@@ -123,9 +125,9 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 					},
 				},
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("function_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("function_id"),
 	}
 }
 
@@ -138,7 +140,7 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 	req := &function.CreateTriggerRequest{
 		Region:      region,
 		Name:        expandOrGenerateString(d.Get("name").(string), "trigger"),
-		FunctionID:  expandID(d.Get("function_id")),
+		FunctionID:  locality.ExpandID(d.Get("function_id")),
 		Description: expandStringPtr(d.Get("description")),
 	}
 
@@ -167,7 +169,7 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, trigger.ID))
+	d.SetId(regional.NewIDString(region, trigger.ID))
 
 	_, err = waitForFunctionTrigger(ctx, api, region, trigger.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

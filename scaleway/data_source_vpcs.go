@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewayVPCs() *schema.Resource {
@@ -58,13 +59,13 @@ func dataSourceScalewayVPCs() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeBool,
 						},
-						"region":          regionSchema(),
+						"region":          regional.Schema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
 					},
 				},
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -90,7 +91,7 @@ func dataSourceScalewayVPCsRead(ctx context.Context, d *schema.ResourceData, met
 	vpcs := []interface{}(nil)
 	for _, virtualPrivateCloud := range res.Vpcs {
 		rawVpc := make(map[string]interface{})
-		rawVpc["id"] = newRegionalIDString(region, virtualPrivateCloud.ID)
+		rawVpc["id"] = regional.NewIDString(region, virtualPrivateCloud.ID)
 		rawVpc["name"] = virtualPrivateCloud.Name
 		rawVpc["created_at"] = flattenTime(virtualPrivateCloud.CreatedAt)
 		rawVpc["update_at"] = flattenTime(virtualPrivateCloud.UpdatedAt)

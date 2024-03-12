@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayLbIPs() *schema.Resource {
@@ -41,13 +42,13 @@ func dataSourceScalewayLbIPs() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
-						"zone":            zoneSchema(),
+						"zone":            zonal.Schema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -77,7 +78,7 @@ func dataSourceScalewayLbIPsRead(ctx context.Context, d *schema.ResourceData, me
 	ips := []interface{}(nil)
 	for _, ip := range filteredList {
 		rawIP := make(map[string]interface{})
-		rawIP["id"] = newZonedID(ip.Zone, ip.ID).String()
+		rawIP["id"] = zonal.NewID(ip.Zone, ip.ID).String()
 		rawIP["ip_address"] = ip.IPAddress
 		rawIP["lb_id"] = flattenStringPtr(ip.LBID)
 		rawIP["reverse"] = ip.Reverse

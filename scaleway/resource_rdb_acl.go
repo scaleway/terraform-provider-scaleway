@@ -13,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayRdbACL() *schema.Resource {
@@ -62,9 +64,9 @@ func resourceScalewayRdbACL() *schema.Resource {
 				},
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
@@ -75,7 +77,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	instanceID := d.Get("instance_id").(string)
-	_, err = waitForRDBInstance(ctx, api, region, expandID(instanceID), d.Timeout(schema.TimeoutCreate))
+	_, err = waitForRDBInstance(ctx, api, region, locality.ExpandID(instanceID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,7 +88,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
-		InstanceID: expandID(instanceID),
+		InstanceID: locality.ExpandID(instanceID),
 		Rules:      aclRules,
 	}
 
@@ -123,7 +125,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	id := newRegionalID(region, instanceID).String()
+	id := regional.NewID(region, instanceID).String()
 	d.SetId(id)
 	_ = d.Set("instance_id", id)
 

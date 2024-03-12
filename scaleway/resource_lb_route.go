@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayLbRoute() *schema.Resource {
@@ -71,12 +72,12 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	frontZone, frontID, err := parseZonedID(d.Get("frontend_id").(string))
+	frontZone, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	backZone, backID, err := parseZonedID(d.Get("backend_id").(string))
+	backZone, backID, err := zonal.ParseID(d.Get("backend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -100,7 +101,7 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(frontZone, route.ID))
+	d.SetId(zonal.NewIDString(frontZone, route.ID))
 
 	return resourceScalewayLbRouteRead(ctx, d, meta)
 }
@@ -123,8 +124,8 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("frontend_id", newZonedIDString(zone, route.FrontendID))
-	_ = d.Set("backend_id", newZonedIDString(zone, route.BackendID))
+	_ = d.Set("frontend_id", zonal.NewIDString(zone, route.FrontendID))
+	_ = d.Set("backend_id", zonal.NewIDString(zone, route.BackendID))
 	_ = d.Set("match_sni", flattenStringPtr(route.Match.Sni))
 	_ = d.Set("match_host_header", flattenStringPtr(route.Match.HostHeader))
 	_ = d.Set("created_at", flattenTime(route.CreatedAt))
@@ -139,7 +140,7 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	backZone, backID, err := parseZonedID(d.Get("backend_id").(string))
+	backZone, backID, err := zonal.ParseID(d.Get("backend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -13,6 +13,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -40,7 +42,7 @@ func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Regi
 
 // rdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
 func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -122,7 +124,7 @@ func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, static
 		r := pn.(map[string]interface{})
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
-				PrivateNetworkID: expandID(r["pn_id"].(string)),
+				PrivateNetworkID: locality.ExpandID(r["pn_id"].(string)),
 				IpamConfig:       &rdb.EndpointSpecPrivateNetworkIpamConfig{},
 			},
 		}
@@ -164,7 +166,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint, enableIpam bool) (interfac
 			if err != nil {
 				return diag.FromErr(err), false
 			}
-			pnRegionalID := newRegionalIDString(fetchRegion, pn.PrivateNetworkID)
+			pnRegionalID := regional.NewIDString(fetchRegion, pn.PrivateNetworkID)
 			serviceIP, err := flattenIPNet(pn.ServiceIP)
 			if err != nil {
 				return pnI, false
@@ -241,7 +243,7 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *
 
 	endpoint := &rdb.ReadReplicaEndpointSpec{
 		PrivateNetwork: &rdb.ReadReplicaEndpointSpecPrivateNetwork{
-			PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
+			PrivateNetworkID: locality.ExpandID(rawEndpoint["private_network_id"]),
 			IpamConfig:       &rdb.ReadReplicaEndpointSpecPrivateNetworkIpamConfig{},
 		},
 	}
@@ -284,7 +286,7 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 			if err != nil {
 				return diag.FromErr(err), false
 			}
-			pnRegionalID := newRegionalIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
+			pnRegionalID := regional.NewIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
 			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
@@ -317,7 +319,7 @@ func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]inte
 		return rawState, nil
 	}
 
-	region, idStr, err := parseRegionalID(idRaw.(string))
+	region, idStr, err := regional.ParseID(idRaw.(string))
 	if err != nil {
 		// force the default region
 		meta := m.(*Meta)

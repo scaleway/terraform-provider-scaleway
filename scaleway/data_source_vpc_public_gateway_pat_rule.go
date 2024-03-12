@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
@@ -43,7 +44,7 @@ func dataSourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schem
 
 	// check if pat rule exist
 	_, err = vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
-		PatRuleID: expandID(patRuleIDRaw),
+		PatRuleID: locality.ExpandID(patRuleIDRaw),
 		Zone:      zone,
 	}, scw.WithContext(ctx))
 	if err != nil {

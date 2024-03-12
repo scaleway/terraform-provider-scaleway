@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayRDBPrivilege() *schema.Resource {
@@ -28,7 +29,7 @@ func dataSourceScalewayRDBPrivilegeRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id").(string))
+	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 	userName, _ := d.Get("user_name").(string)
 	databaseName, _ := d.Get("database_name").(string)
 

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
@@ -167,7 +168,7 @@ func testAccCheckScalewayBaremetalOfferExists(tt *TestTools, n string) resource.
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		zone, id, err := parseZonedID(rs.Primary.ID)
+		zone, id, err := zonal.ParseID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}

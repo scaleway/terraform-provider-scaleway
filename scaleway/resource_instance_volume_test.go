@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -234,7 +235,7 @@ func testAccCheckScalewayInstanceVolumeExists(tt *TestTools, n string) resource.
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		zone, id, err := parseZonedID(rs.Primary.ID)
+		zone, id, err := zonal.ParseID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -260,7 +261,7 @@ func testAccCheckScalewayInstanceVolumeDestroy(tt *TestTools) resource.TestCheck
 				continue
 			}
 
-			zone, id, err := parseZonedID(rs.Primary.ID)
+			zone, id, err := zonal.ParseID(rs.Primary.ID)
 			if err != nil {
 				return err
 			}

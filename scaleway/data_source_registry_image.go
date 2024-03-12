@@ -3,6 +3,8 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewayRegistryImage() *schema.Resource {
@@ -53,7 +55,7 @@ func dataSourceScalewayRegistryImage() *schema.Resource {
 				Computed: true,
 				Type:     schema.TypeString,
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -71,7 +73,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 	if !ok {
 		var namespaceID *string
 		if d.Get("namespace_id") != "" {
-			namespaceID = expandStringPtr(expandID(d.Get("namespace_id")))
+			namespaceID = expandStringPtr(locality.ExpandID(d.Get("namespace_id")))
 		}
 		imageName := d.Get("name").(string)
 		res, err := api.ListImages(&registry.ListImagesRequest{
@@ -96,7 +98,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 	} else {
 		res, err := api.GetImage(&registry.GetImageRequest{
 			Region:  region,
-			ImageID: expandID(imageID),
+			ImageID: locality.ExpandID(imageID),
 		})
 		if err != nil {
 			return err

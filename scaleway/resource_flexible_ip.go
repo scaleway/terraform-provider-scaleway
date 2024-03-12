@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayFlexibleIP() *schema.Resource {
@@ -58,7 +60,7 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the flexible IP",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			"ip_address": {
@@ -82,7 +84,7 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("server_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("server_id"),
 	}
 }
 
@@ -97,7 +99,7 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 		ProjectID:   d.Get("project_id").(string),
 		Description: d.Get("description").(string),
 		Tags:        expandStrings(d.Get("tags")),
-		ServerID:    expandStringPtr(expandID(d.Get("server_id"))),
+		ServerID:    expandStringPtr(locality.ExpandID(d.Get("server_id"))),
 		Reverse:     expandStringPtr(d.Get("reverse")),
 		IsIPv6:      d.Get("is_ipv6").(bool),
 	}, scw.WithContext(ctx))
@@ -105,7 +107,7 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, flexibleIP.ID))
+	d.SetId(zonal.NewIDString(zone, flexibleIP.ID))
 
 	_, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -150,7 +152,7 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("status", flexibleIP.Status.String())
 
 	if flexibleIP.ServerID != nil {
-		_ = d.Set("server_id", newZonedIDString(zone, *flexibleIP.ServerID))
+		_ = d.Set("server_id", zonal.NewIDString(zone, *flexibleIP.ServerID))
 	} else {
 		_ = d.Set("server_id", "")
 	}
@@ -215,7 +217,7 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 			_, err = fipAPI.AttachFlexibleIP(&flexibleip.AttachFlexibleIPRequest{
 				Zone:     zone,
 				FipsIDs:  []string{ID},
-				ServerID: expandID(d.Get("server_id")),
+				ServerID: locality.ExpandID(d.Get("server_id")),
 			})
 			if err != nil {
 				return diag.FromErr(err)

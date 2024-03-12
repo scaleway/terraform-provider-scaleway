@@ -10,6 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayIPAMIP() *schema.Resource {
@@ -97,8 +100,8 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Description:   "Defines whether to filter only for IPs which are attached to a resource",
 				ConflictsWith: []string{"ipam_ip_id"},
 			},
-			"zonal":           zoneSchema(),
-			"region":          regionSchema(),
+			"zonal":           zonal.Schema(),
+			"region":          regional.Schema(),
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 			// Computed
@@ -155,7 +158,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 			MacAddress:       expandStringPtr(d.Get("mac_address")),
 			Tags:             expandStrings(d.Get("tags")),
 			OrganizationID:   expandStringPtr(d.Get("organization_id")),
-			PrivateNetworkID: expandStringPtr(expandID(d.Get("private_network_id"))),
+			PrivateNetworkID: expandStringPtr(locality.ExpandID(d.Get("private_network_id"))),
 		}
 
 		ipType, ipTypeExist := d.GetOk("type")
@@ -204,7 +207,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	} else {
 		res, err := api.GetIP(&ipam.GetIPRequest{
 			Region: region,
-			IPID:   expandID(IPID.(string)),
+			IPID:   locality.ExpandID(IPID.(string)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

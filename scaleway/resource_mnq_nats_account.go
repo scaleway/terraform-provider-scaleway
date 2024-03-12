@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayMNQNatsAccount() *schema.Resource {
@@ -31,7 +32,7 @@ func resourceScalewayMNQNatsAccount() *schema.Resource {
 				Computed:    true,
 				Description: "The endpoint for interact with Nats",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -52,7 +53,7 @@ func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, account.ID))
+	d.SetId(regional.NewIDString(region, account.ID))
 
 	return resourceScalewayMNQNatsAccountRead(ctx, d, meta)
 }

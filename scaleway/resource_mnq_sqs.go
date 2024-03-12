@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayMNQSQS() *schema.Resource {
@@ -24,7 +25,7 @@ func resourceScalewayMNQSQS() *schema.Resource {
 				Computed:    true,
 				Description: "Endpoint of the SQS service",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -44,7 +45,7 @@ func resourceScalewayMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, sqs.ProjectID))
+	d.SetId(regional.NewIDString(region, sqs.ProjectID))
 
 	return resourceScalewayMNQSQSRead(ctx, d, meta)
 }

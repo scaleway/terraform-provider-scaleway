@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayBlockSnapshot() *schema.Resource {
@@ -47,7 +49,7 @@ func resourceScalewayBlockSnapshot() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the snapshot",
 			},
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -63,14 +65,14 @@ func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.Resource
 		Zone:      zone,
 		ProjectID: d.Get("project_id").(string),
 		Name:      expandOrGenerateString(d.Get("name").(string), "snapshot"),
-		VolumeID:  expandID(d.Get("volume_id")),
+		VolumeID:  locality.ExpandID(d.Get("volume_id")),
 		Tags:      expandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, snapshot.ID))
+	d.SetId(zonal.NewIDString(zone, snapshot.ID))
 
 	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
