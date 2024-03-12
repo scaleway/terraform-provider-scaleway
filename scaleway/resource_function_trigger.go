@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFunctionTrigger() *schema.Resource {
@@ -133,7 +132,7 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 }
 
 func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -146,7 +145,7 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 	}
 
 	if scwSqs, isScwSqs := d.GetOk("sqs.0"); isScwSqs {
-		err := completeFunctionTriggerMnqCreationConfig(scwSqs, d, m.(*meta.Meta), region)
+		err := completeFunctionTriggerMnqCreationConfig(scwSqs, d, m, region)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to complete sqs config: %w", err))
 		}
@@ -156,7 +155,7 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 	}
 
 	if scwNats, isScwNats := d.GetOk("nats.0"); isScwNats {
-		err := completeFunctionTriggerMnqCreationConfig(scwNats, d, m.(*meta.Meta), region)
+		err := completeFunctionTriggerMnqCreationConfig(scwNats, d, m, region)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to complete nats config: %w", err))
 		}
@@ -181,7 +180,7 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayFunctionTriggerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,7 +215,7 @@ func resourceScalewayFunctionTriggerRead(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayFunctionTriggerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -251,7 +250,7 @@ func resourceScalewayFunctionTriggerUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayFunctionTriggerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

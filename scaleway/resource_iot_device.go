@@ -11,7 +11,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 const (
@@ -185,7 +184,7 @@ func resourceScalewayIotDevice() *schema.Resource {
 }
 
 func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, m.(*meta.Meta))
+	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -275,7 +274,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -360,7 +359,7 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -437,7 +436,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayIotDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

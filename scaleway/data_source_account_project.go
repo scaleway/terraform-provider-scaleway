@@ -30,12 +30,12 @@ func dataSourceScalewayAccountProject() *schema.Resource {
 }
 
 func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(m.(*meta.Meta))
+	accountAPI := accountV3ProjectAPI(m)
 
 	var projectID string
 
 	if name, nameExists := d.GetOk("name"); nameExists {
-		orgID := getOrganizationID(m.(*meta.Meta), d)
+		orgID := getOrganizationID(m, d)
 		if orgID == nil {
 			// required not in schema as we could use default
 			return diag.Errorf("organization_id is required with name")
@@ -59,7 +59,7 @@ func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.Resourc
 
 		projectID = foundProject.ID
 	} else {
-		extractedProjectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta))
+		extractedProjectID, _, err := meta.ExtractProjectID(d, m)
 		if err != nil {
 			return diag.FromErr(err)
 		}

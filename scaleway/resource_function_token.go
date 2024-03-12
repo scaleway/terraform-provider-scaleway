@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFunctionToken() *schema.Resource {
@@ -62,7 +61,7 @@ func resourceScalewayFunctionToken() *schema.Resource {
 }
 
 func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,7 +85,7 @@ func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, ID, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, ID, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,7 +110,7 @@ func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, ID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

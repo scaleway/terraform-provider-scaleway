@@ -8,7 +8,6 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayMNQNatsAccount() *schema.Resource {
@@ -40,7 +39,7 @@ func resourceScalewayMNQNatsAccount() *schema.Resource {
 }
 
 func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := newMNQNatsAPI(d, m.(*meta.Meta))
+	api, region, err := newMNQNatsAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -60,7 +59,7 @@ func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,7 +85,7 @@ func resourceScalewayMNQNatsAccountRead(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -108,7 +107,7 @@ func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

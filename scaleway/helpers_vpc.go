@@ -23,7 +23,7 @@ const defaultVPCPrivateNetworkRetryInterval = 30 * time.Second
 
 // vpcAPIWithRegion returns a new VPC API and the region for a Create request
 func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Region, error) {
-	vpcAPI := vpc.NewAPI(m.(*meta.Meta).ScwClient())
+	vpcAPI := vpc.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -34,7 +34,7 @@ func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Regi
 
 // vpcAPIWithRegionAndID returns a new VPC API with locality and ID extracted from the state
 func vpcAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, string, error) {
-	vpcAPI := vpc.NewAPI(m.(*meta.Meta).ScwClient())
+	vpcAPI := vpc.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
@@ -44,7 +44,7 @@ func vpcAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, stri
 }
 
 func vpcAPI(m interface{}) (*vpc.API, error) {
-	return vpc.NewAPI(m.(*meta.Meta).ScwClient()), nil
+	return vpc.NewAPI(meta.ExtractScwClient(m)), nil
 }
 
 func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets []scw.IPNet, err error) {

@@ -11,7 +11,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIotRoute() *schema.Resource {
@@ -195,7 +194,7 @@ func resourceScalewayIotRoute() *schema.Resource {
 }
 
 func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, m.(*meta.Meta))
+	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -258,7 +257,7 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, routeID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	iotAPI, region, routeID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -314,7 +313,7 @@ func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIotRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, routeID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	iotAPI, region, routeID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

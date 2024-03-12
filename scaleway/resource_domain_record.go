@@ -13,7 +13,6 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 var changeKeys = []string{
@@ -265,7 +264,7 @@ func resourceScalewayDomainRecord() *schema.Resource {
 }
 
 func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(m.(*meta.Meta))
+	domainAPI := newDomainAPI(m)
 
 	dnsZone := d.Get("dns_zone").(string)
 	geoIP, okGeoIP := d.GetOk("geo_ip")
@@ -330,7 +329,7 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(m.(*meta.Meta))
+	domainAPI := newDomainAPI(m)
 	var record *domain.Record
 	var dnsZone string
 	var projectID string
@@ -441,7 +440,7 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 		return resourceScalewayDomainRecordRead(ctx, d, m)
 	}
 
-	domainAPI := newDomainAPI(m.(*meta.Meta))
+	domainAPI := newDomainAPI(m)
 
 	req := &domain.UpdateDNSZoneRecordsRequest{
 		DNSZone:          d.Get("dns_zone").(string),
@@ -484,7 +483,7 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(m.(*meta.Meta))
+	domainAPI := newDomainAPI(m)
 
 	recordID := locality.ExpandID(d.Id())
 	_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{

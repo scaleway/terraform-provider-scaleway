@@ -22,7 +22,7 @@ const (
 
 // domainAPI returns a new domain API.
 func newDomainAPI(m interface{}) *domain.API {
-	return domain.NewAPI(m.(*meta.Meta).ScwClient())
+	return domain.NewAPI(meta.ExtractScwClient(m))
 }
 
 func flattenDomainData(data string, recordType domain.RecordType) interface{} {

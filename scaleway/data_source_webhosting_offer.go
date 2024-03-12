@@ -9,7 +9,6 @@ import (
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayWebhostingOffer() *schema.Resource {
@@ -86,7 +85,7 @@ func dataSourceScalewayWebhostingOffer() *schema.Resource {
 }
 
 func dataSourceScalewayWebhostingOfferRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	webhostingAPI, region, err := webhostingAPIWithRegion(d, m.(*meta.Meta))
+	webhostingAPI, region, err := webhostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayVPC() *schema.Resource {
@@ -60,7 +59,7 @@ func resourceScalewayVPC() *schema.Resource {
 }
 
 func resourceScalewayVPCCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, m.(*meta.Meta))
+	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -81,7 +80,7 @@ func resourceScalewayVPCCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -114,7 +113,7 @@ func resourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourceScalewayVPCUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -133,7 +132,7 @@ func resourceScalewayVPCUpdate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceScalewayVPCDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

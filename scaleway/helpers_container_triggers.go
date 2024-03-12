@@ -65,7 +65,7 @@ func completeContainerTriggerMnqCreationConfig(i interface{}, d *schema.Resource
 	}
 
 	if projectID, exists := configMap["project_id"]; !exists || projectID == "" {
-		projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta))
+		projectID, _, err := meta.ExtractProjectID(d, m)
 		if err == nil {
 			configMap["project_id"] = projectID
 		}

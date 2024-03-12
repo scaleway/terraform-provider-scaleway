@@ -333,7 +333,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 
 //gocyclo:ignore
 func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := instanceAndBlockAPIWithZone(d, m.(*meta.Meta))
+	api, zone, err := instanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -349,7 +349,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
 		imageLabel := formatImageLabel(imageUUID)
 
-		marketPlaceAPI := marketplace.NewAPI(m.(*meta.Meta).ScwClient())
+		marketPlaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
 		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
@@ -528,7 +528,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	// Private Network
 	////
 	if rawPNICs, ok := d.GetOk("private_network"); ok {
-		vpcAPI, err := vpcAPI(m.(*meta.Meta))
+		vpcAPI, err := vpcAPI(m)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -566,7 +566,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 //gocyclo:ignore
 func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -738,7 +738,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 //gocyclo:ignore
 func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1053,7 +1053,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1237,7 +1237,7 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 
 	// If image is a label, we check that server.Image.ID matches the label in case the user has edited
 	// the image with another tool.
-	marketplaceAPI := marketplace.NewAPI(m.(*meta.Meta).ScwClient())
+	marketplaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
 	if err != nil {
 		return err
 	}

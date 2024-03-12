@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayRegistryNamespace() *schema.Resource {
@@ -33,7 +32,7 @@ func dataSourceScalewayRegistryNamespace() *schema.Resource {
 }
 
 func dataSourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := registryAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

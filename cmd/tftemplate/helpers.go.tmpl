@@ -8,10 +8,9 @@ import (
 
 // {{.API}}APIWith{{.LocalityUpper}} returns a new {{.API}} API and the {{.Locality}} for a Create request
 func {{.API}}APIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*{{.API}}.API, scw.{{.LocalityUpper}}, error) {
-    meta := m.(*meta.Meta)
-    {{.API}}API := {{.API}}.NewAPI(m.(*meta.Meta).ScwClient())
+    {{.API}}API := {{.API}}.NewAPI(meta.ExtractScwClient(m))
 
-    {{.Locality}}, err := extract{{.LocalityUpper}}(d, m.(*meta.Meta))
+    {{.Locality}}, err := extract{{.LocalityUpper}}(d, m)
     if err != nil {
         return nil, "", err
     }
@@ -21,8 +20,7 @@ func {{.API}}APIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*
 
 // {{.API}}APIWith{{.LocalityAdjectiveUpper}}AndID returns a new {{.API }} API with {{.Locality}} and ID extracted from the state
 func {{.API}}APIWith{{.LocalityUpper}}AndID(m interface{}, {{.LocalityAdjective}}ID string) (*{{.API}}.API, scw.{{.LocalityUpper}}, string, error) {
-    meta := m.(*meta.Meta)
-    {{.API}}API := {{.API}}.NewAPI(m.(*meta.Meta).ScwClient())
+    {{.API}}API := {{.API}}.NewAPI(meta.ExtractScwClient(m))
 
     {{.Locality}}, ID, err := parse{{.LocalityAdjectiveUpper}}ID({{.LocalityAdjective}}ID)
     if err != nil {

@@ -86,13 +86,13 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 		return nil, "", err
 	}
 
-	accessKey, _ := m.(*meta.Meta).ScwClient().GetAccessKey()
-	if projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta)); err == nil {
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
-	secretKey, _ := m.(*meta.Meta).ScwClient().GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
-	s3Client, err := newS3Client(m.(*meta.Meta).HTTPClient(), region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -114,19 +114,19 @@ func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string)
 
 	d.SetId(fmt.Sprintf("%s/%s", region, name))
 
-	accessKey, _ := m.(*meta.Meta).ScwClient().GetAccessKey()
-	secretKey, _ := m.(*meta.Meta).ScwClient().GetSecretKey()
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
 	if len(parts) == 2 {
 		accessKey = accessKeyWithProjectID(accessKey, parts[1])
 	} else {
-		projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta))
+		projectID, _, err := meta.ExtractProjectID(d, m)
 		if err == nil {
 			accessKey = accessKeyWithProjectID(accessKey, projectID)
 		}
 	}
 
-	s3Client, err := newS3Client(m.(*meta.Meta).HTTPClient(), region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -140,13 +140,13 @@ func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name
 		return nil, "", "", "", err
 	}
 
-	accessKey, _ := m.(*meta.Meta).ScwClient().GetAccessKey()
-	if projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta)); err == nil {
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
-	secretKey, _ := m.(*meta.Meta).ScwClient().GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
-	s3Client, err := newS3Client(m.(*meta.Meta).HTTPClient(), region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -160,13 +160,13 @@ func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name s
 		return nil, "", name, "", err
 	}
 
-	accessKey, _ := m.(*meta.Meta).ScwClient().GetAccessKey()
-	if projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta)); err == nil {
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
-	secretKey, _ := m.(*meta.Meta).ScwClient().GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
-	s3Client, err := newS3Client(m.(*meta.Meta).HTTPClient(), region, accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region, accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -174,13 +174,13 @@ func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name s
 }
 
 func s3ClientForceRegion(d *schema.ResourceData, m interface{}, region string) (*s3.S3, error) {
-	accessKey, _ := m.(*meta.Meta).ScwClient().GetAccessKey()
-	if projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta)); err == nil {
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
-	secretKey, _ := m.(*meta.Meta).ScwClient().GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
-	s3Client, err := newS3Client(m.(*meta.Meta).HTTPClient(), region, accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region, accessKey, secretKey)
 	if err != nil {
 		return nil, err
 	}

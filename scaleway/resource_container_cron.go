@@ -12,7 +12,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayContainerCron() *schema.Resource {
@@ -66,7 +65,7 @@ func resourceScalewayContainerCron() *schema.Resource {
 }
 
 func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,7 +103,7 @@ func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayContainerCronRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, containerCronID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, containerCronID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -133,7 +132,7 @@ func resourceScalewayContainerCronRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, containerCronID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, containerCronID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -182,7 +181,7 @@ func resourceScalewayContainerCronUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayContainerCronDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, containerCronID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, containerCronID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

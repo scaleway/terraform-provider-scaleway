@@ -18,7 +18,7 @@ const (
 
 // serverlessSQLdbAPIWithRegion returns a new serverless_sqldb API and the region for a Create request
 func serverlessSQLdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*serverless_sqldb.API, scw.Region, error) {
-	sdbAPI := serverless_sqldb.NewAPI(m.(*meta.Meta).ScwClient())
+	sdbAPI := serverless_sqldb.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -30,7 +30,7 @@ func serverlessSQLdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*serve
 
 // serverlessSQLdbAPIWithRegionalAndID returns a new serverless_sqldb API with region and ID extracted from the state
 func serverlessSQLdbAPIWithRegionAndID(m interface{}, regionalID string) (*serverless_sqldb.API, scw.Region, string, error) {
-	sdbAPI := serverless_sqldb.NewAPI(m.(*meta.Meta).ScwClient())
+	sdbAPI := serverless_sqldb.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {

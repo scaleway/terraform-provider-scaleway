@@ -14,7 +14,7 @@ import (
 )
 
 func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Region, error) {
-	api := mnq.NewNatsAPI(m.(*meta.Meta).ScwClient())
+	api := mnq.NewNatsAPI(meta.ExtractScwClient(m))
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -24,7 +24,7 @@ func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Reg
 }
 
 func mnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, scw.Region, string, error) {
-	api := mnq.NewNatsAPI(m.(*meta.Meta).ScwClient())
+	api := mnq.NewNatsAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
@@ -35,7 +35,7 @@ func mnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, 
 }
 
 func newMNQSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error) {
-	api := mnq.NewSqsAPI(m.(*meta.Meta).ScwClient())
+	api := mnq.NewSqsAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -46,7 +46,7 @@ func newMNQSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error
 }
 
 func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, scw.Region, string, error) {
-	api := mnq.NewSqsAPI(m.(*meta.Meta).ScwClient())
+	api := mnq.NewSqsAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
@@ -57,7 +57,7 @@ func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, sc
 }
 
 func newMNQSNSAPI(d *schema.ResourceData, m any) (*mnq.SnsAPI, scw.Region, error) {
-	api := mnq.NewSnsAPI(m.(*meta.Meta).ScwClient())
+	api := mnq.NewSnsAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -68,7 +68,7 @@ func newMNQSNSAPI(d *schema.ResourceData, m any) (*mnq.SnsAPI, scw.Region, error
 }
 
 func mnqSNSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SnsAPI, scw.Region, string, error) {
-	api := mnq.NewSnsAPI(m.(*meta.Meta).ScwClient())
+	api := mnq.NewSnsAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {

@@ -13,7 +13,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIPAMIP() *schema.Resource {
@@ -146,7 +145,7 @@ func resourceScalewayIPAMIP() *schema.Resource {
 }
 
 func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ipamAPI, region, err := ipamAPIWithRegion(d, m.(*meta.Meta))
+	ipamAPI, region, err := ipamAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -186,11 +185,11 @@ func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	vpcAPI, err := vpcAPI(m.(*meta.Meta))
+	vpcAPI, err := vpcAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -258,7 +257,7 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -276,7 +275,7 @@ func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

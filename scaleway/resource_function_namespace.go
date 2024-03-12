@@ -9,7 +9,6 @@ import (
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFunctionNamespace() *schema.Resource {
@@ -81,7 +80,7 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 }
 
 func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -109,7 +108,7 @@ func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +135,7 @@ func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -175,7 +174,7 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

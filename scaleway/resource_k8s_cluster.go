@@ -16,7 +16,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayK8SCluster() *schema.Resource {
@@ -320,7 +319,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 
 //gocyclo:ignore
 func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, m.(*meta.Meta))
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -523,7 +522,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -610,7 +609,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 
 //gocyclo:ignore
 func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -829,7 +828,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			return append(diag.FromErr(errors.New("it is only possible to change the private network attached to the cluster, but not to remove it")), diags...)
 		}
 		if actual == "" {
-			err = migrateToPrivateNetworkCluster(ctx, d, m.(*meta.Meta))
+			err = migrateToPrivateNetworkCluster(ctx, d, m)
 			if err != nil {
 				return append(diag.FromErr(err), diags...)
 			}
@@ -883,7 +882,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

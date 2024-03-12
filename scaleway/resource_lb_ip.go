@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayLbIP() *schema.Resource {
@@ -59,7 +58,7 @@ func resourceScalewayLbIP() *schema.Resource {
 }
 
 func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, m.(*meta.Meta))
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,7 +85,7 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -133,7 +132,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -202,7 +201,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m i
 
 //gocyclo:ignore
 func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

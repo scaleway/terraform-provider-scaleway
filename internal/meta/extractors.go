@@ -1,6 +1,8 @@
 package meta
 
 import (
+	"net/http"
+
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -85,4 +87,12 @@ func ExtractProjectID(d terraformResourceData, m interface{}) (projectID string,
 	}
 
 	return "", false, ErrProjectIDNotFound
+}
+
+func ExtractScwClient(m interface{}) *scw.Client {
+	return m.(*Meta).ScwClient()
+}
+
+func ExtractHTTPClient(m interface{}) *http.Client {
+	return m.(*Meta).HTTPClient()
 }

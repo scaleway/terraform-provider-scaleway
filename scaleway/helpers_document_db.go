@@ -22,7 +22,7 @@ const (
 
 // documentDBAPIWithRegion returns a new documentdb API and the region for a Create request
 func documentDBAPIWithRegion(d *schema.ResourceData, m interface{}) (*documentdb.API, scw.Region, error) {
-	api := documentdb.NewAPI(m.(*meta.Meta).ScwClient())
+	api := documentdb.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -34,7 +34,7 @@ func documentDBAPIWithRegion(d *schema.ResourceData, m interface{}) (*documentdb
 
 // documentDBAPIWithRegionalAndID returns a new documentdb API with region and ID extracted from the state
 func documentDBAPIWithRegionAndID(m interface{}, regionalID string) (*documentdb.API, scw.Region, string, error) {
-	api := documentdb.NewAPI(m.(*meta.Meta).ScwClient())
+	api := documentdb.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {

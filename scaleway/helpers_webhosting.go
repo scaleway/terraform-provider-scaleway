@@ -19,7 +19,7 @@ const (
 
 // webhostingAPIWithRegion returns a new Webhosting API and the region for a Create request
 func webhostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.API, scw.Region, error) {
-	api := webhosting.NewAPI(m.(*meta.Meta).ScwClient())
+	api := webhosting.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -30,7 +30,7 @@ func webhostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting
 
 // webhostingAPIWithRegionAndID returns a Webhosting API with region and ID extracted from the state
 func webhostingAPIWithRegionAndID(m interface{}, id string) (*webhosting.API, scw.Region, string, error) {
-	api := webhosting.NewAPI(m.(*meta.Meta).ScwClient())
+	api := webhosting.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {

@@ -12,7 +12,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayK8SPool() *schema.Resource {
@@ -231,7 +230,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 
 //gocyclo:ignore
 func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, m.(*meta.Meta))
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -339,7 +338,7 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -402,7 +401,7 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -472,7 +471,7 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

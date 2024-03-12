@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFlexibleIPMACAddress() *schema.Resource {
@@ -85,7 +84,7 @@ func resourceScalewayFlexibleIPMACAddress() *schema.Resource {
 }
 
 func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, m.(*meta.Meta))
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -137,7 +136,7 @@ func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, m.(*meta.Meta))
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -170,7 +169,7 @@ func resourceScalewayFlexibleIPMACRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, m.(*meta.Meta))
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -253,7 +252,7 @@ func resourceScalewayFlexibleIPMACUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayFlexibleIPMACDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, m.(*meta.Meta))
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

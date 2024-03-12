@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayK8SVersion() *schema.Resource {
@@ -52,7 +51,7 @@ func dataSourceScalewayK8SVersion() *schema.Resource {
 }
 
 func dataSourceScalewayK8SVersionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, m.(*meta.Meta))
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

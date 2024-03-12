@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayDocumentDBDatabase() *schema.Resource {
@@ -64,7 +63,7 @@ func resourceScalewayDocumentDBDatabase() *schema.Resource {
 }
 
 func resourceScalewayDocumentDBDatabaseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,7 +116,7 @@ func resourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	api, region, instanceID, err := documentDBAPIWithRegionAndID(m.(*meta.Meta), instanceLocalizedID)
+	api, region, instanceID, err := documentDBAPIWithRegionAndID(m, instanceLocalizedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,7 +150,7 @@ func resourceScalewayDocumentDBDatabaseDelete(ctx context.Context, d *schema.Res
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	api, region, instanceID, err := documentDBAPIWithRegionAndID(m.(*meta.Meta), instanceLocalizedID)
+	api, region, instanceID, err := documentDBAPIWithRegionAndID(m, instanceLocalizedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

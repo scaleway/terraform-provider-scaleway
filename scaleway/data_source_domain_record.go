@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayDomainRecord() *schema.Resource {
@@ -36,7 +35,7 @@ func dataSourceScalewayDomainRecord() *schema.Resource {
 }
 
 func dataSourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(m.(*meta.Meta))
+	domainAPI := newDomainAPI(m)
 
 	recordID, ok := d.GetOk("record_id")
 	if !ok { // Get Record by dns_zone, name, type and data.

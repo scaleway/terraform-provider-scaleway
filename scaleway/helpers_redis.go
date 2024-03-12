@@ -25,7 +25,7 @@ const (
 
 // newRedisApi returns a new Redis API
 func newRedisAPI(m interface{}) *redis.API {
-	return redis.NewAPI(m.(*meta.Meta).ScwClient())
+	return redis.NewAPI(meta.ExtractScwClient(m))
 }
 
 // redisAPIWithZone returns a new Redis API and the zone for a Create request

@@ -11,7 +11,6 @@ import (
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayDocumentDBInstance() *schema.Resource {
@@ -105,7 +104,7 @@ func resourceScalewayDocumentDBInstance() *schema.Resource {
 }
 
 func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -153,7 +152,7 @@ func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -196,7 +195,7 @@ func setInitSettings(d *schema.ResourceData, settings []*documentdb.InstanceSett
 }
 
 func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -321,7 +320,7 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayDocumentDBInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

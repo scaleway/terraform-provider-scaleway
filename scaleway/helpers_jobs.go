@@ -10,7 +10,7 @@ import (
 
 // jobsAPIWithRegion returns a new jobs API and the region for a Create request
 func jobsAPIWithRegion(d *schema.ResourceData, m interface{}) (*jobs.API, scw.Region, error) {
-	jobsAPI := jobs.NewAPI(m.(*meta.Meta).ScwClient())
+	jobsAPI := jobs.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -22,7 +22,7 @@ func jobsAPIWithRegion(d *schema.ResourceData, m interface{}) (*jobs.API, scw.Re
 
 // jobsAPIWithRegionalAndID returns a new jobs API with region and ID extracted from the state
 func jobsAPIWithRegionAndID(m interface{}, regionalID string) (*jobs.API, scw.Region, string, error) {
-	jobsAPI := jobs.NewAPI(m.(*meta.Meta).ScwClient())
+	jobsAPI := jobs.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {

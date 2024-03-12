@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayCockpitGrafanaUser() *schema.Resource {
@@ -57,7 +56,7 @@ func resourceScalewayCockpitGrafanaUser() *schema.Resource {
 }
 
 func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m.(*meta.Meta))
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -88,7 +87,7 @@ func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(m.(*meta.Meta), d.Id())
+	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +135,7 @@ func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(m.(*meta.Meta), d.Id())
+	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

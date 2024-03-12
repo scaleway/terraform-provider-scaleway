@@ -11,7 +11,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewaySecretVersion() *schema.Resource {
@@ -75,7 +74,7 @@ func resourceScalewaySecretVersion() *schema.Resource {
 }
 
 func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := secretAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := secretAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,7 +104,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +135,7 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -165,7 +164,7 @@ func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewaySecretVersionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

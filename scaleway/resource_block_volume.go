@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayBlockVolume() *schema.Resource {
@@ -75,7 +74,7 @@ func resourceScalewayBlockVolume() *schema.Resource {
 }
 
 func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, m.(*meta.Meta))
+	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -121,7 +120,7 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -155,7 +154,7 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -195,7 +194,7 @@ func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

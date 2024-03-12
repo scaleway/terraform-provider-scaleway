@@ -14,7 +14,6 @@ import (
 	sdkValidation "github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayBaremetalServer() *schema.Resource {
@@ -275,12 +274,12 @@ func resourceScalewayBaremetalServerIP() *schema.Resource {
 }
 
 func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zone, err := baremetalAPIWithZone(d, m.(*meta.Meta))
+	baremetalAPI, zone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZone(d, m.(*meta.Meta))
+	baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -298,7 +297,7 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 	}
 
 	if !d.Get("install_config_afterward").(bool) {
-		if diags := validateInstallConfig(ctx, d, m.(*meta.Meta)); len(diags) > 0 {
+		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 			return diags
 		}
 	}
@@ -389,12 +388,12 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZone(d, m.(*meta.Meta))
+	baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -470,12 +469,12 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 
 //gocyclo:ignore
 func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	baremetalPrivateNetworkAPI, zone, err := baremetalPrivateNetworkAPIWithZone(d, m.(*meta.Meta))
+	baremetalPrivateNetworkAPI, zone, err := baremetalPrivateNetworkAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -591,7 +590,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("os") {
-		if diags := validateInstallConfig(ctx, d, m.(*meta.Meta)); len(diags) > 0 {
+		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 			return diags
 		}
 		err = baremetalInstallServer(ctx, d, baremetalAPI, installReq)
@@ -616,7 +615,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 					"If this behaviour is wanted, please set 'reinstall_on_config_changes' argument to true",
 			})
 		} else {
-			if diags := validateInstallConfig(ctx, d, m.(*meta.Meta)); len(diags) > 0 {
+			if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 				return diags
 			}
 			err = baremetalInstallServer(ctx, d, baremetalAPI, installReq)
@@ -635,12 +634,12 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m.(*meta.Meta), d.Id())
+	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = detachAllPrivateNetworkFromBaremetal(ctx, d, m.(*meta.Meta), zonedID.ID)
+	err = detachAllPrivateNetworkFromBaremetal(ctx, d, m, zonedID.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -675,7 +674,7 @@ func baremetalInstallAttributeMissing(field *baremetal.OSOSField, d *schema.Reso
 
 // validateInstallConfig validates that schema contains attribute required for OS install
 func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zone, err := baremetalAPIWithZone(d, m.(*meta.Meta))
+	baremetalAPI, zone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

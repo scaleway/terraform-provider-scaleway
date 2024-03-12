@@ -13,7 +13,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayRdbPrivilege() *schema.Resource {
@@ -74,7 +73,7 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 }
 
 func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,7 +124,7 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := newRdbAPI(m.(*meta.Meta))
+	api := newRdbAPI(m)
 
 	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
@@ -187,7 +186,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(m.(*meta.Meta))
+	rdbAPI := newRdbAPI(m)
 	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -252,7 +251,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 
 //gocyclo:ignore
 func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(m.(*meta.Meta))
+	rdbAPI := newRdbAPI(m)
 	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

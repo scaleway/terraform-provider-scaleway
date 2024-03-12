@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayContainerNamespace() *schema.Resource {
@@ -89,7 +88,7 @@ func resourceScalewayContainerNamespace() *schema.Resource {
 }
 
 func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,7 +116,7 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -144,7 +143,7 @@ func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -179,7 +178,7 @@ func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,7 +208,7 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 	d.SetId("")
 
 	if destroy := d.Get("destroy_registry"); destroy != nil && destroy == true {
-		registryAPI, region, err := registryAPIWithRegion(d, m.(*meta.Meta))
+		registryAPI, region, err := registryAPIWithRegion(d, m)
 		if err != nil {
 			return diag.FromErr(err)
 		}

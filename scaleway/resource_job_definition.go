@@ -11,7 +11,6 @@ import (
 	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayJobDefinition() *schema.Resource {
@@ -92,7 +91,7 @@ func resourceScalewayJobDefinition() *schema.Resource {
 }
 
 func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := jobsAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := jobsAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,7 +134,7 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,7 +167,7 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -234,7 +233,7 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -5,7 +5,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayRegistryImage() *schema.Resource {
@@ -64,7 +63,7 @@ func dataSourceScalewayRegistryImage() *schema.Resource {
 }
 
 func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, m interface{}) error {
-	api, region, err := registryAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}

@@ -13,7 +13,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayDocumentDBPrivilege() *schema.Resource {
@@ -71,7 +70,7 @@ func resourceScalewayDocumentDBPrivilege() *schema.Resource {
 }
 
 func resourceScalewayDocumentDBPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -122,7 +121,7 @@ func resourceScalewayDocumentDBPrivilegeCreate(ctx context.Context, d *schema.Re
 }
 
 func resourceScalewayDocumentDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, _, err := documentDBAPIWithRegion(d, m.(*meta.Meta))
+	api, _, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,7 +182,7 @@ func resourceScalewayDocumentDBPrivilegeRead(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayDocumentDBPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -252,7 +251,7 @@ func resourceScalewayDocumentDBPrivilegeUpdate(ctx context.Context, d *schema.Re
 
 //gocyclo:ignore
 func resourceScalewayDocumentDBPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

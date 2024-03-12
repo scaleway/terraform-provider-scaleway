@@ -31,7 +31,7 @@ const (
 
 // lbAPIWithZone returns an lb API WITH zone for a Create request
 func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.Zone, error) {
-	lbAPI := lbSDK.NewZonedAPI(m.(*meta.Meta).ScwClient())
+	lbAPI := lbSDK.NewZonedAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
@@ -42,7 +42,7 @@ func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.
 
 // lbAPIWithZoneAndID returns an lb API with zone and ID extracted from the state
 func lbAPIWithZoneAndID(m interface{}, id string) (*lbSDK.ZonedAPI, scw.Zone, string, error) {
-	lbAPI := lbSDK.NewZonedAPI(m.(*meta.Meta).ScwClient())
+	lbAPI := lbSDK.NewZonedAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {

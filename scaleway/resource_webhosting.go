@@ -8,7 +8,6 @@ import (
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayWebhosting() *schema.Resource {
@@ -159,7 +158,7 @@ func resourceScalewayWebhosting() *schema.Resource {
 }
 
 func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := webhostingAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := webhostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -208,7 +207,7 @@ func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := webhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -246,7 +245,7 @@ func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := webhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -298,7 +297,7 @@ func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayWebhostingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := webhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayBaremetalOffer() *schema.Resource {
@@ -146,7 +145,7 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 }
 
 func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, fallBackZone, err := baremetalAPIWithZone(d, m.(*meta.Meta))
+	baremetalAPI, fallBackZone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

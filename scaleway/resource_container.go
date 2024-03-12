@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 const (
@@ -193,7 +192,7 @@ func resourceScalewayContainer() *schema.Resource {
 }
 
 func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -245,7 +244,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, containerID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, containerID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -285,7 +284,7 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, containerID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, containerID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -389,7 +388,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, containerID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, containerID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

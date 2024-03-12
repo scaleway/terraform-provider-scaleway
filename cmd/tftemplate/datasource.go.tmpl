@@ -30,7 +30,7 @@ func dataSourceScaleway{{.Resource}}() *schema.Resource {
 }
 
 func dataSourceScaleway{{.Resource}}Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-    api, {{.Locality}}, err := {{.API}}APIWith{{.LocalityUpper}}(d, m.(*meta.Meta))
+    api, {{.Locality}}, err := {{.API}}APIWith{{.LocalityUpper}}(d, m)
     if err != nil {
         return diag.FromErr(err)
     }

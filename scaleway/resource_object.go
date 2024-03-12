@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayObject() *schema.Resource {
@@ -108,7 +107,7 @@ func resourceScalewayObject() *schema.Resource {
 }
 
 func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, m.(*meta.Meta))
+	s3Client, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -121,7 +120,7 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, m.(*meta.Meta), bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -183,7 +182,7 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m.(*meta.Meta), d.Id())
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -252,11 +251,11 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(regional.NewIDString(region, objectID(bucketUpdated, keyUpdated)))
 
-	return resourceScalewayObjectCreate(ctx, d, m.(*meta.Meta))
+	return resourceScalewayObjectCreate(ctx, d, m)
 }
 
 func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m.(*meta.Meta), d.Id())
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -312,7 +311,7 @@ func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceScalewayObjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(d, m.(*meta.Meta), d.Id())
+	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

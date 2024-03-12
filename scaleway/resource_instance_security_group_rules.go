@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
@@ -49,13 +48,13 @@ func resourceScalewayInstanceSecurityGroupRulesCreate(ctx context.Context, d *sc
 	d.SetId(d.Get("security_group_id").(string))
 
 	// We call update instead of read as it will take care of creating rules.
-	return resourceScalewayInstanceSecurityGroupRulesUpdate(ctx, d, m.(*meta.Meta))
+	return resourceScalewayInstanceSecurityGroupRulesUpdate(ctx, d, m)
 }
 
 func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
 
-	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m.(*meta.Meta), securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,7 +78,7 @@ func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *sche
 
 func resourceScalewayInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
-	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m.(*meta.Meta), securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -94,7 +93,7 @@ func resourceScalewayInstanceSecurityGroupRulesUpdate(ctx context.Context, d *sc
 
 func resourceScalewayInstanceSecurityGroupRulesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
-	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m.(*meta.Meta), securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

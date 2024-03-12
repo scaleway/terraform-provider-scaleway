@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayContainerTrigger() *schema.Resource {
@@ -133,7 +132,7 @@ func resourceScalewayContainerTrigger() *schema.Resource {
 }
 
 func resourceScalewayContainerTriggerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -146,7 +145,7 @@ func resourceScalewayContainerTriggerCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if scwSqs, isScwSqs := d.GetOk("sqs.0"); isScwSqs {
-		err := completeContainerTriggerMnqCreationConfig(scwSqs, d, m.(*meta.Meta), region)
+		err := completeContainerTriggerMnqCreationConfig(scwSqs, d, m, region)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to complete sqs config: %w", err))
 		}
@@ -156,7 +155,7 @@ func resourceScalewayContainerTriggerCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if scwNats, isScwNats := d.GetOk("nats.0"); isScwNats {
-		err := completeContainerTriggerMnqCreationConfig(scwNats, d, m.(*meta.Meta), region)
+		err := completeContainerTriggerMnqCreationConfig(scwNats, d, m, region)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to complete nats config: %w", err))
 		}
@@ -181,7 +180,7 @@ func resourceScalewayContainerTriggerCreate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayContainerTriggerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,7 +215,7 @@ func resourceScalewayContainerTriggerRead(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayContainerTriggerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -251,7 +250,7 @@ func resourceScalewayContainerTriggerUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayContainerTriggerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

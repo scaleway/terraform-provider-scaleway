@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayCockpit() *schema.Resource {
@@ -95,7 +94,7 @@ func resourceScalewayCockpit() *schema.Resource {
 }
 
 func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m.(*meta.Meta))
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,7 +142,7 @@ func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m.(*meta.Meta))
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,7 +165,7 @@ func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m.(*meta.Meta))
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -213,7 +212,7 @@ func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayCockpitDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m.(*meta.Meta))
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceObjectLockConfiguration() *schema.Resource {
@@ -79,7 +78,7 @@ func resourceObjectLockConfiguration() *schema.Resource {
 }
 
 func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(d, m.(*meta.Meta))
+	conn, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -89,7 +88,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		conn, err = s3ClientForceRegion(d, m.(*meta.Meta), bucketRegion.String())
+		conn, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -115,7 +114,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 }
 
 func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, m.(*meta.Meta), d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,7 +155,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 }
 
 func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, m.(*meta.Meta), d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -180,7 +179,7 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, m.(*meta.Meta), d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

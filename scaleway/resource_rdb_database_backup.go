@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayRdbDatabaseBackup() *schema.Resource {
@@ -84,7 +83,7 @@ func resourceScalewayRdbDatabaseBackup() *schema.Resource {
 }
 
 func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m.(*meta.Meta))
+	rdbAPI, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,7 +114,7 @@ func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, id, err := rdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	rdbAPI, region, id, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -145,7 +144,7 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, id, err := rdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	rdbAPI, region, id, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -182,7 +181,7 @@ func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayRdbDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, id, err := rdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	rdbAPI, region, id, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

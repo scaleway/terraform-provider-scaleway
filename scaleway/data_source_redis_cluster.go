@@ -9,7 +9,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayRedisCluster() *schema.Resource {
@@ -34,7 +33,7 @@ func dataSourceScalewayRedisCluster() *schema.Resource {
 }
 
 func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := redisAPIWithZone(d, m.(*meta.Meta))
+	api, zone, err := redisAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

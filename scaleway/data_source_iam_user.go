@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayIamUser() *schema.Resource {
@@ -40,7 +39,7 @@ func dataSourceScalewayIamUser() *schema.Resource {
 }
 
 func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(m.(*meta.Meta))
+	iamAPI := iamAPI(m)
 
 	var email, organizationID string
 	userID, ok := d.GetOk("user_id")
@@ -56,7 +55,7 @@ func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, 
 		organizationID = res.OrganizationID
 	} else {
 		res, err := iamAPI.ListUsers(&iam.ListUsersRequest{
-			OrganizationID: getOrganizationID(m.(*meta.Meta), d),
+			OrganizationID: getOrganizationID(m, d),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

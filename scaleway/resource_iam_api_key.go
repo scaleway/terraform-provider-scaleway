@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIamAPIKey() *schema.Resource {
@@ -85,7 +84,7 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 }
 
 func resourceScalewayIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 	res, err := api.CreateAPIKey(&iam.CreateAPIKeyRequest{
 		ApplicationID:    expandStringPtr(d.Get("application_id")),
 		UserID:           expandStringPtr(d.Get("user_id")),
@@ -105,7 +104,7 @@ func resourceScalewayIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 	res, err := api.GetAPIKey(&iam.GetAPIKeyRequest{
 		AccessKey: d.Id(),
 	}, scw.WithContext(ctx))
@@ -137,7 +136,7 @@ func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 
 	req := &iam.UpdateAPIKeyRequest{
 		AccessKey: d.Id(),
@@ -166,7 +165,7 @@ func resourceScalewayIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayIamAPIKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 
 	err := api.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
 		AccessKey: d.Id(),

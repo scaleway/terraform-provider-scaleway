@@ -13,7 +13,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayRdbUser() *schema.Resource {
@@ -66,7 +65,7 @@ func resourceScalewayRdbUser() *schema.Resource {
 }
 
 func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(m.(*meta.Meta))
+	rdbAPI := newRdbAPI(m)
 	// resource depends on the instance locality
 	regionalID := d.Get("instance_id").(string)
 	region, instanceID, err := regional.ParseID(regionalID)
@@ -115,7 +114,7 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(m.(*meta.Meta))
+	rdbAPI := newRdbAPI(m)
 	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -160,7 +159,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(m.(*meta.Meta))
+	rdbAPI := newRdbAPI(m)
 	// resource depends on the instance locality
 	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
@@ -194,7 +193,7 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(m.(*meta.Meta))
+	rdbAPI := newRdbAPI(m)
 	// resource depends on the instance locality
 	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {

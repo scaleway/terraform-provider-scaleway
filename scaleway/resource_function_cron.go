@@ -9,7 +9,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFunctionCron() *schema.Resource {
@@ -64,7 +63,7 @@ func resourceScalewayFunctionCron() *schema.Resource {
 }
 
 func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -106,7 +105,7 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,7 +134,7 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -179,7 +178,7 @@ func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

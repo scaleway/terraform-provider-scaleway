@@ -16,8 +16,8 @@ type InstanceBlockAPI struct {
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
 func instanceAndBlockAPIWithZone(d *schema.ResourceData, m interface{}) (*InstanceBlockAPI, scw.Zone, error) {
-	instanceAPI := instance.NewAPI(m.(*meta.Meta).ScwClient())
-	blockAPI := block.NewAPI(m.(*meta.Meta).ScwClient())
+	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
+	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
@@ -32,8 +32,8 @@ func instanceAndBlockAPIWithZone(d *schema.ResourceData, m interface{}) (*Instan
 
 // instanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
 func instanceAndBlockAPIWithZoneAndID(m interface{}, zonedID string) (*InstanceBlockAPI, scw.Zone, string, error) {
-	instanceAPI := instance.NewAPI(m.(*meta.Meta).ScwClient())
-	blockAPI := block.NewAPI(m.(*meta.Meta).ScwClient())
+	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
+	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {

@@ -18,7 +18,7 @@ const (
 
 // secretAPIWithRegion returns a new Secret API and the region for a Create request
 func secretAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, error) {
-	api := secret.NewAPI(m.(*meta.Meta).ScwClient())
+	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -29,9 +29,9 @@ func secretAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, sc
 
 // secretAPIWithRegionAndDefault returns a new Secret API and the region for a Create request
 func secretAPIWithRegionAndDefault(d *schema.ResourceData, m interface{}, defaultRegion scw.Region) (*secret.API, scw.Region, error) {
-	api := secret.NewAPI(m.(*meta.Meta).ScwClient())
+	api := secret.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := meta.ExtractRegionWithDefault(d, m.(*meta.Meta), defaultRegion)
+	region, err := meta.ExtractRegionWithDefault(d, m, defaultRegion)
 	if err != nil {
 		return nil, "", err
 	}
@@ -40,14 +40,14 @@ func secretAPIWithRegionAndDefault(d *schema.ResourceData, m interface{}, defaul
 
 // secretAPIWithRegionAndProjectID returns a new Secret API, with region and projectID
 func secretAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, string, error) {
-	api := secret.NewAPI(m.(*meta.Meta).ScwClient())
+	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", "", err
 	}
 
-	projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta))
+	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -57,7 +57,7 @@ func secretAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*se
 
 // secretAPIWithRegionAndID returns a Secret API with locality and ID extracted from the state
 func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, error) {
-	api := secret.NewAPI(m.(*meta.Meta).ScwClient())
+	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
@@ -72,7 +72,7 @@ func secretVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw
 	if err != nil {
 		return nil, "", "", "", err
 	}
-	api := secret.NewAPI(m.(*meta.Meta).ScwClient())
+	api := secret.NewAPI(meta.ExtractScwClient(m))
 	return api, scw.Region(region), id, revision, nil
 }
 

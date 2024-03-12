@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIamGroup() *schema.Resource {
@@ -80,7 +79,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 }
 
 func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 	req := &iam.CreateGroupRequest{
 		OrganizationID: d.Get("organization_id").(string),
 		Name:           expandOrGenerateString(d.Get("name"), "group"),
@@ -111,7 +110,7 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 	group, err := api.GetGroup(&iam.GetGroupRequest{
 		GroupID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -139,7 +138,7 @@ func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 
 	group, err := api.GetGroup(&iam.GetGroupRequest{
 		GroupID: d.Id(),
@@ -198,7 +197,7 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayIamGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 
 	err := api.DeleteGroup(&iam.DeleteGroupRequest{
 		GroupID: d.Id(),

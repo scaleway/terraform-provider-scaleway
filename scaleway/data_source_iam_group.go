@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayIamGroup() *schema.Resource {
@@ -37,13 +36,13 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 }
 
 func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 
 	groupID, groupIDExists := d.GetOk("group_id")
 	if !groupIDExists {
 		groupName := d.Get("name").(string)
 		req := &iam.ListGroupsRequest{
-			OrganizationID: flattenStringPtr(getOrganizationID(m.(*meta.Meta), d)).(string),
+			OrganizationID: flattenStringPtr(getOrganizationID(m, d)).(string),
 			Name:           expandStringPtr(groupName),
 		}
 

@@ -8,7 +8,6 @@ import (
 	serverless_sqldb "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewaySDBSQLDatabase() *schema.Resource {
@@ -59,7 +58,7 @@ func resourceScalewaySDBSQLDatabase() *schema.Resource {
 }
 
 func resourceScalewayServerlessSQLDBDatabaseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := serverlessSQLdbAPIWithRegion(d, m.(*meta.Meta))
+	api, region, err := serverlessSQLdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -87,7 +86,7 @@ func resourceScalewayServerlessSQLDBDatabaseCreate(ctx context.Context, d *schem
 }
 
 func resourceScalewayServerlessSQLDBDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -112,7 +111,7 @@ func resourceScalewayServerlessSQLDBDatabaseRead(ctx context.Context, d *schema.
 }
 
 func resourceScalewayServerlessSQLDBDatabaseUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -146,7 +145,7 @@ func resourceScalewayServerlessSQLDBDatabaseUpdate(ctx context.Context, d *schem
 }
 
 func resourceScalewayServerlessSQLDBDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

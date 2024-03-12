@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIamGroupMembership() *schema.Resource {
@@ -47,7 +46,7 @@ func resourceScalewayIamGroupMembership() *schema.Resource {
 }
 
 func resourceScalewayIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 
 	userID := expandStringPtr(d.Get("user_id"))
 	applicationID := expandStringPtr(d.Get("application_id"))
@@ -67,7 +66,7 @@ func resourceScalewayIamGroupMembershipCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 	groupID, userID, applicationID, err := expandGroupMembershipID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -117,7 +116,7 @@ func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m.(*meta.Meta))
+	api := iamAPI(m)
 	groupID, userID, applicationID, err := expandGroupMembershipID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

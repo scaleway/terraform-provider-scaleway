@@ -12,7 +12,6 @@ import (
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIotHub() *schema.Resource {
@@ -128,7 +127,7 @@ func resourceScalewayIotHub() *schema.Resource {
 }
 
 func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, m.(*meta.Meta))
+	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,7 +208,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, hubID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	iotAPI, region, hubID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -243,7 +242,7 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m i
 	_ = d.Set("device_auto_provisioning", response.EnableDeviceAutoProvisioning)
 	_ = d.Set("mqtt_ca_url", computeIotHubCaURL(response.ProductPlan, region))
 	mqttURL := d.Get("mqtt_ca_url")
-	mqttCa, err := computeIotHubMQTTCa(ctx, fmt.Sprintf("%v", mqttURL), m.(*meta.Meta))
+	mqttCa, err := computeIotHubMQTTCa(ctx, fmt.Sprintf("%v", mqttURL), m)
 	if err != nil {
 		_ = diag.Diagnostic{
 			Severity:      diag.Warning,
@@ -258,7 +257,7 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, hubID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	iotAPI, region, hubID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -346,7 +345,7 @@ func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, id, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	iotAPI, region, id, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

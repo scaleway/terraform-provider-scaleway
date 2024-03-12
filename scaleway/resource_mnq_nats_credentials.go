@@ -9,7 +9,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayMNQNatsCredentials() *schema.Resource {
@@ -46,7 +45,7 @@ func resourceScalewayMNQNatsCredentials() *schema.Resource {
 }
 
 func resourceScalewayMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := newMNQNatsAPI(d, m.(*meta.Meta))
+	api, region, err := newMNQNatsAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -68,7 +67,7 @@ func resourceScalewayMNQNatsCredentialsCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -93,7 +92,7 @@ func resourceScalewayMNQNatsCredentialsRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayMNQNatsCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,7 +114,7 @@ func resourceScalewayMNQNatsCredentialsUpdate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayMNQNatsCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
