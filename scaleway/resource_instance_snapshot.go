@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -143,7 +145,7 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
 		SnapshotID:    res.Snapshot.ID,
 		Zone:          zone,
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 	})
 	if err != nil {

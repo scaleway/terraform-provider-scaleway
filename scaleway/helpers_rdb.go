@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,8 +72,8 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 
 func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
 	retryInterval := defaultWaitRDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
@@ -84,8 +86,8 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 
 func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.DatabaseBackup, error) {
 	retryInterval := defaultWaitRDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
@@ -98,8 +100,8 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 
 func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.ReadReplica, error) {
 	retryInterval := defaultWaitRDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{

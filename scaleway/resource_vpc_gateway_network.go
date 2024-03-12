@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -163,7 +165,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		req.DHCPID = &dhcpZoned.ID
 	}
 
-	gatewayNetwork, err := retryOnTransientStateError(func() (*vpcgw.GatewayNetwork, error) {
+	gatewayNetwork, err := transport.RetryOnTransientStateError(func() (*vpcgw.GatewayNetwork, error) {
 		return vpcgwAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
 	}, func() (*vpcgw.Gateway, error) {
 		tflog.Warn(ctx, "Public gateway is in transient state after waiting, retrying...")

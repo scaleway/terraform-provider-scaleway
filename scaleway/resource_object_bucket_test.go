@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -825,7 +827,7 @@ func testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt *TestTools,
 
 		_, err = s3Client.GetBucketLifecycleConfiguration(input)
 		if err != nil {
-			if err == ErrRetryWhenTimeout {
+			if err == transport.ErrRetryWhenTimeout {
 				return fmt.Errorf("object Storage Bucket Replication Configuration for bucket (%s) not found", rs.Primary.ID)
 			}
 			return err

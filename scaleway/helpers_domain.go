@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -264,8 +266,8 @@ func expandDomainView(i interface{}, ok bool) *domain.RecordViewConfig {
 
 func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, timeout time.Duration) (*domain.DNSZone, error) {
 	retryInterval := defaultDomainZoneRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
@@ -277,8 +279,8 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 
 func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, recordName string, recordType domain.RecordType, timeout time.Duration) (*domain.Record, error) {
 	retryInterval := defaultDomainZoneRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return domainAPI.WaitForDNSRecordExist(&domain.WaitForDNSRecordExistRequest{

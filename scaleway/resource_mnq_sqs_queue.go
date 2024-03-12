@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
@@ -166,7 +168,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 		QueueName:  scw.StringPtr(queueName),
 	}
 
-	_, err = retryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDeletedRecently}, &RetryWhenConfig[*sqs.CreateQueueOutput]{
+	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDeletedRecently}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.CreateQueueOutput, error) {
@@ -193,7 +195,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	queue, err := retryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	queue, err := transport.RetryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutRead),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
@@ -242,7 +244,7 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	queue, err := retryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	queue, err := transport.RetryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutUpdate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
@@ -304,7 +306,7 @@ func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to delete SQS Queue (%s): %s", d.Id(), err)
 	}
 
-	_, _ = retryWhenAWSErrCodeNotEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	_, _ = transport.RetryWhenAWSErrCodeNotEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {

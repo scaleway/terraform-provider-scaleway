@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -116,7 +118,7 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 	_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 		VolumeID:      res.Volume.ID,
 		Zone:          zone,
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -232,7 +234,7 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 	volume, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 		Zone:          zone,
 		VolumeID:      id,
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 	}, scw.WithContext(ctx))
 	if err != nil {

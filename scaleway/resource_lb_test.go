@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -37,8 +39,8 @@ func testSweepLB(_ string) error {
 		for _, l := range listLBs.LBs {
 			retryInterval := defaultWaitLBRetryInterval
 
-			if DefaultWaitRetryInterval != nil {
-				retryInterval = *DefaultWaitRetryInterval
+			if transport.DefaultWaitRetryInterval != nil {
+				retryInterval = *transport.DefaultWaitRetryInterval
 			}
 
 			_, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{

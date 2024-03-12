@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -117,8 +119,8 @@ func flattenCockpitTokenScopes(scopes *cockpit.TokenScopes) []map[string]interfa
 
 func waitForCockpit(ctx context.Context, api *cockpit.API, projectID string, timeout time.Duration) (*cockpit.Cockpit, error) {
 	retryInterval := defaultContainerRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForCockpit(&cockpit.WaitForCockpitRequest{

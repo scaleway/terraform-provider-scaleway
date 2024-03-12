@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -78,8 +80,8 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 
 func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
 	retryInterval := defaultK8SRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
@@ -94,8 +96,8 @@ func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clu
 
 func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
 	retryInterval := defaultK8SRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
@@ -108,8 +110,8 @@ func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region,
 
 func waitK8SClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Cluster, status k8s.ClusterStatus, timeout time.Duration) (*k8s.Cluster, error) {
 	retryInterval := defaultK8SRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
@@ -131,8 +133,8 @@ func waitK8SClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Clu
 
 func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string, timeout time.Duration) (*k8s.Pool, error) {
 	retryInterval := defaultK8SRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	pool, err := k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{

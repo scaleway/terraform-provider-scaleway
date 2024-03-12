@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -213,7 +215,7 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 	_, err = instanceAPI.WaitForImage(&instance.WaitForImageRequest{
 		ImageID:       res.Image.ID,
 		Zone:          zone,
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 	}, scw.WithContext(ctx))
 	if err != nil {

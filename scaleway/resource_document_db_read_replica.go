@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -176,8 +178,8 @@ func expandDocumentDBReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*
 
 func waitForDocumentDBReadReplica(ctx context.Context, api *documentdb.API, region scw.Region, id string, timeout time.Duration) (*documentdb.ReadReplica, error) {
 	retryInterval := defaultWaitDocumentDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForReadReplica(&documentdb.WaitForReadReplicaRequest{

@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -83,8 +85,8 @@ func flattenHostingOptions(options []*webhosting.HostingOption) []map[string]int
 
 func waitForHosting(ctx context.Context, api *webhosting.API, region scw.Region, hostingID string, timeout time.Duration) (*webhosting.Hosting, error) {
 	retryInterval := hostingRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForHosting(&webhosting.WaitForHostingRequest{
