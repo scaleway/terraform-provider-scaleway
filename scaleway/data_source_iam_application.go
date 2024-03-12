@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayIamApplication() *schema.Resource {
@@ -35,15 +36,15 @@ func dataSourceScalewayIamApplication() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
 	appID, appIDExists := d.GetOk("application_id")
 
 	if !appIDExists {
 		applicationName := d.Get("name").(string)
 		res, err := api.ListApplications(&iam.ListApplicationsRequest{
-			OrganizationID: flattenStringPtr(getOrganizationID(meta, d)).(string),
+			OrganizationID: flattenStringPtr(getOrganizationID(m.(*meta.Meta), d)).(string),
 			Name:           expandStringPtr(applicationName),
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -68,7 +69,7 @@ func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayIamApplicationRead(ctx, d, meta)
+	diags := resourceScalewayIamApplicationRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read iam application state")...)
 	}

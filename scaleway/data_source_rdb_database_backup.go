@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
@@ -36,8 +37,8 @@ func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, meta)
+func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := rdbAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,7 +75,7 @@ func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayRdbDatabaseBackupRead(ctx, d, meta)
+	diags := resourceScalewayRdbDatabaseBackupRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read database backup state")...)
 	}

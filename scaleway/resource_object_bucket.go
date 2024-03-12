@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayObjectBucket() *schema.Resource {
@@ -221,12 +222,12 @@ func resourceScalewayObjectBucket() *schema.Resource {
 	}
 }
 
-func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
 	objectLockEnabled := d.Get("object_lock_enabled").(bool)
 	acl := d.Get("acl").(string)
 
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+	s3Client, region, err := s3ClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -260,11 +261,11 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(regional.NewIDString(region, bucketName))
 
-	return resourceScalewayObjectBucketUpdate(ctx, d, meta)
+	return resourceScalewayObjectBucketUpdate(ctx, d, m.(*meta.Meta))
 }
 
-func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -322,7 +323,7 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	return resourceScalewayObjectBucketRead(ctx, d, meta)
+	return resourceScalewayObjectBucketRead(ctx, d, m)
 }
 
 //gocyclo:ignore
@@ -446,8 +447,8 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 }
 
 //gocyclo:ignore
-func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(d, m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -651,8 +652,8 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -672,7 +673,7 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 				return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
 			}
 			// Try to delete bucket again after deleting objects
-			return resourceScalewayObjectBucketDelete(ctx, d, meta)
+			return resourceScalewayObjectBucketDelete(ctx, d, m.(*meta.Meta))
 		}
 	}
 	if err != nil {

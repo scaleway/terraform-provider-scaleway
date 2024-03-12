@@ -22,17 +22,15 @@ const (
 )
 
 func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Region, error) {
-	meta := m.(*meta.Meta)
-	iotAPI := iot.NewAPI(meta.ScwClient())
+	iotAPI := iot.NewAPI(m.(*meta.Meta).ScwClient())
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 
 	return iotAPI, region, err
 }
 
 func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, string, error) {
-	meta := m.(*meta.Meta)
-	iotAPI := iot.NewAPI(meta.ScwClient())
+	iotAPI := iot.NewAPI(m.(*meta.Meta).ScwClient())
 
 	region, ID, err := regional.ParseID(id)
 	return iotAPI, region, ID, err
@@ -73,13 +71,12 @@ func computeIotHubCaURL(productPlan iot.HubProductPlan, region scw.Region) strin
 }
 
 func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m interface{}) (string, error) {
-	meta := m.(*meta.Meta)
 	if mqttCaURL == "" {
 		return "", nil
 	}
 	var mqttCa *http.Response
 	req, _ := http.NewRequestWithContext(ctx, "GET", mqttCaURL, nil)
-	mqttCa, err := meta.HttpClient().Do(req)
+	mqttCa, err := m.(*meta.Meta).HTTPClient().Do(req)
 	if err != nil {
 		return "", err
 	}

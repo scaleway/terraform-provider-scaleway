@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIotNetwork() *schema.Resource {
@@ -78,8 +79,8 @@ func resourceScalewayIotNetwork() *schema.Resource {
 	}
 }
 
-func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, meta)
+func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, err := iotAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,11 +106,11 @@ func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceDat
 	// Secret key cannot be retrieved later
 	_ = d.Set("secret", res.Secret)
 
-	return resourceScalewayIotNetworkRead(ctx, d, meta)
+	return resourceScalewayIotNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, networkID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, networkID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,8 +137,8 @@ func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, networkID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, networkID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

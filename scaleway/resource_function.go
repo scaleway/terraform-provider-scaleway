@@ -12,6 +12,7 @@ import (
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFunction() *schema.Resource {
@@ -161,8 +162,8 @@ func resourceScalewayFunction() *schema.Resource {
 	}
 }
 
-func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -200,7 +201,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	var diags diag.Diagnostics
 
 	if zipFile, zipFileExists := d.GetOk("zip_file"); zipFileExists {
-		err = functionUpload(ctx, meta, api, region, f.ID, zipFile.(string))
+		err = functionUpload(ctx, m.(*meta.Meta), api, region, f.ID, zipFile.(string))
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -245,11 +246,11 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	return append(diags, resourceScalewayFunctionRead(ctx, d, meta)...)
+	return append(diags, resourceScalewayFunctionRead(ctx, d, m)...)
 }
 
-func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -300,8 +301,8 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -386,7 +387,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	shouldDeploy := d.Get("deploy").(bool)
 
 	if zipHasChanged {
-		err = functionUpload(ctx, meta, api, region, f.ID, d.Get("zip_file").(string))
+		err = functionUpload(ctx, m.(*meta.Meta), api, region, f.ID, d.Get("zip_file").(string))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to upload function: %w", err))
 		}
@@ -403,11 +404,11 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	return resourceScalewayFunctionRead(ctx, d, meta)
+	return resourceScalewayFunctionRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayLbFrontend() *schema.Resource {
@@ -231,8 +232,8 @@ func resourceScalewayLbFrontend() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, _, err := lbAPIWithZone(d, meta)
+func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, _, err := lbAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -294,14 +295,14 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 	d.SetId(zonal.NewIDString(zone, frontend.ID))
 
 	if d.Get("external_acls").(bool) {
-		return resourceScalewayLbFrontendRead(ctx, d, meta)
+		return resourceScalewayLbFrontendRead(ctx, d, m)
 	}
 
-	return resourceScalewayLbFrontendUpdate(ctx, d, meta)
+	return resourceScalewayLbFrontendUpdate(ctx, d, m.(*meta.Meta))
 }
 
-func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -442,8 +443,8 @@ func expandsLBACLs(raw interface{}) []*lbSDK.ACL {
 	return newACL
 }
 
-func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -488,11 +489,11 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		return diagnostics
 	}
 
-	return resourceScalewayLbFrontendRead(ctx, d, meta)
+	return resourceScalewayLbFrontendRead(ctx, d, m)
 }
 
-func resourceScalewayLbFrontendDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbFrontendDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

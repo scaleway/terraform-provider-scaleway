@@ -12,6 +12,7 @@ import (
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIotHub() *schema.Resource {
@@ -126,8 +127,8 @@ func resourceScalewayIotHub() *schema.Resource {
 	}
 }
 
-func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, meta)
+func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, err := iotAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,11 +205,11 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 	MQTTUrl := computeIotHubCaURL(req.ProductPlan, region)
 	_ = d.Set("mqtt_ca_url", MQTTUrl)
 
-	return resourceScalewayIotHubRead(ctx, d, meta)
+	return resourceScalewayIotHubRead(ctx, d, m)
 }
 
-func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, hubID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, hubID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -242,7 +243,7 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("device_auto_provisioning", response.EnableDeviceAutoProvisioning)
 	_ = d.Set("mqtt_ca_url", computeIotHubCaURL(response.ProductPlan, region))
 	mqttURL := d.Get("mqtt_ca_url")
-	mqttCa, err := computeIotHubMQTTCa(ctx, fmt.Sprintf("%v", mqttURL), meta)
+	mqttCa, err := computeIotHubMQTTCa(ctx, fmt.Sprintf("%v", mqttURL), m.(*meta.Meta))
 	if err != nil {
 		_ = diag.Diagnostic{
 			Severity:      diag.Warning,
@@ -256,8 +257,8 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, hubID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, hubID, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -341,11 +342,11 @@ func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayIotHubRead(ctx, d, meta)
+	return resourceScalewayIotHubRead(ctx, d, m)
 }
 
-func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, id, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, id, err := iotAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

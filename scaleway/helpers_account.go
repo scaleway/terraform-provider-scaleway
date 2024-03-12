@@ -6,6 +6,5 @@ import (
 )
 
 func accountV3ProjectAPI(m interface{}) *accountV3.ProjectAPI {
-	meta := m.(*meta.Meta)
-	return accountV3.NewProjectAPI(meta.ScwClient())
+	return accountV3.NewProjectAPI(m.(*meta.Meta).ScwClient())
 }

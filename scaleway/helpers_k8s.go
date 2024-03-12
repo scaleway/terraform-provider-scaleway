@@ -23,10 +23,9 @@ const (
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
-	meta := m.(*meta.Meta)
-	k8sAPI := k8s.NewAPI(meta.ScwClient())
+	k8sAPI := k8s.NewAPI(m.(*meta.Meta).ScwClient())
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -34,8 +33,7 @@ func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Regi
 }
 
 func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
-	meta := m.(*meta.Meta)
-	k8sAPI := k8s.NewAPI(meta.ScwClient())
+	k8sAPI := k8s.NewAPI(m.(*meta.Meta).ScwClient())
 
 	region, ID, err := regional.ParseID(id)
 	if err != nil {

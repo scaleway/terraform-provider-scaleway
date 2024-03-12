@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayRedisCluster() *schema.Resource {
@@ -227,8 +228,8 @@ func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
 	}
 }
 
-func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	redisAPI, zone, err := redisAPIWithZone(d, meta)
+func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	redisAPI, zone, err := redisAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -289,11 +290,11 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRedisClusterRead(ctx, d, meta)
+	return resourceScalewayRedisClusterRead(ctx, d, m)
 }
 
-func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	redisAPI, zone, ID, err := redisAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -357,8 +358,8 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	redisAPI, zone, ID, err := redisAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -453,7 +454,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRedisClusterRead(ctx, d, meta)
+	return resourceScalewayRedisClusterRead(ctx, d, m)
 }
 
 func resourceScalewayRedisClusterUpdateACL(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
@@ -525,8 +526,8 @@ func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	redisAPI, zone, ID, err := redisAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

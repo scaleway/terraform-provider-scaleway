@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIPAMIPReverseDNS() *schema.Resource {
@@ -50,8 +51,8 @@ func resourceScalewayIPAMIPReverseDNS() *schema.Resource {
 	}
 }
 
-func resourceScalewayIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, err := ipamAPIWithRegion(d, meta)
+func resourceScalewayIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, err := ipamAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -83,11 +84,11 @@ func resourceScalewayIPAMIPReverseDNSCreate(ctx context.Context, d *schema.Resou
 		}
 	}
 
-	return resourceScalewayIPAMIPReverseDNSRead(ctx, d, meta)
+	return resourceScalewayIPAMIPReverseDNSRead(ctx, d, m)
 }
 
-func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -119,8 +120,8 @@ func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,11 +144,11 @@ func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.Resou
 		}
 	}
 
-	return resourceScalewayIPAMIPReverseDNSRead(ctx, d, meta)
+	return resourceScalewayIPAMIPReverseDNSRead(ctx, d, m)
 }
 
-func resourceScalewayIPAMIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

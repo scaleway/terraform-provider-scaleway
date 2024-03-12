@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayIamSSHKey() *schema.Resource {
@@ -28,8 +29,8 @@ func dataSourceScalewayIamSSHKey() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func dataSourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iamAPI := iamAPI(m.(*meta.Meta))
 
 	sshKeyID, sshKeyIDExists := d.GetOk("ssh_key_id")
 	if !sshKeyIDExists {
@@ -61,7 +62,7 @@ func dataSourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayIamSSHKeyRead(ctx, d, meta)
+	diags := resourceScalewayIamSSHKeyRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read iam ssh key state")...)
 	}

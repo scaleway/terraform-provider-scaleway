@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayObjectBucket() *schema.Resource {
@@ -25,8 +26,8 @@ func dataSourceScalewayObjectBucket() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, err := s3ClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -36,7 +37,7 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(d, m.(*meta.Meta), bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -63,5 +64,5 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 
 	bucketRegionalID := regional.NewIDString(region, bucket)
 	d.SetId(bucketRegionalID)
-	return resourceScalewayObjectBucketRead(ctx, d, meta)
+	return resourceScalewayObjectBucketRead(ctx, d, m)
 }

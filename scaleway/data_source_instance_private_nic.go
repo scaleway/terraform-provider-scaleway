@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayInstancePrivateNIC() *schema.Resource {
@@ -36,8 +37,8 @@ func dataSourceScalewayInstancePrivateNIC() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -77,7 +78,7 @@ func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayInstancePrivateNICRead(ctx, d, meta)
+	diags := resourceScalewayInstancePrivateNICRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read private nic state")...)
 	}

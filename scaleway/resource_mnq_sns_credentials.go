@@ -8,6 +8,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayMNQSNSCredentials() *schema.Resource {
@@ -75,8 +76,8 @@ func resourceScalewayMNQSNSCredentials() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSNSAPI(d, meta)
+func resourceScalewayMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSNSAPI(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -100,11 +101,11 @@ func resourceScalewayMNQSNSCredentialsCreate(ctx context.Context, d *schema.Reso
 	_ = d.Set("access_key", credentials.AccessKey)
 	_ = d.Set("secret_key", credentials.SecretKey)
 
-	return resourceScalewayMNQSNSCredentialsRead(ctx, d, meta)
+	return resourceScalewayMNQSNSCredentialsRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqSNSAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,8 +137,8 @@ func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqSNSAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -171,11 +172,11 @@ func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayMNQSNSCredentialsRead(ctx, d, meta)
+	return resourceScalewayMNQSNSCredentialsRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSCredentialsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqSNSAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

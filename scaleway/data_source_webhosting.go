@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayWebhosting() *schema.Resource {
@@ -36,8 +37,8 @@ func dataSourceScalewayWebhosting() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := webhostingAPIWithRegion(d, meta)
+func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := webhostingAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,7 +75,7 @@ func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayWebhostingRead(ctx, d, meta)
+	diags := resourceScalewayWebhostingRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read hosting")...)
 	}

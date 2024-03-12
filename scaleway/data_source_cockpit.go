@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayCockpit() *schema.Resource {
@@ -25,8 +26,8 @@ func dataSourceScalewayCockpit() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func dataSourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}

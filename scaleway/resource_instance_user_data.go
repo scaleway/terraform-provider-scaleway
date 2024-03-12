@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayInstanceUserData() *schema.Resource {
@@ -53,8 +54,8 @@ func resourceScalewayInstanceUserData() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,11 +87,11 @@ func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.Resou
 
 	d.SetId(zonal.NewNestedIDString(zone, key, server.ID))
 
-	return resourceScalewayInstanceUserDataRead(ctx, d, meta)
+	return resourceScalewayInstanceUserDataRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(meta, d.Id())
+func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,8 +133,8 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(meta, d.Id())
+func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,11 +169,11 @@ func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceUserDataRead(ctx, d, meta)
+	return resourceScalewayInstanceUserDataRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(meta, d.Id())
+func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

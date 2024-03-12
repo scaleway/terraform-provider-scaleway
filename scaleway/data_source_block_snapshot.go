@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayBlockSnapshot() *schema.Resource {
@@ -28,8 +29,8 @@ func dataSourceScalewayBlockSnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, meta)
+func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := blockAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,7 +66,7 @@ func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayBlockSnapshotRead(ctx, d, meta)
+	diags := resourceScalewayBlockSnapshotRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read snapshot state")...)
 	}

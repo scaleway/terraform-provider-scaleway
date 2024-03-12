@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayDocumentDBInstance() *schema.Resource {
@@ -28,8 +29,8 @@ func dataSourceScalewayDocumentDBInstance() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,7 +66,7 @@ func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayDocumentDBInstanceRead(ctx, d, meta)
+	diags := resourceScalewayDocumentDBInstanceRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read instance state")...)
 	}

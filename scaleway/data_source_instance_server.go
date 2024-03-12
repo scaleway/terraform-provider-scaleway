@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayInstanceServer() *schema.Resource {
@@ -32,8 +33,8 @@ func dataSourceScalewayInstanceServer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,5 +66,5 @@ func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.Resourc
 	zonedID := datasourceNewZonedID(serverID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("server_id", zonedID)
-	return resourceScalewayInstanceServerRead(ctx, d, meta)
+	return resourceScalewayInstanceServerRead(ctx, d, m)
 }

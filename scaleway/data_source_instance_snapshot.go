@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayInstanceSnapshot() *schema.Resource {
@@ -31,8 +32,8 @@ func dataSourceScalewayInstanceSnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -69,7 +70,7 @@ func dataSourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	diags := resourceScalewayInstanceSnapshotRead(ctx, d, meta)
+	diags := resourceScalewayInstanceSnapshotRead(ctx, d, m)
 	if len(diags) > 0 {
 		return diags
 	}

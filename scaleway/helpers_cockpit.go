@@ -21,8 +21,7 @@ const (
 
 // cockpitAPI returns a new cockpit API.
 func cockpitAPI(m interface{}) (*cockpit.API, error) {
-	meta := m.(*meta.Meta)
-	api := cockpit.NewAPI(meta.ScwClient())
+	api := cockpit.NewAPI(m.(*meta.Meta).ScwClient())
 
 	return api, nil
 }

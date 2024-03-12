@@ -19,10 +19,9 @@ const (
 
 // temAPIWithRegion returns a new Tem API and the region for a Create request
 func temAPIWithRegion(d *schema.ResourceData, m interface{}) (*tem.API, scw.Region, error) {
-	meta := m.(*meta.Meta)
-	api := tem.NewAPI(meta.ScwClient())
+	api := tem.NewAPI(m.(*meta.Meta).ScwClient())
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -31,8 +30,7 @@ func temAPIWithRegion(d *schema.ResourceData, m interface{}) (*tem.API, scw.Regi
 
 // temAPIWithRegionAndID returns a Tem API with zone and ID extracted from the state
 func temAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, string, error) {
-	meta := m.(*meta.Meta)
-	api := tem.NewAPI(meta.ScwClient())
+	api := tem.NewAPI(m.(*meta.Meta).ScwClient())
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {

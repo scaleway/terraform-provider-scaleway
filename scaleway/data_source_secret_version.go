@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewaySecretVersion() *schema.Resource {
@@ -51,9 +52,9 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 	}
 }
 
-func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	secretID, existSecretID := d.GetOk("secret_id")
-	api, region, err := secretAPIWithRegionAndDefault(d, meta, regional.ExpandID(secretID).Region)
+	api, region, err := secretAPIWithRegionAndDefault(d, m.(*meta.Meta), regional.ExpandID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,7 +116,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewaySecretVersionRead(ctx, d, meta)
+	diags := resourceScalewaySecretVersionRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read secret version")...)
 	}

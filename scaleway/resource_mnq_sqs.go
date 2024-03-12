@@ -8,6 +8,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayMNQSQS() *schema.Resource {
@@ -31,8 +32,8 @@ func resourceScalewayMNQSQS() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQSQSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSQSAPI(d, meta)
+func resourceScalewayMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSQSAPI(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -47,11 +48,11 @@ func resourceScalewayMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(regional.NewIDString(region, sqs.ProjectID))
 
-	return resourceScalewayMNQSQSRead(ctx, d, meta)
+	return resourceScalewayMNQSQSRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSQSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqSQSAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -71,8 +72,8 @@ func resourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceScalewayMNQSQSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSQSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSQSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqSQSAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayAccountProject() *schema.Resource {
@@ -28,13 +29,13 @@ func dataSourceScalewayAccountProject() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m.(*meta.Meta))
 
 	var projectID string
 
 	if name, nameExists := d.GetOk("name"); nameExists {
-		orgID := getOrganizationID(meta, d)
+		orgID := getOrganizationID(m.(*meta.Meta), d)
 		if orgID == nil {
 			// required not in schema as we could use default
 			return diag.Errorf("organization_id is required with name")
@@ -58,7 +59,7 @@ func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.Resourc
 
 		projectID = foundProject.ID
 	} else {
-		extractedProjectID, _, err := extractProjectID(d, meta.(*Meta))
+		extractedProjectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -69,7 +70,7 @@ func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.Resourc
 	d.SetId(projectID)
 	_ = d.Set("project_id", projectID)
 
-	diags := resourceScalewayAccountProjectRead(ctx, d, meta)
+	diags := resourceScalewayAccountProjectRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read account project")...)
 	}

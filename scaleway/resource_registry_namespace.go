@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayRegistryNamespace() *schema.Resource {
@@ -56,8 +57,8 @@ func resourceScalewayRegistryNamespace() *schema.Resource {
 	}
 }
 
-func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := registryAPIWithRegion(d, meta)
+func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := registryAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,11 +81,11 @@ func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRegistryNamespaceRead(ctx, d, meta)
+	return resourceScalewayRegistryNamespaceRead(ctx, d, m)
 }
 
-func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := registryAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -109,8 +110,8 @@ func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := registryAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,11 +136,11 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		}
 	}
 
-	return resourceScalewayRegistryNamespaceRead(ctx, d, meta)
+	return resourceScalewayRegistryNamespaceRead(ctx, d, m)
 }
 
-func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := registryAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -29,8 +29,8 @@ func dataSourceScaleway{{.Resource}}() *schema.Resource {
     }
 }
 
-func dataSourceScaleway{{.Resource}}Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    api, {{.Locality}}, err := {{.API}}APIWith{{.LocalityUpper}}(d, meta)
+func dataSourceScaleway{{.Resource}}Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+    api, {{.Locality}}, err := {{.API}}APIWith{{.LocalityUpper}}(d, m.(*meta.Meta))
     if err != nil {
         return diag.FromErr(err)
     }
@@ -65,7 +65,7 @@ func dataSourceScaleway{{.Resource}}Read(ctx context.Context, d *schema.Resource
         return diag.FromErr(err)
     }
 
-    diags := resourceScaleway{{.Resource}}Read(ctx, d, meta)
+    diags := resourceScaleway{{.Resource}}Read(ctx, d, m)
     if diags != nil {
         return append(diags, diag.Errorf("failed to read {{.ResourceCleanLow}} state")...)
     }

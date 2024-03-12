@@ -20,10 +20,9 @@ const (
 
 // fipAPIWithZone returns an lb API WITH zone for a Create request
 func fipAPIWithZone(d *schema.ResourceData, m interface{}) (*flexibleip.API, scw.Zone, error) {
-	meta := m.(*meta.Meta)
-	flexibleipAPI := flexibleip.NewAPI(meta.ScwClient())
+	flexibleipAPI := flexibleip.NewAPI(m.(*meta.Meta).ScwClient())
 
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -32,8 +31,7 @@ func fipAPIWithZone(d *schema.ResourceData, m interface{}) (*flexibleip.API, scw
 
 // fipAPIWithZoneAndID returns an flexibleip API with zone and ID extracted from the state
 func fipAPIWithZoneAndID(m interface{}, id string) (*flexibleip.API, scw.Zone, string, error) {
-	meta := m.(*meta.Meta)
-	fipAPI := flexibleip.NewAPI(meta.ScwClient())
+	fipAPI := flexibleip.NewAPI(m.(*meta.Meta).ScwClient())
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIPAMIP() *schema.Resource {
@@ -144,8 +145,8 @@ func resourceScalewayIPAMIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, err := ipamAPIWithRegion(d, meta)
+func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, err := ipamAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,15 +182,15 @@ func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
-	return resourceScalewayIPAMIPRead(ctx, d, meta)
+	return resourceScalewayIPAMIPRead(ctx, d, m)
 }
 
-func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	vpcAPI, err := vpcAPI(meta)
+	vpcAPI, err := vpcAPI(m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -256,8 +257,8 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -271,11 +272,11 @@ func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayIPAMIPRead(ctx, d, meta)
+	return resourceScalewayIPAMIPRead(ctx, d, m)
 }
 
-func resourceScalewayIPAMIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

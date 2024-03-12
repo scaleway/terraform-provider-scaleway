@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayRDBACL() *schema.Resource {
@@ -23,8 +24,8 @@ func dataSourceScalewayRDBACL() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRDBACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, region, err := rdbAPIWithRegion(d, meta)
+func dataSourceScalewayRDBACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, region, err := rdbAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -41,5 +42,5 @@ func dataSourceScalewayRDBACLRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayRdbACLRead(ctx, d, meta)
+	return resourceScalewayRdbACLRead(ctx, d, m)
 }

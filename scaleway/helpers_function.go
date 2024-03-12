@@ -29,10 +29,9 @@ const (
 
 // functionAPIWithRegion returns a new container registry API and the region.
 func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API, scw.Region, error) {
-	meta := m.(*meta.Meta)
-	api := function.NewAPI(meta.ScwClient())
+	api := function.NewAPI(m.(*meta.Meta).ScwClient())
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -41,8 +40,7 @@ func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API
 
 // functionAPIWithRegionAndID returns a new container registry API, region and ID.
 func functionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region, string, error) {
-	meta := m.(*meta.Meta)
-	api := function.NewAPI(meta.ScwClient())
+	api := function.NewAPI(m.(*meta.Meta).ScwClient())
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
@@ -130,7 +128,6 @@ func waitForFunctionTrigger(ctx context.Context, functionAPI *function.API, regi
 }
 
 func functionUpload(ctx context.Context, m interface{}, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
-	meta := m.(*meta.Meta)
 	zipStat, err := os.Stat(zipFile)
 	if err != nil {
 		return fmt.Errorf("failed to stat zip file: %w", err)
@@ -164,10 +161,10 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 		}
 	}
 
-	secretKey, _ := meta.ScwClient().GetSecretKey()
+	secretKey, _ := m.(*meta.Meta).ScwClient().GetSecretKey()
 	req.Header.Add("X-Auth-Token", secretKey)
 
-	resp, err := meta.HttpClient().Do(req)
+	resp, err := m.(*meta.Meta).HTTPClient().Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}

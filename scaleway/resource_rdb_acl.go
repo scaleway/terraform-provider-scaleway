@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayRdbACL() *schema.Resource {
@@ -70,8 +71,8 @@ func resourceScalewayRdbACL() *schema.Resource {
 	}
 }
 
-func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, meta)
+func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := rdbAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -99,11 +100,11 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(instanceID)
 
-	return resourceScalewayRdbACLRead(ctx, d, meta)
+	return resourceScalewayRdbACLRead(ctx, d, m)
 }
 
-func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -152,8 +153,8 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
-func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,11 +186,11 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return resourceScalewayRdbACLRead(ctx, d, meta)
+	return resourceScalewayRdbACLRead(ctx, d, m)
 }
 
-func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

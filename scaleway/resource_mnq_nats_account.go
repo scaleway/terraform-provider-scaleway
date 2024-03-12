@@ -8,6 +8,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayMNQNatsAccount() *schema.Resource {
@@ -38,8 +39,8 @@ func resourceScalewayMNQNatsAccount() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQNatsAPI(d, meta)
+func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQNatsAPI(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -55,11 +56,11 @@ func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(regional.NewIDString(region, account.ID))
 
-	return resourceScalewayMNQNatsAccountRead(ctx, d, meta)
+	return resourceScalewayMNQNatsAccountRead(ctx, d, m)
 }
 
-func resourceScalewayMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -84,8 +85,8 @@ func resourceScalewayMNQNatsAccountRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,11 +104,11 @@ func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayMNQNatsAccountRead(ctx, d, meta)
+	return resourceScalewayMNQNatsAccountRead(ctx, d, m)
 }
 
-func resourceScalewayMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

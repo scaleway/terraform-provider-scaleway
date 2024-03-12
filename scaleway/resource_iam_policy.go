@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIamPolicy() *schema.Resource {
@@ -119,8 +120,8 @@ func resourceScalewayIamPolicy() *schema.Resource {
 	}
 }
 
-func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
 	pol, err := api.CreatePolicy(&iam.CreatePolicyRequest{
 		Name:           expandOrGenerateString(d.Get("name"), "policy"),
@@ -139,11 +140,11 @@ func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(pol.ID)
 
-	return resourceScalewayIamPolicyRead(ctx, d, meta)
+	return resourceScalewayIamPolicyRead(ctx, d, m)
 }
 
-func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 	pol, err := api.GetPolicy(&iam.GetPolicyRequest{
 		PolicyID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -186,8 +187,8 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
 	req := &iam.UpdatePolicyRequest{
 		PolicyID: d.Id(),
@@ -240,11 +241,11 @@ func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	return resourceScalewayIamPolicyRead(ctx, d, meta)
+	return resourceScalewayIamPolicyRead(ctx, d, m)
 }
 
-func resourceScalewayIamPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
 	err := api.DeletePolicy(&iam.DeletePolicyRequest{
 		PolicyID: d.Id(),

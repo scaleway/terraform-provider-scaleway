@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayBillingInvoices() *schema.Resource {
@@ -124,8 +125,8 @@ func dataSourceScalewayBillingInvoices() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := billingAPI(meta)
+func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := billingAPI(m.(*meta.Meta))
 
 	res, err := api.ListInvoices(&billing.ListInvoicesRequest{
 		OrganizationID:           expandStringPtr(d.Get("organization_id")),

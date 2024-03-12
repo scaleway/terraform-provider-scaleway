@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFlexibleIP() *schema.Resource {
@@ -88,8 +89,8 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, meta)
+func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, err := fipAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,11 +114,11 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayFlexibleIPRead(ctx, d, meta)
+	return resourceScalewayFlexibleIPRead(ctx, d, m)
 }
 
-func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, ID, err := fipAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, ID, err := fipAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,8 +161,8 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, ID, err := fipAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, ID, err := fipAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -230,11 +231,11 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFlexibleIPRead(ctx, d, meta)
+	return resourceScalewayFlexibleIPRead(ctx, d, m)
 }
 
-func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, ID, err := fipAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, ID, err := fipAPIWithZoneAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

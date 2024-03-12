@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFunctionCron() *schema.Resource {
@@ -62,8 +63,8 @@ func resourceScalewayFunctionCron() *schema.Resource {
 	}
 }
 
-func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,11 +102,11 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(regional.NewIDString(region, cron.ID))
 
-	return resourceScalewayFunctionCronRead(ctx, d, meta)
+	return resourceScalewayFunctionCronRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -133,8 +134,8 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -174,11 +175,11 @@ func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	return resourceScalewayFunctionCronRead(ctx, d, meta)
+	return resourceScalewayFunctionCronRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

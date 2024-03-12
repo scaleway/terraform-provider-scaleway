@@ -9,20 +9,17 @@ import (
 
 // instanceAPIWithZone returns a new iam API for a Create request
 func iamAPI(m interface{}) *iam.API {
-	meta := m.(*meta.Meta)
-	return iam.NewAPI(meta.ScwClient())
+	return iam.NewAPI(m.(*meta.Meta).ScwClient())
 }
 
 func getOrganizationID(m interface{}, d *schema.ResourceData) *string {
-	meta := m.(*meta.Meta)
-
 	orgID, orgIDExist := d.GetOk("organization_id")
 
 	if orgIDExist {
 		return expandStringPtr(orgID)
 	}
 
-	defaultOrgID, defaultOrgIDExists := meta.ScwClient().GetDefaultOrganizationID()
+	defaultOrgID, defaultOrgIDExists := m.(*meta.Meta).ScwClient().GetDefaultOrganizationID()
 	if defaultOrgIDExists {
 		return expandStringPtr(defaultOrgID)
 	}

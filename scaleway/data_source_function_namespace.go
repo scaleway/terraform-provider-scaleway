@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayFunctionNamespace() *schema.Resource {
@@ -30,8 +31,8 @@ func dataSourceScalewayFunctionNamespace() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func dataSourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -64,5 +65,5 @@ func dataSourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.Reso
 	d.SetId(regionalID)
 	_ = d.Set("namespace_id", regionalID)
 
-	return resourceScalewayFunctionNamespaceRead(ctx, d, meta)
+	return resourceScalewayFunctionNamespaceRead(ctx, d, m)
 }

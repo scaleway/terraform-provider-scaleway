@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayMNQSQS() *schema.Resource {
@@ -21,8 +22,8 @@ func dataSourceScalewayMNQSQS() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSQSAPI(d, meta)
+func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSQSAPI(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -42,7 +43,7 @@ func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, m
 	regionID := datasourceNewRegionalID(sqs.ProjectID, region)
 	d.SetId(regionID)
 
-	diags := resourceScalewayMNQSQSRead(ctx, d, meta)
+	diags := resourceScalewayMNQSQSRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read sqs state")...)
 	}

@@ -10,6 +10,7 @@ import (
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayTemDomain() *schema.Resource {
@@ -167,8 +168,8 @@ func resourceScalewayTemDomain() *schema.Resource {
 	}
 }
 
-func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := temAPIWithRegion(d, meta)
+func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := temAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,11 +186,11 @@ func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(regional.NewIDString(region, domain.ID))
 
-	return resourceScalewayTemDomainRead(ctx, d, meta)
+	return resourceScalewayTemDomainRead(ctx, d, m)
 }
 
-func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := temAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := temAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -230,8 +231,8 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := temAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := temAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

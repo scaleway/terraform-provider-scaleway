@@ -13,6 +13,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -127,13 +128,13 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSQSAPI(d, meta)
+func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSQSAPI(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID, _, err := extractProjectID(d, meta.(*Meta))
+	projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,7 +151,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("expected sqs to be enabled for given project, got: %q", sqsInfo.Status))
 	}
 
-	sqsClient, _, err := SQSClientWithRegion(d, meta)
+	sqsClient, _, err := SQSClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,11 +182,11 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(composeMNQID(region, projectID, queueName))
 
-	return resourceScalewayMNQSQSQueueRead(ctx, d, meta)
+	return resourceScalewayMNQSQSQueueRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, meta)
+func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	sqsClient, _, err := SQSClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,8 +234,8 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, meta)
+func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	sqsClient, _, err := SQSClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -270,11 +271,11 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to update SQS Queue attributes: %s", err)
 	}
 
-	return resourceScalewayMNQSQSQueueRead(ctx, d, meta)
+	return resourceScalewayMNQSQSQueueRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, meta)
+func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	sqsClient, _, err := SQSClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -9,10 +9,9 @@ import (
 
 // marketplaceAPIWithZone returns a new marketplace API and the zone for a Create request
 func marketplaceAPIWithZone(d *schema.ResourceData, m interface{}) (*marketplace.API, scw.Zone, error) {
-	meta := m.(*meta.Meta)
-	marketplaceAPI := marketplace.NewAPI(meta.ScwClient())
+	marketplaceAPI := marketplace.NewAPI(m.(*meta.Meta).ScwClient())
 
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}

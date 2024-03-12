@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIamUser() *schema.Resource {
@@ -70,9 +71,9 @@ func resourceScalewayIamUser() *schema.Resource {
 	}
 }
 
-func resourceScalewayIamUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
-	user, err := iamAPI.CreateUser(&iam.CreateUserRequest{
+func resourceScalewayIamUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
+	user, err := api.CreateUser(&iam.CreateUserRequest{
 		OrganizationID: d.Get("organization_id").(string),
 		Email:          d.Get("email").(string),
 	}, scw.WithContext(ctx))
@@ -82,11 +83,11 @@ func resourceScalewayIamUserCreate(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(user.ID)
 
-	return resourceScalewayIamUserRead(ctx, d, meta)
+	return resourceScalewayIamUserRead(ctx, d, m)
 }
 
-func resourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 	user, err := api.GetUser(&iam.GetUserRequest{
 		UserID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -111,8 +112,8 @@ func resourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceScalewayIamUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
 	err := api.DeleteUser(&iam.DeleteUserRequest{
 		UserID: d.Id(),

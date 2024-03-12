@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIamSSKKey() *schema.Resource {
@@ -64,10 +65,10 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 	}
 }
 
-func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
-	res, err := iamAPI.CreateSSHKey(&iam.CreateSSHKeyRequest{
+	res, err := api.CreateSSHKey(&iam.CreateSSHKeyRequest{
 		Name:      d.Get("name").(string),
 		PublicKey: strings.Trim(d.Get("public_key").(string), "\n"),
 		ProjectID: (d.Get("project_id")).(string),
@@ -77,7 +78,7 @@ func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if _, disabledExists := d.GetOk("disabled"); disabledExists {
-		_, err = iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+		_, err = api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 			SSHKeyID: d.Id(),
 			Disabled: expandBoolPtr(getBool(d, "disabled")),
 		}, scw.WithContext(ctx))
@@ -88,13 +89,13 @@ func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(res.ID)
 
-	return resourceScalewayIamSSHKeyRead(ctx, d, meta)
+	return resourceScalewayIamSSHKeyRead(ctx, d, m)
 }
 
-func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
-	res, err := iamAPI.GetSSHKey(&iam.GetSSHKeyRequest{
+	res, err := api.GetSSHKey(&iam.GetSSHKeyRequest{
 		SSHKeyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -117,8 +118,8 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
 	req := &iam.UpdateSSHKeyRequest{
 		SSHKeyID: d.Id(),
@@ -133,7 +134,7 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChange("disabled") {
 		if _, disabledExists := d.GetOk("disabled"); !disabledExists {
-			_, err := iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+			_, err := api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 				SSHKeyID: d.Id(),
 				Disabled: expandBoolPtr(false),
 			})
@@ -141,7 +142,7 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 				return diag.FromErr(err)
 			}
 		} else {
-			_, err := iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+			_, err := api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 				SSHKeyID: d.Id(),
 				Disabled: expandBoolPtr(getBool(d, "disabled")),
 			})
@@ -152,19 +153,19 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if hasUpdated {
-		_, err := iamAPI.UpdateSSHKey(req, scw.WithContext(ctx))
+		_, err := api.UpdateSSHKey(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayIamSSHKeyRead(ctx, d, meta)
+	return resourceScalewayIamSSHKeyRead(ctx, d, m)
 }
 
-func resourceScalewayIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func resourceScalewayIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
-	err := iamAPI.DeleteSSHKey(&iam.DeleteSSHKeyRequest{
+	err := api.DeleteSSHKey(&iam.DeleteSSHKeyRequest{
 		SSHKeyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {

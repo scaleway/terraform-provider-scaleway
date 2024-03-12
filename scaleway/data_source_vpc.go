@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayVPC() *schema.Resource {
@@ -37,8 +38,8 @@ func dataSourceScalewayVPC() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
+func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, err := vpcAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +96,7 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayVPCRead(ctx, d, meta)
+	diags := resourceScalewayVPCRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read VPC")...)
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayIamApplication() *schema.Resource {
@@ -59,8 +60,8 @@ func resourceScalewayIamApplication() *schema.Resource {
 	}
 }
 
-func resourceScalewayIamApplicationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 	app, err := api.CreateApplication(&iam.CreateApplicationRequest{
 		Name:           expandOrGenerateString(d.Get("name"), "application"),
 		Description:    d.Get("description").(string),
@@ -73,11 +74,11 @@ func resourceScalewayIamApplicationCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(app.ID)
 
-	return resourceScalewayIamApplicationRead(ctx, d, meta)
+	return resourceScalewayIamApplicationRead(ctx, d, m)
 }
 
-func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 	app, err := api.GetApplication(&iam.GetApplicationRequest{
 		ApplicationID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -99,8 +100,8 @@ func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayIamApplicationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamApplicationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
 	req := &iam.UpdateApplicationRequest{
 		ApplicationID: d.Id(),
@@ -128,11 +129,11 @@ func resourceScalewayIamApplicationUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
-	return resourceScalewayIamApplicationRead(ctx, d, meta)
+	return resourceScalewayIamApplicationRead(ctx, d, m)
 }
 
-func resourceScalewayIamApplicationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamApplicationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m.(*meta.Meta))
 
 	err := api.DeleteApplication(&iam.DeleteApplicationRequest{
 		ApplicationID: d.Id(),

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayAccountProject() *schema.Resource {
@@ -53,8 +54,8 @@ func resourceScalewayAccountProject() *schema.Resource {
 	}
 }
 
-func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m.(*meta.Meta))
 
 	request := &accountV3.ProjectAPICreateProjectRequest{
 		Name:        expandOrGenerateString(d.Get("name"), "project"),
@@ -72,11 +73,11 @@ func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(res.ID)
 
-	return resourceScalewayAccountProjectRead(ctx, d, meta)
+	return resourceScalewayAccountProjectRead(ctx, d, m)
 }
 
-func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m.(*meta.Meta))
 	res, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -97,8 +98,8 @@ func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m.(*meta.Meta))
 
 	req := &accountV3.ProjectAPIUpdateProjectRequest{
 		ProjectID: d.Id(),
@@ -122,11 +123,11 @@ func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
-	return resourceScalewayAccountProjectRead(ctx, d, meta)
+	return resourceScalewayAccountProjectRead(ctx, d, m)
 }
 
-func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m.(*meta.Meta))
 
 	err := accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 		ProjectID: d.Id(),

@@ -26,15 +26,12 @@ const (
 
 // newRdbAPI returns a new RDB API
 func newRdbAPI(m interface{}) *rdb.API {
-	meta := m.(*meta.Meta)
-	return rdb.NewAPI(meta.ScwClient())
+	return rdb.NewAPI(m.(*meta.Meta).ScwClient())
 }
 
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
 func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
-	meta := m.(*meta.Meta)
-
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -323,8 +320,7 @@ func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]inte
 	region, idStr, err := regional.ParseID(idRaw.(string))
 	if err != nil {
 		// force the default region
-		meta := m.(*meta.Meta)
-		defaultRegion, exist := meta.ScwClient().GetDefaultRegion()
+		defaultRegion, exist := m.(*meta.Meta).ScwClient().GetDefaultRegion()
 		if exist {
 			region = defaultRegion
 		}
@@ -375,8 +371,8 @@ func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 	return ipamConfig, staticConfig
 }
 
-func getIPAMConfigRead(resource interface{}, meta interface{}) (bool, error) {
-	ipamAPI := ipam.NewAPI(meta.(*Meta).ScwClient())
+func getIPAMConfigRead(resource interface{}, m interface{}) (bool, error) {
+	ipamAPI := ipam.NewAPI(m.(*meta.Meta).ScwClient())
 	request := &ipam.ListIPsRequest{
 		ResourceType: "rdb_instance",
 		IsIPv6:       scw.BoolPtr(false),

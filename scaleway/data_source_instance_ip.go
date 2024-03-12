@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayInstanceIP() *schema.Resource {
@@ -38,8 +39,8 @@ func dataSourceScalewayInstanceIP() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,5 +66,5 @@ func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceDat
 	}
 	d.SetId(zonal.NewIDString(zone, ID))
 
-	return resourceScalewayInstanceIPRead(ctx, d, meta)
+	return resourceScalewayInstanceIPRead(ctx, d, m)
 }

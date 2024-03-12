@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 const (
@@ -138,8 +139,8 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 	}
 }
 
-func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(d, meta)
+func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, region, err := s3ClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,7 +150,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		conn, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		conn, err = s3ClientForceRegion(d, m.(*meta.Meta), bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -183,7 +184,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	d.SetId(BucketACLCreateResourceID(region, bucket, acl))
 
-	return resourceBucketACLRead(ctx, d, meta)
+	return resourceBucketACLRead(ctx, d, m)
 }
 
 func expandBucketACLAccessControlPolicy(l []interface{}) *s3.AccessControlPolicy {
@@ -362,9 +363,9 @@ func flattenBucketACLAccessControlPolicyOwner(owner *s3.Owner) []interface{} {
 	return []interface{}{m}
 }
 
-func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	expectedBucketOwner := d.Get("expected_bucket_owner")
-	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(d, meta, d.Id())
+	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(d, m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -414,8 +415,8 @@ func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
 	return regional.NewIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
 }
 
-func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(d, meta, d.Id())
+func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(d, m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -447,7 +448,7 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		d.SetId(BucketACLCreateResourceID(region, bucket, acl))
 	}
 
-	return resourceBucketACLRead(ctx, d, meta)
+	return resourceBucketACLRead(ctx, d, m)
 }
 
 func resourceBucketACLDelete(ctx context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayLbRoute() *schema.Resource {
@@ -24,8 +25,8 @@ func dataSourceScalewayLbRoute() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, zone, err := lbAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -38,5 +39,5 @@ func dataSourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayLbRouteRead(ctx, d, meta)
+	return resourceScalewayLbRouteRead(ctx, d, m)
 }

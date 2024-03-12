@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
@@ -43,8 +44,8 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,7 +93,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, 
 	d.SetId(zonedID)
 	_ = d.Set("reservation_id", zonedID)
 
-	diags := resourceScalewayVPCPublicGatewayDHCPReservationRead(ctx, d, meta)
+	diags := resourceScalewayVPCPublicGatewayDHCPReservationRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read DHCP Entries")...)
 	}

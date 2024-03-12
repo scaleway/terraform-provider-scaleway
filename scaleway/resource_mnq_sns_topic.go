@@ -10,6 +10,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayMNQSNSTopic() *schema.Resource {
@@ -86,13 +87,13 @@ func resourceScalewayMNQSNSTopic() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSNSAPI(d, meta)
+func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSNSAPI(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID, _, err := extractProjectID(d, meta.(*Meta))
+	projectID, _, err := meta.ExtractProjectID(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,7 +106,7 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project, go %q", snsInfo.Status))
 	}
 
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+	snsClient, _, err := SNSClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,11 +135,11 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(composeMNQID(region, projectID, topicName))
 
-	return resourceScalewayMNQSNSTopicRead(ctx, d, meta)
+	return resourceScalewayMNQSNSTopicRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	snsClient, _, err := SNSClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -170,8 +171,8 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	snsClient, _, err := SNSClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -214,11 +215,11 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return resourceScalewayMNQSNSTopicRead(ctx, d, meta)
+	return resourceScalewayMNQSNSTopicRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+func resourceScalewayMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	snsClient, _, err := SNSClientWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}

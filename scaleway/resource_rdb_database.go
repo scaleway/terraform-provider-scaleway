@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayRdbDatabase() *schema.Resource {
@@ -79,8 +80,8 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 	}
 }
 
-func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
+func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m.(*meta.Meta))
 	region, instanceID, err := regional.ParseID(d.Get("instance_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -124,7 +125,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, db.Name))
 	_ = d.Set("region", region)
 
-	return resourceScalewayRdbDatabaseRead(ctx, d, meta)
+	return resourceScalewayRdbDatabaseRead(ctx, d, m)
 }
 
 func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, dbName string) (*rdb.Database, error) {
@@ -144,8 +145,8 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 	return res.Databases[0], nil
 }
 
-func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
+func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m.(*meta.Meta))
 	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -171,8 +172,8 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
+func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m.(*meta.Meta))
 	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

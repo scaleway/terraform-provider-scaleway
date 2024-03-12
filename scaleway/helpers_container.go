@@ -25,10 +25,9 @@ const (
 
 // containerAPIWithRegion returns a new container API and the region.
 func containerAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.API, scw.Region, error) {
-	meta := m.(*meta.Meta)
-	api := container.NewAPI(meta.ScwClient())
+	api := container.NewAPI(m.(*meta.Meta).ScwClient())
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -37,8 +36,7 @@ func containerAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.A
 
 // containerAPIWithRegionAndID returns a new container API, region and ID.
 func containerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region, string, error) {
-	meta := m.(*meta.Meta)
-	api := container.NewAPI(meta.ScwClient())
+	api := container.NewAPI(m.(*meta.Meta).ScwClient())
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {

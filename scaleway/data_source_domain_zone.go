@@ -20,8 +20,8 @@ func dataSourceScalewayDomainZone() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	d.SetId(fmt.Sprintf("%s.%s", d.Get("subdomain").(string), d.Get("domain").(string)))
 
-	return resourceScalewayDomainZoneRead(ctx, d, meta)
+	return resourceScalewayDomainZoneRead(ctx, d, m)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
@@ -29,8 +30,8 @@ func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -66,7 +67,7 @@ func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayInstancePlacementGroupRead(ctx, d, meta)
+	diags := resourceScalewayInstancePlacementGroupRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read placement group state")...)
 	}

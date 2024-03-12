@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayFunctionToken() *schema.Resource {
@@ -60,8 +61,8 @@ func resourceScalewayFunctionToken() *schema.Resource {
 	}
 }
 
-func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -81,11 +82,11 @@ func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.Resource
 
 	_ = d.Set("token", token.Token)
 
-	return resourceScalewayFunctionTokenRead(ctx, d, meta)
+	return resourceScalewayFunctionTokenRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := functionAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -109,8 +110,8 @@ func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

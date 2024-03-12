@@ -37,7 +37,7 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 	bucketSecondary := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-secondary")
 	objectBucketTestMainRegion := scw.RegionFrPar
 	objectBucketTestSecondaryRegion := scw.RegionNlAms
-	objectBucketTestDefaultRegion, _ := tt.meta.ScwClient().GetDefaultRegion()
+	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },

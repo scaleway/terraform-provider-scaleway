@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/stretchr/testify/require"
 )
 
@@ -111,9 +112,9 @@ func TestAccScalewayMNQSQSQueue_DefaultProject(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
-			metaProd, err := NewMeta(ctx, &MetaConfig{
+			metaProd, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
-				HttpClient:       tt.Meta.HttpClient(),
+				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
 
@@ -175,7 +176,7 @@ func testAccCheckScalewayMNQSQSQueueExists(tt *TestTools, n string) resource.Tes
 			return err
 		}
 
-		sqsClient, err := newSQSClient(tt.Meta.HttpClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		sqsClient, err := newSQSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
@@ -231,7 +232,7 @@ func testAccCheckScalewayMNQSQSQueueDestroy(tt *TestTools) resource.TestCheckFun
 				return nil
 			}
 
-			sqsClient, err := newSQSClient(tt.Meta.HttpClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			sqsClient, err := newSQSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}

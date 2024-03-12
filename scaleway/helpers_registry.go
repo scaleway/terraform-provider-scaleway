@@ -24,10 +24,9 @@ type ErrorRegistryMessage struct {
 
 // registryAPIWithRegion returns a new container registry API and the region.
 func registryAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API, scw.Region, error) {
-	meta := m.(*meta.Meta)
-	api := registry.NewAPI(meta.ScwClient())
+	api := registry.NewAPI(m.(*meta.Meta).ScwClient())
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -36,8 +35,7 @@ func registryAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API
 
 // registryAPIWithRegionAndID returns a new container registry API, region and ID.
 func registryAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Region, string, error) {
-	meta := m.(*meta.Meta)
-	api := registry.NewAPI(meta.ScwClient())
+	api := registry.NewAPI(m.(*meta.Meta).ScwClient())
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {

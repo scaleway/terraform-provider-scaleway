@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayK8SPool() *schema.Resource {
@@ -229,8 +230,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 }
 
 //gocyclo:ignore
-func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
+func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -334,11 +335,11 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayK8SPoolRead(ctx, d, meta)
+	return resourceScalewayK8SPoolRead(ctx, d, m)
 }
 
-func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -400,8 +401,8 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -467,11 +468,11 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	return resourceScalewayK8SPoolRead(ctx, d, meta)
+	return resourceScalewayK8SPoolRead(ctx, d, m)
 }
 
-func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

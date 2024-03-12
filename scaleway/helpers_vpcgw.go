@@ -21,10 +21,9 @@ const (
 
 // vpcgwAPIWithZone returns a new VPC API and the zone for a Create request
 func vpcgwAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zone, error) {
-	meta := m.(*meta.Meta)
-	vpcgwAPI := vpcgw.NewAPI(meta.ScwClient())
+	vpcgwAPI := vpcgw.NewAPI(m.(*meta.Meta).ScwClient())
 
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -33,8 +32,7 @@ func vpcgwAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zo
 
 // vpcgwAPIWithZoneAndID
 func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string, error) {
-	meta := m.(*meta.Meta)
-	vpcgwAPI := vpcgw.NewAPI(meta.ScwClient())
+	vpcgwAPI := vpcgw.NewAPI(m.(*meta.Meta).ScwClient())
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {

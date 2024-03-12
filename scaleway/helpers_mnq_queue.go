@@ -33,8 +33,7 @@ const (
 )
 
 func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
-	meta := m.(*meta.Meta)
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -43,7 +42,7 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	sqsClient, err := newSQSClient(meta.HttpClient(), region.String(), endpoint, accessKey, secretKey)
+	sqsClient, err := newSQSClient(m.(*meta.Meta).HTTPClient(), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -69,8 +68,7 @@ func newSQSClient(httpClient *http.Client, region string, endpoint string, acces
 }
 
 func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn
-	meta := m.(*meta.Meta)
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}

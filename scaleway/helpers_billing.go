@@ -7,6 +7,5 @@ import (
 
 // billingAPI returns a new billing API.
 func billingAPI(m interface{}) *billing.API {
-	meta := m.(*meta.Meta)
-	return billing.NewAPI(meta.ScwClient())
+	return billing.NewAPI(m.(*meta.Meta).ScwClient())
 }

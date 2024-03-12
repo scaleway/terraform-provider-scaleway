@@ -10,7 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	meta2 "github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 var terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
@@ -19,7 +19,7 @@ var terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
 type ProviderConfig struct {
 	// Meta can be used to override Meta that will be used by the provider.
 	// This is useful for tests.
-	Meta *meta2.Meta
+	Meta *meta.Meta
 }
 
 // DefaultProviderConfig return default ProviderConfig struct
@@ -285,14 +285,14 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
-			meta, err := meta2.NewMeta(ctx, &meta2.MetaConfig{
+			m, err := meta.NewMeta(ctx, &meta.Config{
 				ProviderSchema:   data,
 				TerraformVersion: terraformVersion,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
-			return meta, nil
+			return m, nil
 		}
 
 		return p

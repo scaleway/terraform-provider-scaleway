@@ -31,11 +31,11 @@ func (m Meta) ScwClient() *scw.Client {
 	return m.scwClient
 }
 
-func (m Meta) HttpClient() *http.Client {
+func (m Meta) HTTPClient() *http.Client {
 	return m.httpClient
 }
 
-type MetaConfig struct {
+type Config struct {
 	ProviderSchema      *schema.ResourceData
 	TerraformVersion    string
 	ForceZone           scw.Zone
@@ -43,11 +43,11 @@ type MetaConfig struct {
 	ForceOrganizationID string
 	ForceAccessKey      string
 	ForceSecretKey      string
-	HttpClient          *http.Client
+	HTTPClient          *http.Client
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
-func NewMeta(ctx context.Context, config *MetaConfig) (*Meta, error) {
+func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	////
 	// Load Profile
 	////
@@ -87,8 +87,8 @@ func NewMeta(ctx context.Context, config *MetaConfig) (*Meta, error) {
 	}
 
 	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
-	if config.HttpClient != nil {
-		httpClient = config.HttpClient
+	if config.HTTPClient != nil {
+		httpClient = config.HTTPClient
 	}
 	opts = append(opts, scw.WithHTTPClient(httpClient))
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayVPCPublicGatewayIP() *schema.Resource {
@@ -24,8 +25,8 @@ func dataSourceScalewayVPCPublicGatewayIP() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, zone, err := vpcgwAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -35,5 +36,5 @@ func dataSourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.Res
 	zonedID := datasourceNewZonedID(ipID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("ip_id", zonedID)
-	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, m)
 }

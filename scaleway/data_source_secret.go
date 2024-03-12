@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewaySecret() *schema.Resource {
@@ -39,8 +40,8 @@ func dataSourceScalewaySecret() *schema.Resource {
 	}
 }
 
-func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, projectID, err := secretAPIWithRegionAndProjectID(d, meta)
+func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, projectID, err := secretAPIWithRegionAndProjectID(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,7 +81,7 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewaySecretRead(ctx, d, meta)
+	diags := resourceScalewaySecretRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read secret")...)
 	}

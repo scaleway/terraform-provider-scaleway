@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayContainerDomain() *schema.Resource {
@@ -53,8 +54,8 @@ func resourceScalewayContainerDomain() *schema.Resource {
 	}
 }
 
-func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -85,11 +86,11 @@ func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.Resour
 
 	d.SetId(regional.NewIDString(region, domain.ID))
 
-	return resourceScalewayContainerDomainRead(ctx, d, meta)
+	return resourceScalewayContainerDomainRead(ctx, d, m)
 }
 
-func resourceScalewayContainerDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, domainID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, domainID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,8 +112,8 @@ func resourceScalewayContainerDomainRead(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func resourceScalewayContainerDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, domainID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, domainID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayRedisCluster() *schema.Resource {
@@ -32,8 +33,8 @@ func dataSourceScalewayRedisCluster() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := redisAPIWithZone(d, meta)
+func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := redisAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,5 +81,5 @@ func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("no clusters found with the id %s", clusterID))
 	}
 
-	return resourceScalewayRedisClusterRead(ctx, d, meta)
+	return resourceScalewayRedisClusterRead(ctx, d, m)
 }

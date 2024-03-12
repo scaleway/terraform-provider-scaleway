@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayInstancePrivateNIC() *schema.Resource {
@@ -70,8 +71,8 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,11 +111,11 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 		),
 	)
 
-	return resourceScalewayInstancePrivateNICRead(ctx, d, meta)
+	return resourceScalewayInstancePrivateNICRead(ctx, d, m)
 }
 
-func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, _, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, _, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,8 +150,8 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, _, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, _, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -175,11 +176,11 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 		}
 	}
 
-	return resourceScalewayInstancePrivateNICRead(ctx, d, meta)
+	return resourceScalewayInstancePrivateNICRead(ctx, d, m)
 }
 
-func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, _, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, _, err := instanceAPIWithZone(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}

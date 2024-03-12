@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayContainerToken() *schema.Resource {
@@ -59,8 +60,8 @@ func resourceScalewayContainerToken() *schema.Resource {
 	}
 }
 
-func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,11 +81,11 @@ func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.Resourc
 
 	_ = d.Set("token", token.Token)
 
-	return resourceScalewayContainerTokenRead(ctx, d, meta)
+	return resourceScalewayContainerTokenRead(ctx, d, m)
 }
 
-func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -108,8 +109,8 @@ func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayContainerTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := containerAPIWithRegionAndID(m.(*meta.Meta), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

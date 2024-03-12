@@ -19,10 +19,9 @@ const (
 
 // asAPIWithZone returns a new apple silicon API and the zone
 func asAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, scw.Zone, error) {
-	meta := m.(*meta.Meta)
-	asAPI := applesilicon.NewAPI(meta.ScwClient())
+	asAPI := applesilicon.NewAPI(m.(*meta.Meta).ScwClient())
 
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -31,8 +30,7 @@ func asAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, sc
 
 // asAPIWithZoneAndID returns an apple silicon API with zone and ID extracted from the state
 func asAPIWithZoneAndID(m interface{}, id string) (*applesilicon.API, scw.Zone, string, error) {
-	meta := m.(*meta.Meta)
-	asAPI := applesilicon.NewAPI(meta.ScwClient())
+	asAPI := applesilicon.NewAPI(m.(*meta.Meta).ScwClient())
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {

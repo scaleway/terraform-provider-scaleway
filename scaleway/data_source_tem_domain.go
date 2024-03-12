@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayTemDomain() *schema.Resource {
@@ -33,8 +34,8 @@ func dataSourceScalewayTemDomain() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := temAPIWithRegion(d, meta)
+func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := temAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -76,7 +77,7 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayTemDomainRead(ctx, d, meta)
+	diags := resourceScalewayTemDomainRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read tem domain state")...)
 	}

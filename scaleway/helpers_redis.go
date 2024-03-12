@@ -25,15 +25,12 @@ const (
 
 // newRedisApi returns a new Redis API
 func newRedisAPI(m interface{}) *redis.API {
-	meta := m.(*meta.Meta)
-	return redis.NewAPI(meta.ScwClient())
+	return redis.NewAPI(m.(*meta.Meta).ScwClient())
 }
 
 // redisAPIWithZone returns a new Redis API and the zone for a Create request
 func redisAPIWithZone(d *schema.ResourceData, m interface{}) (*redis.API, scw.Zone, error) {
-	meta := m.(*meta.Meta)
-
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func dataSourceScalewayIotDevice() *schema.Resource {
@@ -30,8 +31,8 @@ func dataSourceScalewayIotDevice() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := iotAPIWithRegion(d, meta)
+func dataSourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := iotAPIWithRegion(d, m.(*meta.Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -73,7 +74,7 @@ func dataSourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	diags := resourceScalewayIotDeviceRead(ctx, d, meta)
+	diags := resourceScalewayIotDeviceRead(ctx, d, m)
 	if diags != nil {
 		return diags
 	}
