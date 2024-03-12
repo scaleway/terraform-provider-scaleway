@@ -59,7 +59,7 @@ func testAccCheckScalewayBaremetalOptionExists(tt *TestTools, n string) resource
 			return err
 		}
 
-		baremetalAPI := baremetal.NewAPI(tt.Meta.scwClient)
+		baremetalAPI := baremetal.NewAPI(tt.Meta.ScwClient())
 		_, err = baremetalAPI.GetOption(&baremetal.GetOptionRequest{
 			OptionID: ID,
 			Zone:     zone,

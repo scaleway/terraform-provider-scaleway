@@ -55,35 +55,35 @@ func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw
 
 func sweep(f func(scwClient *scw.Client) error) error {
 	ctx := context.Background()
-	meta, err := buildMeta(ctx, &metaConfig{
-		terraformVersion: "terraform-tests",
+	meta, err := NewMeta(ctx, &MetaConfig{
+		TerraformVersion: "terraform-tests",
 	})
 	if err != nil {
 		return err
 	}
-	return f(meta.scwClient)
+	return f(meta.ScwClient())
 }
 
 // sharedClientForZone returns a Scaleway client needed for the sweeper
 // functions for a given zone
 func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
 	ctx := context.Background()
-	meta, err := buildMeta(ctx, &metaConfig{
-		terraformVersion: "terraform-tests",
-		forceZone:        zone,
+	meta, err := NewMeta(ctx, &MetaConfig{
+		TerraformVersion: "terraform-tests",
+		ForceZone:        zone,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return meta.scwClient, nil
+	return meta.ScwClient(), nil
 }
 
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
 func sharedS3ClientForRegion(region scw.Region) (*s3.S3, error) {
 	ctx := context.Background()
-	meta, err := buildMeta(ctx, &metaConfig{
-		terraformVersion: "terraform-tests",
-		forceZone:        region.GetZones()[0],
+	meta, err := NewMeta(ctx, &MetaConfig{
+		TerraformVersion: "terraform-tests",
+		ForceZone:        region.GetZones()[0],
 	})
 	if err != nil {
 		return nil, err

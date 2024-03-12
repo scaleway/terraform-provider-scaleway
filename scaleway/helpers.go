@@ -50,7 +50,7 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 		return scw.ParseZone(rawZone.(string))
 	}
 
-	zone, exist := meta.scwClient.GetDefaultZone()
+	zone, exist := meta.ScwClient().GetDefaultZone()
 	if exist {
 		return zone, nil
 	}
@@ -67,7 +67,7 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 		return scw.ParseRegion(rawRegion.(string))
 	}
 
-	region, exist := meta.scwClient.GetDefaultRegion()
+	region, exist := meta.ScwClient().GetDefaultRegion()
 	if exist {
 		return region, nil
 	}
@@ -89,7 +89,7 @@ func extractRegionWithDefault(d terraformResourceData, meta *Meta, defaultRegion
 		return defaultRegion, nil
 	}
 
-	region, exist := meta.scwClient.GetDefaultRegion()
+	region, exist := meta.ScwClient().GetDefaultRegion()
 	if exist {
 		return region, nil
 	}
@@ -109,7 +109,7 @@ func extractProjectID(d terraformResourceData, meta *Meta) (projectID string, is
 		return rawProjectID.(string), false, nil
 	}
 
-	defaultProjectID, exist := meta.scwClient.GetDefaultProjectID()
+	defaultProjectID, exist := meta.ScwClient().GetDefaultProjectID()
 	if exist {
 		return defaultProjectID, true, nil
 	}

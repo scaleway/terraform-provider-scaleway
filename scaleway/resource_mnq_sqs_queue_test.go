@@ -99,7 +99,7 @@ func TestAccScalewayMNQSQSQueue_DefaultProject(t *testing.T) {
 
 	ctx := context.Background()
 
-	accountAPI := accountV3.NewProjectAPI(tt.Meta.scwClient)
+	accountAPI := accountV3.NewProjectAPI(tt.Meta.ScwClient())
 	projectID := ""
 	project, err := accountAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
 		Name: "tf_tests_mnq_sqs_queue_default_project",
@@ -111,9 +111,9 @@ func TestAccScalewayMNQSQSQueue_DefaultProject(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
-			metaProd, err := buildMeta(ctx, &metaConfig{
-				terraformVersion: "terraform-tests",
-				httpClient:       tt.Meta.httpClient,
+			metaProd, err := NewMeta(ctx, &MetaConfig{
+				TerraformVersion: "terraform-tests",
+				HttpClient:       tt.Meta.HttpClient(),
 			})
 			require.NoError(t, err)
 
@@ -175,7 +175,7 @@ func testAccCheckScalewayMNQSQSQueueExists(tt *TestTools, n string) resource.Tes
 			return err
 		}
 
-		sqsClient, err := newSQSClient(tt.Meta.httpClient, region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		sqsClient, err := newSQSClient(tt.Meta.HttpClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
@@ -217,7 +217,7 @@ func testAccCheckScalewayMNQSQSQueueDestroy(tt *TestTools) resource.TestCheckFun
 				return err
 			}
 
-			mnqAPI := mnq.NewSqsAPI(tt.Meta.scwClient)
+			mnqAPI := mnq.NewSqsAPI(tt.Meta.ScwClient())
 			sqsInfo, err := mnqAPI.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
 				Region:    region,
 				ProjectID: projectID,
@@ -231,7 +231,7 @@ func testAccCheckScalewayMNQSQSQueueDestroy(tt *TestTools) resource.TestCheckFun
 				return nil
 			}
 
-			sqsClient, err := newSQSClient(tt.Meta.httpClient, region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			sqsClient, err := newSQSClient(tt.Meta.HttpClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}

@@ -20,7 +20,7 @@ func init() {
 }
 
 func testAccScalewayK8SClusterGetLatestK8SVersion(tt *TestTools) string {
-	api := k8s.NewAPI(tt.Meta.scwClient)
+	api := k8s.NewAPI(tt.Meta.ScwClient())
 	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
@@ -33,7 +33,7 @@ func testAccScalewayK8SClusterGetLatestK8SVersion(tt *TestTools) string {
 }
 
 func testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt *TestTools) string {
-	api := k8s.NewAPI(tt.Meta.scwClient)
+	api := k8s.NewAPI(tt.Meta.ScwClient())
 	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
@@ -47,7 +47,7 @@ func testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt *TestTools) string {
 }
 
 func testAccScalewayK8SClusterGetPreviousK8SVersion(tt *TestTools) string {
-	api := k8s.NewAPI(tt.Meta.scwClient)
+	api := k8s.NewAPI(tt.Meta.ScwClient())
 	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
@@ -60,7 +60,7 @@ func testAccScalewayK8SClusterGetPreviousK8SVersion(tt *TestTools) string {
 }
 
 func testAccScalewayK8SClusterGetPreviousK8SVersionMinor(tt *TestTools) string {
-	api := k8s.NewAPI(tt.Meta.scwClient)
+	api := k8s.NewAPI(tt.Meta.ScwClient())
 	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)

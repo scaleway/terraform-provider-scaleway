@@ -21,7 +21,7 @@ const (
 // blockAPIWithZone returns a new block API and the zone for a Create request
 func blockAPIWithZone(d *schema.ResourceData, m interface{}) (*block.API, scw.Zone, error) {
 	meta := m.(*Meta)
-	blockAPI := block.NewAPI(meta.scwClient)
+	blockAPI := block.NewAPI(meta.GetScwClient())
 
 	zone, err := extractZone(d, meta)
 	if err != nil {
@@ -34,7 +34,7 @@ func blockAPIWithZone(d *schema.ResourceData, m interface{}) (*block.API, scw.Zo
 // blockAPIWithZonedAndID returns a new block API with zone and ID extracted from the state
 func blockAPIWithZoneAndID(m interface{}, zonedID string) (*block.API, scw.Zone, string, error) {
 	meta := m.(*Meta)
-	blockAPI := block.NewAPI(meta.scwClient)
+	blockAPI := block.NewAPI(meta.GetScwClient())
 
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {

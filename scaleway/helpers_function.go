@@ -29,7 +29,7 @@ const (
 // functionAPIWithRegion returns a new container registry API and the region.
 func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API, scw.Region, error) {
 	meta := m.(*Meta)
-	api := function.NewAPI(meta.scwClient)
+	api := function.NewAPI(meta.GetScwClient())
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -41,7 +41,7 @@ func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API
 // functionAPIWithRegionAndID returns a new container registry API, region and ID.
 func functionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region, string, error) {
 	meta := m.(*Meta)
-	api := function.NewAPI(meta.scwClient)
+	api := function.NewAPI(meta.GetScwClient())
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
@@ -163,10 +163,10 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 		}
 	}
 
-	secretKey, _ := meta.scwClient.GetSecretKey()
+	secretKey, _ := meta.ScwClient().GetSecretKey()
 	req.Header.Add("X-Auth-Token", secretKey)
 
-	resp, err := meta.httpClient.Do(req)
+	resp, err := meta.HttpClient().Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}

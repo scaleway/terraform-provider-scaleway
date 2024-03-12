@@ -1019,7 +1019,7 @@ func testAccCheckScalewayRedisCertificateIsValid(name string) resource.TestCheck
 }
 
 func testAccScalewayRedisClusterGetLatestVersion(tt *TestTools) string {
-	api := redis.NewAPI(tt.Meta.scwClient)
+	api := redis.NewAPI(tt.Meta.ScwClient())
 
 	versions, err := api.ListClusterVersions(&redis.ListClusterVersionsRequest{})
 	if err != nil {

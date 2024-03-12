@@ -348,7 +348,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
 		imageLabel := formatImageLabel(imageUUID)
 
-		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
+		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).ScwClient())
 		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
@@ -1236,7 +1236,7 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 
 	// If image is a label, we check that server.Image.ID matches the label in case the user has edited
 	// the image with another tool.
-	marketplaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
+	marketplaceAPI := marketplace.NewAPI(meta.(*Meta).ScwClient())
 	if err != nil {
 		return err
 	}

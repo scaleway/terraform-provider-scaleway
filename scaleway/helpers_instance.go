@@ -50,7 +50,7 @@ const (
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
 func instanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, scw.Zone, error) {
 	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
+	instanceAPI := instance.NewAPI(meta.GetScwClient())
 
 	zone, err := extractZone(d, meta)
 	if err != nil {
@@ -62,7 +62,7 @@ func instanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, 
 // instanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
 func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw.Zone, string, error) {
 	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
+	instanceAPI := instance.NewAPI(meta.ScwClient())
 
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
@@ -74,7 +74,7 @@ func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw
 // instanceAPIWithZoneAndNestedID returns an instance API with zone and inner/outer ID extracted from the state
 func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*instance.API, scw.Zone, string, string, error) {
 	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
+	instanceAPI := instance.NewAPI(meta.ScwClient())
 
 	zone, innerID, outerID, err := zonal.ParseNestedID(zonedNestedID)
 	if err != nil {

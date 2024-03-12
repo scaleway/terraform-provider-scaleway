@@ -29,7 +29,7 @@ func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.R
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	snsClient, err := newSNSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
+	snsClient, err := newSNSClient(meta.HttpClient(), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -53,7 +53,7 @@ func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	snsClient, err := newSNSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
+	snsClient, err := newSNSClient(meta.HttpClient(), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}

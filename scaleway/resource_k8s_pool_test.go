@@ -556,7 +556,7 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 			return err
 		}
 
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 
 		for _, node := range nodes.Nodes {
 			providerIDSplit := strings.SplitN(node.ProviderID, "/", 5)
@@ -617,7 +617,7 @@ func testAccCheckScalewayK8SPoolPublicIP(tt *TestTools, clusterTFName, poolTFNam
 			return err
 		}
 
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 
 		for _, node := range nodes.Nodes {
 			providerIDSplit := strings.SplitN(node.ProviderID, "/", 5)

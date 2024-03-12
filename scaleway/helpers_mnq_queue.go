@@ -42,7 +42,7 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	sqsClient, err := newSQSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
+	sqsClient, err := newSQSClient(meta.HttpClient(), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}

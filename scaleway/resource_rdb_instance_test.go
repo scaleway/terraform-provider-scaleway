@@ -24,7 +24,7 @@ func init() {
 }
 
 func testAccCheckScalewayRdbEngineGetLatestVersion(tt *TestTools, engineName string) string {
-	api := rdb.NewAPI(tt.Meta.scwClient)
+	api := rdb.NewAPI(tt.Meta.ScwClient())
 	engines, err := api.ListDatabaseEngines(&rdb.ListDatabaseEnginesRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latest engine version: %s", err)

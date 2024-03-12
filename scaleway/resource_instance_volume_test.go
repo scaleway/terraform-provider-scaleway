@@ -240,7 +240,7 @@ func testAccCheckScalewayInstanceVolumeExists(tt *TestTools, n string) resource.
 			return err
 		}
 
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 		_, err = instanceAPI.GetVolume(&instance.GetVolumeRequest{
 			VolumeID: id,
 			Zone:     zone,
@@ -255,7 +255,7 @@ func testAccCheckScalewayInstanceVolumeExists(tt *TestTools, n string) resource.
 
 func testAccCheckScalewayInstanceVolumeDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_volume" {
 				continue

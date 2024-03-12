@@ -9,7 +9,7 @@ import (
 // {{.API}}APIWith{{.LocalityUpper}} returns a new {{.API}} API and the {{.Locality}} for a Create request
 func {{.API}}APIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*{{.API}}.API, scw.{{.LocalityUpper}}, error) {
     meta := m.(*Meta)
-    {{.API}}API := {{.API}}.NewAPI(meta.scwClient)
+    {{.API}}API := {{.API}}.NewAPI(meta.GetScwClient())
 
     {{.Locality}}, err := extract{{.LocalityUpper}}(d, meta)
     if err != nil {
@@ -22,7 +22,7 @@ func {{.API}}APIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*
 // {{.API}}APIWith{{.LocalityAdjectiveUpper}}AndID returns a new {{.API }} API with {{.Locality}} and ID extracted from the state
 func {{.API}}APIWith{{.LocalityUpper}}AndID(m interface{}, {{.LocalityAdjective}}ID string) (*{{.API}}.API, scw.{{.LocalityUpper}}, string, error) {
     meta := m.(*Meta)
-    {{.API}}API := {{.API}}.NewAPI(meta.scwClient)
+    {{.API}}API := {{.API}}.NewAPI(meta.GetScwClient())
 
     {{.Locality}}, ID, err := parse{{.LocalityAdjectiveUpper}}ID({{.LocalityAdjective}}ID)
     if err != nil {

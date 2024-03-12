@@ -92,7 +92,7 @@ func testAccCheckScalewayMNQSNSTopicSubscriptionExists(tt *TestTools, n string) 
 			return fmt.Errorf("failed to parse id: %w", err)
 		}
 
-		snsClient, err := newSNSClient(tt.Meta.httpClient, arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		snsClient, err := newSNSClient(tt.Meta.HttpClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
@@ -120,7 +120,7 @@ func testAccCheckScalewayMNQSNSTopicSubscriptionDestroy(tt *TestTools) resource.
 				return fmt.Errorf("failed to parse id: %w", err)
 			}
 
-			snsClient, err := newSNSClient(tt.Meta.httpClient, arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			snsClient, err := newSNSClient(tt.Meta.HttpClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}

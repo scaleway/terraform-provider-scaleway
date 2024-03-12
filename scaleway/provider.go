@@ -290,9 +290,9 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
-			meta, err := buildMeta(ctx, &metaConfig{
-				providerSchema:   data,
-				terraformVersion: terraformVersion,
+			meta, err := NewMeta(ctx, &MetaConfig{
+				ProviderSchema:   data,
+				TerraformVersion: terraformVersion,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -316,45 +316,53 @@ type Meta struct {
 	httpClient *http.Client
 }
 
-type metaConfig struct {
-	providerSchema      *schema.ResourceData
-	terraformVersion    string
-	forceZone           scw.Zone
-	forceProjectID      string
-	forceOrganizationID string
-	forceAccessKey      string
-	forceSecretKey      string
-	httpClient          *http.Client
+func (m Meta) ScwClient() *scw.Client {
+	return m.scwClient
+}
+
+func (m Meta) HttpClient() *http.Client {
+	return m.httpClient
+}
+
+type MetaConfig struct {
+	ProviderSchema      *schema.ResourceData
+	TerraformVersion    string
+	ForceZone           scw.Zone
+	ForceProjectID      string
+	ForceOrganizationID string
+	ForceAccessKey      string
+	ForceSecretKey      string
+	HttpClient          *http.Client
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
-func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
+func NewMeta(ctx context.Context, config *MetaConfig) (*Meta, error) {
 	////
 	// Load Profile
 	////
-	profile, err := loadProfile(ctx, config.providerSchema)
+	profile, err := loadProfile(ctx, config.ProviderSchema)
 	if err != nil {
 		return nil, err
 	}
-	if config.forceZone != "" {
-		region, err := config.forceZone.Region()
+	if config.ForceZone != "" {
+		region, err := config.ForceZone.Region()
 		if err != nil {
 			return nil, err
 		}
 		profile.DefaultRegion = scw.StringPtr(region.String())
-		profile.DefaultZone = scw.StringPtr(config.forceZone.String())
+		profile.DefaultZone = scw.StringPtr(config.ForceZone.String())
 	}
-	if config.forceProjectID != "" {
-		profile.DefaultProjectID = scw.StringPtr(config.forceProjectID)
+	if config.ForceProjectID != "" {
+		profile.DefaultProjectID = scw.StringPtr(config.ForceProjectID)
 	}
-	if config.forceOrganizationID != "" {
-		profile.DefaultOrganizationID = scw.StringPtr(config.forceOrganizationID)
+	if config.ForceOrganizationID != "" {
+		profile.DefaultOrganizationID = scw.StringPtr(config.ForceOrganizationID)
 	}
-	if config.forceAccessKey != "" {
-		profile.AccessKey = scw.StringPtr(config.forceAccessKey)
+	if config.ForceAccessKey != "" {
+		profile.AccessKey = scw.StringPtr(config.ForceAccessKey)
 	}
-	if config.forceSecretKey != "" {
-		profile.SecretKey = scw.StringPtr(config.forceSecretKey)
+	if config.ForceSecretKey != "" {
+		profile.SecretKey = scw.StringPtr(config.ForceSecretKey)
 	}
 
 	// TODO validated profile
@@ -363,13 +371,13 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 	// Create scaleway SDK client
 	////
 	opts := []scw.ClientOption{
-		scw.WithUserAgent(customizeUserAgent(version, config.terraformVersion)),
+		scw.WithUserAgent(customizeUserAgent(version, config.TerraformVersion)),
 		scw.WithProfile(profile),
 	}
 
 	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
-	if config.httpClient != nil {
-		httpClient = config.httpClient
+	if config.HttpClient != nil {
+		httpClient = config.HttpClient
 	}
 	opts = append(opts, scw.WithHTTPClient(httpClient))
 

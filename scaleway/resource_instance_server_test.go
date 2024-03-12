@@ -1824,12 +1824,12 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 	temporarySecretKey := ""
 	customProviderFactory := map[string]func() (*schema.Provider, error){
 		"scaleway": func() (*schema.Provider, error) {
-			meta, err := buildMeta(context.Background(), &metaConfig{
-				providerSchema:   nil,
-				terraformVersion: "terraform-tests",
-				httpClient:       tt.Meta.httpClient,
-				forceAccessKey:   temporaryAccessKey,
-				forceSecretKey:   temporarySecretKey,
+			meta, err := NewMeta(context.Background(), &MetaConfig{
+				ProviderSchema:   nil,
+				TerraformVersion: "terraform-tests",
+				HttpClient:       tt.Meta.HttpClient(),
+				ForceAccessKey:   temporaryAccessKey,
+				ForceSecretKey:   temporarySecretKey,
 			})
 			if err != nil {
 				return nil, err

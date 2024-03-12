@@ -26,7 +26,7 @@ const (
 // instanceAPIWithZone returns a new baremetal API and the zone for a Create request
 func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.Zone, error) {
 	meta := m.(*Meta)
-	baremetalAPI := baremetal.NewAPI(meta.scwClient)
+	baremetalAPI := baremetal.NewAPI(meta.GetScwClient())
 
 	zone, err := extractZone(d, meta)
 	if err != nil {
@@ -38,7 +38,7 @@ func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API
 // instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
 func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, error) {
 	meta := m.(*Meta)
-	baremetalAPI := baremetal.NewAPI(meta.scwClient)
+	baremetalAPI := baremetal.NewAPI(meta.GetScwClient())
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
@@ -50,7 +50,7 @@ func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.
 // returns a new baremetal private network API and the zone for a Create request
 func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.PrivateNetworkAPI, scw.Zone, error) {
 	meta := m.(*Meta)
-	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.scwClient)
+	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.GetScwClient())
 
 	zone, err := extractZone(d, meta)
 	if err != nil {
@@ -62,7 +62,7 @@ func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (
 // baremetalPrivateNetworkAPIWithZoneAndID returns a baremetal private network API with zone and ID extracted from the state
 func baremetalPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, zonal.ID, error) {
 	meta := m.(*Meta)
-	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.scwClient)
+	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.GetScwClient())
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {

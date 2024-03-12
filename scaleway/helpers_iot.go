@@ -22,7 +22,7 @@ const (
 
 func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Region, error) {
 	meta := m.(*Meta)
-	iotAPI := iot.NewAPI(meta.scwClient)
+	iotAPI := iot.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
 
@@ -31,7 +31,7 @@ func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Regi
 
 func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, string, error) {
 	meta := m.(*Meta)
-	iotAPI := iot.NewAPI(meta.scwClient)
+	iotAPI := iot.NewAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(id)
 	return iotAPI, region, ID, err
@@ -78,7 +78,7 @@ func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m interface{}) (
 	}
 	var mqttCa *http.Response
 	req, _ := http.NewRequestWithContext(ctx, "GET", mqttCaURL, nil)
-	mqttCa, err := meta.httpClient.Do(req)
+	mqttCa, err := meta.HttpClient().Do(req)
 	if err != nil {
 		return "", err
 	}

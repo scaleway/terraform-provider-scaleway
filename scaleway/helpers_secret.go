@@ -18,7 +18,7 @@ const (
 // secretAPIWithRegion returns a new Secret API and the region for a Create request
 func secretAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, error) {
 	meta := m.(*Meta)
-	api := secret.NewAPI(meta.scwClient)
+	api := secret.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -30,7 +30,7 @@ func secretAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, sc
 // secretAPIWithRegionAndDefault returns a new Secret API and the region for a Create request
 func secretAPIWithRegionAndDefault(d *schema.ResourceData, m interface{}, defaultRegion scw.Region) (*secret.API, scw.Region, error) {
 	meta := m.(*Meta)
-	api := secret.NewAPI(meta.scwClient)
+	api := secret.NewAPI(meta.ScwClient())
 
 	region, err := extractRegionWithDefault(d, meta, defaultRegion)
 	if err != nil {
@@ -42,7 +42,7 @@ func secretAPIWithRegionAndDefault(d *schema.ResourceData, m interface{}, defaul
 // secretAPIWithRegionAndProjectID returns a new Secret API, with region and projectID
 func secretAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, string, error) {
 	meta := m.(*Meta)
-	api := secret.NewAPI(meta.scwClient)
+	api := secret.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -60,7 +60,7 @@ func secretAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*se
 // secretAPIWithRegionAndID returns a Secret API with locality and ID extracted from the state
 func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, error) {
 	meta := m.(*Meta)
-	api := secret.NewAPI(meta.scwClient)
+	api := secret.NewAPI(meta.ScwClient())
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
@@ -78,7 +78,7 @@ func secretVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw
 		return nil, "", "", "", err
 	}
 
-	api := secret.NewAPI(meta.scwClient)
+	api := secret.NewAPI(meta.ScwClient())
 	return api, scw.Region(region), id, revision, nil
 }
 

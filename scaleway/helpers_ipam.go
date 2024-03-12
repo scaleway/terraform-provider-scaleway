@@ -22,7 +22,7 @@ const (
 // ipamAPIWithRegion returns a new ipam API and the region
 func ipamAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Region, error) {
 	meta := m.(*Meta)
-	ipamAPI := ipam.NewAPI(meta.scwClient)
+	ipamAPI := ipam.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -35,7 +35,7 @@ func ipamAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Re
 // ipamAPIWithRegionAndID returns a new ipam API with locality and ID extracted from the state
 func ipamAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, string, error) {
 	meta := m.(*Meta)
-	ipamAPI := ipam.NewAPI(meta.scwClient)
+	ipamAPI := ipam.NewAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(id)
 	if err != nil {

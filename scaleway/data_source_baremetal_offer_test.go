@@ -173,7 +173,7 @@ func testAccCheckScalewayBaremetalOfferExists(tt *TestTools, n string) resource.
 			return err
 		}
 
-		baremetalAPI := baremetal.NewAPI(tt.Meta.scwClient)
+		baremetalAPI := baremetal.NewAPI(tt.Meta.ScwClient())
 		_, err = baremetalFindOfferByID(context.Background(), baremetalAPI, zone, id)
 		if err != nil {
 			return err
