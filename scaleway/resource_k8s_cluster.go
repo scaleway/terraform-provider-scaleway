@@ -14,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayK8SCluster() *schema.Resource {
@@ -166,7 +168,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			// Computed elements
@@ -266,7 +268,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 							return nil
 						}
 						if planned != "" {
-							_, plannedPNID, err := parseLocalizedID(planned.(string))
+							_, plannedPNID, err := locality.ParseLocalizedID(planned.(string))
 							if err != nil {
 								return err
 							}
@@ -494,7 +496,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	// Private network configuration
 
 	if pnID, ok := d.GetOk("private_network_id"); ok {
-		req.PrivateNetworkID = scw.StringPtr(expandRegionalID(pnID.(string)).ID)
+		req.PrivateNetworkID = scw.StringPtr(regional.ExpandID(pnID.(string)).ID)
 	}
 
 	// Cluster creation
@@ -504,7 +506,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return append(diag.FromErr(err), diags...)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 	if strings.Contains(clusterType.(string), "multicloud") {
 		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
 		_, err = waitK8SCluster(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayLbACLs() *schema.Resource {
@@ -125,7 +126,7 @@ func dataSourceScalewayLbACLs() *schema.Resource {
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -138,7 +139,7 @@ func dataSourceScalewayLbACLsRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, frontID, err := parseZonedID(d.Get("frontend_id").(string))
+	_, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -155,9 +156,9 @@ func dataSourceScalewayLbACLsRead(ctx context.Context, d *schema.ResourceData, m
 	acls := []interface{}(nil)
 	for _, acl := range res.ACLs {
 		rawACL := make(map[string]interface{})
-		rawACL["id"] = newZonedIDString(zone, acl.ID)
+		rawACL["id"] = zonal.NewIDString(zone, acl.ID)
 		rawACL["name"] = acl.Name
-		rawACL["frontend_id"] = newZonedIDString(zone, acl.Frontend.ID)
+		rawACL["frontend_id"] = zonal.NewIDString(zone, acl.Frontend.ID)
 		rawACL["created_at"] = flattenTime(acl.CreatedAt)
 		rawACL["update_at"] = flattenTime(acl.UpdatedAt)
 		rawACL["index"] = acl.Index

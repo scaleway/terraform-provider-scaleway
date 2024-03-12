@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayBaremetalOffer() *schema.Resource {
@@ -45,7 +46,7 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 				Default:     false,
 				Description: "Include disabled offers",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 
 			"bandwidth": {
 				Type:        schema.TypeInt,
@@ -149,7 +150,7 @@ func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	zone, offerID, _ := parseZonedID(datasourceNewZonedID(d.Get("offer_id"), fallBackZone))
+	zone, offerID, _ := zonal.ParseID(datasourceNewZonedID(d.Get("offer_id"), fallBackZone))
 
 	var offer *baremetal.Offer
 

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayLbCertificate() *schema.Resource {
@@ -127,7 +128,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 }
 
 func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	zone, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -162,7 +163,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, certificate.ID))
+	d.SetId(zonal.NewIDString(zone, certificate.ID))
 
 	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -194,7 +195,7 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newZonedIDString(zone, certificate.LB.ID))
+	_ = d.Set("lb_id", zonal.NewIDString(zone, certificate.LB.ID))
 	_ = d.Set("name", certificate.Name)
 	_ = d.Set("common_name", certificate.CommonName)
 	_ = d.Set("subject_alternative_name", certificate.SubjectAlternativeName)

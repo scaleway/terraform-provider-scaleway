@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayContainer() *schema.Resource {
@@ -55,7 +56,7 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 		res, err := api.ListContainers(&container.ListContainersRequest{
 			Region:      region,
 			Name:        expandStringPtr(containerName),
-			NamespaceID: expandID(namespaceID),
+			NamespaceID: locality.ExpandID(namespaceID),
 			ProjectID:   expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {

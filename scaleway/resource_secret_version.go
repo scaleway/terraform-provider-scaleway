@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewaySecretVersion() *schema.Resource {
@@ -66,7 +68,7 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				Computed:    true,
 				Description: "Date and time of secret version's creation (RFC 3339 format)",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
@@ -77,7 +79,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	secretID := expandID(d.Get("secret_id").(string))
+	secretID := locality.ExpandID(d.Get("secret_id").(string))
 	payloadSecretRaw := []byte(d.Get("data").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -96,7 +98,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 
 	_ = d.Set("data", base64Encoded(payloadSecretRaw))
 
-	d.SetId(newRegionalIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
+	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
 
 	return resourceScalewaySecretVersionRead(ctx, d, meta)
 }
@@ -122,7 +124,7 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 
 	revisionStr := strconv.Itoa(int(secretResponse.Revision))
 	_ = d.Set("revision", revisionStr)
-	_ = d.Set("secret_id", newRegionalIDString(region, id))
+	_ = d.Set("secret_id", regional.NewIDString(region, id))
 	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
 	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(secretResponse.UpdatedAt))

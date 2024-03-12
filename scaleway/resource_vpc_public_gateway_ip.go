@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
@@ -35,7 +36,7 @@ func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
 				},
 			},
 			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"reverse": {
@@ -75,7 +76,7 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	reverse := d.Get("reverse")
 	if len(reverse.(string)) > 0 {

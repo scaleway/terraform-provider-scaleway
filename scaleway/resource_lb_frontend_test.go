@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -168,7 +169,7 @@ func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) re
 		}
 
 		for _, id := range frEnd.CertificateIDs {
-			if expandID(cs.Primary.ID) == id {
+			if locality.ExpandID(cs.Primary.ID) == id {
 				return nil
 			}
 		}

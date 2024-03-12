@@ -14,6 +14,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 const defaultVPCPrivateNetworkRetryInterval = 30 * time.Second
@@ -35,7 +37,7 @@ func vpcAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, stri
 	meta := m.(*Meta)
 	vpcAPI := vpc.NewAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -208,17 +210,17 @@ func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]inte
 }
 
 func vpcPrivateNetworkUpgradeV1ZonalToRegionalID(element string) (string, error) {
-	locality, id, err := parseLocalizedID(element)
-	// return error if can't parse
+	l, id, err := locality.ParseLocalizedID(element)
+	// return error if l cannot be parsed
 	if err != nil {
 		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
 	}
 	// if locality is already regional return
-	if validator.IsRegion(locality) {
+	if validator.IsRegion(l) {
 		return element, nil
 	}
 
-	fetchRegion, err := scw.Zone(locality).Region()
+	fetchRegion, err := scw.Zone(l).Region()
 	if err != nil {
 		return "", err
 	}

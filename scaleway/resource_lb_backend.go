@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayLbBackend() *schema.Resource {
@@ -330,7 +331,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	// parse lb_id. It will be forced to a zoned lb
-	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	zone, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -440,7 +441,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	return resourceScalewayLbBackendRead(ctx, d, meta)
 }
@@ -463,7 +464,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newZonedIDString(zone, backend.LB.ID))
+	_ = d.Set("lb_id", zonal.NewIDString(zone, backend.LB.ID))
 	_ = d.Set("name", backend.Name)
 	_ = d.Set("forward_protocol", flattenLbProtocol(backend.ForwardProtocol))
 	_ = d.Set("forward_port", backend.ForwardPort)
@@ -515,7 +516,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -653,7 +654,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}

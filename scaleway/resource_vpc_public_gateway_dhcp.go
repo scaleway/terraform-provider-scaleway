@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
@@ -24,7 +25,7 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			"subnet": {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsCIDR,
@@ -187,7 +188,7 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, meta)
 }

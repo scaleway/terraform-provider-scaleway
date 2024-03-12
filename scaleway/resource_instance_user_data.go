@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayInstanceUserData() *schema.Resource {
@@ -45,9 +47,9 @@ func resourceScalewayInstanceUserData() *schema.Resource {
 				Required:    true,
 				Description: "The value of the user data to set.",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("server_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("server_id"),
 	}
 }
 
@@ -57,7 +59,7 @@ func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	serverID := expandID(d.Get("server_id").(string))
+	serverID := locality.ExpandID(d.Get("server_id").(string))
 	server, err := waitForInstanceServer(ctx, instanceAPI, zone, serverID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -82,7 +84,7 @@ func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedNestedIDString(zone, key, server.ID))
+	d.SetId(zonal.NewNestedIDString(zone, key, server.ID))
 
 	return resourceScalewayInstanceUserDataRead(ctx, d, meta)
 }
@@ -122,7 +124,7 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("server_id", newZonedID(zone, server.ID).String())
+	_ = d.Set("server_id", zonal.NewID(zone, server.ID).String())
 	_ = d.Set("key", key)
 	_ = d.Set("value", string(userDataValue))
 	_ = d.Set("zone", zone.String())
@@ -176,7 +178,7 @@ func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.Resou
 	}
 
 	deleteUserData := &instance.DeleteServerUserDataRequest{
-		ServerID: expandID(id),
+		ServerID: locality.ExpandID(id),
 		Key:      key,
 		Zone:     zone,
 	}

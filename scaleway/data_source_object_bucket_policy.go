@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewayObjectBucketPolicy() *schema.Resource {
@@ -32,7 +33,7 @@ func dataSourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 	tflog.Debug(ctx, "bucket name: "+bucket)
@@ -78,6 +79,6 @@ func dataSourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Res
 	}
 	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
-	d.SetId(newRegionalIDString(region, bucket))
+	d.SetId(regional.NewIDString(region, bucket))
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayDocumentDBInstance() *schema.Resource {
@@ -96,7 +97,7 @@ func resourceScalewayDocumentDBInstance() *schema.Resource {
 				Optional:    true,
 				Description: " Enable telemetry to collects basic anonymous usage data and sends them to FerretDB telemetry service",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -140,7 +141,7 @@ func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, instance.ID))
+	d.SetId(regional.NewIDString(region, instance.ID))
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, instance.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

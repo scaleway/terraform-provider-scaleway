@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayWebhosting() *schema.Resource {
@@ -134,7 +135,7 @@ func resourceScalewayWebhosting() *schema.Resource {
 				Computed:    true,
 				Description: "Main hosting cPanel username",
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 		},
@@ -162,7 +163,7 @@ func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	_, offerID, err := parseRegionalID(d.Get("offer_id").(string))
+	_, offerID, err := regional.ParseID(d.Get("offer_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -195,7 +196,7 @@ func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, hostingResponse.ID))
+	d.SetId(regional.NewIDString(region, hostingResponse.ID))
 
 	_, err = waitForHosting(ctx, api, region, hostingResponse.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -224,7 +225,7 @@ func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData,
 		_ = d.Set("tags", webhostingResponse.Tags)
 	}
 
-	_ = d.Set("offer_id", newRegionalIDString(region, webhostingResponse.OfferID))
+	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.OfferID))
 	_ = d.Set("domain", webhostingResponse.Domain)
 	_ = d.Set("created_at", flattenTime(webhostingResponse.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(webhostingResponse.UpdatedAt))
@@ -267,7 +268,7 @@ func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("offer_id") {
-		_, offerID, err := parseRegionalID(d.Get("offer_id").(string))
+		_, offerID, err := regional.ParseID(d.Get("offer_id").(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayRdbReadReplica() *schema.Resource {
@@ -142,9 +144,9 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 				},
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
 	}
 }
 
@@ -172,7 +174,7 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 
 	rr, err := rdbAPI.CreateReadReplica(&rdb.CreateReadReplicaRequest{
 		Region:       region,
-		InstanceID:   expandID(d.Get("instance_id")),
+		InstanceID:   locality.ExpandID(d.Get("instance_id")),
 		EndpointSpec: endpointSpecs,
 		SameZone:     expandBoolPtr(d.Get("same_zone")),
 	}, scw.WithContext(ctx))
@@ -180,7 +182,7 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
 	}
 
-	d.SetId(newRegionalIDString(region, rr.ID))
+	d.SetId(regional.NewIDString(region, rr.ID))
 
 	_, err = waitForRDBReadReplica(ctx, rdbAPI, region, rr.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -216,7 +218,7 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 	regionStr := region.String()
 	_ = d.Set("same_zone", rr.SameZone)
 	_ = d.Set("region", regionStr)
-	_ = d.Set("instance_id", newRegionalIDString(region, rr.InstanceID))
+	_ = d.Set("instance_id", regional.NewIDString(region, rr.InstanceID))
 
 	return nil
 }

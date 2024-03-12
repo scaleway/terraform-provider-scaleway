@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayInstancePlacementGroup() *schema.Resource {
@@ -63,7 +64,7 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the placement group",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -88,7 +89,7 @@ func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.PlacementGroup.ID))
+	d.SetId(zonal.NewIDString(zone, res.PlacementGroup.ID))
 	return resourceScalewayInstancePlacementGroupRead(ctx, d, meta)
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Region, error) {
@@ -26,7 +27,7 @@ func mnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, 
 	meta := m.(*Meta)
 	api := mnq.NewNatsAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -50,7 +51,7 @@ func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, sc
 	meta := m.(*Meta)
 	api := mnq.NewSqsAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -74,7 +75,7 @@ func mnqSNSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SnsAPI, sc
 	meta := m.(*Meta)
 	api := mnq.NewSnsAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}

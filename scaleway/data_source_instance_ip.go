@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayInstanceIP() *schema.Resource {
@@ -59,9 +61,9 @@ func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceDat
 		}
 		ID = res.IP.ID
 	} else {
-		_, ID, _ = parseLocalizedID(id.(string))
+		_, ID, _ = locality.ParseLocalizedID(id.(string))
 	}
-	d.SetId(newZonedIDString(zone, ID))
+	d.SetId(zonal.NewIDString(zone, ID))
 
 	return resourceScalewayInstanceIPRead(ctx, d, meta)
 }

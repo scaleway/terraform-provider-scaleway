@@ -6,6 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewayDocumentDBEndpointLoadBalancer() *schema.Resource {
@@ -48,7 +50,7 @@ func dataSourceScalewayDocumentDBEndpointLoadBalancer() *schema.Resource {
 				Computed:    true,
 				Description: "The hostname of your endpoint",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -84,7 +86,7 @@ func dataSourceScalewayDocumentDBLoadBalancerRead(ctx context.Context, d *schema
 		rawInstanceID = foundRawInstance.ID
 	}
 
-	instanceID := expandID(rawInstanceID)
+	instanceID := locality.ExpandID(rawInstanceID)
 	instance, err := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)

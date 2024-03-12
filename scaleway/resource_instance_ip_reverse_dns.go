@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
@@ -37,9 +39,9 @@ func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 				Required:    true,
 				Description: "The reverse DNS for this IP",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("ip_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("ip_id"),
 	}
 }
 
@@ -50,13 +52,13 @@ func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.R
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
-		IP:   expandID(d.Get("ip_id")),
+		IP:   locality.ExpandID(d.Get("ip_id")),
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(newZonedIDString(zone, res.IP.ID))
+	d.SetId(zonal.NewIDString(zone, res.IP.ID))
 
 	if _, ok := d.GetOk("reverse"); ok {
 		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))

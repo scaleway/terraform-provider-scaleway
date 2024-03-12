@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayVPCPrivateNetwork() *schema.Resource {
@@ -52,7 +53,7 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 				Name:      expandStringPtr(pnName),
 				Region:    region,
 				ProjectID: expandStringPtr(d.Get("project_id")),
-				VpcID:     expandStringPtr(expandID(d.Get("vpc_id"))),
+				VpcID:     expandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayMNQSQSCredentials() *schema.Resource {
@@ -54,7 +55,7 @@ func resourceScalewayMNQSQSCredentials() *schema.Resource {
 					},
 				},
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 
 			// Computed
@@ -94,7 +95,7 @@ func resourceScalewayMNQSQSCredentialsCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, credentials.ID))
+	d.SetId(regional.NewIDString(region, credentials.ID))
 
 	_ = d.Set("access_key", credentials.AccessKey)
 	_ = d.Set("secret_key", credentials.SecretKey)

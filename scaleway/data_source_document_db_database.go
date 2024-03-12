@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayDocumentDBDatabase() *schema.Resource {
@@ -28,7 +29,7 @@ func dataSourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id").(string))
+	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 	databaseName := d.Get("name").(string)
 
 	id := resourceScalewayDocumentDBDatabaseID(region, instanceID, databaseName)

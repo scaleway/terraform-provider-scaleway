@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayDocumentDBUser() *schema.Resource {
@@ -56,9 +58,9 @@ func resourceScalewayDocumentDBUser() *schema.Resource {
 				Description: "Grant admin permissions to database user",
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
@@ -70,7 +72,7 @@ func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.Resourc
 
 	// resource depends on the instance locality
 	regionalID := d.Get("instance_id").(string)
-	region, instanceID, err := parseRegionalID(regionalID)
+	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
 		diag.FromErr(err)
 	}
@@ -110,7 +112,7 @@ func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayDocumentDBUserID(region, expandID(instanceID), user.Name))
+	d.SetId(resourceScalewayDocumentDBUserID(region, locality.ExpandID(instanceID), user.Name))
 
 	return resourceScalewayDocumentDBUserRead(ctx, d, meta)
 }
@@ -145,7 +147,7 @@ func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	user := res.Users[0]
-	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
 	_ = d.Set("name", user.Name)
 	_ = d.Set("is_admin", user.IsAdmin)
 	_ = d.Set("region", string(region))

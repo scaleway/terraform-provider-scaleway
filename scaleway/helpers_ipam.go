@@ -10,6 +10,8 @@ import (
 	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 const (
@@ -35,7 +37,7 @@ func ipamAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, st
 	meta := m.(*Meta)
 	ipamAPI := ipam.NewAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -68,7 +70,7 @@ func expandIPSource(raw interface{}) *ipam.Source {
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	return &ipam.Source{
 		Zonal:            expandStringPtr(rawMap["zonal"].(string)),
-		PrivateNetworkID: expandStringPtr(expandID(rawMap["private_network_id"].(string))),
+		PrivateNetworkID: expandStringPtr(locality.ExpandID(rawMap["private_network_id"].(string))),
 		SubnetID:         expandStringPtr(rawMap["subnet_id"].(string)),
 	}
 }

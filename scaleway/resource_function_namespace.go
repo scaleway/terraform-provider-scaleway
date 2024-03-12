@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayFunctionNamespace() *schema.Resource {
@@ -71,7 +72,7 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the registry namespace",
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -96,7 +97,7 @@ func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, ns.ID))
+	d.SetId(regional.NewIDString(region, ns.ID))
 
 	_, err = waitForFunctionNamespace(ctx, api, region, ns.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

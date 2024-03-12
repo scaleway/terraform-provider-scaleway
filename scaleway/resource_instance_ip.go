@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayInstanceIP() *schema.Resource {
@@ -57,7 +58,7 @@ func resourceScalewayInstanceIP() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the ip",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -114,7 +115,7 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	d.SetId(newZonedIDString(zone, res.IP.ID))
+	d.SetId(zonal.NewIDString(zone, res.IP.ID))
 	return resourceScalewayInstanceIPRead(ctx, d, meta)
 }
 
@@ -187,7 +188,7 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if res.IP.Server != nil {
-		_ = d.Set("server_id", newZonedIDString(res.IP.Zone, res.IP.Server.ID))
+		_ = d.Set("server_id", zonal.NewIDString(res.IP.Zone, res.IP.Server.ID))
 	} else {
 		_ = d.Set("server_id", "")
 	}

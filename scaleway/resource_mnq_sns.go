@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayMNQSNS() *schema.Resource {
@@ -24,7 +25,7 @@ func resourceScalewayMNQSNS() *schema.Resource {
 				Computed:    true,
 				Description: "Endpoint of the SNS service",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -44,7 +45,7 @@ func resourceScalewayMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, sns.ProjectID))
+	d.SetId(regional.NewIDString(region, sns.ProjectID))
 
 	return resourceScalewayMNQSNSRead(ctx, d, meta)
 }

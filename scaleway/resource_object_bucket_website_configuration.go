@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func ResourceBucketWebsiteConfiguration() *schema.Resource {
@@ -72,7 +73,7 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 				Computed:    true,
 				Description: "The website endpoint.",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -84,7 +85,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
@@ -121,7 +122,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) website configuration: %w", bucket, err))
 	}
 
-	d.SetId(newRegionalIDString(region, bucket))
+	d.SetId(regional.NewIDString(region, bucket))
 
 	return resourceBucketWebsiteConfigurationRead(ctx, d, meta)
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceObjectLockConfiguration() *schema.Resource {
@@ -70,7 +71,7 @@ func resourceObjectLockConfiguration() *schema.Resource {
 				},
 				Description: "Specifies the Object Lock rule for the specified object.",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -82,7 +83,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
@@ -107,7 +108,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err))
 	}
 
-	d.SetId(newRegionalIDString(region, bucket))
+	d.SetId(regional.NewIDString(region, bucket))
 
 	return resourceObjectLockConfigurationRead(ctx, d, meta)
 }

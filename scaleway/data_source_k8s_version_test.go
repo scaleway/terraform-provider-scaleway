@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func TestAccScalewayDataSourceK8SVersion_Basic(t *testing.T) {
@@ -78,7 +79,7 @@ func testAccCheckScalewayK8SVersionExists(tt *TestTools, n string) resource.Test
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		region, name, err := parseRegionalID(rs.Primary.ID)
+		region, name, err := regional.ParseID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}

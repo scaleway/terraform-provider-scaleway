@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayInstanceImage() *schema.Resource {
@@ -42,7 +43,7 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 				Description:   "Select most recent image if multiple match",
 				ConflictsWith: []string{"image_id"},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 
@@ -137,7 +138,7 @@ func dataSourceScalewayInstanceImageRead(ctx context.Context, d *schema.Resource
 	}
 
 	zonedID := datasourceNewZonedID(imageID, zone)
-	zone, imageID, _ = parseZonedID(zonedID)
+	zone, imageID, _ = zonal.ParseID(zonedID)
 
 	d.SetId(zonedID)
 	_ = d.Set("image_id", zonedID)

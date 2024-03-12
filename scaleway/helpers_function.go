@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -42,7 +43,7 @@ func functionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Re
 	meta := m.(*Meta)
 	api := function.NewAPI(meta.scwClient)
 
-	region, id, err := parseRegionalID(id)
+	region, id, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}

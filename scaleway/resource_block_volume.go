@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayBlockVolume() *schema.Resource {
@@ -62,7 +64,7 @@ func resourceScalewayBlockVolume() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the volume",
 			},
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			"project_id": projectIDSchema(),
 		},
 		CustomizeDiff: customdiff.All(
@@ -98,7 +100,7 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 
 	if snapshotID, ok := d.GetOk("snapshot_id"); ok {
 		req.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
-			SnapshotID: expandID(snapshotID.(string)),
+			SnapshotID: locality.ExpandID(snapshotID.(string)),
 		}
 	}
 
@@ -107,7 +109,7 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, volume.ID))
+	d.SetId(zonal.NewIDString(zone, volume.ID))
 
 	_, err = waitForBlockVolume(ctx, api, zone, volume.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -143,7 +145,7 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("tags", volume.Tags)
 
 	if volume.ParentSnapshotID != nil {
-		_ = d.Set("snapshot_id", newZonedIDString(zone, *volume.ParentSnapshotID))
+		_ = d.Set("snapshot_id", zonal.NewIDString(zone, *volume.ParentSnapshotID))
 	} else {
 		_ = d.Set("snapshot_id", "")
 	}

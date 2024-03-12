@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayTemDomain() *schema.Resource {
@@ -160,7 +161,7 @@ func resourceScalewayTemDomain() *schema.Resource {
 					},
 				},
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -182,7 +183,7 @@ func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, domain.ID))
+	d.SetId(regional.NewIDString(region, domain.ID))
 
 	return resourceScalewayTemDomainRead(ctx, d, meta)
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayObjectBucket() *schema.Resource {
@@ -188,7 +189,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					},
 				},
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 			"versioning": {
 				Type:        schema.TypeList,
@@ -257,7 +258,7 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	d.SetId(newRegionalIDString(region, bucketName))
+	d.SetId(regional.NewIDString(region, bucketName))
 
 	return resourceScalewayObjectBucketUpdate(ctx, d, meta)
 }

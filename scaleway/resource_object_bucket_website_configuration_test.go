@@ -12,6 +12,7 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 const (
@@ -293,7 +294,7 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) 
 				continue
 			}
 
-			regionalID := expandRegionalID(rs.Primary.ID)
+			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucket := regionalID.ID
 			bucketRegion := regionalID.Region
 
@@ -341,7 +342,7 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *TestTools, r
 			return fmt.Errorf("resource (%s) ID not set", resourceName)
 		}
 
-		regionalID := expandRegionalID(rs.Primary.ID)
+		regionalID := regional.ExpandID(rs.Primary.ID)
 		bucket := regionalID.ID
 		bucketRegion := regionalID.Region
 

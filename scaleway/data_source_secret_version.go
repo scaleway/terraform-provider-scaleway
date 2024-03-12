@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewaySecretVersion() *schema.Resource {
@@ -51,7 +53,7 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 
 func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretID, existSecretID := d.GetOk("secret_id")
-	api, region, err := secretAPIWithRegionAndDefault(d, meta, expandRegionalID(secretID).Region)
+	api, region, err := secretAPIWithRegionAndDefault(d, meta, regional.ExpandID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -88,13 +90,13 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 
-		secretVersionIDStr = newRegionalIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
-		_ = d.Set("secret_id", newRegionalIDString(region, res.SecretID))
+		secretVersionIDStr = regional.NewIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
+		_ = d.Set("secret_id", regional.NewIDString(region, res.SecretID))
 		payloadSecretRaw = res.Data
 	} else {
 		request := &secret.AccessSecretVersionRequest{
 			Region:   region,
-			SecretID: expandID(secretID),
+			SecretID: locality.ExpandID(secretID),
 			Revision: d.Get("revision").(string),
 		}
 
@@ -103,7 +105,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 
-		secretVersionIDStr = newRegionalIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
+		secretVersionIDStr = regional.NewIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
 		payloadSecretRaw = res.Data
 	}
 

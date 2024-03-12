@@ -11,6 +11,7 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 const (
@@ -301,7 +302,7 @@ func testAccCheckScalewayBucketLockConfigurationDestroy(tt *TestTools) resource.
 				continue
 			}
 
-			regionalID := expandRegionalID(rs.Primary.ID)
+			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucketRegion := regionalID.Region
 			bucket := regionalID.ID
 			conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
@@ -348,7 +349,7 @@ func testAccCheckBucketLockConfigurationExists(tt *TestTools, resourceName strin
 			return fmt.Errorf("resource (%s) ID not set", resourceName)
 		}
 
-		regionalID := expandRegionalID(rs.Primary.ID)
+		regionalID := regional.ExpandID(rs.Primary.ID)
 		bucketRegion := regionalID.Region
 		bucket := regionalID.ID
 		conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())

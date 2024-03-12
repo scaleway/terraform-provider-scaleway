@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func TestAccScalewayObject_Basic(t *testing.T) {
@@ -740,7 +741,7 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 		}
 		key := rs.Primary.Attributes["key"]
 
-		regionalID := expandRegionalID(rs.Primary.Attributes["bucket"])
+		regionalID := regional.ExpandID(rs.Primary.Attributes["bucket"])
 		bucketRegion := regionalID.Region.String()
 		bucketName := regionalID.ID
 
@@ -779,7 +780,7 @@ func testAccCheckScalewayObjectDestroy(tt *TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			regionalID := expandRegionalID(rs.Primary.Attributes["bucket"])
+			regionalID := regional.ExpandID(rs.Primary.Attributes["bucket"])
 			bucketRegion := regionalID.Region.String()
 			bucketName := regionalID.ID
 			key := rs.Primary.Attributes["key"]

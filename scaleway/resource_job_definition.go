@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayJobDefinition() *schema.Resource {
@@ -83,7 +84,7 @@ func resourceScalewayJobDefinition() *schema.Resource {
 					},
 				},
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -127,7 +128,7 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, definition.ID))
+	d.SetId(regional.NewIDString(region, definition.ID))
 
 	return resourceScalewayJobDefinitionRead(ctx, d, meta)
 }

@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayContainerToken() *schema.Resource {
@@ -51,9 +53,9 @@ func resourceScalewayContainerToken() *schema.Resource {
 				Sensitive: true,
 			},
 
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("container_id", "namespace_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("container_id", "namespace_id"),
 	}
 }
 
@@ -65,8 +67,8 @@ func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.Resourc
 
 	token, err := api.CreateToken(&container.CreateTokenRequest{
 		Region:      region,
-		ContainerID: expandStringPtr(expandID(d.Get("container_id"))),
-		NamespaceID: expandStringPtr(expandID(d.Get("namespace_id"))),
+		ContainerID: expandStringPtr(locality.ExpandID(d.Get("container_id"))),
+		NamespaceID: expandStringPtr(locality.ExpandID(d.Get("namespace_id"))),
 		Description: expandStringPtr(d.Get("description")),
 		ExpiresAt:   expandTimePtr(d.Get("expires_at")),
 	}, scw.WithContext(ctx))
@@ -74,7 +76,7 @@ func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, token.ID))
+	d.SetId(regional.NewIDString(region, token.ID))
 
 	_ = d.Set("token", token.Token)
 

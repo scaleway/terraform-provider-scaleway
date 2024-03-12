@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
@@ -68,7 +69,7 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 				Default:     "both",
 				Description: "The protocol used in the PAT rule",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -82,7 +83,7 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 				Description: "The date and time of the last update of the PAT rule",
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("gateway_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("gateway_id"),
 	}
 }
 
@@ -92,7 +93,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	gatewayID := zonal.ExpandID(d.Get("gateway_id").(string)).ID
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -117,7 +118,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, patRule.ID))
+	d.SetId(zonal.NewIDString(zone, patRule.ID))
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -145,7 +146,7 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	gatewayID := newZonedID(zone, patRule.GatewayID).String()
+	gatewayID := zonal.NewID(zone, patRule.GatewayID).String()
 	_ = d.Set("created_at", patRule.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", patRule.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("gateway_id", gatewayID)

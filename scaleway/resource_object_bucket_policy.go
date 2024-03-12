@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayObjectBucketPolicy() *schema.Resource {
@@ -41,7 +42,7 @@ func resourceScalewayObjectBucketPolicy() *schema.Resource {
 				Description:      "The text of the policy.",
 				DiffSuppressFunc: SuppressEquivalentPolicyDiffs,
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
@@ -53,7 +54,7 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 	tflog.Debug(ctx, "bucket name: "+bucket)
@@ -96,7 +97,7 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %s", err))
 	}
 
-	d.SetId(newRegionalIDString(region, bucket))
+	d.SetId(regional.NewIDString(region, bucket))
 
 	return resourceScalewayObjectBucketPolicyRead(ctx, d, meta)
 }
@@ -108,7 +109,7 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Id())
+	regionalID := regional.ExpandID(d.Id())
 	bucket := regionalID.ID
 
 	_ = d.Set("region", region)

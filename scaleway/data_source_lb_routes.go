@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayLbRoutes() *schema.Resource {
@@ -54,7 +55,7 @@ func dataSourceScalewayLbRoutes() *schema.Resource {
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -67,7 +68,7 @@ func dataSourceScalewayLbRoutesRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, frontID, err := parseZonedID(d.Get("frontend_id").(string))
+	_, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -83,7 +84,7 @@ func dataSourceScalewayLbRoutesRead(ctx context.Context, d *schema.ResourceData,
 	routes := []interface{}(nil)
 	for _, route := range res.Routes {
 		rawRoute := make(map[string]interface{})
-		rawRoute["id"] = newZonedID(zone, route.ID).String()
+		rawRoute["id"] = zonal.NewID(zone, route.ID).String()
 		rawRoute["frontend_id"] = route.FrontendID
 		rawRoute["backend_id"] = route.BackendID
 		rawRoute["created_at"] = flattenTime(route.CreatedAt)

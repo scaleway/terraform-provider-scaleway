@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 const (
@@ -150,7 +152,7 @@ func resourceScalewayIotDevice() *schema.Resource {
 				},
 			},
 			// Computed elements
-			"region": regionSchema(),
+			"region": regional.Schema(),
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -177,7 +179,7 @@ func resourceScalewayIotDevice() *schema.Resource {
 				Description: "The MQTT connection status of the device",
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("hub_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("hub_id"),
 	}
 }
 
@@ -189,7 +191,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 
 	req := &iot.CreateDeviceRequest{
 		Region: region,
-		HubID:  expandID(d.Get("hub_id")),
+		HubID:  locality.ExpandID(d.Get("hub_id")),
 		Name:   expandOrGenerateString(d.Get("name"), "device"),
 	}
 
@@ -245,7 +247,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.Device.ID))
+	d.SetId(regional.NewIDString(region, res.Device.ID))
 
 	// If user certificate is provided.
 	if devCrt, ok := d.GetOk("certificate.0.crt"); ok {
@@ -291,7 +293,7 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 
 	_ = d.Set("name", device.Name)
 	_ = d.Set("status", device.Status)
-	_ = d.Set("hub_id", newRegionalID(region, device.HubID).String())
+	_ = d.Set("hub_id", regional.NewID(region, device.HubID).String())
 	_ = d.Set("created_at", device.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", device.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("last_activity_at", device.LastActivityAt.Format(time.RFC3339))

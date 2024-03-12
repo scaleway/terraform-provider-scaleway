@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func dataSourceScalewayLbs() *schema.Resource {
@@ -75,7 +76,7 @@ func dataSourceScalewayLbs() *schema.Resource {
 										Computed: true,
 										Type:     schema.TypeString,
 									},
-									"zone": zoneSchema(),
+									"zone": zonal.Schema(),
 								},
 							},
 						},
@@ -102,7 +103,7 @@ func dataSourceScalewayLbs() *schema.Resource {
 									},
 									"project_id":      projectIDSchema(),
 									"organization_id": organizationIDSchema(),
-									"zone":            zoneSchema(),
+									"zone":            zonal.Schema(),
 								},
 							},
 						},
@@ -138,13 +139,13 @@ func dataSourceScalewayLbs() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
-						"zone":            zoneSchema(),
+						"zone":            zonal.Schema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -168,7 +169,7 @@ func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, meta
 	lbs := []interface{}(nil)
 	for _, loadbalancer := range res.LBs {
 		rawLb := make(map[string]interface{})
-		rawLb["id"] = newZonedID(loadbalancer.Zone, loadbalancer.ID).String()
+		rawLb["id"] = zonal.NewID(loadbalancer.Zone, loadbalancer.ID).String()
 		rawLb["description"] = loadbalancer.Description
 		rawLb["zone"] = string(zone)
 		rawLb["name"] = loadbalancer.Name

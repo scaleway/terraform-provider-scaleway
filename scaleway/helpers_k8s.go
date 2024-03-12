@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -35,7 +36,7 @@ func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 	meta := m.(*Meta)
 	k8sAPI := k8s.NewAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -298,7 +299,7 @@ func migrateToPrivateNetworkCluster(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return err
 	}
-	pnID := expandRegionalID(d.Get("private_network_id").(string)).ID
+	pnID := regional.ExpandID(d.Get("private_network_id").(string)).ID
 	_, err = k8sAPI.MigrateToPrivateNetworkCluster(&k8s.MigrateToPrivateNetworkClusterRequest{
 		Region:           region,
 		ClusterID:        clusterID,

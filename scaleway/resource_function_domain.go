@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayFunctionDomain() *schema.Resource {
@@ -45,9 +46,9 @@ func resourceScalewayFunctionDomain() *schema.Resource {
 				Description: "URL to use to trigger the function",
 				Computed:    true,
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("function_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("function_id"),
 	}
 }
 
@@ -57,7 +58,7 @@ func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	functionID := expandRegionalID(d.Get("function_id").(string)).ID
+	functionID := regional.ExpandID(d.Get("function_id").(string)).ID
 	_, err = waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -76,7 +77,7 @@ func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, domain.ID))
+	d.SetId(regional.NewIDString(region, domain.ID))
 
 	_, err = waitForFunctionDomain(ctx, api, region, domain.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -102,7 +103,7 @@ func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	_ = d.Set("hostname", domain.Hostname)
-	_ = d.Set("function_id", newRegionalIDString(region, domain.FunctionID))
+	_ = d.Set("function_id", regional.NewIDString(region, domain.FunctionID))
 	_ = d.Set("url", domain.URL)
 	_ = d.Set("region", region)
 

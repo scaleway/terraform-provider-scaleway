@@ -17,6 +17,9 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -42,7 +45,7 @@ func lbAPIWithZoneAndID(m interface{}, id string) (*lbSDK.ZonedAPI, scw.Zone, st
 	meta := m.(*Meta)
 	lbAPI := lbSDK.NewZonedAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(id)
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -144,7 +147,7 @@ func expandPrivateNetworks(data interface{}) ([]*lbSDK.PrivateNetwork, error) {
 	for _, pn := range data.(*schema.Set).List() {
 		rawPn := pn.(map[string]interface{})
 		privateNetwork := &lbSDK.PrivateNetwork{}
-		privateNetwork.PrivateNetworkID = expandID(rawPn["private_network_id"].(string))
+		privateNetwork.PrivateNetworkID = locality.ExpandID(rawPn["private_network_id"].(string))
 		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig && len(staticConfig.([]interface{})) > 0 {
 			privateNetwork.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
 		} else {
@@ -209,7 +212,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) inter
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		pnRegionalID := newRegionalIDString(pnRegion, pn.PrivateNetworkID)
+		pnRegionalID := regional.NewIDString(pnRegion, pn.PrivateNetworkID)
 		pnI = append(pnI, map[string]interface{}{
 			"private_network_id": pnRegionalID,
 			"dhcp_config":        dhcpConfigExist,
@@ -421,17 +424,17 @@ func lbUpgradeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interfa
 }
 
 func lbUpgradeV1RegionalToZonedID(element string) (string, error) {
-	locality, id, err := parseLocalizedID(element)
-	// return error if can't parse
+	loc, id, err := locality.ParseLocalizedID(element)
+	// return error if l cannot be parsed
 	if err != nil {
 		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
 	}
 	// if locality is already zoned return
-	if validator.IsZone(locality) {
+	if validator.IsZone(loc) {
 		return element, nil
 	}
 	//  append zone 1 as default: e.g. fr-par-1
-	return fmt.Sprintf("%s-1/%s", locality, id), nil
+	return fmt.Sprintf("%s-1/%s", loc, id), nil
 }
 
 func expandLbPrivateNetworkStaticConfig(raw interface{}) *lbSDK.PrivateNetworkStaticConfig {
@@ -615,7 +618,7 @@ func lbPrivateNetworkSetHash(v interface{}) int {
 
 	m := v.(map[string]interface{})
 	if pnID, ok := m["private_network_id"]; ok {
-		buf.WriteString(expandID(pnID))
+		buf.WriteString(locality.ExpandID(pnID))
 	}
 
 	if staticConfig, ok := m["static_config"]; ok && len(staticConfig.([]interface{})) > 0 {

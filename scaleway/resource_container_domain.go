@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayContainerDomain() *schema.Resource {
@@ -45,9 +47,9 @@ func resourceScalewayContainerDomain() *schema.Resource {
 				Computed:    true,
 				Description: "URL used to query the container",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("container_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("container_id"),
 	}
 }
 
@@ -58,7 +60,7 @@ func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.Resour
 	}
 
 	hostname := d.Get("hostname").(string)
-	containerID := expandID(d.Get("container_id"))
+	containerID := locality.ExpandID(d.Get("container_id"))
 
 	_, err = waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -81,7 +83,7 @@ func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, domain.ID))
+	d.SetId(regional.NewIDString(region, domain.ID))
 
 	return resourceScalewayContainerDomainRead(ctx, d, meta)
 }

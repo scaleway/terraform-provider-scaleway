@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayDocumentDBPrivilege() *schema.Resource {
@@ -61,9 +63,9 @@ func resourceScalewayDocumentDBPrivilege() *schema.Resource {
 				Required: true,
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
@@ -73,7 +75,7 @@ func resourceScalewayDocumentDBPrivilegeCreate(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id").(string))
+	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -113,7 +115,7 @@ func resourceScalewayDocumentDBPrivilegeCreate(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayDocumentDBUserPrivilegeID(region, expandID(instanceID), databaseName, userName))
+	d.SetId(resourceScalewayDocumentDBUserPrivilegeID(region, locality.ExpandID(instanceID), databaseName, userName))
 
 	return resourceScalewayDocumentDBPrivilegeRead(ctx, d, meta)
 }
@@ -173,7 +175,7 @@ func resourceScalewayDocumentDBPrivilegeRead(ctx context.Context, d *schema.Reso
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
 	_ = d.Set("permission", privilege.Permission)
-	_ = d.Set("instance_id", newRegionalIDString(region, instanceID))
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 	_ = d.Set("region", region)
 
 	return nil

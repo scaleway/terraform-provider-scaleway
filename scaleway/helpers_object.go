@@ -25,6 +25,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
 )
 
@@ -100,7 +102,7 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 
 func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string) (*s3.S3, scw.Region, string, error) {
 	meta := m.(*Meta)
-	region, name, err := parseRegionalID(id)
+	region, name, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -135,7 +137,7 @@ func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string)
 
 func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
 	meta := m.(*Meta)
-	region, outerID, innerID, err := parseRegionalNestedID(name)
+	region, outerID, innerID, err := regional.ParseNestedID(name)
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -156,7 +158,7 @@ func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name
 
 func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
 	meta := m.(*Meta)
-	region, name, outerID, err := parseLocalizedNestedOwnerID(name)
+	region, name, outerID, err := locality.ParseLocalizedNestedOwnerID(name)
 	if err != nil {
 		return nil, "", name, "", err
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayVPC() *schema.Resource {
@@ -35,7 +36,7 @@ func resourceScalewayVPC() *schema.Resource {
 				},
 			},
 			"project_id": projectIDSchema(),
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"is_default": {
@@ -73,7 +74,7 @@ func resourceScalewayVPCCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	return resourceScalewayVPCRead(ctx, d, meta)
 }

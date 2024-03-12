@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 const (
@@ -60,7 +62,7 @@ func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region
 	meta := m.(*Meta)
 	api := secret.NewAPI(meta.scwClient)
 
-	region, id, err := parseRegionalID(id)
+	region, id, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -71,7 +73,7 @@ func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region
 func secretVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, string, error) {
 	meta := m.(*Meta)
 
-	region, id, revision, err := parseLocalizedNestedID(id)
+	region, id, revision, err := locality.ParseLocalizedNestedID(id)
 	if err != nil {
 		return nil, "", "", "", err
 	}

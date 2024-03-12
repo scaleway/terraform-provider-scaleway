@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -75,9 +77,9 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			},
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("from_snapshot_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("from_snapshot_id"),
 	}
 }
 
@@ -104,7 +106,7 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if snapshotID, ok := d.GetOk("from_snapshot_id"); ok {
-		createVolumeRequest.BaseSnapshot = expandStringPtr(expandID(snapshotID))
+		createVolumeRequest.BaseSnapshot = expandStringPtr(locality.ExpandID(snapshotID))
 	}
 
 	res, err := instanceAPI.CreateVolume(createVolumeRequest, scw.WithContext(ctx))
@@ -112,7 +114,7 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("couldn't create volume: %s", err))
 	}
 
-	d.SetId(newZonedIDString(zone, res.Volume.ID))
+	d.SetId(zonal.NewIDString(zone, res.Volume.ID))
 
 	_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 		VolumeID:      res.Volume.ID,

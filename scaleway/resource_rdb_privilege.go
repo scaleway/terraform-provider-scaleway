@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayRdbPrivilege() *schema.Resource {
@@ -64,9 +66,9 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 				Required: true,
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
@@ -76,7 +78,7 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id").(string))
+	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 	_, err = waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -116,7 +118,7 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayRdbUserPrivilegeID(region, expandID(instanceID), databaseName, userName))
+	d.SetId(resourceScalewayRdbUserPrivilegeID(region, locality.ExpandID(instanceID), databaseName, userName))
 
 	return resourceScalewayRdbPrivilegeRead(ctx, d, meta)
 }
@@ -177,7 +179,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
 	_ = d.Set("permission", privilege.Permission)
-	_ = d.Set("instance_id", newRegionalIDString(region, instanceID))
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 	_ = d.Set("region", region)
 
 	return nil

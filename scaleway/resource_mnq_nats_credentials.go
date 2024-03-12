@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayMNQNatsCredentials() *schema.Resource {
@@ -37,7 +39,7 @@ func resourceScalewayMNQNatsCredentials() *schema.Resource {
 				Computed:    true,
 				Description: "The credentials file",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
@@ -50,7 +52,7 @@ func resourceScalewayMNQNatsCredentialsCreate(ctx context.Context, d *schema.Res
 
 	credentials, err := api.CreateNatsCredentials(&mnq.NatsAPICreateNatsCredentialsRequest{
 		Region:        region,
-		NatsAccountID: expandID(d.Get("account_id").(string)),
+		NatsAccountID: locality.ExpandID(d.Get("account_id").(string)),
 		Name:          expandOrGenerateString(d.Get("name").(string), "nats-credentials"),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -59,7 +61,7 @@ func resourceScalewayMNQNatsCredentialsCreate(ctx context.Context, d *schema.Res
 
 	_ = d.Set("file", credentials.Credentials.Content)
 
-	d.SetId(newRegionalIDString(region, credentials.ID))
+	d.SetId(regional.NewIDString(region, credentials.ID))
 
 	return resourceScalewayMNQNatsCredentialsRead(ctx, d, meta)
 }

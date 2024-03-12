@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/stretchr/testify/require"
 )
@@ -941,7 +942,7 @@ func testAccCheckScalewayInstancePrivateNICsExists(tt *TestTools, n string) reso
 		// build terraform private networks
 		for key, value := range rs.Primary.Attributes {
 			if strings.Contains(key, "pn_id") {
-				privateNetworksToCheckOnSchema[expandID(value)] = struct{}{}
+				privateNetworksToCheckOnSchema[locality.ExpandID(value)] = struct{}{}
 			}
 		}
 

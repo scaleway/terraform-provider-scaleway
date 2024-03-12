@@ -9,6 +9,7 @@ import (
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -35,7 +36,7 @@ func blockAPIWithZoneAndID(m interface{}, zonedID string) (*block.API, scw.Zone,
 	meta := m.(*Meta)
 	blockAPI := block.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(zonedID)
+	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
 		return nil, "", "", err
 	}

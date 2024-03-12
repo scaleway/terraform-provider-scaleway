@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -421,7 +422,7 @@ func testAccCheckScalewayObjectBucketDestroy(tt *TestTools) resource.TestCheckFu
 				continue
 			}
 
-			regionalID := expandRegionalID(rs.Primary.ID)
+			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucketRegion := regionalID.Region.String()
 			bucketName := regionalID.ID
 
@@ -818,7 +819,7 @@ func testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt *TestTools,
 			return err
 		}
 
-		bucketRegionalID := expandRegionalID(rs.Primary.ID)
+		bucketRegionalID := regional.ExpandID(rs.Primary.ID)
 
 		input := &s3.GetBucketLifecycleConfigurationInput{
 			Bucket: expandStringPtr(bucketRegionalID.ID),

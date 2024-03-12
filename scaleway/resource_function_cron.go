@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayFunctionCron() *schema.Resource {
@@ -54,9 +56,9 @@ func resourceScalewayFunctionCron() *schema.Resource {
 				Computed:    true,
 				Description: "Cron job status.",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("function_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("function_id"),
 	}
 }
 
@@ -66,7 +68,7 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	functionID := expandID(d.Get("function_id").(string))
+	functionID := locality.ExpandID(d.Get("function_id").(string))
 	f, err := waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -97,7 +99,7 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, cron.ID))
+	d.SetId(regional.NewIDString(region, cron.ID))
 
 	return resourceScalewayFunctionCronRead(ctx, d, meta)
 }
@@ -117,7 +119,7 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("function_id", newRegionalID(region, cron.FunctionID).String())
+	_ = d.Set("function_id", regional.NewID(region, cron.FunctionID).String())
 	_ = d.Set("schedule", cron.Schedule)
 	_ = d.Set("name", cron.Name)
 	args, err := scw.EncodeJSONObject(*cron.Args, scw.NoEscape)

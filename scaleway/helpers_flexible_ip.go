@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -32,7 +34,7 @@ func fipAPIWithZoneAndID(m interface{}, id string) (*flexibleip.API, scw.Zone, s
 	meta := m.(*Meta)
 	fipAPI := flexibleip.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(id)
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -76,7 +78,7 @@ func expandServerIDs(data interface{}) []string {
 		if s == nil {
 			s = ""
 		}
-		expandedID := expandID(s.(string))
+		expandedID := locality.ExpandID(s.(string))
 		expandedIDs = append(expandedIDs, expandedID)
 	}
 	return expandedIDs

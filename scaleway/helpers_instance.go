@@ -16,6 +16,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -62,7 +64,7 @@ func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw
 	meta := m.(*Meta)
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(zonedID)
+	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -74,7 +76,7 @@ func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*insta
 	meta := m.(*Meta)
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
-	zone, innerID, outerID, err := parseZonedNestedID(zonedNestedID)
+	zone, innerID, outerID, err := zonal.ParseNestedID(zonedNestedID)
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -313,14 +315,14 @@ func preparePrivateNIC(
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
 		zonedID, pnExist := r["pn_id"]
-		privateNetworkID := expandID(zonedID.(string))
+		privateNetworkID := locality.ExpandID(zonedID.(string))
 		if pnExist {
 			region, err := server.Zone.Region()
 			if err != nil {
 				return nil, err
 			}
 			currentPN, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
-				PrivateNetworkID: expandID(privateNetworkID),
+				PrivateNetworkID: locality.ExpandID(privateNetworkID),
 				Region:           region,
 			}, scw.WithContext(ctx))
 			if err != nil {
@@ -371,16 +373,16 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout time.Duration) error {
 	oPtr := expandStringPtr(o)
 	if oPtr != nil && len(*oPtr) > 0 {
-		idPN := expandID(*oPtr)
+		idPN := locality.ExpandID(*oPtr)
 		// check if old private network still exist on instance server
 		if p, ok := ph.privateNICsMap[idPN]; ok {
-			_, err := waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, expandID(p.ID), timeout)
+			_, err := waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, locality.ExpandID(p.ID), timeout)
 			if err != nil {
 				return err
 			}
 			// detach private NIC
 			err = ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
-				PrivateNicID: expandID(p.ID),
+				PrivateNicID: locality.ExpandID(p.ID),
 				Zone:         ph.zone,
 				ServerID:     ph.serverID,
 			},
@@ -408,7 +410,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout time.Duration) error {
 	if nPtr := expandStringPtr(n); nPtr != nil {
 		// check if new private network was already attached on instance server
-		privateNetworkID := expandID(*nPtr)
+		privateNetworkID := locality.ExpandID(*nPtr)
 		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
 			pn, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
 				Zone:             ph.zone,
@@ -450,19 +452,19 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 }
 
 func (ph *privateNICsHandler) get(key string) (interface{}, error) {
-	locality, id, err := parseLocalizedID(key)
+	loc, id, err := locality.ParseLocalizedID(key)
 	if err != nil {
 		return nil, err
 	}
 	pn, ok := ph.privateNICsMap[id]
 	if !ok {
-		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, locality)
+		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, loc)
 	}
 	return map[string]interface{}{
 		"pn_id":       key,
 		"mac_address": pn.MacAddress,
 		"status":      pn.State.String(),
-		"zone":        locality,
+		"zone":        loc,
 	}, nil
 }
 
@@ -566,7 +568,7 @@ func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone,
 func getSnapshotsFromIDs(ctx context.Context, snapIDs []interface{}, instanceAPI *instance.API) ([]*instance.GetSnapshotResponse, error) {
 	snapResponses := []*instance.GetSnapshotResponse(nil)
 	for _, snapID := range snapIDs {
-		zone, id, err := parseZonedID(snapID.(string))
+		zone, id, err := zonal.ParseID(snapID.(string))
 		if err != nil {
 			return nil, err
 		}
@@ -624,7 +626,7 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 			server["name"] = volume.Server.Name
 		}
 		volumeFlat := map[string]interface{}{
-			"id":                newZonedIDString(zone, volume.ID),
+			"id":                zonal.NewIDString(zone, volume.ID),
 			"name":              volume.Name,
 			"export_uri":        volume.ExportURI,
 			"size":              volume.Size,
@@ -686,7 +688,7 @@ func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []interface
 
 	for i, ip := range ips {
 		flattenedIPs[i] = map[string]interface{}{
-			"id":      newZonedIDString(zone, ip.ID),
+			"id":      zonal.NewIDString(zone, ip.ID),
 			"address": ip.Address.String(),
 		}
 	}
@@ -732,7 +734,7 @@ func instanceIPHasMigrated(d *schema.ResourceData) bool {
 func instanceServerAdditionalVolumeTemplate(api *InstanceBlockAPI, zone scw.Zone, volumeID string) (*instance.VolumeServerTemplate, error) {
 	vol, err := api.GetVolume(&instance.GetVolumeRequest{
 		Zone:     zone,
-		VolumeID: expandID(volumeID),
+		VolumeID: locality.ExpandID(volumeID),
 	})
 	if err == nil {
 		return &instance.VolumeServerTemplate{
@@ -748,7 +750,7 @@ func instanceServerAdditionalVolumeTemplate(api *InstanceBlockAPI, zone scw.Zone
 
 	blockVol, err := api.blockAPI.GetVolume(&block.GetVolumeRequest{
 		Zone:     zone,
-		VolumeID: expandID(volumeID),
+		VolumeID: locality.ExpandID(volumeID),
 	})
 	if err == nil {
 		return &instance.VolumeServerTemplate{

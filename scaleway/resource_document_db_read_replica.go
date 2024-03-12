@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -130,9 +132,9 @@ func resourceScalewayDocumentDBReadReplica() *schema.Resource {
 				},
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
 	}
 }
 
@@ -160,7 +162,7 @@ func expandDocumentDBReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*
 
 	serviceIP := rawEndpoint["service_ip"].(string)
 	endpoint.PrivateNetwork = &documentdb.ReadReplicaEndpointSpecPrivateNetwork{
-		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
+		PrivateNetworkID: locality.ExpandID(rawEndpoint["private_network_id"]),
 	}
 	if len(serviceIP) > 0 {
 		ipNet, err := expandIPNet(serviceIP)
@@ -207,7 +209,7 @@ func flattenDocumentDBReadReplicaEndpoints(endpoints []*documentdb.Endpoint) (di
 			if err != nil {
 				return diag.FromErr(err), false
 			}
-			pnRegionalID := newRegionalIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
+			pnRegionalID := regional.NewIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
 			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
@@ -246,14 +248,14 @@ func resourceScalewayDocumentDBReadReplicaCreate(ctx context.Context, d *schema.
 
 	rr, err := api.CreateReadReplica(&documentdb.CreateReadReplicaRequest{
 		Region:       region,
-		InstanceID:   expandID(d.Get("instance_id")),
+		InstanceID:   locality.ExpandID(d.Get("instance_id")),
 		EndpointSpec: endpointSpecs,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
 	}
 
-	d.SetId(newRegionalIDString(region, rr.ID))
+	d.SetId(regional.NewIDString(region, rr.ID))
 
 	_, err = waitForDocumentDBReadReplica(ctx, api, region, rr.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -313,7 +315,7 @@ func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.
 		if !directAccessExists {
 			err := api.DeleteEndpoint(&documentdb.DeleteEndpointRequest{
 				Region:     region,
-				EndpointID: expandID(d.Get("direct_access.0.endpoint_id")),
+				EndpointID: locality.ExpandID(d.Get("direct_access.0.endpoint_id")),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
@@ -328,7 +330,7 @@ func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.
 		if !privateNetworkExists {
 			err := api.DeleteEndpoint(&documentdb.DeleteEndpointRequest{
 				Region:     region,
-				EndpointID: expandID(d.Get("private_network.0.endpoint_id")),
+				EndpointID: locality.ExpandID(d.Get("private_network.0.endpoint_id")),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)

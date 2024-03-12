@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -32,7 +33,7 @@ func asAPIWithZoneAndID(m interface{}, id string) (*applesilicon.API, scw.Zone, 
 	meta := m.(*Meta)
 	asAPI := applesilicon.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(id)
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}

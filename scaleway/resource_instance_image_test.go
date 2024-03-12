@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -486,7 +487,7 @@ func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.T
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
-		zone, ID, err := parseZonedID(rs.Primary.ID)
+		zone, ID, err := zonal.ParseID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}

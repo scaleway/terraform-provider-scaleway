@@ -10,6 +10,8 @@ import (
 	"github.com/robfig/cron/v3"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayContainerCron() *schema.Resource {
@@ -57,7 +59,7 @@ func resourceScalewayContainerCron() *schema.Resource {
 				Computed:    true,
 				Description: "Cron job name",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
@@ -73,7 +75,7 @@ func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	containerID := expandID(d.Get("container_id").(string))
+	containerID := locality.ExpandID(d.Get("container_id").(string))
 	schedule := d.Get("schedule").(string)
 	req := &container.CreateCronRequest{
 		ContainerID: containerID,
@@ -95,7 +97,7 @@ func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.Resource
 	}
 	tflog.Info(ctx, "[INFO] cron job ready")
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	return resourceScalewayContainerCronRead(ctx, d, meta)
 }
@@ -120,7 +122,7 @@ func resourceScalewayContainerCronRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("container_id", newRegionalID(region, cron.ContainerID).String())
+	_ = d.Set("container_id", regional.NewID(region, cron.ContainerID).String())
 	_ = d.Set("schedule", cron.Schedule)
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
@@ -136,8 +138,8 @@ func resourceScalewayContainerCronUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	req := &container.UpdateCronRequest{
-		ContainerID: scw.StringPtr(expandID(d.Get("container_id"))),
-		CronID:      expandID(containerCronID),
+		ContainerID: scw.StringPtr(locality.ExpandID(d.Get("container_id"))),
+		CronID:      locality.ExpandID(containerCronID),
 		Region:      region,
 	}
 

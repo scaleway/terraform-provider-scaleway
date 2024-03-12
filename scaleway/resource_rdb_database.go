@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func resourceScalewayRdbDatabase() *schema.Resource {
@@ -72,15 +73,15 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Description: "Size of the database",
 				Computed:    true,
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
 func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
-	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))
+	region, instanceID, err := regional.ParseID(d.Get("instance_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,7 +161,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, database.Name))
-	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
 	_ = d.Set("name", database.Name)
 	_ = d.Set("owner", database.Owner)
 	_ = d.Set("managed", database.Managed)
