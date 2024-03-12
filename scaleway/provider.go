@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/version"
 )
 
 const appendUserAgentEnvVar = "TF_APPEND_USER_AGENT"
@@ -363,7 +364,7 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 	// Create scaleway SDK client
 	////
 	opts := []scw.ClientOption{
-		scw.WithUserAgent(customizeUserAgent(version, config.terraformVersion)),
+		scw.WithUserAgent(customizeUserAgent(version.Version, config.terraformVersion)),
 		scw.WithProfile(profile),
 	}
 
