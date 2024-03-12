@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 
 // ipamAPIWithRegion returns a new ipam API and the region
 func ipamAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	ipamAPI := ipam.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -34,7 +35,7 @@ func ipamAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Re
 
 // ipamAPIWithRegionAndID returns a new ipam API with locality and ID extracted from the state
 func ipamAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	ipamAPI := ipam.NewAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(id)

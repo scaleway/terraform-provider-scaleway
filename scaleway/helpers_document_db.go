@@ -10,6 +10,7 @@ import (
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -21,8 +22,8 @@ const (
 
 // documentDBAPIWithRegion returns a new documentdb API and the region for a Create request
 func documentDBAPIWithRegion(d *schema.ResourceData, m interface{}) (*documentdb.API, scw.Region, error) {
-	meta := m.(*Meta)
-	api := documentdb.NewAPI(meta.GetScwClient())
+	meta := m.(*meta.Meta)
+	api := documentdb.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -34,8 +35,8 @@ func documentDBAPIWithRegion(d *schema.ResourceData, m interface{}) (*documentdb
 
 // documentDBAPIWithRegionalAndID returns a new documentdb API with region and ID extracted from the state
 func documentDBAPIWithRegionAndID(m interface{}, regionalID string) (*documentdb.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := documentdb.NewAPI(meta.GetScwClient())
+	meta := m.(*meta.Meta)
+	api := documentdb.NewAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -22,7 +23,7 @@ const (
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	k8sAPI := k8s.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -33,7 +34,7 @@ func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Regi
 }
 
 func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	k8sAPI := k8s.NewAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(id)

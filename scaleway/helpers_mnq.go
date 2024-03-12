@@ -10,10 +10,11 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := mnq.NewNatsAPI(meta.ScwClient())
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -24,7 +25,7 @@ func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Reg
 }
 
 func mnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := mnq.NewNatsAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(regionalID)
@@ -36,7 +37,7 @@ func mnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, 
 }
 
 func newMNQSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := mnq.NewSqsAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -48,7 +49,7 @@ func newMNQSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error
 }
 
 func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := mnq.NewSqsAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(regionalID)
@@ -60,7 +61,7 @@ func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, sc
 }
 
 func newMNQSNSAPI(d *schema.ResourceData, m any) (*mnq.SnsAPI, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := mnq.NewSnsAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -72,7 +73,7 @@ func newMNQSNSAPI(d *schema.ResourceData, m any) (*mnq.SnsAPI, scw.Region, error
 }
 
 func mnqSNSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SnsAPI, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := mnq.NewSnsAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(regionalID)

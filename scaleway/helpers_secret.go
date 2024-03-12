@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 
 // secretAPIWithRegion returns a new Secret API and the region for a Create request
 func secretAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := secret.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -29,7 +30,7 @@ func secretAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, sc
 
 // secretAPIWithRegionAndDefault returns a new Secret API and the region for a Create request
 func secretAPIWithRegionAndDefault(d *schema.ResourceData, m interface{}, defaultRegion scw.Region) (*secret.API, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := secret.NewAPI(meta.ScwClient())
 
 	region, err := extractRegionWithDefault(d, meta, defaultRegion)
@@ -41,7 +42,7 @@ func secretAPIWithRegionAndDefault(d *schema.ResourceData, m interface{}, defaul
 
 // secretAPIWithRegionAndProjectID returns a new Secret API, with region and projectID
 func secretAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := secret.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -59,7 +60,7 @@ func secretAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*se
 
 // secretAPIWithRegionAndID returns a Secret API with locality and ID extracted from the state
 func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	api := secret.NewAPI(meta.ScwClient())
 
 	region, id, err := regional.ParseID(id)
@@ -71,7 +72,7 @@ func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region
 
 // secretVersionAPIWithRegionAndID returns a Secret API with locality and Nested ID extracted from the state
 func secretVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 
 	region, id, revision, err := locality.ParseLocalizedNestedID(id)
 	if err != nil {

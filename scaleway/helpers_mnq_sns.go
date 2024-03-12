@@ -16,10 +16,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	region, err := extractRegion(d, meta)
 	if err != nil {
 		return nil, "", err
@@ -38,7 +39,7 @@ func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.R
 }
 
 func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID string) (*sns.SNS, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 
 	tab := strings.SplitN(regionalID, "/", 2)
 	if len(tab) != 2 {

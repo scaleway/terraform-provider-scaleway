@@ -9,6 +9,7 @@ import (
 
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -20,8 +21,8 @@ const (
 
 // cockpitAPI returns a new cockpit API.
 func cockpitAPI(m interface{}) (*cockpit.API, error) {
-	meta := m.(*Meta)
-	api := cockpit.NewAPI(meta.GetScwClient())
+	meta := m.(*meta.Meta)
+	api := cockpit.NewAPI(meta.ScwClient())
 
 	return api, nil
 }

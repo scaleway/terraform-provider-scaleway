@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -25,8 +26,8 @@ const (
 
 // instanceAPIWithZone returns a new baremetal API and the zone for a Create request
 func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.Zone, error) {
-	meta := m.(*Meta)
-	baremetalAPI := baremetal.NewAPI(meta.GetScwClient())
+	meta := m.(*meta.Meta)
+	baremetalAPI := baremetal.NewAPI(meta.ScwClient())
 
 	zone, err := extractZone(d, meta)
 	if err != nil {
@@ -37,8 +38,7 @@ func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API
 
 // instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
 func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, error) {
-	meta := m.(*Meta)
-	baremetalAPI := baremetal.NewAPI(meta.GetScwClient())
+	baremetalAPI := baremetal.NewAPI(m.(*meta.Meta).ScwClient())
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
@@ -49,8 +49,8 @@ func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.
 
 // returns a new baremetal private network API and the zone for a Create request
 func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.PrivateNetworkAPI, scw.Zone, error) {
-	meta := m.(*Meta)
-	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.GetScwClient())
+	meta := m.(*meta.Meta)
+	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.ScwClient())
 
 	zone, err := extractZone(d, meta)
 	if err != nil {
@@ -61,8 +61,8 @@ func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (
 
 // baremetalPrivateNetworkAPIWithZoneAndID returns a baremetal private network API with zone and ID extracted from the state
 func baremetalPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, zonal.ID, error) {
-	meta := m.(*Meta)
-	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.GetScwClient())
+	meta := m.(*meta.Meta)
+	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.ScwClient())
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {

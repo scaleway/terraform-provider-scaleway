@@ -27,6 +27,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
 )
 
@@ -80,7 +81,7 @@ func newS3ClientFromMeta(meta *Meta, region string) (*s3.S3, error) {
 }
 
 func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	region, err := extractRegion(d, meta)
 	if err != nil {
 		return nil, "", err
@@ -101,7 +102,7 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 }
 
 func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string) (*s3.S3, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	region, name, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
@@ -136,7 +137,7 @@ func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string)
 }
 
 func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	region, outerID, innerID, err := regional.ParseNestedID(name)
 	if err != nil {
 		return nil, "", "", "", err
@@ -157,7 +158,7 @@ func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name
 }
 
 func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	region, name, outerID, err := locality.ParseLocalizedNestedOwnerID(name)
 	if err != nil {
 		return nil, "", name, "", err
@@ -177,7 +178,7 @@ func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name s
 }
 
 func s3ClientForceRegion(d *schema.ResourceData, m interface{}, region string) (*s3.S3, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 
 	accessKey, _ := meta.ScwClient().GetAccessKey()
 	if projectID, _, err := extractProjectID(d, meta); err == nil {

@@ -8,6 +8,7 @@ import (
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -18,8 +19,8 @@ const (
 
 // asAPIWithZone returns a new apple silicon API and the zone
 func asAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, scw.Zone, error) {
-	meta := m.(*Meta)
-	asAPI := applesilicon.NewAPI(meta.GetScwClient())
+	meta := m.(*meta.Meta)
+	asAPI := applesilicon.NewAPI(meta.ScwClient())
 
 	zone, err := extractZone(d, meta)
 	if err != nil {
@@ -30,8 +31,8 @@ func asAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, sc
 
 // asAPIWithZoneAndID returns an apple silicon API with zone and ID extracted from the state
 func asAPIWithZoneAndID(m interface{}, id string) (*applesilicon.API, scw.Zone, string, error) {
-	meta := m.(*Meta)
-	asAPI := applesilicon.NewAPI(meta.GetScwClient())
+	meta := m.(*meta.Meta)
+	asAPI := applesilicon.NewAPI(meta.ScwClient())
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {

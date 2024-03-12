@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -25,13 +26,13 @@ const (
 
 // newRdbAPI returns a new RDB API
 func newRdbAPI(m interface{}) *rdb.API {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	return rdb.NewAPI(meta.ScwClient())
 }
 
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
 func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -322,7 +323,7 @@ func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]inte
 	region, idStr, err := regional.ParseID(idRaw.(string))
 	if err != nil {
 		// force the default region
-		meta := m.(*Meta)
+		meta := m.(*meta.Meta)
 		defaultRegion, exist := meta.ScwClient().GetDefaultRegion()
 		if exist {
 			region = defaultRegion

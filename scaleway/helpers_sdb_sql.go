@@ -8,6 +8,7 @@ import (
 	serverless_sqldb "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -17,7 +18,7 @@ const (
 
 // serverlessSQLdbAPIWithRegion returns a new serverless_sqldb API and the region for a Create request
 func serverlessSQLdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*serverless_sqldb.API, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	sdbAPI := serverless_sqldb.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -30,7 +31,7 @@ func serverlessSQLdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*serve
 
 // serverlessSQLdbAPIWithRegionalAndID returns a new serverless_sqldb API with region and ID extracted from the state
 func serverlessSQLdbAPIWithRegionAndID(m interface{}, regionalID string) (*serverless_sqldb.API, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	sdbAPI := serverless_sqldb.NewAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(regionalID)

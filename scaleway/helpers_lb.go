@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -30,7 +31,7 @@ const (
 
 // lbAPIWithZone returns an lb API WITH zone for a Create request
 func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.Zone, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	lbAPI := lbSDK.NewZonedAPI(meta.ScwClient())
 
 	zone, err := extractZone(d, meta)
@@ -42,7 +43,7 @@ func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.
 
 // lbAPIWithZoneAndID returns an lb API with zone and ID extracted from the state
 func lbAPIWithZoneAndID(m interface{}, id string) (*lbSDK.ZonedAPI, scw.Zone, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	lbAPI := lbSDK.NewZonedAPI(meta.ScwClient())
 
 	zone, ID, err := zonal.ParseID(id)

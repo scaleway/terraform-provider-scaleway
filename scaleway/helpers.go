@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -44,7 +46,7 @@ type terraformResourceData interface {
 // extractZone will try to guess the zone from the following:
 //   - zone field of the resource data
 //   - default zone from config
-func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
+func extractZone(d terraformResourceData, meta *meta.Meta) (scw.Zone, error) {
 	rawZone, exist := d.GetOk("zone")
 	if exist {
 		return scw.ParseZone(rawZone.(string))
@@ -61,7 +63,7 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 // extractRegion will try to guess the region from the following:
 //   - region field of the resource data
 //   - default region from config
-func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
+func extractRegion(d terraformResourceData, meta *meta.Meta) (scw.Region, error) {
 	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
@@ -79,7 +81,7 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 //   - region field of the resource data
 //   - default region given in argument
 //   - default region from config
-func extractRegionWithDefault(d terraformResourceData, meta *Meta, defaultRegion scw.Region) (scw.Region, error) {
+func extractRegionWithDefault(d terraformResourceData, meta *meta.Meta, defaultRegion scw.Region) (scw.Region, error) {
 	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
@@ -103,7 +105,7 @@ var ErrProjectIDNotFound = errors.New("could not detect project id")
 // extractProjectID will try to guess the project id from the following:
 //   - project_id field of the resource data
 //   - default project id from config
-func extractProjectID(d terraformResourceData, meta *Meta) (projectID string, isDefault bool, err error) {
+func extractProjectID(d terraformResourceData, meta *meta.Meta) (projectID string, isDefault bool, err error) {
 	rawProjectID, exist := d.GetOk("project_id")
 	if exist {
 		return rawProjectID.(string), false, nil
@@ -725,7 +727,7 @@ func expandListKeys(key string, diff *schema.ResourceDiff) []string {
 // getLocality find the locality of a resource
 // Will try to get the zone if available then use region
 // Will also use default zone or region if available
-func getLocality(diff *schema.ResourceDiff, meta *Meta) string {
+func getLocality(diff *schema.ResourceDiff, meta *meta.Meta) string {
 	var locality string
 
 	rawStateType := diff.GetRawState().Type()
@@ -747,7 +749,7 @@ func getLocality(diff *schema.ResourceDiff, meta *Meta) string {
 // this function will still block the terraform plan
 func CustomizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, i interface{}) error {
-		l := getLocality(diff, i.(*Meta))
+		l := getLocality(diff, i.(*meta.Meta))
 
 		if l == "" {
 			return errors.New("missing locality zone or region to check IDs")

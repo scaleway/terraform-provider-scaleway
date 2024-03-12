@@ -16,13 +16,14 @@ import (
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 const defaultVPCPrivateNetworkRetryInterval = 30 * time.Second
 
 // vpcAPIWithRegion returns a new VPC API and the region for a Create request
 func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	vpcAPI := vpc.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -34,7 +35,7 @@ func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Regi
 
 // vpcAPIWithRegionAndID returns a new VPC API with locality and ID extracted from the state
 func vpcAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	vpcAPI := vpc.NewAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(id)

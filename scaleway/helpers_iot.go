@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -21,7 +22,7 @@ const (
 )
 
 func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Region, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	iotAPI := iot.NewAPI(meta.ScwClient())
 
 	region, err := extractRegion(d, meta)
@@ -30,7 +31,7 @@ func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Regi
 }
 
 func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	iotAPI := iot.NewAPI(meta.ScwClient())
 
 	region, ID, err := regional.ParseID(id)
@@ -72,7 +73,7 @@ func computeIotHubCaURL(productPlan iot.HubProductPlan, region scw.Region) strin
 }
 
 func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m interface{}) (string, error) {
-	meta := m.(*Meta)
+	meta := m.(*meta.Meta)
 	if mqttCaURL == "" {
 		return "", nil
 	}
