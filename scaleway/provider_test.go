@@ -25,6 +25,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/stretchr/testify/require"
 )
 
@@ -317,12 +318,12 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	// Add a filter that will replace sensitive values with fixed values
 	r.AddSaveFilter(cassetteSensitiveFieldsAnonymizer)
 
-	retryOptions := retryableTransportOptions{}
+	retryOptions := transport.RetryableTransportOptions{}
 	if !*UpdateCassettes {
 		retryOptions.RetryWaitMax = scw.TimeDurationPtr(0)
 	}
 
-	return &http.Client{Transport: newRetryableTransportWithOptions(r, retryOptions)}, func() {
+	return &http.Client{Transport: transport.NewRetryableTransportWithOptions(r, retryOptions)}, func() {
 		require.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
 }
@@ -577,7 +578,7 @@ func NewTestTools(t *testing.T) *TestTools {
 
 	if !*UpdateCassettes {
 		tmp := 0 * time.Second
-		DefaultWaitRetryInterval = &tmp
+		transport.DefaultWaitRetryInterval = &tmp
 	}
 
 	return &TestTools{

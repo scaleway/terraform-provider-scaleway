@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -50,8 +51,8 @@ func functionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Re
 
 func waitForFunctionNamespace(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Namespace, error) {
 	retryInterval := defaultFunctionRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	ns, err := functionAPI.WaitForNamespace(&function.WaitForNamespaceRequest{
@@ -66,8 +67,8 @@ func waitForFunctionNamespace(ctx context.Context, functionAPI *function.API, re
 
 func waitForFunction(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Function, error) {
 	retryInterval := defaultFunctionRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	f, err := functionAPI.WaitForFunction(&function.WaitForFunctionRequest{
@@ -82,8 +83,8 @@ func waitForFunction(ctx context.Context, functionAPI *function.API, region scw.
 
 func waitForFunctionCron(ctx context.Context, functionAPI *function.API, region scw.Region, cronID string, timeout time.Duration) (*function.Cron, error) {
 	retryInterval := defaultFunctionRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return functionAPI.WaitForCron(&function.WaitForCronRequest{
@@ -96,8 +97,8 @@ func waitForFunctionCron(ctx context.Context, functionAPI *function.API, region 
 
 func waitForFunctionDomain(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Domain, error) {
 	retryInterval := defaultFunctionRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	domain, err := functionAPI.WaitForDomain(&function.WaitForDomainRequest{
@@ -112,8 +113,8 @@ func waitForFunctionDomain(ctx context.Context, functionAPI *function.API, regio
 
 func waitForFunctionTrigger(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Trigger, error) {
 	retryInterval := defaultFunctionRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	trigger, err := functionAPI.WaitForTrigger(&function.WaitForTriggerRequest{

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -260,8 +261,8 @@ func detachAllPrivateNetworkFromBaremetal(ctx context.Context, d *schema.Resourc
 
 func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
 	retryInterval := baremetalRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	server, err := api.WaitForServer(&baremetal.WaitForServerRequest{
@@ -276,8 +277,8 @@ func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zo
 
 func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
 	retryInterval := baremetalRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	server, err := api.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
@@ -292,8 +293,8 @@ func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone
 
 func waitForBaremetalServerOptions(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
 	retryInterval := baremetalRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	server, err := api.WaitForServerOptions(&baremetal.WaitForServerOptionsRequest{
@@ -308,8 +309,8 @@ func waitForBaremetalServerOptions(ctx context.Context, api *baremetal.API, zone
 
 func waitForBaremetalServerPrivateNetwork(ctx context.Context, api *baremetal.PrivateNetworkAPI, zone scw.Zone, serverID string, timeout time.Duration) ([]*baremetal.ServerPrivateNetwork, error) {
 	retryInterval := baremetalRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 	serverPrivateNetwork, err := api.WaitForServerPrivateNetworks(&baremetal.WaitForServerPrivateNetworksRequest{
 		Zone:          zone,

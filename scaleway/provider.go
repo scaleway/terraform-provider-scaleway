@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const appendUserAgentEnvVar = "TF_APPEND_USER_AGENT"
@@ -364,7 +365,7 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 		scw.WithProfile(profile),
 	}
 
-	httpClient := &http.Client{Transport: newRetryableTransport(http.DefaultTransport)}
+	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
 	if config.httpClient != nil {
 		httpClient = config.httpClient
 	}

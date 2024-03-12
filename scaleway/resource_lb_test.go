@@ -13,6 +13,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func init() {
@@ -37,8 +38,8 @@ func testSweepLB(_ string) error {
 		for _, l := range listLBs.LBs {
 			retryInterval := defaultWaitLBRetryInterval
 
-			if DefaultWaitRetryInterval != nil {
-				retryInterval = *DefaultWaitRetryInterval
+			if transport.DefaultWaitRetryInterval != nil {
+				retryInterval = *transport.DefaultWaitRetryInterval
 			}
 
 			_, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{

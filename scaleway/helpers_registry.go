@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -45,8 +46,8 @@ func registryAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Re
 
 func waitForRegistryNamespace(ctx context.Context, api *registry.API, region scw.Region, id string, timeout time.Duration) (*registry.Namespace, error) {
 	retryInterval := defaultRegistryNamespaceRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	ns, err := api.WaitForNamespace(&registry.WaitForNamespaceRequest{
@@ -61,8 +62,8 @@ func waitForRegistryNamespace(ctx context.Context, api *registry.API, region scw
 
 func waitForRegistryNamespaceDelete(ctx context.Context, api *registry.API, region scw.Region, id string, timeout time.Duration) (*registry.Namespace, error) {
 	retryInterval := defaultRegistryNamespaceRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	terminalStatus := map[registry.NamespaceStatus]struct{}{
