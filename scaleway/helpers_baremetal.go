@@ -7,11 +7,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (

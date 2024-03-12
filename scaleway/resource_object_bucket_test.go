@@ -9,8 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -18,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func init() {

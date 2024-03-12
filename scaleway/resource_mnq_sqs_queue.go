@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
@@ -14,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func resourceScalewayMNQSQSQueue() *schema.Resource {

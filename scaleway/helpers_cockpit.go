@@ -7,10 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (

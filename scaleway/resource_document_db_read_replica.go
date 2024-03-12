@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func resourceScalewayDocumentDBReadReplica() *schema.Resource {

@@ -4,14 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func resourceScalewayVPCGatewayNetwork() *schema.Resource {
