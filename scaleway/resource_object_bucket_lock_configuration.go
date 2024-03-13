@@ -149,7 +149,11 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
 	_ = d.Set("bucket", bucket)
-	_ = d.Set("rule", flattenBucketLockConfigurationRule(output.ObjectLockConfiguration.Rule))
+	if output.ObjectLockConfiguration != nil {
+		_ = d.Set("rule", flattenBucketLockConfigurationRule(output.ObjectLockConfiguration.Rule))
+	} else {
+		_ = d.Set("rule", flattenBucketLockConfigurationRule(nil))
+	}
 
 	return nil
 }
