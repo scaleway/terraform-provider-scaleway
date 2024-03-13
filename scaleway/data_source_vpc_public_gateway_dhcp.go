@@ -5,12 +5,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPublicGatewayDHCP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCPublicGatewayDHCP().Schema)
 
 	dsSchema["dhcp_id"] = &schema.Schema{
 		Type:         schema.TypeString,
@@ -33,7 +34,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.R
 
 	dhcpID, _ := d.GetOk("dhcp_id")
 
-	zonedID := datasourceNewZonedID(dhcpID, zone)
+	zonedID := datasource.NewZonedID(dhcpID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("dhcp_id", zonedID)
 	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, m)

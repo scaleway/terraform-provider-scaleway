@@ -7,13 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayFunction() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayFunction().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayFunction().Schema)
 
 	dsSchema["function_id"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -21,8 +22,8 @@ func dataSourceScalewayFunction() *schema.Resource {
 		Computed:    true,
 	}
 
-	addOptionalFieldsToSchema(dsSchema, "name", "function_id", "project_id", "region")
-	fixDatasourceSchemaFlags(dsSchema, true, "namespace_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "function_id", "project_id", "region")
+	datasource.FixDatasourceSchemaFlags(dsSchema, true, "namespace_id")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayFunctionRead,
@@ -61,7 +62,7 @@ func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData,
 		functionID = foundFunction.ID
 	}
 
-	regionalID := datasourceNewRegionalID(functionID, region)
+	regionalID := datasource.NewRegionalID(functionID, region)
 	d.SetId(regionalID)
 	_ = d.Set("function_id", regionalID)
 

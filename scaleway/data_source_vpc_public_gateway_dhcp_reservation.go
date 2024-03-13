@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -15,10 +16,10 @@ import (
 
 func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPublicGatewayDHCPReservation().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCPublicGatewayDHCPReservation().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "mac_address", "gateway_network_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "mac_address", "gateway_network_id")
 
 	dsSchema["mac_address"].ConflictsWith = []string{"reservation_id"}
 	dsSchema["gateway_network_id"].ConflictsWith = []string{"reservation_id"}
@@ -37,7 +38,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 	}
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "zone")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "zone")
 
 	return &schema.Resource{
 		Schema:      dsSchema,
@@ -90,7 +91,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, 
 		reservationIDRaw = res.DHCPEntries[0].ID
 	}
 
-	zonedID := datasourceNewZonedID(reservationIDRaw, zone)
+	zonedID := datasource.NewZonedID(reservationIDRaw, zone)
 	d.SetId(zonedID)
 	_ = d.Set("reservation_id", zonedID)
 

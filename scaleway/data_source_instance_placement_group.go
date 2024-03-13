@@ -6,15 +6,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstancePlacementGroup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayInstancePlacementGroup().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["placement_group_id"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -61,7 +62,7 @@ func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema
 		}
 	}
 
-	zoneID := datasourceNewZonedID(placementGroupID, zone)
+	zoneID := datasource.NewZonedID(placementGroupID, zone)
 	d.SetId(zoneID)
 	err = d.Set("placement_group_id", zoneID)
 	if err != nil {

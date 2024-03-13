@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -102,7 +103,7 @@ func dataSourceScalewayDocumentDBLoadBalancerRead(ctx context.Context, d *schema
 	_ = d.Set("ip", types.FlattenIPPtr(lb.IP))
 	_ = d.Set("name", lb.Name)
 
-	d.SetId(datasourceNewRegionalID(lb.ID, region))
+	d.SetId(datasource.NewRegionalID(lb.ID, region))
 
 	return nil
 }

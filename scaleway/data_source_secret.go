@@ -7,16 +7,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewaySecret() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewaySecret().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewaySecret().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "path")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "path")
 
 	dsSchema["name"].ConflictsWith = []string{"secret_id"}
 	dsSchema["path"].ConflictsWith = []string{"secret_id"}
@@ -75,7 +76,7 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 		secretID = foundSecret.ID
 	}
 
-	regionalID := datasourceNewRegionalID(secretID, region)
+	regionalID := datasource.NewRegionalID(secretID, region)
 	d.SetId(regionalID)
 	err = d.Set("secret_id", regionalID)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -14,10 +15,10 @@ import (
 
 func dataSourceScalewayK8SPool() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayK8SPool().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayK8SPool().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "cluster_id", "size")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "cluster_id", "size")
 
 	dsSchema["name"].ConflictsWith = []string{"pool_id"}
 	dsSchema["cluster_id"].ConflictsWith = []string{"pool_id"}
@@ -68,7 +69,7 @@ func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, 
 		poolID = foundPool.ID
 	}
 
-	regionalizedID := datasourceNewRegionalID(poolID, region)
+	regionalizedID := datasource.NewRegionalID(poolID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
 	return resourceScalewayK8SPoolRead(ctx, d, m)

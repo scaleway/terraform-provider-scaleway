@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -14,10 +15,10 @@ import (
 
 func dataSourceScalewayLbFrontend() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbFrontend().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayLbFrontend().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "lb_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "lb_id")
 
 	dsSchema["name"].ConflictsWith = []string{"frontend_id"}
 	dsSchema["frontend_id"] = &schema.Schema{
@@ -63,7 +64,7 @@ func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceDat
 
 		frontID = foundFront.ID
 	}
-	zonedID := datasourceNewZonedID(frontID, zone)
+	zonedID := datasource.NewZonedID(frontID, zone)
 	d.SetId(zonedID)
 	err = d.Set("frontend_id", zonedID)
 	if err != nil {

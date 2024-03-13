@@ -6,15 +6,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayDocumentDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayDocumentDBInstance().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayDocumentDBInstance().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["instance_id"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -60,7 +61,7 @@ func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Res
 		instanceID = foundRawInstance.ID
 	}
 
-	regionID := datasourceNewRegionalID(instanceID, region)
+	regionID := datasource.NewRegionalID(instanceID, region)
 	d.SetId(regionID)
 	err = d.Set("instance_id", regionID)
 	if err != nil {

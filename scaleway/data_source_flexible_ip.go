@@ -7,13 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayFlexibleIP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayFlexibleIP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayFlexibleIP().Schema)
 
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -73,7 +74,7 @@ func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	zoneID := datasourceNewZonedID(ipID, zone)
+	zoneID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zoneID)
 	err = d.Set("flexible_ip_id", zoneID)
 	if err != nil {

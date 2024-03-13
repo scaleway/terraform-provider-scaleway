@@ -7,14 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayAccountProject() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayAccountProject().Schema)
-	addOptionalFieldsToSchema(dsSchema, "name", "organization_id")
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayAccountProject().Schema)
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "organization_id")
 
 	dsSchema["name"].ConflictsWith = []string{"project_id"}
 	dsSchema["project_id"] = &schema.Schema{

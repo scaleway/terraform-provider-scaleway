@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -14,9 +15,9 @@ import (
 
 func dataSourceScalewayContainer() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayContainer().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayContainer().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"container_id"}
 	dsSchema["container_id"] = &schema.Schema{
@@ -77,7 +78,7 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 		containerID = foundContainer.ID
 	}
 
-	regionalID := datasourceNewRegionalID(containerID, region)
+	regionalID := datasource.NewRegionalID(containerID, region)
 	d.SetId(regionalID)
 	_ = d.Set("container_id", regionalID)
 

@@ -6,15 +6,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayBlockSnapshot() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayBlockSnapshot().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayBlockSnapshot().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "volume_id", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "volume_id", "project_id")
 
 	dsSchema["snapshot_id"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -60,7 +61,7 @@ func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	zoneID := datasourceNewZonedID(snapshotID, zone)
+	zoneID := datasource.NewZonedID(snapshotID, zone)
 	d.SetId(zoneID)
 	err = d.Set("snapshot_id", zoneID)
 	if err != nil {

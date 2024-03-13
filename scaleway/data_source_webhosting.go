@@ -7,14 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayWebhosting() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayWebhosting().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayWebhosting().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "domain")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "domain")
 
 	dsSchema["domain"].ConflictsWith = []string{"webhosting_id"}
 	dsSchema["webhosting_id"] = &schema.Schema{
@@ -69,7 +70,7 @@ func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceDat
 		webhostingID = foundDomain.ID
 	}
 
-	regionalID := datasourceNewRegionalID(webhostingID, region)
+	regionalID := datasource.NewRegionalID(webhostingID, region)
 	d.SetId(regionalID)
 	err = d.Set("webhosting_id", regionalID)
 	if err != nil {

@@ -7,15 +7,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayRegistryNamespace() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRegistryNamespace().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayRegistryNamespace().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"namespace_id"}
 	dsSchema["namespace_id"] = &schema.Schema{
@@ -63,7 +64,7 @@ func dataSourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Reso
 		namespaceID = foundNamespace.ID
 	}
 
-	regionalID := datasourceNewRegionalID(namespaceID, region)
+	regionalID := datasource.NewRegionalID(namespaceID, region)
 	d.SetId(regionalID)
 	_ = d.Set("namespace_id", regionalID)
 

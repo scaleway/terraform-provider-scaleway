@@ -5,12 +5,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayLbRoute() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbRoute().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayLbRoute().Schema)
 
 	dsSchema["route_id"] = &schema.Schema{
 		Type:         schema.TypeString,
@@ -33,7 +34,7 @@ func dataSourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, 
 
 	routeID, _ := d.GetOk("route_id")
 
-	zonedID := datasourceNewZonedID(routeID, zone)
+	zonedID := datasource.NewZonedID(routeID, zone)
 	d.SetId(zonedID)
 	err = d.Set("route_id", zonedID)
 	if err != nil {

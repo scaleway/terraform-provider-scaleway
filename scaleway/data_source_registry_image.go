@@ -3,6 +3,7 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -108,7 +109,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, m interface{}) 
 		image = res
 	}
 
-	d.SetId(datasourceNewRegionalID(image.ID, region))
+	d.SetId(datasource.NewRegionalID(image.ID, region))
 	_ = d.Set("image_id", image.ID)
 	_ = d.Set("name", image.Name)
 	_ = d.Set("namespace_id", image.NamespaceID)
