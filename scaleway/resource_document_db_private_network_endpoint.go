@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -106,7 +107,7 @@ func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *sc
 	createEndpointRequest.EndpointSpec.PrivateNetwork = endpointSpecPN
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -120,7 +121,7 @@ func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *sc
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -143,7 +144,7 @@ func resourceScalewayDocumentDBInstanceEndpointRead(ctx context.Context, d *sche
 		Region:     region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}

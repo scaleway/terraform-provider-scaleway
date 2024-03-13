@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func TestAccScalewaySecretVersion_Basic(t *testing.T) {
@@ -159,7 +160,7 @@ func testAccCheckScalewaySecretVersionDestroy(tt *TestTools) resource.TestCheckF
 				return fmt.Errorf("secret version (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !errs.Is404Error(err) {
 				return err
 			}
 		}

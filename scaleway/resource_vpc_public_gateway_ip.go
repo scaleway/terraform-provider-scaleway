@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
@@ -106,7 +107,7 @@ func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.Resou
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -170,7 +171,7 @@ func resourceScalewayVPCPublicGatewayIPDelete(ctx context.Context, d *schema.Res
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is409Error(err) || is412Error(err) || is404Error(err) {
+		if errs.Is409Error(err) || errs.Is412Error(err) || errs.Is404Error(err) {
 			return append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  err.Error(),

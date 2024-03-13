@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -908,7 +909,7 @@ func testAccCheckScalewayRedisClusterDestroy(tt *TestTools) resource.TestCheckFu
 				return fmt.Errorf("cluster (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !errs.Is404Error(err) {
 				return err
 			}
 		}

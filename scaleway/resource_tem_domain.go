@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -199,7 +200,7 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 		DomainID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -238,7 +239,7 @@ func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData
 
 	_, err = waitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -250,12 +251,12 @@ func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData
 		Region:   region,
 		DomainID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 

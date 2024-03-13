@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -289,7 +290,7 @@ func testAccCheckScalewayIamAPIKeyDestroy(tt *TestTools) resource.TestCheckFunc 
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !errs.Is404Error(err) {
 				return err
 			}
 		}

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -147,7 +148,7 @@ func testAccCheckScalewayTemDomainDestroy(tt *TestTools) resource.TestCheckFunc 
 			}
 
 			_, err = waitForTemDomain(context.Background(), api, region, id, defaultTemDomainTimeout)
-			if err != nil && !is404Error(err) {
+			if err != nil && !errs.Is404Error(err) {
 				return err
 			}
 		}

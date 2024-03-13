@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -127,7 +128,7 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 
 	volume, err := waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -161,7 +162,7 @@ func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceDa
 
 	volume, err := waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -213,7 +214,7 @@ func resourceScalewayBlockVolumeDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_, err = waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 

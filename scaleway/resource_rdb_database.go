@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -103,7 +104,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		currentDB, errCreateDB := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
 		if errCreateDB != nil {
 			// WIP: Issue on creation/write database. Need a database stable status
-			if is409Error(errCreateDB) {
+			if errs.Is409Error(errCreateDB) {
 				return retry.RetryableError(errCreateDB)
 			}
 			return retry.NonRetryableError(errCreateDB)
@@ -153,7 +154,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 
 	database, err := getDatabase(ctx, rdbAPI, region, instanceID, databaseName)
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -193,7 +194,7 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 

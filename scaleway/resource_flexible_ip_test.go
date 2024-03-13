@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
@@ -374,7 +375,7 @@ func testAccCheckScalewayFlexibleIPDestroy(tt *TestTools) resource.TestCheckFunc
 
 			// Unexpected api error we return it
 			// We check for 403 because instance API return 403 for deleted IP
-			if !is404Error(err) && !is403Error(err) {
+			if !errs.Is404Error(err) && !errs.Is403Error(err) {
 				return err
 			}
 		}

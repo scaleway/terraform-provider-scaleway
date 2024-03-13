@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
@@ -343,7 +344,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is403Error(err) {
+		if errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -434,7 +435,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 
 	_, err = waitForLB(ctx, lbAPI, zone, res.LB.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is403Error(err) {
+		if errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -457,7 +458,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		BackendID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is403Error(err) {
+		if errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -499,7 +500,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is403Error(err) {
+		if errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -523,7 +524,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is403Error(err) {
+		if errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -638,7 +639,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is403Error(err) {
+		if errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -661,7 +662,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is403Error(err) {
+		if errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -673,13 +674,13 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		BackendID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is403Error(err) {
+		if errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
@@ -95,7 +96,7 @@ func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.Resourc
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		currentUser, errCreateUser := api.CreateUser(createUserReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
-			if is409Error(errCreateUser) {
+			if errs.Is409Error(errCreateUser) {
 				_, errWait := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -134,7 +135,7 @@ func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceD
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -218,7 +219,7 @@ func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.Resourc
 			Name:       userName,
 		}, scw.WithContext(ctx))
 		if errDeleteUser != nil {
-			if is409Error(errDeleteUser) {
+			if errs.Is409Error(errDeleteUser) {
 				_, errWait := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -231,7 +232,7 @@ func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.Resourc
 		return nil
 	})
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 

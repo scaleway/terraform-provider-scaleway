@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func resourceScalewayIamGroupMembership() *schema.Resource {
@@ -76,7 +77,7 @@ func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.Resou
 		GroupID: groupID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 
 			return nil
@@ -134,7 +135,7 @@ func resourceScalewayIamGroupMembershipDelete(ctx context.Context, d *schema.Res
 
 	_, err = api.RemoveGroupMember(req, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 
 			return nil

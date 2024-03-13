@@ -10,6 +10,7 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func init() {
@@ -39,7 +40,7 @@ func testSweepCockpit(_ string) error {
 				Timeout:   scw.TimeDurationPtr(defaultCockpitTimeout),
 			})
 			if err != nil {
-				if !is404Error(err) {
+				if !errs.Is404Error(err) {
 					return fmt.Errorf("failed to deactivate cockpit: %w", err)
 				}
 			}
@@ -48,7 +49,7 @@ func testSweepCockpit(_ string) error {
 				ProjectID: project.ID,
 			})
 			if err != nil {
-				if !is404Error(err) {
+				if !errs.Is404Error(err) {
 					return fmt.Errorf("failed to deactivate cockpit: %w", err)
 				}
 			}
@@ -241,7 +242,7 @@ func testAccCheckScalewayCockpitDestroy(tt *TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("cockpit (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !errs.Is404Error(err) {
 				return err
 			}
 		}

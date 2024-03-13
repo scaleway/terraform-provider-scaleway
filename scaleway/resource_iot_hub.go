@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -218,7 +219,7 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m i
 		HubID:  hubID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -355,12 +356,12 @@ func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, m
 		HubID:  id,
 		// Don't force delete if devices. This avoids deleting a hub by mistake
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 

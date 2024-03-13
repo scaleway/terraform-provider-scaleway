@@ -8,6 +8,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
@@ -94,7 +95,7 @@ func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceDa
 		TokenID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -119,7 +120,7 @@ func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.Resource
 		Region:  region,
 		TokenID: ID,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -158,7 +159,7 @@ func testAccCheckScalewayBlockVolumeDestroy(tt *TestTools) resource.TestCheckFun
 				return fmt.Errorf("block volume (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) && !is410Error(err) {
+			if !errs.Is404Error(err) && !errs.Is410Error(err) {
 				return err
 			}
 		}

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func TestAccScalewayLbAcl_Basic(t *testing.T) {
@@ -185,7 +186,7 @@ func testAccCheckScalewayLbACLDestroy(tt *TestTools) resource.TestCheckFunc {
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !errs.Is404Error(err) {
 				return err
 			}
 		}

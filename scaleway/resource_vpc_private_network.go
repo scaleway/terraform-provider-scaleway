@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -234,7 +235,7 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 		Region:           region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -295,9 +296,9 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 			Region:           region,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if is412Error(err) {
+			if errs.Is412Error(err) {
 				return retry.RetryableError(err)
-			} else if !is404Error(err) {
+			} else if !errs.Is404Error(err) {
 				return retry.NonRetryableError(err)
 			}
 		}

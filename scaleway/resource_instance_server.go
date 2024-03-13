@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -1081,7 +1082,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	}
 	// reach stopped state
 	err = reachState(ctx, api, zone, id, instance.ServerStateStopped)
-	if is404Error(err) {
+	if errs.Is404Error(err) {
 		return nil
 	}
 	if err != nil {
@@ -1106,7 +1107,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	}
 
 	_, err = waitForInstanceServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 
@@ -1114,12 +1115,12 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		Zone:     zone,
 		ServerID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForInstanceServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 
@@ -1134,7 +1135,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 			Zone:     zone,
 			VolumeID: locality.ExpandID(volumeID),
 		})
-		if err != nil && !is404Error(err) {
+		if err != nil && !errs.Is404Error(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -1246,7 +1247,7 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	}, scw.WithContext(ctx))
 	if err != nil {
 		// If UUID is not in marketplace, then it's an image change
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			return diff.ForceNew("image")
 		}
 		return err

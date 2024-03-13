@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -134,7 +135,7 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		// We check for 403 because flexible API returns 403 for a deleted IP
-		if is404Error(err) || is403Error(err) {
+		if errs.Is404Error(err) || errs.Is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -249,12 +250,12 @@ func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceDat
 		Zone:  zone,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) && !is403Error(err) {
+	if err != nil && !errs.Is404Error(err) && !errs.Is403Error(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) && !is403Error(err) {
+	if err != nil && !errs.Is404Error(err) && !errs.Is403Error(err) {
 		return diag.FromErr(err)
 	}
 

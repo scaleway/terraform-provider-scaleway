@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -166,7 +167,7 @@ func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resourc
 		Zone:       zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -223,14 +224,14 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 		Zone:       zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !errs.Is404Error(err) {
 			return diag.FromErr(err)
 		}
 	}
 
 	_, err = waitForInstanceSnapshot(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if !is404Error(err) {
+		if !errs.Is404Error(err) {
 			return diag.FromErr(err)
 		}
 	}

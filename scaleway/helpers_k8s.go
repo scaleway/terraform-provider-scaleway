@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -121,7 +122,7 @@ func waitK8SClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Clu
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if status == k8s.ClusterStatusDeleted && is404Error(err) {
+		if status == k8s.ClusterStatusDeleted && errs.Is404Error(err) {
 			return cluster, nil
 		}
 		return cluster, err

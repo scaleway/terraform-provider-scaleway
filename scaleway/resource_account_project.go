@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func resourceScalewayAccountProject() *schema.Resource {
@@ -81,7 +82,7 @@ func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceD
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -131,7 +132,7 @@ func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.Resourc
 	err := accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func TestAccScalewayFunctionToken_Basic(t *testing.T) {
@@ -103,7 +104,7 @@ func testAccCheckScalewayFunctionTokenDestroy(tt *TestTools) resource.TestCheckF
 				return fmt.Errorf("function token (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !errs.Is404Error(err) {
 				return err
 			}
 		}

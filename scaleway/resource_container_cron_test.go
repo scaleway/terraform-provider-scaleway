@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func TestAccScalewayContainerCron_Basic(t *testing.T) {
@@ -182,7 +183,7 @@ func testAccCheckScalewayContainerCronDestroy(tt *TestTools) resource.TestCheckF
 				return fmt.Errorf("container cron (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !errs.Is404Error(err) {
 				return err
 			}
 		}

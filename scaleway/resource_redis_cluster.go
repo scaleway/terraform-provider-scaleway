@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -304,7 +305,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	}
 	cluster, err := redisAPI.GetCluster(getReq, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if errs.Is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -427,7 +428,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	for i := range migrateClusterRequests {
 		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !errs.Is404Error(err) {
 			return diag.FromErr(err)
 		}
 		_, err = redisAPI.MigrateCluster(&migrateClusterRequests[i], scw.WithContext(ctx))
@@ -436,7 +437,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		}
 
 		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !errs.Is404Error(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -545,7 +546,7 @@ func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !errs.Is404Error(err) {
 		return diag.FromErr(err)
 	}
 

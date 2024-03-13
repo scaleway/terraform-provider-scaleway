@@ -10,6 +10,7 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func init() {
@@ -38,7 +39,7 @@ func testSweepCockpitToken(_ string) error {
 				ProjectID: project.ID,
 			}, scw.WithAllPages())
 			if err != nil {
-				if is404Error(err) {
+				if errs.Is404Error(err) {
 					return nil
 				}
 
@@ -50,7 +51,7 @@ func testSweepCockpitToken(_ string) error {
 					TokenID: token.ID,
 				})
 				if err != nil {
-					if !is404Error(err) {
+					if !errs.Is404Error(err) {
 						return fmt.Errorf("failed to delete token: %w", err)
 					}
 				}
@@ -284,7 +285,7 @@ func testAccCheckScalewayCockpitTokenDestroy(tt *TestTools) resource.TestCheckFu
 			}
 
 			// Currently the API returns a 403 error when we try to delete a token that does not exist
-			if !is404Error(err) && !is403Error(err) {
+			if !errs.Is404Error(err) && !errs.Is403Error(err) {
 				return err
 			}
 		}

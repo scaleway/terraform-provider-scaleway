@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
 )
 
 func TestAccScalewayDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
@@ -238,7 +239,7 @@ func testAccCheckScalewayDocumentDBInstanceEndpointDestroy(tt *TestTools) resour
 				return fmt.Errorf("documentdb instance endpoint (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !errs.Is404Error(err) {
 				return err
 			}
 		}
