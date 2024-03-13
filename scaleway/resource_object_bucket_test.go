@@ -140,7 +140,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 						name = "%s"
 						region = "%s"
 						acl = "private"
-			
+
 						lifecycle_rule {
 							id      = "id1"
 							prefix  = "path1/"
@@ -174,7 +174,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 						name = "%s"
 						region = "%s"
 						acl = "private"
-			
+
 						lifecycle_rule {
 							id      = "id1"
 							prefix  = "path1/"
@@ -208,7 +208,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 						name = "%s"
 						region = "%s"
 						acl = "private"
-			
+
 						lifecycle_rule {
 							id      = "id1"
 							prefix  = "path1/"
@@ -221,7 +221,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 							  	storage_class = "GLACIER"
 							}
 						}
-			
+
 						lifecycle_rule {
 							id      = "id2"
 							prefix  = "path2/"
@@ -230,7 +230,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 								days = "50"
 							}
 						}
-			
+
 						lifecycle_rule {
 							id      = "id3"
 							prefix  = "path3/"
@@ -243,7 +243,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 							  	days = "1"
 							}
 						}
-			
+
 						lifecycle_rule {
 							id      = "id4"
 							enabled = true
@@ -256,7 +256,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 							  	storage_class = "GLACIER"
 							}
 						}
-			
+
 						lifecycle_rule {
 							id      = "id5"
 							enabled = true
@@ -309,7 +309,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 						name = "%s"
 						region = "%s"
 						acl = "private"
-			
+
 						lifecycle_rule {
 							id      = "id1"
 							prefix  = "path1/"
@@ -333,7 +333,7 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 						name = "%s"
 						region = "%s"
 						acl = "private"
-			
+
 						lifecycle_rule {
 							prefix  = "path1/"
 							enabled = true
