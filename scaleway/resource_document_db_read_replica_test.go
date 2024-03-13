@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func TestAccScalewayDocumentDBReadReplica_Basic(t *testing.T) {
@@ -257,7 +258,7 @@ func testAccCheckScalewayDocumentDBReadReplicaDestroy(tt *TestTools) resource.Te
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

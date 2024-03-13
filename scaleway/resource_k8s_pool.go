@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -353,7 +354,7 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m 
 	////
 	pool, err := k8sAPI.GetPool(req, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -486,7 +487,7 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 
 	_, err = k8sAPI.DeletePool(req, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -496,7 +497,7 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -177,7 +178,7 @@ func testAccCheckScalewayVPCPublicGatewayIPDestroy(tt *TestTools) resource.TestC
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -35,7 +36,7 @@ func testSweepFunction(_ string) error {
 				FunctionID: f.ID,
 				Region:     region,
 			})
-			if err != nil && !is404Error(err) {
+			if err != nil && !httperrors.Is404(err) {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting functions in sweeper: %s", err)
@@ -399,7 +400,7 @@ func testAccCheckScalewayFunctionDestroy(tt *TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("function (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

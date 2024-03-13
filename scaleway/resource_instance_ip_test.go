@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
@@ -420,7 +421,7 @@ func testAccCheckScalewayInstanceIPDestroy(tt *TestTools) resource.TestCheckFunc
 
 			// Unexpected api error we return it
 			// We check for 403 because instance API return 403 for deleted IP
-			if !is404Error(errIP) && !is403Error(errIP) {
+			if !httperrors.Is404(errIP) && !httperrors.Is403(errIP) {
 				return errIP
 			}
 		}

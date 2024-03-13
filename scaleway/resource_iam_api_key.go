@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func resourceScalewayIamAPIKey() *schema.Resource {
@@ -109,7 +110,7 @@ func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, 
 		AccessKey: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -170,7 +171,7 @@ func resourceScalewayIamAPIKeyDelete(ctx context.Context, d *schema.ResourceData
 	err := api.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
 		AccessKey: d.Id(),
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

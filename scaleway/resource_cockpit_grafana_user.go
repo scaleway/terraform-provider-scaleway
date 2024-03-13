@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func resourceScalewayCockpitGrafanaUser() *schema.Resource {
@@ -96,7 +97,7 @@ func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.Resou
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -107,7 +108,7 @@ func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.Resou
 		ProjectID: projectID,
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -144,7 +145,7 @@ func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.Res
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -155,7 +156,7 @@ func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.Res
 		GrafanaUserID: grafanaUserID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)

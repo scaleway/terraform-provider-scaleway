@@ -1,38 +1,16 @@
 package scaleway
 
 import (
-	"errors"
 	"fmt"
 	"net"
-	"net/http"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestIsHTTPCodeError(t *testing.T) {
-	assert.True(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusBadRequest))
-	assert.False(t, isHTTPCodeError(nil, http.StatusBadRequest))
-	assert.False(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusNotFound))
-	assert.False(t, isHTTPCodeError(errors.New("not an http error"), http.StatusNotFound))
-}
-
-func TestIs404Error(t *testing.T) {
-	assert.True(t, is404Error(&scw.ResponseError{StatusCode: http.StatusNotFound}))
-	assert.False(t, is404Error(nil))
-	assert.False(t, is404Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
-}
-
-func TestIs403Error(t *testing.T) {
-	assert.True(t, is403Error(&scw.ResponseError{StatusCode: http.StatusForbidden}))
-	assert.False(t, is403Error(nil))
-	assert.False(t, is403Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
-}
 
 func TestGetRandomName(t *testing.T) {
 	name := newRandomName("test")

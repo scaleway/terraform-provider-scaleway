@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
@@ -350,7 +351,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			ID:      &recordID,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
-			if is404Error(err) || is403Error(err) {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -380,7 +381,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			ID:      &idRecord,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
-			if is404Error(err) || is403Error(err) {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -399,7 +400,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZone: scw.StringPtr(dnsZone)}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -511,7 +512,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 		DNSZone: d.Get("dns_zone").(string),
 	})
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -527,7 +528,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 
 	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -538,7 +539,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 		ProjectID: d.Get("project_id").(string),
 	})
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
 		return diag.FromErr(err)
