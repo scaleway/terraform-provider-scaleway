@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayJobDefinition() *schema.Resource {
@@ -99,13 +100,13 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 
 	req := &jobs.CreateJobDefinitionRequest{
 		Region:               region,
-		Name:                 expandOrGenerateString(d.Get("name").(string), "job"),
+		Name:                 types.ExpandOrGenerateString(d.Get("name").(string), "job"),
 		CPULimit:             uint32(d.Get("cpu_limit").(int)),
 		MemoryLimit:          uint32(d.Get("memory_limit").(int)),
 		ImageURI:             d.Get("image_uri").(string),
 		Command:              d.Get("command").(string),
 		ProjectID:            d.Get("project_id").(string),
-		EnvironmentVariables: expandMapStringString(d.Get("env")),
+		EnvironmentVariables: types.ExpandMapStringString(d.Get("env")),
 		Description:          d.Get("description").(string),
 		CronSchedule:         expandJobDefinitionCron(d.Get("cron")).ToCreateRequest(),
 	}
@@ -157,7 +158,7 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("memory_limit", int(definition.MemoryLimit))
 	_ = d.Set("image_uri", definition.ImageURI)
 	_ = d.Set("command", definition.Command)
-	_ = d.Set("env", flattenMap(definition.EnvironmentVariables))
+	_ = d.Set("env", types.FlattenMap(definition.EnvironmentVariables))
 	_ = d.Set("description", definition.Description)
 	_ = d.Set("timeout", definition.JobTimeout.ToTimeDuration().String())
 	_ = d.Set("cron", flattenJobDefinitionCron(definition.CronSchedule))
@@ -179,31 +180,31 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("cpu_limit") {
-		req.CPULimit = expandUint32Ptr(d.Get("cpu_limit"))
+		req.CPULimit = types.ExpandUint32Ptr(d.Get("cpu_limit"))
 	}
 
 	if d.HasChange("memory_limit") {
-		req.MemoryLimit = expandUint32Ptr(d.Get("memory_limit"))
+		req.MemoryLimit = types.ExpandUint32Ptr(d.Get("memory_limit"))
 	}
 
 	if d.HasChange("image_uri") {
-		req.ImageURI = expandUpdatedStringPtr(d.Get("image_uri"))
+		req.ImageURI = types.ExpandUpdatedStringPtr(d.Get("image_uri"))
 	}
 
 	if d.HasChange("command") {
-		req.Command = expandUpdatedStringPtr(d.Get("command"))
+		req.Command = types.ExpandUpdatedStringPtr(d.Get("command"))
 	}
 
 	if d.HasChange("env") {
-		req.EnvironmentVariables = expandMapPtrStringString(d.Get("env"))
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("env"))
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChange("timeout") {

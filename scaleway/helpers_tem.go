@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -63,9 +64,9 @@ func flattenDomainReputation(reputation *tem.DomainReputation) interface{} {
 		{
 			"status":             reputation.Status.String(),
 			"score":              reputation.Score,
-			"scored_at":          flattenTime(reputation.ScoredAt),
-			"previous_score":     flattenUint32Ptr(reputation.PreviousScore),
-			"previous_scored_at": flattenTime(reputation.PreviousScoredAt),
+			"scored_at":          types.FlattenTime(reputation.ScoredAt),
+			"previous_score":     types.FlattenUint32Ptr(reputation.PreviousScore),
+			"previous_scored_at": types.FlattenTime(reputation.PreviousScoredAt),
 		},
 	}
 }

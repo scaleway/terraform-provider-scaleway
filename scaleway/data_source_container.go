@@ -8,6 +8,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -56,9 +57,9 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 		containerName := d.Get("name").(string)
 		res, err := api.ListContainers(&container.ListContainersRequest{
 			Region:      region,
-			Name:        expandStringPtr(containerName),
+			Name:        types.ExpandStringPtr(containerName),
 			NamespaceID: locality.ExpandID(namespaceID),
-			ProjectID:   expandStringPtr(d.Get("project_id")),
+			ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

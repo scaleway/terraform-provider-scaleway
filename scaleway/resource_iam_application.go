@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIamApplication() *schema.Resource {
@@ -63,10 +64,10 @@ func resourceScalewayIamApplication() *schema.Resource {
 func resourceScalewayIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := iamAPI(m)
 	app, err := api.CreateApplication(&iam.CreateApplicationRequest{
-		Name:           expandOrGenerateString(d.Get("name"), "application"),
+		Name:           types.ExpandOrGenerateString(d.Get("name"), "application"),
 		Description:    d.Get("description").(string),
 		OrganizationID: d.Get("organization_id").(string),
-		Tags:           expandStrings(d.Get("tags")),
+		Tags:           types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -91,11 +92,11 @@ func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceD
 	}
 	_ = d.Set("name", app.Name)
 	_ = d.Set("description", app.Description)
-	_ = d.Set("created_at", flattenTime(app.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(app.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(app.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(app.UpdatedAt))
 	_ = d.Set("organization_id", app.OrganizationID)
 	_ = d.Set("editable", app.Editable)
-	_ = d.Set("tags", flattenSliceString(app.Tags))
+	_ = d.Set("tags", types.FlattenSliceString(app.Tags))
 
 	return nil
 }
@@ -110,15 +111,15 @@ func resourceScalewayIamApplicationUpdate(ctx context.Context, d *schema.Resourc
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 

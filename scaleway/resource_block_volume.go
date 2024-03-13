@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayBlockVolume() *schema.Resource {
@@ -82,14 +83,14 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 
 	req := &block.CreateVolumeRequest{
 		Zone:      zone,
-		Name:      expandOrGenerateString(d.Get("name").(string), "volume"),
+		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "volume"),
 		ProjectID: d.Get("project_id").(string),
-		Tags:      expandStrings(d.Get("tags")),
-		PerfIops:  expandUint32Ptr(d.Get("iops")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
+		PerfIops:  types.ExpandUint32Ptr(d.Get("iops")),
 	}
 
 	if iops, ok := d.GetOk("iops"); ok {
-		req.PerfIops = expandUint32Ptr(iops)
+		req.PerfIops = types.ExpandUint32Ptr(iops)
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -138,7 +139,7 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("name", volume.Name)
 
 	if volume.Specs != nil {
-		_ = d.Set("iops", flattenUint32Ptr(volume.Specs.PerfIops))
+		_ = d.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
 	}
 	_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
 	_ = d.Set("zone", volume.Zone)
@@ -175,7 +176,7 @@ func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("size") {
@@ -184,7 +185,7 @@ func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if _, err := api.UpdateVolume(req, scw.WithContext(ctx)); err != nil {

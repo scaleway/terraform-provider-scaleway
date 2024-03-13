@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -295,8 +296,8 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	createReq := &rdb.CreateInstanceRequest{
 		Region:        region,
-		ProjectID:     expandStringPtr(d.Get("project_id")),
-		Name:          expandOrGenerateString(d.Get("name"), "rdb"),
+		ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
+		Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 		NodeType:      d.Get("node_type").(string),
 		Engine:        d.Get("engine").(string),
 		IsHaCluster:   d.Get("is_ha_cluster").(bool),
@@ -312,7 +313,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	rawTag, tagExist := d.GetOk("tags")
 	if tagExist {
-		createReq.Tags = expandStrings(rawTag)
+		createReq.Tags = types.ExpandStrings(rawTag)
 	}
 
 	// Init Endpoints
@@ -353,7 +354,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			InstanceID: res.ID,
 		}
 
-		updateReq.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
+		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
@@ -417,9 +418,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
-	_ = d.Set("tags", flattenSliceString(res.Tags))
+	_ = d.Set("tags", types.FlattenSliceString(res.Tags))
 	if res.Endpoint != nil {
-		_ = d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
+		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP))
 		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
 	} else {
 		_ = d.Set("endpoint_ip", "")
@@ -567,7 +568,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 				rdb.UpgradeInstanceRequest{
 					Region:     region,
 					InstanceID: ID,
-					NodeType:   expandStringPtr(d.Get("node_type")),
+					NodeType:   types.ExpandStringPtr(d.Get("node_type")),
 				})
 		} else {
 			return diag.Diagnostics{
@@ -617,7 +618,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 	if d.HasChange("disable_backup") {
 		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
@@ -629,10 +630,10 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
 	}
 	if d.HasChange("backup_same_region") {
-		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
+		req.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
@@ -676,7 +677,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			Region:     region,
 			InstanceID: ID,
 			Name:       d.Get("user_name").(string),
-			Password:   expandStringPtr(d.Get("password")),
+			Password:   types.ExpandStringPtr(d.Get("password")),
 		}
 
 		_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))

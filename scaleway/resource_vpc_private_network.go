@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayVPCPrivateNetwork() *schema.Resource {
@@ -195,15 +196,15 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 	}
 
 	req := &vpc.CreatePrivateNetworkRequest{
-		Name:      expandOrGenerateString(d.Get("name"), "pn"),
-		Tags:      expandStrings(d.Get("tags")),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "pn"),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
 		Region:    region,
 	}
 
 	if _, ok := d.GetOk("vpc_id"); ok {
 		vpcID := regional.ExpandID(d.Get("vpc_id").(string)).ID
-		req.VpcID = expandUpdatedStringPtr(vpcID)
+		req.VpcID = types.ExpandUpdatedStringPtr(vpcID)
 	}
 
 	if ipv4Subnets != nil {
@@ -251,8 +252,8 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 	_ = d.Set("vpc_id", regional.NewIDString(region, pn.VpcID))
 	_ = d.Set("organization_id", pn.OrganizationID)
 	_ = d.Set("project_id", pn.ProjectID)
-	_ = d.Set("created_at", flattenTime(pn.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(pn.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(pn.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("region", region)
 	_ = d.Set("is_regional", true)
@@ -275,7 +276,7 @@ func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.Reso
 		PrivateNetworkID: ID,
 		Region:           region,
 		Name:             scw.StringPtr(d.Get("name").(string)),
-		Tags:             expandUpdatedStringsPtr(d.Get("tags")),
+		Tags:             types.ExpandUpdatedStringsPtr(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

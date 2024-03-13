@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayLbFrontends() *schema.Resource {
@@ -96,7 +97,7 @@ func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceDa
 	res, err := lbAPI.ListFrontends(&lb.ZonedAPIListFrontendsRequest{
 		Zone: zone,
 		LBID: lbID,
-		Name: expandStringPtr(d.Get("name")),
+		Name: types.ExpandStringPtr(d.Get("name")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -108,11 +109,11 @@ func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceDa
 		rawFrontend["id"] = zonal.NewIDString(zone, frontend.ID)
 		rawFrontend["name"] = frontend.Name
 		rawFrontend["lb_id"] = zonal.NewIDString(zone, frontend.LB.ID)
-		rawFrontend["created_at"] = flattenTime(frontend.CreatedAt)
-		rawFrontend["update_at"] = flattenTime(frontend.UpdatedAt)
+		rawFrontend["created_at"] = types.FlattenTime(frontend.CreatedAt)
+		rawFrontend["update_at"] = types.FlattenTime(frontend.UpdatedAt)
 		rawFrontend["inbound_port"] = frontend.InboundPort
 		rawFrontend["backend_id"] = frontend.Backend.ID
-		rawFrontend["timeout_client"] = flattenDuration(frontend.TimeoutClient)
+		rawFrontend["timeout_client"] = types.FlattenDuration(frontend.TimeoutClient)
 		rawFrontend["enable_http3"] = frontend.EnableHTTP3
 		if len(frontend.CertificateIDs) > 0 {
 			rawFrontend["certificate_ids"] = frontend.CertificateIDs

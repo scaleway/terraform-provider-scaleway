@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayInstanceSecurityGroup() *schema.Resource {
@@ -113,16 +114,16 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 	}
 
 	req := &instance.CreateSecurityGroupRequest{
-		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
+		Name:                  types.ExpandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
-		Project:               expandStringPtr(d.Get("project_id")),
+		Project:               types.ExpandStringPtr(d.Get("project_id")),
 		Description:           d.Get("description").(string),
 		Stateful:              d.Get("stateful").(bool),
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
-		EnableDefaultSecurity: expandBoolPtr(d.Get("enable_default_security")),
+		EnableDefaultSecurity: types.ExpandBoolPtr(d.Get("enable_default_security")),
 	}
-	tags := expandStrings(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 	if len(tags) > 0 {
 		req.Tags = tags
 	}
@@ -267,24 +268,24 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 		Zone:                  zone,
 		SecurityGroupID:       ID,
 		Stateful:              scw.BoolPtr(d.Get("stateful").(bool)),
-		Description:           expandStringPtr(description),
+		Description:           types.ExpandStringPtr(description),
 		InboundDefaultPolicy:  inboundDefaultPolicy,
 		OutboundDefaultPolicy: outboundDefaultPolicy,
 		Tags:                  scw.StringsPtr([]string{}),
 	}
 
-	tags := expandStrings(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 	if len(tags) > 0 {
-		updateReq.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateReq.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("enable_default_security") {
-		updateReq.EnableDefaultSecurity = expandBoolPtr(d.Get("enable_default_security"))
+		updateReq.EnableDefaultSecurity = types.ExpandBoolPtr(d.Get("enable_default_security"))
 	}
 
 	// Only update name if one is provided in the state
 	if d.Get("name") != nil && d.Get("name").(string) != "" {
-		updateReq.Name = expandStringPtr(d.Get("name"))
+		updateReq.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 
 	_, err = instanceAPI.UpdateSecurityGroup(updateReq, scw.WithContext(ctx))
@@ -440,7 +441,7 @@ func securityGroupRuleExpand(i interface{}) (*instance.SecurityGroupRule, error)
 		ipRange = "0.0.0.0/0"
 	}
 
-	ipnetRange, err := expandIPNet(ipRange)
+	ipnetRange, err := types.ExpandIPNet(ipRange)
 	if err != nil {
 		return nil, err
 	}
@@ -477,7 +478,7 @@ func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) (map[string]inte
 		portTo = *rule.DestPortTo
 	}
 
-	ipnetRange, err := flattenIPNet(rule.IPRange)
+	ipnetRange, err := types.FlattenIPNet(rule.IPRange)
 	if err != nil {
 		return nil, err
 	}
@@ -500,11 +501,11 @@ func securityGroupRuleEquals(ruleA, ruleB *instance.SecurityGroupRule) (bool, er
 	}
 	portFromEqual := zeroIfNil(ruleA.DestPortFrom) == zeroIfNil(ruleB.DestPortFrom)
 	portToEqual := zeroIfNil(ruleA.DestPortTo) == zeroIfNil(ruleB.DestPortTo)
-	ipRangeA, err := flattenIPNet(ruleA.IPRange)
+	ipRangeA, err := types.FlattenIPNet(ruleA.IPRange)
 	if err != nil {
 		return false, err
 	}
-	ipRangeB, err := flattenIPNet(ruleB.IPRange)
+	ipRangeB, err := types.FlattenIPNet(ruleB.IPRange)
 	if err != nil {
 		return false, err
 	}

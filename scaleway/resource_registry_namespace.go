@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayRegistryNamespace() *schema.Resource {
@@ -65,7 +66,7 @@ func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.Reso
 
 	ns, err := api.CreateNamespace(&registry.CreateNamespaceRequest{
 		Region:      region,
-		ProjectID:   expandStringPtr(d.Get("project_id")),
+		ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		IsPublic:    d.Get("is_public").(bool),
@@ -129,7 +130,7 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		if _, err := api.UpdateNamespace(&registry.UpdateNamespaceRequest{
 			Region:      region,
 			NamespaceID: id,
-			Description: expandUpdatedStringPtr(d.Get("description")),
+			Description: types.ExpandUpdatedStringPtr(d.Get("description")),
 			IsPublic:    scw.BoolPtr(d.Get("is_public").(bool)),
 		}, scw.WithContext(ctx)); err != nil {
 			return diag.FromErr(err)

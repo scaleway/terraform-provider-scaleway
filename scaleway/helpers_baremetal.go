@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -208,7 +209,7 @@ func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) i
 	for _, option := range options {
 		flattenedOptions = append(flattenedOptions, map[string]interface{}{
 			"id":         zonal.NewID(zone, option.ID).String(),
-			"expires_at": flattenTime(option.ExpiresAt),
+			"expires_at": types.FlattenTime(option.ExpiresAt),
 			"name":       option.Name,
 		})
 	}
@@ -220,10 +221,10 @@ func flattenBaremetalPrivateNetworks(region scw.Region, privateNetworks []*barem
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
 			"id":         regional.NewIDString(region, privateNetwork.PrivateNetworkID),
-			"vlan":       flattenUint32Ptr(privateNetwork.Vlan),
+			"vlan":       types.FlattenUint32Ptr(privateNetwork.Vlan),
 			"status":     privateNetwork.Status,
-			"created_at": flattenTime(privateNetwork.CreatedAt),
-			"updated_at": flattenTime(privateNetwork.UpdatedAt),
+			"created_at": types.FlattenTime(privateNetwork.CreatedAt),
+			"updated_at": types.FlattenTime(privateNetwork.UpdatedAt),
 		})
 	}
 	return flattenedPrivateNetworks
@@ -325,7 +326,7 @@ func waitForBaremetalServerPrivateNetwork(ctx context.Context, api *baremetal.Pr
 
 func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremetalAPI *baremetal.API, installServerRequest *baremetal.InstallServerRequest) error {
 	installServerRequest.OsID = locality.ExpandID(d.Get("os"))
-	installServerRequest.SSHKeyIDs = expandStrings(d.Get("ssh_key_ids"))
+	installServerRequest.SSHKeyIDs = types.ExpandStrings(d.Get("ssh_key_ids"))
 
 	_, err := baremetalAPI.InstallServer(installServerRequest, scw.WithContext(ctx))
 	if err != nil {
@@ -372,7 +373,7 @@ func baremetalCompareOptions(slice1, slice2 []*baremetal.ServerOption) []*bareme
 		if _, foundID := m[option.ID]; !foundID {
 			diff = append(diff, option)
 		} else if foundID {
-			if _, foundExp := m[flattenTime(option.ExpiresAt).(string)]; !foundExp {
+			if _, foundExp := m[types.FlattenTime(option.ExpiresAt).(string)]; !foundExp {
 				diff = append(diff, option)
 			}
 		}

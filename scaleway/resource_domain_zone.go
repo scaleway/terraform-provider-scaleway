@@ -10,6 +10,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayDomainZone() *schema.Resource {
@@ -89,7 +90,7 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 	zoneName := fmt.Sprintf("%s.%s", subdomainName, domainName)
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: expandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		DNSZone:   scw.StringPtr(zoneName),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -128,7 +129,7 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 	var zone *domain.DNSZone
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: expandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		DNSZone:   scw.StringPtr(d.Id()),
 	}, scw.WithContext(ctx))
 	if err != nil {

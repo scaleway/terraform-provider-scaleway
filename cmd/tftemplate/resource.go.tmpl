@@ -42,7 +42,7 @@ func resourceScaleway{{ .Resource }}Create(ctx context.Context, d *schema.Resour
 	{{ .ResourceCleanLow }}, err := api.Create{{ .ResourceClean }}(&{{ .API }}.Create{{ .ResourceClean }}Request{
 		{{.LocalityUpper}}: {{.Locality}},
 		ProjectID: d.Get("project_id").(string),
-		Name: expandOrGenerateString(d.Get("name").(string), "{{ .ResourceCleanLow }}"),
+		Name: types.ExpandOrGenerateString(d.Get("name").(string), "{{ .ResourceCleanLow }}"),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -109,7 +109,7 @@ func resourceScaleway{{ .Resource }}Update(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if _, err := api.Update{{ .ResourceClean }}(req, scw.WithContext(ctx)); err != nil {

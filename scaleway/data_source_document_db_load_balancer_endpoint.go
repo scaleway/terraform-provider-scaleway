@@ -8,6 +8,7 @@ import (
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -68,8 +69,8 @@ func dataSourceScalewayDocumentDBLoadBalancerRead(ctx context.Context, d *schema
 		rawInstanceName := d.Get("instance_name").(string)
 		res, err := api.ListInstances(&documentdb.ListInstancesRequest{
 			Region:    region,
-			Name:      expandStringPtr(rawInstanceName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(rawInstanceName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -96,9 +97,9 @@ func dataSourceScalewayDocumentDBLoadBalancerRead(ctx context.Context, d *schema
 	lb := getEndPointDocumentDBLoadBalancer(instance.Endpoints)
 	_ = d.Set("instance_id", instanceID)
 	_ = d.Set("instance_name", instance.Name)
-	_ = d.Set("hostname", flattenStringPtr(lb.Hostname))
+	_ = d.Set("hostname", types.FlattenStringPtr(lb.Hostname))
 	_ = d.Set("port", int(lb.Port))
-	_ = d.Set("ip", flattenIPPtr(lb.IP))
+	_ = d.Set("ip", types.FlattenIPPtr(lb.IP))
 	_ = d.Set("name", lb.Name)
 
 	d.SetId(datasourceNewRegionalID(lb.ID, region))

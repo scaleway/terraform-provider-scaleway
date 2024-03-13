@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -40,8 +41,8 @@ func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Res
 		instanceName := d.Get("name").(string)
 		res, err := api.ListInstances(&documentdb.ListInstancesRequest{
 			Region:    region,
-			Name:      expandStringPtr(instanceName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(instanceName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)

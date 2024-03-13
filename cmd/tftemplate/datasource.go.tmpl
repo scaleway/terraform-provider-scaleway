@@ -39,8 +39,8 @@ func dataSourceScaleway{{.Resource}}Read(ctx context.Context, d *schema.Resource
     if !{{.ResourceCleanLow}}IDExists {
         res, err := api.List{{.ResourceClean}}s(&{{.API}}.List{{.ResourceClean}}sRequest{
             {{.LocalityUpper}}:     {{.Locality}},
-            Name:       expandStringPtr(d.Get("name")),
-            ProjectID:  expandStringPtr(d.Get("project_id")),
+            Name:       types.ExpandStringPtr(d.Get("name")),
+            ProjectID:  types.ExpandStringPtr(d.Get("project_id")),
         })
         if err != nil {
             return diag.FromErr(err)

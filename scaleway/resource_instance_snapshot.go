@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -117,8 +118,8 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 
 	req := &instance.CreateSnapshotRequest{
 		Zone:    zone,
-		Project: expandStringPtr(d.Get("project_id")),
-		Name:    expandOrGenerateString(d.Get("name"), "snap"),
+		Project: types.ExpandStringPtr(d.Get("project_id")),
+		Name:    types.ExpandOrGenerateString(d.Get("name"), "snap"),
 	}
 
 	if volumeType, ok := d.GetOk("type"); ok {
@@ -126,15 +127,15 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		req.VolumeType = volumeType
 	}
 
-	req.Tags = expandStringsPtr(d.Get("tags"))
+	req.Tags = types.ExpandStringsPtr(d.Get("tags"))
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
 		req.VolumeID = scw.StringPtr(zonal.ExpandID(volumeID).ID)
 	}
 
 	if _, isImported := d.GetOk("import"); isImported {
-		req.Bucket = expandStringPtr(d.Get("import.0.bucket"))
-		req.Key = expandStringPtr(d.Get("import.0.key"))
+		req.Bucket = types.ExpandStringPtr(d.Get("import.0.bucket"))
+		req.Key = types.ExpandStringPtr(d.Get("import.0.key"))
 	}
 
 	res, err := instanceAPI.CreateSnapshot(req, scw.WithContext(ctx))
@@ -196,9 +197,9 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 		Tags:       scw.StringsPtr([]string{}),
 	}
 
-	tags := expandStrings(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
 	}
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))

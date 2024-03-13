@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayTemDomain() *schema.Resource {
@@ -210,10 +211,10 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("name", domain.Name)
 	_ = d.Set("accept_tos", true)
 	_ = d.Set("status", domain.Status)
-	_ = d.Set("created_at", flattenTime(domain.CreatedAt))
-	_ = d.Set("next_check_at", flattenTime(domain.NextCheckAt))
-	_ = d.Set("last_valid_at", flattenTime(domain.LastValidAt))
-	_ = d.Set("revoked_at", flattenTime(domain.RevokedAt))
+	_ = d.Set("created_at", types.FlattenTime(domain.CreatedAt))
+	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
+	_ = d.Set("last_valid_at", types.FlattenTime(domain.LastValidAt))
+	_ = d.Set("revoked_at", types.FlattenTime(domain.RevokedAt))
 	_ = d.Set("last_error", domain.LastError)
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)

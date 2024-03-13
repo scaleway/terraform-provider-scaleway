@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -51,10 +52,10 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 		secretName := d.Get("name").(string)
 		request := &secret.ListSecretsRequest{
 			Region:         region,
-			Name:           expandStringPtr(secretName),
-			ProjectID:      expandStringPtr(projectID),
-			OrganizationID: expandStringPtr(d.Get("organization_id")),
-			Path:           expandStringPtr(d.Get("path")),
+			Name:           types.ExpandStringPtr(secretName),
+			ProjectID:      types.ExpandStringPtr(projectID),
+			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
+			Path:           types.ExpandStringPtr(d.Get("path")),
 		}
 
 		res, err := api.ListSecrets(request, scw.WithContext(ctx))

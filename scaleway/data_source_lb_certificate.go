@@ -8,6 +8,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -44,7 +45,7 @@ func dataSourceScalewayLbCertificateRead(ctx context.Context, d *schema.Resource
 		certificateName := d.Get("name").(string)
 		res, err := api.ListCertificates(&lbSDK.ZonedAPIListCertificatesRequest{
 			Zone: zone,
-			Name: expandStringPtr(certificateName),
+			Name: types.ExpandStringPtr(certificateName),
 			LBID: locality.ExpandID(d.Get("lb_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {

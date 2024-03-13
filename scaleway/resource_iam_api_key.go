@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -88,10 +89,10 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 func resourceScalewayIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := iamAPI(m)
 	res, err := api.CreateAPIKey(&iam.CreateAPIKeyRequest{
-		ApplicationID:    expandStringPtr(d.Get("application_id")),
-		UserID:           expandStringPtr(d.Get("user_id")),
+		ApplicationID:    types.ExpandStringPtr(d.Get("application_id")),
+		UserID:           types.ExpandStringPtr(d.Get("user_id")),
 		ExpiresAt:        expandTimePtr(d.Get("expires_at")),
-		DefaultProjectID: expandStringPtr(d.Get("default_project_id")),
+		DefaultProjectID: types.ExpandStringPtr(d.Get("default_project_id")),
 		Description:      d.Get("description").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -118,9 +119,9 @@ func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	_ = d.Set("description", res.Description)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
-	_ = d.Set("expires_at", flattenTime(res.ExpiresAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
+	_ = d.Set("expires_at", types.FlattenTime(res.ExpiresAt))
 	_ = d.Set("access_key", res.AccessKey)
 
 	if res.ApplicationID != nil {
@@ -147,12 +148,12 @@ func resourceScalewayIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData
 	hasChanged := false
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
 	if d.HasChange("default_project_id") {
-		req.DefaultProjectID = expandStringPtr(d.Get("default_project_id"))
+		req.DefaultProjectID = types.ExpandStringPtr(d.Get("default_project_id"))
 		hasChanged = true
 	}
 

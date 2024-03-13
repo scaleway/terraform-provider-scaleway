@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -217,7 +218,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 
 	// check if container should be deployed
 	shouldDeploy := d.Get("deploy")
-	if *expandBoolPtr(shouldDeploy) {
+	if *types.ExpandBoolPtr(shouldDeploy) {
 		_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.Errorf("unexpected waiting container error: %s", err)
@@ -226,7 +227,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		reqUpdate := &container.UpdateContainerRequest{
 			Region:      res.Region,
 			ContainerID: res.ID,
-			Redeploy:    expandBoolPtr(shouldDeploy),
+			Redeploy:    types.ExpandBoolPtr(shouldDeploy),
 		}
 		_, err = api.UpdateContainer(reqUpdate, scw.WithContext(ctx))
 		if err != nil {
@@ -263,7 +264,7 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("namespace_id", regional.NewID(region, co.NamespaceID).String())
 	_ = d.Set("status", co.Status.String())
 	_ = d.Set("error_message", co.ErrorMessage)
-	_ = d.Set("environment_variables", flattenMap(co.EnvironmentVariables))
+	_ = d.Set("environment_variables", types.FlattenMap(co.EnvironmentVariables))
 	_ = d.Set("min_scale", int(co.MinScale))
 	_ = d.Set("max_scale", int(co.MaxScale))
 	_ = d.Set("memory_limit", int(co.MemoryLimit))
@@ -277,7 +278,7 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("protocol", co.Protocol.String())
 	_ = d.Set("cron_status", co.Status.String())
 	_ = d.Set("port", int(co.Port))
-	_ = d.Set("deploy", scw.BoolPtr(*expandBoolPtr(d.Get("deploy"))))
+	_ = d.Set("deploy", scw.BoolPtr(*types.ExpandBoolPtr(d.Get("deploy"))))
 	_ = d.Set("http_option", co.HTTPOption)
 	_ = d.Set("region", co.Region.String())
 
@@ -311,7 +312,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("environment_variables") {
 		envVariablesRaw := d.Get("environment_variables")
-		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(envVariablesRaw)
 	}
 
 	if d.HasChanges("secret_environment_variables") {
@@ -339,15 +340,15 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("privacy") {
-		req.Privacy = container.ContainerPrivacy(*expandStringPtr(d.Get("privacy")))
+		req.Privacy = container.ContainerPrivacy(*types.ExpandStringPtr(d.Get("privacy")))
 	}
 
 	if d.HasChanges("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChanges("registry_image") {
-		req.RegistryImage = expandStringPtr(d.Get("registry_image"))
+		req.RegistryImage = types.ExpandStringPtr(d.Get("registry_image"))
 	}
 
 	if d.HasChanges("max_concurrency") {
@@ -355,7 +356,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("protocol") {
-		req.Protocol = container.ContainerProtocol(*expandStringPtr(d.Get("protocol")))
+		req.Protocol = container.ContainerProtocol(*types.ExpandStringPtr(d.Get("protocol")))
 	}
 
 	if d.HasChanges("port") {
@@ -367,7 +368,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("deploy") {
-		req.Redeploy = expandBoolPtr(d.Get("deploy"))
+		req.Redeploy = types.ExpandBoolPtr(d.Get("deploy"))
 	}
 
 	imageHasChanged := d.HasChanges("registry_sha256")

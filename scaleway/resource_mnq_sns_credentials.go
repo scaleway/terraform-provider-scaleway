@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayMNQSNSCredentials() *schema.Resource {
@@ -85,11 +86,11 @@ func resourceScalewayMNQSNSCredentialsCreate(ctx context.Context, d *schema.Reso
 	credentials, err := api.CreateSnsCredentials(&mnq.SnsAPICreateSnsCredentialsRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
-		Name:      expandOrGenerateString(d.Get("name").(string), "sns-credentials"),
+		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "sns-credentials"),
 		Permissions: &mnq.SnsPermissions{
-			CanPublish: expandBoolPtr(d.Get("permissions.0.can_publish")),
-			CanReceive: expandBoolPtr(d.Get("permissions.0.can_receive")),
-			CanManage:  expandBoolPtr(d.Get("permissions.0.can_manage")),
+			CanPublish: types.ExpandBoolPtr(d.Get("permissions.0.can_publish")),
+			CanReceive: types.ExpandBoolPtr(d.Get("permissions.0.can_receive")),
+			CanManage:  types.ExpandBoolPtr(d.Get("permissions.0.can_manage")),
 		},
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -149,22 +150,22 @@ func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("permissions.0") {
 		req.Permissions = &mnq.SnsPermissions{}
 
 		if d.HasChange("permissions.0.can_publish") {
-			req.Permissions.CanPublish = expandBoolPtr(d.Get("permissions.0.can_publish"))
+			req.Permissions.CanPublish = types.ExpandBoolPtr(d.Get("permissions.0.can_publish"))
 		}
 
 		if d.HasChange("permissions.0.can_receive") {
-			req.Permissions.CanReceive = expandBoolPtr(d.Get("permissions.0.can_receive"))
+			req.Permissions.CanReceive = types.ExpandBoolPtr(d.Get("permissions.0.can_receive"))
 		}
 
 		if d.HasChange("permissions.0.can_manage") {
-			req.Permissions.CanManage = expandBoolPtr(d.Get("permissions.0.can_manage"))
+			req.Permissions.CanManage = types.ExpandBoolPtr(d.Get("permissions.0.can_manage"))
 		}
 	}
 

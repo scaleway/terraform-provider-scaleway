@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -48,9 +49,9 @@ func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceDat
 		hostingDomain := d.Get("domain").(string)
 		res, err := api.ListHostings(&webhosting.ListHostingsRequest{
 			Region:         region,
-			Domain:         expandStringPtr(hostingDomain),
-			ProjectID:      expandStringPtr(d.Get("project_id")),
-			OrganizationID: expandStringPtr(d.Get("organization_id")),
+			Domain:         types.ExpandStringPtr(hostingDomain),
+			ProjectID:      types.ExpandStringPtr(d.Get("project_id")),
+			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayK8SPool() *schema.Resource {
@@ -242,12 +243,12 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	req := &k8s.CreatePoolRequest{
 		Region:           region,
 		ClusterID:        locality.ExpandID(d.Get("cluster_id")),
-		Name:             expandOrGenerateString(d.Get("name"), "pool"),
+		Name:             types.ExpandOrGenerateString(d.Get("name"), "pool"),
 		NodeType:         d.Get("node_type").(string),
 		Autoscaling:      d.Get("autoscaling").(bool),
 		Autohealing:      d.Get("autohealing").(bool),
 		Size:             uint32(d.Get("size").(int)),
-		Tags:             expandStrings(d.Get("tags")),
+		Tags:             types.ExpandStrings(d.Get("tags")),
 		Zone:             scw.Zone(d.Get("zone").(string)),
 		KubeletArgs:      expandKubeletArgs(d.Get("kubelet_args")),
 		PublicIPDisabled: d.Get("public_ip_disabled").(bool),
@@ -262,7 +263,7 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		req.PlacementGroupID = expandStringPtr(locality.ExpandID(placementGroupID))
+		req.PlacementGroupID = types.ExpandStringPtr(locality.ExpandID(placementGroupID))
 	}
 
 	if minSize, ok := d.GetOk("min_size"); ok {
@@ -436,7 +437,7 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("kubelet_args") {

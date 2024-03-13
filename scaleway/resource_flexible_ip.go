@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayFlexibleIP() *schema.Resource {
@@ -99,9 +100,9 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 		Zone:        zone,
 		ProjectID:   d.Get("project_id").(string),
 		Description: d.Get("description").(string),
-		Tags:        expandStrings(d.Get("tags")),
-		ServerID:    expandStringPtr(locality.ExpandID(d.Get("server_id"))),
-		Reverse:     expandStringPtr(d.Get("reverse")),
+		Tags:        types.ExpandStrings(d.Get("tags")),
+		ServerID:    types.ExpandStringPtr(locality.ExpandID(d.Get("server_id"))),
+		Reverse:     types.ExpandStringPtr(d.Get("reverse")),
 		IsIPv6:      d.Get("is_ipv6").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -147,8 +148,8 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("organization_id", flexibleIP.OrganizationID)
 	_ = d.Set("project_id", flexibleIP.ProjectID)
 	_ = d.Set("reverse", flexibleIP.Reverse)
-	_ = d.Set("created_at", flattenTime(flexibleIP.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(flexibleIP.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(flexibleIP.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(flexibleIP.UpdatedAt))
 	_ = d.Set("tags", flexibleIP.Tags)
 	_ = d.Set("status", flexibleIP.Status.String())
 
@@ -179,17 +180,17 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 	hasChanged := false
 
 	if d.HasChanges("reverse") {
-		updateRequest.Reverse = expandUpdatedStringPtr(d.Get("reverse"))
+		updateRequest.Reverse = types.ExpandUpdatedStringPtr(d.Get("reverse"))
 		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 

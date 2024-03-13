@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -128,7 +129,7 @@ func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, static
 		}
 
 		if staticConfig != nil {
-			ip, err := expandIPNet(*staticConfig)
+			ip, err := types.ExpandIPNet(*staticConfig)
 			if err != nil {
 				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network ip_net (%s): %s", r["ip_net"], err))...)
 			}
@@ -165,18 +166,18 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint, enableIpam bool) (interfac
 				return diag.FromErr(err), false
 			}
 			pnRegionalID := regional.NewIDString(fetchRegion, pn.PrivateNetworkID)
-			serviceIP, err := flattenIPNet(pn.ServiceIP)
+			serviceIP, err := types.FlattenIPNet(pn.ServiceIP)
 			if err != nil {
 				return pnI, false
 			}
 			pnI = append(pnI, map[string]interface{}{
 				"endpoint_id": endpoint.ID,
-				"ip":          flattenIPPtr(endpoint.IP),
+				"ip":          types.FlattenIPPtr(endpoint.IP),
 				"port":        int(endpoint.Port),
 				"name":        endpoint.Name,
 				"ip_net":      serviceIP,
 				"pn_id":       pnRegionalID,
-				"hostname":    flattenStringPtr(endpoint.Hostname),
+				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 				"enable_ipam": enableIpam,
 			})
 			return pnI, true
@@ -192,10 +193,10 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 		if endpoint.LoadBalancer != nil {
 			flat = append(flat, map[string]interface{}{
 				"endpoint_id": endpoint.ID,
-				"ip":          flattenIPPtr(endpoint.IP),
+				"ip":          types.FlattenIPPtr(endpoint.IP),
 				"port":        int(endpoint.Port),
 				"name":        endpoint.Name,
-				"hostname":    flattenStringPtr(endpoint.Hostname),
+				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 			})
 			return flat, true
 		}
@@ -207,7 +208,7 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 // expandTimePtr returns a time pointer for an RFC3339 time.
 // It returns nil if time is not valid, you should use validateDate to validate field.
 func expandTimePtr(i interface{}) *time.Time {
-	rawTime := expandStringPtr(i)
+	rawTime := types.ExpandStringPtr(i)
 	if rawTime == nil {
 		return nil
 	}
@@ -247,7 +248,7 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *
 	}
 
 	if staticConfig != nil {
-		ipNet, err := expandIPNet(*staticConfig)
+		ipNet, err := types.ExpandIPNet(*staticConfig)
 		if err != nil {
 			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network service_ip (%s): %s", rawEndpoint["service_ip"], err))...)
 		}
@@ -271,10 +272,10 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 	for _, endpoint := range endpoints {
 		rawEndpoint := map[string]interface{}{
 			"endpoint_id": endpoint.ID,
-			"ip":          flattenIPPtr(endpoint.IP),
+			"ip":          types.FlattenIPPtr(endpoint.IP),
 			"port":        int(endpoint.Port),
 			"name":        endpoint.Name,
-			"hostname":    flattenStringPtr(endpoint.Hostname),
+			"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 		}
 		if endpoint.DirectAccess != nil {
 			directAccess = rawEndpoint
@@ -343,11 +344,11 @@ func rdbPrivilegeUpgradeV1SchemaType() cty.Type {
 func getIPConfigCreate(d *schema.ResourceData, ipFieldName string) (ipamConfig *bool, staticConfig *string) {
 	enableIpam, enableIpamSet := d.GetOk("private_network.0.enable_ipam")
 	if enableIpamSet {
-		ipamConfig = expandBoolPtr(enableIpam)
+		ipamConfig = types.ExpandBoolPtr(enableIpam)
 	}
 	customIP, customIPSet := d.GetOk("private_network.0." + ipFieldName)
 	if customIPSet {
-		staticConfig = expandStringPtr(customIP)
+		staticConfig = types.ExpandStringPtr(customIP)
 	}
 	return ipamConfig, staticConfig
 }

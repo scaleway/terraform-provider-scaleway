@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayVPCPublicGatewayIPReverseDNS() *schema.Resource {
@@ -70,7 +71,7 @@ func resourceScalewayVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *
 
 		reverse := d.Get("reverse").(string)
 		if len(reverse) > 0 {
-			updateReverseReq.Reverse = expandStringPtr(reverse)
+			updateReverseReq.Reverse = types.ExpandStringPtr(reverse)
 		}
 
 		err := retryUpdateGatewayReverseDNS(ctx, vpcgwAPI, updateReverseReq, d.Timeout(schema.TimeoutCreate))
@@ -122,7 +123,7 @@ func resourceScalewayVPCPublicGatewayIPReverseDNSUpdate(ctx context.Context, d *
 
 		reverse := d.Get("reverse").(string)
 		if len(reverse) > 0 {
-			updateReverseReq.Reverse = expandStringPtr(reverse)
+			updateReverseReq.Reverse = types.ExpandStringPtr(reverse)
 		}
 
 		err := retryUpdateGatewayReverseDNS(ctx, vpcgwAPI, updateReverseReq, d.Timeout(schema.TimeoutUpdate))

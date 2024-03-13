@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -93,11 +94,11 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 
 	createVolumeRequest := &instance.CreateVolumeRequest{
 		Zone:       zone,
-		Name:       expandOrGenerateString(d.Get("name"), "vol"),
+		Name:       types.ExpandOrGenerateString(d.Get("name"), "vol"),
 		VolumeType: instance.VolumeVolumeType(d.Get("type").(string)),
-		Project:    expandStringPtr(d.Get("project_id")),
+		Project:    types.ExpandStringPtr(d.Get("project_id")),
 	}
-	tags := expandStrings(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 	if len(tags) > 0 {
 		createVolumeRequest.Tags = tags
 	}
@@ -108,7 +109,7 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if snapshotID, ok := d.GetOk("from_snapshot_id"); ok {
-		createVolumeRequest.BaseSnapshot = expandStringPtr(locality.ExpandID(snapshotID))
+		createVolumeRequest.BaseSnapshot = types.ExpandStringPtr(locality.ExpandID(snapshotID))
 	}
 
 	res, err := instanceAPI.CreateVolume(createVolumeRequest, scw.WithContext(ctx))
@@ -187,9 +188,9 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		req.Name = &newName
 	}
 
-	tags := expandStrings(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("size_in_gb") {

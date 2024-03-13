@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayLbCertificate() *schema.Resource {
@@ -142,7 +143,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 	createReq := &lbSDK.ZonedAPICreateCertificateRequest{
 		Zone:              zone,
 		LBID:              lbID,
-		Name:              expandOrGenerateString(d.Get("name"), "lb-cert"),
+		Name:              types.ExpandOrGenerateString(d.Get("name"), "lb-cert"),
 		Letsencrypt:       expandLbLetsEncrypt(d.Get("letsencrypt")),
 		CustomCertificate: expandLbCustomCertificate(d.Get("custom_certificate")),
 	}
@@ -201,8 +202,8 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("common_name", certificate.CommonName)
 	_ = d.Set("subject_alternative_name", certificate.SubjectAlternativeName)
 	_ = d.Set("fingerprint", certificate.Fingerprint)
-	_ = d.Set("not_valid_before", flattenTime(certificate.NotValidBefore))
-	_ = d.Set("not_valid_after", flattenTime(certificate.NotValidAfter))
+	_ = d.Set("not_valid_before", types.FlattenTime(certificate.NotValidBefore))
+	_ = d.Set("not_valid_after", types.FlattenTime(certificate.NotValidAfter))
 	_ = d.Set("status", certificate.Status)
 
 	diags := diag.Diagnostics(nil)

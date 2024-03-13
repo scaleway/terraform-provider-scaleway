@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIPAMIPReverseDNS() *schema.Resource {
@@ -110,7 +111,7 @@ func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.Resourc
 	for _, reverse := range res.Reverses {
 		if reverse.Hostname == managedHostname && reverse.Address.String() == managedAddress {
 			_ = d.Set("hostname", reverse.Hostname)
-			_ = d.Set("address", flattenIPPtr(reverse.Address))
+			_ = d.Set("address", types.FlattenIPPtr(reverse.Address))
 			break
 		}
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -268,7 +269,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	timeoutClient, err := expandDuration(d.Get("timeout_client"))
+	timeoutClient, err := types.ExpandDuration(d.Get("timeout_client"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -276,7 +277,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 	createFrontendRequest := &lbSDK.ZonedAPICreateFrontendRequest{
 		Zone:          zone,
 		LBID:          lbID,
-		Name:          expandOrGenerateString(d.Get("name"), "lb-frt"),
+		Name:          types.ExpandOrGenerateString(d.Get("name"), "lb-frt"),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     locality.ExpandID(d.Get("backend_id")),
 		TimeoutClient: timeoutClient,
@@ -285,7 +286,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 
 	certificatesRaw, certificatesExist := d.GetOk("certificate_ids")
 	if certificatesExist {
-		createFrontendRequest.CertificateIDs = expandSliceIDsPtr(certificatesRaw)
+		createFrontendRequest.CertificateIDs = types.ExpandSliceIDsPtr(certificatesRaw)
 	}
 
 	frontend, err := lbAPI.CreateFrontend(createFrontendRequest, scw.WithContext(ctx))
@@ -324,7 +325,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("backend_id", zonal.NewIDString(zone, frontend.Backend.ID))
 	_ = d.Set("name", frontend.Name)
 	_ = d.Set("inbound_port", int(frontend.InboundPort))
-	_ = d.Set("timeout_client", flattenDuration(frontend.TimeoutClient))
+	_ = d.Set("timeout_client", types.FlattenDuration(frontend.TimeoutClient))
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 
 	if frontend.Certificate != nil {
@@ -334,7 +335,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if len(frontend.CertificateIDs) > 0 {
-		_ = d.Set("certificate_ids", flattenSliceIDs(frontend.CertificateIDs, zone))
+		_ = d.Set("certificate_ids", types.FlattenSliceIDs(frontend.CertificateIDs, zone))
 	}
 
 	if !d.Get("external_acls").(bool) {
@@ -413,7 +414,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 		_, err = lbAPI.CreateACL(&lbSDK.ZonedAPICreateACLRequest{
 			Zone:       zone,
 			FrontendID: frontendID,
-			Name:       expandOrGenerateString(stateACL.Name, "lb-acl"),
+			Name:       types.ExpandOrGenerateString(stateACL.Name, "lb-acl"),
 			Action:     stateACL.Action,
 			Match:      stateACL.Match,
 			Index:      key,
@@ -465,18 +466,18 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	timeoutClient, err := expandDuration(d.Get("timeout_client"))
+	timeoutClient, err := types.ExpandDuration(d.Get("timeout_client"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	req := &lbSDK.ZonedAPIUpdateFrontendRequest{
 		Zone:           zone,
 		FrontendID:     ID,
-		Name:           expandOrGenerateString(d.Get("name"), "lb-frt"),
+		Name:           types.ExpandOrGenerateString(d.Get("name"), "lb-frt"),
 		InboundPort:    int32(d.Get("inbound_port").(int)),
 		BackendID:      locality.ExpandID(d.Get("backend_id")),
 		TimeoutClient:  timeoutClient,
-		CertificateIDs: expandSliceIDsPtr(d.Get("certificate_ids")),
+		CertificateIDs: types.ExpandSliceIDsPtr(d.Get("certificate_ids")),
 		EnableHTTP3:    d.Get("enable_http3").(bool),
 	}
 

@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -84,9 +85,9 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 	api := iamAPI(m)
 	req := &iam.CreateGroupRequest{
 		OrganizationID: d.Get("organization_id").(string),
-		Name:           expandOrGenerateString(d.Get("name"), "group"),
+		Name:           types.ExpandOrGenerateString(d.Get("name"), "group"),
 		Description:    d.Get("description").(string),
-		Tags:           expandStrings(d.Get("tags")),
+		Tags:           types.ExpandStrings(d.Get("tags")),
 	}
 	group, err := api.CreateGroup(req, scw.WithContext(ctx))
 	if err != nil {
@@ -95,8 +96,8 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 
 	d.SetId(group.ID)
 
-	appIDs := expandStrings(d.Get("application_ids").(*schema.Set).List())
-	userIDs := expandStrings(d.Get("user_ids").(*schema.Set).List())
+	appIDs := types.ExpandStrings(d.Get("application_ids").(*schema.Set).List())
+	userIDs := types.ExpandStrings(d.Get("user_ids").(*schema.Set).List())
 	if !d.Get("external_membership").(bool) && (len(appIDs) > 0 || len(userIDs) > 0) {
 		_, err := api.SetGroupMembers(&iam.SetGroupMembersRequest{
 			GroupID:        group.ID,
@@ -126,10 +127,10 @@ func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m
 
 	_ = d.Set("name", group.Name)
 	_ = d.Set("description", group.Description)
-	_ = d.Set("created_at", flattenTime(group.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(group.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(group.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(group.UpdatedAt))
 	_ = d.Set("organization_id", group.OrganizationID)
-	_ = d.Set("tags", flattenSliceString(group.Tags))
+	_ = d.Set("tags", types.FlattenSliceString(group.Tags))
 
 	if !d.Get("external_membership").(bool) {
 		_ = d.Set("user_ids", group.UserIDs)
@@ -152,9 +153,9 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChanges("name", "description", "tags") {
 		_, err = api.UpdateGroup(&iam.UpdateGroupRequest{
 			GroupID:     group.ID,
-			Name:        expandUpdatedStringPtr(d.Get("name")),
-			Description: expandUpdatedStringPtr(d.Get("description")),
-			Tags:        expandUpdatedStringsPtr(d.Get("tags")),
+			Name:        types.ExpandUpdatedStringPtr(d.Get("name")),
+			Description: types.ExpandUpdatedStringPtr(d.Get("description")),
+			Tags:        types.ExpandUpdatedStringsPtr(d.Get("tags")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -162,8 +163,8 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if !d.Get("external_membership").(bool) && d.HasChanges("application_ids", "user_ids") {
-		appIDs := expandStrings(d.Get("application_ids").(*schema.Set).List())
-		userIDs := expandStrings(d.Get("user_ids").(*schema.Set).List())
+		appIDs := types.ExpandStrings(d.Get("application_ids").(*schema.Set).List())
+		userIDs := types.ExpandStrings(d.Get("user_ids").(*schema.Set).List())
 		if len(appIDs) > 0 || len(userIDs) > 0 {
 			_, err = api.SetGroupMembers(&iam.SetGroupMembersRequest{
 				ApplicationIDs: appIDs,

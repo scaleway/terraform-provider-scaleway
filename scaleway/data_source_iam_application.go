@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -44,8 +45,8 @@ func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.Resourc
 	if !appIDExists {
 		applicationName := d.Get("name").(string)
 		res, err := api.ListApplications(&iam.ListApplicationsRequest{
-			OrganizationID: flattenStringPtr(getOrganizationID(m, d)).(string),
-			Name:           expandStringPtr(applicationName),
+			OrganizationID: types.FlattenStringPtr(getOrganizationID(m, d)).(string),
+			Name:           types.ExpandStringPtr(applicationName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

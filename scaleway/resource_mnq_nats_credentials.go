@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayMNQNatsCredentials() *schema.Resource {
@@ -54,7 +55,7 @@ func resourceScalewayMNQNatsCredentialsCreate(ctx context.Context, d *schema.Res
 	credentials, err := api.CreateNatsCredentials(&mnq.NatsAPICreateNatsCredentialsRequest{
 		Region:        region,
 		NatsAccountID: locality.ExpandID(d.Get("account_id").(string)),
-		Name:          expandOrGenerateString(d.Get("name").(string), "nats-credentials"),
+		Name:          types.ExpandOrGenerateString(d.Get("name").(string), "nats-credentials"),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -104,7 +105,7 @@ func resourceScalewayMNQNatsCredentialsUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if _, err := api.UpdateNatsAccount(req, scw.WithContext(ctx)); err != nil {

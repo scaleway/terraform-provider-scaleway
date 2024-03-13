@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayAppleSiliconServer() *schema.Resource {
@@ -86,7 +87,7 @@ func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.Res
 	}
 
 	createReq := &applesilicon.CreateServerRequest{
-		Name:      expandOrGenerateString(d.Get("name"), "m1"),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "m1"),
 		Type:      d.Get("type").(string),
 		ProjectID: d.Get("project_id").(string),
 	}
@@ -152,7 +153,7 @@ func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -36,8 +37,8 @@ func dataSourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData
 	if !sshKeyIDExists {
 		sshKeyName := d.Get("name").(string)
 		res, err := iamAPI.ListSSHKeys(&iam.ListSSHKeysRequest{
-			Name:      expandStringPtr(sshKeyName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(sshKeyName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

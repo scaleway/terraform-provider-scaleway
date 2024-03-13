@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -193,7 +194,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 	req := &iot.CreateDeviceRequest{
 		Region: region,
 		HubID:  locality.ExpandID(d.Get("hub_id")),
-		Name:   expandOrGenerateString(d.Get("name"), "device"),
+		Name:   types.ExpandOrGenerateString(d.Get("name"), "device"),
 	}
 
 	if allowInsecure, ok := d.GetOk("allow_insecure"); ok {
@@ -220,7 +221,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 				mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(policy.(string))
 			}
 			if topics, ok := d.GetOk(fqfnS + iotTopicsSuffix); ok {
-				mfSet.Topics = scw.StringsPtr(expandStringsOrEmpty(topics))
+				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
 			}
 
 			mf.Publish = &mfSet
@@ -234,7 +235,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 				mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(policy.(string))
 			}
 			if topics, ok := d.GetOk(fqfnP + iotTopicsSuffix); ok {
-				mfSet.Topics = scw.StringsPtr(expandStringsOrEmpty(topics))
+				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
 			}
 
 			mf.Subscribe = &mfSet
@@ -388,7 +389,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 				d.Get(fqfnS + iotPolicySuffix).(string))
 
 			mfSet.Topics = scw.StringsPtr(
-				expandStringsOrEmpty(d.Get(fqfnS + iotTopicsSuffix)))
+				types.ExpandStringsOrEmpty(d.Get(fqfnS + iotTopicsSuffix)))
 		}
 
 		if d.HasChange(fqfn + ".subscribe") {
@@ -400,7 +401,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 				d.Get(fqfnP + iotPolicySuffix).(string))
 
 			mfSet.Topics = scw.StringsPtr(
-				expandStringsOrEmpty(d.Get(fqfnP + iotTopicsSuffix)))
+				types.ExpandStringsOrEmpty(d.Get(fqfnP + iotTopicsSuffix)))
 		}
 	}
 
@@ -413,7 +414,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	_, err = iotAPI.UpdateDevice(updateRequest, scw.WithContext(ctx))

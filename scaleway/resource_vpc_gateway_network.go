@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -149,13 +150,13 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		Zone:             zone,
 		GatewayID:        gateway.ID,
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
-		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
-		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
+		EnableMasquerade: *types.ExpandBoolPtr(d.Get("enable_masquerade")),
+		EnableDHCP:       types.ExpandBoolPtr(d.Get("enable_dhcp")),
 		IpamConfig:       expandIpamConfig(d.Get("ipam_config")),
 	}
 	staticAddress, staticAddressExist := d.GetOk("static_address")
 	if staticAddressExist {
-		address, err := expandIPNet(staticAddress.(string))
+		address, err := types.ExpandIPNet(staticAddress.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -217,7 +218,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	if staticAddress := gatewayNetwork.Address; staticAddress != nil {
-		staticAddressValue, err := flattenIPNet(*staticAddress)
+		staticAddressValue, err := types.FlattenIPNet(*staticAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -225,7 +226,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
-		_ = d.Set("mac_address", flattenStringPtr(macAddress).(string))
+		_ = d.Set("mac_address", types.FlattenStringPtr(macAddress).(string))
 	}
 
 	if enableDHCP := gatewayNetwork.EnableDHCP; enableDHCP {
@@ -239,7 +240,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	var cleanUpDHCPValue bool
 	cleanUpDHCP, cleanUpDHCPExist := d.GetOk("cleanup_dhcp")
 	if cleanUpDHCPExist {
-		cleanUpDHCPValue = *expandBoolPtr(cleanUpDHCP)
+		cleanUpDHCPValue = *types.ExpandBoolPtr(cleanUpDHCP)
 	}
 
 	gatewayNetwork, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetwork.ID, d.Timeout(schema.TimeoutRead))
@@ -281,10 +282,10 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("enable_masquerade") {
-		updateRequest.EnableMasquerade = expandBoolPtr(d.Get("enable_masquerade"))
+		updateRequest.EnableMasquerade = types.ExpandBoolPtr(d.Get("enable_masquerade"))
 	}
 	if d.HasChange("enable_dhcp") {
-		updateRequest.EnableDHCP = expandBoolPtr(d.Get("enable_dhcp"))
+		updateRequest.EnableDHCP = types.ExpandBoolPtr(d.Get("enable_dhcp"))
 	}
 	if d.HasChange("dhcp_id") {
 		dhcpID := zonal.ExpandID(d.Get("dhcp_id").(string)).ID
@@ -296,7 +297,7 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 	if d.HasChange("static_address") {
 		staticAddress, staticAddressExist := d.GetOk("static_address")
 		if staticAddressExist {
-			address, err := expandIPNet(staticAddress.(string))
+			address, err := types.ExpandIPNet(staticAddress.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -331,7 +332,7 @@ func resourceScalewayVPCGatewayNetworkDelete(ctx context.Context, d *schema.Reso
 	req := &vpcgw.DeleteGatewayNetworkRequest{
 		GatewayNetworkID: gwNetwork.ID,
 		Zone:             gwNetwork.Zone,
-		CleanupDHCP:      *expandBoolPtr(d.Get("cleanup_dhcp")),
+		CleanupDHCP:      *types.ExpandBoolPtr(d.Get("cleanup_dhcp")),
 	}
 	err = vpcgwAPI.DeleteGatewayNetwork(req, scw.WithContext(ctx))
 	if err != nil {

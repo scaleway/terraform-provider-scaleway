@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -141,9 +142,9 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 
 	req := &function.CreateTriggerRequest{
 		Region:      region,
-		Name:        expandOrGenerateString(d.Get("name").(string), "trigger"),
+		Name:        types.ExpandOrGenerateString(d.Get("name").(string), "trigger"),
 		FunctionID:  locality.ExpandID(d.Get("function_id")),
-		Description: expandStringPtr(d.Get("description")),
+		Description: types.ExpandStringPtr(d.Get("description")),
 	}
 
 	if scwSqs, isScwSqs := d.GetOk("sqs.0"); isScwSqs {
@@ -237,11 +238,11 @@ func resourceScalewayFunctionTriggerUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if _, err := api.UpdateTrigger(req, scw.WithContext(ctx)); err != nil {

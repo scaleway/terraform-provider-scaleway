@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -49,10 +50,10 @@ func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Reso
 	gatewayNetworkID, ok := d.GetOk("gateway_network_id")
 	if !ok {
 		res, err := vpcAPI.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
-			GatewayID:        expandStringPtr(locality.ExpandID(d.Get("gateway_id"))),
-			PrivateNetworkID: expandStringPtr(locality.ExpandID(d.Get("private_network_id"))),
-			EnableMasquerade: expandBoolPtr(getBool(d, "enable_masquerade")),
-			DHCPID:           expandStringPtr(locality.ExpandID(d.Get("dhcp_id").(string))),
+			GatewayID:        types.ExpandStringPtr(locality.ExpandID(d.Get("gateway_id"))),
+			PrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("private_network_id"))),
+			EnableMasquerade: types.ExpandBoolPtr(getBool(d, "enable_masquerade")),
+			DHCPID:           types.ExpandStringPtr(locality.ExpandID(d.Get("dhcp_id").(string))),
 			Zone:             zone,
 		}, scw.WithContext(ctx))
 		if err != nil {

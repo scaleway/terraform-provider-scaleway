@@ -10,6 +10,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIamGroupMembership() *schema.Resource {
@@ -49,8 +50,8 @@ func resourceScalewayIamGroupMembership() *schema.Resource {
 func resourceScalewayIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := iamAPI(m)
 
-	userID := expandStringPtr(d.Get("user_id"))
-	applicationID := expandStringPtr(d.Get("application_id"))
+	userID := types.ExpandStringPtr(d.Get("user_id"))
+	applicationID := types.ExpandStringPtr(d.Get("application_id"))
 
 	group, err := api.AddGroupMember(&iam.AddGroupMemberRequest{
 		GroupID:       d.Get("group_id").(string),
