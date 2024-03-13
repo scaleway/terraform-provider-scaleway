@@ -8,33 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/stretchr/testify/assert"
 )
-
-<<<<<<< HEAD
-func TestGetRandomName(t *testing.T) {
-	name := newRandomName("test")
-	assert.True(t, strings.HasPrefix(name, "tf-test-"))
-=======
-func TestIsHTTPCodeError(t *testing.T) {
-	assert.True(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusBadRequest))
-	assert.False(t, isHTTPCodeError(nil, http.StatusBadRequest))
-	assert.False(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusNotFound))
-	assert.False(t, isHTTPCodeError(errors.New("not an http error"), http.StatusNotFound))
-}
-
-func TestIs404Error(t *testing.T) {
-	assert.True(t, is404Error(&scw.ResponseError{StatusCode: http.StatusNotFound}))
-	assert.False(t, is404Error(nil))
-	assert.False(t, is404Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
-}
-
-func TestIs403Error(t *testing.T) {
-	assert.True(t, is403Error(&scw.ResponseError{StatusCode: http.StatusForbidden}))
-	assert.False(t, is403Error(nil))
-	assert.False(t, is403Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
->>>>>>> 8b7b03a4 (chore: migrate types to its own package)
-}
 
 func testCheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
