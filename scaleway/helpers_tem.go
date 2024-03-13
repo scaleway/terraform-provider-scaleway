@@ -14,11 +14,12 @@ import (
 )
 
 const (
-	defaultTemDomainTimeout       = 5 * time.Minute
-	defaultTemDomainRetryInterval = 15 * time.Second
+	defaultTemDomainTimeout           = 5 * time.Minute
+	defaultTemDomainValidationTimeout = 60 * time.Minute
+	defaultTemDomainRetryInterval     = 15 * time.Second
 )
 
-// temAPIWithRegion returns a new Tem API and the region for a Create request
+// teemAPIWithRegion returns a new Tem API and the region for a Create request
 func temAPIWithRegion(d *schema.ResourceData, m interface{}) (*tem.API, scw.Region, error) {
 	api := tem.NewAPI(meta.ExtractScwClient(m))
 

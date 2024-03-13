@@ -14,13 +14,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_tem_domain", &resource.Sweeper{
-		Name: "scaleway_tem_domain",
-		F:    testSweepTemDomain,
-	})
-}
-
 func testSweepTemDomain(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		temAPI := tem.NewAPI(scwClient)
@@ -48,6 +41,13 @@ func testSweepTemDomain(_ string) error {
 		}
 
 		return nil
+	})
+}
+
+func init() {
+	resource.AddTestSweepers("scaleway_tem_domain", &resource.Sweeper{
+		Name: "scaleway_tem_domain",
+		F:    testSweepTemDomain,
 	})
 }
 
