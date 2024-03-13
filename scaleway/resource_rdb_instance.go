@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -401,7 +401,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	// verify resource is ready
 	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -592,7 +592,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	// Carry out the upgrades
 	for i := range upgradeInstanceRequests {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
@@ -602,7 +602,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -649,7 +649,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	////////////////////
 	if d.HasChange("settings") {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
@@ -794,7 +794,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 
 	// Lastly wait in case the instance is in a transient state
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

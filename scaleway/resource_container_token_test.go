@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func TestAccScalewayContainerToken_Basic(t *testing.T) {
@@ -101,7 +101,7 @@ func testAccCheckScalewayContainerTokenDestroy(tt *TestTools) resource.TestCheck
 				return fmt.Errorf("container token (%s) still exists", rs.Primary.ID)
 			}
 
-			if !errs.Is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

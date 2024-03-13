@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
@@ -201,7 +201,7 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 
 	rr, err := waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -234,7 +234,7 @@ func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.Resourc
 	// verify resource is ready
 	rr, err := waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -344,7 +344,7 @@ func resourceScalewayRdbReadReplicaDelete(ctx context.Context, d *schema.Resourc
 
 	// Lastly wait in case the instance is in a transient state
 	_, err = waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

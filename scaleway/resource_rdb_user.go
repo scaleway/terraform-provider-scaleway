@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
@@ -92,7 +92,7 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		currentUser, errCreateUser := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
-			if errs.Is409Error(errCreateUser) {
+			if httperrors.Is409(errCreateUser) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, ins.ID, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -123,7 +123,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m 
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -136,7 +136,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m 
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -213,7 +213,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 			Name:       userName,
 		}, scw.WithContext(ctx))
 		if errDeleteUser != nil {
-			if errs.Is409Error(errDeleteUser) {
+			if httperrors.Is409(errDeleteUser) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -226,7 +226,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		return nil
 	})
 
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

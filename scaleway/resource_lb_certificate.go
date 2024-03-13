@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
@@ -152,7 +152,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if errs.Is403Error(err) {
+		if httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -168,7 +168,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 
 	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if errs.Is403Error(err) {
+		if httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -189,7 +189,7 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		Zone:          zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -244,7 +244,7 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 			return diag.FromErr(err)
 		}
 		if err != nil {
-			if errs.Is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -275,7 +275,7 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 	}
 
 	_, err = waitForLBCertificate(ctx, lbAPI, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is403Error(err) && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is403(err) && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

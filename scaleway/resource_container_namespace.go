@@ -9,7 +9,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -124,7 +124,7 @@ func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Resou
 
 	ns, err := waitForContainerNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -186,7 +186,7 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 
 	_, err = waitForContainerNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -197,12 +197,12 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 		Region:      region,
 		NamespaceID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForContainerNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -220,11 +220,11 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 			Region:      region,
 			NamespaceID: registryID,
 		})
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 		_, err = waitForRegistryNamespace(ctx, registryAPI, region, registryID, d.Timeout(schema.TimeoutDelete))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}

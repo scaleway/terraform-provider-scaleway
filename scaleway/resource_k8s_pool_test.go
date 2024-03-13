@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
@@ -668,7 +668,7 @@ func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCh
 			return fmt.Errorf("pool (%s) still exists", rs.Primary.ID)
 		}
 		// Unexpected api error we return it
-		if !errs.Is404Error(err) {
+		if !httperrors.Is404(err) {
 			return err
 		}
 

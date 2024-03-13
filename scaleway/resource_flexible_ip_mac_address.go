@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -148,7 +148,7 @@ func resourceScalewayFlexibleIPMACRead(ctx context.Context, d *schema.ResourceDa
 	}, scw.WithContext(ctx))
 	if err != nil {
 		// We check for 403 because flexible API returns 403 for a deleted IP
-		if errs.Is404Error(err) || errs.Is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -267,7 +267,7 @@ func resourceScalewayFlexibleIPMACDelete(ctx context.Context, d *schema.Resource
 		FipID: flexibleIP.MacAddress.ID,
 		Zone:  zone,
 	}, scw.WithContext(ctx))
-	if err != nil && !errs.Is404Error(err) && !errs.Is403Error(err) {
+	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
 

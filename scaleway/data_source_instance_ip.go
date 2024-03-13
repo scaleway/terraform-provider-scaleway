@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -54,7 +54,7 @@ func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceDat
 		}, scw.WithContext(ctx))
 		if err != nil {
 			// We check for 403 because instance API returns 403 for a deleted IP
-			if errs.Is404Error(err) || errs.Is403Error(err) {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}

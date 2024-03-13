@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/stretchr/testify/require"
 )
@@ -212,7 +212,7 @@ func testAccCheckScalewayMNQSQSQueueDestroy(tt *TestTools) resource.TestCheckFun
 				ProjectID: projectID,
 			})
 			if err != nil {
-				if errs.Is404Error(err) {
+				if httperrors.Is404(err) {
 					return nil
 				}
 
@@ -253,7 +253,7 @@ func testAccCheckScalewayMNQSQSQueueDestroy(tt *TestTools) resource.TestCheckFun
 				return fmt.Errorf("mnq sqs queue (%s) still exists", rs.Primary.ID)
 			}
 
-			if !errs.Is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

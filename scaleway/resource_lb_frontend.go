@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -260,7 +260,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if errs.Is403Error(err) {
+		if httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -312,7 +312,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		FrontendID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -457,7 +457,7 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 	// check err waiting process
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if errs.Is403Error(err) {
+		if httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -512,7 +512,7 @@ func resourceScalewayLbFrontendDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
@@ -113,7 +113,7 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 
 	cron, err := waitForFunctionCron(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -186,7 +186,7 @@ func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceD
 
 	cron, err := waitForFunctionCron(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -198,7 +198,7 @@ func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceD
 		CronID: cron.ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

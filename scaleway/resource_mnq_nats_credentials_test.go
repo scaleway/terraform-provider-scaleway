@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func TestAccScalewayMNQNatsCredentials_Basic(t *testing.T) {
@@ -83,7 +83,7 @@ func testAccCheckScalewayMNQNatsCredentialsDestroy(tt *TestTools) resource.TestC
 				return fmt.Errorf("mnq nats credentials (%s) still exists", rs.Primary.ID)
 			}
 
-			if !errs.Is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

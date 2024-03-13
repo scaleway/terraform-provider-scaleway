@@ -11,7 +11,7 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func init() {
@@ -40,7 +40,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 				ProjectID: project.ID,
 			}, scw.WithAllPages())
 			if err != nil {
-				if errs.Is404Error(err) {
+				if httperrors.Is404(err) {
 					return nil
 				}
 
@@ -53,7 +53,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 					GrafanaUserID: grafanaUser.ID,
 				})
 				if err != nil {
-					if !errs.Is404Error(err) {
+					if !httperrors.Is404(err) {
 						return fmt.Errorf("failed to delete grafana user: %w", err)
 					}
 				}
@@ -253,7 +253,7 @@ func testAccCheckScalewayCockpitGrafanaUserDestroy(tt *TestTools) resource.TestC
 				return fmt.Errorf("cockpit grafana user (%s) still exists", rs.Primary.ID)
 			}
 
-			if !errs.Is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

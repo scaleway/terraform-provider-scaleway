@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -101,7 +101,7 @@ func testAccCheckScalewayContainerDomainDestroy(tt *TestTools) resource.TestChec
 				Region:   region,
 				DomainID: id,
 			})
-			if errs.Is404Error(err) {
+			if httperrors.Is404(err) {
 				return nil
 			}
 

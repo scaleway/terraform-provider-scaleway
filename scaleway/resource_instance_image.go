@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -237,7 +237,7 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 		ImageID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -349,14 +349,14 @@ func resourceScalewayInstanceImageDelete(ctx context.Context, d *schema.Resource
 		Zone:    zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !errs.Is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
 
 	_, err = waitForInstanceImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if !errs.Is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}

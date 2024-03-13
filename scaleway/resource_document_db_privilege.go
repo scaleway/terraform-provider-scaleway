@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
@@ -96,7 +96,7 @@ func resourceScalewayDocumentDBPrivilegeCreate(ctx context.Context, d *schema.Re
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		_, errSetPrivilege := api.SetPrivilege(createReq, scw.WithContext(ctx))
 		if errSetPrivilege != nil {
-			if errs.Is409Error(errSetPrivilege) {
+			if httperrors.Is409(errSetPrivilege) {
 				_, errWait := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -143,7 +143,7 @@ func resourceScalewayDocumentDBPrivilegeRead(ctx context.Context, d *schema.Reso
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -162,7 +162,7 @@ func resourceScalewayDocumentDBPrivilegeRead(ctx context.Context, d *schema.Reso
 		UserName:     &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -203,7 +203,7 @@ func resourceScalewayDocumentDBPrivilegeUpdate(ctx context.Context, d *schema.Re
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -227,7 +227,7 @@ func resourceScalewayDocumentDBPrivilegeUpdate(ctx context.Context, d *schema.Re
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 		_, errSet := api.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
-			if errs.Is409Error(errSet) {
+			if httperrors.Is409(errSet) {
 				_, errWait := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -274,7 +274,7 @@ func resourceScalewayDocumentDBPrivilegeDelete(ctx context.Context, d *schema.Re
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -303,7 +303,7 @@ func resourceScalewayDocumentDBPrivilegeDelete(ctx context.Context, d *schema.Re
 			Name:       &userName,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if errs.Is404Error(err) {
+			if httperrors.Is404(err) {
 				d.SetId("")
 				return nil
 			}
@@ -316,7 +316,7 @@ func resourceScalewayDocumentDBPrivilegeDelete(ctx context.Context, d *schema.Re
 		}
 		_, errSet := api.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
-			if errs.Is409Error(errSet) {
+			if httperrors.Is409(errSet) {
 				_, errWait := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)

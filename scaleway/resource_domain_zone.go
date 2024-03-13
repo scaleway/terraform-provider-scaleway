@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func resourceScalewayDomainZone() *schema.Resource {
@@ -112,7 +112,7 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 		Subdomain: subdomainName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is409Error(err) {
+		if httperrors.Is409(err) {
 			return resourceScalewayDomainZoneRead(ctx, d, m)
 		}
 		return diag.FromErr(err)
@@ -132,7 +132,7 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 		DNSZone:   scw.StringPtr(d.Id()),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -183,7 +183,7 @@ func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceDat
 
 	_, err := waitForDNSZone(ctx, domainAPI, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if errs.Is404Error(err) || errs.Is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -194,7 +194,7 @@ func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceDat
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))
 
-	if err != nil && !errs.Is404Error(err) && !errs.Is403Error(err) {
+	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
 

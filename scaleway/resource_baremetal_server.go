@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	sdkValidation "github.com/scaleway/scaleway-sdk-go/validation"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -380,7 +380,7 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		}
 
 		_, err = waitForBaremetalServerPrivateNetwork(ctx, baremetalPrivateNetworkAPI, zone, baremetalPrivateNetwork.ServerPrivateNetworks[0].ServerID, d.Timeout(schema.TimeoutCreate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -404,7 +404,7 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 		ServerID: zonedID.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -509,7 +509,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 
 		_, err = waitForBaremetalServerOptions(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
@@ -545,7 +545,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 
 		_, err = waitForBaremetalServerPrivateNetwork(ctx, baremetalPrivateNetworkAPI, zone, baremetalPrivateNetwork.ServerPrivateNetworks[0].ServerID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -650,14 +650,14 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 		ServerID: zonedID.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForBaremetalServer(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

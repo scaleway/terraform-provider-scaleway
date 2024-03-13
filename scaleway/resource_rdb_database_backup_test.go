@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -35,7 +35,7 @@ func testSweepRDBDatabaseBackup(_ string) error {
 				Region:           region,
 				DatabaseBackupID: backup.ID,
 			})
-			if err != nil && !errs.Is404Error(err) {
+			if err != nil && !httperrors.Is404(err) {
 				return fmt.Errorf("error deleting rdb database backup in sweeper: %s", err)
 			}
 		}
@@ -129,7 +129,7 @@ func testAccCheckScalewayRdbDatabaseBackupDestroy(tt *TestTools) resource.TestCh
 			}
 
 			// Unexpected api error we return it
-			if !errs.Is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

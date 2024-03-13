@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -116,7 +116,7 @@ func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.Resour
 
 	ns, err := waitForFunctionNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -143,7 +143,7 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 
 	ns, err := waitForFunctionNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -194,7 +194,7 @@ func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.Reso
 	}
 
 	_, err = waitForFunctionNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

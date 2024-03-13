@@ -16,7 +16,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -397,7 +397,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 				Timeout:       &timeout,
 				RetryInterval: scw.TimeDurationPtr(defaultInstanceRetryInterval),
 			})
-			if err != nil && !errs.Is404Error(err) {
+			if err != nil && !httperrors.Is404(err) {
 				return err
 			}
 		}
@@ -743,7 +743,7 @@ func instanceServerAdditionalVolumeTemplate(api *InstanceBlockAPI, zone scw.Zone
 			Size:       &vol.Volume.Size,
 		}, nil
 	}
-	if !errs.Is404Error(err) {
+	if !httperrors.Is404(err) {
 		return nil, err
 	}
 

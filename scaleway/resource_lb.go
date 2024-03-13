@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -231,7 +231,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	lb, err := waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) || errs.Is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -262,7 +262,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m inter
 	// retrieve attached private networks
 	privateNetworks, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -288,12 +288,12 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -333,7 +333,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 		// check that pns are in a stable state
 		pns, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
@@ -351,20 +351,20 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m int
 				LBID:             ID,
 				PrivateNetworkID: pnToDetach[i].PrivateNetworkID,
 			}, scw.WithContext(ctx))
-			if err != nil && !errs.Is404Error(err) {
+			if err != nil && !httperrors.Is404(err) {
 				return diag.FromErr(err)
 			}
 		}
 
 		// check load balancer state
 		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
 		// check that pns are in a stable state
 		pns, err = waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
@@ -376,7 +376,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m int
 		}
 
 		privateNetworks, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
@@ -388,7 +388,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m int
 					LBID:             ID,
 					PrivateNetworkID: pn.PrivateNetworkID,
 				}, scw.WithContext(ctx))
-				if err != nil && !errs.Is404Error(err) {
+				if err != nil && !httperrors.Is404(err) {
 					return diag.FromErr(err)
 				}
 				return diag.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
@@ -416,7 +416,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, m int
 			Zone: zone,
 			LBID: ID,
 		}, scw.WithContext(ctx))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
@@ -427,13 +427,13 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, m int
 				LBID:             ID,
 				PrivateNetworkID: pn.PrivateNetworkID,
 			}, scw.WithContext(ctx))
-			if err != nil && !errs.Is404Error(err) {
+			if err != nil && !httperrors.Is404(err) {
 				return diag.FromErr(err)
 			}
 		}
 
 		_, err = waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
-		if err != nil && !errs.Is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -443,17 +443,17 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, m int
 		LBID:      ID,
 		ReleaseIP: false,
 	}, scw.WithContext(ctx))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

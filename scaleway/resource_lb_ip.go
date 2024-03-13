@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -96,7 +96,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m int
 		IPID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -107,7 +107,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m int
 	if ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutRead))
 		if err != nil {
-			if errs.Is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -145,7 +145,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m i
 			IPID: ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if errs.Is403Error(errGet) {
+			if httperrors.Is403(errGet) {
 				return resource.RetryableError(errGet)
 			}
 			return resource.NonRetryableError(errGet)
@@ -155,7 +155,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m i
 		return nil
 	})
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -165,7 +165,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m i
 	if ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			if errs.Is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -189,7 +189,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m i
 	if ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			if errs.Is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -214,7 +214,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, m i
 			IPID: ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if errs.Is403Error(errGet) {
+			if httperrors.Is403(errGet) {
 				return resource.RetryableError(errGet)
 			}
 			return resource.NonRetryableError(errGet)
@@ -231,7 +231,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, m i
 	if ip != nil && ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			if errs.Is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -244,7 +244,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, m i
 		IPID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !errs.Is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -252,7 +252,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, m i
 	if ip != nil && ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			if errs.Is404Error(err) || errs.Is403Error(err) {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}

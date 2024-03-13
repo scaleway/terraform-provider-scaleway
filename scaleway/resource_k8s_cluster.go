@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
@@ -533,7 +533,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	cluster, err := waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -592,7 +592,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, region, clusterID)
 	if err != nil {
-		if errs.Is403Error(err) {
+		if httperrors.Is403(err) {
 			diags = append(diags, diag.Diagnostic{
 				Severity:      diag.Warning,
 				Summary:       "Cannot read kubeconfig: unauthorized",
@@ -899,7 +899,7 @@ func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceDat
 		WithAdditionalResources: deleteAdditionalResources,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if errs.Is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)

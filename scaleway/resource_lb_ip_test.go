@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/errs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -165,7 +165,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 				}, scw.WithContext(context.Background()))
 
 				// Unexpected api error we return it
-				if !errs.Is404Error(err) {
+				if !httperrors.Is404(err) {
 					return err
 				}
 			}
@@ -175,7 +175,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 					Zone: zone,
 					IPID: ID,
 				})
-				if errs.Is403Error(errGet) {
+				if httperrors.Is403(errGet) {
 					return resource.RetryableError(errGet)
 				}
 
@@ -188,7 +188,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 			}
 
 			// Unexpected api error we return it
-			if !errs.Is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}
