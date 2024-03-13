@@ -358,12 +358,12 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 						lifecycle_rule {
 							prefix  = "path1/"
 							enabled = true
-    						tags    = {
-    						  "deleted" = "true"
-    						}
-    						expiration {
-    						  days = 1
-    						}
+							tags    = {
+								"deleted" = "true"
+							}
+							expiration {
+								days = 1
+							}
 						}
 					}
 				`, bucketLifecycle, objectTestsMainRegion),
