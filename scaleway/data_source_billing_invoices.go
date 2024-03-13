@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayBillingInvoices() *schema.Resource {
@@ -128,7 +129,7 @@ func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.Resour
 	api := billingAPI(m)
 
 	res, err := api.ListInvoices(&billing.ListInvoicesRequest{
-		OrganizationID:           expandStringPtr(d.Get("organization_id")),
+		OrganizationID:           types.ExpandStringPtr(d.Get("organization_id")),
 		BillingPeriodStartAfter:  expandTimePtr(d.Get("started_after").(string)),
 		BillingPeriodStartBefore: expandTimePtr(d.Get("started_before").(string)),
 		InvoiceType:              billing.InvoiceType(d.Get("invoice_type").(string)),
@@ -142,11 +143,11 @@ func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.Resour
 		rawInvoice := make(map[string]interface{})
 		rawInvoice["id"] = invoice.ID
 		rawInvoice["organization_name"] = invoice.OrganizationName
-		rawInvoice["start_date"] = flattenTime(invoice.StartDate)
-		rawInvoice["stop_date"] = flattenTime(invoice.StopDate)
-		rawInvoice["billing_period"] = flattenTime(invoice.BillingPeriod)
-		rawInvoice["issued_date"] = flattenTime(invoice.IssuedDate)
-		rawInvoice["due_date"] = flattenTime(invoice.DueDate)
+		rawInvoice["start_date"] = types.FlattenTime(invoice.StartDate)
+		rawInvoice["stop_date"] = types.FlattenTime(invoice.StopDate)
+		rawInvoice["billing_period"] = types.FlattenTime(invoice.BillingPeriod)
+		rawInvoice["issued_date"] = types.FlattenTime(invoice.IssuedDate)
+		rawInvoice["due_date"] = types.FlattenTime(invoice.DueDate)
 		rawInvoice["total_untaxed"] = invoice.TotalUntaxed.String()
 		rawInvoice["total_taxed"] = invoice.TotalTaxed.String()
 		rawInvoice["total_tax"] = invoice.TotalTax.String()

@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func init() {
@@ -822,7 +823,7 @@ func testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt *TestTools,
 		bucketRegionalID := regional.ExpandID(rs.Primary.ID)
 
 		input := &s3.GetBucketLifecycleConfigurationInput{
-			Bucket: expandStringPtr(bucketRegionalID.ID),
+			Bucket: types.ExpandStringPtr(bucketRegionalID.ID),
 		}
 
 		_, err = s3Client.GetBucketLifecycleConfiguration(input)

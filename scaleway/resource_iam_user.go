@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIamUser() *schema.Resource {
@@ -100,11 +101,11 @@ func resourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	_ = d.Set("email", user.Email)
-	_ = d.Set("created_at", flattenTime(user.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(user.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(user.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
 	_ = d.Set("organization_id", user.OrganizationID)
 	_ = d.Set("deletable", user.Deletable)
-	_ = d.Set("last_login_at", flattenTime(user.LastLoginAt))
+	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
 	_ = d.Set("type", user.Type)
 	_ = d.Set("status", user.Status)
 	_ = d.Set("mfa", user.Mfa)

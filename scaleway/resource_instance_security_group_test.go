@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,11 +26,11 @@ func init() {
 func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	ipnetZero, err := expandIPNet("0.0.0.0/0")
+	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
-	ipnetOne, err := expandIPNet("1.1.1.1")
+	ipnetOne, err := types.ExpandIPNet("1.1.1.1")
 	require.NoError(t, err)
-	ipnetTest, err := expandIPNet("8.8.8.8")
+	ipnetTest, err := types.ExpandIPNet("8.8.8.8")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -177,9 +178,9 @@ func TestAccScalewayInstanceSecurityGroup_ICMP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	ipnetZero, err := expandIPNet("0.0.0.0/0")
+	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
-	ipnetTest, err := expandIPNet("8.8.8.8")
+	ipnetTest, err := types.ExpandIPNet("8.8.8.8")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -290,7 +291,7 @@ func TestAccScalewayInstanceSecurityGroup_ANY(t *testing.T) {
 func TestAccScalewayInstanceSecurityGroup_WithNoPort(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	ipnetZero, err := expandIPNet("0.0.0.0/0")
+	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -325,7 +326,7 @@ func TestAccScalewayInstanceSecurityGroup_WithNoPort(t *testing.T) {
 func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	ipnetZero, err := expandIPNet("0.0.0.0/0")
+	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },

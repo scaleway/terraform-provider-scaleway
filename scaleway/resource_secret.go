@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewaySecret() *schema.Resource {
@@ -93,17 +94,17 @@ func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m
 
 	rawTag, tagExist := d.GetOk("tags")
 	if tagExist {
-		secretCreateRequest.Tags = expandStrings(rawTag)
+		secretCreateRequest.Tags = types.ExpandStrings(rawTag)
 	}
 
 	rawDescription, descriptionExist := d.GetOk("description")
 	if descriptionExist {
-		secretCreateRequest.Description = expandStringPtr(rawDescription)
+		secretCreateRequest.Description = types.ExpandStringPtr(rawDescription)
 	}
 
 	rawPath, pathExist := d.GetOk("path")
 	if pathExist {
-		secretCreateRequest.Path = expandStringPtr(rawPath)
+		secretCreateRequest.Path = types.ExpandStringPtr(rawPath)
 	}
 
 	secretResponse, err := api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
@@ -135,13 +136,13 @@ func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	if len(secretResponse.Tags) > 0 {
-		_ = d.Set("tags", flattenSliceString(secretResponse.Tags))
+		_ = d.Set("tags", types.FlattenSliceString(secretResponse.Tags))
 	}
 
 	_ = d.Set("name", secretResponse.Name)
-	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(secretResponse.UpdatedAt))
+	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
+	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
 	_ = d.Set("version_count", int(secretResponse.VersionCount))
 	_ = d.Set("region", string(region))
@@ -165,22 +166,22 @@ func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m
 	hasChanged := false
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = expandUpdatedStringPtr(d.Get("name"))
+		updateRequest.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
 	if d.HasChange("path") {
-		updateRequest.Path = expandUpdatedStringPtr(d.Get("path"))
+		updateRequest.Path = types.ExpandUpdatedStringPtr(d.Get("path"))
 		hasChanged = true
 	}
 

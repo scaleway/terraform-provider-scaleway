@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -178,7 +179,7 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 		Region:       region,
 		InstanceID:   locality.ExpandID(d.Get("instance_id")),
 		EndpointSpec: endpointSpecs,
-		SameZone:     expandBoolPtr(d.Get("same_zone")),
+		SameZone:     types.ExpandBoolPtr(d.Get("same_zone")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))

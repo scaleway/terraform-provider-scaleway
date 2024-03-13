@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayInstanceIP() *schema.Resource {
@@ -90,10 +91,10 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 	}
 	iprequest := &instance.CreateIPRequest{
 		Zone:    zone,
-		Project: expandStringPtr(d.Get("project_id")),
+		Project: types.ExpandStringPtr(d.Get("project_id")),
 		Type:    instance.IPType(d.Get("type").(string)),
 	}
-	tags := expandStrings(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 	if len(tags) > 0 {
 		iprequest.Tags = tags
 	}
@@ -104,7 +105,7 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 
 	reverseRaw, ok := d.GetOk("reverse")
 	if ok {
-		reverseStrPtr := expandStringPtr(reverseRaw)
+		reverseStrPtr := types.ExpandStringPtr(reverseRaw)
 		req := &instance.UpdateIPRequest{
 			IP:      res.IP.ID,
 			Reverse: &instance.NullableStringValue{Value: *reverseStrPtr},
@@ -131,7 +132,7 @@ func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("type") {
@@ -185,7 +186,7 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("type", res.IP.Type)
 
 	if len(res.IP.Tags) > 0 {
-		_ = d.Set("tags", flattenSliceString(res.IP.Tags))
+		_ = d.Set("tags", types.FlattenSliceString(res.IP.Tags))
 	}
 
 	if res.IP.Server != nil {

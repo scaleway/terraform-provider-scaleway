@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -144,8 +145,8 @@ func resourceScalewayWebhosting() *schema.Resource {
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 			if diff.HasChange("tags") {
 				oldTagsInterface, newTagsInterface := diff.GetChange("tags")
-				oldTags := expandStrings(oldTagsInterface)
-				newTags := expandStrings(newTagsInterface)
+				oldTags := types.ExpandStrings(oldTagsInterface)
+				newTags := types.ExpandStrings(newTagsInterface)
 				// If the 'internal' tag has been added, remove it from the diff
 				if sliceContainsString(oldTags, "internal") && !sliceContainsString(newTags, "internal") {
 					err := diff.SetNew("tags", oldTags)
@@ -175,22 +176,22 @@ func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceDat
 		OfferID:   offerID,
 		ProjectID: d.Get("project_id").(string),
 		Domain:    d.Get("domain").(string),
-		OptionIDs: expandStrings(d.Get("option_ids")),
+		OptionIDs: types.ExpandStrings(d.Get("option_ids")),
 	}
 
 	rawTags, tagsExist := d.GetOk("tags")
 	if tagsExist {
-		hostingCreateRequest.Tags = expandStrings(rawTags)
+		hostingCreateRequest.Tags = types.ExpandStrings(rawTags)
 	}
 
 	rawOptionIDs, rawOptionIDsExist := d.GetOk("option_ids")
 	if rawOptionIDsExist {
-		hostingCreateRequest.OptionIDs = expandStrings(rawOptionIDs)
+		hostingCreateRequest.OptionIDs = types.ExpandStrings(rawOptionIDs)
 	}
 
 	rawEmail, emailExist := d.GetOk("email")
 	if emailExist {
-		hostingCreateRequest.Email = expandStringPtr(rawEmail)
+		hostingCreateRequest.Email = types.ExpandStringPtr(rawEmail)
 	}
 
 	hostingResponse, err := api.CreateHosting(hostingCreateRequest, scw.WithContext(ctx))
@@ -229,11 +230,11 @@ func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData,
 
 	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.OfferID))
 	_ = d.Set("domain", webhostingResponse.Domain)
-	_ = d.Set("created_at", flattenTime(webhostingResponse.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(webhostingResponse.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(webhostingResponse.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(webhostingResponse.UpdatedAt))
 	_ = d.Set("status", webhostingResponse.Status.String())
 	_ = d.Set("platform_hostname", webhostingResponse.PlatformHostname)
-	_ = d.Set("platform_number", flattenInt32Ptr(webhostingResponse.PlatformNumber))
+	_ = d.Set("platform_number", types.FlattenInt32Ptr(webhostingResponse.PlatformNumber))
 	_ = d.Set("options", flattenHostingOptions(webhostingResponse.Options))
 	_ = d.Set("offer_name", webhostingResponse.OfferName)
 	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String())
@@ -265,7 +266,7 @@ func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceDat
 	hasChanged := false
 
 	if d.HasChange("option_ids") {
-		updateRequest.OptionIDs = expandUpdatedStringsPtr(d.Get("option_ids"))
+		updateRequest.OptionIDs = types.ExpandUpdatedStringsPtr(d.Get("option_ids"))
 		hasChanged = true
 	}
 
@@ -274,17 +275,17 @@ func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateRequest.OfferID = expandUpdatedStringPtr(offerID)
+		updateRequest.OfferID = types.ExpandUpdatedStringPtr(offerID)
 		hasChanged = true
 	}
 
 	if d.HasChange("email") {
-		updateRequest.Email = expandUpdatedStringPtr(d.Get("email"))
+		updateRequest.Email = types.ExpandUpdatedStringPtr(d.Get("email"))
 		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 

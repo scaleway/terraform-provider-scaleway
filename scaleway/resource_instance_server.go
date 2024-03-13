@@ -25,6 +25,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -366,14 +367,14 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
-		Name:              expandOrGenerateString(d.Get("name"), "srv"),
-		Project:           expandStringPtr(d.Get("project_id")),
+		Name:              types.ExpandOrGenerateString(d.Get("name"), "srv"),
+		Project:           types.ExpandStringPtr(d.Get("project_id")),
 		Image:             imageUUID,
 		CommercialType:    commercialType,
-		SecurityGroup:     expandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
+		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
-		Tags:              expandStrings(d.Get("tags")),
-		RoutedIPEnabled:   expandBoolPtr(getBool(d, "routed_ip_enabled")),
+		Tags:              types.ExpandStrings(d.Get("tags")),
+		RoutedIPEnabled:   types.ExpandBoolPtr(getBool(d, "routed_ip_enabled")),
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
@@ -382,7 +383,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
-		req.Bootscript = expandStringPtr(bootScriptID)
+		req.Bootscript = types.ExpandStringPtr(bootScriptID)
 	}
 
 	if bootType, ok := d.GetOk("boot_type"); ok {
@@ -391,11 +392,11 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.PublicIP = expandStringPtr(zonal.ExpandID(ipID).ID)
+		req.PublicIP = types.ExpandStringPtr(zonal.ExpandID(ipID).ID)
 	}
 
 	if ipIDs, ok := d.GetOk("ip_ids"); ok {
-		req.PublicIPs = expandSliceIDsPtr(ipIDs)
+		req.PublicIPs = types.ExpandSliceIDsPtr(ipIDs)
 		// If server has multiple IPs, routed ip must be enabled per default
 		if getBool(d, "routed_ip_enabled") == nil {
 			req.RoutedIPEnabled = scw.BoolPtr(true)
@@ -403,7 +404,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		req.PlacementGroup = expandStringPtr(zonal.ExpandID(placementGroupID).ID)
+		req.PlacementGroup = types.ExpandStringPtr(zonal.ExpandID(placementGroupID).ID)
 	}
 
 	serverType := getServerType(ctx, api.API, req.Zone, req.CommercialType)
@@ -418,7 +419,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
 	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
-	rootVolumeIsBootVolume := expandBoolPtr(d.Get("root_volume.0.boot"))
+	rootVolumeIsBootVolume := types.ExpandBoolPtr(d.Get("root_volume.0.boot"))
 	rootVolumeType := d.Get("root_volume.0.volume_type").(string)
 	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
 	rootVolumeID := zonal.ExpandID(d.Get("root_volume.0.volume_id").(string)).ID
@@ -434,7 +435,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	rootVolumeName := ""
 	if req.Image == "" { // When creating an instance from an image, volume should not have a name
-		rootVolumeName = newRandomName("vol")
+		rootVolumeName = types.NewRandomName("vol")
 	}
 
 	var rootVolumeSize *scw.Size
@@ -448,8 +449,8 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	req.Volumes["0"] = &instance.VolumeServerTemplate{
-		Name:       expandStringPtr(rootVolumeName),
-		ID:         expandStringPtr(rootVolumeID),
+		Name:       types.ExpandStringPtr(rootVolumeName),
+		ID:         types.ExpandStringPtr(rootVolumeID),
 		VolumeType: instance.VolumeVolumeType(rootVolumeType),
 		Size:       rootVolumeSize,
 		Boot:       rootVolumeIsBootVolume,
@@ -619,7 +620,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		}
 
 		if server.PrivateIP != nil {
-			_ = d.Set("private_ip", flattenStringPtr(server.PrivateIP))
+			_ = d.Set("private_ip", types.FlattenStringPtr(server.PrivateIP))
 		}
 
 		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID {
@@ -765,19 +766,19 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	if d.HasChange("name") {
 		serverShouldUpdate = true
-		updateRequest.Name = expandStringPtr(d.Get("name"))
+		updateRequest.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {
 		serverShouldUpdate = true
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("security_group_id") {
 		serverShouldUpdate = true
 		updateRequest.SecurityGroup = &instance.SecurityGroupTemplate{
 			ID:   zonal.ExpandID(d.Get("security_group_id")).ID,
-			Name: newRandomName("sg"), // this value will be ignored by the API
+			Name: types.NewRandomName("sg"), // this value will be ignored by the API
 		}
 	}
 
@@ -796,8 +797,8 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChanges("additional_volume_ids", "root_volume") {
 		volumes["0"] = &instance.VolumeServerTemplate{
 			ID:   scw.StringPtr(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
-			Name: scw.StringPtr(newRandomName("vol")), // name is ignored by the API, any name will work here
-			Boot: expandBoolPtr(d.Get("root_volume.0.boot")),
+			Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
+			Boot: types.ExpandBoolPtr(d.Get("root_volume.0.boot")),
 		}
 
 		if !hasAdditionalVolumes {
@@ -825,7 +826,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
 				ID:   scw.StringPtr(zonal.ExpandID(volumeID).ID),
-				Name: scw.StringPtr(newRandomName("vol")), // name is ignored by the API, any name will work here
+				Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
 			}
 		}
 
@@ -916,7 +917,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	if d.HasChanges("bootscript_id") {
 		serverShouldUpdate = true
-		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
+		updateRequest.Bootscript = types.ExpandStringPtr(d.Get("bootscript_id").(string))
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
@@ -1274,7 +1275,7 @@ func resourceScalewayInstanceServerMigrate(ctx context.Context, d *schema.Resour
 	_, err = api.UpdateServer(&instance.UpdateServerRequest{
 		Zone:           zone,
 		ServerID:       id,
-		CommercialType: expandStringPtr(d.Get("type")),
+		CommercialType: types.ExpandStringPtr(d.Get("type")),
 	})
 	if err != nil {
 		return errors.New("failed to change server type server")

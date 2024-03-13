@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayInstanceImage() *schema.Resource {
@@ -104,9 +105,9 @@ func dataSourceScalewayInstanceImageRead(ctx context.Context, d *schema.Resource
 	if !ok { // Get instance by name, zone, and arch.
 		res, err := instanceAPI.ListImages(&instance.ListImagesRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(d.Get("name")),
-			Arch:    expandStringPtr(d.Get("architecture")),
-			Project: expandStringPtr(d.Get("project_id")),
+			Name:    types.ExpandStringPtr(d.Get("name")),
+			Arch:    types.ExpandStringPtr(d.Get("architecture")),
+			Project: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -157,8 +158,8 @@ func dataSourceScalewayInstanceImageRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("architecture", resp.Image.Arch)
 	_ = d.Set("name", resp.Image.Name)
 
-	_ = d.Set("creation_date", flattenTime(resp.Image.CreationDate))
-	_ = d.Set("modification_date", flattenTime(resp.Image.ModificationDate))
+	_ = d.Set("creation_date", types.FlattenTime(resp.Image.CreationDate))
+	_ = d.Set("modification_date", types.FlattenTime(resp.Image.ModificationDate))
 	_ = d.Set("public", resp.Image.Public)
 	_ = d.Set("from_server_id", resp.Image.FromServer)
 	_ = d.Set("state", resp.Image.State.String())

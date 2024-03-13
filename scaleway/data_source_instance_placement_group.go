@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -40,8 +41,8 @@ func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema
 	if !placementGroupIDExists {
 		res, err := api.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(d.Get("name")),
-			Project: expandStringPtr(d.Get("project_id")),
+			Name:    types.ExpandStringPtr(d.Get("name")),
+			Project: types.ExpandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)

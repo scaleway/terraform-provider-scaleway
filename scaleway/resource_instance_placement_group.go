@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayInstancePlacementGroup() *schema.Resource {
@@ -80,11 +81,11 @@ func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema
 
 	res, err := instanceAPI.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
 		Zone:       zone,
-		Name:       expandOrGenerateString(d.Get("name"), "pg"),
-		Project:    expandStringPtr(d.Get("project_id")),
+		Name:       types.ExpandOrGenerateString(d.Get("name"), "pg"),
+		Project:    types.ExpandStringPtr(d.Get("project_id")),
 		PolicyMode: instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType: instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
-		Tags:       expandStrings(d.Get("tags")),
+		Tags:       types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -138,7 +139,7 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name").(string))
+		req.Name = types.ExpandStringPtr(d.Get("name").(string))
 		hasChanged = true
 	}
 
@@ -155,7 +156,7 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 

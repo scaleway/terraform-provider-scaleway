@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayLbBackend() *schema.Resource {
@@ -351,30 +352,30 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	healthCheckoutTimeout, err := expandDuration(d.Get("health_check_timeout"))
+	healthCheckoutTimeout, err := types.ExpandDuration(d.Get("health_check_timeout"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	healthCheckDelay, err := expandDuration(d.Get("health_check_delay"))
+	healthCheckDelay, err := types.ExpandDuration(d.Get("health_check_delay"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	timeoutServer, err := expandDuration(d.Get("timeout_server"))
+	timeoutServer, err := types.ExpandDuration(d.Get("timeout_server"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	timeoutConnect, err := expandDuration(d.Get("timeout_connect"))
+	timeoutConnect, err := types.ExpandDuration(d.Get("timeout_connect"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	timeoutTunnel, err := expandDuration(d.Get("timeout_tunnel"))
+	timeoutTunnel, err := types.ExpandDuration(d.Get("timeout_tunnel"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	createReq := &lbSDK.ZonedAPICreateBackendRequest{
 		Zone:                     zone,
 		LBID:                     lbID,
-		Name:                     expandOrGenerateString(d.Get("name"), "lb-bkd"),
+		Name:                     types.ExpandOrGenerateString(d.Get("name"), "lb-bkd"),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
 		ForwardPort:              int32(d.Get("forward_port").(int)),
 		ForwardPortAlgorithm:     expandLbForwardPortAlgorithm(d.Get("forward_port_algorithm")),
@@ -390,19 +391,19 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 			HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 			CheckSendProxy:  d.Get("health_check_send_proxy").(bool),
 		},
-		ServerIP:              expandStrings(d.Get("server_ips")),
+		ServerIP:              types.ExpandStrings(d.Get("server_ips")),
 		ProxyProtocol:         expandLbProxyProtocol(d.Get("proxy_protocol")),
 		TimeoutServer:         timeoutServer,
 		TimeoutConnect:        timeoutConnect,
 		TimeoutTunnel:         timeoutTunnel,
 		OnMarkedDownAction:    expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
-		FailoverHost:          expandStringPtr(d.Get("failover_host")),
-		SslBridging:           expandBoolPtr(getBool(d, "ssl_bridging")),
-		IgnoreSslServerVerify: expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
+		FailoverHost:          types.ExpandStringPtr(d.Get("failover_host")),
+		SslBridging:           types.ExpandBoolPtr(getBool(d, "ssl_bridging")),
+		IgnoreSslServerVerify: types.ExpandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
 	}
 
 	if maxConn, ok := d.GetOk("max_connections"); ok {
-		createReq.MaxConnections = expandInt32Ptr(maxConn)
+		createReq.MaxConnections = types.ExpandInt32Ptr(maxConn)
 	}
 	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
 		timeout, err := time.ParseDuration(timeoutQueue.(string))
@@ -412,10 +413,10 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		createReq.TimeoutQueue = &scw.Duration{Seconds: int64(timeout.Seconds())}
 	}
 	if redispatchAttemptCount, ok := d.GetOk("redispatch_attempt_count"); ok {
-		createReq.RedispatchAttemptCount = expandInt32Ptr(redispatchAttemptCount)
+		createReq.RedispatchAttemptCount = types.ExpandInt32Ptr(redispatchAttemptCount)
 	}
 	if maxRetries, ok := d.GetOk("max_retries"); ok {
-		createReq.MaxRetries = expandInt32Ptr(maxRetries)
+		createReq.MaxRetries = types.ExpandInt32Ptr(maxRetries)
 	}
 	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
 		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
@@ -426,7 +427,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// deprecated attribute
-	createReq.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
+	createReq.SendProxyV2 = types.ExpandBoolPtr(getBool(d, "send_proxy_v2"))
 
 	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {
@@ -474,28 +475,28 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("sticky_sessions_cookie_name", backend.StickySessionsCookieName)
 	_ = d.Set("server_ips", backend.Pool)
 	_ = d.Set("proxy_protocol", flattenLbProxyProtocol(backend.ProxyProtocol))
-	_ = d.Set("timeout_server", flattenDuration(backend.TimeoutServer))
-	_ = d.Set("timeout_connect", flattenDuration(backend.TimeoutConnect))
-	_ = d.Set("timeout_tunnel", flattenDuration(backend.TimeoutTunnel))
+	_ = d.Set("timeout_server", types.FlattenDuration(backend.TimeoutServer))
+	_ = d.Set("timeout_connect", types.FlattenDuration(backend.TimeoutConnect))
+	_ = d.Set("timeout_tunnel", types.FlattenDuration(backend.TimeoutTunnel))
 	_ = d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(backend.OnMarkedDownAction))
-	_ = d.Set("send_proxy_v2", flattenBoolPtr(backend.SendProxyV2))
+	_ = d.Set("send_proxy_v2", types.FlattenBoolPtr(backend.SendProxyV2))
 	_ = d.Set("failover_host", backend.FailoverHost)
-	_ = d.Set("ssl_bridging", flattenBoolPtr(backend.SslBridging))
-	_ = d.Set("ignore_ssl_server_verify", flattenBoolPtr(backend.IgnoreSslServerVerify))
-	_ = d.Set("max_connections", flattenInt32Ptr(backend.MaxConnections))
-	_ = d.Set("redispatch_attempt_count", flattenInt32Ptr(backend.RedispatchAttemptCount))
-	_ = d.Set("max_retries", flattenInt32Ptr(backend.MaxRetries))
-	_ = d.Set("timeout_queue", flattenDuration(backend.TimeoutQueue.ToTimeDuration()))
+	_ = d.Set("ssl_bridging", types.FlattenBoolPtr(backend.SslBridging))
+	_ = d.Set("ignore_ssl_server_verify", types.FlattenBoolPtr(backend.IgnoreSslServerVerify))
+	_ = d.Set("max_connections", types.FlattenInt32Ptr(backend.MaxConnections))
+	_ = d.Set("redispatch_attempt_count", types.FlattenInt32Ptr(backend.RedispatchAttemptCount))
+	_ = d.Set("max_retries", types.FlattenInt32Ptr(backend.MaxRetries))
+	_ = d.Set("timeout_queue", types.FlattenDuration(backend.TimeoutQueue.ToTimeDuration()))
 
 	// HealthCheck
 	_ = d.Set("health_check_port", backend.HealthCheck.Port)
 	_ = d.Set("health_check_max_retries", backend.HealthCheck.CheckMaxRetries)
-	_ = d.Set("health_check_timeout", flattenDuration(backend.HealthCheck.CheckTimeout))
-	_ = d.Set("health_check_delay", flattenDuration(backend.HealthCheck.CheckDelay))
+	_ = d.Set("health_check_timeout", types.FlattenDuration(backend.HealthCheck.CheckTimeout))
+	_ = d.Set("health_check_delay", types.FlattenDuration(backend.HealthCheck.CheckDelay))
 	_ = d.Set("health_check_tcp", flattenLbHCTCP(backend.HealthCheck.TCPConfig))
 	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
-	_ = d.Set("health_check_transient_delay", flattenDuration(backend.HealthCheck.TransientCheckDelay.ToTimeDuration()))
+	_ = d.Set("health_check_transient_delay", types.FlattenDuration(backend.HealthCheck.TransientCheckDelay.ToTimeDuration()))
 	_ = d.Set("health_check_send_proxy", backend.HealthCheck.CheckSendProxy)
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
@@ -531,15 +532,15 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	timeoutServer, err := expandDuration(d.Get("timeout_server"))
+	timeoutServer, err := types.ExpandDuration(d.Get("timeout_server"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	timeoutConnect, err := expandDuration(d.Get("timeout_connect"))
+	timeoutConnect, err := types.ExpandDuration(d.Get("timeout_connect"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	timeoutTunnel, err := expandDuration(d.Get("timeout_tunnel"))
+	timeoutTunnel, err := types.ExpandDuration(d.Get("timeout_tunnel"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -558,12 +559,12 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		TimeoutConnect:           timeoutConnect,
 		TimeoutTunnel:            timeoutTunnel,
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
-		FailoverHost:             expandStringPtr(d.Get("failover_host")),
-		SslBridging:              expandBoolPtr(getBool(d, "ssl_bridging")),
-		IgnoreSslServerVerify:    expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
-		MaxConnections:           expandInt32Ptr(d.Get("max_connections")),
-		RedispatchAttemptCount:   expandInt32Ptr(d.Get("redispatch_attempt_count")),
-		MaxRetries:               expandInt32Ptr(d.Get("max_retries")),
+		FailoverHost:             types.ExpandStringPtr(d.Get("failover_host")),
+		SslBridging:              types.ExpandBoolPtr(getBool(d, "ssl_bridging")),
+		IgnoreSslServerVerify:    types.ExpandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
+		MaxConnections:           types.ExpandInt32Ptr(d.Get("max_connections")),
+		RedispatchAttemptCount:   types.ExpandInt32Ptr(d.Get("redispatch_attempt_count")),
+		MaxRetries:               types.ExpandInt32Ptr(d.Get("max_retries")),
 	}
 
 	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
@@ -575,18 +576,18 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// deprecated
-	req.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
+	req.SendProxyV2 = types.ExpandBoolPtr(getBool(d, "send_proxy_v2"))
 
 	_, err = lbAPI.UpdateBackend(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	healthCheckoutTimeout, err := expandDuration(d.Get("health_check_timeout"))
+	healthCheckoutTimeout, err := types.ExpandDuration(d.Get("health_check_timeout"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	healthCheckDelay, err := expandDuration(d.Get("health_check_delay"))
+	healthCheckDelay, err := types.ExpandDuration(d.Get("health_check_delay"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -631,7 +632,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	_, err = lbAPI.SetBackendServers(&lbSDK.ZonedAPISetBackendServersRequest{
 		Zone:      zone,
 		BackendID: ID,
-		ServerIP:  expandStrings(d.Get("server_ips")),
+		ServerIP:  types.ExpandStrings(d.Get("server_ips")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -49,8 +50,8 @@ func dataSourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData
 		deviceName := d.Get("name").(string)
 		res, err := api.ListDevices(&iot.ListDevicesRequest{
 			Region: region,
-			Name:   expandStringPtr(deviceName),
-			HubID:  expandStringPtr(hubID),
+			Name:   types.ExpandStringPtr(deviceName),
+			HubID:  types.ExpandStringPtr(hubID),
 		})
 		if err != nil {
 			return diag.FromErr(err)

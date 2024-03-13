@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -66,9 +67,9 @@ func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.Resource
 	snapshot, err := api.CreateSnapshot(&block.CreateSnapshotRequest{
 		Zone:      zone,
 		ProjectID: d.Get("project_id").(string),
-		Name:      expandOrGenerateString(d.Get("name").(string), "snapshot"),
+		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "snapshot"),
 		VolumeID:  locality.ExpandID(d.Get("volume_id")),
-		Tags:      expandStrings(d.Get("tags")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -133,11 +134,11 @@ func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if _, err := api.UpdateSnapshot(req, scw.WithContext(ctx)); err != nil {

@@ -8,6 +8,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -44,7 +45,7 @@ func dataSourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData
 		backendName := d.Get("name").(string)
 		res, err := api.ListBackends(&lbSDK.ZonedAPIListBackendsRequest{
 			Zone: zone,
-			Name: expandStringPtr(backendName),
+			Name: types.ExpandStringPtr(backendName),
 			LBID: locality.ExpandID(d.Get("lb_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {

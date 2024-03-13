@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -39,9 +40,9 @@ func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.Resource
 	if !snapshotIDExists {
 		res, err := api.ListSnapshots(&block.ListSnapshotsRequest{
 			Zone:      zone,
-			Name:      expandStringPtr(d.Get("name")),
-			ProjectID: expandStringPtr(d.Get("project_id")),
-			VolumeID:  expandStringPtr(d.Get("volume_id")),
+			Name:      types.ExpandStringPtr(d.Get("name")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			VolumeID:  types.ExpandStringPtr(d.Get("volume_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)

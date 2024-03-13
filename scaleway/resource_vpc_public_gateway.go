@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayVPCPublicGateway() *schema.Resource {
@@ -113,10 +114,10 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 	}
 
 	req := &vpcgw.CreateGatewayRequest{
-		Name:               expandOrGenerateString(d.Get("name"), "pn"),
+		Name:               types.ExpandOrGenerateString(d.Get("name"), "pn"),
 		Type:               d.Get("type").(string),
-		Tags:               expandStrings(d.Get("tags")),
-		UpstreamDNSServers: expandStrings(d.Get("upstream_dns_servers")),
+		Tags:               types.ExpandStrings(d.Get("tags")),
+		UpstreamDNSServers: types.ExpandStrings(d.Get("upstream_dns_servers")),
 		ProjectID:          d.Get("project_id").(string),
 		EnableBastion:      d.Get("bastion_enabled").(bool),
 		Zone:               zone,
@@ -124,11 +125,11 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if bastionPort, ok := d.GetOk("bastion_port"); ok {
-		req.BastionPort = expandUint32Ptr(bastionPort.(int))
+		req.BastionPort = types.ExpandUint32Ptr(bastionPort.(int))
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.IPID = expandStringPtr(zonal.ExpandID(ipID).ID)
+		req.IPID = types.ExpandStringPtr(zonal.ExpandID(ipID).ID)
 	}
 
 	gateway, err := vpcgwAPI.CreateGateway(req, scw.WithContext(ctx))
@@ -201,7 +202,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("bastion_port") {
@@ -217,7 +218,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("upstream_dns_servers") {
-		updateRequest.UpstreamDNSServers = expandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
+		updateRequest.UpstreamDNSServers = types.ExpandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
 	}
 
 	_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))

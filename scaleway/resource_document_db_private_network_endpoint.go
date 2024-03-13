@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -96,7 +97,7 @@ func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *sc
 	endpointSpecPN.PrivateNetworkID = locality.ExpandID(d.Get("private_network_id").(string))
 	ipNet := d.Get("ip_net").(string)
 	if len(ipNet) > 0 {
-		ip, err := expandIPNet(ipNet)
+		ip, err := types.ExpandIPNet(ipNet)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -153,7 +154,7 @@ func resourceScalewayDocumentDBInstanceEndpointRead(ctx context.Context, d *sche
 	}
 
 	pnID := regional.NewIDString(region, endpoint.PrivateNetwork.PrivateNetworkID)
-	serviceIP, err := flattenIPNet(endpoint.PrivateNetwork.ServiceIP)
+	serviceIP, err := types.FlattenIPNet(endpoint.PrivateNetwork.ServiceIP)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,7 +165,7 @@ func resourceScalewayDocumentDBInstanceEndpointRead(ctx context.Context, d *sche
 	_ = d.Set("port", int(endpoint.Port))
 	_ = d.Set("name", endpoint.Name)
 	_ = d.Set("hostname", endpoint.Hostname)
-	_ = d.Set("ip", flattenIPPtr(endpoint.IP))
+	_ = d.Set("ip", types.FlattenIPPtr(endpoint.IP))
 	_ = d.Set("region", region.String())
 
 	return nil

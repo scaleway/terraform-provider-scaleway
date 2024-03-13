@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -218,8 +219,8 @@ func resourceScalewayLbACLRead(ctx context.Context, d *schema.ResourceData, m in
 	_ = d.Set("name", acl.Name)
 	_ = d.Set("description", acl.Description)
 	_ = d.Set("index", int(acl.Index))
-	_ = d.Set("created_at", flattenTime(acl.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(acl.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(acl.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(acl.UpdatedAt))
 	_ = d.Set("action", flattenLbACLAction(acl.Action))
 
 	if acl.Match != nil {
@@ -242,7 +243,7 @@ func resourceScalewayLbACLUpdate(ctx context.Context, d *schema.ResourceData, m 
 		Action:      expandLbACLAction(d.Get("action")),
 		Index:       int32(d.Get("index").(int)),
 		Match:       expandLbACLMatch(d.Get("match")),
-		Description: expandUpdatedStringPtr(d.Get("description")),
+		Description: types.ExpandUpdatedStringPtr(d.Get("description")),
 	}
 
 	_, err = lbAPI.UpdateACL(req, scw.WithContext(ctx))

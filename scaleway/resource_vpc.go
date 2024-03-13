@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayVPC() *schema.Resource {
@@ -66,8 +67,8 @@ func resourceScalewayVPCCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	res, err := vpcAPI.CreateVPC(&vpc.CreateVPCRequest{
-		Name:      expandOrGenerateString(d.Get("name"), "vpc"),
-		Tags:      expandStrings(d.Get("tags")),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "vpc"),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
 		Region:    region,
 	}, scw.WithContext(ctx))
@@ -101,8 +102,8 @@ func resourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("name", res.Name)
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_default", res.IsDefault)
 	_ = d.Set("region", region)
 
@@ -123,7 +124,7 @@ func resourceScalewayVPCUpdate(ctx context.Context, d *schema.ResourceData, m in
 		VpcID:  ID,
 		Region: region,
 		Name:   scw.StringPtr(d.Get("name").(string)),
-		Tags:   expandUpdatedStringsPtr(d.Get("tags")),
+		Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

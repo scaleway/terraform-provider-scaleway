@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIotRoute() *schema.Resource {
@@ -208,7 +209,7 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 
 	req := &iot.CreateRouteRequest{
 		Region: region,
-		Name:   expandOrGenerateString(d.Get("name"), "route"),
+		Name:   types.ExpandOrGenerateString(d.Get("name"), "route"),
 		HubID:  zonal.ExpandID(d.Get("hub_id")).ID,
 		Topic:  d.Get("topic").(string),
 	}

@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -234,7 +235,7 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 		ipRaw, ok := r["ip"]
 		if ok {
 			aclRule := &rdb.ACLRuleRequest{}
-			ip, err := expandIPNet(ipRaw.(string))
+			ip, err := types.ExpandIPNet(ipRaw.(string))
 			if err != nil {
 				return res, err
 			}
@@ -263,7 +264,7 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 	ruleMapFromSchema := map[string]struct{}{}
 	for _, ruleFromSchema := range dataFromSchema {
 		currentRule := ruleFromSchema.(map[string]interface{})
-		ip, err := expandIPNet(currentRule["ip"].(string))
+		ip, err := types.ExpandIPNet(currentRule["ip"].(string))
 		if err != nil {
 			errors = append(errors, err)
 			continue

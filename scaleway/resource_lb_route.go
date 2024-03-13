@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -93,8 +94,8 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		FrontendID: frontID,
 		BackendID:  backID,
 		Match: &lbSDK.RouteMatch{
-			Sni:        expandStringPtr(d.Get("match_sni")),
-			HostHeader: expandStringPtr(d.Get("match_host_header")),
+			Sni:        types.ExpandStringPtr(d.Get("match_sni")),
+			HostHeader: types.ExpandStringPtr(d.Get("match_host_header")),
 		},
 	}
 
@@ -128,10 +129,10 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, m 
 
 	_ = d.Set("frontend_id", zonal.NewIDString(zone, route.FrontendID))
 	_ = d.Set("backend_id", zonal.NewIDString(zone, route.BackendID))
-	_ = d.Set("match_sni", flattenStringPtr(route.Match.Sni))
-	_ = d.Set("match_host_header", flattenStringPtr(route.Match.HostHeader))
-	_ = d.Set("created_at", flattenTime(route.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(route.UpdatedAt))
+	_ = d.Set("match_sni", types.FlattenStringPtr(route.Match.Sni))
+	_ = d.Set("match_host_header", types.FlattenStringPtr(route.Match.HostHeader))
+	_ = d.Set("created_at", types.FlattenTime(route.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(route.UpdatedAt))
 
 	return nil
 }
@@ -156,8 +157,8 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		RouteID:   ID,
 		BackendID: backID,
 		Match: &lbSDK.RouteMatch{
-			Sni:        expandStringPtr(d.Get("match_sni")),
-			HostHeader: expandStringPtr(d.Get("match_host_header")),
+			Sni:        types.ExpandStringPtr(d.Get("match_sni")),
+			HostHeader: types.ExpandStringPtr(d.Get("match_host_header")),
 		},
 	}
 

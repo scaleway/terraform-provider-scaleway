@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayBillingConsumptions() *schema.Resource {
@@ -72,10 +73,10 @@ func dataSourceScalewayBillingConsumptionsRead(ctx context.Context, d *schema.Re
 	api := billingAPI(m)
 
 	res, err := api.ListConsumptions(&billing.ListConsumptionsRequest{
-		CategoryName:   expandStringPtr(d.Get("category_name")),
-		BillingPeriod:  expandStringPtr(d.Get("billing_period")),
-		OrganizationID: expandStringPtr(d.Get("organization_id")),
-		ProjectID:      expandStringPtr(d.Get("project_id")),
+		CategoryName:   types.ExpandStringPtr(d.Get("category_name")),
+		BillingPeriod:  types.ExpandStringPtr(d.Get("billing_period")),
+		OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
+		ProjectID:      types.ExpandStringPtr(d.Get("project_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -97,7 +98,7 @@ func dataSourceScalewayBillingConsumptionsRead(ctx context.Context, d *schema.Re
 
 	hashedID := sha256.Sum256([]byte(d.Get("organization_id").(string)))
 	d.SetId(hex.EncodeToString(hashedID[:]))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("consumptions", consumptions)
 
 	return nil

@@ -9,6 +9,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIamSSKKey() *schema.Resource {
@@ -80,7 +81,7 @@ func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData
 	if _, disabledExists := d.GetOk("disabled"); disabledExists {
 		_, err = api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 			SSHKeyID: d.Id(),
-			Disabled: expandBoolPtr(getBool(d, "disabled")),
+			Disabled: types.ExpandBoolPtr(getBool(d, "disabled")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -109,8 +110,8 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("public_key", res.PublicKey)
 	_ = d.Set("fingerprint", res.Fingerprint)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("disabled", res.Disabled)
@@ -128,7 +129,7 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 	hasUpdated := false
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 		hasUpdated = true
 	}
 
@@ -136,7 +137,7 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 		if _, disabledExists := d.GetOk("disabled"); !disabledExists {
 			_, err := api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 				SSHKeyID: d.Id(),
-				Disabled: expandBoolPtr(false),
+				Disabled: types.ExpandBoolPtr(false),
 			})
 			if err != nil {
 				return diag.FromErr(err)
@@ -144,7 +145,7 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 		} else {
 			_, err := api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 				SSHKeyID: d.Id(),
-				Disabled: expandBoolPtr(getBool(d, "disabled")),
+				Disabled: types.ExpandBoolPtr(getBool(d, "disabled")),
 			})
 			if err != nil {
 				return diag.FromErr(err)

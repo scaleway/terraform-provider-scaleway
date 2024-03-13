@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIPAMIP() *schema.Resource {
@@ -155,7 +156,7 @@ func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		IsIPv6:    d.Get("is_ipv6").(bool),
-		Tags:      expandStrings(d.Get("tags")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}
 
 	address, addressOk := d.GetOk("address")
@@ -234,7 +235,7 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m i
 		}
 	}
 
-	address, err := flattenIPNet(res.Address)
+	address, err := types.FlattenIPNet(res.Address)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -242,8 +243,8 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m i
 	_ = d.Set("source", flattenIPSource(res.Source, privateNetworkID))
 	_ = d.Set("resource", flattenIPResource(res.Resource))
 	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_ipv6", res.IsIPv6)
 	_ = d.Set("region", region)
 	if res.Zone != nil {
@@ -266,7 +267,7 @@ func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m
 	_, err = ipamAPI.UpdateIP(&ipam.UpdateIPRequest{
 		IPID:   ID,
 		Region: region,
-		Tags:   expandUpdatedStringsPtr(d.Get("tags")),
+		Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

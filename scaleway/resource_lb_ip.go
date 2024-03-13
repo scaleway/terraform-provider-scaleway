@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayLbIP() *schema.Resource {
@@ -71,8 +72,8 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, m i
 
 	createReq := &lbSDK.ZonedAPICreateIPRequest{
 		Zone:      zone,
-		ProjectID: expandStringPtr(d.Get("project_id")),
-		Reverse:   expandStringPtr(d.Get("reverse")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		Reverse:   types.ExpandStringPtr(d.Get("reverse")),
 	}
 
 	res, err := lbAPI.CreateIP(createReq, scw.WithContext(ctx))
@@ -127,7 +128,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("project_id", ip.ProjectID)
 	_ = d.Set("ip_address", ip.IPAddress)
 	_ = d.Set("reverse", ip.Reverse)
-	_ = d.Set("lb_id", flattenStringPtr(ip.LBID))
+	_ = d.Set("lb_id", types.FlattenStringPtr(ip.LBID))
 
 	return nil
 }
@@ -177,7 +178,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m i
 		req := &lbSDK.ZonedAPIUpdateIPRequest{
 			Zone:    zone,
 			IPID:    ID,
-			Reverse: expandStringPtr(d.Get("reverse")),
+			Reverse: types.ExpandStringPtr(d.Get("reverse")),
 		}
 
 		_, err = lbAPI.UpdateIP(req, scw.WithContext(ctx))

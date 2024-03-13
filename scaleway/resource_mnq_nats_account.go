@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayMNQNatsAccount() *schema.Resource {
@@ -48,7 +49,7 @@ func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.Resourc
 	account, err := api.CreateNatsAccount(&mnq.NatsAPICreateNatsAccountRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
-		Name:      expandOrGenerateString(d.Get("name").(string), "nats-account"),
+		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "nats-account"),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -97,7 +98,7 @@ func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if _, err := api.UpdateNatsAccount(req, scw.WithContext(ctx)); err != nil {

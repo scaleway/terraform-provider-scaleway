@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -51,7 +52,7 @@ func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Res
 		resp, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
 			Zone:     zone,
 			ServerID: serverID,
-			Tags:     expandStrings(d.Get("tags")),
+			Tags:     types.ExpandStrings(d.Get("tags")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to list instance private_nic: %w", err))

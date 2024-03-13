@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayIPAMIPs() *schema.Resource {
@@ -144,20 +145,20 @@ func dataSourceScalewayIPAMIPsRead(ctx context.Context, d *schema.ResourceData, 
 
 	req := &ipam.ListIPsRequest{
 		Region:           region,
-		ProjectID:        expandStringPtr(d.Get("project_id")),
-		Zonal:            expandStringPtr(d.Get("zonal")),
-		PrivateNetworkID: expandStringPtr(d.Get("private_network_id")),
-		ResourceID:       expandStringPtr(expandLastID(d.Get("resource.0.id"))),
+		ProjectID:        types.ExpandStringPtr(d.Get("project_id")),
+		Zonal:            types.ExpandStringPtr(d.Get("zonal")),
+		PrivateNetworkID: types.ExpandStringPtr(d.Get("private_network_id")),
+		ResourceID:       types.ExpandStringPtr(expandLastID(d.Get("resource.0.id"))),
 		ResourceType:     ipam.ResourceType(d.Get("resource.0.type").(string)),
-		ResourceName:     expandStringPtr(d.Get("resource.0.name")),
-		MacAddress:       expandStringPtr(d.Get("mac_address")),
-		Tags:             expandStrings(d.Get("tags")),
-		OrganizationID:   expandStringPtr(d.Get("organization_id")),
+		ResourceName:     types.ExpandStringPtr(d.Get("resource.0.name")),
+		MacAddress:       types.ExpandStringPtr(d.Get("mac_address")),
+		Tags:             types.ExpandStrings(d.Get("tags")),
+		OrganizationID:   types.ExpandStringPtr(d.Get("organization_id")),
 	}
 
 	attached, attachedExists := d.GetOk("attached")
 	if attachedExists {
-		req.Attached = expandBoolPtr(attached)
+		req.Attached = types.ExpandBoolPtr(attached)
 	}
 
 	ipType, ipTypeExist := d.GetOk("type")
@@ -184,7 +185,7 @@ func dataSourceScalewayIPAMIPsRead(ctx context.Context, d *schema.ResourceData, 
 
 	ips := []interface{}(nil)
 	for _, ip := range resp.IPs {
-		address, err := flattenIPNet(ip.Address)
+		address, err := types.FlattenIPNet(ip.Address)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -194,8 +195,8 @@ func dataSourceScalewayIPAMIPsRead(ctx context.Context, d *schema.ResourceData, 
 		rawIP["address"] = address
 		rawIP["resource"] = flattenIPResource(ip.Resource)
 		rawIP["tags"] = ip.Tags
-		rawIP["created_at"] = flattenTime(ip.CreatedAt)
-		rawIP["updated_at"] = flattenTime(ip.UpdatedAt)
+		rawIP["created_at"] = types.FlattenTime(ip.CreatedAt)
+		rawIP["updated_at"] = types.FlattenTime(ip.UpdatedAt)
 		rawIP["region"] = ip.Region.String()
 		rawIP["project_id"] = ip.ProjectID
 

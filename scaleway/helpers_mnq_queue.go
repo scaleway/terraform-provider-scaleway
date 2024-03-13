@@ -20,6 +20,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -152,7 +153,7 @@ func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isSQ
 	if value, ok := prefix.(string); ok && value != "" {
 		output = id.PrefixedUniqueId(value)
 	} else {
-		output = newRandomName("queue")
+		output = types.NewRandomName("queue")
 	}
 	if isSQS && isSQSFifo {
 		return output + SQSFIFOQueueNameSuffix

@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayInstancePrivateNIC() *schema.Resource {
@@ -86,8 +87,8 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 		Zone:             zone,
 		ServerID:         zonal.ExpandID(d.Get("server_id").(string)).ID,
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
-		Tags:             expandStrings(d.Get("tags")),
-		IPIDs:            expandStrings(d.Get("ip_ids")),
+		Tags:             types.ExpandStrings(d.Get("tags")),
+		IPIDs:            types.ExpandStrings(d.Get("ip_ids")),
 	}
 
 	privateNIC, err := instanceAPI.CreatePrivateNIC(
@@ -167,7 +168,7 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 				Zone:         zone,
 				ServerID:     serverID,
 				PrivateNicID: privateNICID,
-				Tags:         expandUpdatedStringsPtr(d.Get("tags")),
+				Tags:         types.ExpandUpdatedStringsPtr(d.Get("tags")),
 			},
 			scw.WithContext(ctx),
 		)

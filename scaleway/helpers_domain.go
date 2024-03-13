@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -150,9 +151,9 @@ func flattenDomainHTTPService(config *domain.RecordHTTPServiceConfig) interface{
 	}
 	return []map[string]interface{}{
 		{
-			"must_contain": flattenStringPtr(config.MustContain),
+			"must_contain": types.FlattenStringPtr(config.MustContain),
 			"url":          config.URL,
-			"user_agent":   flattenStringPtr(config.UserAgent),
+			"user_agent":   types.FlattenStringPtr(config.UserAgent),
 			"strategy":     config.Strategy.String(),
 			"ips":          ips,
 		},
@@ -175,9 +176,9 @@ func expandDomainHTTPService(i interface{}, ok bool) *domain.RecordHTTPServiceCo
 	}
 
 	return &domain.RecordHTTPServiceConfig{
-		MustContain: expandStringPtr(rawMap["must_contain"]),
+		MustContain: types.ExpandStringPtr(rawMap["must_contain"]),
 		URL:         rawMap["url"].(string),
-		UserAgent:   expandStringPtr(rawMap["user_agent"]),
+		UserAgent:   types.ExpandStringPtr(rawMap["user_agent"]),
 		Strategy:    domain.RecordHTTPServiceConfigStrategy(rawMap["strategy"].(string)),
 		IPs:         ips,
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -80,7 +81,7 @@ func resourceScalewayDocumentDBDatabaseCreate(ctx context.Context, d *schema.Res
 	database, err := api.CreateDatabase(&documentdb.CreateDatabaseRequest{
 		Region:     region,
 		InstanceID: instanceID,
-		Name:       expandOrGenerateString(d.Get("name").(string), "database"),
+		Name:       types.ExpandOrGenerateString(d.Get("name").(string), "database"),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

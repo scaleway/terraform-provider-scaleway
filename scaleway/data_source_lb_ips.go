@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayLbIPs() *schema.Resource {
@@ -62,7 +63,7 @@ func dataSourceScalewayLbIPsRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 	res, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{
 		Zone:      zone,
-		ProjectID: expandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -80,7 +81,7 @@ func dataSourceScalewayLbIPsRead(ctx context.Context, d *schema.ResourceData, m 
 		rawIP := make(map[string]interface{})
 		rawIP["id"] = zonal.NewID(ip.Zone, ip.ID).String()
 		rawIP["ip_address"] = ip.IPAddress
-		rawIP["lb_id"] = flattenStringPtr(ip.LBID)
+		rawIP["lb_id"] = types.FlattenStringPtr(ip.LBID)
 		rawIP["reverse"] = ip.Reverse
 		rawIP["zone"] = string(zone)
 		rawIP["organization_id"] = ip.OrganizationID

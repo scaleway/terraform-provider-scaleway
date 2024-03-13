@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -370,7 +371,7 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 }
 
 func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout time.Duration) error {
-	oPtr := expandStringPtr(o)
+	oPtr := types.ExpandStringPtr(o)
 	if oPtr != nil && len(*oPtr) > 0 {
 		idPN := locality.ExpandID(*oPtr)
 		// check if old private network still exist on instance server
@@ -407,7 +408,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 }
 
 func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout time.Duration) error {
-	if nPtr := expandStringPtr(n); nPtr != nil {
+	if nPtr := types.ExpandStringPtr(n); nPtr != nil {
 		// check if new private network was already attached on instance server
 		privateNetworkID := locality.ExpandID(*nPtr)
 		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
@@ -720,7 +721,7 @@ func instanceIPHasMigrated(d *schema.ResourceData) bool {
 		return false
 	}
 
-	ipIDs := expandStrings(d.Get("ip_ids"))
+	ipIDs := types.ExpandStrings(d.Get("ip_ids"))
 	for _, ipID := range ipIDs {
 		if ipID == oldIP {
 			return true

@@ -12,6 +12,7 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func TestAccScalewayObjectBucketPolicy_Basic(t *testing.T) {
@@ -260,7 +261,7 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 
 		bucketName := rs.Primary.Attributes["name"]
 		policy, err := s3Client.GetBucketPolicy(&s3.GetBucketPolicyInput{
-			Bucket: expandStringPtr(bucketName),
+			Bucket: types.ExpandStringPtr(bucketName),
 		})
 		if err != nil {
 			return fmt.Errorf("GetBucketPolicy error: %v", err)

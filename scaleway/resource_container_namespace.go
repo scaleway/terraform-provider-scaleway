@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayContainerNamespace() *schema.Resource {
@@ -95,10 +96,10 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 	}
 
 	ns, err := api.CreateNamespace(&container.CreateNamespaceRequest{
-		Description:                expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
+		Description:                types.ExpandStringPtr(d.Get("description").(string)),
+		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandContainerSecrets(d.Get("secret_environment_variables")),
-		Name:                       expandOrGenerateString(d.Get("name").(string), "ns"),
+		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "ns"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
 	}, scw.WithContext(ctx))
@@ -131,7 +132,7 @@ func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("description", flattenStringPtr(ns.Description))
+	_ = d.Set("description", types.FlattenStringPtr(ns.Description))
 	_ = d.Set("environment_variables", ns.EnvironmentVariables)
 	_ = d.Set("name", ns.Name)
 	_ = d.Set("organization_id", ns.OrganizationID)
@@ -160,11 +161,11 @@ func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChanges("environment_variables") {
-		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("environment_variables"))
 	}
 
 	if d.HasChange("secret_environment_variables") {

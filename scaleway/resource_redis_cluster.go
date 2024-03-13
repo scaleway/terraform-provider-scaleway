@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -238,7 +239,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	createReq := &redis.CreateClusterRequest{
 		Zone:      zone,
 		ProjectID: d.Get("project_id").(string),
-		Name:      expandOrGenerateString(d.Get("name"), "redis"),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "redis"),
 		Version:   d.Get("version").(string),
 		NodeType:  d.Get("node_type").(string),
 		UserName:  d.Get("user_name").(string),
@@ -247,7 +248,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
-		createReq.Tags = expandStrings(tags)
+		createReq.Tags = types.ExpandStrings(tags)
 	}
 	clusterSize, clusterSizeExist := d.GetOk("cluster_size")
 	if clusterSizeExist {
@@ -371,16 +372,16 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 	if d.HasChange("user_name") {
-		req.UserName = expandStringPtr(d.Get("user_name"))
+		req.UserName = types.ExpandStringPtr(d.Get("user_name"))
 	}
 	if d.HasChange("password") {
-		req.Password = expandStringPtr(d.Get("password"))
+		req.Password = types.ExpandStringPtr(d.Get("password"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 	if d.HasChange("acl") {
 		diagnostics := resourceScalewayRedisClusterUpdateACL(ctx, d, redisAPI, zone, ID)
@@ -417,14 +418,14 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
 			Zone:      zone,
 			ClusterID: ID,
-			Version:   expandStringPtr(d.Get("version")),
+			Version:   types.ExpandStringPtr(d.Get("version")),
 		})
 	}
 	if d.HasChange("node_type") {
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
 			Zone:      zone,
 			ClusterID: ID,
-			NodeType:  expandStringPtr(d.Get("node_type")),
+			NodeType:  types.ExpandStringPtr(d.Get("node_type")),
 		})
 	}
 	for i := range migrateClusterRequests {

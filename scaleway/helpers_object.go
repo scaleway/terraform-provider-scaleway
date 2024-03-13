@@ -28,6 +28,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
 )
 
@@ -215,7 +216,7 @@ func expandObjectBucketTags(tags interface{}) []*s3.Tag {
 	for key, value := range tags.(map[string]interface{}) {
 		tagsSet = append(tagsSet, &s3.Tag{
 			Key:   scw.StringPtr(key),
-			Value: expandStringPtr(value),
+			Value: types.ExpandStringPtr(value),
 		})
 	}
 
@@ -265,12 +266,12 @@ func flattenBucketCORS(corsResponse interface{}) []map[string]interface{} {
 		corsRules = make([]map[string]interface{}, 0, len(cors.CORSRules))
 		for _, ruleObject := range cors.CORSRules {
 			rule := make(map[string]interface{})
-			rule["allowed_headers"] = flattenSliceStringPtr(ruleObject.AllowedHeaders)
-			rule["allowed_methods"] = flattenSliceStringPtr(ruleObject.AllowedMethods)
-			rule["allowed_origins"] = flattenSliceStringPtr(ruleObject.AllowedOrigins)
+			rule["allowed_headers"] = types.FlattenSliceStringPtr(ruleObject.AllowedHeaders)
+			rule["allowed_methods"] = types.FlattenSliceStringPtr(ruleObject.AllowedMethods)
+			rule["allowed_origins"] = types.FlattenSliceStringPtr(ruleObject.AllowedOrigins)
 			// Both the "ExposeHeaders" and "MaxAgeSeconds" might not be set.
 			if ruleObject.AllowedOrigins != nil {
-				rule["expose_headers"] = flattenSliceStringPtr(ruleObject.ExposeHeaders)
+				rule["expose_headers"] = types.FlattenSliceStringPtr(ruleObject.ExposeHeaders)
 			}
 			if ruleObject.MaxAgeSeconds != nil {
 				rule["max_age_seconds"] = int(*ruleObject.MaxAgeSeconds)

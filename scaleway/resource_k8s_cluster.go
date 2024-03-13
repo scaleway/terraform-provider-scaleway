@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -353,15 +354,15 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	req := &k8s.CreateClusterRequest{
 		Region:            region,
-		ProjectID:         expandStringPtr(d.Get("project_id")),
-		Name:              expandOrGenerateString(d.Get("name"), "cluster"),
+		ProjectID:         types.ExpandStringPtr(d.Get("project_id")),
+		Name:              types.ExpandOrGenerateString(d.Get("name"), "cluster"),
 		Type:              clusterType.(string),
 		Description:       description.(string),
 		Cni:               k8s.CNI(d.Get("cni").(string)),
-		Tags:              expandStrings(d.Get("tags")),
-		FeatureGates:      expandStrings(d.Get("feature_gates")),
-		AdmissionPlugins:  expandStrings(d.Get("admission_plugins")),
-		ApiserverCertSans: expandStrings(d.Get("apiserver_cert_sans")),
+		Tags:              types.ExpandStrings(d.Get("tags")),
+		FeatureGates:      types.ExpandStrings(d.Get("feature_gates")),
+		AdmissionPlugins:  types.ExpandStrings(d.Get("admission_plugins")),
+		ApiserverCertSans: types.ExpandStrings(d.Get("apiserver_cert_sans")),
 	}
 
 	// Autoscaler configuration
@@ -373,11 +374,11 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
-		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(scaleDownDelayAfterAdd)
+		autoscalerReq.ScaleDownDelayAfterAdd = types.ExpandStringPtr(scaleDownDelayAfterAdd)
 	}
 
 	if scaleDownUneededTime, ok := d.GetOk("autoscaler_config.0.scale_down_unneeded_time"); ok {
-		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(scaleDownUneededTime)
+		autoscalerReq.ScaleDownUnneededTime = types.ExpandStringPtr(scaleDownUneededTime)
 	}
 
 	if estimator, ok := d.GetOk("autoscaler_config.0.estimator"); ok {
@@ -435,7 +436,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if groupsClaim, ok := d.GetOk("open_id_connect_config.0.groups_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(expandStrings(groupsClaim))
+		createClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(types.ExpandStrings(groupsClaim))
 	}
 
 	if groupsPrefix, ok := d.GetOk("open_id_connect_config.0.groups_prefix"); ok {
@@ -443,7 +444,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if requiredClaim, ok := d.GetOk("open_id_connect_config.0.required_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(expandStrings(requiredClaim))
+		createClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(types.ExpandStrings(requiredClaim))
 	}
 
 	// Auto-upgrade configuration
@@ -577,7 +578,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	var diags diag.Diagnostics
 
 	// private_network
-	pnID := flattenStringPtr(cluster.PrivateNetworkID)
+	pnID := types.FlattenStringPtr(cluster.PrivateNetworkID)
 	clusterType := d.Get("type").(string)
 	_ = d.Set("private_network_id", pnID)
 	if pnID == "" && !strings.HasPrefix(clusterType, "multicloud") {
@@ -658,27 +659,27 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = expandStringPtr(d.Get("name"))
+		updateRequest.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandStringPtr(d.Get("description"))
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("apiserver_cert_sans") {
-		updateRequest.ApiserverCertSans = expandUpdatedStringsPtr(d.Get("apiserver_cert_sans"))
+		updateRequest.ApiserverCertSans = types.ExpandUpdatedStringsPtr(d.Get("apiserver_cert_sans"))
 	}
 
 	if d.HasChange("feature_gates") {
-		updateRequest.FeatureGates = expandUpdatedStringsPtr(d.Get("feature_gates"))
+		updateRequest.FeatureGates = types.ExpandUpdatedStringsPtr(d.Get("feature_gates"))
 	}
 
 	if d.HasChange("admission_plugins") {
-		updateRequest.AdmissionPlugins = expandUpdatedStringsPtr(d.Get("admission_plugins"))
+		updateRequest.AdmissionPlugins = types.ExpandUpdatedStringsPtr(d.Get("admission_plugins"))
 	}
 
 	////
@@ -748,11 +749,11 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_delay_after_add") {
-		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add"))
+		autoscalerReq.ScaleDownDelayAfterAdd = types.ExpandStringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add"))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_unneeded_time") {
-		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time"))
+		autoscalerReq.ScaleDownUnneededTime = types.ExpandStringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time"))
 	}
 
 	if d.HasChange("autoscaler_config.0.estimator") {
@@ -807,7 +808,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_claim") {
-		updateClusterRequestOpenIDConnectConfig.GroupsClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.groups_claim"))
+		updateClusterRequestOpenIDConnectConfig.GroupsClaim = types.ExpandUpdatedStringsPtr(d.Get("open_id_connect_config.0.groups_claim"))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_prefix") {
@@ -815,7 +816,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.required_claim") {
-		updateClusterRequestOpenIDConnectConfig.RequiredClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.required_claim"))
+		updateClusterRequestOpenIDConnectConfig.RequiredClaim = types.ExpandUpdatedStringsPtr(d.Get("open_id_connect_config.0.required_claim"))
 	}
 
 	updateRequest.OpenIDConnectConfig = updateClusterRequestOpenIDConnectConfig

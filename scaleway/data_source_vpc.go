@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -49,9 +50,9 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m in
 
 	if d.Get("is_default").(bool) {
 		request := &vpc.ListVPCsRequest{
-			IsDefault: expandBoolPtr(d.Get("is_default").(bool)),
+			IsDefault: types.ExpandBoolPtr(d.Get("is_default").(bool)),
 			Region:    region,
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}
 
 		res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))
@@ -65,10 +66,10 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m in
 		if !ok {
 			vpcName := d.Get("name").(string)
 			request := &vpc.ListVPCsRequest{
-				Name:           expandStringPtr(vpcName),
+				Name:           types.ExpandStringPtr(vpcName),
 				Region:         region,
-				ProjectID:      expandStringPtr(d.Get("project_id")),
-				OrganizationID: expandStringPtr(d.Get("organization_id")),
+				ProjectID:      types.ExpandStringPtr(d.Get("project_id")),
+				OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 			}
 
 			res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))

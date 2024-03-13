@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.Region, error) {
@@ -122,7 +123,7 @@ func resourceMNQSNSTopicName(name interface{}, prefix interface{}, isSQS bool, i
 	if value, ok := prefix.(string); ok && value != "" {
 		output = id.PrefixedUniqueId(value)
 	} else {
-		output = newRandomName("topic")
+		output = types.NewRandomName("topic")
 	}
 	if isSQS && isSQSFifo {
 		return output + SQSFIFOQueueNameSuffix

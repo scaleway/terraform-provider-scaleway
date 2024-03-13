@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayInstanceServers() *schema.Resource {
@@ -149,9 +150,9 @@ func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.Resour
 	}
 	res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 		Zone:    zone,
-		Name:    expandStringPtr(d.Get("name")),
-		Project: expandStringPtr(d.Get("project_id")),
-		Tags:    expandStrings(d.Get("tags")),
+		Name:    types.ExpandStringPtr(d.Get("name")),
+		Project: types.ExpandStringPtr(d.Get("project_id")),
+		Tags:    types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

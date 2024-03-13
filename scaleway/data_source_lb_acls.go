@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayLbACLs() *schema.Resource {
@@ -147,7 +148,7 @@ func dataSourceScalewayLbACLsRead(ctx context.Context, d *schema.ResourceData, m
 	res, err := lbAPI.ListACLs(&lb.ZonedAPIListACLsRequest{
 		Zone:       zone,
 		FrontendID: frontID,
-		Name:       expandStringPtr(d.Get("name")),
+		Name:       types.ExpandStringPtr(d.Get("name")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -159,8 +160,8 @@ func dataSourceScalewayLbACLsRead(ctx context.Context, d *schema.ResourceData, m
 		rawACL["id"] = zonal.NewIDString(zone, acl.ID)
 		rawACL["name"] = acl.Name
 		rawACL["frontend_id"] = zonal.NewIDString(zone, acl.Frontend.ID)
-		rawACL["created_at"] = flattenTime(acl.CreatedAt)
-		rawACL["update_at"] = flattenTime(acl.UpdatedAt)
+		rawACL["created_at"] = types.FlattenTime(acl.CreatedAt)
+		rawACL["update_at"] = types.FlattenTime(acl.UpdatedAt)
 		rawACL["index"] = acl.Index
 		rawACL["description"] = acl.Description
 		rawACL["action"] = flattenLbACLAction(acl.Action)
