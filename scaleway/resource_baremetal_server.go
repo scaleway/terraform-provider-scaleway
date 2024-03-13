@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -306,11 +307,11 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 
 	server, err := baremetalAPI.CreateServer(&baremetal.CreateServerRequest{
 		Zone:        zone,
-		Name:        expandOrGenerateString(d.Get("name"), "bm"),
-		ProjectID:   expandStringPtr(d.Get("project_id")),
+		Name:        types.ExpandOrGenerateString(d.Get("name"), "bm"),
+		ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		Description: d.Get("description").(string),
 		OfferID:     offerID.ID,
-		Tags:        expandStrings(d.Get("tags")),
+		Tags:        types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -328,12 +329,12 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 			Zone:            server.Zone,
 			ServerID:        server.ID,
 			OsID:            zonal.ExpandID(d.Get("os")).ID,
-			Hostname:        expandStringWithDefault(d.Get("hostname"), server.Name),
-			SSHKeyIDs:       expandStrings(d.Get("ssh_key_ids")),
-			User:            expandStringPtr(d.Get("user")),
-			Password:        expandStringPtr(d.Get("password")),
-			ServiceUser:     expandStringPtr(d.Get("service_user")),
-			ServicePassword: expandStringPtr(d.Get("service_password")),
+			Hostname:        types.ExpandStringWithDefault(d.Get("hostname"), server.Name),
+			SSHKeyIDs:       types.ExpandStrings(d.Get("ssh_key_ids")),
+			User:            types.ExpandStringPtr(d.Get("user")),
+			Password:        types.ExpandStringPtr(d.Get("password")),
+			ServiceUser:     types.ExpandStringPtr(d.Get("service_user")),
+			ServicePassword: types.ExpandStringPtr(d.Get("service_password")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -559,17 +560,17 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
@@ -583,12 +584,12 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 	installReq := &baremetal.InstallServerRequest{
 		Zone:            zonedID.Zone,
 		ServerID:        zonedID.ID,
-		Hostname:        expandStringWithDefault(d.Get("hostname"), d.Get("name").(string)),
-		SSHKeyIDs:       expandStrings(d.Get("ssh_key_ids")),
-		User:            expandStringPtr(d.Get("user")),
-		Password:        expandStringPtr(d.Get("password")),
-		ServiceUser:     expandStringPtr(d.Get("service_user")),
-		ServicePassword: expandStringPtr(d.Get("service_password")),
+		Hostname:        types.ExpandStringWithDefault(d.Get("hostname"), d.Get("name").(string)),
+		SSHKeyIDs:       types.ExpandStrings(d.Get("ssh_key_ids")),
+		User:            types.ExpandStringPtr(d.Get("user")),
+		Password:        types.ExpandStringPtr(d.Get("password")),
+		ServiceUser:     types.ExpandStringPtr(d.Get("service_user")),
+		ServicePassword: types.ExpandStringPtr(d.Get("service_password")),
 	}
 
 	if d.HasChange("os") {

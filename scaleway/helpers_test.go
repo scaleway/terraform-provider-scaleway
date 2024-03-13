@@ -4,18 +4,11 @@ import (
 	"fmt"
 	"net"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/stretchr/testify/assert"
 )
-
-func TestGetRandomName(t *testing.T) {
-	name := newRandomName("test")
-	assert.True(t, strings.HasPrefix(name, "tf-test-"))
-}
 
 func testCheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

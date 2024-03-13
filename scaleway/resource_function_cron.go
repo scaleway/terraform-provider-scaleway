@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayFunctionCron() *schema.Resource {
@@ -79,7 +80,7 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 		FunctionID: f.ID,
 		Schedule:   d.Get("schedule").(string),
 		Region:     region,
-		Name:       expandStringPtr(d.Get("name")),
+		Name:       types.ExpandStringPtr(d.Get("name")),
 	}
 
 	if args, ok := d.GetOk("args"); ok {
@@ -151,11 +152,11 @@ func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	shouldUpdate := false
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name").(string))
+		req.Name = types.ExpandStringPtr(d.Get("name").(string))
 		shouldUpdate = true
 	}
 	if d.HasChange("schedule") {
-		req.Schedule = expandStringPtr(d.Get("schedule").(string))
+		req.Schedule = types.ExpandStringPtr(d.Get("schedule").(string))
 		shouldUpdate = true
 	}
 

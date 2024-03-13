@@ -23,6 +23,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -133,7 +134,7 @@ func expandLbACLActionRedirect(raw interface{}) *lbSDK.ACLActionRedirect {
 	return &lbSDK.ACLActionRedirect{
 		Type:   lbSDK.ACLActionRedirectRedirectType(rawMap["type"].(string)),
 		Target: rawMap["target"].(string),
-		Code:   expandInt32Ptr(rawMap["code"]),
+		Code:   types.ExpandInt32Ptr(rawMap["code"]),
 	}
 }
 
@@ -231,9 +232,9 @@ func flattenLbACLMatch(match *lbSDK.ACLMatch) interface{} {
 
 	return []map[string]interface{}{
 		{
-			"ip_subnet":          flattenSliceStringPtr(match.IPSubnet),
+			"ip_subnet":          types.FlattenSliceStringPtr(match.IPSubnet),
 			"http_filter":        match.HTTPFilter.String(),
-			"http_filter_value":  flattenSliceStringPtr(match.HTTPFilterValue),
+			"http_filter_value":  types.FlattenSliceStringPtr(match.HTTPFilterValue),
 			"http_filter_option": match.HTTPFilterOption,
 			"invert":             match.Invert,
 		},
@@ -247,16 +248,16 @@ func expandLbACLMatch(raw interface{}) *lbSDK.ACLMatch {
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	// scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
-	ipSubnet := expandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
+	ipSubnet := types.ExpandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
 	if len(ipSubnet) == 0 {
-		ipSubnet = []*string{expandStringPtr("0.0.0.0/0")}
+		ipSubnet = []*string{types.ExpandStringPtr("0.0.0.0/0")}
 	}
 
 	return &lbSDK.ACLMatch{
 		IPSubnet:         ipSubnet,
 		HTTPFilter:       lbSDK.ACLHTTPFilter(rawMap["http_filter"].(string)),
-		HTTPFilterValue:  expandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
-		HTTPFilterOption: expandStringPtr(rawMap["http_filter_option"].(string)),
+		HTTPFilterValue:  types.ExpandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
+		HTTPFilterOption: types.ExpandStringPtr(rawMap["http_filter_option"].(string)),
 		Invert:           rawMap["invert"].(bool),
 	}
 }
@@ -316,7 +317,7 @@ func flattenLbHCHTTP(config *lbSDK.HealthCheckHTTPConfig) interface{} {
 		{
 			"uri":         config.URI,
 			"method":      config.Method,
-			"code":        flattenInt32Ptr(config.Code),
+			"code":        types.FlattenInt32Ptr(config.Code),
 			"host_header": config.HostHeader,
 		},
 	}
@@ -330,7 +331,7 @@ func expandLbHCHTTP(raw interface{}) *lbSDK.HealthCheckHTTPConfig {
 	return &lbSDK.HealthCheckHTTPConfig{
 		URI:        rawMap["uri"].(string),
 		Method:     rawMap["method"].(string),
-		Code:       expandInt32Ptr(rawMap["code"]),
+		Code:       types.ExpandInt32Ptr(rawMap["code"]),
 		HostHeader: rawMap["host_header"].(string),
 	}
 }
@@ -343,7 +344,7 @@ func flattenLbHCHTTPS(config *lbSDK.HealthCheckHTTPSConfig) interface{} {
 		{
 			"uri":         config.URI,
 			"method":      config.Method,
-			"code":        flattenInt32Ptr(config.Code),
+			"code":        types.FlattenInt32Ptr(config.Code),
 			"host_header": config.HostHeader,
 			"sni":         config.Sni,
 		},
@@ -359,7 +360,7 @@ func expandLbHCHTTPS(raw interface{}) *lbSDK.HealthCheckHTTPSConfig {
 	return &lbSDK.HealthCheckHTTPSConfig{
 		URI:        rawMap["uri"].(string),
 		Method:     rawMap["method"].(string),
-		Code:       expandInt32Ptr(rawMap["code"]),
+		Code:       types.ExpandInt32Ptr(rawMap["code"]),
 		HostHeader: rawMap["host_header"].(string),
 		Sni:        rawMap["sni"].(string),
 	}
@@ -442,7 +443,7 @@ func expandLbPrivateNetworkStaticConfig(raw interface{}) *lbSDK.PrivateNetworkSt
 		return nil
 	}
 	return &lbSDK.PrivateNetworkStaticConfig{
-		IPAddress: expandStringsPtr(raw),
+		IPAddress: types.ExpandStringsPtr(raw),
 	}
 }
 
@@ -575,8 +576,8 @@ func flattenLbInstances(instances []*lbSDK.Instance) interface{} {
 			"id":         instance.ID,
 			"status":     instance.Status.String(),
 			"ip_address": instance.IPAddress,
-			"created_at": flattenTime(instance.CreatedAt),
-			"updated_at": flattenTime(instance.UpdatedAt),
+			"created_at": types.FlattenTime(instance.CreatedAt),
+			"updated_at": types.FlattenTime(instance.UpdatedAt),
 			"zone":       instance.Zone,
 		})
 	}
@@ -596,7 +597,7 @@ func flattenLbIPs(ips []*lbSDK.IP) interface{} {
 			"organization_id": ip.OrganizationID,
 			"project_id":      ip.ProjectID,
 			"zone":            ip.Zone,
-			"lb_id":           flattenStringPtr(ip.LBID),
+			"lb_id":           types.FlattenStringPtr(ip.LBID),
 		})
 	}
 	return flattenedIPs

@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -61,8 +62,8 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, 
 		} else {
 			res, err = vpcgwAPI.ListDHCPEntries(
 				&vpcgw.ListDHCPEntriesRequest{
-					GatewayNetworkID: expandStringPtr(gatewayNetworkID),
-					MacAddress:       expandStringPtr(macAddress),
+					GatewayNetworkID: types.ExpandStringPtr(gatewayNetworkID),
+					MacAddress:       types.ExpandStringPtr(macAddress),
 				}, scw.WithContext(ctx))
 		}
 		if err != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewaySecretVersion() *schema.Resource {
@@ -89,7 +90,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 		Region:      region,
 		SecretID:    secretID,
 		Data:        payloadSecretRaw,
-		Description: expandStringPtr(d.Get("description")),
+		Description: types.ExpandStringPtr(d.Get("description")),
 	}
 
 	secretResponse, err := api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
@@ -126,9 +127,9 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 	revisionStr := strconv.Itoa(int(secretResponse.Revision))
 	_ = d.Set("revision", revisionStr)
 	_ = d.Set("secret_id", regional.NewIDString(region, id))
-	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(secretResponse.UpdatedAt))
+	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
+	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
 	_ = d.Set("region", string(region))
 
@@ -150,7 +151,7 @@ func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.Resource
 	hasChanged := false
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayFunctionNamespace() *schema.Resource {
@@ -87,10 +88,10 @@ func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.Reso
 	}
 
 	ns, err := api.CreateNamespace(&function.CreateNamespaceRequest{
-		Description:                expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
+		Description:                types.ExpandStringPtr(d.Get("description").(string)),
+		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandFunctionsSecrets(d.Get("secret_environment_variables")),
-		Name:                       expandOrGenerateString(d.Get("name").(string), "func"),
+		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "func"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
 	}, scw.WithContext(ctx))
@@ -156,11 +157,11 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChanges("environment_variables") {
-		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("environment_variables"))
 	}
 
 	if d.HasChanges("secret_environment_variables") {

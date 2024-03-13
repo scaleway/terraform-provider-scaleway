@@ -8,6 +8,7 @@ import (
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayFlexibleIPs() *schema.Resource {
@@ -132,8 +133,8 @@ func dataSourceScalewayFlexibleIPsRead(ctx context.Context, d *schema.ResourceDa
 	res, err := fipAPI.ListFlexibleIPs(&flexibleip.ListFlexibleIPsRequest{
 		Zone:      zone,
 		ServerIDs: expandServerIDs(d.Get("server_ids")),
-		ProjectID: expandStringPtr(d.Get("project_id")),
-		Tags:      expandStrings(d.Get("tags")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -149,10 +150,10 @@ func dataSourceScalewayFlexibleIPsRead(ctx context.Context, d *schema.ResourceDa
 		if len(fip.Tags) > 0 {
 			rawFip["tags"] = fip.Tags
 		}
-		rawFip["created_at"] = flattenTime(fip.CreatedAt)
-		rawFip["updated_at"] = flattenTime(fip.UpdatedAt)
+		rawFip["created_at"] = types.FlattenTime(fip.CreatedAt)
+		rawFip["updated_at"] = types.FlattenTime(fip.UpdatedAt)
 		rawFip["status"] = fip.Status
-		ip, err := flattenIPNet(fip.IPAddress)
+		ip, err := types.FlattenIPNet(fip.IPAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}

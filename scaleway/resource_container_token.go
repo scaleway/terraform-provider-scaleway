@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayContainerToken() *schema.Resource {
@@ -68,9 +69,9 @@ func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.Resourc
 
 	token, err := api.CreateToken(&container.CreateTokenRequest{
 		Region:      region,
-		ContainerID: expandStringPtr(locality.ExpandID(d.Get("container_id"))),
-		NamespaceID: expandStringPtr(locality.ExpandID(d.Get("namespace_id"))),
-		Description: expandStringPtr(d.Get("description")),
+		ContainerID: types.ExpandStringPtr(locality.ExpandID(d.Get("container_id"))),
+		NamespaceID: types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id"))),
+		Description: types.ExpandStringPtr(d.Get("description")),
 		ExpiresAt:   expandTimePtr(d.Get("expires_at")),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -101,10 +102,10 @@ func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("container_id", flattenStringPtr(token.ContainerID))
-	_ = d.Set("namespace_id", flattenStringPtr(token.NamespaceID))
-	_ = d.Set("description", flattenStringPtr(token.Description))
-	_ = d.Set("expires_at", flattenTime(token.ExpiresAt))
+	_ = d.Set("container_id", types.FlattenStringPtr(token.ContainerID))
+	_ = d.Set("namespace_id", types.FlattenStringPtr(token.NamespaceID))
+	_ = d.Set("description", types.FlattenStringPtr(token.Description))
+	_ = d.Set("expires_at", types.FlattenTime(token.ExpiresAt))
 
 	return nil
 }

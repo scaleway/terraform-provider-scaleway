@@ -2,10 +2,8 @@ package scaleway
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"reflect"
 	"sort"
 	"strconv"
@@ -19,11 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -63,249 +60,7 @@ func projectIDSchema() *schema.Schema {
 	}
 }
 
-// newRandomName returns a random name prefixed for terraform.
-func newRandomName(prefix string) string {
-	return namegenerator.GetRandomName("tf", prefix)
-}
-
 const gb uint64 = 1000 * 1000 * 1000
-
-func flattenTime(date *time.Time) interface{} {
-	if date != nil {
-		return date.Format(time.RFC3339)
-	}
-	return ""
-}
-
-func flattenDuration(duration *time.Duration) interface{} {
-	if duration != nil {
-		return duration.String()
-	}
-	return ""
-}
-
-func expandDuration(data interface{}) (*time.Duration, error) {
-	if data == nil || data == "" {
-		return nil, nil
-	}
-	d, err := time.ParseDuration(data.(string))
-	if err != nil {
-		return nil, err
-	}
-	return &d, nil
-}
-
-func expandOrGenerateString(data interface{}, prefix string) string {
-	if data == nil || data == "" {
-		return newRandomName(prefix)
-	}
-	return data.(string)
-}
-
-func expandStringWithDefault(data interface{}, defaultValue string) string {
-	if data == nil || data.(string) == "" {
-		return defaultValue
-	}
-	return data.(string)
-}
-
-func expandStrings(data interface{}) []string {
-	stringSlice := make([]string, 0, len(data.([]interface{})))
-	for _, s := range data.([]interface{}) {
-		// zero-value is nil, ["foo", ""]
-		if s == nil {
-			s = ""
-		}
-		stringSlice = append(stringSlice, s.(string))
-	}
-	return stringSlice
-}
-
-func expandStringsPtr(data interface{}) *[]string {
-	stringSlice := make([]string, 0, len(data.([]interface{})))
-	if _, ok := data.([]interface{}); !ok || data == nil {
-		return nil
-	}
-	for _, s := range data.([]interface{}) {
-		// zero-value is nil, ["foo", ""]
-		if s == nil {
-			s = ""
-		}
-		stringSlice = append(stringSlice, s.(string))
-	}
-	if len(stringSlice) == 0 {
-		return nil
-	}
-
-	return &stringSlice
-}
-
-// expandUpdatedStringsPtr expands a string slice but will default to an empty list.
-// Should be used on schema update so emptying a list will update resource.
-func expandUpdatedStringsPtr(data interface{}) *[]string {
-	stringSlice := []string{}
-	if _, ok := data.([]interface{}); !ok || data == nil {
-		return &stringSlice
-	}
-	for _, s := range data.([]interface{}) {
-		// zero-value is nil, ["foo", ""]
-		if s == nil {
-			s = ""
-		}
-		stringSlice = append(stringSlice, s.(string))
-	}
-	return &stringSlice
-}
-
-func expandSliceIDsPtr(rawIDs interface{}) *[]string {
-	stringSlice := make([]string, 0, len(rawIDs.([]interface{})))
-	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
-		return &stringSlice
-	}
-	for _, s := range rawIDs.([]interface{}) {
-		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
-	}
-	return &stringSlice
-}
-
-func expandStringsOrEmpty(data interface{}) []string {
-	stringSlice := make([]string, 0, len(data.([]interface{})))
-	if _, ok := data.([]interface{}); !ok || data == nil {
-		return stringSlice
-	}
-	for _, s := range data.([]interface{}) {
-		stringSlice = append(stringSlice, s.(string))
-	}
-	return stringSlice
-}
-
-func expandSliceStringPtr(data interface{}) []*string {
-	if data == nil {
-		return nil
-	}
-	stringSlice := []*string(nil)
-	for _, s := range data.([]interface{}) {
-		stringSlice = append(stringSlice, expandStringPtr(s))
-	}
-	return stringSlice
-}
-
-func flattenIPPtr(ip *net.IP) interface{} {
-	if ip == nil {
-		return ""
-	}
-	return ip.String()
-}
-
-func flattenStringPtr(s *string) interface{} {
-	if s == nil {
-		return ""
-	}
-	return *s
-}
-
-func flattenSliceStringPtr(s []*string) interface{} {
-	res := make([]interface{}, 0, len(s))
-	for _, strPtr := range s {
-		res = append(res, flattenStringPtr(strPtr))
-	}
-	return res
-}
-
-func flattenSliceString(s []string) interface{} {
-	res := make([]interface{}, 0, len(s))
-	for _, strPtr := range s {
-		res = append(res, strPtr)
-	}
-	return res
-}
-
-func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
-	res := []interface{}(nil)
-	for _, certificateID := range certificates {
-		res = append(res, zonal.NewIDString(zone, certificateID))
-	}
-
-	return res
-}
-
-func flattenBoolPtr(b *bool) interface{} {
-	if b == nil {
-		return nil
-	}
-	return *b
-}
-
-func expandStringPtr(data interface{}) *string {
-	if data == nil || data == "" {
-		return nil
-	}
-	return scw.StringPtr(data.(string))
-}
-
-func expandUpdatedStringPtr(data interface{}) *string {
-	str := ""
-	if data != nil {
-		str = data.(string)
-	}
-	return &str
-}
-
-func expandBoolPtr(data interface{}) *bool {
-	if data == nil {
-		return nil
-	}
-	return scw.BoolPtr(data.(bool))
-}
-
-func flattenInt32Ptr(i *int32) interface{} {
-	if i == nil {
-		return 0
-	}
-	return *i
-}
-
-func flattenUint32Ptr(i *uint32) interface{} {
-	if i == nil {
-		return 0
-	}
-	return *i
-}
-
-func expandInt32Ptr(data interface{}) *int32 {
-	if data == nil || data == "" {
-		return nil
-	}
-	return scw.Int32Ptr(int32(data.(int)))
-}
-
-func expandUint32Ptr(data interface{}) *uint32 {
-	if data == nil || data == "" {
-		return nil
-	}
-	return scw.Uint32Ptr(uint32(data.(int)))
-}
-
-func expandIPNet(raw string) (scw.IPNet, error) {
-	if raw == "" {
-		return scw.IPNet{}, nil
-	}
-	var ipNet scw.IPNet
-	err := json.Unmarshal([]byte(strconv.Quote(raw)), &ipNet)
-	if err != nil {
-		return scw.IPNet{}, fmt.Errorf("%s could not be marshaled: %v", raw, err)
-	}
-
-	return ipNet, nil
-}
-
-func flattenIPNet(ipNet scw.IPNet) (string, error) {
-	raw, err := json.Marshal(ipNet)
-	if err != nil {
-		return "", err
-	}
-	return string(raw[1 : len(raw)-1]), nil // remove quotes
-}
 
 func validateDuration() schema.SchemaValidateFunc {
 	return func(i interface{}, _ string) (strings []string, errors []error) {
@@ -319,32 +74,6 @@ func validateDuration() schema.SchemaValidateFunc {
 		}
 		return nil, nil
 	}
-}
-
-func flattenMap(m map[string]string) interface{} {
-	if m == nil {
-		return nil
-	}
-	flattenedMap := make(map[string]interface{})
-	for k, v := range m {
-		flattenedMap[k] = v
-	}
-	return flattenedMap
-}
-
-func flattenMapStringStringPtr(m map[string]*string) interface{} {
-	if m == nil {
-		return nil
-	}
-	flattenedMap := make(map[string]interface{})
-	for k, v := range m {
-		if v != nil {
-			flattenedMap[k] = *v
-		} else {
-			flattenedMap[k] = ""
-		}
-	}
-	return flattenedMap
 }
 
 func diffSuppressFuncDuration(_, oldValue, newValue string, _ *schema.ResourceData) bool {
@@ -440,39 +169,6 @@ func TimedOut(err error) bool {
 	return ok && timeoutErr.LastError == nil
 }
 
-func expandMapPtrStringString(data interface{}) *map[string]string {
-	if data == nil {
-		return nil
-	}
-	m := make(map[string]string)
-	for k, v := range data.(map[string]interface{}) {
-		m[k] = v.(string)
-	}
-	return &m
-}
-
-func expandMapStringStringPtr(data interface{}) map[string]*string {
-	if data == nil {
-		return nil
-	}
-	m := make(map[string]*string)
-	for k, v := range data.(map[string]interface{}) {
-		m[k] = expandStringPtr(v)
-	}
-	return m
-}
-
-func expandMapStringString(data any) map[string]string {
-	if data == nil {
-		return nil
-	}
-	m := make(map[string]string)
-	for k, v := range data.(map[string]interface{}) {
-		m[k] = v.(string)
-	}
-	return m
-}
-
 func errorCheck(err error, message string) bool {
 	return strings.Contains(err.Error(), message)
 }
@@ -516,13 +212,6 @@ func validateDate() schema.SchemaValidateDiagFunc {
 	}
 }
 
-func flattenSize(size *scw.Size) interface{} {
-	if size == nil {
-		return 0
-	}
-	return *size
-}
-
 type ServiceErrorCheckFunc func(*testing.T) resource.ErrorCheckFunc
 
 var serviceErrorCheckFunc map[string]ServiceErrorCheckFunc
@@ -551,7 +240,7 @@ func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
 
 func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
 	return func(i interface{}, _ cty.Path) diag.Diagnostics {
-		m := expandMapStringStringPtr(i)
+		m := types.ExpandMapStringStringPtr(i)
 		for k := range m {
 			if strings.ToLower(k) != k {
 				return diag.Diagnostics{diag.Diagnostic{

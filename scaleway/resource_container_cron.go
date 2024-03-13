@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayContainerCron() *schema.Resource {
@@ -82,7 +83,7 @@ func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.Resource
 		ContainerID: containerID,
 		Region:      region,
 		Schedule:    schedule,
-		Name:        expandStringPtr(d.Get("name")),
+		Name:        types.ExpandStringPtr(d.Get("name")),
 		Args:        &jsonObj,
 	}
 

@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -68,9 +69,9 @@ func expandIPSource(raw interface{}) *ipam.Source {
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	return &ipam.Source{
-		Zonal:            expandStringPtr(rawMap["zonal"].(string)),
-		PrivateNetworkID: expandStringPtr(locality.ExpandID(rawMap["private_network_id"].(string))),
-		SubnetID:         expandStringPtr(rawMap["subnet_id"].(string)),
+		Zonal:            types.ExpandStringPtr(rawMap["zonal"].(string)),
+		PrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(rawMap["private_network_id"].(string))),
+		SubnetID:         types.ExpandStringPtr(rawMap["subnet_id"].(string)),
 	}
 }
 
@@ -80,9 +81,9 @@ func flattenIPSource(source *ipam.Source, privateNetworkID string) interface{} {
 	}
 	return []map[string]interface{}{
 		{
-			"zonal":              flattenStringPtr(source.Zonal),
+			"zonal":              types.FlattenStringPtr(source.Zonal),
 			"private_network_id": privateNetworkID,
-			"subnet_id":          flattenStringPtr(source.SubnetID),
+			"subnet_id":          types.FlattenStringPtr(source.SubnetID),
 		},
 	}
 }
@@ -95,8 +96,8 @@ func flattenIPResource(resource *ipam.Resource) interface{} {
 		{
 			"type":        resource.Type.String(),
 			"id":          resource.ID,
-			"mac_address": flattenStringPtr(resource.MacAddress),
-			"name":        flattenStringPtr(resource.Name),
+			"mac_address": types.FlattenStringPtr(resource.MacAddress),
+			"name":        types.FlattenStringPtr(resource.Name),
 		},
 	}
 }
@@ -108,7 +109,7 @@ func flattenIPReverse(reverse *ipam.Reverse) interface{} {
 
 	return map[string]interface{}{
 		"hostname": reverse.Hostname,
-		"address":  flattenIPPtr(reverse.Address),
+		"address":  types.FlattenIPPtr(reverse.Address),
 	}
 }
 

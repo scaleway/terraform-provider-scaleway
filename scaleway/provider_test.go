@@ -27,6 +27,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -387,7 +388,7 @@ func createFakeSideProject(tt *TestTools) (*accountV3.Project, *iam.APIKey, Fake
 
 	iamPolicy, err := iamAPI.CreatePolicy(&iam.CreatePolicyRequest{
 		Name:          iamPolicyName,
-		ApplicationID: expandStringPtr(iamApplication.ID),
+		ApplicationID: types.ExpandStringPtr(iamApplication.ID),
 		Rules: []*iam.RuleSpecs{
 			{
 				ProjectIDs:         &[]string{project.ID},
@@ -409,7 +410,7 @@ func createFakeSideProject(tt *TestTools) (*accountV3.Project, *iam.APIKey, Fake
 	})
 
 	iamAPIKey, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
-		ApplicationID:    expandStringPtr(iamApplication.ID),
+		ApplicationID:    types.ExpandStringPtr(iamApplication.ID),
 		DefaultProjectID: &project.ID,
 	})
 	if err != nil {
@@ -484,7 +485,7 @@ func createFakeIAMManager(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeS
 
 	iamPolicy, err := iamAPI.CreatePolicy(&iam.CreatePolicyRequest{
 		Name:          iamPolicyName,
-		ApplicationID: expandStringPtr(iamApplication.ID),
+		ApplicationID: types.ExpandStringPtr(iamApplication.ID),
 		Rules: []*iam.RuleSpecs{
 			{
 				OrganizationID:     &project.OrganizationID,
@@ -506,7 +507,7 @@ func createFakeIAMManager(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeS
 	})
 
 	iamAPIKey, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
-		ApplicationID:    expandStringPtr(iamApplication.ID),
+		ApplicationID:    types.ExpandStringPtr(iamApplication.ID),
 		DefaultProjectID: &project.ID,
 	})
 	if err != nil {

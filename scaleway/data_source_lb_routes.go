@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func dataSourceScalewayLbRoutes() *schema.Resource {
@@ -75,7 +76,7 @@ func dataSourceScalewayLbRoutesRead(ctx context.Context, d *schema.ResourceData,
 
 	res, err := lbAPI.ListRoutes(&lb.ZonedAPIListRoutesRequest{
 		Zone:       zone,
-		FrontendID: expandStringPtr(frontID),
+		FrontendID: types.ExpandStringPtr(frontID),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -87,10 +88,10 @@ func dataSourceScalewayLbRoutesRead(ctx context.Context, d *schema.ResourceData,
 		rawRoute["id"] = zonal.NewID(zone, route.ID).String()
 		rawRoute["frontend_id"] = route.FrontendID
 		rawRoute["backend_id"] = route.BackendID
-		rawRoute["created_at"] = flattenTime(route.CreatedAt)
-		rawRoute["update_at"] = flattenTime(route.UpdatedAt)
-		rawRoute["match_sni"] = flattenStringPtr(route.Match.Sni)
-		rawRoute["match_host_header"] = flattenStringPtr(route.Match.HostHeader)
+		rawRoute["created_at"] = types.FlattenTime(route.CreatedAt)
+		rawRoute["update_at"] = types.FlattenTime(route.UpdatedAt)
+		rawRoute["match_sni"] = types.FlattenStringPtr(route.Match.Sni)
+		rawRoute["match_host_header"] = types.FlattenStringPtr(route.Match.HostHeader)
 
 		routes = append(routes, rawRoute)
 	}

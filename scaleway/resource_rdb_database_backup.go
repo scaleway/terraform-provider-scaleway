@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -96,7 +97,7 @@ func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.Reso
 		Region:       region,
 		InstanceID:   locality.ExpandID(instanceID),
 		DatabaseName: d.Get("database_name").(string),
-		Name:         expandOrGenerateString(d.Get("name"), "backup"),
+		Name:         types.ExpandOrGenerateString(d.Get("name"), "backup"),
 		ExpiresAt:    expandTimePtr(d.Get("expires_at")),
 	}
 
@@ -134,10 +135,10 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 	_ = d.Set("name", dbBackup.Name)
 	_ = d.Set("database_name", dbBackup.DatabaseName)
 	_ = d.Set("instance_name", dbBackup.InstanceName)
-	_ = d.Set("expires_at", flattenTime(dbBackup.ExpiresAt))
-	_ = d.Set("created_at", flattenTime(dbBackup.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(dbBackup.UpdatedAt))
-	_ = d.Set("size", flattenSize(dbBackup.Size))
+	_ = d.Set("expires_at", types.FlattenTime(dbBackup.ExpiresAt))
+	_ = d.Set("created_at", types.FlattenTime(dbBackup.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(dbBackup.UpdatedAt))
+	_ = d.Set("size", types.FlattenSize(dbBackup.Size))
 	_ = d.Set("region", dbBackup.Region)
 
 	d.SetId(regional.NewIDString(region, dbBackup.ID))
@@ -165,7 +166,7 @@ func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.Reso
 	req := &rdb.UpdateDatabaseBackupRequest{
 		Region:           region,
 		DatabaseBackupID: id,
-		Name:             expandStringPtr(d.Get("name")),
+		Name:             types.ExpandStringPtr(d.Get("name")),
 		ExpiresAt:        expandTimePtr(d.Get("expires_at")),
 	}
 

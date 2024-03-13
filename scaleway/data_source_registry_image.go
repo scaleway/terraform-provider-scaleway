@@ -5,6 +5,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -74,14 +75,14 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, m interface{}) 
 	if !ok {
 		var namespaceID *string
 		if d.Get("namespace_id") != "" {
-			namespaceID = expandStringPtr(locality.ExpandID(d.Get("namespace_id")))
+			namespaceID = types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id")))
 		}
 		imageName := d.Get("name").(string)
 		res, err := api.ListImages(&registry.ListImagesRequest{
 			Region:      region,
-			Name:        expandStringPtr(imageName),
+			Name:        types.ExpandStringPtr(imageName),
 			NamespaceID: namespaceID,
-			ProjectID:   expandStringPtr(d.Get("project_id")),
+			ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return err
@@ -114,7 +115,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, m interface{}) 
 	_ = d.Set("visibility", image.Visibility.String())
 	_ = d.Set("size", int(image.Size))
 	_ = d.Set("tags", image.Tags)
-	_ = d.Set("updated_at", flattenTime(image.UpdatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(image.UpdatedAt))
 
 	return nil
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -210,7 +211,7 @@ func expandFunctionsSecrets(secretsRawMap interface{}) []*function.Secret {
 	for k, v := range secretsMap {
 		secrets = append(secrets, &function.Secret{
 			Key:   k,
-			Value: expandStringPtr(v),
+			Value: types.ExpandStringPtr(v),
 		})
 	}
 

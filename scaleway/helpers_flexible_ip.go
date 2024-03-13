@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -64,8 +65,8 @@ func flattenFlexibleIPMacAddress(mac *flexibleip.MACAddress) interface{} {
 			"mac_address": mac.MacAddress,
 			"mac_type":    mac.MacType,
 			"status":      mac.Status,
-			"created_at":  flattenTime(mac.CreatedAt),
-			"updated_at":  flattenTime(mac.UpdatedAt),
+			"created_at":  types.FlattenTime(mac.CreatedAt),
+			"updated_at":  types.FlattenTime(mac.UpdatedAt),
 			"zone":        mac.Zone,
 		},
 	}

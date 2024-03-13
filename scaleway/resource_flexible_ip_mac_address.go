@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -117,7 +118,7 @@ func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.Resource
 
 	duplicateIDs, duplicateIDsExist := d.GetOk("flexible_ip_ids_to_duplicate")
 	if duplicateIDsExist {
-		dupIDs := expandStrings(duplicateIDs.(*schema.Set).List())
+		dupIDs := types.ExpandStrings(duplicateIDs.(*schema.Set).List())
 		for _, dupID := range dupIDs {
 			_, err := fipAPI.DuplicateMACAddr(&flexibleip.DuplicateMACAddrRequest{
 				Zone:               zone,
@@ -161,11 +162,11 @@ func resourceScalewayFlexibleIPMACRead(ctx context.Context, d *schema.ResourceDa
 		_ = d.Set("type", fip.MacAddress.MacType.String())
 		_ = d.Set("address", fip.MacAddress.MacAddress)
 		_ = d.Set("status", fip.MacAddress.Status.String())
-		_ = d.Set("created_at", flattenTime(fip.MacAddress.CreatedAt))
-		_ = d.Set("updated_at", flattenTime(fip.MacAddress.UpdatedAt))
+		_ = d.Set("created_at", types.FlattenTime(fip.MacAddress.CreatedAt))
+		_ = d.Set("updated_at", types.FlattenTime(fip.MacAddress.UpdatedAt))
 		_ = d.Set("zone", fip.MacAddress.Zone)
 	}
-	_ = d.Set("flexible_ip_ids_to_duplicate", expandStrings(d.Get("flexible_ip_ids_to_duplicate").(*schema.Set).List()))
+	_ = d.Set("flexible_ip_ids_to_duplicate", types.ExpandStrings(d.Get("flexible_ip_ids_to_duplicate").(*schema.Set).List()))
 
 	return nil
 }
@@ -203,8 +204,8 @@ func resourceScalewayFlexibleIPMACUpdate(ctx context.Context, d *schema.Resource
 
 	if d.HasChange("flexible_ip_ids_to_duplicate") {
 		oldID, newID := d.GetChange("flexible_ip_ids_to_duplicate")
-		oldIDs := expandStrings(oldID.(*schema.Set).List())
-		newIDs := expandStrings(newID.(*schema.Set).List())
+		oldIDs := types.ExpandStrings(oldID.(*schema.Set).List())
+		newIDs := types.ExpandStrings(newID.(*schema.Set).List())
 
 		// Handle added flexible IPs
 		for _, newID := range newIDs {

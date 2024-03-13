@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -48,9 +49,9 @@ func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.Reso
 		backupName := d.Get("name").(string)
 		res, err := api.ListDatabaseBackups(&rdb.ListDatabaseBackupsRequest{
 			Region:     region,
-			Name:       expandStringPtr(backupName),
-			InstanceID: expandStringPtr(locality.ExpandID(d.Get("instance_id"))),
-			ProjectID:  expandStringPtr(d.Get("project_id")),
+			Name:       types.ExpandStringPtr(backupName),
+			InstanceID: types.ExpandStringPtr(locality.ExpandID(d.Get("instance_id"))),
+			ProjectID:  types.ExpandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)

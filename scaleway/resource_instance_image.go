@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -184,11 +185,11 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 
 	req := &instance.CreateImageRequest{
 		Zone:       zone,
-		Name:       expandOrGenerateString(d.Get("name"), "image"),
+		Name:       types.ExpandOrGenerateString(d.Get("name"), "image"),
 		RootVolume: zonal.ExpandID(d.Get("root_volume_id").(string)).ID,
 		Arch:       instance.Arch(d.Get("architecture").(string)),
-		Project:    expandStringPtr(d.Get("project_id")),
-		Public:     expandBoolPtr(d.Get("public")),
+		Project:    types.ExpandStringPtr(d.Get("project_id")),
+		Public:     types.ExpandBoolPtr(d.Get("public")),
 	}
 
 	extraVolumesIDs, volumesExist := d.GetOk("additional_volume_ids")
@@ -201,10 +202,10 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 	}
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
-		req.Tags = expandStrings(tags)
+		req.Tags = types.ExpandStrings(tags)
 	}
 	if _, exist := d.GetOk("public"); exist {
-		req.Public = expandBoolPtr(getBool(d, "public"))
+		req.Public = types.ExpandBoolPtr(getBool(d, "public"))
 	}
 
 	res, err := instanceAPI.CreateImage(req, scw.WithContext(ctx))
@@ -251,8 +252,8 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("additional_volumes", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes, zone))
 	_ = d.Set("tags", image.Image.Tags)
 	_ = d.Set("public", image.Image.Public)
-	_ = d.Set("creation_date", flattenTime(image.Image.CreationDate))
-	_ = d.Set("modification_date", flattenTime(image.Image.ModificationDate))
+	_ = d.Set("creation_date", types.FlattenTime(image.Image.CreationDate))
+	_ = d.Set("modification_date", types.FlattenTime(image.Image.ModificationDate))
 	_ = d.Set("from_server_id", image.Image.FromServer)
 	_ = d.Set("state", image.Image.State)
 	_ = d.Set("zone", image.Image.Zone)
@@ -274,15 +275,15 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 	if d.HasChange("architecture") {
 		req.Arch = instance.Arch(d.Get("architecture").(string))
 	}
 	if d.HasChange("public") {
-		req.Public = expandBoolPtr(getBool(d, "public"))
+		req.Public = types.ExpandBoolPtr(getBool(d, "public"))
 	}
-	req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+	req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 
 	image, err := instanceAPI.GetImage(&instance.GetImageRequest{
 		Zone:    zone,

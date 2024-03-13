@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewaySDBSQLDatabase() *schema.Resource {
@@ -132,10 +133,10 @@ func resourceScalewayServerlessSQLDBDatabaseUpdate(ctx context.Context, d *schem
 	}
 
 	if d.HasChange("max_cpu") {
-		req.CPUMax = expandUint32Ptr(d.Get("max_cpu"))
+		req.CPUMax = types.ExpandUint32Ptr(d.Get("max_cpu"))
 	}
 	if d.HasChange("min_cpu") {
-		req.CPUMin = expandUint32Ptr(d.Get("min_cpu"))
+		req.CPUMin = types.ExpandUint32Ptr(d.Get("min_cpu"))
 	}
 
 	if _, err := api.UpdateDatabase(req, scw.WithContext(ctx)); err != nil {

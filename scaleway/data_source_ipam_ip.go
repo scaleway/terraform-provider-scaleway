@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -151,15 +152,15 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 
 		req := &ipam.ListIPsRequest{
 			Region:           region,
-			ProjectID:        expandStringPtr(d.Get("project_id")),
-			Zonal:            expandStringPtr(d.Get("zonal")),
-			ResourceID:       expandStringPtr(expandLastID(d.Get("resource.0.id"))),
+			ProjectID:        types.ExpandStringPtr(d.Get("project_id")),
+			Zonal:            types.ExpandStringPtr(d.Get("zonal")),
+			ResourceID:       types.ExpandStringPtr(expandLastID(d.Get("resource.0.id"))),
 			ResourceType:     ipam.ResourceType(d.Get("resource.0.type").(string)),
-			ResourceName:     expandStringPtr(d.Get("resource.0.name").(string)),
-			MacAddress:       expandStringPtr(d.Get("mac_address")),
-			Tags:             expandStrings(d.Get("tags")),
-			OrganizationID:   expandStringPtr(d.Get("organization_id")),
-			PrivateNetworkID: expandStringPtr(locality.ExpandID(d.Get("private_network_id"))),
+			ResourceName:     types.ExpandStringPtr(d.Get("resource.0.name").(string)),
+			MacAddress:       types.ExpandStringPtr(d.Get("mac_address")),
+			Tags:             types.ExpandStrings(d.Get("tags")),
+			OrganizationID:   types.ExpandStringPtr(d.Get("organization_id")),
+			PrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("private_network_id"))),
 		}
 
 		ipType, ipTypeExist := d.GetOk("type")
@@ -181,7 +182,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 
 		attached, attachedExists := d.GetOk("attached")
 		if attachedExists {
-			req.Attached = expandBoolPtr(attached)
+			req.Attached = types.ExpandBoolPtr(attached)
 		}
 
 		err = retry.RetryContext(ctx, defaultIPAMIPRetryInterval, func() *retry.RetryError {
@@ -218,7 +219,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	address = ip.IP.String()
-	addressCidr, err = flattenIPNet(ip)
+	addressCidr, err = types.FlattenIPNet(ip)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -51,10 +52,10 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 		pnName := d.Get("name").(string)
 		res, err := vpcAPI.ListPrivateNetworks(
 			&vpc.ListPrivateNetworksRequest{
-				Name:      expandStringPtr(pnName),
+				Name:      types.ExpandStringPtr(pnName),
 				Region:    region,
-				ProjectID: expandStringPtr(d.Get("project_id")),
-				VpcID:     expandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
+				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+				VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

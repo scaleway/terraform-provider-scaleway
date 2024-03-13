@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -76,7 +77,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 		}
 		if len(rawIPs) != 0 {
 			for _, rawIP := range rawIPs {
-				ip, err := expandIPNet(rawIP.(string))
+				ip, err := types.ExpandIPNet(rawIP.(string))
 				if err != nil {
 					return epSpecs, err
 				}
@@ -101,7 +102,7 @@ func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 		if ruleDescription, hasDescription := rawRule["description"]; hasDescription {
 			rule.Description = ruleDescription.(string)
 		}
-		ip, err := expandIPNet(rawRule["ip"].(string))
+		ip, err := types.ExpandIPNet(rawRule["ip"].(string))
 		if err != nil {
 			return nil, fmt.Errorf("failed to validate acl ip (%s): %w", rawRule["ip"].(string), err)
 		}
@@ -118,7 +119,7 @@ func flattenRedisACLs(aclRules []*redis.ACLRule) interface{} {
 		flat = append(flat, map[string]interface{}{
 			"id":          acl.ID,
 			"ip":          acl.IPCidr.String(),
-			"description": flattenStringPtr(acl.Description),
+			"description": types.FlattenStringPtr(acl.Description),
 		})
 	}
 	return flat

@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -167,7 +168,7 @@ func expandDocumentDBReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*
 		PrivateNetworkID: locality.ExpandID(rawEndpoint["private_network_id"]),
 	}
 	if len(serviceIP) > 0 {
-		ipNet, err := expandIPNet(serviceIP)
+		ipNet, err := types.ExpandIPNet(serviceIP)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
 		}
@@ -198,10 +199,10 @@ func flattenDocumentDBReadReplicaEndpoints(endpoints []*documentdb.Endpoint) (di
 	for _, endpoint := range endpoints {
 		rawEndpoint := map[string]interface{}{
 			"endpoint_id": endpoint.ID,
-			"ip":          flattenIPPtr(endpoint.IP),
+			"ip":          types.FlattenIPPtr(endpoint.IP),
 			"port":        int(endpoint.Port),
 			"name":        endpoint.Name,
-			"hostname":    flattenStringPtr(endpoint.Hostname),
+			"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 		}
 		if endpoint.DirectAccess != nil {
 			directAccess = rawEndpoint

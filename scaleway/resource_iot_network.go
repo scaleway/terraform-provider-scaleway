@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIotNetwork() *schema.Resource {
@@ -87,7 +88,7 @@ func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceDat
 
 	req := &iot.CreateNetworkRequest{
 		Region: region,
-		Name:   expandOrGenerateString(d.Get("name"), "network"),
+		Name:   types.ExpandOrGenerateString(d.Get("name"), "network"),
 		Type:   iot.NetworkNetworkType(d.Get("type").(string)),
 		HubID:  locality.ExpandID(d.Get("hub_id")),
 	}

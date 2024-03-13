@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -174,13 +175,13 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
 		Zone:                  zone,
-		IPID:                  expandStringPtr(locality.ExpandID(d.Get("ip_id"))),
-		ProjectID:             expandStringPtr(d.Get("project_id")),
-		Name:                  expandOrGenerateString(d.Get("name"), "lb"),
+		IPID:                  types.ExpandStringPtr(locality.ExpandID(d.Get("ip_id"))),
+		ProjectID:             types.ExpandStringPtr(d.Get("project_id")),
+		Name:                  types.ExpandOrGenerateString(d.Get("name"), "lb"),
 		Description:           d.Get("description").(string),
 		Type:                  d.Get("type").(string),
-		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level"))),
-		AssignFlexibleIP:      expandBoolPtr(getBool(d, "assign_flexible_ip")),
+		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*types.ExpandStringPtr(d.Get("ssl_compatibility_level"))),
+		AssignFlexibleIP:      types.ExpandBoolPtr(getBool(d, "assign_flexible_ip")),
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
@@ -283,9 +284,9 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m int
 		Zone:                  zone,
 		LBID:                  ID,
 		Name:                  d.Get("name").(string),
-		Tags:                  expandStrings(d.Get("tags")),
+		Tags:                  types.ExpandStrings(d.Get("tags")),
 		Description:           d.Get("description").(string),
-		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level"))),
+		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*types.ExpandStringPtr(d.Get("ssl_compatibility_level"))),
 	}
 
 	_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))

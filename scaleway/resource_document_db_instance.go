@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayDocumentDBInstance() *schema.Resource {
@@ -112,14 +113,14 @@ func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.Res
 
 	createReq := &documentdb.CreateInstanceRequest{
 		Region:      region,
-		ProjectID:   expandStringPtr(d.Get("project_id")),
-		Name:        expandOrGenerateString(d.Get("name").(string), "document-instance"),
+		ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
+		Name:        types.ExpandOrGenerateString(d.Get("name").(string), "document-instance"),
 		NodeType:    d.Get("node_type").(string),
 		Engine:      d.Get("engine").(string),
 		IsHaCluster: d.Get("is_ha_cluster").(bool),
 		UserName:    d.Get("user_name").(string),
 		Password:    d.Get("password").(string),
-		Tags:        expandStrings(d.Get("tags")),
+		Tags:        types.ExpandStrings(d.Get("tags")),
 		VolumeType:  documentdb.VolumeType(d.Get("volume_type").(string)),
 	}
 
@@ -216,11 +217,11 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
@@ -287,7 +288,7 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 			upgradeRequests = append(upgradeRequests, &documentdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: id,
-				NodeType:   expandStringPtr(d.Get("node_type")),
+				NodeType:   types.ExpandStringPtr(d.Get("node_type")),
 			})
 		}
 
@@ -295,7 +296,7 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 			upgradeRequests = append(upgradeRequests, &documentdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: id,
-				EnableHa:   expandBoolPtr(d.Get("is_ha_cluster")),
+				EnableHa:   types.ExpandBoolPtr(d.Get("is_ha_cluster")),
 			})
 		}
 	}

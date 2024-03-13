@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
@@ -67,7 +68,7 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 	}
 
 	req := &vpcgw.CreateIPRequest{
-		Tags:      expandStrings(d.Get("tags")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
 		Zone:      zone,
 	}
@@ -84,8 +85,8 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 		updateRequest := &vpcgw.UpdateIPRequest{
 			IPID:    res.ID,
 			Zone:    zone,
-			Tags:    scw.StringsPtr(expandStrings(d.Get("tags"))),
-			Reverse: expandStringPtr(reverse.(string)),
+			Tags:    scw.StringsPtr(types.ExpandStrings(d.Get("tags"))),
+			Reverse: types.ExpandStringPtr(reverse.(string)),
 		}
 		_, err = vpcgwAPI.UpdateIP(updateRequest, scw.WithContext(ctx))
 		if err != nil {
@@ -140,12 +141,12 @@ func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.Res
 	hasChanged := false
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
 	if d.HasChange("reverse") {
-		updateRequest.Reverse = expandStringPtr(d.Get("reverse").(string))
+		updateRequest.Reverse = types.ExpandStringPtr(d.Get("reverse").(string))
 		hasChanged = true
 	}
 

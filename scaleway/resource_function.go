@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayFunction() *schema.Resource {
@@ -174,14 +175,14 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	req := &function.CreateFunctionRequest{
-		Description:                expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
+		Description:                types.ExpandStringPtr(d.Get("description").(string)),
+		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandFunctionsSecrets(d.Get("secret_environment_variables")),
-		Handler:                    expandStringPtr(d.Get("handler").(string)),
-		MaxScale:                   expandUint32Ptr(d.Get("max_scale")),
-		MemoryLimit:                expandUint32Ptr(d.Get("memory_limit")),
-		MinScale:                   expandUint32Ptr(d.Get("min_scale")),
-		Name:                       expandOrGenerateString(d.Get("name").(string), "func"),
+		Handler:                    types.ExpandStringPtr(d.Get("handler").(string)),
+		MaxScale:                   types.ExpandUint32Ptr(d.Get("max_scale")),
+		MemoryLimit:                types.ExpandUint32Ptr(d.Get("memory_limit")),
+		MinScale:                   types.ExpandUint32Ptr(d.Get("min_scale")),
+		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "func"),
 		NamespaceID:                namespace,
 		Privacy:                    function.FunctionPrivacy(d.Get("privacy").(string)),
 		Region:                     region,
@@ -323,7 +324,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	updated := false
 
 	if d.HasChange("environment_variables") {
-		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("environment_variables"))
 		updated = true
 	}
 
@@ -333,27 +334,27 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		updated = true
 	}
 
 	if d.HasChange("memory_limit") {
-		req.MemoryLimit = expandUint32Ptr(d.Get("memory_limit"))
+		req.MemoryLimit = types.ExpandUint32Ptr(d.Get("memory_limit"))
 		updated = true
 	}
 
 	if d.HasChange("handler") {
-		req.Handler = expandStringPtr(d.Get("handler").(string))
+		req.Handler = types.ExpandStringPtr(d.Get("handler").(string))
 		updated = true
 	}
 
 	if d.HasChange("min_scale") {
-		req.MinScale = expandUint32Ptr(d.Get("min_scale"))
+		req.MinScale = types.ExpandUint32Ptr(d.Get("min_scale"))
 		updated = true
 	}
 
 	if d.HasChange("max_scale") {
-		req.MaxScale = expandUint32Ptr(d.Get("max_scale"))
+		req.MaxScale = types.ExpandUint32Ptr(d.Get("max_scale"))
 		updated = true
 	}
 

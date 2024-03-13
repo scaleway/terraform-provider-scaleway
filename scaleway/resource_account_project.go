@@ -8,6 +8,7 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -59,7 +60,7 @@ func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.Resourc
 	accountAPI := accountV3ProjectAPI(m)
 
 	request := &accountV3.ProjectAPICreateProjectRequest{
-		Name:        expandOrGenerateString(d.Get("name"), "project"),
+		Name:        types.ExpandOrGenerateString(d.Get("name"), "project"),
 		Description: d.Get("description").(string),
 	}
 
@@ -92,8 +93,8 @@ func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceD
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("description", res.Description)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("organization_id", res.OrganizationID)
 
 	return nil
@@ -109,11 +110,11 @@ func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.Resourc
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 

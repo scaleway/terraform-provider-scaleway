@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayMNQSNSTopicSubscription() *schema.Resource {
@@ -136,8 +137,8 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 
 	input := &sns.SubscribeInput{
 		Attributes:            attributes,
-		Endpoint:              expandStringPtr(d.Get("endpoint")),
-		Protocol:              expandStringPtr(d.Get("protocol")),
+		Endpoint:              types.ExpandStringPtr(d.Get("endpoint")),
+		Protocol:              types.ExpandStringPtr(d.Get("protocol")),
 		ReturnSubscriptionArn: scw.BoolPtr(true),
 		TopicArn:              &topicARN,
 	}

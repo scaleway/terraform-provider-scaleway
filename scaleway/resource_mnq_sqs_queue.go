@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayMNQSQSQueue() *schema.Resource {
@@ -225,7 +226,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("name", queueName)
 	_ = d.Set("region", region)
 	_ = d.Set("project_id", projectID)
-	_ = d.Set("url", flattenStringPtr(queue.QueueUrl))
+	_ = d.Set("url", types.FlattenStringPtr(queue.QueueUrl))
 
 	for k, v := range values {
 		_ = d.Set(k, v) // lintignore: R001

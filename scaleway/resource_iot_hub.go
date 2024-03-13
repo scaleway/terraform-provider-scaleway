@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func resourceScalewayIotHub() *schema.Resource {
@@ -134,7 +135,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	req := &iot.CreateHubRequest{
 		Region:      region,
-		Name:        expandOrGenerateString(d.Get("name"), "hub"),
+		Name:        types.ExpandOrGenerateString(d.Get("name"), "hub"),
 		ProductPlan: iot.HubProductPlan(d.Get("product_plan").(string)),
 	}
 
