@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource {
@@ -36,7 +37,7 @@ func resourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource
 			"private_network_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				Description:      "The private network ID",
 				ForceNew:         true,

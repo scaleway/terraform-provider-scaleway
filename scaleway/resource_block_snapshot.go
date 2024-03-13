@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayBlockSnapshot() *schema.Resource {
@@ -38,7 +39,7 @@ func resourceScalewayBlockSnapshot() *schema.Resource {
 			"volume_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				Description:      "ID of the volume from which creates a snapshot",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},

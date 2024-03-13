@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayRdbDatabase() *schema.Resource {
@@ -35,7 +36,7 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDWithLocality(),
 				Description:  "Instance on which the database is created",
 			},
 			"name": {

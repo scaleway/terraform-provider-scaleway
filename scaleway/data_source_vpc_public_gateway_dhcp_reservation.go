@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
@@ -24,7 +25,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of dhcp entry reservation",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"mac_address", "gateway_network_id"},
 	}
 	dsSchema["wait_for_dhcp"] = &schema.Schema{

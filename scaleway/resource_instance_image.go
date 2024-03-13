@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayInstanceImage() *schema.Resource {
@@ -42,7 +43,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "UUID of the snapshot from which the image is to be created",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"architecture": {
 				Type:        schema.TypeString,
@@ -60,7 +61,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUIDorUUIDWithLocality(),
+					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description: "The IDs of the additional volumes attached to the image",
 			},

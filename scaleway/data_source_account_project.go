@@ -8,6 +8,7 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayAccountProject() *schema.Resource {
@@ -20,7 +21,7 @@ func dataSourceScalewayAccountProject() *schema.Resource {
 		Computed:     true,
 		Optional:     true,
 		Description:  "The ID of the SSH key",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

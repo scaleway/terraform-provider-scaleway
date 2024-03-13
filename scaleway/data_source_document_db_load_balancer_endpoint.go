@@ -8,6 +8,7 @@ import (
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayDocumentDBEndpointLoadBalancer() *schema.Resource {
@@ -20,7 +21,7 @@ func dataSourceScalewayDocumentDBEndpointLoadBalancer() *schema.Resource {
 				Computed:         true,
 				Description:      "Instance on which the endpoint is attached",
 				ConflictsWith:    []string{"instance_name"},
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"instance_name": {

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayInstanceVolume() *schema.Resource {
@@ -21,7 +22,7 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the volume",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["name"].ConflictsWith = []string{"volume_id"}
 

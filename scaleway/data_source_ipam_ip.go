@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayIPAMIP() *schema.Resource {
@@ -24,7 +25,7 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "The ID of the IPAM IP",
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"private_network_id", "resource", "mac_address", "type", "tags", "attached"},
 			},
 			"private_network_id": {

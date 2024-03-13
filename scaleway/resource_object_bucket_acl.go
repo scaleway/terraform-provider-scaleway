@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 const (
@@ -60,7 +61,7 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 													Type:         schema.TypeString,
 													Required:     true,
 													Description:  "The project ID owner of the grantee.",
-													ValidateFunc: validationUUID(),
+													ValidateFunc: verify.IsUUID(),
 												},
 												"type": {
 													Type:         schema.TypeString,
@@ -92,13 +93,13 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 										Computed:     true,
 										Optional:     true,
 										Description:  "The project ID of the grantee.",
-										ValidateFunc: validationUUID(),
+										ValidateFunc: verify.IsUUID(),
 									},
 									"id": {
 										Type:         schema.TypeString,
 										Required:     true,
 										Description:  "The display ID of the project.",
-										ValidateFunc: validationUUID(),
+										ValidateFunc: verify.IsUUID(),
 									},
 								},
 							},
@@ -130,7 +131,7 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				Description:  "The project ID as owner.",
-				ValidateFunc: validationUUID(),
+				ValidateFunc: verify.IsUUID(),
 			},
 			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),

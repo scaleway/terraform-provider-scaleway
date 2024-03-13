@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayVPC() *schema.Resource {
@@ -20,7 +21,7 @@ func dataSourceScalewayVPC() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the VPC",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 	dsSchema["organization_id"] = organizationIDOptionalSchema()
@@ -28,7 +29,7 @@ func dataSourceScalewayVPC() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The project ID the resource is associated to",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

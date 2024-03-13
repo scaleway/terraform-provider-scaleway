@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayInstanceVolume() *schema.Resource {
@@ -60,7 +61,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Description:   "Create a volume based on a image",
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"size_in_gb"},
 			},
 			"server_id": {

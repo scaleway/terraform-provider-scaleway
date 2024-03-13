@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayLbFrontend() *schema.Resource {
@@ -40,14 +41,14 @@ func resourceScalewayLbFrontend() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The load-balancer ID",
 			},
 			"backend_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The load-balancer backend ID",
 			},
 			"name": {
@@ -80,7 +81,7 @@ func resourceScalewayLbFrontend() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUIDorUUIDWithLocality(),
+					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description:      "Collection of Certificate IDs related to the load balancer and domain",
 				DiffSuppressFunc: diffSuppressFuncOrderDiff,

@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayIamGroup() *schema.Resource {
@@ -48,7 +49,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 			},
 			"application_ids": {
@@ -57,7 +58,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 			},
 			"external_membership": {

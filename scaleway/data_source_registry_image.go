@@ -5,6 +5,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayRegistryImage() *schema.Resource {
@@ -23,14 +24,14 @@ func dataSourceScalewayRegistryImage() *schema.Resource {
 				Optional:      true,
 				Description:   "The ID of the registry image",
 				ConflictsWith: []string{"name"},
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 			},
 			"namespace_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				Description:  "The namespace ID of the registry image",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"size": {
 				Type:        schema.TypeInt,

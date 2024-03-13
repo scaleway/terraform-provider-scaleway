@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayIamAPIKey() *schema.Resource {
@@ -60,14 +61,14 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 				ForceNew:      true,
 				Description:   "ID of the application attached to the api key",
 				ConflictsWith: []string{"user_id"},
-				ValidateFunc:  validationUUID(),
+				ValidateFunc:  verify.IsUUID(),
 			},
 			"user_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "ID of the user attached to the api key",
 				ConflictsWith: []string{"application_id"},
-				ValidateFunc:  validationUUID(),
+				ValidateFunc:  verify.IsUUID(),
 			},
 			"editable": {
 				Type:        schema.TypeBool,

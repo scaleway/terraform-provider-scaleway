@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayInstanceSnapshot() *schema.Resource {
@@ -21,7 +22,7 @@ func dataSourceScalewayInstanceSnapshot() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the snapshot",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["name"].ConflictsWith = []string{"snapshot_id"}
 

@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayVPCGatewayNetwork() *schema.Resource {
@@ -37,20 +38,20 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			"gateway_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The ID of the public gateway where connect to",
 			},
 			"private_network_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				Description:      "The ID of the private network where connect to",
 			},
 			"dhcp_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				Description:   "The ID of the public gateway DHCP config",
 				ConflictsWith: []string{"static_address", "ipam_config"},
 			},
@@ -98,7 +99,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 							Optional:         true,
 							Computed:         true,
 							Description:      "Use this IPAM-booked IP ID as the Gateway's IP in this Private Network",
-							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
 					},
