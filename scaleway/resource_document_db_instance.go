@@ -103,8 +103,8 @@ func resourceScalewayDocumentDBInstance() *schema.Resource {
 	}
 }
 
-func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -148,11 +148,11 @@ func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBInstanceRead(ctx, d, meta)
+	return resourceScalewayDocumentDBInstanceRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -194,8 +194,8 @@ func setInitSettings(d *schema.ResourceData, settings []*documentdb.InstanceSett
 	return nil
 }
 
-func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -316,11 +316,11 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 		}
 	}
 
-	return resourceScalewayDocumentDBInstanceRead(ctx, d, meta)
+	return resourceScalewayDocumentDBInstanceRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

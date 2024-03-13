@@ -144,8 +144,8 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	baremetalAPI, fallBackZone, err := baremetalAPIWithZone(d, meta)
+func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	baremetalAPI, fallBackZone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

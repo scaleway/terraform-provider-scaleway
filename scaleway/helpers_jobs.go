@@ -5,14 +5,14 @@ import (
 	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 // jobsAPIWithRegion returns a new jobs API and the region for a Create request
 func jobsAPIWithRegion(d *schema.ResourceData, m interface{}) (*jobs.API, scw.Region, error) {
-	meta := m.(*Meta)
-	jobsAPI := jobs.NewAPI(meta.scwClient)
+	jobsAPI := jobs.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -22,8 +22,7 @@ func jobsAPIWithRegion(d *schema.ResourceData, m interface{}) (*jobs.API, scw.Re
 
 // jobsAPIWithRegionalAndID returns a new jobs API with region and ID extracted from the state
 func jobsAPIWithRegionAndID(m interface{}, regionalID string) (*jobs.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	jobsAPI := jobs.NewAPI(meta.scwClient)
+	jobsAPI := jobs.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {

@@ -124,8 +124,8 @@ func dataSourceScalewayBillingInvoices() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := billingAPI(meta)
+func dataSourceScalewayBillingInvoicesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := billingAPI(m)
 
 	res, err := api.ListInvoices(&billing.ListInvoicesRequest{
 		OrganizationID:           expandStringPtr(d.Get("organization_id")),

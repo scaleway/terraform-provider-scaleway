@@ -491,7 +491,7 @@ func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.T
 		if err != nil {
 			return err
 		}
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 		_, err = instanceAPI.GetImage(&instance.GetImageRequest{
 			ImageID: ID,
 			Zone:    zone,

@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -23,10 +24,9 @@ type ErrorRegistryMessage struct {
 
 // registryAPIWithRegion returns a new container registry API and the region.
 func registryAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API, scw.Region, error) {
-	meta := m.(*Meta)
-	api := registry.NewAPI(meta.scwClient)
+	api := registry.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -35,8 +35,7 @@ func registryAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API
 
 // registryAPIWithRegionAndID returns a new container registry API, region and ID.
 func registryAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := registry.NewAPI(meta.scwClient)
+	api := registry.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {

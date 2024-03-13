@@ -84,7 +84,7 @@ func testAccCheckScalewayK8SVersionExists(tt *TestTools, n string) resource.Test
 			return err
 		}
 
-		k8sAPI := k8s.NewAPI(tt.Meta.scwClient)
+		k8sAPI := k8s.NewAPI(tt.Meta.ScwClient())
 		_, err = k8sAPI.GetVersion(&k8s.GetVersionRequest{
 			Region:      region,
 			VersionName: name,

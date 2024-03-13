@@ -29,8 +29,8 @@ func dataSourceScalewayFunction() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -64,5 +64,5 @@ func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData,
 	d.SetId(regionalID)
 	_ = d.Set("function_id", regionalID)
 
-	return resourceScalewayFunctionRead(ctx, d, meta)
+	return resourceScalewayFunctionRead(ctx, d, m)
 }

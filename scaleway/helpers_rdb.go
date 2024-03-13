@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -25,15 +26,12 @@ const (
 
 // newRdbAPI returns a new RDB API
 func newRdbAPI(m interface{}) *rdb.API {
-	meta := m.(*Meta)
-	return rdb.NewAPI(meta.scwClient)
+	return rdb.NewAPI(meta.ExtractScwClient(m))
 }
 
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
 func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
-	meta := m.(*Meta)
-
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -322,8 +320,7 @@ func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]inte
 	region, idStr, err := regional.ParseID(idRaw.(string))
 	if err != nil {
 		// force the default region
-		meta := m.(*Meta)
-		defaultRegion, exist := meta.scwClient.GetDefaultRegion()
+		defaultRegion, exist := meta.ExtractScwClient(m).GetDefaultRegion()
 		if exist {
 			region = defaultRegion
 		}
@@ -374,8 +371,8 @@ func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 	return ipamConfig, staticConfig
 }
 
-func getIPAMConfigRead(resource interface{}, meta interface{}) (bool, error) {
-	ipamAPI := ipam.NewAPI(meta.(*Meta).scwClient)
+func getIPAMConfigRead(resource interface{}, m interface{}) (bool, error) {
+	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
 	request := &ipam.ListIPsRequest{
 		ResourceType: "rdb_instance",
 		IsIPv6:       scw.BoolPtr(false),

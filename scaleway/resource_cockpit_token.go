@@ -121,8 +121,8 @@ func resourceScalewayCockpitTokenScopes() *schema.Resource {
 	}
 }
 
-func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,11 +159,11 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 
 	_ = d.Set("secret_key", res.SecretKey)
 	d.SetId(res.ID)
-	return resourceScalewayCockpitTokenRead(ctx, d, meta)
+	return resourceScalewayCockpitTokenRead(ctx, d, m)
 }
 
-func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -186,8 +186,8 @@ func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScalewayCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

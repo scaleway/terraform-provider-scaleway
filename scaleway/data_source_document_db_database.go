@@ -23,8 +23,8 @@ func dataSourceScalewayDocumentDBDatabase() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, region, err := documentDBAPIWithRegion(d, meta)
+func dataSourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -38,7 +38,7 @@ func dataSourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayDocumentDBDatabaseRead(ctx, d, meta)
+	diags := resourceScalewayDocumentDBDatabaseRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read database state")...)
 	}

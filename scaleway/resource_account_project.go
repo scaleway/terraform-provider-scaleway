@@ -53,8 +53,8 @@ func resourceScalewayAccountProject() *schema.Resource {
 	}
 }
 
-func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m)
 
 	request := &accountV3.ProjectAPICreateProjectRequest{
 		Name:        expandOrGenerateString(d.Get("name"), "project"),
@@ -72,11 +72,11 @@ func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(res.ID)
 
-	return resourceScalewayAccountProjectRead(ctx, d, meta)
+	return resourceScalewayAccountProjectRead(ctx, d, m)
 }
 
-func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m)
 	res, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -97,8 +97,8 @@ func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m)
 
 	req := &accountV3.ProjectAPIUpdateProjectRequest{
 		ProjectID: d.Id(),
@@ -122,11 +122,11 @@ func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
-	return resourceScalewayAccountProjectRead(ctx, d, meta)
+	return resourceScalewayAccountProjectRead(ctx, d, m)
 }
 
-func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := accountV3ProjectAPI(m)
 
 	err := accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 		ProjectID: d.Id(),

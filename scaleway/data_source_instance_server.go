@@ -32,8 +32,8 @@ func dataSourceScalewayInstanceServer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,5 +65,5 @@ func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.Resourc
 	zonedID := datasourceNewZonedID(serverID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("server_id", zonedID)
-	return resourceScalewayInstanceServerRead(ctx, d, meta)
+	return resourceScalewayInstanceServerRead(ctx, d, m)
 }

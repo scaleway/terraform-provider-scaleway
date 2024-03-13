@@ -39,8 +39,8 @@ func dataSourceScalewayVPCGatewayNetwork() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -71,7 +71,7 @@ func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Reso
 
 	_ = d.Set("gateway_network_id", zonedID)
 
-	diags := resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
+	diags := resourceScalewayVPCGatewayNetworkRead(ctx, d, m)
 	if len(diags) > 0 {
 		return append(diags, diag.Errorf("failed to read gateway network state")...)
 	}

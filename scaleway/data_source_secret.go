@@ -39,8 +39,8 @@ func dataSourceScalewaySecret() *schema.Resource {
 	}
 }
 
-func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, projectID, err := secretAPIWithRegionAndProjectID(d, meta)
+func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, projectID, err := secretAPIWithRegionAndProjectID(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,7 +80,7 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewaySecretRead(ctx, d, meta)
+	diags := resourceScalewaySecretRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read secret")...)
 	}

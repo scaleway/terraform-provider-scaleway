@@ -29,8 +29,8 @@ func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -66,7 +66,7 @@ func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayInstancePlacementGroupRead(ctx, d, meta)
+	diags := resourceScalewayInstancePlacementGroupRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read placement group state")...)
 	}

@@ -55,8 +55,8 @@ func resourceScalewayCockpitGrafanaUser() *schema.Resource {
 	}
 }
 
-func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -83,11 +83,11 @@ func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.Res
 
 	_ = d.Set("password", grafanaUser.Password)
 	d.SetId(cockpitIDWithProjectID(projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)))
-	return resourceScalewayCockpitGrafanaUserRead(ctx, d, meta)
+	return resourceScalewayCockpitGrafanaUserRead(ctx, d, m)
 }
 
-func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(meta, d.Id())
+func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,8 +134,8 @@ func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(meta, d.Id())
+func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

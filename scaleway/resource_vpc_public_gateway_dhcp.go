@@ -127,8 +127,8 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 	}
 }
 
-func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -190,11 +190,11 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 
 	d.SetId(zonal.NewIDString(zone, res.ID))
 
-	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,8 +233,8 @@ func resourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func resourceScalewayVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -309,11 +309,11 @@ func resourceScalewayVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayDHCPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayDHCPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -69,8 +69,8 @@ func resourceScalewayDocumentDBPrivilege() *schema.Resource {
 	}
 }
 
-func resourceScalewayDocumentDBPrivilegeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,11 +117,11 @@ func resourceScalewayDocumentDBPrivilegeCreate(ctx context.Context, d *schema.Re
 
 	d.SetId(resourceScalewayDocumentDBUserPrivilegeID(region, locality.ExpandID(instanceID), databaseName, userName))
 
-	return resourceScalewayDocumentDBPrivilegeRead(ctx, d, meta)
+	return resourceScalewayDocumentDBPrivilegeRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, _, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,8 +181,8 @@ func resourceScalewayDocumentDBPrivilegeRead(ctx context.Context, d *schema.Reso
 	return nil
 }
 
-func resourceScalewayDocumentDBPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -250,8 +250,8 @@ func resourceScalewayDocumentDBPrivilegeUpdate(ctx context.Context, d *schema.Re
 }
 
 //gocyclo:ignore
-func resourceScalewayDocumentDBPrivilegeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

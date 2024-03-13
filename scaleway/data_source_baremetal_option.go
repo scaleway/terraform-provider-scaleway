@@ -38,8 +38,8 @@ func dataSourceScalewayBaremetalOption() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBaremetalOptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := baremetalAPIWithZone(d, meta)
+func dataSourceScalewayBaremetalOptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

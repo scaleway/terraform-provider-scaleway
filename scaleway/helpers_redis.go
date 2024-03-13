@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -24,15 +25,12 @@ const (
 
 // newRedisApi returns a new Redis API
 func newRedisAPI(m interface{}) *redis.API {
-	meta := m.(*Meta)
-	return redis.NewAPI(meta.scwClient)
+	return redis.NewAPI(meta.ExtractScwClient(m))
 }
 
 // redisAPIWithZone returns a new Redis API and the zone for a Create request
 func redisAPIWithZone(d *schema.ResourceData, m interface{}) (*redis.API, scw.Zone, error) {
-	meta := m.(*Meta)
-
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}

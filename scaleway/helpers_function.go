@@ -15,6 +15,7 @@ import (
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -28,10 +29,9 @@ const (
 
 // functionAPIWithRegion returns a new container registry API and the region.
 func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API, scw.Region, error) {
-	meta := m.(*Meta)
-	api := function.NewAPI(meta.scwClient)
+	api := function.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -40,8 +40,7 @@ func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API
 
 // functionAPIWithRegionAndID returns a new container registry API, region and ID.
 func functionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := function.NewAPI(meta.scwClient)
+	api := function.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
@@ -129,7 +128,6 @@ func waitForFunctionTrigger(ctx context.Context, functionAPI *function.API, regi
 }
 
 func functionUpload(ctx context.Context, m interface{}, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
-	meta := m.(*Meta)
 	zipStat, err := os.Stat(zipFile)
 	if err != nil {
 		return fmt.Errorf("failed to stat zip file: %w", err)
@@ -163,10 +161,10 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 		}
 	}
 
-	secretKey, _ := meta.scwClient.GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 	req.Header.Add("X-Auth-Token", secretKey)
 
-	resp, err := meta.httpClient.Do(req)
+	resp, err := meta.ExtractHTTPClient(m).Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}

@@ -38,8 +38,8 @@ func resourceScalewayMNQNatsAccount() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQNatsAPI(d, meta)
+func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQNatsAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -55,11 +55,11 @@ func resourceScalewayMNQNatsAccountCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(regional.NewIDString(region, account.ID))
 
-	return resourceScalewayMNQNatsAccountRead(ctx, d, meta)
+	return resourceScalewayMNQNatsAccountRead(ctx, d, m)
 }
 
-func resourceScalewayMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -84,8 +84,8 @@ func resourceScalewayMNQNatsAccountRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,11 +103,11 @@ func resourceScalewayMNQNatsAccountUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayMNQNatsAccountRead(ctx, d, meta)
+	return resourceScalewayMNQNatsAccountRead(ctx, d, m)
 }
 
-func resourceScalewayMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

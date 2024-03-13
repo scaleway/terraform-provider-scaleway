@@ -34,8 +34,8 @@ func dataSourceScalewayDomainRecord() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func dataSourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := newDomainAPI(m)
 
 	recordID, ok := d.GetOk("record_id")
 	if !ok { // Get Record by dns_zone, name, type and data.
@@ -67,5 +67,5 @@ func dataSourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", d.Get("dns_zone"), recordID.(string)))
-	return resourceScalewayDomainRecordRead(ctx, d, meta)
+	return resourceScalewayDomainRecordRead(ctx, d, m)
 }

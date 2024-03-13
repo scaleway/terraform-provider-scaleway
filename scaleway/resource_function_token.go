@@ -60,8 +60,8 @@ func resourceScalewayFunctionToken() *schema.Resource {
 	}
 }
 
-func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -81,11 +81,11 @@ func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.Resource
 
 	_ = d.Set("token", token.Token)
 
-	return resourceScalewayFunctionTokenRead(ctx, d, meta)
+	return resourceScalewayFunctionTokenRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -109,8 +109,8 @@ func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -455,8 +455,8 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 		meta := tt.Meta
 		var errorMessage ErrorRegistryMessage
 
-		accessKey, _ := meta.scwClient.GetAccessKey()
-		secretKey, _ := meta.scwClient.GetSecretKey()
+		accessKey, _ := meta.ScwClient().GetAccessKey()
+		secretKey, _ := meta.ScwClient().GetSecretKey()
 		authConfig := registry.AuthConfig{
 			ServerAddress: ns.RegistryEndpoint,
 			Username:      accessKey,

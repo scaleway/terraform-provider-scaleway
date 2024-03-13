@@ -79,8 +79,8 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 	}
 }
 
-func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,11 +104,11 @@ func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFunctionNamespaceRead(ctx, d, meta)
+	return resourceScalewayFunctionNamespaceRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,8 +134,8 @@ func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -170,11 +170,11 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFunctionNamespaceRead(ctx, d, meta)
+	return resourceScalewayFunctionNamespaceRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -52,8 +52,8 @@ func resourceScalewayFunctionDomain() *schema.Resource {
 	}
 }
 
-func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -84,11 +84,11 @@ func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFunctionDomainRead(ctx, d, meta)
+	return resourceScalewayFunctionDomainRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,8 +110,8 @@ func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayFunctionDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

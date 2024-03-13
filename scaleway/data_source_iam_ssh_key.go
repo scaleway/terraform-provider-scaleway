@@ -28,8 +28,8 @@ func dataSourceScalewayIamSSHKey() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func dataSourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iamAPI := iamAPI(m)
 
 	sshKeyID, sshKeyIDExists := d.GetOk("ssh_key_id")
 	if !sshKeyIDExists {
@@ -61,7 +61,7 @@ func dataSourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayIamSSHKeyRead(ctx, d, meta)
+	diags := resourceScalewayIamSSHKeyRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read iam ssh key state")...)
 	}

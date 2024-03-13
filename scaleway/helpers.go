@@ -23,8 +23,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 // Service information constants
@@ -32,90 +32,6 @@ const (
 	ServiceName = "scw"       // Name of service.
 	EndpointsID = ServiceName // ID to look up a service endpoint with.
 )
-
-// terraformResourceData is an interface for *schema.ResourceData. (used for mock)
-type terraformResourceData interface {
-	HasChange(string) bool
-	GetOk(string) (interface{}, bool)
-	Get(string) interface{}
-	Id() string
-}
-
-// extractZone will try to guess the zone from the following:
-//   - zone field of the resource data
-//   - default zone from config
-func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
-	rawZone, exist := d.GetOk("zone")
-	if exist {
-		return scw.ParseZone(rawZone.(string))
-	}
-
-	zone, exist := meta.scwClient.GetDefaultZone()
-	if exist {
-		return zone, nil
-	}
-
-	return "", zonal.ErrZoneNotFound
-}
-
-// extractRegion will try to guess the region from the following:
-//   - region field of the resource data
-//   - default region from config
-func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
-	rawRegion, exist := d.GetOk("region")
-	if exist {
-		return scw.ParseRegion(rawRegion.(string))
-	}
-
-	region, exist := meta.scwClient.GetDefaultRegion()
-	if exist {
-		return region, nil
-	}
-
-	return "", regional.ErrRegionNotFound
-}
-
-// extractRegion will try to guess the region from the following:
-//   - region field of the resource data
-//   - default region given in argument
-//   - default region from config
-func extractRegionWithDefault(d terraformResourceData, meta *Meta, defaultRegion scw.Region) (scw.Region, error) {
-	rawRegion, exist := d.GetOk("region")
-	if exist {
-		return scw.ParseRegion(rawRegion.(string))
-	}
-
-	if defaultRegion != "" {
-		return defaultRegion, nil
-	}
-
-	region, exist := meta.scwClient.GetDefaultRegion()
-	if exist {
-		return region, nil
-	}
-
-	return "", regional.ErrRegionNotFound
-}
-
-// ErrProjectIDNotFound is returned when no region can be detected
-var ErrProjectIDNotFound = errors.New("could not detect project id")
-
-// extractProjectID will try to guess the project id from the following:
-//   - project_id field of the resource data
-//   - default project id from config
-func extractProjectID(d terraformResourceData, meta *Meta) (projectID string, isDefault bool, err error) {
-	rawProjectID, exist := d.GetOk("project_id")
-	if exist {
-		return rawProjectID.(string), false, nil
-	}
-
-	defaultProjectID, exist := meta.scwClient.GetDefaultProjectID()
-	if exist {
-		return defaultProjectID, true, nil
-	}
-
-	return "", false, ErrProjectIDNotFound
-}
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
 func isHTTPCodeError(err error, statusCode int) bool {
@@ -725,19 +641,19 @@ func expandListKeys(key string, diff *schema.ResourceDiff) []string {
 // getLocality find the locality of a resource
 // Will try to get the zone if available then use region
 // Will also use default zone or region if available
-func getLocality(diff *schema.ResourceDiff, meta *Meta) string {
-	var locality string
+func getLocality(diff *schema.ResourceDiff, m interface{}) string {
+	var loc string
 
 	rawStateType := diff.GetRawState().Type()
 
 	if rawStateType.HasAttribute("zone") {
-		zone, _ := extractZone(diff, meta)
-		locality = zone.String()
+		zone, _ := meta.ExtractZone(diff, m)
+		loc = zone.String()
 	} else if rawStateType.HasAttribute("region") {
-		region, _ := extractRegion(diff, meta)
-		locality = region.String()
+		region, _ := meta.ExtractRegion(diff, m)
+		loc = region.String()
 	}
-	return locality
+	return loc
 }
 
 // CustomizeDiffLocalityCheck create a function that will validate locality IDs stored in given keys
@@ -746,8 +662,8 @@ func getLocality(diff *schema.ResourceDiff, meta *Meta) string {
 // Should not be used on computed keys, if a computed key is going to change on zone/region change
 // this function will still block the terraform plan
 func CustomizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, i interface{}) error {
-		l := getLocality(diff, i.(*Meta))
+	return func(_ context.Context, diff *schema.ResourceDiff, m interface{}) error {
+		l := getLocality(diff, m)
 
 		if l == "" {
 			return errors.New("missing locality zone or region to check IDs")

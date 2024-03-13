@@ -36,8 +36,8 @@ func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, meta)
+func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,7 +74,7 @@ func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayRdbDatabaseBackupRead(ctx, d, meta)
+	diags := resourceScalewayRdbDatabaseBackupRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read database backup state")...)
 	}

@@ -30,8 +30,8 @@ func dataSourceScalewayContainerNamespace() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func dataSourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -64,5 +64,5 @@ func dataSourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Res
 	d.SetId(regionalID)
 	_ = d.Set("namespace_id", regionalID)
 
-	return resourceScalewayContainerNamespaceRead(ctx, d, meta)
+	return resourceScalewayContainerNamespaceRead(ctx, d, m)
 }

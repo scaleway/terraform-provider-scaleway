@@ -59,8 +59,8 @@ func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,11 +92,11 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 		}
 	}
 
-	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,8 +125,8 @@ func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -155,11 +155,11 @@ func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.Res
 		}
 	}
 
-	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -183,8 +183,8 @@ func resourceScalewayIotDevice() *schema.Resource {
 	}
 }
 
-func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, meta)
+func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -270,11 +270,11 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 		_ = d.Set("certificate", []map[string]interface{}{cert})
 	}
 
-	return resourceScalewayIotDeviceRead(ctx, d, meta)
+	return resourceScalewayIotDeviceRead(ctx, d, m)
 }
 
-func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -358,8 +358,8 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -432,11 +432,11 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	return resourceScalewayIotDeviceRead(ctx, d, meta)
+	return resourceScalewayIotDeviceRead(ctx, d, m)
 }
 
-func resourceScalewayIotDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

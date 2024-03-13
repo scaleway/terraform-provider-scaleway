@@ -32,8 +32,8 @@ func dataSourceScalewayRedisCluster() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := redisAPIWithZone(d, meta)
+func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := redisAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,5 +80,5 @@ func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("no clusters found with the id %s", clusterID))
 	}
 
-	return resourceScalewayRedisClusterRead(ctx, d, meta)
+	return resourceScalewayRedisClusterRead(ctx, d, m)
 }

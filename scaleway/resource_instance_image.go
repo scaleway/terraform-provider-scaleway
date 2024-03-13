@@ -174,8 +174,8 @@ func resourceScalewayInstanceImage() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -222,11 +222,11 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceImageRead(ctx, d, meta)
+	return resourceScalewayInstanceImageRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -260,8 +260,8 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -329,11 +329,11 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceImageRead(ctx, d, meta)
+	return resourceScalewayInstanceImageRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceImageDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceImageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

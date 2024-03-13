@@ -33,8 +33,8 @@ func dataSourceScalewayTemDomain() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := temAPIWithRegion(d, meta)
+func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -76,7 +76,7 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayTemDomainRead(ctx, d, meta)
+	diags := resourceScalewayTemDomainRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read tem domain state")...)
 	}

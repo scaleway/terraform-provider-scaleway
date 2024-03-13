@@ -66,8 +66,8 @@ func resourceScalewayLbRoute() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, _, err := lbAPIWithZone(d, meta)
+func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,11 +103,11 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(zonal.NewIDString(frontZone, route.ID))
 
-	return resourceScalewayLbRouteRead(ctx, d, meta)
+	return resourceScalewayLbRouteRead(ctx, d, m)
 }
 
-func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,8 +134,8 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,11 +164,11 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbRouteRead(ctx, d, meta)
+	return resourceScalewayLbRouteRead(ctx, d, m)
 }
 
-func resourceScalewayLbRouteDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

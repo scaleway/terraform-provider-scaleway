@@ -43,8 +43,8 @@ func dataSourceScalewayContainer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,5 +79,5 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(regionalID)
 	_ = d.Set("container_id", regionalID)
 
-	return resourceScalewayContainerRead(ctx, d, meta)
+	return resourceScalewayContainerRead(ctx, d, m)
 }

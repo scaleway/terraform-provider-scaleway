@@ -84,8 +84,8 @@ func dataSourceScalewayWebhostingOffer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayWebhostingOfferRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	webhostingAPI, region, err := webhostingAPIWithRegion(d, meta)
+func dataSourceScalewayWebhostingOfferRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	webhostingAPI, region, err := webhostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

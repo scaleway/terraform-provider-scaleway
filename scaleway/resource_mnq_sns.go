@@ -31,8 +31,8 @@ func resourceScalewayMNQSNS() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQSNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSNSAPI(d, meta)
+func resourceScalewayMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -47,11 +47,11 @@ func resourceScalewayMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(regional.NewIDString(region, sns.ProjectID))
 
-	return resourceScalewayMNQSNSRead(ctx, d, meta)
+	return resourceScalewayMNQSNSRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -71,8 +71,8 @@ func resourceScalewayMNQSNSRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceScalewayMNQSNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := mnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

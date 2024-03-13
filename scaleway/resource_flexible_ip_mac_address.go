@@ -83,8 +83,8 @@ func resourceScalewayFlexibleIPMACAddress() *schema.Resource {
 	}
 }
 
-func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, meta)
+func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,11 +132,11 @@ func resourceScalewayFlexibleIPMACCreate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	return resourceScalewayFlexibleIPMACRead(ctx, d, meta)
+	return resourceScalewayFlexibleIPMACRead(ctx, d, m)
 }
 
-func resourceScalewayFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, meta)
+func resourceScalewayFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,8 +168,8 @@ func resourceScalewayFlexibleIPMACRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, meta)
+func resourceScalewayFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -248,11 +248,11 @@ func resourceScalewayFlexibleIPMACUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFlexibleIPMACRead(ctx, d, meta)
+	return resourceScalewayFlexibleIPMACRead(ctx, d, m)
 }
 
-func resourceScalewayFlexibleIPMACDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, meta)
+func resourceScalewayFlexibleIPMACDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -38,8 +38,8 @@ func dataSourceScalewayIamUser() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iamAPI := iamAPI(m)
 
 	var email, organizationID string
 	userID, ok := d.GetOk("user_id")
@@ -55,7 +55,7 @@ func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, 
 		organizationID = res.OrganizationID
 	} else {
 		res, err := iamAPI.ListUsers(&iam.ListUsersRequest{
-			OrganizationID: getOrganizationID(meta, d),
+			OrganizationID: getOrganizationID(m, d),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

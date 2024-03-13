@@ -31,8 +31,8 @@ func dataSourceScalewayInstanceSnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -69,7 +69,7 @@ func dataSourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	diags := resourceScalewayInstanceSnapshotRead(ctx, d, meta)
+	diags := resourceScalewayInstanceSnapshotRead(ctx, d, m)
 	if len(diags) > 0 {
 		return diags
 	}

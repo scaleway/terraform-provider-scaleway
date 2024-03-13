@@ -157,8 +157,8 @@ func resourceScalewayWebhosting() *schema.Resource {
 	}
 }
 
-func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := webhostingAPIWithRegion(d, meta)
+func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := webhostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -203,11 +203,11 @@ func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayWebhostingRead(ctx, d, meta)
+	return resourceScalewayWebhostingRead(ctx, d, m)
 }
 
-func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := webhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -244,8 +244,8 @@ func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := webhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -293,11 +293,11 @@ func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	return resourceScalewayWebhostingRead(ctx, d, meta)
+	return resourceScalewayWebhostingRead(ctx, d, m)
 }
 
-func resourceScalewayWebhostingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayWebhostingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := webhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

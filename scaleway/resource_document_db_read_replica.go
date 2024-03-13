@@ -229,8 +229,8 @@ func flattenDocumentDBReadReplicaEndpoints(endpoints []*documentdb.Endpoint) (di
 	return directAccess, privateNetwork
 }
 
-func resourceScalewayDocumentDBReadReplicaCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -262,11 +262,11 @@ func resourceScalewayDocumentDBReadReplicaCreate(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBReadReplicaRead(ctx, d, meta)
+	return resourceScalewayDocumentDBReadReplicaRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -290,8 +290,8 @@ func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.Re
 }
 
 //gocyclo:ignore
-func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -365,11 +365,11 @@ func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBReadReplicaRead(ctx, d, meta)
+	return resourceScalewayDocumentDBReadReplicaRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBReadReplicaDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBReadReplicaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

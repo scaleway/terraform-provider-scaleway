@@ -263,8 +263,8 @@ func resourceScalewayDomainRecord() *schema.Resource {
 	}
 }
 
-func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := newDomainAPI(m)
 
 	dnsZone := d.Get("dns_zone").(string)
 	geoIP, okGeoIP := d.GetOk("geo_ip")
@@ -325,11 +325,11 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(recordID)
 	tflog.Debug(ctx, fmt.Sprintf("record ID[%s]", recordID))
-	return resourceScalewayDomainRecordRead(ctx, d, meta)
+	return resourceScalewayDomainRecordRead(ctx, d, m)
 }
 
-func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := newDomainAPI(m)
 	var record *domain.Record
 	var dnsZone string
 	var projectID string
@@ -435,12 +435,12 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	if !d.HasChanges(changeKeys...) {
-		return resourceScalewayDomainRecordRead(ctx, d, meta)
+		return resourceScalewayDomainRecordRead(ctx, d, m)
 	}
 
-	domainAPI := newDomainAPI(meta)
+	domainAPI := newDomainAPI(m)
 
 	req := &domain.UpdateDNSZoneRecordsRequest{
 		DNSZone:          d.Get("dns_zone").(string),
@@ -479,11 +479,11 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDomainRecordRead(ctx, d, meta)
+	return resourceScalewayDomainRecordRead(ctx, d, m)
 }
 
-func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := newDomainAPI(m)
 
 	recordID := locality.ExpandID(d.Id())
 	_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{

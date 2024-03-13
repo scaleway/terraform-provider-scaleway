@@ -30,8 +30,8 @@ func dataSourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -51,5 +51,5 @@ func dataSourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, m)
 }

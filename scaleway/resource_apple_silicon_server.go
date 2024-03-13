@@ -78,8 +78,8 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 	}
 }
 
-func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	asAPI, zone, err := asAPIWithZone(d, meta)
+func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	asAPI, zone, err := asAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -102,11 +102,11 @@ func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayAppleSiliconServerRead(ctx, d, meta)
+	return resourceScalewayAppleSiliconServerRead(ctx, d, m)
 }
 
-func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	asAPI, zone, ID, err := asAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	asAPI, zone, ID, err := asAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,8 +139,8 @@ func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	asAPI, zone, ID, err := asAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	asAPI, zone, ID, err := asAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,11 +159,11 @@ func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayAppleSiliconServerRead(ctx, d, meta)
+	return resourceScalewayAppleSiliconServerRead(ctx, d, m)
 }
 
-func resourceScalewayAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	asAPI, zone, ID, err := asAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	asAPI, zone, ID, err := asAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

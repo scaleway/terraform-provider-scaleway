@@ -28,8 +28,8 @@ func dataSourceScalewayBlockVolume() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, meta)
+func dataSourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -64,7 +64,7 @@ func dataSourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayBlockVolumeRead(ctx, d, meta)
+	diags := resourceScalewayBlockVolumeRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read volume state")...)
 	}

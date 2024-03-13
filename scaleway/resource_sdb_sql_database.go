@@ -57,8 +57,8 @@ func resourceScalewaySDBSQLDatabase() *schema.Resource {
 	}
 }
 
-func resourceScalewayServerlessSQLDBDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := serverlessSQLdbAPIWithRegion(d, meta)
+func resourceScalewayServerlessSQLDBDatabaseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := serverlessSQLdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -82,11 +82,11 @@ func resourceScalewayServerlessSQLDBDatabaseCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayServerlessSQLDBDatabaseRead(ctx, d, meta)
+	return resourceScalewayServerlessSQLDBDatabaseRead(ctx, d, m)
 }
 
-func resourceScalewayServerlessSQLDBDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayServerlessSQLDBDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,8 +110,8 @@ func resourceScalewayServerlessSQLDBDatabaseRead(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceScalewayServerlessSQLDBDatabaseUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayServerlessSQLDBDatabaseUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -141,11 +141,11 @@ func resourceScalewayServerlessSQLDBDatabaseUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayServerlessSQLDBDatabaseRead(ctx, d, meta)
+	return resourceScalewayServerlessSQLDBDatabaseRead(ctx, d, m)
 }
 
-func resourceScalewayServerlessSQLDBDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayServerlessSQLDBDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := serverlessSQLdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

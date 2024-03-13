@@ -164,8 +164,8 @@ func resourceScalewayLb() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -219,11 +219,11 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	return resourceScalewayLbRead(ctx, d, meta)
+	return resourceScalewayLbRead(ctx, d, m)
 }
 
-func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -271,8 +271,8 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 //gocyclo:ignore
-func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -395,11 +395,11 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	return resourceScalewayLbRead(ctx, d, meta)
+	return resourceScalewayLbRead(ctx, d, m)
 }
 
-func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

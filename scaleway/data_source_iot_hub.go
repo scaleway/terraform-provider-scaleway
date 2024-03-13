@@ -29,8 +29,8 @@ func dataSourceScalewayIotHub() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := iotAPIWithRegion(d, meta)
+func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,7 +65,7 @@ func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	diags := resourceScalewayIotHubRead(ctx, d, meta)
+	diags := resourceScalewayIotHubRead(ctx, d, m)
 	if diags != nil {
 		return diags
 	}

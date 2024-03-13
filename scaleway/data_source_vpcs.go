@@ -72,8 +72,8 @@ func dataSourceScalewayVPCs() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
+func dataSourceScalewayVPCsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

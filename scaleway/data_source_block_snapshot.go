@@ -28,8 +28,8 @@ func dataSourceScalewayBlockSnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, meta)
+func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,7 +65,7 @@ func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayBlockSnapshotRead(ctx, d, meta)
+	diags := resourceScalewayBlockSnapshotRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read snapshot state")...)
 	}

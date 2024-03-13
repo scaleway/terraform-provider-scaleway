@@ -38,8 +38,8 @@ func dataSourceScalewayInstanceIP() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,5 +65,5 @@ func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceDat
 	}
 	d.SetId(zonal.NewIDString(zone, ID))
 
-	return resourceScalewayInstanceIPRead(ctx, d, meta)
+	return resourceScalewayInstanceIPRead(ctx, d, m)
 }

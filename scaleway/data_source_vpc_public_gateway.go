@@ -31,8 +31,8 @@ func dataSourceScalewayVPCPublicGateway() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -69,5 +69,5 @@ func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resou
 	zonedID := datasourceNewZonedID(publicGatewayID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("public_gateway_id", zonedID)
-	return resourceScalewayVPCPublicGatewayRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayRead(ctx, d, m)
 }

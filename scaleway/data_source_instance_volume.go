@@ -31,8 +31,8 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -67,5 +67,5 @@ func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
+	return resourceScalewayInstanceVolumeRead(ctx, d, m)
 }

@@ -19,6 +19,7 @@ import (
 	natsjwt "github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 const (
@@ -32,8 +33,7 @@ const (
 )
 
 func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
-	meta := m.(*Meta)
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -42,7 +42,7 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	sqsClient, err := newSQSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
+	sqsClient, err := newSQSClient(meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -68,8 +68,7 @@ func newSQSClient(httpClient *http.Client, region string, endpoint string, acces
 }
 
 func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn
-	meta := m.(*Meta)
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}

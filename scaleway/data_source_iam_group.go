@@ -35,14 +35,14 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m)
 
 	groupID, groupIDExists := d.GetOk("group_id")
 	if !groupIDExists {
 		groupName := d.Get("name").(string)
 		req := &iam.ListGroupsRequest{
-			OrganizationID: flattenStringPtr(getOrganizationID(meta, d)).(string),
+			OrganizationID: flattenStringPtr(getOrganizationID(m, d)).(string),
 			Name:           expandStringPtr(groupName),
 		}
 
@@ -69,7 +69,7 @@ func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayIamGroupRead(ctx, d, meta)
+	diags := resourceScalewayIamGroupRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read iam group state")...)
 	}

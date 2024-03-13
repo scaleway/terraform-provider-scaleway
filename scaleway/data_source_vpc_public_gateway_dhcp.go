@@ -24,8 +24,8 @@ func dataSourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -35,5 +35,5 @@ func dataSourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.R
 	zonedID := datasourceNewZonedID(dhcpID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("dhcp_id", zonedID)
-	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, m)
 }

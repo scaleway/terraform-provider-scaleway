@@ -8,6 +8,7 @@ import (
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -18,10 +19,9 @@ const (
 
 // webhostingAPIWithRegion returns a new Webhosting API and the region for a Create request
 func webhostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.API, scw.Region, error) {
-	meta := m.(*Meta)
-	api := webhosting.NewAPI(meta.scwClient)
+	api := webhosting.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -30,8 +30,7 @@ func webhostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting
 
 // webhostingAPIWithRegionAndID returns a Webhosting API with region and ID extracted from the state
 func webhostingAPIWithRegionAndID(m interface{}, id string) (*webhosting.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := webhosting.NewAPI(meta.scwClient)
+	api := webhosting.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {

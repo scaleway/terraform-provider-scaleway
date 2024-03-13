@@ -78,8 +78,8 @@ func resourceScalewayIamGroup() *schema.Resource {
 	}
 }
 
-func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m)
 	req := &iam.CreateGroupRequest{
 		OrganizationID: d.Get("organization_id").(string),
 		Name:           expandOrGenerateString(d.Get("name"), "group"),
@@ -106,11 +106,11 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	return resourceScalewayIamGroupRead(ctx, d, meta)
+	return resourceScalewayIamGroupRead(ctx, d, m)
 }
 
-func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m)
 	group, err := api.GetGroup(&iam.GetGroupRequest{
 		GroupID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -137,8 +137,8 @@ func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m)
 
 	group, err := api.GetGroup(&iam.GetGroupRequest{
 		GroupID: d.Id(),
@@ -193,11 +193,11 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	return resourceScalewayIamGroupRead(ctx, d, meta)
+	return resourceScalewayIamGroupRead(ctx, d, m)
 }
 
-func resourceScalewayIamGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := iamAPI(m)
 
 	err := api.DeleteGroup(&iam.DeleteGroupRequest{
 		GroupID: d.Id(),

@@ -152,8 +152,8 @@ func dataSourceScalewayLbs() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

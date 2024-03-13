@@ -30,8 +30,8 @@ func dataSourceScalewayMarketplaceImage() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayMarketplaceImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	marketplaceAPI, zone, err := marketplaceAPIWithZone(d, meta)
+func dataSourceScalewayMarketplaceImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	marketplaceAPI, zone, err := marketplaceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

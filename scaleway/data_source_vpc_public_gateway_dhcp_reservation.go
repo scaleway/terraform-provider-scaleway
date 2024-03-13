@@ -43,8 +43,8 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,7 +92,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, 
 	d.SetId(zonedID)
 	_ = d.Set("reservation_id", zonedID)
 
-	diags := resourceScalewayVPCPublicGatewayDHCPReservationRead(ctx, d, meta)
+	diags := resourceScalewayVPCPublicGatewayDHCPReservationRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read DHCP Entries")...)
 	}

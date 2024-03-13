@@ -64,8 +64,8 @@ func resourceScalewayDocumentDBUser() *schema.Resource {
 	}
 }
 
-func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -114,11 +114,11 @@ func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(resourceScalewayDocumentDBUserID(region, locality.ExpandID(instanceID), user.Name))
 
-	return resourceScalewayDocumentDBUserRead(ctx, d, meta)
+	return resourceScalewayDocumentDBUserRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, _, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -157,8 +157,8 @@ func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayDocumentDBUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, _, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,11 +192,11 @@ func resourceScalewayDocumentDBUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBUserRead(ctx, d, meta)
+	return resourceScalewayDocumentDBUserRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

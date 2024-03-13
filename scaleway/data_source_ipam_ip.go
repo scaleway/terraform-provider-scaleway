@@ -119,8 +119,8 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := ipamAPIWithRegion(d, meta)
+func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := ipamAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

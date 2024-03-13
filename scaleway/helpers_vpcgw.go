@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -20,10 +21,9 @@ const (
 
 // vpcgwAPIWithZone returns a new VPC API and the zone for a Create request
 func vpcgwAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zone, error) {
-	meta := m.(*Meta)
-	vpcgwAPI := vpcgw.NewAPI(meta.scwClient)
+	vpcgwAPI := vpcgw.NewAPI(meta.ExtractScwClient(m))
 
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -32,8 +32,7 @@ func vpcgwAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zo
 
 // vpcgwAPIWithZoneAndID
 func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string, error) {
-	meta := m.(*Meta)
-	vpcgwAPI := vpcgw.NewAPI(meta.scwClient)
+	vpcgwAPI := vpcgw.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {

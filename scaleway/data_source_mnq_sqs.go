@@ -21,8 +21,8 @@ func dataSourceScalewayMNQSQS() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSQSAPI(d, meta)
+func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSQSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -42,7 +42,7 @@ func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, m
 	regionID := datasourceNewRegionalID(sqs.ProjectID, region)
 	d.SetId(regionID)
 
-	diags := resourceScalewayMNQSQSRead(ctx, d, meta)
+	diags := resourceScalewayMNQSQSRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read sqs state")...)
 	}

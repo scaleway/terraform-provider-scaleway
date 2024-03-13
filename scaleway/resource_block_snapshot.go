@@ -55,8 +55,8 @@ func resourceScalewayBlockSnapshot() *schema.Resource {
 	}
 }
 
-func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, meta)
+func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,11 +79,11 @@ func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayBlockSnapshotRead(ctx, d, meta)
+	return resourceScalewayBlockSnapshotRead(ctx, d, m)
 }
 
-func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,8 +110,8 @@ func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,11 +142,11 @@ func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayBlockSnapshotRead(ctx, d, meta)
+	return resourceScalewayBlockSnapshotRead(ctx, d, m)
 }
 
-func resourceScalewayBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

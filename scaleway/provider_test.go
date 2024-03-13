@@ -25,6 +25,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/stretchr/testify/require"
 )
@@ -350,7 +351,7 @@ func createFakeSideProject(tt *TestTools) (*accountV3.Project, *iam.APIKey, Fake
 	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
 	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
 
-	projectAPI := accountV3.NewProjectAPI(tt.Meta.scwClient)
+	projectAPI := accountV3.NewProjectAPI(tt.Meta.ScwClient())
 	project, err := projectAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
 		Name: projectName,
 	})
@@ -367,7 +368,7 @@ func createFakeSideProject(tt *TestTools) (*accountV3.Project, *iam.APIKey, Fake
 		})
 	})
 
-	iamAPI := iam.NewAPI(tt.Meta.scwClient)
+	iamAPI := iam.NewAPI(tt.Meta.ScwClient())
 	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
 		Name: iamApplicationName,
 	})
@@ -447,7 +448,7 @@ func createFakeIAMManager(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeS
 	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
 	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
 
-	projectAPI := accountV3.NewProjectAPI(tt.Meta.scwClient)
+	projectAPI := accountV3.NewProjectAPI(tt.Meta.ScwClient())
 	project, err := projectAPI.CreateProject(&accountV3.ProjectAPICreateProjectRequest{
 		Name: projectName,
 	})
@@ -464,7 +465,7 @@ func createFakeIAMManager(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeS
 		})
 	})
 
-	iamAPI := iam.NewAPI(tt.Meta.scwClient)
+	iamAPI := iam.NewAPI(tt.Meta.ScwClient())
 	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
 		Name: iamApplicationName,
 	})
@@ -524,20 +525,20 @@ func createFakeIAMManager(tt *TestTools) (*accountV3.Project, *iam.APIKey, FakeS
 	return project, iamAPIKey, terminate, nil
 }
 
-// fakeSideProjectProviders creates a new provider alias "side" with a new metaConfig that will use the
+// fakeSideProjectProviders creates a new provider alias "side" with a new Config that will use the
 // given project and API key as default profile configuration.
 //
 // This is useful to test resources that need to create resources in another project.
 func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV3.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
 	t := tt.T
 
-	metaSide, err := buildMeta(ctx, &metaConfig{
-		terraformVersion:    "terraform-tests",
-		httpClient:          tt.Meta.httpClient,
-		forceProjectID:      project.ID,
-		forceOrganizationID: project.OrganizationID,
-		forceAccessKey:      iamAPIKey.AccessKey,
-		forceSecretKey:      *iamAPIKey.SecretKey,
+	metaSide, err := meta.NewMeta(ctx, &meta.Config{
+		TerraformVersion:    "terraform-tests",
+		HTTPClient:          tt.Meta.HTTPClient(),
+		ForceProjectID:      project.ID,
+		ForceOrganizationID: project.OrganizationID,
+		ForceAccessKey:      iamAPIKey.AccessKey,
+		ForceSecretKey:      *iamAPIKey.SecretKey,
 	})
 	require.NoError(t, err)
 
@@ -556,7 +557,7 @@ func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 
 type TestTools struct {
 	T                 *testing.T
-	Meta              *Meta
+	Meta              *meta.Meta
 	ProviderFactories map[string]func() (*schema.Provider, error)
 	Cleanup           func()
 }
@@ -569,10 +570,10 @@ func NewTestTools(t *testing.T) *TestTools {
 	require.NoError(t, err)
 
 	// Create meta that will be passed in the provider config
-	meta, err := buildMeta(ctx, &metaConfig{
-		providerSchema:   nil,
-		terraformVersion: "terraform-tests",
-		httpClient:       httpClient,
+	meta, err := meta.NewMeta(ctx, &meta.Config{
+		ProviderSchema:   nil,
+		TerraformVersion: "terraform-tests",
+		HTTPClient:       httpClient,
 	})
 	require.NoError(t, err)
 
@@ -605,15 +606,15 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
-			metaProd, err := buildMeta(ctx, &metaConfig{
-				terraformVersion: "terraform-tests",
-				httpClient:       tt.Meta.httpClient,
+			metaProd, err := meta.NewMeta(ctx, &meta.Config{
+				TerraformVersion: "terraform-tests",
+				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
 
-			metaDev, err := buildMeta(ctx, &metaConfig{
-				terraformVersion: "terraform-tests",
-				httpClient:       tt.Meta.httpClient,
+			metaDev, err := meta.NewMeta(ctx, &meta.Config{
+				TerraformVersion: "terraform-tests",
+				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
 
@@ -660,17 +661,17 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
-			metaProd, err := buildMeta(ctx, &metaConfig{
-				terraformVersion: "terraform-tests",
-				forceZone:        scw.ZoneFrPar2,
-				httpClient:       tt.Meta.httpClient,
+			metaProd, err := meta.NewMeta(ctx, &meta.Config{
+				TerraformVersion: "terraform-tests",
+				ForceZone:        scw.ZoneFrPar2,
+				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
 
-			metaDev, err := buildMeta(ctx, &metaConfig{
-				terraformVersion: "terraform-tests",
-				forceZone:        scw.ZoneFrPar1,
-				httpClient:       tt.Meta.httpClient,
+			metaDev, err := meta.NewMeta(ctx, &meta.Config{
+				TerraformVersion: "terraform-tests",
+				ForceZone:        scw.ZoneFrPar1,
+				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
 

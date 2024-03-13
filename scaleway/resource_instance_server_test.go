@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/stretchr/testify/require"
 )
 
@@ -1824,17 +1825,17 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 	temporarySecretKey := ""
 	customProviderFactory := map[string]func() (*schema.Provider, error){
 		"scaleway": func() (*schema.Provider, error) {
-			meta, err := buildMeta(context.Background(), &metaConfig{
-				providerSchema:   nil,
-				terraformVersion: "terraform-tests",
-				httpClient:       tt.Meta.httpClient,
-				forceAccessKey:   temporaryAccessKey,
-				forceSecretKey:   temporarySecretKey,
+			m, err := meta.NewMeta(context.Background(), &meta.Config{
+				ProviderSchema:   nil,
+				TerraformVersion: "terraform-tests",
+				HTTPClient:       tt.Meta.HTTPClient(),
+				ForceAccessKey:   temporaryAccessKey,
+				ForceSecretKey:   temporarySecretKey,
 			})
 			if err != nil {
 				return nil, err
 			}
-			return Provider(&ProviderConfig{Meta: meta})(), nil
+			return Provider(&ProviderConfig{Meta: m})(), nil
 		},
 	}
 

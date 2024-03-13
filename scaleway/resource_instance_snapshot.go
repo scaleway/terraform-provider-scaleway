@@ -107,8 +107,8 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -152,11 +152,11 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
+	return resourceScalewayInstanceSnapshotRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,8 +181,8 @@ func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,11 +204,11 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("couldn't update snapshot: %s", err))
 	}
 
-	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
+	return resourceScalewayInstanceSnapshotRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

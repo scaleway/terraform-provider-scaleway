@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func resourceScalewayVPCPrivateNetwork() *schema.Resource {
@@ -181,8 +182,8 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 	}
 }
 
-func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
+func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -219,11 +220,11 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(regional.NewIDString(region, pn.ID))
 
-	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -240,7 +241,7 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	zone, err := extractZone(d, meta.(*Meta))
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -263,8 +264,8 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -279,11 +280,11 @@ func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

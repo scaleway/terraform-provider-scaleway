@@ -56,8 +56,8 @@ func dataSourceScalewayDocumentDBEndpointLoadBalancer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayDocumentDBLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func dataSourceScalewayDocumentDBLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

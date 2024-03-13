@@ -36,8 +36,8 @@ func dataSourceScalewayWebhosting() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := webhostingAPIWithRegion(d, meta)
+func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := webhostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,7 +74,7 @@ func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayWebhostingRead(ctx, d, meta)
+	diags := resourceScalewayWebhostingRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read hosting")...)
 	}

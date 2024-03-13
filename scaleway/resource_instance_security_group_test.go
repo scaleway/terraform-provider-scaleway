@@ -540,7 +540,7 @@ func testAccCheckScalewayInstanceSecurityGroupExists(tt *TestTools, n string) re
 			return err
 		}
 
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 		_, err = instanceAPI.GetSecurityGroup(&instance.GetSecurityGroupRequest{
 			SecurityGroupID: ID,
 			Zone:            zone,
@@ -555,7 +555,7 @@ func testAccCheckScalewayInstanceSecurityGroupExists(tt *TestTools, n string) re
 
 func testAccCheckScalewayInstanceSecurityGroupDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_security_group" {
 				continue

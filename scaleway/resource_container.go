@@ -191,8 +191,8 @@ func resourceScalewayContainer() *schema.Resource {
 	}
 }
 
-func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -240,11 +240,11 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
-	return resourceScalewayContainerRead(ctx, d, meta)
+	return resourceScalewayContainerRead(ctx, d, m)
 }
 
-func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, containerID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -283,8 +283,8 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, containerID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -384,11 +384,11 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayContainerRead(ctx, d, meta)
+	return resourceScalewayContainerRead(ctx, d, m)
 }
 
-func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, containerID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

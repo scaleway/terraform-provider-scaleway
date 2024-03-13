@@ -73,8 +73,8 @@ func resourceScalewaySecretVersion() *schema.Resource {
 	}
 }
 
-func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := secretAPIWithRegion(d, meta)
+func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := secretAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -100,11 +100,11 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 
 	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
 
-	return resourceScalewaySecretVersionRead(ctx, d, meta)
+	return resourceScalewaySecretVersionRead(ctx, d, m)
 }
 
-func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,8 +134,8 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,11 +160,11 @@ func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	return resourceScalewaySecretVersionRead(ctx, d, meta)
+	return resourceScalewaySecretVersionRead(ctx, d, m)
 }
 
-func resourceScalewaySecretVersionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretVersionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

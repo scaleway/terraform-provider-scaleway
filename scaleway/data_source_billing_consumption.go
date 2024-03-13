@@ -68,8 +68,8 @@ func dataSourceScalewayBillingConsumptions() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBillingConsumptionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := billingAPI(meta)
+func dataSourceScalewayBillingConsumptionsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := billingAPI(m)
 
 	res, err := api.ListConsumptions(&billing.ListConsumptionsRequest{
 		CategoryName:   expandStringPtr(d.Get("category_name")),

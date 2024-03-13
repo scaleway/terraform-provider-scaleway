@@ -78,8 +78,8 @@ func resourceScalewaySecret() *schema.Resource {
 	}
 }
 
-func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := secretAPIWithRegion(d, meta)
+func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := secretAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -112,11 +112,11 @@ func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(regional.NewIDString(region, secretResponse.ID))
 
-	return resourceScalewaySecretRead(ctx, d, meta)
+	return resourceScalewaySecretRead(ctx, d, m)
 }
 
-func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := secretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,8 +150,8 @@ func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := secretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -194,11 +194,11 @@ func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return resourceScalewaySecretRead(ctx, d, meta)
+	return resourceScalewaySecretRead(ctx, d, m)
 }
 
-func resourceScalewaySecretDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := secretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

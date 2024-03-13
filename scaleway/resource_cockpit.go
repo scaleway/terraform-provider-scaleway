@@ -93,8 +93,8 @@ func resourceScalewayCockpit() *schema.Resource {
 	}
 }
 
-func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -138,11 +138,11 @@ func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(res.ProjectID)
-	return resourceScalewayCockpitRead(ctx, d, meta)
+	return resourceScalewayCockpitRead(ctx, d, m)
 }
 
-func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,8 +164,8 @@ func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -208,11 +208,11 @@ func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	return resourceScalewayCockpitRead(ctx, d, meta)
+	return resourceScalewayCockpitRead(ctx, d, m)
 }
 
-func resourceScalewayCockpitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := cockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -90,8 +90,8 @@ func resourceScalewayJobDefinition() *schema.Resource {
 	}
 }
 
-func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := jobsAPIWithRegion(d, meta)
+func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := jobsAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -130,11 +130,11 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 
 	d.SetId(regional.NewIDString(region, definition.ID))
 
-	return resourceScalewayJobDefinitionRead(ctx, d, meta)
+	return resourceScalewayJobDefinitionRead(ctx, d, m)
 }
 
-func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,8 +166,8 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -229,11 +229,11 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayJobDefinitionRead(ctx, d, meta)
+	return resourceScalewayJobDefinitionRead(ctx, d, m)
 }
 
-func resourceScalewayJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

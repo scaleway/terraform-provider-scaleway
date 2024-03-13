@@ -167,8 +167,8 @@ func resourceScalewayTemDomain() *schema.Resource {
 	}
 }
 
-func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := temAPIWithRegion(d, meta)
+func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,11 +185,11 @@ func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(regional.NewIDString(region, domain.ID))
 
-	return resourceScalewayTemDomainRead(ctx, d, meta)
+	return resourceScalewayTemDomainRead(ctx, d, m)
 }
 
-func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := temAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := temAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -230,8 +230,8 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := temAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := temAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

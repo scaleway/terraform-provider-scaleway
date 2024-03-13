@@ -64,8 +64,8 @@ func resourceScalewayContainerCron() *schema.Resource {
 	}
 }
 
-func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -99,11 +99,11 @@ func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.Resource
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
-	return resourceScalewayContainerCronRead(ctx, d, meta)
+	return resourceScalewayContainerCronRead(ctx, d, m)
 }
 
-func resourceScalewayContainerCronRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, containerCronID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerCronRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, containerCronID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -131,8 +131,8 @@ func resourceScalewayContainerCronRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayContainerCronUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, containerCronID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, containerCronID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -177,11 +177,11 @@ func resourceScalewayContainerCronUpdate(ctx context.Context, d *schema.Resource
 	}
 	tflog.Info(ctx, "[INFO] cron job ready")
 
-	return resourceScalewayContainerCronRead(ctx, d, meta)
+	return resourceScalewayContainerCronRead(ctx, d, m)
 }
 
-func resourceScalewayContainerCronDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, containerCronID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerCronDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, containerCronID, err := containerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

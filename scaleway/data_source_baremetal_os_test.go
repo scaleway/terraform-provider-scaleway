@@ -60,7 +60,7 @@ func testAccCheckScalewayBaremetalOsExists(tt *TestTools, n string) resource.Tes
 			return err
 		}
 
-		baremetalAPI := baremetal.NewAPI(tt.Meta.scwClient)
+		baremetalAPI := baremetal.NewAPI(tt.Meta.ScwClient())
 		_, err = baremetalAPI.GetOS(&baremetal.GetOSRequest{
 			OsID: ID,
 			Zone: zone,

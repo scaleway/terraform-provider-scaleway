@@ -80,8 +80,8 @@ func resourceScalewayDomainZone() *schema.Resource {
 	}
 }
 
-func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := newDomainAPI(m)
 
 	domainName := strings.ToLower(d.Get("domain").(string))
 	subdomainName := strings.ToLower(d.Get("subdomain").(string))
@@ -99,7 +99,7 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
 			d.SetId(fmt.Sprintf("%s.%s", subdomainName, domainName))
 
-			return resourceScalewayDomainZoneRead(ctx, d, meta)
+			return resourceScalewayDomainZoneRead(ctx, d, m)
 		}
 	}
 
@@ -112,17 +112,17 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if is409Error(err) {
-			return resourceScalewayDomainZoneRead(ctx, d, meta)
+			return resourceScalewayDomainZoneRead(ctx, d, m)
 		}
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%s.%s", dnsZone.Subdomain, dnsZone.Domain))
 
-	return resourceScalewayDomainZoneRead(ctx, d, meta)
+	return resourceScalewayDomainZoneRead(ctx, d, m)
 }
 
-func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := newDomainAPI(m)
 
 	var zone *domain.DNSZone
 
@@ -161,8 +161,8 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := newDomainAPI(m)
 
 	if d.HasChangesExcept("subdomain") {
 		_, err := domainAPI.UpdateDNSZone(&domain.UpdateDNSZoneRequest{
@@ -174,11 +174,11 @@ func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 	}
-	return resourceScalewayDomainZoneRead(ctx, d, meta)
+	return resourceScalewayDomainZoneRead(ctx, d, m)
 }
 
-func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := newDomainAPI(m)
 
 	_, err := waitForDNSZone(ctx, domainAPI, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {

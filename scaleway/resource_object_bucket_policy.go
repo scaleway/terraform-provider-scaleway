@@ -48,8 +48,8 @@ func resourceScalewayObjectBucketPolicy() *schema.Resource {
 	}
 }
 
-func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -60,7 +60,7 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -99,12 +99,12 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(regional.NewIDString(region, bucket))
 
-	return resourceScalewayObjectBucketPolicyRead(ctx, d, meta)
+	return resourceScalewayObjectBucketPolicyRead(ctx, d, m)
 }
 
 //gocyclo:ignore
-func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, _, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, _, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -163,8 +163,8 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 	return diags
 }
 
-func resourceScalewayObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

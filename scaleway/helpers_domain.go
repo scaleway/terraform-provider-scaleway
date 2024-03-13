@@ -10,6 +10,7 @@ import (
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -21,9 +22,7 @@ const (
 
 // domainAPI returns a new domain API.
 func newDomainAPI(m interface{}) *domain.API {
-	meta := m.(*Meta)
-
-	return domain.NewAPI(meta.scwClient)
+	return domain.NewAPI(meta.ExtractScwClient(m))
 }
 
 func flattenDomainData(data string, recordType domain.RecordType) interface{} {

@@ -8,6 +8,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -56,17 +57,17 @@ func expandContainerTriggerMnqNatsCreationConfig(i interface{}) *container.Creat
 	}
 }
 
-func completeContainerTriggerMnqCreationConfig(i interface{}, d *schema.ResourceData, meta interface{}, region scw.Region) error {
-	m := i.(map[string]interface{})
+func completeContainerTriggerMnqCreationConfig(i interface{}, d *schema.ResourceData, m interface{}, region scw.Region) error {
+	configMap := i.(map[string]interface{})
 
-	if sqsRegion, exists := m["region"]; !exists || sqsRegion == "" {
-		m["region"] = region.String()
+	if sqsRegion, exists := configMap["region"]; !exists || sqsRegion == "" {
+		configMap["region"] = region.String()
 	}
 
-	if projectID, exists := m["project_id"]; !exists || projectID == "" {
-		projectID, _, err := extractProjectID(d, meta.(*Meta))
+	if projectID, exists := configMap["project_id"]; !exists || projectID == "" {
+		projectID, _, err := meta.ExtractProjectID(d, m)
 		if err == nil {
-			m["project_id"] = projectID
+			configMap["project_id"] = projectID
 		}
 	}
 

@@ -32,8 +32,8 @@ func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,5 +65,5 @@ func dataSourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.
 	zonedID := datasourceNewZonedID(securityGroupID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("security_group_id", zonedID)
-	return resourceScalewayInstanceSecurityGroupRead(ctx, d, meta)
+	return resourceScalewayInstanceSecurityGroupRead(ctx, d, m)
 }

@@ -123,8 +123,8 @@ func dataSourceScalewayFlexibleIPs() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayFlexibleIPsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, meta)
+func dataSourceScalewayFlexibleIPsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

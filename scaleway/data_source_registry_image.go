@@ -62,8 +62,8 @@ func dataSourceScalewayRegistryImage() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{}) error {
-	api, region, err := registryAPIWithRegion(d, meta)
+func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, m interface{}) error {
+	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}

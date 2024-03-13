@@ -50,8 +50,8 @@ func dataSourceScalewayK8SVersion() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayK8SVersionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
+func dataSourceScalewayK8SVersionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

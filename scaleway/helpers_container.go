@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -24,10 +25,9 @@ const (
 
 // containerAPIWithRegion returns a new container API and the region.
 func containerAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.API, scw.Region, error) {
-	meta := m.(*Meta)
-	api := container.NewAPI(meta.scwClient)
+	api := container.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -36,8 +36,7 @@ func containerAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.A
 
 // containerAPIWithRegionAndID returns a new container API, region and ID.
 func containerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := container.NewAPI(meta.scwClient)
+	api := container.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {

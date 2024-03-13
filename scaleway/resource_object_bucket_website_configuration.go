@@ -79,8 +79,8 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 	}
 }
 
-func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(d, meta)
+func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -90,7 +90,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		conn, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		conn, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -124,11 +124,11 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(regional.NewIDString(region, bucket))
 
-	return resourceBucketWebsiteConfigurationRead(ctx, d, meta)
+	return resourceBucketWebsiteConfigurationRead(ctx, d, m)
 }
 
-func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, region, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,8 +192,8 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,11 +216,11 @@ func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("error updating Object bucket website configuration (%s): %w", d.Id(), err))
 	}
 
-	return resourceBucketWebsiteConfigurationRead(ctx, d, meta)
+	return resourceBucketWebsiteConfigurationRead(ctx, d, m)
 }
 
-func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

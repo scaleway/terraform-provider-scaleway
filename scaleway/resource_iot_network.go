@@ -78,8 +78,8 @@ func resourceScalewayIotNetwork() *schema.Resource {
 	}
 }
 
-func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, meta)
+func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,11 +105,11 @@ func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceDat
 	// Secret key cannot be retrieved later
 	_ = d.Set("secret", res.Secret)
 
-	return resourceScalewayIotNetworkRead(ctx, d, meta)
+	return resourceScalewayIotNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, networkID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, networkID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,8 +136,8 @@ func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, networkID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, networkID, err := iotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

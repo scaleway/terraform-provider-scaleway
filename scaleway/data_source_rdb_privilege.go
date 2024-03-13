@@ -23,8 +23,8 @@ func dataSourceScalewayRDBPrivilege() *schema.Resource {
 }
 
 // dataSourceScalewayRDBPrivilegeRead
-func dataSourceScalewayRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, region, err := rdbAPIWithRegion(d, meta)
+func dataSourceScalewayRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -34,5 +34,5 @@ func dataSourceScalewayRDBPrivilegeRead(ctx context.Context, d *schema.ResourceD
 	databaseName, _ := d.Get("database_name").(string)
 
 	d.SetId(resourceScalewayRdbUserPrivilegeID(region, instanceID, databaseName, userName))
-	return resourceScalewayRdbPrivilegeRead(ctx, d, meta)
+	return resourceScalewayRdbPrivilegeRead(ctx, d, m)
 }
