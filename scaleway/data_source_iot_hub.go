@@ -7,14 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayIotHub() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIotHub().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayIotHub().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"hub_id"}
 	dsSchema["hub_id"] = &schema.Schema{
@@ -61,7 +62,7 @@ func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m
 		hubID = foundHub.ID
 	}
 
-	regionalID := datasourceNewRegionalID(hubID, region)
+	regionalID := datasource.NewRegionalID(hubID, region)
 	d.SetId(regionalID)
 	err = d.Set("hub_id", regionalID)
 	if err != nil {

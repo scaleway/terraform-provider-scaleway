@@ -8,16 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayTemDomain() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayTemDomain().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayTemDomain().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"domain_id"}
 	dsSchema["domain_id"] = &schema.Schema{
@@ -71,7 +72,7 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	regionalID := datasourceNewRegionalID(domainID, region)
+	regionalID := datasource.NewRegionalID(domainID, region)
 	d.SetId(regionalID)
 	err = d.Set("domain_id", regionalID)
 	if err != nil {

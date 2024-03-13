@@ -6,13 +6,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
 func dataSourceScalewayDomainZone() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayDomainZone().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayDomainZone().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "domain", "subdomain")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "domain", "subdomain")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayDomainZoneRead,

@@ -5,18 +5,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayRDBACL() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbACL().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayRdbACL().Schema)
 
 	dsSchema["instance_id"].Computed = false
 	dsSchema["instance_id"].Required = true
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBACLRead,
 		Schema:      dsSchema,
@@ -33,7 +34,7 @@ func dataSourceScalewayRDBACLRead(ctx context.Context, d *schema.ResourceData, m
 	_, _, err = locality.ParseLocalizedID(instanceID.(string))
 	regionalID := instanceID
 	if err != nil {
-		regionalID = datasourceNewRegionalID(instanceID, region)
+		regionalID = datasource.NewRegionalID(instanceID, region)
 	}
 
 	d.SetId(regionalID.(string))

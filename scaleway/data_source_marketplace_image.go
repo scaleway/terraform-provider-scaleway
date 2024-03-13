@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
@@ -46,7 +47,7 @@ func dataSourceScalewayMarketplaceImageRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	zonedID := datasourceNewZonedID(image.ID, zone)
+	zonedID := datasource.NewZonedID(image.ID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("zone", zone)
 	_ = d.Set("label", d.Get("label"))

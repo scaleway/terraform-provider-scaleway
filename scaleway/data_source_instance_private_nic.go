@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -17,10 +18,10 @@ import (
 
 func dataSourceScalewayInstancePrivateNIC() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstancePrivateNIC().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayInstancePrivateNIC().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "private_network_id", "zone", "tags")
-	fixDatasourceSchemaFlags(dsSchema, true, "server_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "private_network_id", "zone", "tags")
+	datasource.FixDatasourceSchemaFlags(dsSchema, true, "server_id")
 
 	dsSchema["private_network_id"].ConflictsWith = []string{"private_nic_id"}
 

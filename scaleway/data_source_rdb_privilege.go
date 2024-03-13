@@ -5,17 +5,18 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayRDBPrivilege() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbPrivilege().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayRdbPrivilege().Schema)
 
-	fixDatasourceSchemaFlags(dsSchema, true, "instance_id", "user_name", "database_name")
+	datasource.FixDatasourceSchemaFlags(dsSchema, true, "instance_id", "user_name", "database_name")
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBPrivilegeRead,
 		Schema:      dsSchema,

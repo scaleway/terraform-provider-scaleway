@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -13,9 +14,9 @@ import (
 
 func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbDatabaseBackup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayRdbDatabaseBackup().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "instance_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "instance_id")
 
 	dsSchema["instance_id"].RequiredWith = []string{"name"}
 	dsSchema["backup_id"] = &schema.Schema{
@@ -69,7 +70,7 @@ func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.Reso
 		backupID = foundBackup.ID
 	}
 
-	regionID := datasourceNewRegionalID(backupID, region)
+	regionID := datasource.NewRegionalID(backupID, region)
 	d.SetId(regionID)
 	err = d.Set("backup_id", regionID)
 	if err != nil {

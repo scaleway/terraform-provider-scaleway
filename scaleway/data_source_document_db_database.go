@@ -5,14 +5,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 func dataSourceScalewayDocumentDBDatabase() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayDocumentDBDatabase().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayDocumentDBDatabase().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["instance_id"].Required = true
 	dsSchema["instance_id"].Computed = false

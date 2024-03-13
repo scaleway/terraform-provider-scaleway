@@ -7,15 +7,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayVPC() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPC().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPC().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "is_default", "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "is_default", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"vpc_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
@@ -90,7 +91,7 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m in
 		}
 	}
 
-	regionalID := datasourceNewRegionalID(vpcID, region)
+	regionalID := datasource.NewRegionalID(vpcID, region)
 	d.SetId(regionalID)
 	err = d.Set("vpc_id", regionalID)
 	if err != nil {

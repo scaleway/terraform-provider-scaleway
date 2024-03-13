@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
@@ -150,7 +151,7 @@ func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	zone, offerID, _ := zonal.ParseID(datasourceNewZonedID(d.Get("offer_id"), fallBackZone))
+	zone, offerID, _ := zonal.ParseID(datasource.NewZonedID(d.Get("offer_id"), fallBackZone))
 
 	var offer *baremetal.Offer
 
@@ -203,7 +204,7 @@ func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.Resourc
 		offer = matches[0]
 	}
 
-	zonedID := datasourceNewZonedID(offer.ID, zone)
+	zonedID := datasource.NewZonedID(offer.ID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("offer_id", zonedID)
 	_ = d.Set("zone", zone)

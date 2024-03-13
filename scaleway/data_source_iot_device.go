@@ -6,15 +6,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayIotDevice() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIotDevice().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayIotDevice().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"device_id"}
 	dsSchema["hub_id"].Optional = true
@@ -69,7 +70,7 @@ func dataSourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData
 		deviceID = foundDevice.ID
 	}
 
-	regionalID := datasourceNewRegionalID(deviceID, region)
+	regionalID := datasource.NewRegionalID(deviceID, region)
 	d.SetId(regionalID)
 	err = d.Set("device_id", regionalID)
 	if err != nil {

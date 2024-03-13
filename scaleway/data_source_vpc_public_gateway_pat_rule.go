@@ -7,13 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPublicGatewayPATRule().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCPublicGatewayPATRule().Schema)
 
 	dsSchema["pat_rule_id"] = &schema.Schema{
 		Type:         schema.TypeString,
@@ -23,7 +24,7 @@ func dataSourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 	}
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "zone")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "zone")
 
 	return &schema.Resource{
 		Schema:      dsSchema,
@@ -39,7 +40,7 @@ func dataSourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schem
 
 	patRuleIDRaw := d.Get("pat_rule_id")
 
-	zonedID := datasourceNewZonedID(patRuleIDRaw, zone)
+	zonedID := datasource.NewZonedID(patRuleIDRaw, zone)
 	d.SetId(zonedID)
 	_ = d.Set("pat_rule_id", zonedID)
 
