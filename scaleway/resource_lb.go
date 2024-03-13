@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 const (
@@ -75,7 +76,7 @@ func resourceScalewayLb() *schema.Resource {
 				ForceNew:         true,
 				Description:      "The load-balance public IP ID",
 				DiffSuppressFunc: diffSuppressFuncLocality,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 			},
 			"ip_address": {
 				Type:        schema.TypeString,
@@ -107,7 +108,7 @@ func resourceScalewayLb() *schema.Resource {
 						"private_network_id": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 							Description:  "The Private Network ID",
 						},
 						"static_config": {
@@ -116,7 +117,7 @@ func resourceScalewayLb() *schema.Resource {
 							Optional:    true,
 							Elem: &schema.Schema{
 								Type:         schema.TypeString,
-								ValidateFunc: validateStandaloneIPorCIDR(),
+								ValidateFunc: verify.IsStandaloneIPorCIDR(),
 							},
 							MaxItems: 1,
 						},

@@ -25,6 +25,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayInstanceServer() *schema.Resource {
@@ -153,7 +154,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
-					ValidateFunc:     validationUUIDorUUIDWithLocality(),
+					ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 					DiffSuppressFunc: diffSuppressFuncLocality,
 				},
 				Optional:    true,
@@ -240,7 +241,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "ID of the target bootscript (set boot_type to bootscript)",
-				ValidateFunc: validationUUID(),
+				ValidateFunc: verify.IsUUID(),
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -271,7 +272,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 							Description:      "The Private Network ID",
 							DiffSuppressFunc: diffSuppressFuncLocality,
 						},

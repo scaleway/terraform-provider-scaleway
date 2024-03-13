@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayInstanceUserData() *schema.Resource {
@@ -36,7 +37,7 @@ func resourceScalewayInstanceUserData() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The ID of the server",
-				ValidateFunc: validationUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDWithLocality(),
 			},
 			"key": {
 				Type:        schema.TypeString,

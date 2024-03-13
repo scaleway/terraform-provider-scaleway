@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayDomainRecord() *schema.Resource {
@@ -24,7 +25,7 @@ func dataSourceScalewayDomainRecord() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the record",
-		ValidateFunc:  validationUUID(),
+		ValidateFunc:  verify.IsUUID(),
 		ConflictsWith: []string{"name", "type", "data"},
 	}
 

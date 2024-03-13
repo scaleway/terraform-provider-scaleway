@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayWebhosting() *schema.Resource {
@@ -31,13 +32,13 @@ func resourceScalewayWebhosting() *schema.Resource {
 			"offer_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The ID of the selected offer for the hosting",
 			},
 			"email": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validationEmail(),
+				ValidateFunc: verify.IsEmail(),
 				Description:  "Contact email of the client for the hosting",
 			},
 			"domain": {

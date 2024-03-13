@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayInstanceSnapshot() *schema.Resource {
@@ -42,7 +43,7 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Description:   "ID of the volume to take a snapshot from",
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"import"},
 			},
 			"type": {

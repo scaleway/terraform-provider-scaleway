@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayIamSSHKey() *schema.Resource {
@@ -19,7 +20,7 @@ func dataSourceScalewayIamSSHKey() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The ID of the SSH key",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

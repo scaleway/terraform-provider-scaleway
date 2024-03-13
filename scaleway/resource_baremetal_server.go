@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayBaremetalServer() *schema.Resource {
@@ -76,7 +77,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Optional:         true,
 				Description:      "The base image of the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 			},
 			"os_name": {
 				Type:        schema.TypeString,
@@ -87,7 +88,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 				Optional: true,
 				Description: `Array of SSH key IDs allowed to SSH to the server
@@ -210,7 +211,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							Type:         schema.TypeString,
 							Description:  "The private network ID",
 							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 							StateFunc: func(i interface{}) string {
 								return locality.ExpandID(i.(string))
 							},
