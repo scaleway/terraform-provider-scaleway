@@ -8,8 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayContainerTrigger() *schema.Resource {
@@ -34,7 +36,7 @@ func resourceScalewayContainerTrigger() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The ID of the container to create a trigger for",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -187,7 +189,7 @@ func resourceScalewayContainerTriggerRead(ctx context.Context, d *schema.Resourc
 
 	trigger, err := waitForContainerTrigger(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -222,7 +224,7 @@ func resourceScalewayContainerTriggerUpdate(ctx context.Context, d *schema.Resou
 
 	trigger, err := waitForContainerTrigger(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -269,7 +271,7 @@ func resourceScalewayContainerTriggerDelete(ctx context.Context, d *schema.Resou
 	}
 
 	_, err = waitForContainerTrigger(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

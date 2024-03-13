@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayInstanceImage() *schema.Resource {
@@ -41,7 +43,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "UUID of the snapshot from which the image is to be created",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"architecture": {
 				Type:        schema.TypeString,
@@ -59,7 +61,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUIDorUUIDWithLocality(),
+					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description: "The IDs of the additional volumes attached to the image",
 			},
@@ -236,7 +238,7 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 		ImageID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -348,14 +350,14 @@ func resourceScalewayInstanceImageDelete(ctx context.Context, d *schema.Resource
 		Zone:    zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
 
 	_, err = waitForInstanceImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}

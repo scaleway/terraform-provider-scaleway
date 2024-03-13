@@ -8,6 +8,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayContainer() *schema.Resource {
@@ -21,20 +22,20 @@ func dataSourceScalewayContainer() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the Container",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 	dsSchema["namespace_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
 		Description:  "The ID of the Container namespace",
-		ValidateFunc: validationUUIDorUUIDWithLocality(),
+		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The ID of the project to filter the Container",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

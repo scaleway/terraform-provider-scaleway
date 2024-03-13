@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -150,7 +151,7 @@ func testAccCheckScalewayAccountProjectDestroy(tt *TestTools) resource.TestCheck
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

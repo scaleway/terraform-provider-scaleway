@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -80,7 +81,7 @@ func testAccCheckScalewayDomainZoneDestroy(tt *TestTools) resource.TestCheckFunc
 				DNSZone: scw.StringPtr(fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])),
 			})
 
-			if is403Error(err) { // forbidden: subdomain not found
+			if httperrors.Is403(err) { // forbidden: subdomain not found
 				return nil
 			}
 

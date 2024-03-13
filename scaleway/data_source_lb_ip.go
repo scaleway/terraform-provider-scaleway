@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayLbIP() *schema.Resource {
@@ -25,7 +26,7 @@ func dataSourceScalewayLbIP() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IP address",
 		ConflictsWith: []string{"ip_address"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"].Optional = true
 

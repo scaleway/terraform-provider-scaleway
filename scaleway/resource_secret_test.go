@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -235,7 +236,7 @@ func testAccCheckScalewaySecretDestroy(tt *TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("secret (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
@@ -19,7 +20,7 @@ func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the placementgroup",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"].Optional = true
 

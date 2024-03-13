@@ -8,9 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource {
@@ -35,7 +37,7 @@ func resourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource
 			"private_network_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				Description:      "The private network ID",
 				ForceNew:         true,
@@ -106,7 +108,7 @@ func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *sc
 	createEndpointRequest.EndpointSpec.PrivateNetwork = endpointSpecPN
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -120,7 +122,7 @@ func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *sc
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -143,7 +145,7 @@ func resourceScalewayDocumentDBInstanceEndpointRead(ctx context.Context, d *sche
 		Region:     region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}

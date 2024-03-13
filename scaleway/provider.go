@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
@@ -55,7 +56,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 					Type:         schema.TypeString,
 					Optional:     true, // To allow user to use deprecated `token`.
 					Description:  "The Scaleway secret Key.",
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 				"profile": {
 					Type:        schema.TypeString,
@@ -66,13 +67,13 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 					Type:         schema.TypeString,
 					Optional:     true, // To allow user to use organization instead of project
 					Description:  "The Scaleway project ID.",
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 				"organization_id": {
 					Type:         schema.TypeString,
 					Optional:     true,
 					Description:  "The Scaleway organization ID.",
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 				"region": regional.Schema(),
 				"zone":   zonal.Schema(),

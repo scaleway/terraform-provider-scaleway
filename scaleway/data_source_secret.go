@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewaySecret() *schema.Resource {
@@ -22,7 +23,7 @@ func dataSourceScalewaySecret() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the secret",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name", "path"},
 	}
 	dsSchema["organization_id"] = organizationIDOptionalSchema()
@@ -30,7 +31,7 @@ func dataSourceScalewaySecret() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The project ID the resource is associated to",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

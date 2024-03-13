@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
 func init() {
@@ -190,7 +191,7 @@ func testAccCheckScalewayInstancePrivateNICDestroy(tt *TestTools) resource.TestC
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

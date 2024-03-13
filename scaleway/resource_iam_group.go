@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayIamGroup() *schema.Resource {
@@ -47,7 +49,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 			},
 			"application_ids": {
@@ -56,7 +58,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 			},
 			"external_membership": {
@@ -115,7 +117,7 @@ func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m
 		GroupID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -202,7 +204,7 @@ func resourceScalewayIamGroupDelete(ctx context.Context, d *schema.ResourceData,
 	err := api.DeleteGroup(&iam.DeleteGroupRequest{
 		GroupID: d.Id(),
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

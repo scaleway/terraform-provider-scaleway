@@ -20,10 +20,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayInstanceServer() *schema.Resource {
@@ -152,7 +154,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
-					ValidateFunc:     validationUUIDorUUIDWithLocality(),
+					ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 					DiffSuppressFunc: diffSuppressFuncLocality,
 				},
 				Optional:    true,
@@ -239,7 +241,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "ID of the target bootscript (set boot_type to bootscript)",
-				ValidateFunc: validationUUID(),
+				ValidateFunc: verify.IsUUID(),
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -270,7 +272,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 							Description:      "The Private Network ID",
 							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
@@ -1081,7 +1083,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	}
 	// reach stopped state
 	err = reachState(ctx, api, zone, id, instance.ServerStateStopped)
-	if is404Error(err) {
+	if httperrors.Is404(err) {
 		return nil
 	}
 	if err != nil {
@@ -1106,7 +1108,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	}
 
 	_, err = waitForInstanceServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -1114,12 +1116,12 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		Zone:     zone,
 		ServerID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForInstanceServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -1134,7 +1136,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 			Zone:     zone,
 			VolumeID: locality.ExpandID(volumeID),
 		})
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -1246,7 +1248,7 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	}, scw.WithContext(ctx))
 	if err != nil {
 		// If UUID is not in marketplace, then it's an image change
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			return diff.ForceNew("image")
 		}
 		return err

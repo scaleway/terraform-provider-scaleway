@@ -12,8 +12,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	sdkValidation "github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayBaremetalServer() *schema.Resource {
@@ -75,7 +77,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Optional:         true,
 				Description:      "The base image of the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 			},
 			"os_name": {
 				Type:        schema.TypeString,
@@ -86,7 +88,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUID(),
+					ValidateFunc: verify.IsUUID(),
 				},
 				Optional: true,
 				Description: `Array of SSH key IDs allowed to SSH to the server
@@ -209,7 +211,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							Type:         schema.TypeString,
 							Description:  "The private network ID",
 							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 							StateFunc: func(i interface{}) string {
 								return locality.ExpandID(i.(string))
 							},
@@ -379,7 +381,7 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		}
 
 		_, err = waitForBaremetalServerPrivateNetwork(ctx, baremetalPrivateNetworkAPI, zone, baremetalPrivateNetwork.ServerPrivateNetworks[0].ServerID, d.Timeout(schema.TimeoutCreate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -403,7 +405,7 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 		ServerID: zonedID.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -508,7 +510,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 
 		_, err = waitForBaremetalServerOptions(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
@@ -544,7 +546,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 
 		_, err = waitForBaremetalServerPrivateNetwork(ctx, baremetalPrivateNetworkAPI, zone, baremetalPrivateNetwork.ServerPrivateNetworks[0].ServerID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -649,14 +651,14 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 		ServerID: zonedID.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForBaremetalServer(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

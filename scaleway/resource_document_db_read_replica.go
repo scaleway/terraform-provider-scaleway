@@ -11,9 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayDocumentDBReadReplica() *schema.Resource {
@@ -86,7 +88,7 @@ func resourceScalewayDocumentDBReadReplica() *schema.Resource {
 						"private_network_id": {
 							Type:             schema.TypeString,
 							Description:      "UUID of the private network to be connected to the read replica (UUID format)",
-							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: diffSuppressFuncLocality,
 							Required:         true,
 						},
@@ -273,7 +275,7 @@ func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.Re
 
 	rr, err := waitForDocumentDBReadReplica(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -298,7 +300,7 @@ func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.
 
 	_, err = waitForDocumentDBReadReplica(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -388,7 +390,7 @@ func resourceScalewayDocumentDBReadReplicaDelete(ctx context.Context, d *schema.
 	}
 
 	_, err = waitForDocumentDBReadReplica(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

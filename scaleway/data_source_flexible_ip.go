@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayFlexibleIP() *schema.Resource {
@@ -24,7 +25,7 @@ func dataSourceScalewayFlexibleIP() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IPv4 address",
 		ConflictsWith: []string{"ip_address"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
@@ -32,7 +33,7 @@ func dataSourceScalewayFlexibleIP() *schema.Resource {
 		Optional:     true,
 		ForceNew:     true,
 		Computed:     true,
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

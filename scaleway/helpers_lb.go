@@ -17,6 +17,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -535,12 +536,12 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone sc
 			StaticConfig:     pnConfigs[i].StaticConfig,
 			DHCPConfig:       pnConfigs[i].DHCPConfig,
 		}, scw.WithContext(ctx))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return nil, err
 		}
 
 		privateNetworks, err = waitForLBPN(ctx, lbAPI, zone, pn.LB.ID, timeout)
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return nil, err
 		}
 
@@ -551,7 +552,7 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone sc
 					LBID:             pn.LB.ID,
 					PrivateNetworkID: pn.PrivateNetworkID,
 				}, scw.WithContext(ctx))
-				if err != nil && !is404Error(err) {
+				if err != nil && !httperrors.Is404(err) {
 					return nil, err
 				}
 				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))

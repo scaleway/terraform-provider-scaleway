@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func resourceScalewayIamPolicy() *schema.Resource {
@@ -52,21 +54,21 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "User id",
-				ValidateFunc: validationUUID(),
+				ValidateFunc: verify.IsUUID(),
 				ExactlyOneOf: []string{"group_id", "application_id", "no_principal"},
 			},
 			"group_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Group id",
-				ValidateFunc: validationUUID(),
+				ValidateFunc: verify.IsUUID(),
 				ExactlyOneOf: []string{"user_id", "application_id", "no_principal"},
 			},
 			"application_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Application id",
-				ValidateFunc: validationUUID(),
+				ValidateFunc: verify.IsUUID(),
 				ExactlyOneOf: []string{"user_id", "group_id", "no_principal"},
 			},
 			"no_principal": {
@@ -85,7 +87,7 @@ func resourceScalewayIamPolicy() *schema.Resource {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Description:  "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
-							ValidateFunc: validationUUID(),
+							ValidateFunc: verify.IsUUID(),
 						},
 						"project_ids": {
 							Type:        schema.TypeList,
@@ -93,7 +95,7 @@ func resourceScalewayIamPolicy() *schema.Resource {
 							Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
 							Elem: &schema.Schema{
 								Type:         schema.TypeString,
-								ValidateFunc: validationUUID(),
+								ValidateFunc: verify.IsUUID(),
 							},
 						},
 						"permission_set_names": {
@@ -148,7 +150,7 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 		PolicyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -250,7 +252,7 @@ func resourceScalewayIamPolicyDelete(ctx context.Context, d *schema.ResourceData
 		PolicyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}

@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
@@ -18,7 +19,7 @@ func dataSourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 		Type:         schema.TypeString,
 		Required:     true,
 		Description:  "The ID of the public gateway PAT rule",
-		ValidateFunc: validationUUIDorUUIDWithLocality(),
+		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	// Set 'Optional' schema elements

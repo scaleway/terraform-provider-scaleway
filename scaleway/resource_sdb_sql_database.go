@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	serverless_sqldb "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -93,7 +94,7 @@ func resourceScalewayServerlessSQLDBDatabaseRead(ctx context.Context, d *schema.
 
 	database, err := waitForServerlessSQLDBDatabase(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -118,7 +119,7 @@ func resourceScalewayServerlessSQLDBDatabaseUpdate(ctx context.Context, d *schem
 
 	database, err := waitForServerlessSQLDBDatabase(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -164,7 +165,7 @@ func resourceScalewayServerlessSQLDBDatabaseDelete(ctx context.Context, d *schem
 	}
 
 	_, err = waitForServerlessSQLDBDatabase(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is403Error(err) {
+	if err != nil && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
 

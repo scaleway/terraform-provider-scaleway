@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayIamApplication() *schema.Resource {
@@ -21,7 +22,7 @@ func dataSourceScalewayIamApplication() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IAM application",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUID(),
+		ValidateFunc:  verify.IsUUID(),
 	}
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,

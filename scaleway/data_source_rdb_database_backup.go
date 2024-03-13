@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
@@ -21,13 +22,13 @@ func dataSourceScalewayRDBDatabaseBackup() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the Backup",
 		ConflictsWith: []string{"name", "instance_id"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The ID of the project to filter the Backup",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

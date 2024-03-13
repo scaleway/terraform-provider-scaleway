@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -872,7 +873,7 @@ func testAccCheckScalewayDomainRecordDestroy(tt *TestTools) resource.TestCheckFu
 			listDNSZones, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 				DNSZone: rs.Primary.Attributes["dns_zone"],
 			})
-			if is403Error(err) { // forbidden: subdomain not found
+			if httperrors.Is403(err) { // forbidden: subdomain not found
 				return nil
 			}
 
