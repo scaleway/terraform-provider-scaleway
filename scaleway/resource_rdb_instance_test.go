@@ -880,6 +880,25 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-dev-m"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "lssd"),
+				),
+			},
 		},
 	})
 }
