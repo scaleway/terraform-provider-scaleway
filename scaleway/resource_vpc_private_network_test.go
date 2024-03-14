@@ -59,7 +59,7 @@ func TestAccScalewayVPCPrivateNetwork_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	privateNetworkName := "private-network-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -121,7 +121,7 @@ func TestAccScalewayVPCPrivateNetwork_DefaultName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -143,7 +143,7 @@ func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -248,7 +248,7 @@ func TestAccScalewayVPCPrivateNetwork_OneSubnet(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -298,7 +298,7 @@ func TestAccScalewayVPCPrivateNetwork_WithTwoIPV6Subnets(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{

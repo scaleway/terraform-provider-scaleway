@@ -57,7 +57,7 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -145,7 +145,7 @@ func TestAccScalewayBaremetalServer_RequiredInstallConfig(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -170,7 +170,7 @@ func TestAccScalewayBaremetalServer_WithoutInstallConfig(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -206,7 +206,7 @@ func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_CreateServerWithOption"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -268,7 +268,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddOption"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -356,7 +356,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -507,7 +507,7 @@ func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T)
 	name := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBaremetalServerDestroy(tt),
@@ -573,7 +573,7 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBaremetalServerDestroy(tt),
@@ -682,7 +682,7 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBaremetalServerDestroy(tt),

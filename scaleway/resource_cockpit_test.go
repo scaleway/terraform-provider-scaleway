@@ -66,7 +66,7 @@ func TestAccScalewayCockpit_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitDestroy(tt),
 		Steps: []resource.TestStep{
@@ -123,7 +123,7 @@ func TestAccScalewayCockpit_PremiumPlanByID(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitDestroy(tt),
 		Steps: []resource.TestStep{
@@ -174,7 +174,7 @@ func TestAccScalewayCockpit_PremiumPlanByName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitDestroy(tt),
 		Steps: []resource.TestStep{

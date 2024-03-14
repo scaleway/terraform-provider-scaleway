@@ -25,7 +25,7 @@ func TestAccScalewayMNQSQSQueue_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayMNQSQSQueueDestroy(tt),
 		Steps: []resource.TestStep{
@@ -113,7 +113,7 @@ func TestAccScalewayMNQSQSQueue_DefaultProject(t *testing.T) {
 	projectID = project.ID
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() { acctest.TestAccPreCheck(t) },
+		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			metaProd, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",

@@ -74,7 +74,7 @@ func TestAccScalewayCockpitGrafanaUser_Basic(t *testing.T) {
 	grafanaTestUsername := "testuserbasic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitGrafanaUserDestroy(tt),
 		Steps: []resource.TestStep{
@@ -114,7 +114,7 @@ func TestAccScalewayCockpitGrafanaUser_Update(t *testing.T) {
 	grafanaTestUsername := "testuserupdate"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitGrafanaUserDestroy(tt),
 		Steps: []resource.TestStep{
@@ -178,7 +178,7 @@ func TestAccScalewayCockpitGrafanaUser_NonExistentCockpit(t *testing.T) {
 	grafanaTestUsername := "testnonexistentuser"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitGrafanaUserDestroy(tt),
 		Steps: []resource.TestStep{

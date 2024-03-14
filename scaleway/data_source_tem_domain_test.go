@@ -15,7 +15,7 @@ func TestAccScalewayDataSourceTemDomain_Basic(t *testing.T) {
 	domainName := "terraform-ds.test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayTemDomainDestroy(tt),
 		Steps: []resource.TestStep{
@@ -53,7 +53,7 @@ func TestAccScalewayDataSourceTemDomain_Reputation(t *testing.T) {
 	domainName := "test.scaleway-terraform.com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{

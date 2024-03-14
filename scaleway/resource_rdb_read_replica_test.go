@@ -19,7 +19,7 @@ func TestAccScalewayRdbReadReplica_Basic(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayRdbInstanceDestroy(tt),
@@ -62,7 +62,7 @@ func TestAccScalewayRdbReadReplica_PrivateNetwork(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayRdbInstanceDestroy(tt),
@@ -110,7 +110,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayRdbInstanceDestroy(tt),
@@ -327,7 +327,7 @@ func TestAccScalewayRdbReadReplica_MultipleEndpoints(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayRdbInstanceDestroy(tt),
@@ -379,7 +379,7 @@ func TestAccScalewayRdbReadReplica_DifferentZone(t *testing.T) {
 	readReplicaID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayRdbInstanceDestroy(tt),
@@ -416,7 +416,7 @@ func TestAccScalewayRdbReadReplica_DifferentZone(t *testing.T) {
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.different_zone"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.different_zone", "instance_id", "scaleway_rdb_instance.different_zone", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.different_zone", "same_zone", "true"),
-					acctest.TestAccCheckScalewayResourceIDPersisted("scaleway_rdb_read_replica.different_zone", &readReplicaID),
+					acctest.CheckResourceIDPersisted("scaleway_rdb_read_replica.different_zone", &readReplicaID),
 				),
 			},
 			{
@@ -450,7 +450,7 @@ func TestAccScalewayRdbReadReplica_DifferentZone(t *testing.T) {
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.different_zone"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.different_zone", "instance_id", "scaleway_rdb_instance.different_zone", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.different_zone", "same_zone", "true"),
-					acctest.TestAccCheckScalewayResourceIDPersisted("scaleway_rdb_read_replica.different_zone", &readReplicaID),
+					acctest.CheckResourceIDPersisted("scaleway_rdb_read_replica.different_zone", &readReplicaID),
 				),
 			},
 			{
@@ -484,7 +484,7 @@ func TestAccScalewayRdbReadReplica_DifferentZone(t *testing.T) {
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.different_zone"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.different_zone", "instance_id", "scaleway_rdb_instance.different_zone", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.different_zone", "same_zone", "false"),
-					acctest.TestAccCheckScalewayResourceIDChanged("scaleway_rdb_read_replica.different_zone", &readReplicaID),
+					acctest.CheckResourceIDChanged("scaleway_rdb_read_replica.different_zone", &readReplicaID),
 				),
 			},
 		},
@@ -496,7 +496,7 @@ func TestAccScalewayRdbReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayRdbInstanceDestroy(tt),

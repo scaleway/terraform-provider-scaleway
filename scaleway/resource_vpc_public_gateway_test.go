@@ -51,7 +51,7 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	publicGatewayName := "public-gateway-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDestroy(tt),
 		Steps: []resource.TestStep{
@@ -130,7 +130,7 @@ func TestAccScalewayVPCPublicGateway_Bastion(t *testing.T) {
 	defer tt.Cleanup()
 	publicGatewayName := "public-gateway-bastion-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDestroy(tt),
 		Steps: []resource.TestStep{
@@ -178,7 +178,7 @@ func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),

@@ -15,7 +15,7 @@ func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
@@ -56,7 +56,7 @@ func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
@@ -84,7 +84,7 @@ func TestAccScalewayAccountSSHKey_ChangeResourceName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{

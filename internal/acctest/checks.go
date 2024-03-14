@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
-// TestAccCheckScalewayResourceIDChanged checks that the ID of the resource has indeed changed, in case of ForceNew for example.
-// It will fail if resourceID is empty so be sure to use acctest.TestAccCheckScalewayResourceIDPersisted first in a test suite.
-func TestAccCheckScalewayResourceIDChanged(resourceName string, resourceID *string) resource.TestCheckFunc {
+// CheckResourceIDChanged checks that the ID of the resource has indeed changed, in case of ForceNew for example.
+// It will fail if resourceID is empty so be sure to use acctest.CheckResourceIDPersisted first in a test suite.
+func CheckResourceIDChanged(resourceName string, resourceID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if resourceID == nil || *resourceID == "" {
 			return errors.New("resourceID was not set")
@@ -28,9 +28,9 @@ func TestAccCheckScalewayResourceIDChanged(resourceName string, resourceID *stri
 	}
 }
 
-// TestAccCheckScalewayResourceIDPersisted checks that the ID of the resource is the same throughout tests of migration or mutation
+// CheckResourceIDPersisted checks that the ID of the resource is the same throughout tests of migration or mutation
 // It can be used to check that no ForceNew has been done
-func TestAccCheckScalewayResourceIDPersisted(resourceName string, resourceID *string) resource.TestCheckFunc {
+func CheckResourceIDPersisted(resourceName string, resourceID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -44,8 +44,8 @@ func TestAccCheckScalewayResourceIDPersisted(resourceName string, resourceID *st
 	}
 }
 
-// TestAccCheckScalewayResourceRawIDMatches asserts the equality of IDs from two specified attributes of two Scaleway resources.
-func TestAccCheckScalewayResourceRawIDMatches(res1, attr1, res2, attr2 string) resource.TestCheckFunc {
+// CheckResourceRawIDMatches asserts the equality of IDs from two specified attributes of two Scaleway resources.
+func CheckResourceRawIDMatches(res1, attr1, res2, attr2 string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs1, ok1 := s.RootModule().Resources[res1]
 		if !ok1 {

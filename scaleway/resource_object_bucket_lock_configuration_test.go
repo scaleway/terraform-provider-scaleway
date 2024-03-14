@@ -29,7 +29,7 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -128,7 +128,7 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -222,7 +222,7 @@ func TestAccScalewayObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(

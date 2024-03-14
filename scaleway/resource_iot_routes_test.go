@@ -19,7 +19,7 @@ func TestAccScalewayIotRoute_RDB(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -85,7 +85,7 @@ func TestAccScalewayIotRoute_S3(t *testing.T) {
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iot-route-s3")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
@@ -140,7 +140,7 @@ func TestAccScalewayIotRoute_REST(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: testAccCheckScalewayIotHubDestroy(tt),

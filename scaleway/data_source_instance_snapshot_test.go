@@ -14,7 +14,7 @@ func TestAccScalewayDataSourceInstanceSnapshot_Basic(t *testing.T) {
 	snapshotName := "tf-snapshot-ds-basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayInstanceVolumeDestroy(tt),

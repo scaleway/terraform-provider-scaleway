@@ -21,7 +21,7 @@ func TestAccScalewayDataSourceSecretVersion_Basic(t *testing.T) {
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewaySecretVersionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -113,7 +113,7 @@ func TestAccScalewayDataSourceSecretVersion_ByNameSecret(t *testing.T) {
 	secretName := "dataSourceSecretVersionByNameSecret"
 	secretVersionData := "my_super_secret"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewaySecretVersionDestroy(tt),
 		Steps: []resource.TestStep{

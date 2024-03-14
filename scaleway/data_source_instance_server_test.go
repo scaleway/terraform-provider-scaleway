@@ -13,7 +13,7 @@ func TestAccScalewayDataSourceInstanceServer_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	serverName := "tf-server"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{

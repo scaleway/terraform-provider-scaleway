@@ -85,7 +85,7 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 	priorityUpdated := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -230,7 +230,7 @@ func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
 	priority := 0
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -303,7 +303,7 @@ func TestAccScalewayDomainRecord_Arobase(t *testing.T) {
 	logging.L.Debugf("TestAccScalewayDomainRecord_Arobase: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -350,7 +350,7 @@ func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -446,7 +446,7 @@ func TestAccScalewayDomainRecord_HTTPService(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -533,7 +533,7 @@ func TestAccScalewayDomainRecord_View(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -625,7 +625,7 @@ func TestAccScalewayDomainRecord_Weighted(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -717,7 +717,7 @@ func TestAccScalewayDomainRecord_SRVZone(t *testing.T) {
 	priority := 100 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -789,7 +789,7 @@ func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
 	priorityUpdated := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{

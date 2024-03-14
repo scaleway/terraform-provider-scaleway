@@ -56,7 +56,7 @@ func TestAccScalewayIamSSHKey_basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
@@ -96,7 +96,7 @@ func TestAccScalewayIamSSHKey_WithNewLine(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
@@ -123,7 +123,7 @@ func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
@@ -163,7 +163,7 @@ func TestAccScalewayIamSSHKey_Disabled(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{

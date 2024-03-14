@@ -30,7 +30,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -83,7 +83,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -159,7 +159,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -239,7 +239,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(

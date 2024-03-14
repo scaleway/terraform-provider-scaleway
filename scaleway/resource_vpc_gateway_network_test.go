@@ -52,7 +52,7 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -141,7 +141,7 @@ func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -186,7 +186,7 @@ func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
@@ -277,7 +277,7 @@ func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					testAccCheckScalewayVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "ipam_config.0.push_default_route", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id"),
-					acctest.TestAccCheckScalewayResourceRawIDMatches("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id", "scaleway_ipam_ip.ip01", "id"),
+					acctest.CheckResourceRawIDMatches("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id", "scaleway_ipam_ip.ip01", "id"),
 				),
 			},
 		},

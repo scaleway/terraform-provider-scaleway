@@ -72,7 +72,7 @@ func TestAccScalewayCockpitToken_Basic(t *testing.T) {
 	tokenName := projectName
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitTokenDestroy(tt),
 		Steps: []resource.TestStep{
@@ -122,7 +122,7 @@ func TestAccScalewayCockpitToken_NoScopes(t *testing.T) {
 	tokenName := "tf_tests_cockpit_token_no_scopes"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitTokenDestroy(tt),
 		Steps: []resource.TestStep{
@@ -168,7 +168,7 @@ func TestAccScalewayCockpitToken_Update(t *testing.T) {
 	tokenName := projectName
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitTokenDestroy(tt),
 		Steps: []resource.TestStep{

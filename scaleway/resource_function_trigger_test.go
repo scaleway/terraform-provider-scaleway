@@ -104,7 +104,7 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 				`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionTriggerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -156,7 +156,7 @@ func TestAccScalewayFunctionTrigger_Nats(t *testing.T) {
 				`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionTriggerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -184,7 +184,7 @@ func TestAccScalewayFunctionTrigger_Error(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionTriggerDestroy(tt),
 		Steps: []resource.TestStep{

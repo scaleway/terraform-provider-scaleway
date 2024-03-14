@@ -13,7 +13,7 @@ func TestAccScalewayDataSourceVPC_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	vpcName := "DataSourceVPC_Basic"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCDestroy(tt),
 		Steps: []resource.TestStep{
@@ -51,7 +51,7 @@ func TestAccScalewayDataSourceVPC_Default(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{

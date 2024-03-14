@@ -23,7 +23,7 @@ func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
@@ -85,7 +85,7 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 	defer tt.Cleanup()
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
@@ -166,7 +166,7 @@ func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.placement_group"),
@@ -223,7 +223,7 @@ func TestAccScalewayK8SCluster_PoolUpgradePolicy(t *testing.T) {
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.upgrade_policy"),
@@ -278,7 +278,7 @@ func TestAccScalewayK8SCluster_PoolKubeletArgs(t *testing.T) {
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.kubelet_args"),
@@ -317,7 +317,7 @@ func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.zone"),
@@ -346,7 +346,7 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 	latestK8SVersionMinor := testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.pool"),
@@ -423,7 +423,7 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.public_ip"),

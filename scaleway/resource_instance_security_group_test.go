@@ -35,7 +35,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 	ipnetTest, err := types.ExpandIPNet("8.8.8.8")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -185,7 +185,7 @@ func TestAccScalewayInstanceSecurityGroup_ICMP(t *testing.T) {
 	ipnetTest, err := types.ExpandIPNet("8.8.8.8")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -249,7 +249,7 @@ func TestAccScalewayInstanceSecurityGroup_ANY(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -296,7 +296,7 @@ func TestAccScalewayInstanceSecurityGroup_WithNoPort(t *testing.T) {
 	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -331,7 +331,7 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -388,7 +388,7 @@ func TestAccScalewayInstanceSecurityGroup_WithPortRange(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -445,7 +445,7 @@ func TestAccScalewayInstanceSecurityGroup_Tags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -625,7 +625,7 @@ func TestAccScalewayInstanceSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{

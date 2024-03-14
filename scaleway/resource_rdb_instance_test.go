@@ -77,7 +77,7 @@ func TestAccScalewayRdbInstance_Basic(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -156,7 +156,7 @@ func TestAccScalewayRdbInstance_WithCluster(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -198,7 +198,7 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -242,7 +242,7 @@ func TestAccScalewayRdbInstance_InitSettings(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, mySQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -280,7 +280,7 @@ func TestAccScalewayRdbInstance_Capitalize(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -311,7 +311,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -497,7 +497,7 @@ func TestAccScalewayRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayRdbInstanceDestroy(tt),
@@ -692,7 +692,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -795,7 +795,7 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -835,7 +835,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -891,7 +891,7 @@ func TestAccScalewayRdbInstance_SBSVolume(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -950,7 +950,7 @@ func TestAccScalewayRdbInstance_ChangeVolumeType(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -1009,7 +1009,7 @@ func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{

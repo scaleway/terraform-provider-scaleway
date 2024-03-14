@@ -21,7 +21,7 @@ func TestAccScalewayContainerDomain_Basic(t *testing.T) {
 	logging.L.Debugf("TestAccScalewayContainerDomain_Basic: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerDomainDestroy(tt),
 		Steps: []resource.TestStep{

@@ -16,7 +16,7 @@ func TestAccScalewayVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	testDNSZone := "tf-reverse-vpcgw." + testDomain
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
 		Steps: []resource.TestStep{

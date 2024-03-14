@@ -13,7 +13,7 @@ func TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Basic(t *testing.T
 	defer tt.Cleanup()
 	pnName := "TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Basic"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
 
@@ -117,7 +117,7 @@ func TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Static(t *testing.
 	defer tt.Cleanup()
 	pnName := "TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Static"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
 

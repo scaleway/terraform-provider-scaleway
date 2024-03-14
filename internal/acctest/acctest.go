@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccPreCheck(_ *testing.T) {}
+func PreCheck(_ *testing.T) {}
 
 type TestTools struct {
 	T                 *testing.T

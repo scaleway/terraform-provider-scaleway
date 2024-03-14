@@ -52,7 +52,7 @@ func TestAccScalewayIPAMIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
 		Steps: []resource.TestStep{
@@ -78,7 +78,7 @@ func TestAccScalewayIPAMIP_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPAMIPExists(tt, "scaleway_ipam_ip.ip01"),
 					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "is_ipv6", "false"),
-					acctest.TestAccCheckScalewayResourceRawIDMatches("scaleway_ipam_ip.ip01", "source.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
+					acctest.CheckResourceRawIDMatches("scaleway_ipam_ip.ip01", "source.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "source.0.subnet_id"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "address"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "created_at"),
@@ -93,7 +93,7 @@ func TestAccScalewayIPAMIP_WithStandaloneAddress(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
 		Steps: []resource.TestStep{
@@ -130,7 +130,7 @@ func TestAccScalewayIPAMIP_WithTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
 		Steps: []resource.TestStep{

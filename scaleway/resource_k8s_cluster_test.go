@@ -127,7 +127,7 @@ func TestAccScalewayK8SCluster_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			acctest.TestAccPreCheck(t)
+			acctest.PreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -183,7 +183,7 @@ func TestAccScalewayK8SCluster_Autoscaling(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			acctest.TestAccPreCheck(t)
+			acctest.PreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -259,7 +259,7 @@ func TestAccScalewayK8SCluster_OIDC(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			acctest.TestAccPreCheck(t)
+			acctest.PreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -329,7 +329,7 @@ func TestAccScalewayK8SCluster_AutoUpgrade(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			acctest.TestAccPreCheck(t)
+			acctest.PreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -411,7 +411,7 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			acctest.TestAccPreCheck(t)
+			acctest.PreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -425,7 +425,7 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
 					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network"),
-					acctest.TestAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.private_network", &clusterID),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.private_network", &clusterID),
 				),
 			},
 			{
@@ -435,7 +435,7 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network_2"),
 					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network_2"),
-					acctest.TestAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.private_network", &clusterID),
+					acctest.CheckResourceIDChanged("scaleway_k8s_cluster.private_network", &clusterID),
 				),
 			},
 		},
@@ -450,7 +450,7 @@ func TestAccScalewayK8SCluster_Multicloud(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			acctest.TestAccPreCheck(t)
+			acctest.PreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
@@ -476,7 +476,7 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			acctest.TestAccPreCheck(t)
+			acctest.PreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -490,7 +490,7 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule"),
-					acctest.TestAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 			{
@@ -499,7 +499,7 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule-dedicated-4"),
-					acctest.TestAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 			{
@@ -508,7 +508,7 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "kapsule-dedicated-8"),
-					acctest.TestAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 			{
@@ -517,7 +517,7 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud-dedicated-4"),
-					acctest.TestAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
+					acctest.CheckResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 			{
@@ -526,7 +526,7 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud-dedicated-8"),
-					acctest.TestAccCheckScalewayResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 			{
@@ -535,7 +535,7 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud-dedicated-4"),
-					acctest.TestAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
+					acctest.CheckResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 			{
@@ -544,7 +544,7 @@ func TestAccScalewayK8SCluster_TypeChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.type-change"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud"),
-					acctest.TestAccCheckScalewayResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
+					acctest.CheckResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
 				),
 			},
 		},

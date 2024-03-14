@@ -78,7 +78,7 @@ func TestAccScalewayObjectBucketPolicy_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
@@ -164,7 +164,7 @@ func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
@@ -198,7 +198,7 @@ func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),

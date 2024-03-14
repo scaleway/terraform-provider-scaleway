@@ -16,7 +16,7 @@ func TestAccScalewayDataSourceAccountProject_Basic(t *testing.T) {
 		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayAccountProjectDestroy(tt),
@@ -55,7 +55,7 @@ func TestAccScalewayDataSourceAccountProject_Default(t *testing.T) {
 		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -99,7 +99,7 @@ func TestAccScalewayDataSourceAccountProject_Extract(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{

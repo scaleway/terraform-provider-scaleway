@@ -21,7 +21,7 @@ func TestAccScalewaySecretVersion_Basic(t *testing.T) {
 	secretVersionDescription := "secret version description"
 	secretVersionData := "my_super_secret"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewaySecretVersionDestroy(tt),
 		Steps: []resource.TestStep{

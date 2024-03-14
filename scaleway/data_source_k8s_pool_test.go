@@ -15,7 +15,7 @@ func TestAccScalewayDataSourceK8SPool_Basic(t *testing.T) {
 	poolName := "tf-pool"
 	version := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),

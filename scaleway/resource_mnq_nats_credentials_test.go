@@ -17,7 +17,7 @@ func TestAccScalewayMNQNatsCredentials_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayMNQNatsCredentialsDestroy(tt),
 		Steps: []resource.TestStep{
