@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -15,9 +16,9 @@ import (
 
 func dataSourceScalewayRedisCluster() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRedisCluster().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayRedisCluster().Schema)
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"cluster_id"}
 	dsSchema["cluster_id"] = &schema.Schema{
@@ -64,7 +65,7 @@ func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceD
 		clusterID = foundCluster.ID
 	}
 
-	zonedID := datasourceNewZonedID(clusterID, zone)
+	zonedID := datasource.NewZonedID(clusterID, zone)
 	d.SetId(zonedID)
 	err = d.Set("cluster_id", zonedID)
 	if err != nil {

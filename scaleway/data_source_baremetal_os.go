@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -79,7 +80,7 @@ func dataSourceScalewayBaremetalOsRead(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	zoneID := datasourceNewZonedID(osID, zone)
+	zoneID := datasource.NewZonedID(osID, zone)
 	d.SetId(zoneID)
 
 	_ = d.Set("os_id", zoneID)

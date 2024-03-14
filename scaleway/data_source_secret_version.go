@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -16,10 +17,10 @@ import (
 
 func dataSourceScalewaySecretVersion() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewaySecretVersion().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewaySecretVersion().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "region", "revision")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "revision")
 	dsSchema["secret_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,

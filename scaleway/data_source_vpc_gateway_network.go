@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -16,7 +17,7 @@ import (
 
 func dataSourceScalewayVPCGatewayNetwork() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCGatewayNetwork().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCGatewayNetwork().Schema)
 
 	// Set 'Optional' schema elements
 	searchFields := []string{
@@ -25,7 +26,7 @@ func dataSourceScalewayVPCGatewayNetwork() *schema.Resource {
 		"enable_masquerade",
 		"dhcp_id",
 	}
-	addOptionalFieldsToSchema(dsSchema, searchFields...)
+	datasource.AddOptionalFieldsToSchema(dsSchema, searchFields...)
 
 	dsSchema["gateway_network_id"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -68,7 +69,7 @@ func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Reso
 		gatewayNetworkID = res.GatewayNetworks[0].ID
 	}
 
-	zonedID := datasourceNewZonedID(gatewayNetworkID, zone)
+	zonedID := datasource.NewZonedID(gatewayNetworkID, zone)
 	d.SetId(zonedID)
 
 	_ = d.Set("gateway_network_id", zonedID)

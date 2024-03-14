@@ -8,13 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayLbIP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbIP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayLbIP().Schema)
 
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -66,7 +67,7 @@ func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m i
 		ipID = res.IPs[0].ID
 	}
 
-	zoneID := datasourceNewZonedID(ipID, zone)
+	zoneID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zoneID)
 	err = d.Set("ip_id", zoneID)
 	if err != nil {

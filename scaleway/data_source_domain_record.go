@@ -8,16 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayDomainRecord() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayDomainRecord().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayDomainRecord().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "dns_zone", "name", "type", "data", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "dns_zone", "name", "type", "data", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"record_id"}
 	dsSchema["type"].ConflictsWith = []string{"record_id"}

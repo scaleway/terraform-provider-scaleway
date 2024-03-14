@@ -352,19 +352,22 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 
 		// Filter
 		tags := ExpandObjectBucketTags(r["tags"])
+		ruleHasPrefix := len(r["prefix"].(string)) > 0
 		filter := &s3.LifecycleRuleFilter{}
-		if len(tags) == 1 {
+
+		if !ruleHasPrefix && len(tags) == 1 {
 			filter.SetTag(tags[0])
-		}
-		if len(tags) > 1 {
-			lifecycleRuleAndOp := &s3.LifecycleRuleAndOperator{}
-			if len(r["prefix"].(string)) > 0 {
-				lifecycleRuleAndOp.SetPrefix(r["prefix"].(string))
+		} else {
+			if len(tags) == 0 && ruleHasPrefix {
+				filter.SetPrefix(r["prefix"].(string))
+			} else {
+				lifecycleRuleAndOp := &s3.LifecycleRuleAndOperator{}
+				lifecycleRuleAndOp.SetTags(tags)
+				if ruleHasPrefix {
+					lifecycleRuleAndOp.SetPrefix(r["prefix"].(string))
+				}
+				filter.SetAnd(lifecycleRuleAndOp)
 			}
-			lifecycleRuleAndOp.SetTags(tags)
-			filter.SetAnd(lifecycleRuleAndOp)
-		} else if len(r["prefix"].(string)) > 0 {
-			filter.SetPrefix(r["prefix"].(string))
 		}
 		rule.SetFilter(filter)
 

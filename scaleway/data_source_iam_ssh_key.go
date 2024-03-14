@@ -7,14 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayIamSSHKey() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIamSSKKey().Schema)
-	addOptionalFieldsToSchema(dsSchema, "name", "project_id")
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayIamSSKKey().Schema)
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"ssh_key_id"}
 	dsSchema["ssh_key_id"] = &schema.Schema{

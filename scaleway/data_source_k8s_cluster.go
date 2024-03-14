@@ -7,16 +7,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayK8SCluster() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayK8SCluster().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayK8SCluster().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 	delete(dsSchema, "delete_additional_resources")
 
 	dsSchema["name"].ConflictsWith = []string{"cluster_id"}
@@ -65,7 +66,7 @@ func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceDat
 		clusterID = foundCluster.ID
 	}
 
-	regionalizedID := datasourceNewRegionalID(clusterID, region)
+	regionalizedID := datasource.NewRegionalID(clusterID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("cluster_id", regionalizedID)
 	return resourceScalewayK8SClusterRead(ctx, d, m)

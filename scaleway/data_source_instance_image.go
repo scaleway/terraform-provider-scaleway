@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -138,7 +139,7 @@ func dataSourceScalewayInstanceImageRead(ctx context.Context, d *schema.Resource
 		// imageID will always be set here
 	}
 
-	zonedID := datasourceNewZonedID(imageID, zone)
+	zonedID := datasource.NewZonedID(imageID, zone)
 	zone, imageID, _ = zonal.ParseID(zonedID)
 
 	d.SetId(zonedID)

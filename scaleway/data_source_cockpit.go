@@ -5,12 +5,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func dataSourceScalewayCockpit() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayCockpit().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayCockpit().Schema)
 
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,

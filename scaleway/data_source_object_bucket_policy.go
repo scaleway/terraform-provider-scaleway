@@ -11,15 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func dataSourceScalewayObjectBucketPolicy() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayObjectBucketPolicy().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayObjectBucketPolicy().Schema)
 
-	fixDatasourceSchemaFlags(dsSchema, true, "bucket")
-	addOptionalFieldsToSchema(dsSchema, "region", "project_id")
+	datasource.FixDatasourceSchemaFlags(dsSchema, true, "bucket")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayObjectBucketPolicyRead,

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -14,10 +15,10 @@ import (
 
 func dataSourceScalewayVPCPrivateNetwork() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPrivateNetwork().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCPrivateNetwork().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"private_network_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
@@ -73,7 +74,7 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 		privateNetworkID = foundPN.ID
 	}
 
-	regionalID := datasourceNewRegionalID(privateNetworkID, region)
+	regionalID := datasource.NewRegionalID(privateNetworkID, region)
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
 	diags := resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
