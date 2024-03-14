@@ -37,10 +37,7 @@ const (
 
 	maxObjectVersionDeletionWorkers = 8
 
-	objectTestsMainRegion      = "nl-ams"
-	objectTestsSecondaryRegion = "pl-waw"
-
-	errCodeForbidden = "Forbidden"
+	ErrCodeForbidden = "Forbidden"
 )
 
 func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {
@@ -64,7 +61,7 @@ func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (
 	return s3.New(s), nil
 }
 
-func newS3ClientFromMeta(meta *meta.Meta, region string) (*s3.S3, error) {
+func NewS3ClientFromMeta(meta *meta.Meta, region string) (*s3.S3, error) {
 	accessKey, _ := meta.ScwClient().GetAccessKey()
 	secretKey, _ := meta.ScwClient().GetSecretKey()
 
@@ -211,7 +208,7 @@ func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
 	return tags
 }
 
-func expandObjectBucketTags(tags interface{}) []*s3.Tag {
+func ExpandObjectBucketTags(tags interface{}) []*s3.Tag {
 	tagsSet := []*s3.Tag(nil)
 	for key, value := range tags.(map[string]interface{}) {
 		tagsSet = append(tagsSet, &s3.Tag{
@@ -231,11 +228,11 @@ func objectBucketAPIEndpointURL(region scw.Region) string {
 	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
 }
 
-// Returns true if the error matches all these conditions:
+// IsS3Err returns true if the error matches all these conditions:
 //   - err is of type aws err.Error
 //   - Error.Code() matches code
 //   - Error.Message() contains message
-func isS3Err(err error, code string, message string) bool {
+func IsS3Err(err error, code string, message string) bool {
 	var awsErr awserr.Error
 	if errors.As(err, &awsErr) {
 		return awsErr.Code() == code && strings.Contains(awsErr.Message(), message)
@@ -383,7 +380,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 				objectVersionID := aws.StringValue(objectVersion.VersionId)
 				err := deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
 
-				if isS3Err(err, ErrCodeAccessDenied, "") && force {
+				if IsS3Err(err, ErrCodeAccessDenied, "") && force {
 					legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
 					if errLegal != nil {
 						return fmt.Errorf("failed to remove legal hold: %s", errLegal)
@@ -593,7 +590,7 @@ func normalizeOwnerID(id *string) *string {
 
 func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, awsResourceNotFoundCode string) (bucketFound bool, resourceFound bool) {
 	switch {
-	case isS3Err(err, s3.ErrCodeNoSuchBucket, ""):
+	case IsS3Err(err, s3.ErrCodeNoSuchBucket, ""):
 		*diags = append(*diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Bucket not found",
@@ -601,10 +598,10 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 		})
 		return false, false
 
-	case isS3Err(err, awsResourceNotFoundCode, ""):
+	case IsS3Err(err, awsResourceNotFoundCode, ""):
 		return true, false
 
-	case isS3Err(err, ErrCodeAccessDenied, ""):
+	case IsS3Err(err, ErrCodeAccessDenied, ""):
 		d := diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  fmt.Sprintf("Cannot read bucket %s: Forbidden", resource),

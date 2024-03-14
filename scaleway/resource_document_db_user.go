@@ -126,7 +126,7 @@ func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	region, instanceID, userName, err := resourceScalewayDocumentDBUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayDocumentDBUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -167,7 +167,7 @@ func resourceScalewayDocumentDBUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// resource depends on the instance locality
-	region, instanceID, userName, err := resourceScalewayDocumentDBUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayDocumentDBUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,7 +204,7 @@ func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 	// resource depends on the instance locality
-	region, instanceID, userName, err := resourceScalewayDocumentDBUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayDocumentDBUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -249,7 +249,7 @@ func resourceScalewayDocumentDBUserID(region scw.Region, instanceID string, user
 
 // Extract instance ID and username from the resource identifier.
 // The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayDocumentDBUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
+func ResourceScalewayDocumentDBUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
 	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)

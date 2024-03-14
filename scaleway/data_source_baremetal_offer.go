@@ -156,7 +156,7 @@ func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.Resourc
 
 	if offerID != "" {
 		// Temporary fix because GetOffer doesn't fetch monthly subscription offers
-		offer, err = baremetalFindOfferByID(ctx, baremetalAPI, zone, offerID)
+		offer, err = BaremetalFindOfferByID(ctx, baremetalAPI, zone, offerID)
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -269,7 +269,7 @@ func resourceScalewayDocumentDBReadReplicaCreate(ctx context.Context, d *schema.
 }
 
 func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -294,7 +294,7 @@ func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.Re
 
 //gocyclo:ignore
 func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -372,7 +372,7 @@ func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.
 }
 
 func resourceScalewayDocumentDBReadReplicaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -9,14 +9,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayMNQSNSTopicSubscription_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayMNQSNSTopicSubscriptionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -80,19 +82,19 @@ func TestAccScalewayMNQSNSTopicSubscription_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayMNQSNSTopicSubscriptionExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayMNQSNSTopicSubscriptionExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		arn, err := decomposeMNQSubscriptionID(rs.Primary.ID)
+		arn, err := scaleway.DecomposeMNQSubscriptionID(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("failed to parse id: %w", err)
 		}
 
-		snsClient, err := newSNSClient(tt.Meta.HTTPClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		snsClient, err := scaleway.NewSNSClient(tt.Meta.HTTPClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
@@ -108,19 +110,19 @@ func testAccCheckScalewayMNQSNSTopicSubscriptionExists(tt *TestTools, n string) 
 	}
 }
 
-func testAccCheckScalewayMNQSNSTopicSubscriptionDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayMNQSNSTopicSubscriptionDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sns_topic_subscription" {
 				continue
 			}
 
-			arn, err := decomposeMNQSubscriptionID(rs.Primary.ID)
+			arn, err := scaleway.DecomposeMNQSubscriptionID(rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("failed to parse id: %w", err)
 			}
 
-			snsClient, err := newSNSClient(tt.Meta.HTTPClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			snsClient, err := scaleway.NewSNSClient(tt.Meta.HTTPClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}

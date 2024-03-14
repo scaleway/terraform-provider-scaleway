@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,19 +8,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayDomainZone_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-zone"
 	logging.L.Debugf("TestAccScalewayDomainZone_Basic: test dns zone: %s, with domain: %s", testDNSZone, testDomain)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainZoneDestroy(tt),
 		Steps: []resource.TestStep{
@@ -42,14 +44,14 @@ func TestAccScalewayDomainZone_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayDomainZoneExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayDomainZoneExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		domainAPI := newDomainAPI(tt.Meta)
+		domainAPI := scaleway.NewDomainAPI(tt.Meta)
 		listDNSZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 			DNSZone: scw.StringPtr(fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])),
 		})
@@ -68,7 +70,7 @@ func testAccCheckScalewayDomainZoneExists(tt *TestTools, n string) resource.Test
 	}
 }
 
-func testAccCheckScalewayDomainZoneDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayDomainZoneDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_domain_zone" {
@@ -76,7 +78,7 @@ func testAccCheckScalewayDomainZoneDestroy(tt *TestTools) resource.TestCheckFunc
 			}
 
 			// check if the zone still exists
-			domainAPI := newDomainAPI(tt.Meta)
+			domainAPI := scaleway.NewDomainAPI(tt.Meta)
 			listDNSZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 				DNSZone: scw.StringPtr(fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])),
 			})

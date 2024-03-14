@@ -115,11 +115,11 @@ func getDocumentDBDatabase(ctx context.Context, api *documentdb.API, region scw.
 }
 
 func resourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceLocalizedID, databaseName, err := resourceScalewayDocumentDBDatabaseName(d.Id())
+	instanceLocalizedID, databaseName, err := ResourceScalewayDocumentDBDatabaseName(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	api, region, instanceID, err := documentDBAPIWithRegionAndID(m, instanceLocalizedID)
+	api, region, instanceID, err := DocumentDBAPIWithRegionAndID(m, instanceLocalizedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,11 +149,11 @@ func resourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayDocumentDBDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceLocalizedID, databaseName, err := resourceScalewayDocumentDBDatabaseName(d.Id())
+	instanceLocalizedID, databaseName, err := ResourceScalewayDocumentDBDatabaseName(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	api, region, instanceID, err := documentDBAPIWithRegionAndID(m, instanceLocalizedID)
+	api, region, instanceID, err := DocumentDBAPIWithRegionAndID(m, instanceLocalizedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -33,7 +33,7 @@ func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Regi
 	return k8sAPI, region, nil
 }
 
-func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
+func K8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
 	k8sAPI := k8s.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)
@@ -43,7 +43,7 @@ func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 	return k8sAPI, region, ID, nil
 }
 
-func k8sGetMinorVersionFromFull(version string) (string, error) {
+func K8sGetMinorVersionFromFull(version string) (string, error) {
 	versionSplit := strings.Split(version, ".")
 	if len(versionSplit) != 3 {
 		return "", errors.New("version is not a full x.y.z version") // shoud never happen
@@ -295,7 +295,7 @@ func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, 
 }
 
 func migrateToPrivateNetworkCluster(ctx context.Context, d *schema.ResourceData, i interface{}) error {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(i, d.Id())
+	k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(i, d.Id())
 	if err != nil {
 		return err
 	}

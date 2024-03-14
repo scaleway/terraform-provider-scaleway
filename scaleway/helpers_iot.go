@@ -29,7 +29,7 @@ func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Regi
 	return iotAPI, region, err
 }
 
-func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, string, error) {
+func IotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, string, error) {
 	iotAPI := iot.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)

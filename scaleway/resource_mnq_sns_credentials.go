@@ -106,7 +106,7 @@ func resourceScalewayMNQSNSCredentialsCreate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := MnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,7 +139,7 @@ func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := MnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -177,7 +177,7 @@ func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayMNQSNSCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := MnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

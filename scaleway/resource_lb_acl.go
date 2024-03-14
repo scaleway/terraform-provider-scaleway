@@ -198,7 +198,7 @@ func resourceScalewayLbACLCreate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceScalewayLbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -231,7 +231,7 @@ func resourceScalewayLbACLRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceScalewayLbACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -255,7 +255,7 @@ func resourceScalewayLbACLUpdate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceScalewayLbACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

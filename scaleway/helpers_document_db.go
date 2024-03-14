@@ -33,7 +33,7 @@ func documentDBAPIWithRegion(d *schema.ResourceData, m interface{}) (*documentdb
 }
 
 // documentDBAPIWithRegionalAndID returns a new documentdb API with region and ID extracted from the state
-func documentDBAPIWithRegionAndID(m interface{}, regionalID string) (*documentdb.API, scw.Region, string, error) {
+func DocumentDBAPIWithRegionAndID(m interface{}, regionalID string) (*documentdb.API, scw.Region, string, error) {
 	api := documentdb.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
@@ -66,9 +66,9 @@ func resourceScalewayDocumentDBDatabaseID(region scw.Region, instanceID string, 
 	return fmt.Sprintf("%s/%s/%s", region, instanceID, databaseName)
 }
 
-// resourceScalewayDocumentDBDatabaseName extract regional instanceID and databaseName from composed ID
+// ResourceScalewayDocumentDBDatabaseName extract regional instanceID and databaseName from composed ID
 // returned by resourceScalewayDocumentDBDatabaseID()
-func resourceScalewayDocumentDBDatabaseName(id string) (string, string, error) {
+func ResourceScalewayDocumentDBDatabaseName(id string) (string, string, error) {
 	elems := strings.Split(id, "/")
 	if len(elems) != 3 {
 		return "", "", fmt.Errorf("cant parse terraform database id: %s", id)

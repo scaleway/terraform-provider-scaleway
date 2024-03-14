@@ -291,7 +291,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 				if diff.HasChange("type") && diff.Id() != "" {
-					k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(i, diff.Id())
+					k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(i, diff.Id())
 					if err != nil {
 						return err
 					}
@@ -525,7 +525,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -563,7 +563,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
 	version := cluster.Version
 	if cluster.AutoUpgrade != nil && cluster.AutoUpgrade.Enabled {
-		version, err = k8sGetMinorVersionFromFull(version)
+		version, err = K8sGetMinorVersionFromFull(version)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -612,7 +612,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 
 //gocyclo:ignore
 func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -885,7 +885,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

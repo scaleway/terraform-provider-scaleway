@@ -99,7 +99,7 @@ The definition of a complete test looks like this:
 
 ```go
 func TestAccScalewayInstanceServerImport(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -152,7 +152,7 @@ When executing the test, the following steps are taken for each `TestStep`:
     			return fmt.Errorf("resource not found: %s", n)
     		}
     
-    		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+    		instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
     		if err != nil {
     			return err
     		}
@@ -190,7 +190,7 @@ When executing the test, the following steps are taken for each `TestStep`:
                     continue
                 }
         
-                instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+                instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
                 if err != nil {
                     return err
                 }

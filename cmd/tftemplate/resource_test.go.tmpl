@@ -46,7 +46,7 @@ func testSweep{{ .Resource }}(_ string) error {
 }
 
 func TestAccScaleway{{.Resource}}_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{

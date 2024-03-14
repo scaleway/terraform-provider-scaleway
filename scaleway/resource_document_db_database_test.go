@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -8,14 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	document_db "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayDocumentDBDatabase_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDocumentDBInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -46,19 +48,19 @@ func TestAccScalewayDocumentDBDatabase_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayDocumentDBDatabaseExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayDocumentDBDatabaseExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		localizedInstanceID, databaseName, err := resourceScalewayDocumentDBDatabaseName(rs.Primary.ID)
+		localizedInstanceID, databaseName, err := scaleway.ResourceScalewayDocumentDBDatabaseName(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		api, region, instanceID, err := documentDBAPIWithRegionAndID(tt.Meta, localizedInstanceID)
+		api, region, instanceID, err := scaleway.DocumentDBAPIWithRegionAndID(tt.Meta, localizedInstanceID)
 		if err != nil {
 			return err
 		}

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"flag"
@@ -11,8 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 var (
@@ -67,7 +69,7 @@ func init() {
 }
 
 func TestAccScalewayDomainRecord_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-basic." + testDomain
@@ -83,7 +85,7 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 	priorityUpdated := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -216,7 +218,7 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 }
 
 func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-basic2." + testDomain
@@ -228,7 +230,7 @@ func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
 	priority := 0
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -294,14 +296,14 @@ func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
 }
 
 func TestAccScalewayDomainRecord_Arobase(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-arobase." + testDomain
 	logging.L.Debugf("TestAccScalewayDomainRecord_Arobase: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -335,7 +337,7 @@ func TestAccScalewayDomainRecord_Arobase(t *testing.T) {
 }
 
 func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-geoip." + testDomain
@@ -348,7 +350,7 @@ func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -431,7 +433,7 @@ func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
 }
 
 func TestAccScalewayDomainRecord_HTTPService(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-httpservice." + testDomain
@@ -444,7 +446,7 @@ func TestAccScalewayDomainRecord_HTTPService(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -518,7 +520,7 @@ func TestAccScalewayDomainRecord_HTTPService(t *testing.T) {
 }
 
 func TestAccScalewayDomainRecord_View(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-view." + testDomain
@@ -531,7 +533,7 @@ func TestAccScalewayDomainRecord_View(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -610,7 +612,7 @@ func TestAccScalewayDomainRecord_View(t *testing.T) {
 }
 
 func TestAccScalewayDomainRecord_Weighted(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-weighted." + testDomain
@@ -623,7 +625,7 @@ func TestAccScalewayDomainRecord_Weighted(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -702,7 +704,7 @@ func TestAccScalewayDomainRecord_Weighted(t *testing.T) {
 }
 
 func TestAccScalewayDomainRecord_SRVZone(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-srv." + testDomain
@@ -715,7 +717,7 @@ func TestAccScalewayDomainRecord_SRVZone(t *testing.T) {
 	priority := 100 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -744,14 +746,14 @@ func TestAccScalewayDomainRecord_SRVZone(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayDomainRecordExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayDomainRecordExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		domainAPI := newDomainAPI(tt.Meta)
+		domainAPI := scaleway.NewDomainAPI(tt.Meta)
 		listDNSZones, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: rs.Primary.Attributes["dns_zone"],
 		})
@@ -771,7 +773,7 @@ func testAccCheckScalewayDomainRecordExists(tt *TestTools, n string) resource.Te
 }
 
 func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	testDNSZone := "test-basic-cname." + testDomain
@@ -787,7 +789,7 @@ func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
 	priorityUpdated := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -861,7 +863,7 @@ func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayDomainRecordDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_domain_record" {
@@ -869,7 +871,7 @@ func testAccCheckScalewayDomainRecordDestroy(tt *TestTools) resource.TestCheckFu
 			}
 
 			// check if the zone still exists
-			domainAPI := newDomainAPI(tt.Meta)
+			domainAPI := scaleway.NewDomainAPI(tt.Meta)
 			listDNSZones, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 				DNSZone: rs.Primary.Attributes["dns_zone"],
 			})

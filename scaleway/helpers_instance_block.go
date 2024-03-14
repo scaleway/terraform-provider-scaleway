@@ -30,7 +30,7 @@ func instanceAndBlockAPIWithZone(d *schema.ResourceData, m interface{}) (*Instan
 	}, zone, nil
 }
 
-// instanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
+// InstanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
 func instanceAndBlockAPIWithZoneAndID(m interface{}, zonedID string) (*InstanceBlockAPI, scw.Zone, string, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
 	blockAPI := block.NewAPI(meta.ExtractScwClient(m))

@@ -39,8 +39,8 @@ func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API
 	return api, region, nil
 }
 
-// functionAPIWithRegionAndID returns a new container registry API, region and ID.
-func functionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region, string, error) {
+// FunctionAPIWithRegionAndID returns a new container registry API, region and ID.
+func FunctionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region, string, error) {
 	api := function.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)

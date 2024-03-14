@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,8 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -45,7 +47,7 @@ func testSweepAccountProject(_ string) error {
 }
 
 func TestAccScalewayAccountProject_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -82,7 +84,7 @@ func TestAccScalewayAccountProject_Basic(t *testing.T) {
 }
 
 func TestAccScalewayAccountProject_NoUpdate(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -112,14 +114,14 @@ func TestAccScalewayAccountProject_NoUpdate(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayAccountProjectExists(tt *TestTools, name string) resource.TestCheckFunc {
+func testAccCheckScalewayAccountProjectExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", name)
 		}
 
-		accountAPI := accountV3ProjectAPI(tt.Meta)
+		accountAPI := scaleway.AccountV3ProjectAPI(tt.Meta)
 
 		_, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 			ProjectID: rs.Primary.ID,
@@ -132,14 +134,14 @@ func testAccCheckScalewayAccountProjectExists(tt *TestTools, name string) resour
 	}
 }
 
-func testAccCheckScalewayAccountProjectDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayAccountProjectDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_account_project" {
 				continue
 			}
 
-			accountAPI := accountV3ProjectAPI(tt.Meta)
+			accountAPI := scaleway.AccountV3ProjectAPI(tt.Meta)
 
 			_, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 				ProjectID: rs.Primary.ID,

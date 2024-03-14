@@ -9,7 +9,7 @@ import (
 )
 
 // instanceAPIWithZone returns a new iam API for a Create request
-func iamAPI(m interface{}) *iam.API {
+func IamAPI(m interface{}) *iam.API {
 	return iam.NewAPI(meta.ExtractScwClient(m))
 }
 

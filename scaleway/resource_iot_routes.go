@@ -259,7 +259,7 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, routeID, err := iotAPIWithRegionAndID(m, d.Id())
+	iotAPI, region, routeID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -315,7 +315,7 @@ func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIotRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, routeID, err := iotAPIWithRegionAndID(m, d.Id())
+	iotAPI, region, routeID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

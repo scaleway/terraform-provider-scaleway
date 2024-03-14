@@ -35,8 +35,8 @@ func containerAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.A
 	return api, region, nil
 }
 
-// containerAPIWithRegionAndID returns a new container API, region and ID.
-func containerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region, string, error) {
+// ContainerAPIWithRegionAndID returns a new container API, region and ID.
+func ContainerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region, string, error) {
 	api := container.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)

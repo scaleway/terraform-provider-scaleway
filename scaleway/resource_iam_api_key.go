@@ -87,7 +87,7 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 }
 
 func resourceScalewayIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 	res, err := api.CreateAPIKey(&iam.CreateAPIKeyRequest{
 		ApplicationID:    types.ExpandStringPtr(d.Get("application_id")),
 		UserID:           types.ExpandStringPtr(d.Get("user_id")),
@@ -107,7 +107,7 @@ func resourceScalewayIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 	res, err := api.GetAPIKey(&iam.GetAPIKeyRequest{
 		AccessKey: d.Id(),
 	}, scw.WithContext(ctx))
@@ -139,7 +139,7 @@ func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	req := &iam.UpdateAPIKeyRequest{
 		AccessKey: d.Id(),
@@ -168,7 +168,7 @@ func resourceScalewayIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayIamAPIKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	err := api.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
 		AccessKey: d.Id(),

@@ -28,8 +28,8 @@ func webhostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting
 	return api, region, nil
 }
 
-// webhostingAPIWithRegionAndID returns a Webhosting API with region and ID extracted from the state
-func webhostingAPIWithRegionAndID(m interface{}, id string) (*webhosting.API, scw.Region, string, error) {
+// WebhostingAPIWithRegionAndID returns a Webhosting API with region and ID extracted from the state
+func WebhostingAPIWithRegionAndID(m interface{}, id string) (*webhosting.API, scw.Region, string, error) {
 	api := webhosting.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)

@@ -38,8 +38,8 @@ func redisAPIWithZone(d *schema.ResourceData, m interface{}) (*redis.API, scw.Zo
 	return newRedisAPI(m), zone, nil
 }
 
-// redisAPIWithZoneAndID returns a Redis API with zone and ID extracted from the state
-func redisAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string, error) {
+// RedisAPIWithZoneAndID returns a Redis API with zone and ID extracted from the state
+func RedisAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string, error) {
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err

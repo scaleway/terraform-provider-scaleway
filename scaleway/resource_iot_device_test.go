@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 const customDevCert = `-----BEGIN CERTIFICATE-----
@@ -34,10 +36,10 @@ WuePu1khrEuTaXKyaiLD3pmxM86F/6Ho6V86mJpKXr/wmMU56TcKk9UURucVQZ1o
 `
 
 func TestAccScalewayIotDevice_Minimal(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: testAccCheckScalewayIotHubDestroy(tt),
@@ -68,10 +70,10 @@ func TestAccScalewayIotDevice_Minimal(t *testing.T) {
 
 func TestAccScalewayIotDevice_MessageFilters(t *testing.T) {
 	t.Skip("Some checks seem to be flaky.")
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: testAccCheckScalewayIotHubDestroy(tt),
@@ -124,10 +126,10 @@ func TestAccScalewayIotDevice_MessageFilters(t *testing.T) {
 }
 
 func TestAccScalewayIotDevice_AllowInsecure(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: testAccCheckScalewayIotHubDestroy(tt),
@@ -179,10 +181,10 @@ func TestAccScalewayIotDevice_AllowInsecure(t *testing.T) {
 }
 
 func TestAccScalewayIotDevice_Certificate(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: testAccCheckScalewayIotHubDestroy(tt),
@@ -217,14 +219,14 @@ func TestAccScalewayIotDevice_Certificate(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayIotDeviceExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayIotDeviceExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		iotAPI, region, deviceID, err := iotAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		iotAPI, region, deviceID, err := scaleway.IotAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

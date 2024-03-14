@@ -1,10 +1,11 @@
-package scaleway
+package scaleway_test
 
 import (
 	"testing"
 
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -48,7 +49,7 @@ func TestIsEqualPrivateNetwork(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, isPrivateNetworkEqual(tt.A, tt.B))
+			assert.Equal(t, tt.expected, scaleway.IsPrivateNetworkEqual(tt.A, tt.B))
 		})
 	}
 }

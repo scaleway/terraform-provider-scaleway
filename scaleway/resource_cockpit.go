@@ -17,10 +17,10 @@ func resourceScalewayCockpit() *schema.Resource {
 		UpdateContext: resourceScalewayCockpitUpdate,
 		DeleteContext: resourceScalewayCockpitDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Read:    schema.DefaultTimeout(defaultCockpitTimeout),
-			Delete:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Default: schema.DefaultTimeout(defaultCockpitTimeout),
+			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
+			Delete:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Default: schema.DefaultTimeout(DefaultCockpitTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -95,7 +95,7 @@ func resourceScalewayCockpit() *schema.Resource {
 }
 
 func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,7 +143,7 @@ func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,7 +166,7 @@ func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -213,7 +213,7 @@ func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayCockpitDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"encoding/base64"
@@ -13,18 +13,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayObject_Basic(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -96,14 +98,14 @@ func TestAccScalewayObject_Basic(t *testing.T) {
 }
 
 func TestAccScalewayObject_Hash(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-hash")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -157,14 +159,14 @@ func TestAccScalewayObject_Hash(t *testing.T) {
 }
 
 func TestAccScalewayObject_Move(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-move")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -214,14 +216,14 @@ func TestAccScalewayObject_Move(t *testing.T) {
 }
 
 func TestAccScalewayObject_StorageClass(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-storage-class")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -279,14 +281,14 @@ func TestAccScalewayObject_StorageClass(t *testing.T) {
 }
 
 func TestAccScalewayObject_Metadata(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-metadata")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -350,14 +352,14 @@ func TestAccScalewayObject_Metadata(t *testing.T) {
 }
 
 func TestAccScalewayObject_Tags(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-tags")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -415,14 +417,14 @@ func TestAccScalewayObject_Tags(t *testing.T) {
 }
 
 func TestAccScalewayObject_Visibility(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -474,14 +476,14 @@ func TestAccScalewayObject_Visibility(t *testing.T) {
 }
 
 func TestAccScalewayObject_State(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -544,7 +546,7 @@ func TestAccScalewayObject_State(t *testing.T) {
 }
 
 func TestAccScalewayObject_ByContent(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content")
 
@@ -552,7 +554,7 @@ func TestAccScalewayObject_ByContent(t *testing.T) {
 	fileContentStep2 := "This is a different content"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -602,7 +604,7 @@ func TestAccScalewayObject_ByContent(t *testing.T) {
 }
 
 func TestAccScalewayObject_ByContentBase64(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content-base64")
 
@@ -612,7 +614,7 @@ func TestAccScalewayObject_ByContentBase64(t *testing.T) {
 	fileEncodedStep2 := base64.StdEncoding.EncodeToString([]byte(fileContentStep2))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -677,14 +679,14 @@ func TestAccScalewayObject_ByContentBase64(t *testing.T) {
 }
 
 func TestAccScalewayObject_WithBucketName(t *testing.T) {
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectDestroy(tt),
@@ -733,7 +735,7 @@ func TestAccScalewayObject_WithBucketName(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs := state.RootModule().Resources[n]
 		if rs == nil {
@@ -745,7 +747,7 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 		bucketRegion := regionalID.Region.String()
 		bucketName := regionalID.ID
 
-		s3Client, err := newS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := scaleway.NewS3ClientFromMeta(tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -764,7 +766,7 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 			Key:    scw.StringPtr(key),
 		})
 		if err != nil {
-			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+			if scaleway.IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				return errors.New("s3 object not found")
 			}
 			return err
@@ -773,7 +775,7 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 	}
 }
 
-func testAccCheckScalewayObjectDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayObjectDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway" {
@@ -785,7 +787,7 @@ func testAccCheckScalewayObjectDestroy(tt *TestTools) resource.TestCheckFunc {
 			bucketName := regionalID.ID
 			key := rs.Primary.Attributes["key"]
 
-			s3Client, err := newS3ClientFromMeta(tt.Meta, bucketRegion)
+			s3Client, err := scaleway.NewS3ClientFromMeta(tt.Meta, bucketRegion)
 			if err != nil {
 				return err
 			}

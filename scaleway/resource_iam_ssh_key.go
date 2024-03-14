@@ -67,7 +67,7 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 }
 
 func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	res, err := api.CreateSSHKey(&iam.CreateSSHKeyRequest{
 		Name:      d.Get("name").(string),
@@ -94,7 +94,7 @@ func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	res, err := api.GetSSHKey(&iam.GetSSHKeyRequest{
 		SSHKeyID: d.Id(),
@@ -120,7 +120,7 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	req := &iam.UpdateSSHKeyRequest{
 		SSHKeyID: d.Id(),
@@ -164,7 +164,7 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	err := api.DeleteSSHKey(&iam.DeleteSSHKeyRequest{
 		SSHKeyID: d.Id(),

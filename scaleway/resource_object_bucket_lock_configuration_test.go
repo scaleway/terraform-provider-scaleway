@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -11,7 +11,9 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 const (
@@ -23,12 +25,12 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(LockResourcePrefix)
 	resourceName := lockResourceTestName
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBucketLockConfigurationDestroy(tt),
@@ -122,12 +124,12 @@ func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(LockResourcePrefix)
 	resourceName := lockResourceTestName
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBucketLockConfigurationDestroy(tt),
@@ -216,12 +218,12 @@ func TestAccScalewayObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(LockResourcePrefix)
 	resourceName := lockResourceTestName
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBucketLockConfigurationDestroy(tt),
@@ -295,7 +297,7 @@ func TestAccScalewayObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayBucketLockConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_object_bucket_lock_configuration" {
@@ -305,7 +307,7 @@ func testAccCheckScalewayBucketLockConfigurationDestroy(tt *TestTools) resource.
 			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucketRegion := regionalID.Region
 			bucket := regionalID.ID
-			conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
+			conn, err := scaleway.NewS3ClientFromMeta(tt.Meta, bucketRegion.String())
 			if err != nil {
 				return err
 			}
@@ -316,7 +318,7 @@ func testAccCheckScalewayBucketLockConfigurationDestroy(tt *TestTools) resource.
 
 			output, err := conn.GetObjectLockConfiguration(input)
 
-			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+			if scaleway.IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				continue
 			}
 
@@ -333,7 +335,7 @@ func testAccCheckScalewayBucketLockConfigurationDestroy(tt *TestTools) resource.
 	}
 }
 
-func testAccCheckBucketLockConfigurationExists(tt *TestTools, resourceName string) resource.TestCheckFunc {
+func testAccCheckBucketLockConfigurationExists(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs := s.RootModule().Resources[resourceName]
 		if rs == nil {
@@ -352,7 +354,7 @@ func testAccCheckBucketLockConfigurationExists(tt *TestTools, resourceName strin
 		regionalID := regional.ExpandID(rs.Primary.ID)
 		bucketRegion := regionalID.Region
 		bucket := regionalID.ID
-		conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
+		conn, err := scaleway.NewS3ClientFromMeta(tt.Meta, bucketRegion.String())
 		if err != nil {
 			return err
 		}

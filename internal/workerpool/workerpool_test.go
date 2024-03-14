@@ -1,4 +1,4 @@
-package workerpool
+package workerpool_test
 
 import (
 	"errors"
@@ -6,11 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestWorkerPoolSimple(t *testing.T) {
-	pool := NewWorkerPool(2)
+	pool := workerpool.NewWorkerPool(2)
 
 	pool.AddTask(func() error {
 		return nil
@@ -31,7 +32,7 @@ func TestWorkerPoolSimple(t *testing.T) {
 }
 
 func TestWorkerPoolWaitTime(t *testing.T) {
-	pool := NewWorkerPool(2)
+	pool := workerpool.NewWorkerPool(2)
 
 	pool.AddTask(func() error {
 		time.Sleep(50 * time.Millisecond) // lintignore: R018
@@ -55,7 +56,7 @@ func TestWorkerPoolWaitTime(t *testing.T) {
 }
 
 func TestWorkerPoolWaitTimeMultiple(t *testing.T) {
-	pool := NewWorkerPool(5)
+	pool := workerpool.NewWorkerPool(5)
 	iterations := 20
 
 	for i := 0; i < iterations; i++ {

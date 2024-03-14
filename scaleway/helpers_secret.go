@@ -55,8 +55,8 @@ func secretAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*se
 	return api, region, projectID, nil
 }
 
-// secretAPIWithRegionAndID returns a Secret API with locality and ID extracted from the state
-func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, error) {
+// SecretAPIWithRegionAndID returns a Secret API with locality and ID extracted from the state
+func SecretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, error) {
 	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -66,8 +66,8 @@ func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region
 	return api, region, id, nil
 }
 
-// secretVersionAPIWithRegionAndID returns a Secret API with locality and Nested ID extracted from the state
-func secretVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, string, error) {
+// SecretVersionAPIWithRegionAndID returns a Secret API with locality and Nested ID extracted from the state
+func SecretVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, string, error) {
 	region, id, revision, err := locality.ParseLocalizedNestedID(id)
 	if err != nil {
 		return nil, "", "", "", err
@@ -81,7 +81,7 @@ func isBase64Encoded(data []byte) bool {
 	return err == nil
 }
 
-func base64Encoded(data []byte) string {
+func Base64Encoded(data []byte) string {
 	if isBase64Encoded(data) {
 		return string(data)
 	}

@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	defaultWaitLBRetryInterval = 30 * time.Second
+	DefaultWaitLBRetryInterval = 30 * time.Second
 )
 
 func resourceScalewayLb() *schema.Resource {
@@ -42,7 +42,7 @@ func resourceScalewayLb() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: LbUpgradeV1SchemaUpgradeFunc},
 		},
 		CustomizeDiff: CustomizeDiffLocalityCheck("ip_id", "private_network.#.private_network_id"),
 		Schema: map[string]*schema.Schema{
@@ -226,7 +226,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -275,7 +275,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m inter
 
 //gocyclo:ignore
 func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -402,7 +402,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(m, d.Id())
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

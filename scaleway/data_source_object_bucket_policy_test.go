@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,10 +8,11 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
 func TestAccScalewayDataSourceObjectBucketPolicy_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-data-basic")
@@ -35,7 +36,7 @@ func TestAccScalewayDataSourceObjectBucketPolicy_Basic(t *testing.T) {
 }`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
@@ -84,7 +85,7 @@ func TestAccScalewayDataSourceObjectBucketPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_object_bucket_policy.selected", "policy"),
 					testAccCheckDataSourcePolicyIsEquivalent("data.scaleway_object_bucket_policy.selected", expectedPolicyText),
 				),
-				ExpectNonEmptyPlan: !*UpdateCassettes,
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 		},
 	})

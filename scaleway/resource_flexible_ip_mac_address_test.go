@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -7,11 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayFlexibleIPMACAddress_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -39,7 +41,7 @@ func TestAccScalewayFlexibleIPMACAddress_Basic(t *testing.T) {
 }
 
 func TestAccScalewayFlexibleIPMACAddress_MoveToAnotherFlexibleIP(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -94,7 +96,7 @@ func TestAccScalewayFlexibleIPMACAddress_MoveToAnotherFlexibleIP(t *testing.T) {
 }
 
 func TestAccScalewayFlexibleIPMACAddress_DuplicateOnOtherFlexibleIPs(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -190,7 +192,7 @@ func TestAccScalewayFlexibleIPMACAddress_DuplicateOnOtherFlexibleIPs(t *testing.
 	})
 }
 
-func testAccCheckScalewayFlexibleIPAttachedMACAddress(tt *TestTools, fipResource, macResource string) resource.TestCheckFunc {
+func testAccCheckScalewayFlexibleIPAttachedMACAddress(tt *acctest.TestTools, fipResource, macResource string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fipState, ok := s.RootModule().Resources[fipResource]
 		if !ok {
@@ -201,7 +203,7 @@ func testAccCheckScalewayFlexibleIPAttachedMACAddress(tt *TestTools, fipResource
 			return fmt.Errorf("resource not found: %s", macResource)
 		}
 
-		fipAPI, zone, ID, err := fipAPIWithZoneAndID(tt.Meta, fipState.Primary.ID)
+		fipAPI, zone, ID, err := scaleway.FipAPIWithZoneAndID(tt.Meta, fipState.Primary.ID)
 		if err != nil {
 			return err
 		}

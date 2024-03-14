@@ -32,7 +32,7 @@ const (
 	// InstanceServerStateStandby transient state of the instance event waiting third action or rescue mode
 	InstanceServerStateStandby = "standby"
 
-	defaultInstanceServerWaitTimeout        = 10 * time.Minute
+	DefaultInstanceServerWaitTimeout        = 10 * time.Minute
 	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
 	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
 	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
@@ -61,8 +61,8 @@ func instanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, 
 	return instanceAPI, zone, nil
 }
 
-// instanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
-func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw.Zone, string, error) {
+// InstanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
+func InstanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw.Zone, string, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(zonedID)
@@ -72,8 +72,8 @@ func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw
 	return instanceAPI, zone, ID, nil
 }
 
-// instanceAPIWithZoneAndNestedID returns an instance API with zone and inner/outer ID extracted from the state
-func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*instance.API, scw.Zone, string, string, error) {
+// InstanceAPIWithZoneAndNestedID returns an instance API with zone and inner/outer ID extracted from the state
+func InstanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*instance.API, scw.Zone, string, string, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
 
 	zone, innerID, outerID, err := zonal.ParseNestedID(zonedNestedID)
@@ -199,7 +199,7 @@ func reachState(ctx context.Context, api *InstanceBlockAPI, zone scw.Zone, serve
 			ServerID:      serverID,
 			Action:        a,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout),
 			RetryInterval: transport.DefaultWaitRetryInterval,
 		})
 		if err != nil {

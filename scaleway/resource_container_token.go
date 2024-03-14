@@ -86,7 +86,7 @@ func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(m, d.Id())
+	api, region, ID, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,7 +111,7 @@ func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayContainerTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(m, d.Id())
+	api, region, ID, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -9,19 +9,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAccScalewayRdbDatabase_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	instanceName := "TestAccScalewayRdbDatabase_Basic"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -49,13 +51,13 @@ func TestAccScalewayRdbDatabase_Basic(t *testing.T) {
 }
 
 func TestAccScalewayRdbDatabase_ManualDelete(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -102,7 +104,7 @@ func TestAccScalewayRdbDatabase_ManualDelete(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database string) resource.TestCheckFunc {
+func testAccCheckRdbDatabaseExists(tt *acctest.TestTools, instance string, database string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]
 		if !ok {
@@ -114,12 +116,12 @@ func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database stri
 			return fmt.Errorf("resource database not found: %s", database)
 		}
 
-		rdbAPI, _, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+		rdbAPI, _, _, err := scaleway.RdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(databaseResource.Primary.ID)
+		region, instanceID, databaseName, err := scaleway.ResourceScalewayRdbDatabaseParseID(databaseResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -145,14 +147,14 @@ func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database stri
 }
 
 func TestResourceScalewayRdbDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
-	region, _, _, err := resourceScalewayRdbDatabaseParseID("notandid")
+	region, _, _, err := scaleway.ResourceScalewayRdbDatabaseParseID("notandid")
 	require.Error(t, err)
 	assert.Empty(t, region)
 	assert.Equal(t, "can't parse user resource id: notandid", err.Error())
 }
 
 func TestResourceScalewayRdbDatabaseParseID(t *testing.T) {
-	region, instanceID, dbname, err := resourceScalewayRdbDatabaseParseID("region/instanceid/dbname")
+	region, instanceID, dbname, err := scaleway.ResourceScalewayRdbDatabaseParseID("region/instanceid/dbname")
 	require.NoError(t, err)
 	assert.Equal(t, scw.Region("region"), region)
 	assert.Equal(t, "instanceid", instanceID)

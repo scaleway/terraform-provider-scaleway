@@ -21,7 +21,7 @@ func jobsAPIWithRegion(d *schema.ResourceData, m interface{}) (*jobs.API, scw.Re
 }
 
 // jobsAPIWithRegionalAndID returns a new jobs API with region and ID extracted from the state
-func jobsAPIWithRegionAndID(m interface{}, regionalID string) (*jobs.API, scw.Region, string, error) {
+func JobsAPIWithRegionAndID(m interface{}, regionalID string) (*jobs.API, scw.Region, string, error) {
 	jobsAPI := jobs.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)

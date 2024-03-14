@@ -1,16 +1,17 @@
-package scaleway
+package scaleway_test
 
 import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
 func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -135,7 +136,7 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSecurityGroupRules_IPRanges(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	config := `
 			resource scaleway_instance_security_group sg01 {
@@ -179,7 +180,7 @@ func TestAccScalewayInstanceSecurityGroupRules_IPRanges(t *testing.T) {
 		`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -206,7 +207,7 @@ func TestAccScalewayInstanceSecurityGroupRules_IPRanges(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSecurityGroupRules_Basic2(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	config := `
 			resource scaleway_instance_security_group sg01 {
@@ -238,7 +239,7 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic2(t *testing.T) {
 		`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
