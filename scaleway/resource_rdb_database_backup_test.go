@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,8 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -45,14 +47,14 @@ func testSweepRDBDatabaseBackup(_ string) error {
 }
 
 func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	instanceName := "TestAccScalewayRdbDatabaseBackup_Basic"
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayRdbInstanceDestroy(tt),
@@ -106,14 +108,14 @@ func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayRdbDatabaseBackupDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayRdbDatabaseBackupDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_rdb_database_backup" {
 				continue
 			}
 
-			rdbAPI, region, ID, err := rdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			rdbAPI, region, ID, err := scaleway.RdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -138,14 +140,14 @@ func testAccCheckScalewayRdbDatabaseBackupDestroy(tt *TestTools) resource.TestCh
 	}
 }
 
-func testAccCheckRdbDatabaseBackupExists(tt *TestTools, databaseBackup string) resource.TestCheckFunc {
+func testAccCheckRdbDatabaseBackupExists(tt *acctest.TestTools, databaseBackup string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[databaseBackup]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", databaseBackup)
 		}
 
-		rdbAPI, region, id, err := rdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		rdbAPI, region, id, err := scaleway.RdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

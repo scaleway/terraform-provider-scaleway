@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"encoding/json"
@@ -12,7 +12,9 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayObjectBucketPolicy_Basic(t *testing.T) {
@@ -72,12 +74,12 @@ func TestAccScalewayObjectBucketPolicy_Basic(t *testing.T) {
    ]
 }`
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
@@ -88,7 +90,7 @@ func TestAccScalewayObjectBucketPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_object_bucket_policy.bucket", "region", "scaleway_object_bucket.bucket", "region"),
 					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
 				),
-				ExpectNonEmptyPlan: !*UpdateCassettes,
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 			{
 				ResourceName: "scaleway_object_bucket_policy.bucket",
@@ -97,7 +99,7 @@ func TestAccScalewayObjectBucketPolicy_Basic(t *testing.T) {
 			{
 				Config:             tfConfig,
 				PlanOnly:           true,
-				ExpectNonEmptyPlan: !*UpdateCassettes,
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 		},
 	})
@@ -158,12 +160,12 @@ func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
    ]
 }`
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
@@ -174,7 +176,7 @@ func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_object_bucket_policy.bucket", "region", "scaleway_object_bucket.bucket", "region"),
 					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
 				),
-				ExpectNonEmptyPlan: !*UpdateCassettes,
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 			{
 				ResourceName: "scaleway_object_bucket_policy.bucket",
@@ -183,7 +185,7 @@ func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 			{
 				Config:             tfConfig,
 				PlanOnly:           true,
-				ExpectNonEmptyPlan: !*UpdateCassettes,
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 		},
 	})
@@ -192,12 +194,12 @@ func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-with-bucket-name")
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
@@ -242,7 +244,7 @@ func TestAccScalewayObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 	})
 }
 
-func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText string) resource.TestCheckFunc {
+func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicyText string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -250,7 +252,7 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]
-		s3Client, err := newS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := scaleway.NewS3ClientFromMeta(tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}

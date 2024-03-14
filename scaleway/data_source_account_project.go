@@ -33,7 +33,7 @@ func dataSourceScalewayAccountProject() *schema.Resource {
 }
 
 func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(m)
+	accountAPI := AccountV3ProjectAPI(m)
 
 	var projectID string
 

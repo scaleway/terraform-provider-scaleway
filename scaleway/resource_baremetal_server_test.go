@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
@@ -48,14 +50,14 @@ func testSweepBaremetalServer(_ string) error {
 
 func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 	t.Skip("Skipping Baremetal Server test as no stock is available currently")
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_Basic"
 	name := "TestAccScalewayBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -139,11 +141,11 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 }
 
 func TestAccScalewayBaremetalServer_RequiredInstallConfig(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -164,11 +166,11 @@ func TestAccScalewayBaremetalServer_RequiredInstallConfig(t *testing.T) {
 }
 
 func TestAccScalewayBaremetalServer_WithoutInstallConfig(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -197,14 +199,14 @@ func TestAccScalewayBaremetalServer_WithoutInstallConfig(t *testing.T) {
 }
 
 func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_CreateServerWithOption"
 	name := "TestAccScalewayBaremetalServer_CreateServerWithOption"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -259,14 +261,14 @@ func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
 }
 
 func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddOption"
 	name := "TestAccScalewayBaremetalServer_AddOption"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -347,14 +349,14 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 }
 
 func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
 	name := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -498,14 +500,14 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 }
 
 func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
 	name := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBaremetalServerDestroy(tt),
@@ -564,14 +566,14 @@ func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T)
 }
 
 func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
 	name := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBaremetalServerDestroy(tt),
@@ -673,14 +675,14 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 }
 
 func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
 	name := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayBaremetalServerDestroy(tt),
@@ -794,14 +796,14 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayBaremetalServerExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayBaremetalServerExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		baremetalAPI, zonedID, err := scaleway.BaremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -818,14 +820,14 @@ func testAccCheckScalewayBaremetalServerExists(tt *TestTools, n string) resource
 	}
 }
 
-func testAccCheckScalewayBaremetalServerDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayBaremetalServerDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_baremetal_server" {
 				continue
 			}
 
-			baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			baremetalAPI, zonedID, err := scaleway.BaremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -849,14 +851,14 @@ func testAccCheckScalewayBaremetalServerDestroy(tt *TestTools) resource.TestChec
 	}
 }
 
-func testAccCheckScalewayBaremetalServerHasOptions(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayBaremetalServerHasOptions(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		baremetalAPI, zonedID, err := scaleway.BaremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -877,19 +879,19 @@ func testAccCheckScalewayBaremetalServerHasOptions(tt *TestTools, n string) reso
 	}
 }
 
-func testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		_, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		_, zonedID, err := scaleway.BaremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		baremetalPrivateNetworkAPI, _, err := scaleway.BaremetalPrivateNetworkAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

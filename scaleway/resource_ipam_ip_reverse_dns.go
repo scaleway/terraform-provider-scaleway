@@ -89,7 +89,7 @@ func resourceScalewayIPAMIPReverseDNSCreate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m, d.Id())
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -122,7 +122,7 @@ func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m, d.Id())
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,7 +149,7 @@ func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayIPAMIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(m, d.Id())
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

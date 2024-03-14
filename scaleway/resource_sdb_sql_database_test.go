@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,8 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	serverless_sqldb "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -48,11 +50,11 @@ func testSweepServerlessSQLDBDatabase(_ string) error {
 }
 
 func TestAccScalewayServerlessSQLDBDatabase_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayServerlessSQLDBDatabaseDestroy(tt),
 		Steps: []resource.TestStep{
@@ -118,14 +120,14 @@ func TestAccScalewayServerlessSQLDBDatabase_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayServerlessSQLDBDatabaseExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayServerlessSQLDBDatabaseExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := serverlessSQLdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.ServerlessSQLdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -142,14 +144,14 @@ func testAccCheckScalewayServerlessSQLDBDatabaseExists(tt *TestTools, n string) 
 	}
 }
 
-func testAccCheckScalewayServerlessSQLDBDatabaseDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayServerlessSQLDBDatabaseDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_sdb_sql_database" {
 				continue
 			}
 
-			api, region, id, err := serverlessSQLdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.ServerlessSQLdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

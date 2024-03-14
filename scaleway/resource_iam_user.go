@@ -73,7 +73,7 @@ func resourceScalewayIamUser() *schema.Resource {
 }
 
 func resourceScalewayIamUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 	user, err := api.CreateUser(&iam.CreateUserRequest{
 		OrganizationID: d.Get("organization_id").(string),
 		Email:          d.Get("email").(string),
@@ -88,7 +88,7 @@ func resourceScalewayIamUserCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 	user, err := api.GetUser(&iam.GetUserRequest{
 		UserID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -114,7 +114,7 @@ func resourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceScalewayIamUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	err := api.DeleteUser(&iam.DeleteUserRequest{
 		UserID: d.Id(),

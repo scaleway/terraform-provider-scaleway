@@ -106,7 +106,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(m, d.Id())
+	rdbAPI, region, instanceID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,7 +156,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(m, d.Id())
+	rdbAPI, region, instanceID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,7 +192,7 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(m, d.Id())
+	rdbAPI, region, instanceID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

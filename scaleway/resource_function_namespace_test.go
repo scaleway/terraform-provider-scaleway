@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,8 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -48,11 +50,11 @@ func testSweepFunctionNamespace(_ string) error {
 }
 
 func TestAccScalewayFunctionNamespace_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -108,11 +110,11 @@ func TestAccScalewayFunctionNamespace_Basic(t *testing.T) {
 }
 
 func TestAccScalewayFunctionNamespace_NoName(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -130,11 +132,11 @@ func TestAccScalewayFunctionNamespace_NoName(t *testing.T) {
 }
 
 func TestAccScalewayFunctionNamespace_EnvironmentVariables(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -176,14 +178,14 @@ func TestAccScalewayFunctionNamespace_EnvironmentVariables(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayFunctionNamespaceExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayFunctionNamespaceExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.FunctionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -200,14 +202,14 @@ func testAccCheckScalewayFunctionNamespaceExists(tt *TestTools, n string) resour
 	}
 }
 
-func testAccCheckScalewayFunctionNamespaceDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayFunctionNamespaceDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_function_namespace" {
 				continue
 			}
 
-			api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.FunctionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

@@ -124,7 +124,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 	}
 
 	output, err := conn.GetObjectLockConfigurationWithContext(ctx, input)
-	if !d.IsNewResource() && isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+	if !d.IsNewResource() && IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
 		return nil
@@ -197,7 +197,7 @@ func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.Resour
 
 	_, err = conn.PutObjectLockConfigurationWithContext(ctx, input)
 
-	if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+	if IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 		return nil
 	}
 

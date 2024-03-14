@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -12,7 +12,9 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 const (
@@ -24,12 +26,12 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Basic(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
@@ -77,12 +79,12 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
@@ -138,7 +140,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "website_domain"),
 					resource.TestCheckResourceAttrSet(resourceName, "website_endpoint"),
 				),
-				ExpectNonEmptyPlan: !*UpdateCassettes,
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 			{
 				ResourceName:      resourceName,
@@ -153,12 +155,12 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
@@ -233,12 +235,12 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ErrorCheck:        scaleway.ErrorCheck(t, scaleway.EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt),
@@ -287,7 +289,7 @@ func TestAccScalewayObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T
 	})
 }
 
-func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_object_bucket_website_configuration" {
@@ -298,7 +300,7 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) 
 			bucket := regionalID.ID
 			bucketRegion := regionalID.Region
 
-			conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
+			conn, err := scaleway.NewS3ClientFromMeta(tt.Meta, bucketRegion.String())
 			if err != nil {
 				return err
 			}
@@ -309,7 +311,7 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) 
 
 			output, err := conn.GetBucketWebsite(input)
 
-			if tfawserr.ErrCodeEquals(err, s3.ErrCodeNoSuchBucket, ErrCodeNoSuchWebsiteConfiguration) {
+			if tfawserr.ErrCodeEquals(err, s3.ErrCodeNoSuchBucket, scaleway.ErrCodeNoSuchWebsiteConfiguration) {
 				continue
 			}
 
@@ -326,7 +328,7 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationDestroy(tt *TestTools) 
 	}
 }
 
-func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *TestTools, resourceName string) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs := s.RootModule().Resources[resourceName]
 		if rs == nil {
@@ -346,7 +348,7 @@ func testAccCheckScalewayObjectBucketWebsiteConfigurationExists(tt *TestTools, r
 		bucket := regionalID.ID
 		bucketRegion := regionalID.Region
 
-		conn, err := newS3ClientFromMeta(tt.Meta, bucketRegion.String())
+		conn, err := scaleway.NewS3ClientFromMeta(tt.Meta, bucketRegion.String())
 		if err != nil {
 			return err
 		}

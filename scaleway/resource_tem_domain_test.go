@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"context"
@@ -10,8 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -52,13 +54,13 @@ func testSweepTemDomain(_ string) error {
 }
 
 func TestAccScalewayTemDomain_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	domainName := "terraform-rs.test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayTemDomainDestroy(tt),
 		Steps: []resource.TestStep{
@@ -80,13 +82,13 @@ func TestAccScalewayTemDomain_Basic(t *testing.T) {
 }
 
 func TestAccScalewayTemDomain_Tos(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	domainName := "terraform-rs.test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayTemDomainDestroy(tt),
 		Steps: []resource.TestStep{
@@ -103,14 +105,14 @@ func TestAccScalewayTemDomain_Tos(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayTemDomainExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayTemDomainExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := temAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.TemAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -127,14 +129,14 @@ func testAccCheckScalewayTemDomainExists(tt *TestTools, n string) resource.TestC
 	}
 }
 
-func testAccCheckScalewayTemDomainDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayTemDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_tem_domain" {
 				continue
 			}
 
-			api, region, id, err := temAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.TemAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -147,7 +149,7 @@ func testAccCheckScalewayTemDomainDestroy(tt *TestTools) resource.TestCheckFunc 
 				return err
 			}
 
-			_, err = waitForTemDomain(context.Background(), api, region, id, defaultTemDomainTimeout)
+			_, err = scaleway.WaitForTemDomain(context.Background(), api, region, id, scaleway.DefaultTemDomainTimeout)
 			if err != nil && !httperrors.Is404(err) {
 				return err
 			}

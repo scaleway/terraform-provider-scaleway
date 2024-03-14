@@ -210,7 +210,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, hubID, err := iotAPIWithRegionAndID(m, d.Id())
+	iotAPI, region, hubID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -259,7 +259,7 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, hubID, err := iotAPIWithRegionAndID(m, d.Id())
+	iotAPI, region, hubID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -347,7 +347,7 @@ func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, id, err := iotAPIWithRegionAndID(m, d.Id())
+	iotAPI, region, id, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -86,7 +86,7 @@ func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := RegistryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -112,7 +112,7 @@ func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := RegistryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -141,7 +141,7 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := RegistryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

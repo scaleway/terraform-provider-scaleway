@@ -39,7 +39,7 @@ func dataSourceScalewayIamApplication() *schema.Resource {
 }
 
 func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	appID, appIDExists := d.GetOk("application_id")
 

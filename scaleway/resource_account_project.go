@@ -57,7 +57,7 @@ func resourceScalewayAccountProject() *schema.Resource {
 }
 
 func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(m)
+	accountAPI := AccountV3ProjectAPI(m)
 
 	request := &accountV3.ProjectAPICreateProjectRequest{
 		Name:        types.ExpandOrGenerateString(d.Get("name"), "project"),
@@ -79,7 +79,7 @@ func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(m)
+	accountAPI := AccountV3ProjectAPI(m)
 	res, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -101,7 +101,7 @@ func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(m)
+	accountAPI := AccountV3ProjectAPI(m)
 
 	req := &accountV3.ProjectAPIUpdateProjectRequest{
 		ProjectID: d.Id(),
@@ -129,7 +129,7 @@ func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(m)
+	accountAPI := AccountV3ProjectAPI(m)
 
 	err := accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 		ProjectID: d.Id(),

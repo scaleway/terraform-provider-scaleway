@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -8,14 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayIamGroupMembership_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayIamGroupDestroy(tt),
@@ -69,7 +71,7 @@ func TestAccScalewayIamGroupMembership_Basic(t *testing.T) {
 					groupID := state.RootModule().Resources["scaleway_iam_group.main"].Primary.ID
 					applicationID := state.RootModule().Resources["scaleway_iam_application.main"].Primary.ID
 
-					return groupMembershipID(groupID, nil, &applicationID), nil
+					return scaleway.GroupMembershipID(groupID, nil, &applicationID), nil
 				},
 				ImportStatePersist: true,
 			},
@@ -101,11 +103,11 @@ func TestAccScalewayIamGroupMembership_Basic(t *testing.T) {
 }
 
 func TestAccScalewayIamGroupMembership_User(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayIamGroupDestroy(tt),
@@ -136,7 +138,7 @@ func TestAccScalewayIamGroupMembership_User(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayIamGroupMembershipApplicationInGroup(tt *TestTools, n string, appN string) resource.TestCheckFunc {
+func testAccCheckScalewayIamGroupMembershipApplicationInGroup(tt *acctest.TestTools, n string, appN string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -150,8 +152,8 @@ func testAccCheckScalewayIamGroupMembershipApplicationInGroup(tt *TestTools, n s
 
 		expectedApplicationID := appRS.Primary.ID
 
-		api := iamAPI(tt.Meta)
-		groupID, _, applicationID, err := expandGroupMembershipID(rs.Primary.ID)
+		api := scaleway.IamAPI(tt.Meta)
+		groupID, _, applicationID, err := scaleway.ExpandGroupMembershipID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -183,7 +185,7 @@ func testAccCheckScalewayIamGroupMembershipApplicationInGroup(tt *TestTools, n s
 	}
 }
 
-func testAccCheckScalewayIamGroupMembershipUserInGroup(tt *TestTools, n string, appN string) resource.TestCheckFunc {
+func testAccCheckScalewayIamGroupMembershipUserInGroup(tt *acctest.TestTools, n string, appN string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -197,8 +199,8 @@ func testAccCheckScalewayIamGroupMembershipUserInGroup(tt *TestTools, n string, 
 
 		expectedUserID := appRS.Primary.ID
 
-		api := iamAPI(tt.Meta)
-		groupID, userID, _, err := expandGroupMembershipID(rs.Primary.ID)
+		api := scaleway.IamAPI(tt.Meta)
+		groupID, userID, _, err := scaleway.ExpandGroupMembershipID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}

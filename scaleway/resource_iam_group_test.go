@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -50,7 +52,7 @@ func testSweepIamGroup(_ string) error {
 }
 
 func TestAccScalewayIamGroup_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -137,7 +139,7 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 }
 
 func TestAccScalewayIamGroup_Applications(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -235,7 +237,7 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 }
 
 func TestAccScalewayIamGroup_Users(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -326,7 +328,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 }
 
 func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -493,14 +495,14 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayIamGroupExists(tt *TestTools, name string) resource.TestCheckFunc {
+func testAccCheckScalewayIamGroupExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", name)
 		}
 
-		iamAPI := iamAPI(tt.Meta)
+		iamAPI := scaleway.IamAPI(tt.Meta)
 
 		_, err := iamAPI.GetGroup(&iam.GetGroupRequest{
 			GroupID: rs.Primary.ID,
@@ -513,14 +515,14 @@ func testAccCheckScalewayIamGroupExists(tt *TestTools, name string) resource.Tes
 	}
 }
 
-func testAccCheckScalewayIamGroupDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayIamGroupDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_iam_group" {
 				continue
 			}
 
-			iamAPI := iamAPI(tt.Meta)
+			iamAPI := scaleway.IamAPI(tt.Meta)
 
 			_, err := iamAPI.GetGroup(&iam.GetGroupRequest{
 				GroupID: rs.Primary.ID,

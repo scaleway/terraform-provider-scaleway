@@ -23,7 +23,7 @@ func dataSourceScalewayCockpitPlan() *schema.Resource {
 }
 
 func dataSourceScalewayCockpitPlanRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

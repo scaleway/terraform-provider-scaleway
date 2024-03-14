@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,8 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -47,10 +49,10 @@ func testSweepIPAMIP(_ string) error {
 }
 
 func TestAccScalewayIPAMIP_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
 		Steps: []resource.TestStep{
@@ -76,7 +78,7 @@ func TestAccScalewayIPAMIP_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPAMIPExists(tt, "scaleway_ipam_ip.ip01"),
 					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "is_ipv6", "false"),
-					testAccCheckScalewayResourceRawIDMatches("scaleway_ipam_ip.ip01", "source.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
+					acctest.CheckResourceRawIDMatches("scaleway_ipam_ip.ip01", "source.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "source.0.subnet_id"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "address"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "created_at"),
@@ -88,10 +90,10 @@ func TestAccScalewayIPAMIP_Basic(t *testing.T) {
 }
 
 func TestAccScalewayIPAMIP_WithStandaloneAddress(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
 		Steps: []resource.TestStep{
@@ -125,10 +127,10 @@ func TestAccScalewayIPAMIP_WithStandaloneAddress(t *testing.T) {
 }
 
 func TestAccScalewayIPAMIP_WithTags(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayIPAMIPDestroy(tt),
 		Steps: []resource.TestStep{
@@ -191,14 +193,14 @@ func TestAccScalewayIPAMIP_WithTags(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayIPAMIPExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayIPAMIPExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		ipamAPI, region, ID, err := ipamAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		ipamAPI, region, ID, err := scaleway.IpamAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -215,14 +217,14 @@ func testAccCheckScalewayIPAMIPExists(tt *TestTools, n string) resource.TestChec
 	}
 }
 
-func testAccCheckScalewayIPAMIPDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayIPAMIPDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_ipam_ip" {
 				continue
 			}
 
-			ipamAPI, region, ID, err := ipamAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			ipamAPI, region, ID, err := scaleway.IpamAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

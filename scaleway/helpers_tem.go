@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultTemDomainTimeout       = 5 * time.Minute
+	DefaultTemDomainTimeout       = 5 * time.Minute
 	defaultTemDomainRetryInterval = 15 * time.Second
 )
 
@@ -29,8 +29,8 @@ func temAPIWithRegion(d *schema.ResourceData, m interface{}) (*tem.API, scw.Regi
 	return api, region, nil
 }
 
-// temAPIWithRegionAndID returns a Tem API with zone and ID extracted from the state
-func temAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, string, error) {
+// TemAPIWithRegionAndID returns a Tem API with zone and ID extracted from the state
+func TemAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, string, error) {
 	api := tem.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -40,7 +40,7 @@ func temAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, stri
 	return api, region, id, nil
 }
 
-func waitForTemDomain(ctx context.Context, api *tem.API, region scw.Region, id string, timeout time.Duration) (*tem.Domain, error) {
+func WaitForTemDomain(ctx context.Context, api *tem.API, region scw.Region, id string, timeout time.Duration) (*tem.Domain, error) {
 	retryInterval := defaultTemDomainRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval

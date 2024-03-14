@@ -192,7 +192,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	region, projectID, queueName, err := decomposeMNQID(d.Id())
+	region, projectID, queueName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -241,7 +241,7 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQID(d.Id())
+	_, _, queueName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -281,7 +281,7 @@ func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQID(d.Id())
+	_, _, queueName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -39,8 +39,8 @@ func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Regi
 	return newRdbAPI(m), region, nil
 }
 
-// rdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
+// RdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
+func RdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
@@ -306,8 +306,8 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 	return directAccess, privateNetwork
 }
 
-// rdbPrivilegeV1SchemaUpgradeFunc allow upgrade the privilege ID on schema V1
-func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
+// RdbPrivilegeV1SchemaUpgradeFunc allow upgrade the privilege ID on schema V1
+func RdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
 	idRaw, exist := rawState["id"]
 	if !exist {
 		return nil, errors.New("upgrade: id not exist")

@@ -35,7 +35,7 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: rdbPrivilegeUpgradeV1SchemaType(), Upgrade: rdbPrivilegeV1SchemaUpgradeFunc},
+			{Version: 0, Type: rdbPrivilegeUpgradeV1SchemaType(), Upgrade: RdbPrivilegeV1SchemaUpgradeFunc},
 		},
 		Schema: map[string]*schema.Schema{
 			"instance_id": {

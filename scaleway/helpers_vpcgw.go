@@ -30,8 +30,8 @@ func vpcgwAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zo
 	return vpcgwAPI, zone, nil
 }
 
-// vpcgwAPIWithZoneAndID
-func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string, error) {
+// VpcgwAPIWithZoneAndID
+func VpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string, error) {
 	vpcgwAPI := vpcgw.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)

@@ -17,10 +17,10 @@ func resourceScalewayCockpitToken() *schema.Resource {
 		ReadContext:   resourceScalewayCockpitTokenRead,
 		DeleteContext: resourceScalewayCockpitTokenDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Read:    schema.DefaultTimeout(defaultCockpitTimeout),
-			Delete:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Default: schema.DefaultTimeout(defaultCockpitTimeout),
+			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
+			Delete:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Default: schema.DefaultTimeout(DefaultCockpitTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -123,7 +123,7 @@ func resourceScalewayCockpitTokenScopes() *schema.Resource {
 }
 
 func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,7 +164,7 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -188,7 +188,7 @@ func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

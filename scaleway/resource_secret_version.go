@@ -42,7 +42,7 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				Sensitive:   true,
 				ForceNew:    true,
 				StateFunc: func(i interface{}) string {
-					return base64Encoded([]byte(i.(string)))
+					return Base64Encoded([]byte(i.(string)))
 				},
 			},
 			"description": {
@@ -98,7 +98,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("data", base64Encoded(payloadSecretRaw))
+	_ = d.Set("data", Base64Encoded(payloadSecretRaw))
 
 	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
 
@@ -106,7 +106,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
+	api, region, id, revision, err := SecretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -137,7 +137,7 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
+	api, region, id, revision, err := SecretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,7 +166,7 @@ func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewaySecretVersionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(m, d.Id())
+	api, region, id, revision, err := SecretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

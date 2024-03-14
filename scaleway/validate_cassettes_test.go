@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"encoding/json"

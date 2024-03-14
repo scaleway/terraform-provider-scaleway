@@ -5,6 +5,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func accountV3ProjectAPI(m interface{}) *accountV3.ProjectAPI {
+func AccountV3ProjectAPI(m interface{}) *accountV3.ProjectAPI {
 	return accountV3.NewProjectAPI(meta.ExtractScwClient(m))
 }

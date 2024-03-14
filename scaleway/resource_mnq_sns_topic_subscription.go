@@ -122,7 +122,7 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 	if topicARNRaw, ok := d.GetOk("topic_arn"); ok {
 		topicARN = topicARNRaw.(string)
 	} else {
-		topicRegion, topicProject, topicName, err := decomposeMNQID(d.Get("topic_id").(string))
+		topicRegion, topicProject, topicName, err := DecomposeMNQID(d.Get("topic_id").(string))
 		if err != nil {
 			return diag.Diagnostics{{
 				Severity:      diag.Error,
@@ -132,7 +132,7 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 			}}
 		}
 
-		topicARN = composeSNSARN(topicRegion, topicProject, topicName)
+		topicARN = ComposeSNSARN(topicRegion, topicProject, topicName)
 	}
 
 	input := &sns.SubscribeInput{
@@ -168,7 +168,7 @@ func resourceScalewayMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	arn, err := decomposeMNQSubscriptionID(d.Id())
+	arn, err := DecomposeMNQSubscriptionID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
@@ -201,7 +201,7 @@ func resourceScalewayMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	arn, err := decomposeMNQSubscriptionID(d.Id())
+	arn, err := DecomposeMNQSubscriptionID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}

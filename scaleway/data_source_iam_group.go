@@ -39,7 +39,7 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 }
 
 func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := iamAPI(m)
+	api := IamAPI(m)
 
 	groupID, groupIDExists := d.GetOk("group_id")
 	if !groupIDExists {

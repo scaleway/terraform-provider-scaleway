@@ -38,7 +38,7 @@ func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API
 }
 
 // instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
-func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, error) {
+func BaremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, error) {
 	baremetalAPI := baremetal.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
@@ -59,8 +59,8 @@ func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (
 	return baremetalPrivateNetworkAPI, zone, nil
 }
 
-// baremetalPrivateNetworkAPIWithZoneAndID returns a baremetal private network API with zone and ID extracted from the state
-func baremetalPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, zonal.ID, error) {
+// BaremetalPrivateNetworkAPIWithZoneAndID returns a baremetal private network API with zone and ID extracted from the state
+func BaremetalPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, zonal.ID, error) {
 	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
@@ -336,7 +336,7 @@ func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremet
 	return nil
 }
 
-func baremetalFindOfferByID(ctx context.Context, baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
+func BaremetalFindOfferByID(ctx context.Context, baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
 	subscriptionPeriods := []baremetal.OfferSubscriptionPeriod{
 		baremetal.OfferSubscriptionPeriodHourly,
 		baremetal.OfferSubscriptionPeriodMonthly,

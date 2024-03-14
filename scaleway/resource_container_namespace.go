@@ -118,7 +118,7 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -145,7 +145,7 @@ func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -180,7 +180,7 @@ func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

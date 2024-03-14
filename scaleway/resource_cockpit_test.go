@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -10,7 +10,9 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -37,7 +39,7 @@ func testSweepCockpit(_ string) error {
 
 			_, err = cockpitAPI.WaitForCockpit(&cockpit.WaitForCockpitRequest{
 				ProjectID: project.ID,
-				Timeout:   scw.TimeDurationPtr(defaultCockpitTimeout),
+				Timeout:   scw.TimeDurationPtr(scaleway.DefaultCockpitTimeout),
 			})
 			if err != nil {
 				if !httperrors.Is404(err) {
@@ -60,11 +62,11 @@ func testSweepCockpit(_ string) error {
 }
 
 func TestAccScalewayCockpit_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitDestroy(tt),
 		Steps: []resource.TestStep{
@@ -117,11 +119,11 @@ func TestAccScalewayCockpit_Basic(t *testing.T) {
 }
 
 func TestAccScalewayCockpit_PremiumPlanByID(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitDestroy(tt),
 		Steps: []resource.TestStep{
@@ -168,11 +170,11 @@ func TestAccScalewayCockpit_PremiumPlanByID(t *testing.T) {
 }
 
 func TestAccScalewayCockpit_PremiumPlanByName(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitDestroy(tt),
 		Steps: []resource.TestStep{
@@ -200,14 +202,14 @@ func TestAccScalewayCockpit_PremiumPlanByName(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayCockpitExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayCockpitExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource cockpit not found: %s", n)
 		}
 
-		api, err := cockpitAPI(tt.Meta)
+		api, err := scaleway.CockpitAPI(tt.Meta)
 		if err != nil {
 			return err
 		}
@@ -223,14 +225,14 @@ func testAccCheckScalewayCockpitExists(tt *TestTools, n string) resource.TestChe
 	}
 }
 
-func testAccCheckScalewayCockpitDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayCockpitDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_cockpit" {
 				continue
 			}
 
-			api, err := cockpitAPI(tt.Meta)
+			api, err := scaleway.CockpitAPI(tt.Meta)
 			if err != nil {
 				return err
 			}

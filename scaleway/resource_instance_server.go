@@ -39,11 +39,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Read:    schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Update:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Delete:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Create:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Read:    schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Update:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Delete:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Default: schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -569,7 +569,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 //gocyclo:ignore
 func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1183,7 +1183,7 @@ func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, 
 		return diff.ForceNew("type")
 	}
 
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, diff.Id())
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(meta, diff.Id())
 	if err != nil {
 		return err
 	}
@@ -1213,7 +1213,7 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	}
 
 	// We get the server to fetch the UUID of the image
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, diff.Id())
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(m, diff.Id())
 	if err != nil {
 		return err
 	}

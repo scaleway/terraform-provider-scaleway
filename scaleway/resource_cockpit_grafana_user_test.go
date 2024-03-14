@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -11,7 +11,9 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -65,14 +67,14 @@ func testSweepCockpitGrafanaUser(_ string) error {
 }
 
 func TestAccScalewayCockpitGrafanaUser_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_grafana_user_basic"
 	grafanaTestUsername := "testuserbasic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitGrafanaUserDestroy(tt),
 		Steps: []resource.TestStep{
@@ -105,14 +107,14 @@ func TestAccScalewayCockpitGrafanaUser_Basic(t *testing.T) {
 }
 
 func TestAccScalewayCockpitGrafanaUser_Update(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_grafana_user_update"
 	grafanaTestUsername := "testuserupdate"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitGrafanaUserDestroy(tt),
 		Steps: []resource.TestStep{
@@ -169,14 +171,14 @@ func TestAccScalewayCockpitGrafanaUser_Update(t *testing.T) {
 }
 
 func TestAccScalewayCockpitGrafanaUser_NonExistentCockpit(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_grafana_user_non_existent_cockpit"
 	grafanaTestUsername := "testnonexistentuser"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitGrafanaUserDestroy(tt),
 		Steps: []resource.TestStep{
@@ -198,14 +200,14 @@ func TestAccScalewayCockpitGrafanaUser_NonExistentCockpit(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayCockpitGrafanaUserExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayCockpitGrafanaUserExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource cockpit grafana user not found: %s", n)
 		}
 
-		api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(tt.Meta, rs.Primary.ID)
+		api, projectID, grafanaUserID, err := scaleway.CockpitAPIGrafanaUserID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -233,14 +235,14 @@ func testAccCheckScalewayCockpitGrafanaUserExists(tt *TestTools, n string) resou
 	}
 }
 
-func testAccCheckScalewayCockpitGrafanaUserDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayCockpitGrafanaUserDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_cockpit_grafana_user" {
 				continue
 			}
 
-			api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(tt.Meta, rs.Primary.ID)
+			api, projectID, grafanaUserID, err := scaleway.CockpitAPIGrafanaUserID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

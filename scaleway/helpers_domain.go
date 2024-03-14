@@ -22,7 +22,7 @@ const (
 )
 
 // domainAPI returns a new domain API.
-func newDomainAPI(m interface{}) *domain.API {
+func NewDomainAPI(m interface{}) *domain.API {
 	return domain.NewAPI(meta.ExtractScwClient(m))
 }
 
@@ -291,7 +291,7 @@ func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, 
 	}, scw.WithContext(ctx))
 }
 
-func findDefaultReverse(address string) string {
+func FindDefaultReverse(address string) string {
 	parts := strings.Split(address, ".")
 	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
 		parts[i], parts[j] = parts[j], parts[i]

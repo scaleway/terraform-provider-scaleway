@@ -33,8 +33,8 @@ func ipamAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Re
 	return ipamAPI, region, nil
 }
 
-// ipamAPIWithRegionAndID returns a new ipam API with locality and ID extracted from the state
-func ipamAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, string, error) {
+// IpamAPIWithRegionAndID returns a new ipam API with locality and ID extracted from the state
+func IpamAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, string, error) {
 	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)

@@ -118,7 +118,7 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 
 func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(m)
-	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,7 +164,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m 
 func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(m)
 	// resource depends on the instance locality
-	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -198,7 +198,7 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(m)
 	// resource depends on the instance locality
-	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -241,9 +241,9 @@ func resourceScalewayRdbUserID(region scw.Region, instanceID string, userName st
 	return fmt.Sprintf("%s/%s/%s", region, instanceID, userName)
 }
 
-// Extract instance ID and username from the resource identifier.
+// ResourceScalewayRdbUserParseID extracts instance ID and username from the resource identifier.
 // The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayRdbUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
+func ResourceScalewayRdbUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
 	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)

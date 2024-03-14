@@ -391,7 +391,7 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zonedID, err := BaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -472,7 +472,7 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 
 //gocyclo:ignore
 func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zonedID, err := BaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -637,7 +637,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zonedID, err := BaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

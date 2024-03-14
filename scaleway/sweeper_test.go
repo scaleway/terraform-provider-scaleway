@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -89,7 +90,7 @@ func sharedS3ClientForRegion(region scw.Region) (*s3.S3, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newS3ClientFromMeta(m, region.String())
+	return scaleway.NewS3ClientFromMeta(m, region.String())
 }
 
 func TestIsTestResource(t *testing.T) {

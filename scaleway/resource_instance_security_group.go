@@ -142,7 +142,7 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 }
 
 func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -217,7 +217,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone 
 				if errGroup != nil {
 					return nil, nil, errGroup
 				}
-				if ok, _ := securityGroupRuleEquals(stateRule, apiRule); !ok {
+				if ok, _ := SecurityGroupRuleEquals(stateRule, apiRule); !ok {
 					stateRules[direction][index], err = securityGroupRuleFlatten(apiRule)
 					if err != nil {
 						return nil, nil, err
@@ -491,8 +491,8 @@ func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) (map[string]inte
 	return res, nil
 }
 
-// securityGroupRuleEquals compares two security group rule.
-func securityGroupRuleEquals(ruleA, ruleB *instance.SecurityGroupRule) (bool, error) {
+// SecurityGroupRuleEquals compares two security group rule.
+func SecurityGroupRuleEquals(ruleA, ruleB *instance.SecurityGroupRule) (bool, error) {
 	zeroIfNil := func(v *uint32) uint32 {
 		if v == nil {
 			return 0

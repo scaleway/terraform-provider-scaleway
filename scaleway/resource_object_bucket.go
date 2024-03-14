@@ -244,7 +244,7 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	tagsSet := expandObjectBucketTags(d.Get("tags"))
+	tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
 	if len(tagsSet) > 0 {
 		_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
@@ -291,7 +291,7 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if d.HasChange("tags") {
-		tagsSet := expandObjectBucketTags(d.Get("tags"))
+		tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
 		if len(tagsSet) > 0 {
 			_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
@@ -351,7 +351,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		rule := &s3.LifecycleRule{}
 
 		// Filter
-		tags := expandObjectBucketTags(r["tags"])
+		tags := ExpandObjectBucketTags(r["tags"])
 		ruleHasPrefix := len(r["prefix"].(string)) > 0
 		filter := &s3.LifecycleRuleFilter{}
 
@@ -664,11 +664,11 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 		Bucket: scw.StringPtr(bucketName),
 	})
 
-	if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+	if IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 		return nil
 	}
 
-	if isS3Err(err, ErrCodeBucketNotEmpty, "") {
+	if IsS3Err(err, ErrCodeBucketNotEmpty, "") {
 		if d.Get("force_destroy").(bool) {
 			err = deleteS3ObjectVersions(ctx, s3Client, bucketName, true)
 			if err != nil {

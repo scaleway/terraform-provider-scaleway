@@ -136,7 +136,7 @@ func resourceScalewayJobDefinitionCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := JobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -169,7 +169,7 @@ func resourceScalewayJobDefinitionRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := JobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -235,7 +235,7 @@ func resourceScalewayJobDefinitionUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := jobsAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := JobsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

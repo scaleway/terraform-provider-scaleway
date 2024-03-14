@@ -148,7 +148,7 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 
 func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(m)
-	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	region, instanceID, databaseName, err := ResourceScalewayRdbDatabaseParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -175,7 +175,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 
 func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(m)
-	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	region, instanceID, databaseName, err := ResourceScalewayRdbDatabaseParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -208,9 +208,9 @@ func resourceScalewayRdbDatabaseID(region scw.Region, instanceID string, databas
 	return fmt.Sprintf("%s/%s/%s", region, instanceID, databaseName)
 }
 
-// Extract instance ID and database from the resource identifier.
+// ResourceScalewayRdbDatabaseParseID extracts instance ID and database from the resource identifier.
 // The resource identifier format is "Region/InstanceId/DatabaseId"
-func resourceScalewayRdbDatabaseParseID(resourceID string) (region scw.Region, instanceID string, database string, err error) {
+func ResourceScalewayRdbDatabaseParseID(resourceID string) (region scw.Region, instanceID string, database string, err error) {
 	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)

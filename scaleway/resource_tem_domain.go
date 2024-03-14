@@ -23,8 +23,8 @@ func resourceScalewayTemDomain() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Delete:  schema.DefaultTimeout(defaultTemDomainTimeout),
-			Default: schema.DefaultTimeout(defaultTemDomainTimeout),
+			Delete:  schema.DefaultTimeout(DefaultTemDomainTimeout),
+			Default: schema.DefaultTimeout(DefaultTemDomainTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -191,7 +191,7 @@ func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := temAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := TemAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,12 +233,12 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := temAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := TemAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	_, err = WaitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -256,7 +256,7 @@ func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	_, err = WaitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

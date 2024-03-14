@@ -86,7 +86,7 @@ func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -114,7 +114,7 @@ func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,7 +149,7 @@ func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

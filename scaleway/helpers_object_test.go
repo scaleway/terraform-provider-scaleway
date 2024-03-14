@@ -1,11 +1,17 @@
-package scaleway
+package scaleway_test
 
 import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/assert"
+)
+
+const (
+	objectTestsMainRegion      = "nl-ams"
+	objectTestsSecondaryRegion = "pl-waw"
 )
 
 func TestExpandObjectBucketTags(t *testing.T) {
@@ -44,7 +50,7 @@ func TestExpandObjectBucketTags(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.ElementsMatch(t, tt.want, expandObjectBucketTags(tt.tags))
+			assert.ElementsMatch(t, tt.want, scaleway.ExpandObjectBucketTags(tt.tags))
 		})
 	}
 }

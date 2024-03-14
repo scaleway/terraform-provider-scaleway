@@ -28,8 +28,8 @@ func serverlessSQLdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*serve
 	return sdbAPI, region, nil
 }
 
-// serverlessSQLdbAPIWithRegionalAndID returns a new serverless_sqldb API with region and ID extracted from the state
-func serverlessSQLdbAPIWithRegionAndID(m interface{}, regionalID string) (*serverless_sqldb.API, scw.Region, string, error) {
+// ServerlessSQLdbAPIWithRegionAndID returns a new serverless_sqldb API with region and ID extracted from the state
+func ServerlessSQLdbAPIWithRegionAndID(m interface{}, regionalID string) (*serverless_sqldb.API, scw.Region, string, error) {
 	sdbAPI := serverless_sqldb.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)

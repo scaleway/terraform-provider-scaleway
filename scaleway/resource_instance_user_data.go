@@ -25,11 +25,11 @@ func resourceScalewayInstanceUserData() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Read:    schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Update:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Delete:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Create:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Read:    schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Update:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Delete:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Default: schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -92,7 +92,7 @@ func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(m, d.Id())
+	instanceAPI, zone, id, key, err := InstanceAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,7 +135,7 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(m, d.Id())
+	instanceAPI, zone, id, key, err := InstanceAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -174,7 +174,7 @@ func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(m, d.Id())
+	instanceAPI, zone, id, key, err := InstanceAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

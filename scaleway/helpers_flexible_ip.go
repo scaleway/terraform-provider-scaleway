@@ -30,8 +30,8 @@ func fipAPIWithZone(d *schema.ResourceData, m interface{}) (*flexibleip.API, scw
 	return flexibleipAPI, zone, nil
 }
 
-// fipAPIWithZoneAndID returns an flexibleip API with zone and ID extracted from the state
-func fipAPIWithZoneAndID(m interface{}, id string) (*flexibleip.API, scw.Zone, string, error) {
+// FipAPIWithZoneAndID returns an flexibleip API with zone and ID extracted from the state
+func FipAPIWithZoneAndID(m interface{}, id string) (*flexibleip.API, scw.Zone, string, error) {
 	fipAPI := flexibleip.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)

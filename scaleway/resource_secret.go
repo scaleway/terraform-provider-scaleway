@@ -118,7 +118,7 @@ func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := SecretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -153,7 +153,7 @@ func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := SecretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -200,7 +200,7 @@ func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewaySecretDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := SecretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

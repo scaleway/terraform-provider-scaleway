@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,14 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayLbBackend_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbBackendDestroy(tt),
 		Steps: []resource.TestStep{
@@ -128,10 +130,10 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 }
 
 func TestAccScalewayLbBackend_HealthCheck(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbBackendDestroy(tt),
 		Steps: []resource.TestStep{
@@ -233,10 +235,10 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "scaleway_object_bucket_website_configuration.test"
 
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayLbBackendDestroy(tt),
@@ -372,17 +374,17 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "website_endpoint", rName+".s3-website.fr-par.scw.cloud"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_backend.bkd01", "failover_host"),
 				),
-				ExpectNonEmptyPlan: !*UpdateCassettes,
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 		},
 	})
 }
 
 func TestAccScalewayLbBackend_HealthCheck_Port(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbBackendDestroy(tt),
 		Steps: []resource.TestStep{
@@ -480,14 +482,14 @@ func TestAccScalewayLbBackend_HealthCheck_Port(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayLbBackendExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayLbBackendExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := scaleway.LbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -504,14 +506,14 @@ func testAccCheckScalewayLbBackendExists(tt *TestTools, n string) resource.TestC
 	}
 }
 
-func testAccCheckScalewayLbBackendDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayLbBackendDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb_backend" {
 				continue
 			}
 
-			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			lbAPI, zone, ID, err := scaleway.LbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

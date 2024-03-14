@@ -107,7 +107,7 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +136,7 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -180,7 +180,7 @@ func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

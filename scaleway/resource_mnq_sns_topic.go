@@ -144,13 +144,13 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQID(d.Id())
+	region, projectID, topicName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
 	topicAttributes, err := snsClient.GetTopicAttributesWithContext(ctx, &sns.GetTopicAttributesInput{
-		TopicArn: scw.StringPtr(composeSNSARN(region, projectID, topicName)),
+		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -177,12 +177,12 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQID(d.Id())
+	region, projectID, topicName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
-	topicARN := composeSNSARN(region, projectID, topicName)
+	topicARN := ComposeSNSARN(region, projectID, topicName)
 
 	changedAttributes := []string(nil)
 	for attributeName, schemaName := range SNSTopicAttributesToResourceMap {
@@ -224,13 +224,13 @@ func resourceScalewayMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQID(d.Id())
+	region, projectID, topicName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = snsClient.DeleteTopicWithContext(ctx, &sns.DeleteTopicInput{
-		TopicArn: scw.StringPtr(composeSNSARN(region, projectID, topicName)),
+		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
