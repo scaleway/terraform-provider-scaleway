@@ -16,7 +16,7 @@ jobs:
       - name: Install tfproviderlint
         run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
       - name: Run tfproviderlint
-        run: tfproviderlint -R014=false ./...
+        run: tfproviderlint -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
   tfproviderdocs:
     runs-on: ubuntu-latest
     steps:

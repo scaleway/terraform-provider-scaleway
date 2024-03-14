@@ -11,12 +11,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
+	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
+func TestAccProvider_InstanceIPZones(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -48,7 +48,7 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 				},
 			}
 		}(),
-		CheckDestroy: iam.CheckSSHKeyDestroy(tt),
+		CheckDestroy: iamchecks.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -61,8 +61,8 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 					}
 `,
 				Check: resource.ComposeTestCheckFunc(
-					instance.CheckIPExists(tt, "scaleway_instance_ip.prod"),
-					instance.CheckIPExists(tt, "scaleway_instance_ip.dev"),
+					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.prod"),
+					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.dev"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.prod", "zone", "fr-par-2"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.dev", "zone", "fr-par-1"),
 				),
@@ -71,7 +71,7 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 	})
 }
 
-func TestAccScalewayProvider_SSHKeys(t *testing.T) {
+func TestAccProvider_SSHKeys(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -104,7 +104,7 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 				},
 			}
 		}(),
-		CheckDestroy: iam.CheckSSHKeyDestroy(tt),
+		CheckDestroy: iamchecks.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -121,8 +121,8 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 					}
 				`, SSHKeyName, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					iam.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.prod"),
-					iam.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.dev"),
+					iamchecks.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.prod"),
+					iamchecks.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.dev"),
 				),
 			},
 		},

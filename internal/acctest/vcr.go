@@ -14,6 +14,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -45,7 +47,7 @@ var BodyMatcherIgnore = []string{
 }
 
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
-func getTestFilePath(t *testing.T, suffix string) string {
+func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	t.Helper()
 	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
 
@@ -58,9 +60,9 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	fileName = specialChars.ReplaceAllLiteralString(fileName, "") + suffix
 
 	// Remove prefix to simplify
-	fileName = strings.TrimPrefix(fileName, "test-acc-scaleway-")
+	fileName = strings.TrimPrefix(fileName, "test-acc-")
 
-	return filepath.Join(".", "testdata", fileName)
+	return filepath.Join(pkgFolder, "testdata", fileName)
 }
 
 func compareJSONFields(expected, actualI interface{}) bool {
@@ -251,11 +253,20 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 //
 // It is important to add a `defer cleanup()` so the given cassette files are correctly
 // closed and saved after the requests.
-func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup func(), err error) {
+func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.Client, cleanup func(), err error) {
 	t.Helper()
 	recorderMode := recorder.ModeReplayOnly
 	if update {
 		recorderMode = recorder.ModeRecordOnly
+	}
+
+	cassetteFilePath := getTestFilePath(t, pkgFolder, ".cassette")
+	_, errorCassette := os.Stat(cassetteFilePath + ".yaml")
+	logging.L.Debugf("using %s.yaml", cassetteFilePath)
+
+	// If in record mode we check that the cassette exists
+	if recorderMode == recorder.ModeReplaying && errorCassette != nil {
+		return nil, nil, fmt.Errorf("cannot stat file %s.yaml while in replay mode", cassetteFilePath)
 	}
 
 	// Setup recorder and scw client
