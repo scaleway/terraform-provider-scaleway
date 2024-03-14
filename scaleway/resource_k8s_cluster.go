@@ -21,7 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayK8SCluster() *schema.Resource {
+func ResourceScalewayK8SCluster() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayK8SClusterCreate,
 		ReadContext:   resourceScalewayK8SClusterRead,

@@ -14,7 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayFunctionToken() *schema.Resource {
+func ResourceScalewayFunctionToken() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionTokenCreate,
 		ReadContext:   resourceScalewayFunctionTokenRead,

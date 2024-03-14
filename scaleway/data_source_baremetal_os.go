@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayBaremetalOs() *schema.Resource {
+func DataSourceScalewayBaremetalOs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayBaremetalOsRead,
 		Schema: map[string]*schema.Schema{

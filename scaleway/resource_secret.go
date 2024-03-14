@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewaySecret() *schema.Resource {
+func ResourceScalewaySecret() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewaySecretCreate,
 		ReadContext:   resourceScalewaySecretRead,

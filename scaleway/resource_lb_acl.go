@@ -14,7 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayLbACL() *schema.Resource {
+func ResourceScalewayLbACL() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayLbACLCreate,
 		ReadContext:   resourceScalewayLbACLRead,

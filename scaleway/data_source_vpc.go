@@ -13,8 +13,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPC() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPC().Schema)
+func DataSourceScalewayVPC() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPC().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "is_default", "region")
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
 
 func TestAccScalewayDataSourceAccountSSHKey_Basic(t *testing.T) {
@@ -16,7 +17,7 @@ func TestAccScalewayDataSourceAccountSSHKey_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
+		CheckDestroy:      iam.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -41,10 +42,10 @@ func TestAccScalewayDataSourceAccountSSHKey_Basic(t *testing.T) {
 						ssh_key_id = "${scaleway_account_ssh_key.main.id}"
 					}`, sshKeyName, dataSourceAccountSSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "data.scaleway_account_ssh_key.prod"),
+					iam.CheckSSHKeyExists(tt, "data.scaleway_account_ssh_key.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.prod", "name", sshKeyName),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.prod", "public_key", dataSourceAccountSSHKey),
-					testAccCheckScalewayIamSSHKeyExists(tt, "data.scaleway_account_ssh_key.stg"),
+					iam.CheckSSHKeyExists(tt, "data.scaleway_account_ssh_key.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.stg", "name", sshKeyName),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.stg", "public_key", dataSourceAccountSSHKey),
 				),

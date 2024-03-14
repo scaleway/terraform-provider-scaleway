@@ -11,9 +11,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
+func DataSourceScalewayInstancePlacementGroup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayInstancePlacementGroup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayInstancePlacementGroup().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone")
 

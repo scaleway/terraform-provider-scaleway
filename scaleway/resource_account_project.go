@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayAccountProject() *schema.Resource {
+func ResourceScalewayAccountProject() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayAccountProjectCreate,
 		ReadContext:   resourceScalewayAccountProjectRead,

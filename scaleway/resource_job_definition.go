@@ -15,7 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayJobDefinition() *schema.Resource {
+func ResourceScalewayJobDefinition() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayJobDefinitionCreate,
 		ReadContext:   resourceScalewayJobDefinitionRead,

@@ -16,7 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
+func ResourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayPATRuleCreate,
 		ReadContext:   resourceScalewayVPCPublicGatewayPATRuleRead,

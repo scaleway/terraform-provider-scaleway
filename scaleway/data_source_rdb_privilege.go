@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
-func dataSourceScalewayRDBPrivilege() *schema.Resource {
+func DataSourceScalewayRDBPrivilege() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayRdbPrivilege().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayRdbPrivilege().Schema)
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "instance_id", "user_name", "database_name")
 

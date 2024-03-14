@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayContainerDomain() *schema.Resource {
+func ResourceScalewayContainerDomain() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayContainerDomainCreate,
 		ReadContext:   resourceScalewayContainerDomainRead,

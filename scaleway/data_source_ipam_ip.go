@@ -17,7 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIPAMIP() *schema.Resource {
+func DataSourceScalewayIPAMIP() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayIPAMIPRead,
 		Schema: map[string]*schema.Schema{

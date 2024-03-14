@@ -17,7 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayObject() *schema.Resource {
+func ResourceScalewayObject() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayObjectCreate,
 		ReadContext:   resourceScalewayObjectRead,

@@ -16,7 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource {
+func ResourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBInstanceEndpointCreate,
 		ReadContext:   resourceScalewayDocumentDBInstanceEndpointRead,

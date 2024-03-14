@@ -12,9 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayK8SCluster() *schema.Resource {
+func DataSourceScalewayK8SCluster() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayK8SCluster().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayK8SCluster().Schema)
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")

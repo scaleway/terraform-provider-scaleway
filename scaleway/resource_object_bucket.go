@@ -17,7 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func resourceScalewayObjectBucket() *schema.Resource {
+func ResourceScalewayObjectBucket() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayObjectBucketCreate,
 		ReadContext:   resourceScalewayObjectBucketRead,

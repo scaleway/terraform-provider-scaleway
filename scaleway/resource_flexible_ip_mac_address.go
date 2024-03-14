@@ -15,7 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayFlexibleIPMACAddress() *schema.Resource {
+func ResourceScalewayFlexibleIPMACAddress() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFlexibleIPMACCreate,
 		ReadContext:   resourceScalewayFlexibleIPMACRead,

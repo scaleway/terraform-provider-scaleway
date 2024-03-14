@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func resourceScalewayMNQSNSTopic() *schema.Resource {
+func ResourceScalewayMNQSNSTopic() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSNSTopicCreate,
 		ReadContext:   resourceScalewayMNQSNSTopicRead,
@@ -111,7 +111,7 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -156,7 +156,7 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, ResourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -191,7 +191,7 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}

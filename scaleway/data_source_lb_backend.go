@@ -13,9 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayLbBackend() *schema.Resource {
+func DataSourceScalewayLbBackend() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayLbBackend().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayLbBackend().Schema)
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "lb_id")

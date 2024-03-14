@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayVPCPublicGateway() *schema.Resource {
+func ResourceScalewayVPCPublicGateway() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayCreate,
 		ReadContext:   resourceScalewayVPCPublicGatewayRead,

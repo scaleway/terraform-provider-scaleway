@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayFlexibleIPs() *schema.Resource {
+func DataSourceScalewayFlexibleIPs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayFlexibleIPsRead,
 		Schema: map[string]*schema.Schema{

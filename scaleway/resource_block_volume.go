@@ -14,7 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayBlockVolume() *schema.Resource {
+func ResourceScalewayBlockVolume() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayBlockVolumeCreate,
 		ReadContext:   resourceScalewayBlockVolumeRead,

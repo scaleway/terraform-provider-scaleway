@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayBillingConsumptions() *schema.Resource {
+func DataSourceScalewayBillingConsumptions() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayBillingConsumptionsRead,
 		Schema: map[string]*schema.Schema{

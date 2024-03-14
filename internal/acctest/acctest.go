@@ -9,8 +9,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,7 +48,7 @@ func NewTestTools(t *testing.T) *TestTools {
 		Meta: m,
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			"scaleway": func() (*schema.Provider, error) {
-				return scaleway.Provider(&scaleway.ProviderConfig{Meta: m})(), nil
+				return provider.Provider(&provider.Config{Meta: m})(), nil
 			},
 		},
 		Cleanup: cleanup,

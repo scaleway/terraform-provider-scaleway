@@ -12,9 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayFunction() *schema.Resource {
+func DataSourceScalewayFunction() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayFunction().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayFunction().Schema)
 
 	dsSchema["function_id"] = &schema.Schema{
 		Type:        schema.TypeString,

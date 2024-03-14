@@ -24,7 +24,7 @@ const (
 	DefaultWaitLBRetryInterval = 30 * time.Second
 )
 
-func resourceScalewayLb() *schema.Resource {
+func ResourceScalewayLb() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayLbCreate,
 		ReadContext:   resourceScalewayLbRead,
