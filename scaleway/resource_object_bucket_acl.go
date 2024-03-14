@@ -22,7 +22,7 @@ const (
 	BucketACLSeparator = "/"
 )
 
-func resourceScalewayObjectBucketACL() *schema.Resource {
+func ResourceScalewayObjectBucketACL() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceBucketACLCreate,
 		ReadContext:   resourceBucketACLRead,

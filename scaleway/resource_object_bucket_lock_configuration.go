@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func resourceObjectLockConfiguration() *schema.Resource {
+func ResourceObjectLockConfiguration() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceObjectLockConfigurationCreate,
 		ReadContext:   resourceObjectLockConfigurationRead,

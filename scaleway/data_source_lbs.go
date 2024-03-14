@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbs() *schema.Resource {
+func DataSourceScalewayLbs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbsRead,
 		Schema: map[string]*schema.Schema{

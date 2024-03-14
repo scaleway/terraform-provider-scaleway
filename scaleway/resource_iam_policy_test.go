@@ -8,10 +8,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
+	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/require"
 )
@@ -25,14 +26,14 @@ func init() {
 
 func testSweepIamPolicy(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
-		api := iam.NewAPI(scwClient)
+		api := iamSDK.NewAPI(scwClient)
 
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {
 			return errors.New("missing organizationID")
 		}
 
-		listPols, err := api.ListPolicies(&iam.ListPoliciesRequest{
+		listPols, err := api.ListPolicies(&iamSDK.ListPoliciesRequest{
 			OrganizationID: orgID,
 		})
 		if err != nil {
@@ -42,7 +43,7 @@ func testSweepIamPolicy(_ string) error {
 			if !isTestResource(pol.Name) {
 				continue
 			}
-			err = api.DeletePolicy(&iam.DeletePolicyRequest{
+			err = api.DeletePolicy(&iamSDK.DeletePolicyRequest{
 				PolicyID: pol.ID,
 			})
 			if err != nil {
@@ -57,11 +58,11 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -130,11 +131,11 @@ func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -193,13 +194,13 @@ func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := context.Background()
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 	randAppName := "tf-tests-scaleway-iam-app-policy-permissions"
 	randGroupName := "tf-tests-scaleway-iam-group-policy-permissions"
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -297,11 +298,11 @@ func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -387,11 +388,11 @@ func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -452,11 +453,11 @@ func TestAccScalewayIamPolicy_ChangeRulePrincipal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -523,7 +524,7 @@ func testAccCheckScalewayIamPolicyExists(tt *acctest.TestTools, name string) res
 
 		iamAPI := scaleway.IamAPI(tt.Meta)
 
-		_, err := iamAPI.GetPolicy(&iam.GetPolicyRequest{
+		_, err := iamAPI.GetPolicy(&iamSDK.GetPolicyRequest{
 			PolicyID: rs.Primary.ID,
 		})
 		if err != nil {
@@ -543,7 +544,7 @@ func testAccCheckScalewayIamPolicyDestroy(tt *acctest.TestTools) resource.TestCh
 
 			iamAPI := scaleway.IamAPI(tt.Meta)
 
-			_, err := iamAPI.GetPolicy(&iam.GetPolicyRequest{
+			_, err := iamAPI.GetPolicy(&iamSDK.GetPolicyRequest{
 				PolicyID: rs.Primary.ID,
 			})
 

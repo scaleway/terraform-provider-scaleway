@@ -14,9 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
+func DataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCPublicGatewayDHCPReservation().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPCPublicGatewayDHCPReservation().Schema)
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "mac_address", "gateway_network_id")

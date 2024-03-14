@@ -15,7 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayMNQSNSTopicSubscription() *schema.Resource {
+func ResourceScalewayMNQSNSTopicSubscription() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSNSTopicSubscriptionCreate,
 		ReadContext:   resourceScalewayMNQSNSTopicSubscriptionRead,
@@ -112,7 +112,7 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -180,7 +180,7 @@ func resourceScalewayMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, resourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
+	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, ResourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}

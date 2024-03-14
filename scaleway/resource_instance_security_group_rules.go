@@ -8,7 +8,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
-func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
+func ResourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceSecurityGroupRulesCreate,
 		ReadContext:   resourceScalewayInstanceSecurityGroupRulesRead,

@@ -15,7 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayVPCPublicGatewayIPReverseDNS() *schema.Resource {
+func ResourceScalewayVPCPublicGatewayIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayIPReverseDNSCreate,
 		ReadContext:   resourceScalewayVPCPublicGatewayIPReverseDNSRead,

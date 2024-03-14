@@ -12,9 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIamGroup() *schema.Resource {
+func DataSourceScalewayIamGroup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayIamGroup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayIamGroup().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name")
 

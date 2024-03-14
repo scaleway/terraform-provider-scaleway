@@ -18,7 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayInstanceVolume() *schema.Resource {
+func ResourceScalewayInstanceVolume() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceVolumeCreate,
 		ReadContext:   resourceScalewayInstanceVolumeRead,

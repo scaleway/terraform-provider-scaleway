@@ -5,13 +5,11 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
+	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
-	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
 
 const SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
@@ -25,11 +23,11 @@ func init() {
 
 func testSweepIamSSHKey(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
-		iamAPI := iam.NewAPI(scwClient)
+		iamAPI := iamSDK.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the SSH keys")
 
-		listSSHKeys, err := iamAPI.ListSSHKeys(&iam.ListSSHKeysRequest{}, scw.WithAllPages())
+		listSSHKeys, err := iamAPI.ListSSHKeys(&iamSDK.ListSSHKeysRequest{}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing SSH keys in sweeper: %s", err)
 		}
@@ -38,7 +36,7 @@ func testSweepIamSSHKey(_ string) error {
 			if !isTestResource(sshKey.Name) {
 				continue
 			}
-			err := iamAPI.DeleteSSHKey(&iam.DeleteSSHKeyRequest{
+			err := iamAPI.DeleteSSHKey(&iamSDK.DeleteSSHKeyRequest{
 				SSHKeyID: sshKey.ID,
 			})
 			if err != nil {
@@ -58,7 +56,7 @@ func TestAccScalewayIamSSHKey_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
+		CheckDestroy:      iam.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -68,7 +66,7 @@ func TestAccScalewayIamSSHKey_basic(t *testing.T) {
 					}
 				`, name, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					iam.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 				),
@@ -81,7 +79,7 @@ func TestAccScalewayIamSSHKey_basic(t *testing.T) {
 					}
 				`, name, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					iam.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name+"-updated"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 				),
@@ -98,7 +96,7 @@ func TestAccScalewayIamSSHKey_WithNewLine(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
+		CheckDestroy:      iam.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -108,7 +106,7 @@ func TestAccScalewayIamSSHKey_WithNewLine(t *testing.T) {
 					}
 				`, name, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					iam.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 				),
@@ -125,7 +123,7 @@ func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
+		CheckDestroy:      iam.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -135,7 +133,7 @@ func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
 					}
 				`, name, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.first"),
+					iam.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.first"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "public_key", SSHKey),
 				),
@@ -148,7 +146,7 @@ func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
 					}
 				`, name, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.second"),
+					iam.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.second"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "public_key", SSHKey),
 				),
@@ -165,7 +163,7 @@ func TestAccScalewayIamSSHKey_Disabled(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
+		CheckDestroy:      iam.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -175,7 +173,7 @@ func TestAccScalewayIamSSHKey_Disabled(t *testing.T) {
 					}
 				`, name, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					iam.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
@@ -190,7 +188,7 @@ func TestAccScalewayIamSSHKey_Disabled(t *testing.T) {
 					}
 				`, name, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					iam.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "true"),
@@ -205,7 +203,7 @@ func TestAccScalewayIamSSHKey_Disabled(t *testing.T) {
 					}
 				`, name, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					iam.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
@@ -213,52 +211,4 @@ func TestAccScalewayIamSSHKey_Disabled(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckScalewayIamSSHKeyDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_iam_ssh_key" {
-				continue
-			}
-
-			iamAPI := scaleway.IamAPI(tt.Meta)
-
-			_, err := iamAPI.GetSSHKey(&iam.GetSSHKeyRequest{
-				SSHKeyID: rs.Primary.ID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("SSH key (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckScalewayIamSSHKeyExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
-		}
-
-		iamAPI := scaleway.IamAPI(tt.Meta)
-
-		_, err := iamAPI.GetSSHKey(&iam.GetSSHKeyRequest{
-			SSHKeyID: rs.Primary.ID,
-		})
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
 }

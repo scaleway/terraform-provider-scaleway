@@ -16,7 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayK8SPool() *schema.Resource {
+func ResourceScalewayK8SPool() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayK8SPoolCreate,
 		ReadContext:   resourceScalewayK8SPoolRead,

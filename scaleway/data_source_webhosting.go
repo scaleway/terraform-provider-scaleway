@@ -12,8 +12,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayWebhosting() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayWebhosting().Schema)
+func DataSourceScalewayWebhosting() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayWebhosting().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "domain")
 

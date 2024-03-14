@@ -14,7 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayContainerNamespace() *schema.Resource {
+func ResourceScalewayContainerNamespace() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayContainerNamespaceCreate,
 		ReadContext:   resourceScalewayContainerNamespaceRead,

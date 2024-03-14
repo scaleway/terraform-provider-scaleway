@@ -29,7 +29,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayInstanceServer() *schema.Resource {
+func ResourceScalewayInstanceServer() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceServerCreate,
 		ReadContext:   resourceScalewayInstanceServerRead,

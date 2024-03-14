@@ -20,7 +20,7 @@ const (
 	iotTopicsSuffix = ".topics"
 )
 
-func resourceScalewayIotDevice() *schema.Resource {
+func ResourceScalewayIotDevice() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIotDeviceCreate,
 		ReadContext:   resourceScalewayIotDeviceRead,

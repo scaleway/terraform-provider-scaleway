@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayFunctionNamespace() *schema.Resource {
+func ResourceScalewayFunctionNamespace() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionNamespaceCreate,
 		ReadContext:   resourceScalewayFunctionNamespaceRead,

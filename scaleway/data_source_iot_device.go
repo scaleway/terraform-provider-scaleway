@@ -12,8 +12,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIotDevice() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayIotDevice().Schema)
+func DataSourceScalewayIotDevice() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayIotDevice().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 

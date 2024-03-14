@@ -21,7 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRedisCluster() *schema.Resource {
+func ResourceScalewayRedisCluster() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRedisClusterCreate,
 		ReadContext:   resourceScalewayRedisClusterRead,

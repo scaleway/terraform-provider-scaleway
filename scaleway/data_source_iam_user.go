@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIamUser() *schema.Resource {
+func DataSourceScalewayIamUser() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayIamUserRead,
 		Schema: map[string]*schema.Schema{

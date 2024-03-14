@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayLbRoute() *schema.Resource {
+func DataSourceScalewayLbRoute() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayLbRoute().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayLbRoute().Schema)
 
 	dsSchema["route_id"] = &schema.Schema{
 		Type:         schema.TypeString,

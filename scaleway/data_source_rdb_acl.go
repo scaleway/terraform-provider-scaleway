@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
-func dataSourceScalewayRDBACL() *schema.Resource {
+func DataSourceScalewayRDBACL() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayRdbACL().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayRdbACL().Schema)
 
 	dsSchema["instance_id"].Computed = false
 	dsSchema["instance_id"].Required = true

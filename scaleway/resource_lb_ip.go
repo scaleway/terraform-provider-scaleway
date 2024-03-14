@@ -14,7 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayLbIP() *schema.Resource {
+func ResourceScalewayLbIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayLbIPCreate,
 		ReadContext:   resourceScalewayLbIPRead,

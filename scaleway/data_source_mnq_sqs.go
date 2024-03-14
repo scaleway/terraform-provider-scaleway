@@ -10,9 +10,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
-func dataSourceScalewayMNQSQS() *schema.Resource {
+func DataSourceScalewayMNQSQS() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayMNQSQS().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayMNQSQS().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 

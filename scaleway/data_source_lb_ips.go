@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbIPs() *schema.Resource {
+func DataSourceScalewayLbIPs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbIPsRead,
 		Schema: map[string]*schema.Schema{

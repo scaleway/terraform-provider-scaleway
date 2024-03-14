@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayMNQNatsAccount() *schema.Resource {
+func ResourceScalewayMNQNatsAccount() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQNatsAccountCreate,
 		ReadContext:   resourceScalewayMNQNatsAccountRead,

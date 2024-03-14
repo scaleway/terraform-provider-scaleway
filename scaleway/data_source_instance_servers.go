@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayInstanceServers() *schema.Resource {
+func DataSourceScalewayInstanceServers() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayInstanceServersRead,
 		Schema: map[string]*schema.Schema{

@@ -17,7 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayDocumentDBPrivilege() *schema.Resource {
+func ResourceScalewayDocumentDBPrivilege() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBPrivilegeCreate,
 		ReadContext:   resourceScalewayDocumentDBPrivilegeRead,

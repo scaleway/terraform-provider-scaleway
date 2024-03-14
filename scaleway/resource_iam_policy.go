@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayIamPolicy() *schema.Resource {
+func ResourceScalewayIamPolicy() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIamPolicyCreate,
 		ReadContext:   resourceScalewayIamPolicyRead,

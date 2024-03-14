@@ -12,9 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIamSSHKey() *schema.Resource {
+func DataSourceScalewayIamSSHKey() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayIamSSKKey().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayIamSSKKey().Schema)
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"ssh_key_id"}

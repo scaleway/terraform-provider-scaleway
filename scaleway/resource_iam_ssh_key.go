@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayIamSSKKey() *schema.Resource {
+func ResourceScalewayIamSSKKey() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIamSSKKeyCreate,
 		ReadContext:   resourceScalewayIamSSHKeyRead,

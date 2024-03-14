@@ -20,7 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbACL() *schema.Resource {
+func ResourceScalewayRdbACL() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbACLCreate,
 		ReadContext:   resourceScalewayRdbACLRead,

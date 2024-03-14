@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
-func resourceScalewayCockpitGrafanaUser() *schema.Resource {
+func ResourceScalewayCockpitGrafanaUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayCockpitGrafanaUserCreate,
 		ReadContext:   resourceScalewayCockpitGrafanaUserRead,

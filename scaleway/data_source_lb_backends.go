@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbBackends() *schema.Resource {
+func DataSourceScalewayLbBackends() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbBackendsRead,
 		Schema: map[string]*schema.Schema{

@@ -10,7 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
-func resourceScalewayCockpit() *schema.Resource {
+func ResourceScalewayCockpit() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayCockpitCreate,
 		ReadContext:   resourceScalewayCockpitRead,

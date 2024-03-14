@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayWebhosting() *schema.Resource {
+func ResourceScalewayWebhosting() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayWebhostingCreate,
 		ReadContext:   resourceScalewayWebhostingRead,

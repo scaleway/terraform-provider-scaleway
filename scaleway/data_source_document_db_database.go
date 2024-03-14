@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
-func dataSourceScalewayDocumentDBDatabase() *schema.Resource {
+func DataSourceScalewayDocumentDBDatabase() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayDocumentDBDatabase().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayDocumentDBDatabase().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 

@@ -12,9 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
+func DataSourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCPublicGatewayPATRule().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPCPublicGatewayPATRule().Schema)
 
 	dsSchema["pat_rule_id"] = &schema.Schema{
 		Type:         schema.TypeString,

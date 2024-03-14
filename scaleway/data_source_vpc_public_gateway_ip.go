@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPCPublicGatewayIP() *schema.Resource {
+func DataSourceScalewayVPCPublicGatewayIP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCPublicGatewayIP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPCPublicGatewayIP().Schema)
 
 	dsSchema["ip_id"] = &schema.Schema{
 		Type:         schema.TypeString,
