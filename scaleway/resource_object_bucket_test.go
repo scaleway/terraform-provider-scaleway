@@ -378,6 +378,36 @@ func TestAccScalewayObjectBucket_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "1"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+					name                = "%s"
+					region = "%s"
+					object_lock_enabled = true
+			
+					lifecycle_rule {
+						enabled = true
+						prefix  = ""
+						expiration {
+							days = 2
+						}
+					}
+			
+					lifecycle_rule {
+						enabled = true
+						abort_incomplete_multipart_upload_days = 30
+					}
+				}`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckScalewayObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
+					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.1.id"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", ""),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "2"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.abort_incomplete_multipart_upload_days", "30"),
+				),
+			},
 		},
 	})
 }
