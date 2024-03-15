@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/require"
 )
@@ -123,7 +124,7 @@ func TestAccScalewayMNQSQSQueue_DefaultProject(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"scaleway": func() (*schema.Provider, error) {
-					return scaleway.Provider(&scaleway.ProviderConfig{Meta: metaProd})(), nil
+					return provider.Provider(&provider.Config{Meta: metaProd})(), nil
 				},
 			}
 		}(),

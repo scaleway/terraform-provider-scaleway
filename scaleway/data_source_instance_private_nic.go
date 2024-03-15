@@ -16,9 +16,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayInstancePrivateNIC() *schema.Resource {
+func DataSourceScalewayInstancePrivateNIC() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayInstancePrivateNIC().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayInstancePrivateNIC().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "private_network_id", "zone", "tags")
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "server_id")

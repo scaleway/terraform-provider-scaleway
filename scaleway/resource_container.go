@@ -18,7 +18,7 @@ const (
 	containerMaxConcurrencyLimit int = 80
 )
 
-func resourceScalewayContainer() *schema.Resource {
+func ResourceScalewayContainer() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayContainerCreate,
 		ReadContext:   resourceScalewayContainerRead,

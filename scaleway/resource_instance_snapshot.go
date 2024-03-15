@@ -17,7 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayInstanceSnapshot() *schema.Resource {
+func ResourceScalewayInstanceSnapshot() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceSnapshotCreate,
 		ReadContext:   resourceScalewayInstanceSnapshotRead,

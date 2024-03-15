@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbRoutes() *schema.Resource {
+func DataSourceScalewayLbRoutes() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbRoutesRead,
 		Schema: map[string]*schema.Schema{

@@ -14,9 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayRedisCluster() *schema.Resource {
+func DataSourceScalewayRedisCluster() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayRedisCluster().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayRedisCluster().Schema)
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 

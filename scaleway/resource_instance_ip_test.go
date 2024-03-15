@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	instance2 "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
@@ -60,8 +61,8 @@ func TestAccScalewayInstanceIP_Basic(t *testing.T) {
 						resource "scaleway_instance_ip" "scaleway" {}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.scaleway"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.base"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.scaleway"),
 				),
 			},
 		},
@@ -80,7 +81,7 @@ func TestAccScalewayInstanceIP_WithZone(t *testing.T) {
 						resource "scaleway_instance_ip" "base" {}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "fr-par-1"),
 				),
 			},
@@ -91,7 +92,7 @@ func TestAccScalewayInstanceIP_WithZone(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
 				),
 			},
@@ -111,7 +112,7 @@ func TestAccScalewayInstanceIP_Tags(t *testing.T) {
 						resource "scaleway_instance_ip" "main" {}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_ip.main", "tags"),
 				),
 			},
@@ -122,7 +123,7 @@ func TestAccScalewayInstanceIP_Tags(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.0", "foo"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.1", "bar"),
 				),
@@ -145,7 +146,7 @@ func TestAccScalewayInstanceIP_RoutedMigrate(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
 				),
 			},
@@ -157,8 +158,8 @@ func TestAccScalewayInstanceIP_RoutedMigrate(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.copy"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.copy"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.copy", "type", "nat"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
@@ -179,8 +180,8 @@ func TestAccScalewayInstanceIP_RoutedMigrate(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.copy"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.copy"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
 				),
@@ -190,8 +191,8 @@ func TestAccScalewayInstanceIP_RoutedMigrate(t *testing.T) {
 				// This check that the ip is not deleted if the migration is done outside terraform
 				RefreshState: true,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.copy"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.copy"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.copy", "type", "routed_ipv4"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
@@ -216,7 +217,7 @@ func TestAccScalewayInstanceIP_RoutedDowngrade(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
 					testAccCheckScalewayInstanceIPValid("scaleway_instance_ip.main", "address"),
 					testAccCheckScalewayInstanceIPCIDRValid("scaleway_instance_ip.main", "prefix"),
@@ -229,7 +230,7 @@ func TestAccScalewayInstanceIP_RoutedDowngrade(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
 					testAccCheckScalewayInstanceIPValid("scaleway_instance_ip.main", "address"),
 					testAccCheckScalewayInstanceIPCIDRValid("scaleway_instance_ip.main", "prefix"),
@@ -254,7 +255,7 @@ func TestAccScalewayInstanceIP_RoutedIPV6(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					instance2.CheckIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv6"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "prefix"),
@@ -301,30 +302,6 @@ func testAccCheckScalewayInstanceIPValid(name string, key string) resource.TestC
 		parsedIP := net.ParseIP(ip)
 		if parsedIP == nil {
 			return fmt.Errorf("invalid ip (%s) in %s[%q]", ip, name, key)
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckScalewayInstanceIPExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", name)
-		}
-
-		instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = instanceAPI.GetIP(&instance.GetIPRequest{
-			IP:   ID,
-			Zone: zone,
-		})
-		if err != nil {
-			return err
 		}
 
 		return nil

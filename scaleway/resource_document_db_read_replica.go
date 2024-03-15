@@ -19,7 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayDocumentDBReadReplica() *schema.Resource {
+func ResourceScalewayDocumentDBReadReplica() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBReadReplicaCreate,
 		ReadContext:   resourceScalewayDocumentDBReadReplicaRead,

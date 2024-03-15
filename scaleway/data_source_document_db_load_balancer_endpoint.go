@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayDocumentDBEndpointLoadBalancer() *schema.Resource {
+func DataSourceScalewayDocumentDBEndpointLoadBalancer() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayDocumentDBLoadBalancerRead,
 		Schema: map[string]*schema.Schema{

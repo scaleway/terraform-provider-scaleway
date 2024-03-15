@@ -13,9 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayContainer() *schema.Resource {
+func DataSourceScalewayContainer() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayContainer().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayContainer().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 

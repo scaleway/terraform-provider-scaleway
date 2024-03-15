@@ -15,9 +15,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewaySecretVersion() *schema.Resource {
+func DataSourceScalewaySecretVersion() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewaySecretVersion().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewaySecretVersion().Schema)
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "revision")

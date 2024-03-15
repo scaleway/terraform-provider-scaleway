@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func dataSourceScalewayK8SVersion() *schema.Resource {
+func DataSourceScalewayK8SVersion() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayK8SVersionRead,
 		Schema: map[string]*schema.Schema{

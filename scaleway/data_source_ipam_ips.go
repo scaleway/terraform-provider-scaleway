@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayIPAMIPs() *schema.Resource {
+func DataSourceScalewayIPAMIPs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayIPAMIPsRead,
 		Schema: map[string]*schema.Schema{

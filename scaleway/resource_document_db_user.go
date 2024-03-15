@@ -18,7 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayDocumentDBUser() *schema.Resource {
+func ResourceScalewayDocumentDBUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBUserCreate,
 		ReadContext:   resourceScalewayDocumentDBUserRead,

@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 )
 
 func main() {
@@ -18,14 +18,14 @@ func main() {
 	if debugMode {
 		err := plugin.Debug(context.Background(), "registry.terraform.io/scaleway/scaleway",
 			&plugin.ServeOpts{
-				ProviderFunc: scaleway.Provider(scaleway.DefaultProviderConfig()),
+				ProviderFunc: provider.Provider(provider.DefaultConfig()),
 			})
 		if err != nil {
 			log.Println(err.Error())
 		}
 	} else {
 		plugin.Serve(&plugin.ServeOpts{
-			ProviderFunc: scaleway.Provider(scaleway.DefaultProviderConfig()),
+			ProviderFunc: provider.Provider(provider.DefaultConfig()),
 		})
 	}
 }

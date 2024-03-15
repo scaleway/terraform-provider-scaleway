@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayInstanceIP() *schema.Resource {
+func ResourceScalewayInstanceIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceIPCreate,
 		ReadContext:   resourceScalewayInstanceIPRead,

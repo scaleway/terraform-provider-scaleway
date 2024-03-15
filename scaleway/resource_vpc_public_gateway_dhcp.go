@@ -15,7 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
+func ResourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayDHCPCreate,
 		ReadContext:   resourceScalewayVPCPublicGatewayDHCPRead,

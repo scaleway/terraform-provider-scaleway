@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayVPCs() *schema.Resource {
+func DataSourceScalewayVPCs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayVPCsRead,
 		Schema: map[string]*schema.Schema{

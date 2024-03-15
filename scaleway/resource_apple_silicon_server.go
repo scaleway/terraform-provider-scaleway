@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayAppleSiliconServer() *schema.Resource {
+func ResourceScalewayAppleSiliconServer() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayAppleSiliconServerCreate,
 		ReadContext:   resourceScalewayAppleSiliconServerRead,

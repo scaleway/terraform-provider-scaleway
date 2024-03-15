@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayIamGroup() *schema.Resource {
+func ResourceScalewayIamGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIamGroupCreate,
 		ReadContext:   resourceScalewayIamGroupRead,

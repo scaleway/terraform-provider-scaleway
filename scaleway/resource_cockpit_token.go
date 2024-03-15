@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
-func resourceScalewayCockpitToken() *schema.Resource {
+func ResourceScalewayCockpitToken() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayCockpitTokenCreate,
 		ReadContext:   resourceScalewayCockpitTokenRead,
@@ -39,7 +39,7 @@ func resourceScalewayCockpitToken() *schema.Resource {
 				ForceNew:    true,
 				MaxItems:    1,
 				Description: "Endpoints",
-				Elem:        resourceScalewayCockpitTokenScopes(),
+				Elem:        ResourceScalewayCockpitTokenScopes(),
 			},
 			"secret_key": {
 				Type:        schema.TypeString,
@@ -52,7 +52,7 @@ func resourceScalewayCockpitToken() *schema.Resource {
 	}
 }
 
-func resourceScalewayCockpitTokenScopes() *schema.Resource {
+func ResourceScalewayCockpitTokenScopes() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"query_metrics": {
@@ -133,7 +133,7 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 	scopes := expandCockpitTokenScopes(d.Get("scopes"))
 
 	if scopes == nil {
-		schema := resourceScalewayCockpitTokenScopes().Schema
+		schema := ResourceScalewayCockpitTokenScopes().Schema
 		scopes = &cockpit.TokenScopes{
 			QueryMetrics:      schema["query_metrics"].Default.(bool),
 			WriteMetrics:      schema["write_metrics"].Default.(bool),

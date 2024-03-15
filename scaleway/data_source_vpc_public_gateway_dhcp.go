@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
+func DataSourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayVPCPublicGatewayDHCP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPCPublicGatewayDHCP().Schema)
 
 	dsSchema["dhcp_id"] = &schema.Schema{
 		Type:         schema.TypeString,

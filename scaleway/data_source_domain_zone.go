@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
-func dataSourceScalewayDomainZone() *schema.Resource {
+func DataSourceScalewayDomainZone() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayDomainZone().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayDomainZone().Schema)
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "domain", "subdomain")
 

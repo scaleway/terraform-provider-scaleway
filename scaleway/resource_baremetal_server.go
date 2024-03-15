@@ -19,7 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayBaremetalServer() *schema.Resource {
+func ResourceScalewayBaremetalServer() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayBaremetalServerCreate,
 		ReadContext:   resourceScalewayBaremetalServerRead,
@@ -155,19 +155,19 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "IP addresses attached to the server.",
-				Elem:        resourceScalewayBaremetalServerIP(),
+				Elem:        ResourceScalewayBaremetalServerIP(),
 			},
 			"ipv4": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "IPv4 addresses attached to the server",
-				Elem:        resourceScalewayBaremetalServerIP(),
+				Elem:        ResourceScalewayBaremetalServerIP(),
 			},
 			"ipv6": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "IPv6 addresses attached to the server",
-				Elem:        resourceScalewayBaremetalServerIP(),
+				Elem:        ResourceScalewayBaremetalServerIP(),
 			},
 			"domain": {
 				Type:     schema.TypeString,
@@ -249,7 +249,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 	}
 }
 
-func resourceScalewayBaremetalServerIP() *schema.Resource {
+func ResourceScalewayBaremetalServerIP() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"id": {

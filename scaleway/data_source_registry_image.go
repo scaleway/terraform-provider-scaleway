@@ -10,7 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayRegistryImage() *schema.Resource {
+func DataSourceScalewayRegistryImage() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceScalewayRegistryImageRead,
 

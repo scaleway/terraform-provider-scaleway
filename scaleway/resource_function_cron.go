@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayFunctionCron() *schema.Resource {
+func ResourceScalewayFunctionCron() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionCronCreate,
 		ReadContext:   resourceScalewayFunctionCronRead,

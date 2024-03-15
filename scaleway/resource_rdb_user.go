@@ -18,7 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbUser() *schema.Resource {
+func ResourceScalewayRdbUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbUserCreate,
 		ReadContext:   resourceScalewayRdbUserRead,

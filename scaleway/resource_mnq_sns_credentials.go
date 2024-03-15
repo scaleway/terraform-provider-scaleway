@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayMNQSNSCredentials() *schema.Resource {
+func ResourceScalewayMNQSNSCredentials() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSNSCredentialsCreate,
 		ReadContext:   resourceScalewayMNQSNSCredentialsRead,

@@ -16,7 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayIotHub() *schema.Resource {
+func ResourceScalewayIotHub() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIotHubCreate,
 		ReadContext:   resourceScalewayIotHubRead,

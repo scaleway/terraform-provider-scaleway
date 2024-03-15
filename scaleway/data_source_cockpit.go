@@ -9,9 +9,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayCockpit() *schema.Resource {
+func DataSourceScalewayCockpit() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayCockpit().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayCockpit().Schema)
 
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,

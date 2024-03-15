@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
-func dataSourceScalewayMarketplaceImage() *schema.Resource {
+func DataSourceScalewayMarketplaceImage() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayMarketplaceImageRead,
 		Schema: map[string]*schema.Schema{

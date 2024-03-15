@@ -14,7 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayInstancePrivateNIC() *schema.Resource {
+func ResourceScalewayInstancePrivateNIC() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstancePrivateNICCreate,
 		ReadContext:   resourceScalewayInstancePrivateNICRead,

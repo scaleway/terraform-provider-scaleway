@@ -15,9 +15,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func dataSourceScalewayObjectBucketPolicy() *schema.Resource {
+func DataSourceScalewayObjectBucketPolicy() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayObjectBucketPolicy().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayObjectBucketPolicy().Schema)
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "bucket")
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")

@@ -18,7 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayLbFrontend() *schema.Resource {
+func ResourceScalewayLbFrontend() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayLbFrontendCreate,
 		ReadContext:   resourceScalewayLbFrontendRead,

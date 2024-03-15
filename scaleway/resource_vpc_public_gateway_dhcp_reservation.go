@@ -16,7 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
-func resourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
+func ResourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayDHCPCReservationCreate,
 		ReadContext:   resourceScalewayVPCPublicGatewayDHCPReservationRead,

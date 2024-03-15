@@ -15,7 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayFunctionTrigger() *schema.Resource {
+func ResourceScalewayFunctionTrigger() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionTriggerCreate,
 		ReadContext:   resourceScalewayFunctionTriggerRead,

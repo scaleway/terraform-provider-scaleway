@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayIamAPIKey() *schema.Resource {
+func ResourceScalewayIamAPIKey() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIamAPIKeyCreate,
 		ReadContext:   resourceScalewayIamAPIKeyRead,

@@ -17,7 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayIPAMIP() *schema.Resource {
+func ResourceScalewayIPAMIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIPAMIPCreate,
 		ReadContext:   resourceScalewayIPAMIPRead,

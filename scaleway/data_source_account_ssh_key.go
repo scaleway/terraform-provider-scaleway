@@ -4,6 +4,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceScalewayAccountSSHKey() *schema.Resource {
-	return dataSourceScalewayIamSSHKey()
+func DataSourceScalewayAccountSSHKey() *schema.Resource {
+	return DataSourceScalewayIamSSHKey()
 }

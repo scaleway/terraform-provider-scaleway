@@ -18,7 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayVPCGatewayNetwork() *schema.Resource {
+func ResourceScalewayVPCGatewayNetwork() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCGatewayNetworkCreate,
 		ReadContext:   resourceScalewayVPCGatewayNetworkRead,

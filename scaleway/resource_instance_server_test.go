@@ -18,6 +18,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/require"
 )
@@ -1815,11 +1817,11 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 
 	ctx := context.Background()
 	// This come from iam_policy tests to use policies in tests
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	// This is the provider factory that will use the temporary project
-	providerFactories := fakeSideProjectProviders(ctx, tt, project, iamAPIKey)
+	providerFactories := iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey)
 
 	// Goal of this test is to check that an IP will not get detached if moved from ip_id to ip_ids
 	// Between the two steps we will create an API key that cannot update the IP,
@@ -1838,7 +1840,7 @@ func TestAccScalewayInstanceServer_IPMigrate(t *testing.T) {
 			if err != nil {
 				return nil, err
 			}
-			return scaleway.Provider(&scaleway.ProviderConfig{Meta: m})(), nil
+			return provider.Provider(&provider.Config{Meta: m})(), nil
 		},
 	}
 

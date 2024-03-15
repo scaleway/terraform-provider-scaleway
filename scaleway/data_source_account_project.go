@@ -13,8 +13,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayAccountProject() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayAccountProject().Schema)
+func DataSourceScalewayAccountProject() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayAccountProject().Schema)
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "organization_id")
 
 	dsSchema["name"].ConflictsWith = []string{"project_id"}

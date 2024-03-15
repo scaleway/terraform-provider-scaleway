@@ -19,7 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbInstance() *schema.Resource {
+func ResourceScalewayRdbInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbInstanceCreate,
 		ReadContext:   resourceScalewayRdbInstanceRead,

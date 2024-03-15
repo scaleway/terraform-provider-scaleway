@@ -30,7 +30,7 @@ var changeKeys = []string{
 	"keep_empty_zone",
 }
 
-func resourceScalewayDomainRecord() *schema.Resource {
+func ResourceScalewayDomainRecord() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDomainRecordCreate,
 		ReadContext:   resourceScalewayDomainRecordRead,

@@ -13,9 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayLbIP() *schema.Resource {
+func DataSourceScalewayLbIP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(resourceScalewayLbIP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayLbIP().Schema)
 
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,

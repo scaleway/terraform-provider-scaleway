@@ -16,7 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayInstanceImage() *schema.Resource {
+func ResourceScalewayInstanceImage() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceImageCreate,
 		ReadContext:   resourceScalewayInstanceImageRead,

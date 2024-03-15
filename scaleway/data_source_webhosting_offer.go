@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func dataSourceScalewayWebhostingOffer() *schema.Resource {
+func DataSourceScalewayWebhostingOffer() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayWebhostingOfferRead,
 		Schema: map[string]*schema.Schema{

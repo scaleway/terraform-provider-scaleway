@@ -10,7 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func resourceScalewayMNQSNS() *schema.Resource {
+func ResourceScalewayMNQSNS() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSNSCreate,
 		ReadContext:   resourceScalewayMNQSNSRead,
