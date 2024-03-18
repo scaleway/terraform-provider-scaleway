@@ -23,6 +23,11 @@ resource scaleway_job_definition main {
   env = {
     foo: "bar"
   }
+
+  cron {
+    schedule = "5 4 1 * *" # cron at 04:05 on day-of-month 1
+    timezone = "Europe/Paris"
+  }
 }
 ```
 
@@ -38,6 +43,9 @@ The following arguments are supported:
 - `command` - (Optional) The command that will be run in the container if specified.
 - `timeout` - (Optional) The job run timeout, in Go Time format (ex: `2h30m25s`)
 - `env` - (Optional) The environment variables of the container.
+- `cron` - (Optional) The cron configuration
+    - `schedule` - Cron format string.
+    - `timezone` - The timezone, must be a canonical TZ identifier as found in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the Job.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Job is associated with.
 
@@ -46,7 +54,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Job Definition.
-~> **Important:** Serverless Jobs Definition's IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
+
+~> **Important:** Serverless Jobs Definition's IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 ## Import
 
