@@ -44,8 +44,8 @@ The following arguments are supported:
 - `timeout` - (Optional) The job run timeout, in Go Time format (ex: `2h30m25s`)
 - `env` - (Optional) The environment variables of the container.
 - `cron` - (Optional) The cron configuration
-  - `schedule` - Cron format string.
-  - `timezone` - The timezone, must be a canonical TZ identifier as found in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+    - `schedule` - Cron format string.
+    - `timezone` - The timezone, must be a canonical TZ identifier as found in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the Job.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Job is associated with.
 
