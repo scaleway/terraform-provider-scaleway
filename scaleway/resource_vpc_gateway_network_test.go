@@ -84,7 +84,7 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 					}
 
 					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
+						name = "tf-tests-vpc-pgw-network-basic"
 						type = "VPC-GW-S"
 						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
@@ -124,7 +124,7 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 					}
 
 					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
+						name = "tf-tests-vpc-pgw-network-basic"
 						type = "VPC-GW-S"
 						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
@@ -148,11 +148,11 @@ func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
-						name = "pn_test_network"
+						name = "tf-tests-vpc-pgw-network-without-dhcp"
 					}
 
 					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
+						name = "tf-tests-vpc-pgw-network-without-dhcp"
 						type = "VPC-GW-S"
 					}
 
@@ -196,11 +196,11 @@ func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_vpc vpc01 {
-						name = "my vpc"
+						name = "tf-tests-vpc-pgw-network-with-ipam-config"
 					}
 
 					resource scaleway_vpc_private_network pn01 {
-						name = "pn_test_network"
+						name = "tf-tests-vpc-pgw-network-with-ipam-config"
 						ipv4_subnet {
 							subnet = "172.16.64.0/22"
 						}
@@ -208,7 +208,7 @@ func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					}
 
 					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
+						name = "tf-tests-vpc-pgw-network-with-ipam-config"
 						type = "VPC-GW-S"
 					}
 
@@ -240,11 +240,11 @@ func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_vpc vpc01 {
-						name = "my vpc"
+						name = "tf-tests-vpc-pgw-network-with-ipam-config"
 					}
 
 					resource scaleway_vpc_private_network pn01 {
-						name = "pn_test_network"
+						name = "tf-tests-vpc-pgw-network-with-ipam-config"
 						ipv4_subnet {
 							subnet = "172.16.64.0/22"
 						}
@@ -252,7 +252,7 @@ func TestAccScalewayVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					}
 
 					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
+						name = "tf-tests-vpc-pgw-network-with-ipam-config"
 						type = "VPC-GW-S"
 					}
 
