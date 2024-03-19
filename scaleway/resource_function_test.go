@@ -63,7 +63,7 @@ func TestAccScalewayFunction_Basic(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-basic"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"
@@ -72,7 +72,7 @@ func TestAccScalewayFunction_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
-					resource.TestCheckResourceAttr("scaleway_function.main", "name", "foobar"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "name", "tf-tests-func-basic"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node14"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "privacy", "private"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "handler", "handler.handle"),
@@ -98,7 +98,7 @@ func TestAccScalewayFunction_Timeout(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-timeout"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"
@@ -108,7 +108,7 @@ func TestAccScalewayFunction_Timeout(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
-					resource.TestCheckResourceAttr("scaleway_function.main", "name", "foobar"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "name", "tf-tests-func-timeout"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node14"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "privacy", "private"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "handler", "handler.handle"),
@@ -162,7 +162,7 @@ func TestAccScalewayFunction_EnvironmentVariables(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-env"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"
@@ -187,7 +187,7 @@ func TestAccScalewayFunction_EnvironmentVariables(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-env"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"
@@ -225,7 +225,7 @@ func TestAccScalewayFunction_Upload(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-upload"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "go118"
 						privacy = "private"
@@ -255,7 +255,7 @@ func TestAccScalewayFunction_Deploy(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-deploy"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "go118"
 						privacy = "private"
@@ -273,7 +273,7 @@ func TestAccScalewayFunction_Deploy(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-deploy"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "go118"
 						privacy = "private"
@@ -305,7 +305,7 @@ func TestAccScalewayFunction_HTTPOption(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-http-option"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"
@@ -323,7 +323,7 @@ func TestAccScalewayFunction_HTTPOption(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-http-option"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"
@@ -341,7 +341,7 @@ func TestAccScalewayFunction_HTTPOption(t *testing.T) {
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
-						name = "foobar"
+						name = "tf-tests-func-http-option"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"
