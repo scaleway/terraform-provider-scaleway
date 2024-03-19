@@ -593,7 +593,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 
 	// If we are switching to local storage, we have to make sure that the node_type upgrade is done first
 	if d.HasChange("volume_type") {
-		_, wantedVolumeType := d.GetChange("volume_type")
+		wantedVolumeType := d.Get("volume_type")
 		if wantedVolumeType == rdb.VolumeTypeLssd.String() {
 			for i, req := range upgradeInstanceRequests {
 				if req.NodeType != nil && i != 0 {
