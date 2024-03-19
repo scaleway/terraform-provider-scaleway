@@ -25,7 +25,7 @@ func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_vpc_private_network main {
-						name = "pn_test_network"
+						name = "tf-tests-vpc-pgw-dhcp-entry-basic"
 					}
 
 					resource "scaleway_instance_server" "main" {
@@ -46,7 +46,7 @@ func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
 					}
 
 					resource scaleway_vpc_public_gateway main {
-						name = "foobar"
+						name = "tf-tests-vpc-pgw-dhcp-entry-basic"
 						type = "VPC-GW-S"
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
@@ -81,7 +81,7 @@ func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_vpc_private_network main {
-						name = "pn_test_network"
+						name = "tf-tests-vpc-pgw-dhcp-entry-basic"
 					}
 
 					resource "scaleway_instance_server" "main" {
@@ -102,7 +102,7 @@ func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
 					}
 
 					resource scaleway_vpc_public_gateway main {
-						name = "foobar"
+						name = "tf-tests-vpc-pgw-dhcp-entry-basic"
 						type = "VPC-GW-S"
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
