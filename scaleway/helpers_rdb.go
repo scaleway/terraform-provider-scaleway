@@ -355,19 +355,11 @@ func getIPConfigCreate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 
 // getIPConfigUpdate forces the provider to read the user's config instead of checking the state, because "enable_ipam" is not readable from the API
 func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *bool, staticConfig *string) {
-	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() {
-		pnRawConfig := rawConfig.AsValueMap()["private_network"].AsValueSlice()[0].AsValueMap()
-		if !pnRawConfig["enable_ipam"].IsNull() {
-			if pnRawConfig["enable_ipam"].False() {
-				ipamConfig = scw.BoolPtr(false)
-			} else {
-				ipamConfig = scw.BoolPtr(true)
-			}
-		}
-		if !pnRawConfig[ipFieldName].IsNull() {
-			value := pnRawConfig[ipFieldName].AsString()
-			staticConfig = &value
-		}
+	if ipamConfigI, _ := getRawConfigForKey(d, "private_network.#.enable_ipam", cty.Bool); ipamConfigI != nil {
+		ipamConfig = types.ExpandBoolPtr(ipamConfigI)
+	}
+	if staticConfigI, _ := getRawConfigForKey(d, "private_network.#."+ipFieldName, cty.String); staticConfigI != nil {
+		staticConfig = types.ExpandStringPtr(staticConfigI)
 	}
 	return ipamConfig, staticConfig
 }
