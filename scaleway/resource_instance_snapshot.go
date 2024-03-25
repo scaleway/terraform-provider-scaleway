@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -80,10 +81,14 @@ func ResourceScalewayInstanceSnapshot() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bucket": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "Bucket containing qcow",
+							Type:             schema.TypeString,
+							Required:         true,
+							ForceNew:         true,
+							Description:      "Bucket containing qcow",
+							DiffSuppressFunc: diffSuppressFuncLocality,
+							StateFunc: func(i interface{}) string {
+								return regional.ExpandID(i.(string)).ID
+							},
 						},
 						"key": {
 							Type:        schema.TypeString,
@@ -134,7 +139,7 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if _, isImported := d.GetOk("import"); isImported {
-		req.Bucket = types.ExpandStringPtr(d.Get("import.0.bucket"))
+		req.Bucket = types.ExpandStringPtr(regional.ExpandID(d.Get("import.0.bucket")).ID)
 		req.Key = types.ExpandStringPtr(d.Get("import.0.key"))
 	}
 
