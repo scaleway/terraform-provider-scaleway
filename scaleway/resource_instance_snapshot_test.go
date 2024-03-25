@@ -228,6 +228,42 @@ func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceSnapshot_FromObject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_object_bucket" "bucket" {
+						name = "test-instance-snapshot-import-from-object"
+					}
+
+					resource "scaleway_object" "image" {
+						bucket = scaleway_object_bucket.bucket.name
+						key    = "image.qcow"
+						file   = "testfixture/empty.qcow2"
+					}
+
+					resource "scaleway_instance_snapshot" "snapshot" {
+						name = "test-instance-snapshot-import-from-object"
+						type = "b_ssd"
+						import {
+							bucket = scaleway_object.image.bucket
+							key    = scaleway_object.image.key
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.snapshot"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceSnapShotExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
