@@ -228,7 +228,7 @@ func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
 	})
 }
 
-func TestAccScalewayInstanceSnapshot_ImportFromObject(t *testing.T) {
+func TestAccScalewayInstanceSnapshot_FromObject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
