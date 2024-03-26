@@ -30,17 +30,10 @@ func waitForContainerTrigger(ctx context.Context, containerAPI *container.API, r
 
 func expandContainerTriggerMnqSqsCreationConfig(i interface{}) *container.CreateTriggerRequestMnqSqsClientConfig {
 	m := i.(map[string]interface{})
-
-	mnqNamespaceID := locality.ExpandID(m["namespace_id"].(string))
-
 	req := &container.CreateTriggerRequestMnqSqsClientConfig{
 		Queue:        m["queue"].(string),
 		MnqProjectID: m["project_id"].(string),
 		MnqRegion:    m["region"].(string),
-	}
-
-	if mnqNamespaceID != "" {
-		req.MnqNamespaceID = &mnqNamespaceID
 	}
 
 	return req
