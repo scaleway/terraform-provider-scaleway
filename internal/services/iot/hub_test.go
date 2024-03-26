@@ -17,11 +17,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_iot_hub", &resource.Sweeper{
 		Name: "scaleway_iot_hub",
-		F:    testSweepIotHub,
+		F:    testSweepHub,
 	})
 }
 
-func testSweepIotHub(_ string) error {
+func testSweepHub(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		iotAPI := iotSDK.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying the iot hub in (%s)", region)
@@ -53,7 +53,7 @@ func TestAccHub_Minimal(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckIotHubDestroy(tt),
+		CheckDestroy:      isHubDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -62,7 +62,7 @@ func TestAccHub_Minimal(t *testing.T) {
 							product_plan = "plan_shared"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "product_plan", "plan_shared"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "status", iotSDK.HubStatusReady.String()),
 					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
@@ -81,7 +81,7 @@ func TestAccHub_Minimal(t *testing.T) {
 							enabled = false
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "status", iotSDK.HubStatusDisabled.String()),
 					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "device_count", "0"),
@@ -102,7 +102,7 @@ func TestAccHub_Dedicated(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckIotHubDestroy(tt),
+		CheckDestroy:      isHubDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -111,7 +111,7 @@ func TestAccHub_Dedicated(t *testing.T) {
 							product_plan = "plan_dedicated"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "product_plan", "plan_dedicated"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "status", iotSDK.HubStatusReady.String()),
 					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
@@ -128,7 +128,7 @@ func TestAccHub_Dedicated(t *testing.T) {
 							product_plan = "plan_dedicated"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "product_plan", "plan_dedicated"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "status", iotSDK.HubStatusReady.String()),
 					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
@@ -142,7 +142,7 @@ func TestAccHub_Dedicated(t *testing.T) {
 	})
 }
 
-func testAccCheckIotHubDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isHubDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_iot_hub" {
@@ -173,7 +173,7 @@ func testAccCheckIotHubDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIotHubExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isHubPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

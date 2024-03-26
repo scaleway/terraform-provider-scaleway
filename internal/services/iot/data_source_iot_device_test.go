@@ -7,13 +7,13 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceIotDevice_Basic(t *testing.T) {
+func TestAccDataSourceDevice_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckIotHubDestroy(tt),
+		CheckDestroy:      isHubDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -41,7 +41,7 @@ func TestAccDataSourceIotDevice_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotDeviceExists(tt, "scaleway_iot_device.test"),
+					isDevicePresent(tt, "scaleway_iot_device.test"),
 
 					resource.TestCheckResourceAttr("data.scaleway_iot_device.by_name", "name", "test_iot_device_datasource"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iot_device.by_name", "id"),

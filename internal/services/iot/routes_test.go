@@ -27,7 +27,7 @@ func TestAccRoute_RDB(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckIotHubDestroy(tt),
+			isHubDestroyed(tt),
 			rdbchecks.IsInstanceDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -63,8 +63,8 @@ func TestAccRoute_RDB(t *testing.T) {
 						}
 						`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					testAccCheckIotRouteExists(tt, "scaleway_iot_route.default"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal"),
+					isRoutePresent(tt, "scaleway_iot_route.default"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "hub_id"),
 					resource.TestCheckResourceAttr("scaleway_iot_route.default", "topic", "#"),
@@ -93,7 +93,7 @@ func TestAccRoute_S3(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			testAccCheckIotHubDestroy(tt),
+			isHubDestroyed(tt),
 			objectchecks.IsBucketDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -125,8 +125,8 @@ func TestAccRoute_S3(t *testing.T) {
 						`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.minimal", true),
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					testAccCheckIotRouteExists(tt, "scaleway_iot_route.default"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal"),
+					isRoutePresent(tt, "scaleway_iot_route.default"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "hub_id"),
 					resource.TestCheckResourceAttr("scaleway_iot_route.default", "topic", "#"),
@@ -147,7 +147,7 @@ func TestAccRoute_REST(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
-		CheckDestroy: testAccCheckIotHubDestroy(tt),
+		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -171,8 +171,8 @@ func TestAccRoute_REST(t *testing.T) {
 						}
 						`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					testAccCheckIotRouteExists(tt, "scaleway_iot_route.default"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal"),
+					isRoutePresent(tt, "scaleway_iot_route.default"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "hub_id"),
 					resource.TestCheckResourceAttr("scaleway_iot_route.default", "topic", "#"),
@@ -185,7 +185,7 @@ func TestAccRoute_REST(t *testing.T) {
 	})
 }
 
-func testAccCheckIotRouteExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isRoutePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

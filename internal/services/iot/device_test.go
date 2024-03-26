@@ -42,7 +42,7 @@ func TestAccDevice_Minimal(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
-		CheckDestroy: testAccCheckIotHubDestroy(tt),
+		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -55,8 +55,8 @@ func TestAccDevice_Minimal(t *testing.T) {
 							product_plan = "plan_shared"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal-1"),
-					testAccCheckIotDeviceExists(tt, "scaleway_iot_device.default-1"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal-1"),
+					isDevicePresent(tt, "scaleway_iot_device.default-1"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-1", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-1", "hub_id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-1", "name"),
@@ -76,7 +76,7 @@ func TestAccDevice_MessageFilters(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
-		CheckDestroy: testAccCheckIotHubDestroy(tt),
+		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -107,8 +107,8 @@ func TestAccDevice_MessageFilters(t *testing.T) {
 							product_plan = "plan_shared"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal-4"),
-					testAccCheckIotDeviceExists(tt, "scaleway_iot_device.default-4"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal-4"),
+					isDevicePresent(tt, "scaleway_iot_device.default-4"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-4", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-4", "hub_id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-4", "name"),
@@ -132,7 +132,7 @@ func TestAccDevice_AllowInsecure(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
-		CheckDestroy: testAccCheckIotHubDestroy(tt),
+		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -146,8 +146,8 @@ func TestAccDevice_AllowInsecure(t *testing.T) {
 							product_plan = "plan_shared"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal-2"),
-					testAccCheckIotDeviceExists(tt, "scaleway_iot_device.default-2"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal-2"),
+					isDevicePresent(tt, "scaleway_iot_device.default-2"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-2", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-2", "hub_id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-2", "name"),
@@ -167,8 +167,8 @@ func TestAccDevice_AllowInsecure(t *testing.T) {
 							product_plan = "plan_shared"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal-3"),
-					testAccCheckIotDeviceExists(tt, "scaleway_iot_device.default-3"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal-3"),
+					isDevicePresent(tt, "scaleway_iot_device.default-3"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-3", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-3", "hub_id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-3", "name"),
@@ -187,7 +187,7 @@ func TestAccDevice_Certificate(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
-		CheckDestroy: testAccCheckIotHubDestroy(tt),
+		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -205,8 +205,8 @@ func TestAccDevice_Certificate(t *testing.T) {
 							product_plan = "plan_shared"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIotHubExists(tt, "scaleway_iot_hub.minimal-5"),
-					testAccCheckIotDeviceExists(tt, "scaleway_iot_device.default-5"),
+					isHubPresent(tt, "scaleway_iot_hub.minimal-5"),
+					isDevicePresent(tt, "scaleway_iot_device.default-5"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-5", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-5", "hub_id"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-5", "name"),
@@ -219,7 +219,7 @@ func TestAccDevice_Certificate(t *testing.T) {
 	})
 }
 
-func testAccCheckIotDeviceExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isDevicePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
