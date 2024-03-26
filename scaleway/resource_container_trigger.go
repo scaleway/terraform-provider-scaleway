@@ -61,10 +61,10 @@ func ResourceScalewayContainerTrigger() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"namespace_id": {
 							Optional:         true,
-							ForceNew:         true,
 							Type:             schema.TypeString,
 							Description:      "ID of the mnq namespace",
 							DiffSuppressFunc: diffSuppressFuncLocality,
+							Deprecated:       "The 'namespace_id' field is deprecated and will be removed in the next major version. It is no longer necessary to specify it",
 						},
 						"queue": {
 							Required:    true,
