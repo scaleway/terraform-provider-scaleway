@@ -9,7 +9,7 @@ import (
 	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 )
 
-func TestAccAccountSSHKey_basic(t *testing.T) {
+func TestAccSSHKeyAccount_basic(t *testing.T) {
 	name := "tf-test-account-ssh-key-basic"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
 	FormattedSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX"
@@ -51,7 +51,7 @@ func TestAccAccountSSHKey_basic(t *testing.T) {
 	})
 }
 
-func TestAccAccountSSHKey_WithNewLine(t *testing.T) {
+func TestAccSSHKeyAccount_WithNewLine(t *testing.T) {
 	name := "tf-test-account-ssh-key-newline"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup opensource@scaleway.com"
 	FormattedSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup"
