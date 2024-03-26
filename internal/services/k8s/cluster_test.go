@@ -24,7 +24,7 @@ func init() {
 	})
 }
 
-func TestAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
+func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
@@ -37,7 +37,7 @@ func TestAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
 	return ""
 }
 
-func TestAccK8SClusterGetLatestK8SVersionMinor(tt *acctest.TestTools) string {
+func testAccK8SClusterGetLatestK8SVersionMinor(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
@@ -51,7 +51,7 @@ func TestAccK8SClusterGetLatestK8SVersionMinor(tt *acctest.TestTools) string {
 	return ""
 }
 
-func TestAccK8SClusterGetPreviousK8SVersion(tt *acctest.TestTools) string {
+func testAccK8SClusterGetPreviousK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
@@ -64,7 +64,7 @@ func TestAccK8SClusterGetPreviousK8SVersion(tt *acctest.TestTools) string {
 	return ""
 }
 
-func TestAccK8SClusterGetPreviousK8SVersionMinor(tt *acctest.TestTools) string {
+func testAccK8SClusterGetPreviousK8SVersionMinor(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
@@ -124,8 +124,8 @@ func TestAccK8SCluster_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
-	previousK8SVersion := testAccScalewayK8SClusterGetPreviousK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+	previousK8SVersion := testAccK8SClusterGetPreviousK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -181,7 +181,7 @@ func TestAccK8SCluster_Autoscaling(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -257,7 +257,7 @@ func TestAccK8SCluster_OIDC(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -324,10 +324,10 @@ func TestAccK8SCluster_AutoUpgrade(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
-	latestK8SVersionMinor := testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt)
-	previousK8SVersion := testAccScalewayK8SClusterGetPreviousK8SVersion(tt)
-	previousK8SVersionMinor := testAccScalewayK8SClusterGetPreviousK8SVersionMinor(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersionMinor := testAccK8SClusterGetLatestK8SVersionMinor(tt)
+	previousK8SVersion := testAccK8SClusterGetPreviousK8SVersion(tt)
+	previousK8SVersionMinor := testAccK8SClusterGetPreviousK8SVersionMinor(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -407,7 +407,7 @@ func TestAccK8SCluster_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	clusterID := ""
 
@@ -448,7 +448,7 @@ func TestAccK8SCluster_Multicloud(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -472,7 +472,7 @@ func TestAccK8SCluster_TypeChange(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	clusterID := ""
 

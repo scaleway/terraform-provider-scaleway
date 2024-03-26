@@ -65,7 +65,7 @@ func TestAccDataSourceK8SVersion_Latest(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SVersionExists(tt, "data.scaleway_k8s_version.latest"),
 					resource.TestCheckResourceAttrSet("data.scaleway_k8s_version.latest", "name"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.latest", "name", testAccScalewayK8SClusterGetLatestK8SVersion(tt)),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.latest", "name", testAccK8SClusterGetLatestK8SVersion(tt)),
 				),
 			},
 		},

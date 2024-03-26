@@ -23,7 +23,7 @@ func TestAccK8SCluster_PoolBasic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -86,7 +86,7 @@ func TestAccK8SCluster_PoolBasic(t *testing.T) {
 func TestAccK8SCluster_PoolWait(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -166,7 +166,7 @@ func TestAccK8SCluster_PoolPlacementGroup(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -223,7 +223,7 @@ func TestAccK8SCluster_PoolUpgradePolicy(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -278,7 +278,7 @@ func TestAccK8SCluster_PoolKubeletArgs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -317,7 +317,7 @@ func TestAccK8SCluster_PoolZone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -346,7 +346,7 @@ func TestAccK8SCluster_PoolSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersionMinor := testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt)
+	latestK8SVersionMinor := testAccK8SClusterGetLatestK8SVersionMinor(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -423,7 +423,7 @@ func TestAccK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },

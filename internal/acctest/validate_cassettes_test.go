@@ -3,7 +3,6 @@ package acctest_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dnaeon/go-vcr/cassette"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -11,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"

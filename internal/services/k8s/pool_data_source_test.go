@@ -14,7 +14,7 @@ func TestAccDataSourceK8SPool_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	clusterName := "tf-cluster-pool"
 	poolName := "tf-pool"
-	version := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	version := testAccK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
