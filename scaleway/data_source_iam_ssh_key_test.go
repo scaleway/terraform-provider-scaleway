@@ -11,6 +11,7 @@ import (
 
 func TestAccScalewayDataSourceIamSSHKey_Basic(t *testing.T) {
 	dataSourceIamSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ foobar@example.com"
+	dataSourceIamSSHKeyWithoutComment := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ"
 	sshKeyName := "tf-test-ds-iam-ssh-key-basic"
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -44,10 +45,10 @@ func TestAccScalewayDataSourceIamSSHKey_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iam.CheckSSHKeyExists(tt, "data.scaleway_iam_ssh_key.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.prod", "name", sshKeyName),
-					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.prod", "public_key", dataSourceIamSSHKey),
+					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.prod", "public_key", dataSourceIamSSHKeyWithoutComment),
 					iam.CheckSSHKeyExists(tt, "data.scaleway_iam_ssh_key.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.stg", "name", sshKeyName),
-					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.stg", "public_key", dataSourceIamSSHKey),
+					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.stg", "public_key", dataSourceIamSSHKeyWithoutComment),
 				),
 			},
 		},
