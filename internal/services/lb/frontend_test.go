@@ -17,13 +17,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccLbFrontend_Basic(t *testing.T) {
+func TestAccFrontend_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbFrontendDestroy(tt),
+		CheckDestroy:      isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -46,7 +46,7 @@ func TestAccLbFrontend_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbFrontendExists(tt, "scaleway_lb_frontend.frt01"),
+					isFrontendPresent(tt, "scaleway_lb_frontend.frt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "inbound_port", "80"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", ""),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_http3", "false"),
@@ -76,7 +76,7 @@ func TestAccLbFrontend_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbFrontendExists(tt, "scaleway_lb_frontend.frt01"),
+					isFrontendPresent(tt, "scaleway_lb_frontend.frt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "name", "tf-test"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "inbound_port", "443"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", "30s"),
@@ -96,14 +96,14 @@ func TestAccLbFrontend_Basic(t *testing.T) {
 // And we generate certificate for foo.test.scaleway-terraform.com, bar.test.scaleway-terraform.com, baz.test.scaleway-terraform.com, etc.
 // Even changing one alternative domain name is enough to count as a new certificate (which is rate limited by the 50 certificates per week limit and not the 5 duplicate certificates per week limit).
 // The only limitation is that all subdomains must resolve to the same IP address.
-func TestAccLbFrontend_Certificate(t *testing.T) {
+func TestAccFrontend_Certificate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbFrontendDestroy(tt),
+		CheckDestroy:      isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -138,8 +138,8 @@ func TestAccLbFrontend_Certificate(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbFrontendExists(tt, "scaleway_lb_frontend.frt01"),
-					testAccCheckFrontendCertificateExist(tt, "scaleway_lb_frontend.frt01", "scaleway_lb_certificate.cert01"),
+					isFrontendPresent(tt, "scaleway_lb_frontend.frt01"),
+					isFrontendCertificatePresent(tt, "scaleway_lb_frontend.frt01", "scaleway_lb_certificate.cert01"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "certificate_ids.#", "1"),
 				),
 			},
@@ -147,7 +147,7 @@ func TestAccLbFrontend_Certificate(t *testing.T) {
 	})
 }
 
-func testAccCheckFrontendCertificateExist(tt *acctest.TestTools, f, c string) resource.TestCheckFunc {
+func isFrontendCertificatePresent(tt *acctest.TestTools, f, c string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[f]
 		if !ok {
@@ -182,7 +182,7 @@ func testAccCheckFrontendCertificateExist(tt *acctest.TestTools, f, c string) re
 	}
 }
 
-func testAccCheckLbFrontendExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isFrontendPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -206,7 +206,7 @@ func testAccCheckLbFrontendExists(tt *acctest.TestTools, n string) resource.Test
 	}
 }
 
-func testAccCheckLbFrontendDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isFrontendDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb_frontend" {
@@ -238,13 +238,13 @@ func testAccCheckLbFrontendDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 	}
 }
 
-func TestAccLbFrontend_ACLBasic(t *testing.T) {
+func TestAccFrontend_ACLBasic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbFrontendDestroy(tt),
+		CheckDestroy:      isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -334,7 +334,7 @@ func TestAccLbFrontend_ACLBasic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckACLAreCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
+					isACLCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
 						{
 							Name: "test-acl",
 							Match: &lbSDK.ACLMatch{
@@ -425,7 +425,7 @@ func TestAccLbFrontend_ACLBasic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckACLAreCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
+					isACLCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
 						{
 							Match: &lbSDK.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"10.0.0.10"}),
@@ -450,13 +450,13 @@ func TestAccLbFrontend_ACLBasic(t *testing.T) {
 	})
 }
 
-func TestAccLbFrontend_ACLRedirectAction(t *testing.T) {
+func TestAccFrontend_ACLRedirectAction(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbFrontendDestroy(tt),
+		CheckDestroy:      isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -496,7 +496,7 @@ func TestAccLbFrontend_ACLRedirectAction(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckACLAreCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
+					isACLCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
 						{
 							Match: &lbSDK.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"10.0.0.10"}),
@@ -528,7 +528,7 @@ func TestAccLbFrontend_ACLRedirectAction(t *testing.T) {
 	})
 }
 
-func testAccCheckACLAreCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lbSDK.ACL) resource.TestCheckFunc {
+func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lbSDK.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		// define a wrapper for acl comparison
 		testCompareAcls := func(testAcl, apiAcl lbSDK.ACL) bool {

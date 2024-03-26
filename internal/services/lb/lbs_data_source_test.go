@@ -13,7 +13,7 @@ func TestAccDataSourceLbs_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// Create one IP first because its POST request cannot be matched correctly

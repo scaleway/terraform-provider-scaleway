@@ -14,13 +14,13 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
-func TestAccLbBackend_Basic(t *testing.T) {
+func TestAccBackend_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbBackendDestroy(tt),
+		CheckDestroy:      isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -43,7 +43,7 @@ func TestAccLbBackend_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port_algorithm", "roundrobin"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "sticky_sessions", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "proxy_protocol", "none"),
@@ -105,7 +105,7 @@ func TestAccLbBackend_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.0", "scaleway_instance_ip.ip01", "address"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.1", "scaleway_instance_ip.ip02", "address"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_server", "1s"),
@@ -130,13 +130,13 @@ func TestAccLbBackend_Basic(t *testing.T) {
 	})
 }
 
-func TestAccLbBackend_HealthCheck(t *testing.T) {
+func TestAccBackend_HealthCheck(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbBackendDestroy(tt),
+		CheckDestroy:      isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -232,7 +232,7 @@ func TestAccLbBackend_HealthCheck(t *testing.T) {
 	})
 }
 
-func TestAccLbBackend_WithFailoverHost(t *testing.T) {
+func TestAccBackend_WithFailoverHost(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "scaleway_object_bucket_website_configuration.test"
 
@@ -242,7 +242,7 @@ func TestAccLbBackend_WithFailoverHost(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckLbBackendDestroy(tt),
+			isBackendDestroyed(tt),
 			objectchecks.IsObjectDestroyed(tt),
 			objectchecks.IsBucketDestroyed(tt),
 			objectchecks.IsWebsiteConfigurationDestroyed(tt),
@@ -321,7 +321,7 @@ func TestAccLbBackend_WithFailoverHost(t *testing.T) {
 						server_ips = [ scaleway_instance_ip.ip01.address ]
 					}
 				`, rName),
-				Check: testAccCheckLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+				Check: isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -371,7 +371,7 @@ func TestAccLbBackend_WithFailoverHost(t *testing.T) {
 				`, rName),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.IsWebsiteConfigurationPresent(tt, resourceName),
-					testAccCheckLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr(resourceName, "website_endpoint", rName+".s3-website.fr-par.scw.cloud"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_backend.bkd01", "failover_host"),
 				),
@@ -381,13 +381,13 @@ func TestAccLbBackend_WithFailoverHost(t *testing.T) {
 	})
 }
 
-func TestAccLbBackend_HealthCheck_Port(t *testing.T) {
+func TestAccBackend_HealthCheck_Port(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbBackendDestroy(tt),
+		CheckDestroy:      isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -406,7 +406,7 @@ func TestAccLbBackend_HealthCheck_Port(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "3333"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "3333"),
 				),
@@ -428,7 +428,7 @@ func TestAccLbBackend_HealthCheck_Port(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "4444"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
 				),
@@ -451,7 +451,7 @@ func TestAccLbBackend_HealthCheck_Port(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "4444"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
 				),
@@ -474,7 +474,7 @@ func TestAccLbBackend_HealthCheck_Port(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "5555"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
 				),
@@ -483,7 +483,7 @@ func TestAccLbBackend_HealthCheck_Port(t *testing.T) {
 	})
 }
 
-func testAccCheckLbBackendExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isBackendPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -507,7 +507,7 @@ func testAccCheckLbBackendExists(tt *acctest.TestTools, n string) resource.TestC
 	}
 }
 
-func testAccCheckLbBackendDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isBackendDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb_backend" {

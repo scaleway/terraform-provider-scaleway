@@ -12,13 +12,13 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 )
 
-func TestAccLbAcl_Basic(t *testing.T) {
+func TestAccAcl_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbACLDestroy(tt),
+		CheckDestroy:      isACLDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -59,7 +59,7 @@ func TestAccLbAcl_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbACLExists(tt, "scaleway_lb_acl.acl01"),
+					isACLPresent(tt, "scaleway_lb_acl.acl01"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_lb_acl.acl01", "frontend_id",
 						"scaleway_lb_frontend.frt01", "id"),
@@ -114,7 +114,7 @@ func TestAccLbAcl_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbACLExists(tt, "scaleway_lb_acl.acl01"),
+					isACLPresent(tt, "scaleway_lb_acl.acl01"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_lb_acl.acl01", "frontend_id",
 						"scaleway_lb_frontend.frt01", "id"),
@@ -141,7 +141,7 @@ func TestAccLbAcl_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckLbACLExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isACLPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -165,7 +165,7 @@ func testAccCheckLbACLExists(tt *acctest.TestTools, n string) resource.TestCheck
 	}
 }
 
-func testAccCheckLbACLDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isACLDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb_acl" {

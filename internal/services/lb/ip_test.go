@@ -17,11 +17,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_lb_ip", &resource.Sweeper{
 		Name: "scaleway_lb_ip",
-		F:    testSweepLBIP,
+		F:    testSweepIP,
 	})
 }
 
-func testSweepLBIP(_ string) error {
+func testSweepIP(_ string) error {
 	return acctest.SweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, zone scw.Zone) error {
 		lbAPI := lbSDK.NewZonedAPI(scwClient)
 
@@ -47,7 +47,7 @@ func testSweepLBIP(_ string) error {
 	})
 }
 
-func TestAccLbIP_Basic(t *testing.T) {
+func TestAccIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -62,7 +62,7 @@ func TestAccLbIP_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ipZone"),
+					isIPPresent(tt, "scaleway_lb_ip.ipZone"),
 					acctest.CheckResourceAttrIPv4("scaleway_lb_ip.ipZone", "ip_address"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_ip.ipZone", "reverse"),
 					resource.TestCheckResourceAttr("scaleway_lb_ip.ipZone", "zone", "nl-ams-1"),
@@ -74,7 +74,7 @@ func TestAccLbIP_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 					acctest.CheckResourceAttrIPv4("scaleway_lb_ip.ip01", "ip_address"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_ip.ip01", "reverse"),
 					resource.TestCheckResourceAttr("scaleway_lb_ip.ip01", "zone", "fr-par-1"),
@@ -87,7 +87,7 @@ func TestAccLbIP_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 					acctest.CheckResourceAttrIPv4("scaleway_lb_ip.ip01", "ip_address"),
 					resource.TestCheckResourceAttr("scaleway_lb_ip.ip01", "reverse", "myreverse.com"),
 				),
@@ -105,15 +105,15 @@ func TestAccLbIP_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isLbPresent(tt, "scaleway_lb.main"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckLbIPExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isIPPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {

@@ -8,7 +8,7 @@ import (
 	lbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb/testfuncs"
 )
 
-func TestAccDataSourceLbRoute_Basic(t *testing.T) {
+func TestAccDataSourceRoute_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -16,7 +16,7 @@ func TestAccDataSourceLbRoute_Basic(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			lbchecks.IsIPDestroyed(tt),
-			testAccCheckLbDestroy(tt),
+			isLbDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{

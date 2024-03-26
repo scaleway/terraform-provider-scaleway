@@ -12,13 +12,13 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 )
 
-func TestAccLbRoute_WithSNI(t *testing.T) {
+func TestAccRoute_WithSNI(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbRouteDestroy(tt),
+		CheckDestroy:      isRouteDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -46,7 +46,7 @@ func TestAccLbRoute_WithSNI(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbRouteExists(tt, "scaleway_lb_route.rt01"),
+					isRoutePresent(tt, "scaleway_lb_route.rt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_sni", "sni.scaleway.com"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "updated_at"),
@@ -56,13 +56,13 @@ func TestAccLbRoute_WithSNI(t *testing.T) {
 	})
 }
 
-func TestAccLbRoute_WithHostHeader(t *testing.T) {
+func TestAccRoute_WithHostHeader(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbRouteDestroy(tt),
+		CheckDestroy:      isRouteDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -90,7 +90,7 @@ func TestAccLbRoute_WithHostHeader(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbRouteExists(tt, "scaleway_lb_route.rt01"),
+					isRoutePresent(tt, "scaleway_lb_route.rt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_host_header", "host.scaleway.com"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "updated_at"),
@@ -100,7 +100,7 @@ func TestAccLbRoute_WithHostHeader(t *testing.T) {
 	})
 }
 
-func testAccCheckLbRouteExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isRoutePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -124,7 +124,7 @@ func testAccCheckLbRouteExists(tt *acctest.TestTools, n string) resource.TestChe
 	}
 }
 
-func testAccCheckLbRouteDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isRouteDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb_route" {

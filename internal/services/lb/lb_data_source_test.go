@@ -36,8 +36,8 @@ func TestAccDataSourceLb_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "data.scaleway_lb.testByID"),
-					testAccCheckLbExists(tt, "data.scaleway_lb.testByName"),
+					isLbPresent(tt, "data.scaleway_lb.testByID"),
+					isLbPresent(tt, "data.scaleway_lb.testByName"),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_lb.testByID", "name",
 						"scaleway_lb.main", "name"),

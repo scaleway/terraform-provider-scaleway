@@ -13,7 +13,7 @@ import (
 	lbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb/testfuncs"
 )
 
-func TestAccLbCertificate_Basic(t *testing.T) {
+func TestAccCertificate_Basic(t *testing.T) {
 	/**
 	* See the discussion on https://github.com/scaleway/terraform-provider-scaleway/pull/396
 	* Long story short, scaleway API will not permit you to request a certificate in case common name is not pointed
@@ -27,9 +27,9 @@ func TestAccLbCertificate_Basic(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckLbDestroy(tt),
+			isLbDestroyed(tt),
 			lbchecks.IsIPDestroyed(tt),
-			testAccCheckLbCertificateDestroy(tt),
+			isCertificateDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -229,7 +229,7 @@ EOF
 	})
 }
 
-func testAccCheckLbCertificateDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isCertificateDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb_certificate" {

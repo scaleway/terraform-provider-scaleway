@@ -73,13 +73,13 @@ func testSweepLB(_ string) error {
 	})
 }
 
-func TestAccLbLb_Basic(t *testing.T) {
+func TestAccLB_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -95,7 +95,7 @@ func TestAccLbLb_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					acctest.CheckResourceAttrUUID("scaleway_lb.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-basic"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
@@ -119,7 +119,7 @@ func TestAccLbLb_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					acctest.CheckResourceAttrUUID("scaleway_lb.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-rename"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "2"),
@@ -131,13 +131,13 @@ func TestAccLbLb_Basic(t *testing.T) {
 	})
 }
 
-func TestAccLbLb_Private(t *testing.T) {
+func TestAccLB_Private(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -150,7 +150,7 @@ func TestAccLbLb_Private(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					acctest.CheckResourceAttrUUID("scaleway_lb.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "assign_flexible_ip", "false"),
 					resource.TestCheckNoResourceAttr("scaleway_lb.main", "ip_address"),
@@ -172,7 +172,7 @@ func TestAccLbLb_Private(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					acctest.CheckResourceAttrUUID("scaleway_lb.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "assign_flexible_ip", "false"),
 					resource.TestCheckNoResourceAttr("scaleway_lb.main", "ip_address"),
@@ -186,7 +186,7 @@ func TestAccLbLb_Private(t *testing.T) {
 	})
 }
 
-func TestAccLbLb_Migrate(t *testing.T) {
+func TestAccLB_Migrate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -195,7 +195,7 @@ func TestAccLbLb_Migrate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -211,7 +211,7 @@ func TestAccLbLb_Migrate(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["scaleway_lb.main"]
 						if !ok {
@@ -239,7 +239,7 @@ func TestAccLbLb_Migrate(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["scaleway_lb.main"]
 						if !ok {
@@ -268,7 +268,7 @@ func TestAccLbLb_Migrate(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-GP-M"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-lb-gp-m"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "0"),
@@ -287,7 +287,7 @@ func TestAccLbLb_Migrate(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-down"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "0"),
@@ -297,13 +297,13 @@ func TestAccLbLb_Migrate(t *testing.T) {
 	})
 }
 
-func TestAccLbLb_WithIP(t *testing.T) {
+func TestAccLB_WithIP(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -326,8 +326,8 @@ func TestAccLbLb_WithIP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.lb01"),
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isLbPresent(tt, "scaleway_lb.lb01"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
 						"private_network.0.static_config.0", "172.16.0.100"),
@@ -476,7 +476,7 @@ func TestAccLbLb_WithIP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB02", "name"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 				),
@@ -487,20 +487,20 @@ func TestAccLbLb_WithIP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLbLb_WithStaticIPCIDR(t *testing.T) {
+func TestAccLB_WithStaticIPCIDR(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -521,8 +521,8 @@ func TestAccLbLb_WithStaticIPCIDR(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.lb01"),
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isLbPresent(tt, "scaleway_lb.lb01"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
 						"private_network.0.static_config.0", "192.168.1.1/25"),
 				),
@@ -531,13 +531,13 @@ func TestAccLbLb_WithStaticIPCIDR(t *testing.T) {
 	})
 }
 
-func TestAccLbLb_InvalidStaticConfig(t *testing.T) {
+func TestAccLB_InvalidStaticConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -562,7 +562,7 @@ func TestAccLbLb_InvalidStaticConfig(t *testing.T) {
 	})
 }
 
-func TestAccLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
+func TestAccLB_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -570,7 +570,7 @@ func TestAccLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsServerDestroyed(tt),
-			testAccCheckLbDestroy(tt),
+			isLbDestroyed(tt),
 			lbchecks.IsIPDestroyed(tt),
 			vpcgwchecks.IsGatewayNetworkDestroyed(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -641,8 +641,8 @@ func TestAccLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.lb01"),
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isLbPresent(tt, "scaleway_lb.lb01"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.main", "name"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_lb.lb01", "private_network.0.private_network_id",
@@ -662,13 +662,13 @@ func TestAccLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 	})
 }
 
-func TestAccLbLb_WithoutPNConfig(t *testing.T) {
+func TestAccLB_WithoutPNConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -688,8 +688,8 @@ func TestAccLbLb_WithoutPNConfig(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.lb01"),
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					isLbPresent(tt, "scaleway_lb.lb01"),
+					isIPPresent(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_lb.lb01", "private_network.0.private_network_id",
 						"scaleway_vpc_private_network.pn", "id"),
@@ -703,13 +703,13 @@ func TestAccLbLb_WithoutPNConfig(t *testing.T) {
 	})
 }
 
-func TestAccLbLb_DifferentLocalityIPID(t *testing.T) {
+func TestAccLB_DifferentLocalityIPID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckLbDestroy(tt),
+		CheckDestroy:      isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -725,7 +725,7 @@ func TestAccLbLb_DifferentLocalityIPID(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbExists(tt, "scaleway_lb.main"),
+					isLbPresent(tt, "scaleway_lb.main"),
 					acctest.CheckResourceAttrUUID("scaleway_lb.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-basic"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
@@ -739,7 +739,7 @@ func TestAccLbLb_DifferentLocalityIPID(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLbIPExists(tt, "scaleway_lb_ip.main"),
+					isIPPresent(tt, "scaleway_lb_ip.main"),
 				),
 			},
 			{
@@ -762,7 +762,7 @@ func TestAccLbLb_DifferentLocalityIPID(t *testing.T) {
 	})
 }
 
-func testAccCheckLbExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isLbPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -786,7 +786,7 @@ func testAccCheckLbExists(tt *acctest.TestTools, n string) resource.TestCheckFun
 	}
 }
 
-func testAccCheckLbDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isLbDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb" {
