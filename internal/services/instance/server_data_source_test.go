@@ -9,7 +9,7 @@ import (
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
-func TestAccDataSourceInstanceServer_Basic(t *testing.T) {
+func TestAccDataSourceServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	serverName := "tf-server"
@@ -46,9 +46,9 @@ func TestAccDataSourceInstanceServer_Basic(t *testing.T) {
 						server_id = "${scaleway_instance_server.main.id}"
 					}`, serverName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceServerExists(tt, "data.scaleway_instance_server.prod"),
+					isServerPresent(tt, "data.scaleway_instance_server.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_server.prod", "name", serverName),
-					testAccCheckInstanceServerExists(tt, "data.scaleway_instance_server.stg"),
+					isServerPresent(tt, "data.scaleway_instance_server.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_server.stg", "name", serverName),
 				),
 			},

@@ -18,11 +18,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_instance_snapshot", &resource.Sweeper{
 		Name: "scaleway_instance_snapshot",
-		F:    testSweepInstanceSnapshot,
+		F:    testSweepSnapshot,
 	})
 }
 
-func testSweepInstanceSnapshot(_ string) error {
+func testSweepSnapshot(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := instanceSDK.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying instance snapshots in (%+v)", zone)
@@ -54,7 +54,7 @@ func TestAccSnapshot_BlockVolume(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -67,7 +67,7 @@ func TestAccSnapshot_BlockVolume(t *testing.T) {
 						volume_id = scaleway_instance_volume.main.id
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 				),
 			},
 		},
@@ -80,7 +80,7 @@ func TestAccSnapshot_Unified(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -108,7 +108,7 @@ func TestAccSnapshot_Unified(t *testing.T) {
 					}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_snapshot.main", "type", "unified"),
 				),
 			},
@@ -122,7 +122,7 @@ func TestAccSnapshot_Server(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -135,7 +135,7 @@ func TestAccSnapshot_Server(t *testing.T) {
 						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 				),
 			},
 		},
@@ -149,9 +149,9 @@ func TestAccSnapshot_ServerWithBlockVolume(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckInstanceVolumeDestroy(tt),
+			isVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
-			testAccCheckInstanceSnapshotDestroy(tt),
+			isSnapshotDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -177,7 +177,7 @@ func TestAccSnapshot_ServerWithBlockVolume(t *testing.T) {
 						volume_id = scaleway_instance_volume.main.id
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 				),
 			},
 		},
@@ -190,7 +190,7 @@ func TestAccSnapshot_RenameSnapshot(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -205,7 +205,7 @@ func TestAccSnapshot_RenameSnapshot(t *testing.T) {
 						tags = ["test-terraform"]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_snapshot.main", "tags.0", "test-terraform"),
 				),
 			},
@@ -221,7 +221,7 @@ func TestAccSnapshot_RenameSnapshot(t *testing.T) {
 						name = "second_name"
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_snapshot.main", "tags.#", "0"),
 				),
 			},
@@ -235,7 +235,7 @@ func TestAccSnapshot_FromObject(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -258,14 +258,14 @@ func TestAccSnapshot_FromObject(t *testing.T) {
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.snapshot"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.snapshot"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckInstanceSnapShotExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSnapshotPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -289,7 +289,7 @@ func testAccCheckInstanceSnapShotExists(tt *acctest.TestTools, n string) resourc
 	}
 }
 
-func testAccCheckInstanceSnapshotDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_snapshot" {

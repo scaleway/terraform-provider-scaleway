@@ -7,14 +7,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceInstancePlacementGroup_Basic(t *testing.T) {
+func TestAccDataSourcePlacementGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckInstancePlacementGroupDestroy(tt),
+			isPlacementGroupDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -32,7 +32,7 @@ func TestAccDataSourceInstancePlacementGroup_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
+					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.main"),
 
 					resource.TestCheckResourceAttrPair("scaleway_instance_placement_group.main", "name", "data.scaleway_instance_placement_group.find_by_name", "name"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_placement_group.main", "name", "data.scaleway_instance_placement_group.find_by_id", "name"),

@@ -13,7 +13,7 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceSecurityGroupDestroy(tt),
+		CheckDestroy:      isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// Simple empty configuration
@@ -27,7 +27,7 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.#", "0"),
 				),
@@ -64,7 +64,7 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 							}
 						`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.0.action", "accept"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.0.port", "80"),
@@ -103,7 +103,7 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.0.action", "drop"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.0.port", "443"),
@@ -126,7 +126,7 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.#", "0"),
 				),
@@ -182,7 +182,7 @@ func TestAccSecurityGroupRules_IPRanges(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceSecurityGroupDestroy(tt),
+		CheckDestroy:      isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -192,7 +192,7 @@ func TestAccSecurityGroupRules_IPRanges(t *testing.T) {
 				ResourceName: "scaleway_instance_security_group_rules.sgrs01",
 				Config:       config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "6"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.0.ip_range", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.1.ip_range", "1.2.0.0/16"),
@@ -241,7 +241,7 @@ func TestAccSecurityGroupRules_Basic2(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceSecurityGroupDestroy(tt),
+		CheckDestroy:      isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -251,7 +251,7 @@ func TestAccSecurityGroupRules_Basic2(t *testing.T) {
 				ResourceName: "scaleway_instance_security_group_rules.sgrs01",
 				Config:       config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.0.action", "accept"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.0.port", "80"),

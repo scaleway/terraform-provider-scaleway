@@ -18,11 +18,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_instance_volume", &resource.Sweeper{
 		Name: "scaleway_instance_volume",
-		F:    testSweepComputeInstanceVolume,
+		F:    testSweepVolume,
 	})
 }
 
-func testSweepComputeInstanceVolume(_ string) error {
+func testSweepVolume(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying the volumes in (%s)", zone)
@@ -55,7 +55,7 @@ func TestAccVolume_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -66,7 +66,7 @@ func TestAccVolume_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.test"),
+					isVolumePresent(tt, "scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "tags.0", "test-terraform"),
 				),
@@ -80,7 +80,7 @@ func TestAccVolume_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.test"),
+					isVolumePresent(tt, "scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "name", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "tags.#", "0"),
@@ -96,7 +96,7 @@ func TestAccVolume_DifferentNameGenerated(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -124,7 +124,7 @@ func TestAccVolume_ResizeBlock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -133,7 +133,7 @@ func TestAccVolume_ResizeBlock(t *testing.T) {
 						size_in_gb = 20
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.main"),
+					isVolumePresent(tt, "scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "20"),
 				),
 			},
@@ -144,7 +144,7 @@ func TestAccVolume_ResizeBlock(t *testing.T) {
 						size_in_gb = 30
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.main"),
+					isVolumePresent(tt, "scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "30"),
 				),
 			},
@@ -158,7 +158,7 @@ func TestAccVolume_ResizeNotBlock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -167,7 +167,7 @@ func TestAccVolume_ResizeNotBlock(t *testing.T) {
 						size_in_gb = 20
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.main"),
+					isVolumePresent(tt, "scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "20"),
 				),
 			},
@@ -189,7 +189,7 @@ func TestAccVolume_CannotResizeBlockDown(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -216,7 +216,7 @@ func TestAccVolume_Scratch(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceVolumeDestroy(tt),
+		CheckDestroy:      isVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -229,7 +229,7 @@ func TestAccVolume_Scratch(t *testing.T) {
 	})
 }
 
-func testAccCheckInstanceVolumeExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -255,7 +255,7 @@ func testAccCheckInstanceVolumeExists(tt *acctest.TestTools, n string) resource.
 	}
 }
 
-func testAccCheckInstanceVolumeDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 		for _, rs := range state.RootModule().Resources {

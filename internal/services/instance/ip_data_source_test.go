@@ -8,7 +8,7 @@ import (
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
-func TestAccDataSourceInstanceIP_Basic(t *testing.T) {
+func TestAccDataSourceIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

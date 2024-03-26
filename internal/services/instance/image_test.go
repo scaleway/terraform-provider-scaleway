@@ -19,11 +19,11 @@ func init() {
 	resource.AddTestSweepers("scaleway_instance_image", &resource.Sweeper{
 		Name:         "scaleway_instance_image",
 		Dependencies: []string{"scaleway_instance_server"},
-		F:            testSweepInstanceImage,
+		F:            testSweepImage,
 	})
 }
 
-func testSweepInstanceImage(_ string) error {
+func testSweepImage(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := instanceSDK.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying instance images in (%+v)", zone)
@@ -57,9 +57,9 @@ func TestAccImage_BlockVolume(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckInstanceImageDestroy(tt),
-			testAccCheckInstanceSnapshotDestroy(tt),
-			testAccCheckInstanceVolumeDestroy(tt),
+			isImageDestroyed(tt),
+			isSnapshotDestroyed(tt),
+			isVolumeDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -83,8 +83,8 @@ func TestAccImage_BlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.main"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isVolumePresent(tt, "scaleway_instance_volume.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_basic"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
@@ -125,8 +125,8 @@ func TestAccImage_BlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.main"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isVolumePresent(tt, "scaleway_instance_volume.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_renamed"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
@@ -153,8 +153,8 @@ func TestAccImage_Server(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckInstanceImageDestroy(tt),
-			testAccCheckInstanceSnapshotDestroy(tt),
+			isImageDestroyed(tt),
+			isSnapshotDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -177,8 +177,8 @@ func TestAccImage_Server(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.main"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isServerPresent(tt, "scaleway_instance_server.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "test_remove_tags"),
@@ -205,8 +205,8 @@ func TestAccImage_Server(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.main"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					isServerPresent(tt, "scaleway_instance_server.main"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.#", "0"),
@@ -227,9 +227,9 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckInstanceImageDestroy(tt),
-			testAccCheckInstanceSnapshotDestroy(tt),
-			testAccCheckInstanceVolumeDestroy(tt),
+			isImageDestroyed(tt),
+			isSnapshotDestroyed(tt),
+			isVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -250,9 +250,9 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.block01"),
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.server"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.block01"),
+					isVolumePresent(tt, "scaleway_instance_volume.block01"),
+					isServerPresent(tt, "scaleway_instance_server.server"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
 				),
 			},
 
@@ -288,10 +288,10 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.block01"),
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.server"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.block01"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.server"),
+					isVolumePresent(tt, "scaleway_instance_volume.block01"),
+					isServerPresent(tt, "scaleway_instance_server.server"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.server"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.server", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_instance_snapshot.block01", "id"),
@@ -343,12 +343,12 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.block01"),
-					testAccCheckInstanceVolumeExists(tt, "scaleway_instance_volume.block02"),
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.server"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.block01"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.block02"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.server"),
+					isVolumePresent(tt, "scaleway_instance_volume.block01"),
+					isVolumePresent(tt, "scaleway_instance_volume.block02"),
+					isServerPresent(tt, "scaleway_instance_server.server"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.block02"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.server"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.server", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_instance_snapshot.block02", "id"),
@@ -370,9 +370,9 @@ func TestAccImage_ServerWithLocalVolume(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckInstanceImageDestroy(tt),
-			testAccCheckInstanceSnapshotDestroy(tt),
-			testAccCheckInstanceVolumeDestroy(tt),
+			isImageDestroyed(tt),
+			isSnapshotDestroyed(tt),
+			isVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -392,8 +392,8 @@ func TestAccImage_ServerWithLocalVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.server01"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local01"),
+					isServerPresent(tt, "scaleway_instance_server.server01"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.local01"),
 				),
 			},
 			{
@@ -425,10 +425,10 @@ func TestAccImage_ServerWithLocalVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.server01"),
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.server02"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local01"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local02"),
+					isServerPresent(tt, "scaleway_instance_server.server01"),
+					isServerPresent(tt, "scaleway_instance_server.server02"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.local01"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.local02"),
 				),
 			},
 			{
@@ -469,10 +469,10 @@ func TestAccImage_ServerWithLocalVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.server01"),
-					testAccCheckInstanceServerExists(tt, "scaleway_instance_server.server02"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local01"),
-					testAccCheckInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local02"),
+					isServerPresent(tt, "scaleway_instance_server.server01"),
+					isServerPresent(tt, "scaleway_instance_server.server02"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.local01"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.local02"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.local01", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_instance_snapshot.local02", "id"),
@@ -484,7 +484,7 @@ func TestAccImage_ServerWithLocalVolume(t *testing.T) {
 	})
 }
 
-func testAccCheckInstanceImageDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isImageDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_image" {

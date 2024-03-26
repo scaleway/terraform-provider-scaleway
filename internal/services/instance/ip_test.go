@@ -19,11 +19,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_instance_ip", &resource.Sweeper{
 		Name: "scaleway_instance_ip",
-		F:    testSweepInstanceIP,
+		F:    testSweepIP,
 	})
 }
 
-func testSweepInstanceIP(_ string) error {
+func testSweepIP(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instanceSDK.NewAPI(scwClient)
 
@@ -218,8 +218,8 @@ func TestAccIP_RoutedDowngrade(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
-					testAccCheckInstanceIPValid("scaleway_instance_ip.main", "address"),
-					testAccCheckInstanceIPCIDRValid("scaleway_instance_ip.main", "prefix"),
+					isIPValid("scaleway_instance_ip.main", "address"),
+					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
 				),
 			},
 			{
@@ -231,8 +231,8 @@ func TestAccIP_RoutedDowngrade(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
-					testAccCheckInstanceIPValid("scaleway_instance_ip.main", "address"),
-					testAccCheckInstanceIPCIDRValid("scaleway_instance_ip.main", "prefix"),
+					isIPValid("scaleway_instance_ip.main", "address"),
+					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
 				),
 			},
 		},
@@ -258,15 +258,15 @@ func TestAccIP_RoutedIPV6(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv6"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "prefix"),
-					testAccCheckInstanceIPValid("scaleway_instance_ip.main", "address"),
-					testAccCheckInstanceIPCIDRValid("scaleway_instance_ip.main", "prefix"),
+					isIPValid("scaleway_instance_ip.main", "address"),
+					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckInstanceIPCIDRValid(name string, key string) resource.TestCheckFunc {
+func isIPCIDRValid(name string, key string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -286,7 +286,7 @@ func testAccCheckInstanceIPCIDRValid(name string, key string) resource.TestCheck
 	}
 }
 
-func testAccCheckInstanceIPValid(name string, key string) resource.TestCheckFunc {
+func isIPValid(name string, key string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -307,7 +307,7 @@ func testAccCheckInstanceIPValid(name string, key string) resource.TestCheckFunc
 	}
 }
 
-func testAccCheckInstanceIPPairWithServer(tt *acctest.TestTools, ipResource, serverResource string) resource.TestCheckFunc {
+func isIPAttachedToServer(tt *acctest.TestTools, ipResource, serverResource string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ipState, ok := s.RootModule().Resources[ipResource]
 		if !ok {
@@ -347,7 +347,7 @@ func testAccCheckInstanceIPPairWithServer(tt *acctest.TestTools, ipResource, ser
 	}
 }
 
-func testAccCheckInstanceServerNoIPAssigned(tt *acctest.TestTools, serverResource string) resource.TestCheckFunc {
+func serverHasNoIPAssigned(tt *acctest.TestTools, serverResource string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		serverState, ok := s.RootModule().Resources[serverResource]
 		if !ok {

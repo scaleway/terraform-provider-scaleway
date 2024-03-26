@@ -8,7 +8,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceInstanceSnapshot_Basic(t *testing.T) {
+func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	snapshotName := "tf-snapshot-ds-basic"
@@ -17,8 +17,8 @@ func TestAccDataSourceInstanceSnapshot_Basic(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckInstanceVolumeDestroy(tt),
-			testAccCheckInstanceSnapshotDestroy(tt),
+			isVolumeDestroyed(tt),
+			isSnapshotDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -53,8 +53,8 @@ func TestAccDataSourceInstanceSnapshot_Basic(t *testing.T) {
 						name = scaleway_instance_snapshot.from_volume.name
 					}`, snapshotName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceSnapShotExists(tt, "data.scaleway_instance_snapshot.by_id"),
-					testAccCheckInstanceSnapShotExists(tt, "data.scaleway_instance_snapshot.by_name"),
+					isSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
+					isSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "id", "scaleway_instance_snapshot.from_volume", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "name", "scaleway_instance_snapshot.from_volume", "name"),
 

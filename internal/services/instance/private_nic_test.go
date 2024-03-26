@@ -25,7 +25,7 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstancePrivateNICDestroy(tt),
+		CheckDestroy:      isPrivateNICDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -44,7 +44,7 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
+					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic01"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
@@ -60,7 +60,7 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstancePrivateNICDestroy(tt),
+		CheckDestroy:      isPrivateNICDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -80,7 +80,7 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
+					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic01"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
@@ -105,7 +105,7 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
+					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic01"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
@@ -131,7 +131,7 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
+					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic01"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
@@ -142,7 +142,7 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 	})
 }
 
-func testAccCheckInstancePrivateNICExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isPrivateNICPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -167,7 +167,7 @@ func testAccCheckInstancePrivateNICExists(tt *acctest.TestTools, n string) resou
 	}
 }
 
-func testAccCheckInstancePrivateNICDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isPrivateNICDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_private_nic" {

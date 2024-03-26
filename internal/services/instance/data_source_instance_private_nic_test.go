@@ -7,14 +7,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceInstancePrivateNIC_Basic(t *testing.T) {
+func TestAccDataSourcePrivateNIC_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckInstancePrivateNICDestroy(tt),
+			isPrivateNICDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -63,7 +63,7 @@ func TestAccDataSourceInstancePrivateNIC_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic"),
+					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "id", "data.scaleway_instance_private_nic.find_by_nic_id", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "id", "data.scaleway_instance_private_nic.find_by_vpc_id", "id"),
