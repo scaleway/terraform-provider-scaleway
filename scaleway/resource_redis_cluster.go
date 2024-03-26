@@ -165,10 +165,10 @@ func ResourceScalewayRedisCluster() *schema.Resource {
 			},
 			// Computed
 			"public_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
+				Type: schema.TypeList,
+				//Optional:    true,
+				Computed: true,
+				//MaxItems:    1,
 				Description: "Public network specs details",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
