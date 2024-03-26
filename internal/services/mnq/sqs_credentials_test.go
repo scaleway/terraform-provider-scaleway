@@ -17,11 +17,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_mnq_sqs_credentials", &resource.Sweeper{
 		Name: "scaleway_mnq_sqs_credentials",
-		F:    testSweepMNQSQSCredentials,
+		F:    testSweepSQSCredentials,
 	})
 }
 
-func testSweepMNQSQSCredentials(_ string) error {
+func testSweepSQSCredentials(_ string) error {
 	return acctest.SweepRegions((&mnqSDK.SqsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		mnqAPI := mnqSDK.NewSqsAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying the mnq sqs credentials in (%s)", region)
@@ -49,14 +49,14 @@ func testSweepMNQSQSCredentials(_ string) error {
 	})
 }
 
-func TestAccMNQSQSCredentials_Basic(t *testing.T) {
+func TestAccSQSCredentials_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQSQSCredentialsDestroy(tt),
+		CheckDestroy:      isSQSCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -74,7 +74,7 @@ func TestAccMNQSQSCredentials_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSQSCredentialsExists(tt, "scaleway_mnq_sqs_credentials.main"),
+					isSQSCredentialsPresent(tt, "scaleway_mnq_sqs_credentials.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_credentials.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_credentials.main", "name", "test-mnq-sqs-credentials-basic"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_sqs_credentials.main", "access_key"),
@@ -102,7 +102,7 @@ func TestAccMNQSQSCredentials_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSQSCredentialsExists(tt, "scaleway_mnq_sqs_credentials.main"),
+					isSQSCredentialsPresent(tt, "scaleway_mnq_sqs_credentials.main"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_credentials.main", "permissions.0.can_manage", "true"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_credentials.main", "permissions.0.can_receive", "false"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_credentials.main", "permissions.0.can_publish", "true"),
@@ -129,7 +129,7 @@ func TestAccMNQSQSCredentials_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSQSCredentialsExists(tt, "scaleway_mnq_sqs_credentials.main"),
+					isSQSCredentialsPresent(tt, "scaleway_mnq_sqs_credentials.main"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_credentials.main", "permissions.0.can_manage", "false"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_credentials.main", "permissions.0.can_receive", "true"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_credentials.main", "permissions.0.can_publish", "false"),
@@ -139,7 +139,7 @@ func TestAccMNQSQSCredentials_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMNQSQSCredentialsExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSQSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -163,7 +163,7 @@ func testAccCheckMNQSQSCredentialsExists(tt *acctest.TestTools, n string) resour
 	}
 }
 
-func testAccCheckMNQSQSCredentialsDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSQSCredentialsDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sqs_credentials" {

@@ -7,14 +7,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceMNQSQS_Basic(t *testing.T) {
+func TestAccDataSourceSQS_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckMNQSQSDestroy(tt),
+			isSQSDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -32,7 +32,7 @@ func TestAccDataSourceMNQSQS_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSQSExists(tt, "scaleway_mnq_sqs.main"),
+					isSQSPresent(tt, "scaleway_mnq_sqs.main"),
 
 					resource.TestCheckResourceAttrPair("scaleway_mnq_sqs.main", "id", "data.scaleway_mnq_sqs.main", "id"),
 				),

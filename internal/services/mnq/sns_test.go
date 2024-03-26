@@ -19,11 +19,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_mnq_sns", &resource.Sweeper{
 		Name: "scaleway_mnq_sns",
-		F:    testSweepMNQSNS,
+		F:    testSweepSNS,
 	})
 }
 
-func testSweepMNQSNS(_ string) error {
+func testSweepSNS(_ string) error {
 	return acctest.SweepRegions((&mnqSDK.SnsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
 		mnqAPI := mnqSDK.NewSnsAPI(scwClient)
@@ -53,14 +53,14 @@ func testSweepMNQSNS(_ string) error {
 	})
 }
 
-func TestAccMNQSNS_Basic(t *testing.T) {
+func TestAccSNS_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQSNSDestroy(tt),
+		CheckDestroy:      isSNSDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -73,7 +73,7 @@ func TestAccMNQSNS_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSNSExists(tt, "scaleway_mnq_sns.main"),
+					isSNSPresent(tt, "scaleway_mnq_sns.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns.main", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_sns.main", "endpoint"),
 				),
@@ -82,7 +82,7 @@ func TestAccMNQSNS_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMNQSNSExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSNSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -111,7 +111,7 @@ func testAccCheckMNQSNSExists(tt *acctest.TestTools, n string) resource.TestChec
 	}
 }
 
-func testAccCheckMNQSNSDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSNSDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sns" {

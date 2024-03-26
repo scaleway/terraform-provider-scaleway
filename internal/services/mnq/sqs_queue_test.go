@@ -22,14 +22,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccMNQSQSQueue_Basic(t *testing.T) {
+func TestAccSQSQueue_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQSQSQueueDestroy(tt),
+		CheckDestroy:      isSQSQueueDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -57,7 +57,7 @@ func TestAccMNQSQSQueue_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSQSQueueExists(tt, "scaleway_mnq_sqs_queue.main"),
+					isSQSQueuePresent(tt, "scaleway_mnq_sqs_queue.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "name", "test-mnq-sqs-queue-basic"),
 				),
@@ -90,7 +90,7 @@ func TestAccMNQSQSQueue_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSQSQueueExists(tt, "scaleway_mnq_sqs_queue.main"),
+					isSQSQueuePresent(tt, "scaleway_mnq_sqs_queue.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "message_max_age", "720"),
 				),
@@ -99,7 +99,7 @@ func TestAccMNQSQSQueue_Basic(t *testing.T) {
 	})
 }
 
-func TestAccMNQSQSQueue_DefaultProject(t *testing.T) {
+func TestAccSQSQueue_DefaultProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -130,7 +130,7 @@ func TestAccMNQSQSQueue_DefaultProject(t *testing.T) {
 			}
 		}(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckMNQSQSQueueDestroy(tt),
+			isSQSQueueDestroyed(tt),
 			func(_ *terraform.State) error {
 				return accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
 					ProjectID: projectID,
@@ -159,7 +159,7 @@ func TestAccMNQSQSQueue_DefaultProject(t *testing.T) {
 					}
 				`, projectID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSQSQueueExists(tt, "scaleway_mnq_sqs_queue.main"),
+					isSQSQueuePresent(tt, "scaleway_mnq_sqs_queue.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "name", "test-mnq-sqs-queue-basic"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "project_id", projectID),
@@ -169,7 +169,7 @@ func TestAccMNQSQSQueue_DefaultProject(t *testing.T) {
 	})
 }
 
-func testAccCheckMNQSQSQueueExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSQSQueuePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -197,7 +197,7 @@ func testAccCheckMNQSQSQueueExists(tt *acctest.TestTools, n string) resource.Tes
 	}
 }
 
-func testAccCheckMNQSQSQueueDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSQSQueueDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sqs_queue" {

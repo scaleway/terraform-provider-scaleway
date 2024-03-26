@@ -20,11 +20,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_mnq_sqs", &resource.Sweeper{
 		Name: "scaleway_mnq_sqs",
-		F:    testSweepMNQSQS,
+		F:    testSweepSQS,
 	})
 }
 
-func testSweepMNQSQS(_ string) error {
+func testSweepSQS(_ string) error {
 	return acctest.SweepRegions((&mnqSDK.SqsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
 		mnqAPI := mnqSDK.NewSqsAPI(scwClient)
@@ -54,14 +54,14 @@ func testSweepMNQSQS(_ string) error {
 	})
 }
 
-func TestAccMNQSQS_Basic(t *testing.T) {
+func TestAccSQS_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQSQSDestroy(tt),
+		CheckDestroy:      isSQSDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -74,7 +74,7 @@ func TestAccMNQSQS_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSQSExists(tt, "scaleway_mnq_sqs.main"),
+					isSQSPresent(tt, "scaleway_mnq_sqs.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs.main", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_sqs.main", "endpoint"),
 				),
@@ -83,14 +83,14 @@ func TestAccMNQSQS_Basic(t *testing.T) {
 	})
 }
 
-func TestAccMNQSQS_AlreadyActivated(t *testing.T) {
+func TestAccSQS_AlreadyActivated(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQSQSDestroy(tt),
+		CheckDestroy:      isSQSDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -123,7 +123,7 @@ func TestAccMNQSQS_AlreadyActivated(t *testing.T) {
 	})
 }
 
-func testAccCheckMNQSQSExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSQSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -151,7 +151,7 @@ func testAccCheckMNQSQSExists(tt *acctest.TestTools, n string) resource.TestChec
 	}
 }
 
-func testAccCheckMNQSQSDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSQSDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sqs" {

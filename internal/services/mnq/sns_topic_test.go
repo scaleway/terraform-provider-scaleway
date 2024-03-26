@@ -15,14 +15,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 )
 
-func TestAccMNQSNSTopic_Basic(t *testing.T) {
+func TestAccSNSTopic_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQSNSTopicDestroy(tt),
+		CheckDestroy:      isSNSTopicDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -49,7 +49,7 @@ func TestAccMNQSNSTopic_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSNSTopicExists(tt, "scaleway_mnq_sns_topic.main"),
+					isSNSTopicPresent(tt, "scaleway_mnq_sns_topic.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "name", "test-mnq-sns-topic-basic"),
 				),
@@ -81,7 +81,7 @@ func TestAccMNQSNSTopic_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSNSTopicExists(tt, "scaleway_mnq_sns_topic.main"),
+					isSNSTopicPresent(tt, "scaleway_mnq_sns_topic.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "name", "test-mnq-sns-topic-basic.fifo"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "content_based_deduplication", "true"),
@@ -114,7 +114,7 @@ func TestAccMNQSNSTopic_Basic(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSNSTopicExists(tt, "scaleway_mnq_sns_topic.main"),
+					isSNSTopicPresent(tt, "scaleway_mnq_sns_topic.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
 					func(state *terraform.State) error {
 						topic, exists := state.RootModule().Resources["scaleway_mnq_sns_topic.main"]
@@ -139,7 +139,7 @@ func TestAccMNQSNSTopic_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMNQSNSTopicExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSNSTopicPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -167,7 +167,7 @@ func testAccCheckMNQSNSTopicExists(tt *acctest.TestTools, n string) resource.Tes
 	}
 }
 
-func testAccCheckMNQSNSTopicDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSNSTopicDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sns_topic" {

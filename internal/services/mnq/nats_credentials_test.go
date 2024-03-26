@@ -12,14 +12,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 )
 
-func TestAccMNQNatsCredentials_Basic(t *testing.T) {
+func TestAccNatsCredentials_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQNatsCredentialsDestroy(tt),
+		CheckDestroy:      isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -32,7 +32,7 @@ func TestAccMNQNatsCredentials_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQNatsCredentialsExists(tt, "scaleway_mnq_nats_credentials.main"),
+					isNatsCredentialsPresent(tt, "scaleway_mnq_nats_credentials.main"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
 				),
 			},
@@ -40,7 +40,7 @@ func TestAccMNQNatsCredentials_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMNQNatsCredentialsExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isNatsCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -64,7 +64,7 @@ func testAccCheckMNQNatsCredentialsExists(tt *acctest.TestTools, n string) resou
 	}
 }
 
-func testAccCheckMNQNatsCredentialsDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isNatsCredentialsDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_nats_credentials" {

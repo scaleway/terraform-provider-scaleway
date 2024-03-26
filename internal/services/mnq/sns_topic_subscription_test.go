@@ -13,14 +13,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 )
 
-func TestAccMNQSNSTopicSubscription_Basic(t *testing.T) {
+func TestAccSNSTopicSubscription_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQSNSTopicSubscriptionDestroy(tt),
+		CheckDestroy:      isSNSTopicSubscriptionDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -67,12 +67,12 @@ func TestAccMNQSNSTopicSubscription_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQSNSTopicSubscriptionExists(tt, "scaleway_mnq_sns_topic_subscription.by_id"),
+					isSNSTopicSubscriptionPresent(tt, "scaleway_mnq_sns_topic_subscription.by_id"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic_subscription.by_id", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_id", "protocol", "http"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_id", "endpoint", "http://scaleway.com"),
 
-					testAccCheckMNQSNSTopicSubscriptionExists(tt, "scaleway_mnq_sns_topic_subscription.by_arn"),
+					isSNSTopicSubscriptionPresent(tt, "scaleway_mnq_sns_topic_subscription.by_arn"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic_subscription.by_arn", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_arn", "protocol", "http"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_arn", "endpoint", "http://scaleway.com"),
@@ -82,7 +82,7 @@ func TestAccMNQSNSTopicSubscription_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMNQSNSTopicSubscriptionExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSNSTopicSubscriptionPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -110,7 +110,7 @@ func testAccCheckMNQSNSTopicSubscriptionExists(tt *acctest.TestTools, n string) 
 	}
 }
 
-func testAccCheckMNQSNSTopicSubscriptionDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSNSTopicSubscriptionDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sns_topic_subscription" {

@@ -17,11 +17,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_mnq_nats_account", &resource.Sweeper{
 		Name: "scaleway_mnq_nats_account",
-		F:    testSweepMNQNatsAccount,
+		F:    testSweepNatsAccount,
 	})
 }
 
-func testSweepMNQNatsAccount(_ string) error {
+func testSweepNatsAccount(_ string) error {
 	return acctest.SweepRegions((&mnqSDK.NatsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		mnqAPI := mnqSDK.NewNatsAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying the mnq nats accounts in (%s)", region)
@@ -49,23 +49,23 @@ func testSweepMNQNatsAccount(_ string) error {
 	})
 }
 
-func TestAccMNQNatsAccount_Basic(t *testing.T) {
+func TestAccNatsAccount_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckMNQNatsAccountDestroy(tt),
+		CheckDestroy:      isNatsAccountDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource scaleway_mnq_nats_account main {
-						name = "test-mnqSDK-nats-account-basic"
+						name = "test-mnq-nats-account-basic"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMNQNatsAccountExists(tt, "scaleway_mnq_nats_account.main"),
+					isNatsAccountPresent(tt, "scaleway_mnq_nats_account.main"),
 					resource.TestCheckResourceAttr("scaleway_mnq_nats_account.main", "name", "test-mnq-nats-account-basic"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_account.main", "endpoint"),
 				),
@@ -74,7 +74,7 @@ func TestAccMNQNatsAccount_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMNQNatsAccountExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isNatsAccountPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -98,7 +98,7 @@ func testAccCheckMNQNatsAccountExists(tt *acctest.TestTools, n string) resource.
 	}
 }
 
-func testAccCheckMNQNatsAccountDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isNatsAccountDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_nats_account" {
