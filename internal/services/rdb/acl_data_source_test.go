@@ -9,7 +9,7 @@ import (
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 )
 
-func TestAccDataSourceRdbACL_Basic(t *testing.T) {
+func TestAccDataSourceACL_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

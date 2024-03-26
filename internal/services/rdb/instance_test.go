@@ -23,11 +23,11 @@ const (
 func init() {
 	resource.AddTestSweepers("scaleway_rdb_instance", &resource.Sweeper{
 		Name: "scaleway_rdb_instance",
-		F:    testSweepRDBInstance,
+		F:    testSweepInstance,
 	})
 }
 
-func testSweepRDBInstance(_ string) error {
+func testSweepInstance(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		rdbAPI := rdbSDK.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying the rdb instance in (%s)", region)
@@ -52,7 +52,7 @@ func testSweepRDBInstance(_ string) error {
 	})
 }
 
-func TestAccRdbInstance_Basic(t *testing.T) {
+func TestAccInstance_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -77,7 +77,7 @@ func TestAccRdbInstance_Basic(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-basic"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
@@ -110,7 +110,7 @@ func TestAccRdbInstance_Basic(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-basic"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
@@ -131,7 +131,7 @@ func TestAccRdbInstance_Basic(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_WithCluster(t *testing.T) {
+func TestAccInstance_WithCluster(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -156,7 +156,7 @@ func TestAccRdbInstance_WithCluster(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-with-cluster"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-m"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
@@ -173,7 +173,7 @@ func TestAccRdbInstance_WithCluster(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_Settings(t *testing.T) {
+func TestAccInstance_Settings(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -204,7 +204,7 @@ func TestAccRdbInstance_Settings(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.work_mem", "4"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.max_connections", "200"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.effective_cache_size", "1300"),
@@ -217,7 +217,7 @@ func TestAccRdbInstance_Settings(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_InitSettings(t *testing.T) {
+func TestAccInstance_InitSettings(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -246,7 +246,7 @@ func TestAccRdbInstance_InitSettings(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "init_settings.lower_case_table_names", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.max_connections", "350"),
 				),
@@ -255,7 +255,7 @@ func TestAccRdbInstance_InitSettings(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_Capitalize(t *testing.T) {
+func TestAccInstance_Capitalize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -279,14 +279,14 @@ func TestAccRdbInstance_Capitalize(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccRdbInstance_PrivateNetwork(t *testing.T) {
+func TestAccInstance_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -334,7 +334,7 @@ func TestAccRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "192.168.1.42/24"),
 				),
@@ -370,7 +370,7 @@ func TestAccRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "192.168.1.254/24"),
 				),
@@ -442,7 +442,7 @@ func TestAccRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "192.168.1.254/24"),
 				),
 			},
@@ -472,7 +472,7 @@ func TestAccRdbInstance_PrivateNetwork(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_PrivateNetworkUpdate(t *testing.T) {
+func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -511,7 +511,7 @@ func TestAccRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn01"),
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn01", "id"),
@@ -547,7 +547,7 @@ func TestAccRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn01"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn02"),
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn02", "id"),
@@ -586,7 +586,7 @@ func TestAccRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn02"),
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn02", "id"),
@@ -626,7 +626,7 @@ func TestAccRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn01"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn02"),
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn01", "id"),
@@ -657,7 +657,7 @@ func TestAccRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn01"),
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn01", "id"),
@@ -667,7 +667,7 @@ func TestAccRdbInstance_PrivateNetworkUpdate(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
+func TestAccInstance_PrivateNetwork_DHCP(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -740,7 +740,7 @@ func TestAccRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "192.168.1.254/24"),
 				),
 			},
@@ -770,7 +770,7 @@ func TestAccRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_BackupSchedule(t *testing.T) {
+func TestAccInstance_BackupSchedule(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -799,7 +799,7 @@ func TestAccRdbInstance_BackupSchedule(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_frequency", "24"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_retention", "7"),
@@ -810,7 +810,7 @@ func TestAccRdbInstance_BackupSchedule(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_Volume(t *testing.T) {
+func TestAccInstance_Volume(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -836,7 +836,7 @@ func TestAccRdbInstance_Volume(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "lssd"),
 				),
 			},
@@ -857,7 +857,7 @@ func TestAccRdbInstance_Volume(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "bssd"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
 				),
@@ -877,7 +877,7 @@ func TestAccRdbInstance_Volume(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "lssd"),
 				),
 			},
@@ -885,7 +885,7 @@ func TestAccRdbInstance_Volume(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_SBSVolume(t *testing.T) {
+func TestAccInstance_SBSVolume(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -913,7 +913,7 @@ func TestAccRdbInstance_SBSVolume(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_5k"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
 				),
@@ -935,7 +935,7 @@ func TestAccRdbInstance_SBSVolume(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_5k"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "20"),
 				),
@@ -944,7 +944,7 @@ func TestAccRdbInstance_SBSVolume(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_ChangeVolumeType(t *testing.T) {
+func TestAccInstance_ChangeVolumeType(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -972,7 +972,7 @@ func TestAccRdbInstance_ChangeVolumeType(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "bssd"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
 				),
@@ -994,7 +994,7 @@ func TestAccRdbInstance_ChangeVolumeType(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.main"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_5k"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "20"),
 				),
@@ -1003,7 +1003,7 @@ func TestAccRdbInstance_ChangeVolumeType(t *testing.T) {
 	})
 }
 
-func TestAccRdbInstance_Endpoints(t *testing.T) {
+func TestAccInstance_Endpoints(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -1036,7 +1036,7 @@ func TestAccRdbInstance_Endpoints(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.test_endpoints"),
+					isInstancePresent(tt, "scaleway_rdb_instance.test_endpoints"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.test_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_endpoints", "private_network.0.pn_id", "scaleway_vpc_private_network.test_endpoints", "id"),
@@ -1069,7 +1069,7 @@ func TestAccRdbInstance_Endpoints(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.test_endpoints"),
+					isInstancePresent(tt, "scaleway_rdb_instance.test_endpoints"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.test_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "load_balancer.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "1"),
@@ -1097,7 +1097,7 @@ func TestAccRdbInstance_Endpoints(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.test_endpoints"),
+					isInstancePresent(tt, "scaleway_rdb_instance.test_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "load_balancer.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "0"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),
@@ -1108,7 +1108,7 @@ func TestAccRdbInstance_Endpoints(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

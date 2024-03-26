@@ -9,7 +9,7 @@ import (
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 )
 
-func TestAccDataSourceRdbInstance_Basic(t *testing.T) {
+func TestAccDataSourceInstance_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -37,7 +37,7 @@ func TestAccDataSourceRdbInstance_Basic(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbExists(tt, "scaleway_rdb_instance.test"),
+					isInstancePresent(tt, "scaleway_rdb_instance.test"),
 
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test", "name", "data-rdb-test-terraform"),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test", "id"),

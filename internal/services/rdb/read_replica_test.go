@@ -14,7 +14,7 @@ import (
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
-func TestAccRdbReadReplica_Basic(t *testing.T) {
+func TestAccReadReplica_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -25,7 +25,7 @@ func TestAccRdbReadReplica_Basic(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
-			testAccCheckRdbReadReplicaDestroy(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -46,7 +46,7 @@ func TestAccRdbReadReplica_Basic(t *testing.T) {
 						direct_access {}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "direct_access.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "direct_access.0.port"),
@@ -57,7 +57,7 @@ func TestAccRdbReadReplica_Basic(t *testing.T) {
 	})
 }
 
-func TestAccRdbReadReplica_PrivateNetwork(t *testing.T) {
+func TestAccReadReplica_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -68,7 +68,7 @@ func TestAccRdbReadReplica_PrivateNetwork(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
-			testAccCheckRdbReadReplicaDestroy(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -94,7 +94,7 @@ func TestAccRdbReadReplica_PrivateNetwork(t *testing.T) {
 						}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
@@ -105,7 +105,7 @@ func TestAccRdbReadReplica_PrivateNetwork(t *testing.T) {
 	})
 }
 
-func TestAccRdbReadReplica_Update(t *testing.T) {
+func TestAccReadReplica_Update(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -116,7 +116,7 @@ func TestAccRdbReadReplica_Update(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
-			testAccCheckRdbReadReplicaDestroy(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -137,7 +137,7 @@ func TestAccRdbReadReplica_Update(t *testing.T) {
 						direct_access {}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "direct_access.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "direct_access.0.port"),
@@ -167,7 +167,7 @@ func TestAccRdbReadReplica_Update(t *testing.T) {
 						}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
@@ -199,7 +199,7 @@ func TestAccRdbReadReplica_Update(t *testing.T) {
 						}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "private_network.0.private_network_id", "scaleway_vpc_private_network.pn", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
@@ -235,7 +235,7 @@ func TestAccRdbReadReplica_Update(t *testing.T) {
 						}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "private_network.0.private_network_id", "scaleway_vpc_private_network.pn2", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
@@ -271,7 +271,7 @@ func TestAccRdbReadReplica_Update(t *testing.T) {
 						}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "private_network.0.private_network_id", "scaleway_vpc_private_network.pn2", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
@@ -307,7 +307,7 @@ func TestAccRdbReadReplica_Update(t *testing.T) {
 						}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "private_network.0.private_network_id", "scaleway_vpc_private_network.pn", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
@@ -322,7 +322,7 @@ func TestAccRdbReadReplica_Update(t *testing.T) {
 	})
 }
 
-func TestAccRdbReadReplica_MultipleEndpoints(t *testing.T) {
+func TestAccReadReplica_MultipleEndpoints(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -333,7 +333,7 @@ func TestAccRdbReadReplica_MultipleEndpoints(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
-			testAccCheckRdbReadReplicaDestroy(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -360,7 +360,7 @@ func TestAccRdbReadReplica_MultipleEndpoints(t *testing.T) {
 						direct_access {}
 					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
@@ -374,7 +374,7 @@ func TestAccRdbReadReplica_MultipleEndpoints(t *testing.T) {
 	})
 }
 
-func TestAccRdbReadReplica_DifferentZone(t *testing.T) {
+func TestAccReadReplica_DifferentZone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -385,7 +385,7 @@ func TestAccRdbReadReplica_DifferentZone(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
-			testAccCheckRdbReadReplicaDestroy(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -414,7 +414,7 @@ func TestAccRdbReadReplica_DifferentZone(t *testing.T) {
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.different_zone"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.different_zone"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.different_zone"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.different_zone", "instance_id", "scaleway_rdb_instance.different_zone", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.different_zone", "same_zone", "true"),
@@ -448,7 +448,7 @@ func TestAccRdbReadReplica_DifferentZone(t *testing.T) {
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.different_zone"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.different_zone"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.different_zone"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.different_zone", "instance_id", "scaleway_rdb_instance.different_zone", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.different_zone", "same_zone", "true"),
@@ -482,7 +482,7 @@ func TestAccRdbReadReplica_DifferentZone(t *testing.T) {
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.different_zone"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.different_zone"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.different_zone"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.different_zone", "instance_id", "scaleway_rdb_instance.different_zone", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.different_zone", "same_zone", "false"),
@@ -493,7 +493,7 @@ func TestAccRdbReadReplica_DifferentZone(t *testing.T) {
 	})
 }
 
-func TestAccRdbReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T) {
+func TestAccReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -502,7 +502,7 @@ func TestAccRdbReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
-			testAccCheckRdbReadReplicaDestroy(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -537,7 +537,7 @@ func TestAccRdbReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T) {
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.#", "1"),
@@ -579,7 +579,7 @@ func TestAccRdbReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T) {
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbReadReplicaExists(tt, "scaleway_rdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_read_replica.replica", "instance_id", "scaleway_rdb_instance.instance", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.#", "1"),
@@ -591,7 +591,7 @@ func TestAccRdbReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbReadReplicaExists(tt *acctest.TestTools, readReplica string) resource.TestCheckFunc {
+func isReadReplicaPresent(tt *acctest.TestTools, readReplica string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		readReplicaResource, ok := state.RootModule().Resources[readReplica]
 		if !ok {
@@ -615,7 +615,7 @@ func testAccCheckRdbReadReplicaExists(tt *acctest.TestTools, readReplica string)
 	}
 }
 
-func testAccCheckRdbReadReplicaDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isReadReplicaDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_rdb_read_replica" {

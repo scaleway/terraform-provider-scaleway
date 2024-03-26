@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccRdbDatabase_Basic(t *testing.T) {
+func TestAccDatabase_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -43,7 +43,7 @@ func TestAccRdbDatabase_Basic(t *testing.T) {
 						name = "foo"
 					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.main", "scaleway_rdb_database.main"),
+					isDatabasePresent(tt, "scaleway_rdb_instance.main", "scaleway_rdb_database.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_database.main", "name", "foo"),
 				),
 			},
@@ -51,7 +51,7 @@ func TestAccRdbDatabase_Basic(t *testing.T) {
 	})
 }
 
-func TestAccRdbDatabase_ManualDelete(t *testing.T) {
+func TestAccDatabase_ManualDelete(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -97,7 +97,7 @@ func TestAccRdbDatabase_ManualDelete(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.pgsql", "scaleway_rdb_database.bug"),
+					isDatabasePresent(tt, "scaleway_rdb_instance.pgsql", "scaleway_rdb_database.bug"),
 					resource.TestCheckResourceAttr("scaleway_rdb_database.bug", "name", "bug"),
 				),
 			},
@@ -105,7 +105,7 @@ func TestAccRdbDatabase_ManualDelete(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbDatabaseExists(tt *acctest.TestTools, instance string, database string) resource.TestCheckFunc {
+func isDatabasePresent(tt *acctest.TestTools, instance string, database string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]
 		if !ok {
@@ -147,14 +147,14 @@ func testAccCheckRdbDatabaseExists(tt *acctest.TestTools, instance string, datab
 	}
 }
 
-func TestResourceRdbDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
+func TestDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
 	region, _, _, err := rdb.ResourceRdbDatabaseParseID("notandid")
 	require.Error(t, err)
 	assert.Empty(t, region)
 	assert.Equal(t, "can't parse user resource id: notandid", err.Error())
 }
 
-func TestResourceRdbDatabaseParseID(t *testing.T) {
+func TestDatabaseParseID(t *testing.T) {
 	region, instanceID, dbname, err := rdb.ResourceRdbDatabaseParseID("region/instanceid/dbname")
 	require.NoError(t, err)
 	assert.Equal(t, scw.Region("region"), region)

@@ -18,11 +18,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_rdb_database_backup", &resource.Sweeper{
 		Name: "scaleway_rdb_database_backup",
-		F:    testSweepRDBDatabaseBackup,
+		F:    testSweepDatabaseBackup,
 	})
 }
 
-func testSweepRDBDatabaseBackup(_ string) error {
+func testSweepDatabaseBackup(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		rdbAPI := rdbSDK.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying the rdb database backups in (%s)", region)
@@ -47,7 +47,7 @@ func testSweepRDBDatabaseBackup(_ string) error {
 	})
 }
 
-func TestAccRdbDatabaseBackup_Basic(t *testing.T) {
+func TestAccDatabaseBackup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -59,7 +59,7 @@ func TestAccRdbDatabaseBackup_Basic(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
-			testAccCheckRdbDatabaseBackupDestroy(tt),
+			isBackupDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -76,7 +76,7 @@ func TestAccRdbDatabaseBackup_Basic(t *testing.T) {
 						name = "foo"
 					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.main", "scaleway_rdb_database.main"),
+					isDatabasePresent(tt, "scaleway_rdb_instance.main", "scaleway_rdb_database.main"),
 				),
 			},
 			{
@@ -99,7 +99,7 @@ func TestAccRdbDatabaseBackup_Basic(t *testing.T) {
   						name = "test_backup"
 					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbDatabaseBackupExists(tt, "scaleway_rdb_database_backup.main"),
+					isBackupPresent(tt, "scaleway_rdb_database_backup.main"),
 
 					resource.TestCheckResourceAttr("scaleway_rdb_database_backup.main", "database_name", "foo"),
 					resource.TestCheckResourceAttr("scaleway_rdb_database_backup.main", "name", "test_backup"),
@@ -109,7 +109,7 @@ func TestAccRdbDatabaseBackup_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbDatabaseBackupDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isBackupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_rdb_database_backup" {
@@ -141,7 +141,7 @@ func testAccCheckRdbDatabaseBackupDestroy(tt *acctest.TestTools) resource.TestCh
 	}
 }
 
-func testAccCheckRdbDatabaseBackupExists(tt *acctest.TestTools, databaseBackup string) resource.TestCheckFunc {
+func isBackupPresent(tt *acctest.TestTools, databaseBackup string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[databaseBackup]
 		if !ok {

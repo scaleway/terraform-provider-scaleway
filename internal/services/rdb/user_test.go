@@ -13,7 +13,7 @@ import (
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 )
 
-func TestAccRdbUser_Basic(t *testing.T) {
+func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -42,7 +42,7 @@ func TestAccRdbUser_Basic(t *testing.T) {
 						is_admin = true
 					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbUserExists(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user"),
+					isUserPresent(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user", "name", "foo"),
 					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user", "is_admin", "true"),
 				),
@@ -64,7 +64,7 @@ func TestAccRdbUser_Basic(t *testing.T) {
 						is_admin = false
 					}`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbUserExists(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user"),
+					isUserPresent(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user", "name", "bar"),
 					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user", "is_admin", "false"),
 				),
@@ -73,7 +73,7 @@ func TestAccRdbUser_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbUserExists(tt *acctest.TestTools, instance string, user string) resource.TestCheckFunc {
+func isUserPresent(tt *acctest.TestTools, instance string, user string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]
 		if !ok {

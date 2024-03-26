@@ -12,11 +12,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_rdb_acl", &resource.Sweeper{
 		Name: "scaleway_rdb_acl",
-		F:    testSweepRDBInstance,
+		F:    testSweepInstance,
 	})
 }
 
-func TestAccRdbACL_Basic(t *testing.T) {
+func TestAccACL_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

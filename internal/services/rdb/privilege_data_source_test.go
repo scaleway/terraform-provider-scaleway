@@ -9,7 +9,7 @@ import (
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 )
 
-func TestAccDataSourceRdbPrivilege_Basic(t *testing.T) {
+func TestAccDataSourcePrivilege_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -129,7 +129,7 @@ func TestAccDataSourceRdbPrivilege_Basic(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db"),
+					isDatabasePresent(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db"),
 					resource.TestCheckResourceAttr("data.scaleway_rdb_privilege.find_priv", "permission", "all"),
 					resource.TestCheckResourceAttr("data.scaleway_rdb_privilege.find_priv", "region", "fr-par"),
 				),

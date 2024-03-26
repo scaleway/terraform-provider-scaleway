@@ -13,7 +13,7 @@ import (
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 )
 
-func TestAccRdbPrivilege_Basic(t *testing.T) {
+func TestAccPrivilege_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -55,7 +55,7 @@ func TestAccRdbPrivilege_Basic(t *testing.T) {
 					}
 					`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo1"),
+					isPrivilegePresent(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_admin", "permission", "all"),
 				),
 			},
@@ -102,7 +102,7 @@ func TestAccRdbPrivilege_Basic(t *testing.T) {
 					}
 					`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo2"),
+					isPrivilegePresent(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo2"),
 					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_02", "permission", "readwrite"),
 				),
 			},
@@ -162,7 +162,7 @@ func TestAccRdbPrivilege_Basic(t *testing.T) {
 					}
 					`, instanceName, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo3"),
+					isPrivilegePresent(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo3"),
 					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_03", "permission", "none"),
 				),
 			},
@@ -170,7 +170,7 @@ func TestAccRdbPrivilege_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbPrivilegeExists(tt *acctest.TestTools, instance string, database string, user string) resource.TestCheckFunc {
+func isPrivilegePresent(tt *acctest.TestTools, instance string, database string, user string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]
 		if !ok {

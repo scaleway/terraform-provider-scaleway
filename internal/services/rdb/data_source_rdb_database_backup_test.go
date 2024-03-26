@@ -9,7 +9,7 @@ import (
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 )
 
-func TestAccDataSourceRdbDatabaseBackup_Basic(t *testing.T) {
+func TestAccDataSourceDatabaseBackup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -20,7 +20,7 @@ func TestAccDataSourceRdbDatabaseBackup_Basic(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
-			testAccCheckRdbDatabaseBackupDestroy(tt),
+			isBackupDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -67,8 +67,8 @@ func TestAccDataSourceRdbDatabaseBackup_Basic(t *testing.T) {
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.server", "scaleway_rdb_database.database"),
-					testAccCheckRdbDatabaseBackupExists(tt, "scaleway_rdb_database_backup.backup"),
+					isDatabasePresent(tt, "scaleway_rdb_instance.server", "scaleway_rdb_database.database"),
+					isBackupPresent(tt, "scaleway_rdb_database_backup.backup"),
 
 					resource.TestCheckResourceAttr("data.scaleway_rdb_database_backup.find_by_name", "name", "test_backup_datasource"),
 					resource.TestCheckResourceAttr("data.scaleway_rdb_database_backup.find_by_name_and_instance", "name", "test_backup_datasource"),
