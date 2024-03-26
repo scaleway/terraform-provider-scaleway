@@ -80,7 +80,7 @@ func TestAccAccountSSHKey_WithNewLine(t *testing.T) {
 	})
 }
 
-func TestAccAccountSSHKey_ChangeResourceName(t *testing.T) {
+func TestAccSSHKeyAccount_ChangeResourceName(t *testing.T) {
 	name := "TestAccScalewayAccountSSHKey_ChangeResourceName"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
 	FormattedSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO"

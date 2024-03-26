@@ -7,7 +7,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceIamGroup_Basic(t *testing.T) {
+func TestAccDataSourceGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -44,7 +44,7 @@ func TestAccDataSourceIamGroup_Basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceIamGroup_UsersAndApplications(t *testing.T) {
+func TestAccDataSourceGroup_UsersAndApplications(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

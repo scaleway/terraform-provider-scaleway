@@ -54,7 +54,7 @@ func testSweepIamAPIKey(_ string) error {
 	})
 }
 
-func TestAccIamApiKey_WithApplication(t *testing.T) {
+func TestAccApiKey_WithApplication(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -110,7 +110,7 @@ func TestAccIamApiKey_WithApplication(t *testing.T) {
 	})
 }
 
-func TestAccIamApiKey_WithApplicationChange(t *testing.T) {
+func TestAccApiKey_WithApplicationChange(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -174,7 +174,7 @@ func TestAccIamApiKey_WithApplicationChange(t *testing.T) {
 	})
 }
 
-func TestAccIamApiKey_Expires(t *testing.T) {
+func TestAccApiKey_Expires(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -207,7 +207,7 @@ func TestAccIamApiKey_Expires(t *testing.T) {
 	})
 }
 
-func TestAccIamApiKey_NoUpdate(t *testing.T) {
+func TestAccApiKey_NoUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

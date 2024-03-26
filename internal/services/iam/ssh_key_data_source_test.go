@@ -9,7 +9,7 @@ import (
 	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 )
 
-func TestAccDataSourceIamSSHKey_Basic(t *testing.T) {
+func TestAccDataSourceSSHKey_Basic(t *testing.T) {
 	dataSourceIamSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ foobar@example.com"
 	dataSourceIamSSHKeyWithoutComment := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ"
 	sshKeyName := "tf-test-ds-iam-ssh-key-basic"

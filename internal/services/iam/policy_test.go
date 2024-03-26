@@ -53,7 +53,7 @@ func testSweepIamPolicy(_ string) error {
 	})
 }
 
-func TestAccIamPolicy_Basic(t *testing.T) {
+func TestAccPolicy_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
@@ -126,7 +126,7 @@ func TestAccIamPolicy_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIamPolicy_NoUpdate(t *testing.T) {
+func TestAccPolicy_NoUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
@@ -188,7 +188,7 @@ func TestAccIamPolicy_NoUpdate(t *testing.T) {
 	})
 }
 
-func TestAccIamPolicy_ChangeLinkedEntity(t *testing.T) {
+func TestAccPolicy_ChangeLinkedEntity(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -293,7 +293,7 @@ func TestAccIamPolicy_ChangeLinkedEntity(t *testing.T) {
 	})
 }
 
-func TestAccIamPolicy_ChangePermissions(t *testing.T) {
+func TestAccPolicy_ChangePermissions(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
@@ -383,7 +383,7 @@ func TestAccIamPolicy_ChangePermissions(t *testing.T) {
 	})
 }
 
-func TestAccIamPolicy_ProjectID(t *testing.T) {
+func TestAccPolicy_ProjectID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
@@ -448,7 +448,7 @@ func TestAccIamPolicy_ProjectID(t *testing.T) {
 	})
 }
 
-func TestAccIamPolicy_ChangeRulePrincipal(t *testing.T) {
+func TestAccPolicy_ChangeRulePrincipal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()

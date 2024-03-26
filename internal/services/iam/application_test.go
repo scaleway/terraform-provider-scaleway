@@ -52,7 +52,7 @@ func testSweepIamApplication(_ string) error {
 	})
 }
 
-func TestAccIamApplication_Basic(t *testing.T) {
+func TestAccApplication_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -95,7 +95,7 @@ func TestAccIamApplication_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIamApplication_NoUpdate(t *testing.T) {
+func TestAccApplication_NoUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

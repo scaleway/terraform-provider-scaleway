@@ -20,11 +20,11 @@ const (
 func init() {
 	resource.AddTestSweepers("scaleway_iam_ssh_key", &resource.Sweeper{
 		Name: "scaleway_iam_ssh_key",
-		F:    testSweepIamSSHKey,
+		F:    testSweepSSHKey,
 	})
 }
 
-func testSweepIamSSHKey(_ string) error {
+func testSweepSSHKey(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		iamAPI := iamSDK.NewAPI(scwClient)
 
@@ -51,7 +51,7 @@ func testSweepIamSSHKey(_ string) error {
 	})
 }
 
-func TestAccIamSSHKey_basic(t *testing.T) {
+func TestAccSSHKey_basic(t *testing.T) {
 	name := "tf-test-iam-ssh-key-basic"
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -91,7 +91,7 @@ func TestAccIamSSHKey_basic(t *testing.T) {
 	})
 }
 
-func TestAccIamSSHKey_WithNewLine(t *testing.T) {
+func TestAccSSHKey_WithNewLine(t *testing.T) {
 	name := "tf-test-iam-ssh-key-newline"
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -118,7 +118,7 @@ func TestAccIamSSHKey_WithNewLine(t *testing.T) {
 	})
 }
 
-func TestAccIamSSHKey_ChangeResourceName(t *testing.T) {
+func TestAccSSHKey_ChangeResourceName(t *testing.T) {
 	name := "tf-test-iam-ssh-key-change-resource-name"
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -158,7 +158,7 @@ func TestAccIamSSHKey_ChangeResourceName(t *testing.T) {
 	})
 }
 
-func TestAccIamSSHKey_Disabled(t *testing.T) {
+func TestAccSSHKey_Disabled(t *testing.T) {
 	name := "tf-test-iam-ssh-key-disabled"
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

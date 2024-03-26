@@ -51,7 +51,7 @@ func testSweepIamGroup(_ string) error {
 	})
 }
 
-func TestAccIamGroup_Basic(t *testing.T) {
+func TestAccGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -138,7 +138,7 @@ func TestAccIamGroup_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIamGroup_Applications(t *testing.T) {
+func TestAccGroup_Applications(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -236,7 +236,7 @@ func TestAccIamGroup_Applications(t *testing.T) {
 	})
 }
 
-func TestAccIamGroup_Users(t *testing.T) {
+func TestAccGroup_Users(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -327,7 +327,7 @@ func TestAccIamGroup_Users(t *testing.T) {
 	})
 }
 
-func TestAccIamGroup_UsersAndApplications(t *testing.T) {
+func TestAccGroup_UsersAndApplications(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

@@ -17,11 +17,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_iam_user", &resource.Sweeper{
 		Name: "scaleway_iam_user",
-		F:    testSweepIamUser,
+		F:    testSweepUser,
 	})
 }
 
-func testSweepIamUser(_ string) error {
+func testSweepUser(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		api := iamSDK.NewAPI(scwClient)
 
@@ -51,12 +51,12 @@ func testSweepIamUser(_ string) error {
 	})
 }
 
-func TestAccIamUser_Basic(t *testing.T) {
+func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckIamUserDestroy(tt),
+		CheckDestroy:      isUserDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -74,7 +74,7 @@ func TestAccIamUser_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIamUserDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_iam_user" {

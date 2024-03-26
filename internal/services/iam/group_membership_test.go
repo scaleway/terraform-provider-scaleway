@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
 
-func TestAccIamGroupMembership_Basic(t *testing.T) {
+func TestAccGroupMembership_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -102,7 +102,7 @@ func TestAccIamGroupMembership_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIamGroupMembership_User(t *testing.T) {
+func TestAccGroupMembership_User(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
