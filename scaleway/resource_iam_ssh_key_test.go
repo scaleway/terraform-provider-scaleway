@@ -12,8 +12,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
 
-const SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
-const SSHKeyWithoutComment = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO"
+const (
+	SSHKey               = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
+	SSHKeyWithoutComment = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO"
+)
 
 func init() {
 	resource.AddTestSweepers("scaleway_iam_ssh_key", &resource.Sweeper{
