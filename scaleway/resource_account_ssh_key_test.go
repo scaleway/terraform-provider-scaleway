@@ -12,6 +12,7 @@ import (
 func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 	name := "tf-test-account-ssh-key-basic"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
+	FormattedSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX"
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -30,7 +31,7 @@ func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iam.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", FormattedSSHKey),
 				),
 			},
 			{
@@ -43,7 +44,7 @@ func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iam.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name+"-updated"),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", FormattedSSHKey),
 				),
 			},
 		},
@@ -53,6 +54,7 @@ func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
 	name := "tf-test-account-ssh-key-newline"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup opensource@scaleway.com"
+	FormattedSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup"
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -71,7 +73,7 @@ func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iam.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", FormattedSSHKey),
 				),
 			},
 		},
@@ -81,6 +83,7 @@ func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
 func TestAccScalewayAccountSSHKey_ChangeResourceName(t *testing.T) {
 	name := "TestAccScalewayAccountSSHKey_ChangeResourceName"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
+	FormattedSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO"
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -99,7 +102,7 @@ func TestAccScalewayAccountSSHKey_ChangeResourceName(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iam.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.first"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.first", "name", name),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.first", "public_key", SSHKey),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.first", "public_key", FormattedSSHKey),
 				),
 			},
 			{
@@ -112,7 +115,7 @@ func TestAccScalewayAccountSSHKey_ChangeResourceName(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iam.CheckSSHKeyExists(tt, "scaleway_account_ssh_key.second"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.second", "name", name),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.second", "public_key", SSHKey),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.second", "public_key", FormattedSSHKey),
 				),
 			},
 		},

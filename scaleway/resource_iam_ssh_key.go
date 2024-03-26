@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"golang.org/x/crypto/ssh"
 )
 
 func ResourceScalewayIamSSKKey() *schema.Resource {
@@ -36,7 +38,21 @@ func ResourceScalewayIamSSKKey() *schema.Resource {
 				Description: "The public SSH key",
 				// We don't consider trailing \n as diff
 				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-					return strings.Trim(oldValue, "\n") == strings.Trim(newValue, "\n")
+					parsedOldValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(oldValue))
+					if err != nil {
+						return false
+					}
+
+					parsedNewValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(newValue))
+					if err != nil {
+						return false
+					}
+
+					marshalledOldValue := ssh.MarshalAuthorizedKey(parsedOldValue)
+					marshalledNewValue := ssh.MarshalAuthorizedKey(parsedNewValue)
+
+					areEqual := bytes.Equal(marshalledOldValue, marshalledNewValue)
+					return areEqual
 				},
 			},
 			"fingerprint": {
@@ -174,4 +190,12 @@ func resourceScalewayIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	return nil
+}
+
+func removePublicSSHKeyComment(publicKey string) string {
+	parts := strings.Split(publicKey, " ")
+	if len(parts) == 3 {
+		return strings.Join(parts[:2], " ")
+	}
+	return publicKey
 }
