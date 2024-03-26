@@ -56,6 +56,7 @@ func ResourceScalewayVPCPublicGateway() *schema.Resource {
 				Type:             schema.TypeString,
 				Computed:         true,
 				Optional:         true,
+				ForceNew:         true,
 				Description:      "attach an existing IP to the gateway",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
