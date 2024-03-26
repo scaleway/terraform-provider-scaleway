@@ -318,18 +318,18 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
-						name = "my_private_network"
+						name = "test-rdb-private-network"
 						region= "nl-ams"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", "my_private_network"),
+					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", "test-rdb-private-network"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_private_network pn01 {
-						name = "my_private_network"
+						name = "test-rdb-private-network"
 						region= "nl-ams"
 					}
 
@@ -360,12 +360,12 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_private_network pn01 {
-						name = "my_private_network_to_be_replaced"
+						name = "test-rdb-private-network-to-be-replaced"
 						region= "nl-ams"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network"
+						name = "test-rdb-private-network"
 						region= "nl-ams"
 					}
 
@@ -396,12 +396,12 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_private_network pn01 {
-						name = "my_private_network_to_be_replaced"
+						name = "test-rdb-private-network-to-be-replaced"
 						region= "nl-ams"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network"
+						name = "test-rdb-private-network"
 						region= "nl-ams"
 					}
 
@@ -415,7 +415,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 
 					resource scaleway_vpc_public_gateway main {
-						name = "foobar"
+						name = "test-rdb-private-network"
 						type = "VPC-GW-S"
 						zone = "nl-ams-1"
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
@@ -467,7 +467,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network"
+						name = "test-rdb-private-network"
 						region= "nl-ams"
 					}
 

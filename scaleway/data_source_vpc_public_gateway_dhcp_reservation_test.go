@@ -42,7 +42,7 @@ func TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Basic(t *testing.T
 					}
 	
 					resource scaleway_vpc_public_gateway main {
-						name = "foobar"
+						name = "tf-tests-ds-vpc-pgw-dhcp-reservation-basic"
 						type = "VPC-GW-S"
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
@@ -81,7 +81,7 @@ func TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Basic(t *testing.T
 					}
 	
 					resource scaleway_vpc_public_gateway main {
-						name = "foobar"
+						name = "tf-tests-ds-vpc-pgw-dhcp-reservation-basic"
 						type = "VPC-GW-S"
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
@@ -158,7 +158,7 @@ func TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Static(t *testing.
 					}
 	
 					resource scaleway_vpc_public_gateway main {
-						name = "foobar"
+						name = "tf-tests-ds-vpc-pgw-dhcp-reservation-static"
 						type = "VPC-GW-S"
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
