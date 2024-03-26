@@ -36,6 +36,7 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 						name  = "tf-lb-datasource0"
 						description = "a description"
 						type = "LB-S"
+						tags = [ "terraform-test", "data_scaleway_lbs", "basic" ]
 					}
 					`,
 			},
@@ -52,6 +53,7 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 						name  = "tf-lb-datasource0"
 						description = "a description"
 						type = "LB-S"
+						tags = [ "terraform-test", "data_scaleway_lbs", "basic" ]
 					}
 
 					resource scaleway_lb lb2 {
@@ -59,6 +61,7 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 						name  = "tf-lb-datasource1"
 						description = "a description"
 						type = "LB-S"
+						tags = [ "terraform-test", "data_scaleway_lbs", "basic" ]
 					}
 					`,
 			},
@@ -75,6 +78,7 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 						name  = "tf-lb-datasource0"
 						description = "a description"
 						type = "LB-S"
+						tags = [ "terraform-test", "data_scaleway_lbs", "basic" ]
 					}
 
 					resource scaleway_lb lb2 {
@@ -82,10 +86,16 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 						name  = "tf-lb-datasource1"
 						description = "a description"
 						type = "LB-S"
+						tags = [ "terraform-test", "data_scaleway_lbs", "basic" ]
 					}
 
 					data "scaleway_lbs" "lbs_by_name" {
 						name  = "tf-lb-datasource"
+						depends_on = [scaleway_lb.lb1, scaleway_lb.lb2]
+					}
+
+					data "scaleway_lbs" "lbs_by_tags" {
+						tags = [ "terraform-test", "data_scaleway_lbs" ]
 						depends_on = [scaleway_lb.lb1, scaleway_lb.lb2]
 					}
 
@@ -100,6 +110,9 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_name", "lbs.1.id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_name", "lbs.0.name"),
 					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_name", "lbs.1.name"),
+
+					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_tags", "lbs.0.id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_tags", "lbs.1.id"),
 
 					resource.TestCheckNoResourceAttr("data.scaleway_lbs.lbs_by_name_other_zone", "lbs.0.id"),
 				),

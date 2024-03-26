@@ -20,6 +20,14 @@ func DataSourceScalewayLbs() *schema.Resource {
 				Optional:    true,
 				Description: "LBs with a name like it are listed.",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "LBs with these exact tags are listed",
+			},
 			"lbs": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -162,6 +170,7 @@ func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, m in
 		Zone:      zone,
 		Name:      types.ExpandStringPtr(d.Get("name")),
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
