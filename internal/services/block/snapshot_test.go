@@ -66,7 +66,7 @@ func TestAccSnapshot_Basic(t *testing.T) {
 					}
 
 					resource scaleway_block_snapshot main {
-						name = "test-blockSDK-snapshot-basic"
+						name = "test-block-snapshot-basic"
 						volume_id = scaleway_block_volume.main.id
 					}
 				`,
