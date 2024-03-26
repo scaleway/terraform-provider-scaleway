@@ -10,17 +10,10 @@ import (
 
 func expandFunctionTriggerMnqSqsCreationConfig(i interface{}) *function.CreateTriggerRequestMnqSqsClientConfig {
 	m := i.(map[string]interface{})
-
-	mnqNamespaceID := locality.ExpandID(m["namespace_id"].(string))
-
 	req := &function.CreateTriggerRequestMnqSqsClientConfig{
 		Queue:        m["queue"].(string),
 		MnqProjectID: m["project_id"].(string),
 		MnqRegion:    m["region"].(string),
-	}
-
-	if mnqNamespaceID != "" {
-		req.MnqNamespaceID = &mnqNamespaceID
 	}
 
 	return req
