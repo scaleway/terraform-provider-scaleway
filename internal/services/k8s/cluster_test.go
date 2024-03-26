@@ -120,7 +120,7 @@ func testSweepK8SCluster(_ string) error {
 	})
 }
 
-func TestAccK8SCluster_Basic(t *testing.T) {
+func TestAccCluster_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -177,7 +177,7 @@ func TestAccK8SCluster_Basic(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_Autoscaling(t *testing.T) {
+func TestAccCluster_Autoscaling(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -253,7 +253,7 @@ func TestAccK8SCluster_Autoscaling(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_OIDC(t *testing.T) {
+func TestAccCluster_OIDC(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -286,7 +286,7 @@ func TestAccK8SCluster_OIDC(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.client_id", "my-super-id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.username_claim", "mario"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_prefix", "pouf"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_claim.0", "k8sSDK"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_claim.0", "k8s"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_claim.1", "admin"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "tags.1", "scaleway_k8s_cluster"),
@@ -320,7 +320,7 @@ func TestAccK8SCluster_OIDC(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_AutoUpgrade(t *testing.T) {
+func TestAccCluster_AutoUpgrade(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -403,7 +403,7 @@ func TestAccK8SCluster_AutoUpgrade(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_PrivateNetwork(t *testing.T) {
+func TestAccCluster_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -444,7 +444,7 @@ func TestAccK8SCluster_PrivateNetwork(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_Multicloud(t *testing.T) {
+func TestAccCluster_Multicloud(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -468,7 +468,7 @@ func TestAccK8SCluster_Multicloud(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_TypeChange(t *testing.T) {
+func TestAccCluster_TypeChange(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

@@ -19,7 +19,7 @@ import (
 	vpcgwchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw/testfuncs"
 )
 
-func TestAccK8SCluster_PoolBasic(t *testing.T) {
+func TestAccCluster_PoolBasic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -83,7 +83,7 @@ func TestAccK8SCluster_PoolBasic(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_PoolWait(t *testing.T) {
+func TestAccCluster_PoolWait(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
@@ -162,7 +162,7 @@ func TestAccK8SCluster_PoolWait(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_PoolPlacementGroup(t *testing.T) {
+func TestAccCluster_PoolPlacementGroup(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -219,7 +219,7 @@ func TestAccK8SCluster_PoolPlacementGroup(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_PoolUpgradePolicy(t *testing.T) {
+func TestAccCluster_PoolUpgradePolicy(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -274,7 +274,7 @@ func TestAccK8SCluster_PoolUpgradePolicy(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_PoolKubeletArgs(t *testing.T) {
+func TestAccCluster_PoolKubeletArgs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -313,7 +313,7 @@ func TestAccK8SCluster_PoolKubeletArgs(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_PoolZone(t *testing.T) {
+func TestAccCluster_PoolZone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -342,7 +342,7 @@ func TestAccK8SCluster_PoolZone(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_PoolSize(t *testing.T) {
+func TestAccCluster_PoolSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -419,7 +419,7 @@ func TestAccK8SCluster_PoolSize(t *testing.T) {
 	})
 }
 
-func TestAccK8SCluster_PoolPublicIPDisabled(t *testing.T) {
+func TestAccCluster_PoolPublicIPDisabled(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func TestAccDataSourceK8SVersion_Basic(t *testing.T) {
+func TestAccDataSourceVersion_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -47,7 +47,7 @@ func TestAccDataSourceK8SVersion_Basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceK8SVersion_Latest(t *testing.T) {
+func TestAccDataSourceVersion_Latest(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

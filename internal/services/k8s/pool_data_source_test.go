@@ -9,7 +9,7 @@ import (
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
-func TestAccDataSourceK8SPool_Basic(t *testing.T) {
+func TestAccDataSourcePool_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	clusterName := "tf-cluster-pool"
