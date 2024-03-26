@@ -19,11 +19,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_tem_domain", &resource.Sweeper{
 		Name: "scaleway_tem_domain",
-		F:    testSweepTemDomain,
+		F:    testSweepDomain,
 	})
 }
 
-func testSweepTemDomain(_ string) error {
+func testSweepDomain(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		temAPI := temSDK.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: revoking the tem domains in (%s)", region)
@@ -53,7 +53,7 @@ func testSweepTemDomain(_ string) error {
 	})
 }
 
-func TestAccTemDomain_Basic(t *testing.T) {
+func TestAccDomain_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -62,7 +62,7 @@ func TestAccTemDomain_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckTemDomainDestroy(tt),
+		CheckDestroy:      isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -72,7 +72,7 @@ func TestAccTemDomain_Basic(t *testing.T) {
 					}
 				`, domainName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckTemDomainExists(tt, "scaleway_tem_domain.cr01"),
+					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainName),
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
@@ -81,7 +81,7 @@ func TestAccTemDomain_Basic(t *testing.T) {
 	})
 }
 
-func TestAccTemDomain_Tos(t *testing.T) {
+func TestAccDomain_Tos(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -90,7 +90,7 @@ func TestAccTemDomain_Tos(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckTemDomainDestroy(tt),
+		CheckDestroy:      isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -105,7 +105,7 @@ func TestAccTemDomain_Tos(t *testing.T) {
 	})
 }
 
-func testAccCheckTemDomainExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isDomainPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -129,7 +129,7 @@ func testAccCheckTemDomainExists(tt *acctest.TestTools, n string) resource.TestC
 	}
 }
 
-func testAccCheckTemDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isDomainDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_tem_domain" {

@@ -8,7 +8,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceTemDomain_Basic(t *testing.T) {
+func TestAccDataSourceDomain_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -17,7 +17,7 @@ func TestAccDataSourceTemDomain_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckTemDomainDestroy(tt),
+		CheckDestroy:      isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -35,10 +35,10 @@ func TestAccDataSourceTemDomain_Basic(t *testing.T) {
 					}
 				`, domainName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckTemDomainExists(tt, "data.scaleway_tem_domain.prod"),
+					isDomainPresent(tt, "data.scaleway_tem_domain.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_tem_domain.prod", "name", domainName),
 
-					testAccCheckTemDomainExists(tt, "data.scaleway_tem_domain.stg"),
+					isDomainPresent(tt, "data.scaleway_tem_domain.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_tem_domain.stg", "name", domainName),
 				),
 			},
@@ -46,7 +46,7 @@ func TestAccDataSourceTemDomain_Basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceTemDomain_Reputation(t *testing.T) {
+func TestAccDataSourceDomain_Reputation(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -63,7 +63,7 @@ func TestAccDataSourceTemDomain_Reputation(t *testing.T) {
 					}
 				`, domainName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckTemDomainExists(tt, "data.scaleway_tem_domain.test"),
+					isDomainPresent(tt, "data.scaleway_tem_domain.test"),
 					resource.TestCheckResourceAttr("data.scaleway_tem_domain.test", "name", domainName),
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_domain.test", "reputation.0.status"),
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_domain.test", "reputation.0.score"),
