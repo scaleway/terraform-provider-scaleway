@@ -267,7 +267,9 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	if err != nil {
 		return nil, nil, err
 	}
-	defer r.Stop()
+	defer func(r *recorder.Recorder) {
+		_ = r.Stop()
+	}(r)
 
 	// Add custom matcher for requests and cassettes
 	r.SetMatcher(cassetteMatcher)
