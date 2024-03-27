@@ -34,7 +34,7 @@ func exceptionsCassettesCases() map[string]struct{} {
 func getTestFiles() (map[string]struct{}, error) {
 	filesMap := make(map[string]struct{})
 	exceptions := exceptionsCassettesCases()
-	err := filepath.WalkDir("../services", func(path string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir("../services", func(path string, _ fs.DirEntry, _ error) error {
 		isCassette := strings.Contains(path, "cassette")
 		_, isException := exceptions[path]
 		if isCassette && !isException {
