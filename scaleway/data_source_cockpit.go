@@ -5,17 +5,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayCockpit() *schema.Resource {
+func DataSourceScalewayCockpit() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayCockpit().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayCockpit().Schema)
 
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Description:  "The project_id you want to attach the resource to",
 		Optional:     true,
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 	delete(dsSchema, "plan")
 
@@ -25,8 +27,8 @@ func dataSourceScalewayCockpit() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func dataSourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

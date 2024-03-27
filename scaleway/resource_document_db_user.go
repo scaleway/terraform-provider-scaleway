@@ -11,9 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayDocumentDBUser() *schema.Resource {
+func ResourceScalewayDocumentDBUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBUserCreate,
 		ReadContext:   resourceScalewayDocumentDBUserRead,
@@ -35,7 +40,7 @@ func resourceScalewayDocumentDBUser() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "Instance on which the user is created",
 			},
 			"name": {
@@ -56,21 +61,21 @@ func resourceScalewayDocumentDBUser() *schema.Resource {
 				Description: "Grant admin permissions to database user",
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
-func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// resource depends on the instance locality
 	regionalID := d.Get("instance_id").(string)
-	region, instanceID, err := parseRegionalID(regionalID)
+	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
 		diag.FromErr(err)
 	}
@@ -93,7 +98,7 @@ func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.Resourc
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		currentUser, errCreateUser := api.CreateUser(createUserReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
-			if is409Error(errCreateUser) {
+			if httperrors.Is409(errCreateUser) {
 				_, errWait := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -110,18 +115,18 @@ func resourceScalewayDocumentDBUserCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayDocumentDBUserID(region, expandID(instanceID), user.Name))
+	d.SetId(resourceScalewayDocumentDBUserID(region, locality.ExpandID(instanceID), user.Name))
 
-	return resourceScalewayDocumentDBUserRead(ctx, d, meta)
+	return resourceScalewayDocumentDBUserRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, _, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	region, instanceID, userName, err := resourceScalewayDocumentDBUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayDocumentDBUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,7 +137,7 @@ func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceD
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -145,7 +150,7 @@ func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	user := res.Users[0]
-	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
 	_ = d.Set("name", user.Name)
 	_ = d.Set("is_admin", user.IsAdmin)
 	_ = d.Set("region", string(region))
@@ -155,14 +160,14 @@ func resourceScalewayDocumentDBUserRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayDocumentDBUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, _, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// resource depends on the instance locality
-	region, instanceID, userName, err := resourceScalewayDocumentDBUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayDocumentDBUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -179,7 +184,7 @@ func resourceScalewayDocumentDBUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("password") {
-		req.Password = expandStringPtr(d.Get("password"))
+		req.Password = types.ExpandStringPtr(d.Get("password"))
 	}
 	if d.HasChange("is_admin") {
 		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
@@ -190,16 +195,16 @@ func resourceScalewayDocumentDBUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBUserRead(ctx, d, meta)
+	return resourceScalewayDocumentDBUserRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	// resource depends on the instance locality
-	region, instanceID, userName, err := resourceScalewayDocumentDBUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayDocumentDBUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,7 +221,7 @@ func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.Resourc
 			Name:       userName,
 		}, scw.WithContext(ctx))
 		if errDeleteUser != nil {
-			if is409Error(errDeleteUser) {
+			if httperrors.Is409(errDeleteUser) {
 				_, errWait := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -229,7 +234,7 @@ func resourceScalewayDocumentDBUserDelete(ctx context.Context, d *schema.Resourc
 		return nil
 	})
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -244,7 +249,7 @@ func resourceScalewayDocumentDBUserID(region scw.Region, instanceID string, user
 
 // Extract instance ID and username from the resource identifier.
 // The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayDocumentDBUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
+func ResourceScalewayDocumentDBUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
 	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)

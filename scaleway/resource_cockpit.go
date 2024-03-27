@@ -7,19 +7,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
-func resourceScalewayCockpit() *schema.Resource {
+func ResourceScalewayCockpit() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayCockpitCreate,
 		ReadContext:   resourceScalewayCockpitRead,
 		UpdateContext: resourceScalewayCockpitUpdate,
 		DeleteContext: resourceScalewayCockpitDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Read:    schema.DefaultTimeout(defaultCockpitTimeout),
-			Delete:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Default: schema.DefaultTimeout(defaultCockpitTimeout),
+			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
+			Delete:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Default: schema.DefaultTimeout(DefaultCockpitTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -93,8 +94,8 @@ func resourceScalewayCockpit() *schema.Resource {
 	}
 }
 
-func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -138,18 +139,18 @@ func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(res.ProjectID)
-	return resourceScalewayCockpitRead(ctx, d, meta)
+	return resourceScalewayCockpitRead(ctx, d, m)
 }
 
-func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	res, err := waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -164,8 +165,8 @@ func resourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -208,18 +209,18 @@ func resourceScalewayCockpitUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	return resourceScalewayCockpitRead(ctx, d, meta)
+	return resourceScalewayCockpitRead(ctx, d, m)
 }
 
-func resourceScalewayCockpitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -229,12 +230,12 @@ func resourceScalewayCockpitDelete(ctx context.Context, d *schema.ResourceData, 
 	_, err = api.DeactivateCockpit(&cockpit.DeactivateCockpitRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

@@ -7,11 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayAccountProject() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayAccountProject().Schema)
-	addOptionalFieldsToSchema(dsSchema, "name", "organization_id")
+func DataSourceScalewayAccountProject() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayAccountProject().Schema)
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "organization_id")
 
 	dsSchema["name"].ConflictsWith = []string{"project_id"}
 	dsSchema["project_id"] = &schema.Schema{
@@ -19,7 +23,7 @@ func dataSourceScalewayAccountProject() *schema.Resource {
 		Computed:     true,
 		Optional:     true,
 		Description:  "The ID of the SSH key",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -28,20 +32,20 @@ func dataSourceScalewayAccountProject() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := AccountV3ProjectAPI(m)
 
 	var projectID string
 
 	if name, nameExists := d.GetOk("name"); nameExists {
-		orgID := getOrganizationID(meta, d)
+		orgID := getOrganizationID(m, d)
 		if orgID == nil {
 			// required not in schema as we could use default
 			return diag.Errorf("organization_id is required with name")
 		}
 		res, err := accountAPI.ListProjects(&accountV3.ProjectAPIListProjectsRequest{
 			OrganizationID: *orgID,
-			Name:           expandStringPtr(name),
+			Name:           types.ExpandStringPtr(name),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -58,7 +62,7 @@ func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.Resourc
 
 		projectID = foundProject.ID
 	} else {
-		extractedProjectID, _, err := extractProjectID(d, meta.(*Meta))
+		extractedProjectID, _, err := meta.ExtractProjectID(d, m)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -69,7 +73,7 @@ func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.Resourc
 	d.SetId(projectID)
 	_ = d.Set("project_id", projectID)
 
-	diags := resourceScalewayAccountProjectRead(ctx, d, meta)
+	diags := resourceScalewayAccountProjectRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read account project")...)
 	}

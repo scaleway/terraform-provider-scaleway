@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"context"
@@ -9,17 +9,19 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
-	objectBucketTestDefaultRegion, _ := tt.Meta.scwClient.GetDefaultRegion()
+	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
@@ -86,18 +88,18 @@ func TestAccScalewayDataSourceObjectBucket_Basic(t *testing.T) {
 }
 
 func TestAccScalewayDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
 
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeSideProject(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeSideProject(tt)
 	require.NoError(t, err)
 
 	ctx := context.Background()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -135,18 +137,18 @@ func TestAccScalewayDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 }
 
 func TestAccScalewayDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
 
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeSideProject(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeSideProject(tt)
 	require.NoError(t, err)
 
 	ctx := context.Background()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()

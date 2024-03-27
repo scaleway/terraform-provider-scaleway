@@ -11,9 +11,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayDocumentDBReadReplica() *schema.Resource {
+func ResourceScalewayDocumentDBReadReplica() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBReadReplicaCreate,
 		ReadContext:   resourceScalewayDocumentDBReadReplicaRead,
@@ -83,7 +89,7 @@ func resourceScalewayDocumentDBReadReplica() *schema.Resource {
 						"private_network_id": {
 							Type:             schema.TypeString,
 							Description:      "UUID of the private network to be connected to the read replica (UUID format)",
-							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: diffSuppressFuncLocality,
 							Required:         true,
 						},
@@ -129,9 +135,9 @@ func resourceScalewayDocumentDBReadReplica() *schema.Resource {
 				},
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
 	}
 }
 
@@ -159,10 +165,10 @@ func expandDocumentDBReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*
 
 	serviceIP := rawEndpoint["service_ip"].(string)
 	endpoint.PrivateNetwork = &documentdb.ReadReplicaEndpointSpecPrivateNetwork{
-		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
+		PrivateNetworkID: locality.ExpandID(rawEndpoint["private_network_id"]),
 	}
 	if len(serviceIP) > 0 {
-		ipNet, err := expandIPNet(serviceIP)
+		ipNet, err := types.ExpandIPNet(serviceIP)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
 		}
@@ -176,8 +182,8 @@ func expandDocumentDBReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*
 
 func waitForDocumentDBReadReplica(ctx context.Context, api *documentdb.API, region scw.Region, id string, timeout time.Duration) (*documentdb.ReadReplica, error) {
 	retryInterval := defaultWaitDocumentDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForReadReplica(&documentdb.WaitForReadReplicaRequest{
@@ -193,10 +199,10 @@ func flattenDocumentDBReadReplicaEndpoints(endpoints []*documentdb.Endpoint) (di
 	for _, endpoint := range endpoints {
 		rawEndpoint := map[string]interface{}{
 			"endpoint_id": endpoint.ID,
-			"ip":          flattenIPPtr(endpoint.IP),
+			"ip":          types.FlattenIPPtr(endpoint.IP),
 			"port":        int(endpoint.Port),
 			"name":        endpoint.Name,
-			"hostname":    flattenStringPtr(endpoint.Hostname),
+			"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 		}
 		if endpoint.DirectAccess != nil {
 			directAccess = rawEndpoint
@@ -206,7 +212,7 @@ func flattenDocumentDBReadReplicaEndpoints(endpoints []*documentdb.Endpoint) (di
 			if err != nil {
 				return diag.FromErr(err), false
 			}
-			pnRegionalID := newRegionalIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
+			pnRegionalID := regional.NewIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
 			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
@@ -226,8 +232,8 @@ func flattenDocumentDBReadReplicaEndpoints(endpoints []*documentdb.Endpoint) (di
 	return directAccess, privateNetwork
 }
 
-func resourceScalewayDocumentDBReadReplicaCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -245,32 +251,32 @@ func resourceScalewayDocumentDBReadReplicaCreate(ctx context.Context, d *schema.
 
 	rr, err := api.CreateReadReplica(&documentdb.CreateReadReplicaRequest{
 		Region:       region,
-		InstanceID:   expandID(d.Get("instance_id")),
+		InstanceID:   locality.ExpandID(d.Get("instance_id")),
 		EndpointSpec: endpointSpecs,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
 	}
 
-	d.SetId(newRegionalIDString(region, rr.ID))
+	d.SetId(regional.NewIDString(region, rr.ID))
 
 	_, err = waitForDocumentDBReadReplica(ctx, api, region, rr.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBReadReplicaRead(ctx, d, meta)
+	return resourceScalewayDocumentDBReadReplicaRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	rr, err := waitForDocumentDBReadReplica(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -287,15 +293,15 @@ func resourceScalewayDocumentDBReadReplicaRead(ctx context.Context, d *schema.Re
 }
 
 //gocyclo:ignore
-func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForDocumentDBReadReplica(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -312,7 +318,7 @@ func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.
 		if !directAccessExists {
 			err := api.DeleteEndpoint(&documentdb.DeleteEndpointRequest{
 				Region:     region,
-				EndpointID: expandID(d.Get("direct_access.0.endpoint_id")),
+				EndpointID: locality.ExpandID(d.Get("direct_access.0.endpoint_id")),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
@@ -327,7 +333,7 @@ func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.
 		if !privateNetworkExists {
 			err := api.DeleteEndpoint(&documentdb.DeleteEndpointRequest{
 				Region:     region,
-				EndpointID: expandID(d.Get("private_network.0.endpoint_id")),
+				EndpointID: locality.ExpandID(d.Get("private_network.0.endpoint_id")),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
@@ -362,11 +368,11 @@ func resourceScalewayDocumentDBReadReplicaUpdate(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBReadReplicaRead(ctx, d, meta)
+	return resourceScalewayDocumentDBReadReplicaRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBReadReplicaDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBReadReplicaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -385,7 +391,7 @@ func resourceScalewayDocumentDBReadReplicaDelete(ctx context.Context, d *schema.
 	}
 
 	_, err = waitForDocumentDBReadReplica(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

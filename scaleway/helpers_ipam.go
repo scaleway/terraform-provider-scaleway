@@ -10,6 +10,10 @@ import (
 	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -19,10 +23,9 @@ const (
 
 // ipamAPIWithRegion returns a new ipam API and the region
 func ipamAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Region, error) {
-	meta := m.(*Meta)
-	ipamAPI := ipam.NewAPI(meta.scwClient)
+	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -30,12 +33,11 @@ func ipamAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Re
 	return ipamAPI, region, nil
 }
 
-// ipamAPIWithRegionAndID returns a new ipam API with locality and ID extracted from the state
-func ipamAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	ipamAPI := ipam.NewAPI(meta.scwClient)
+// IpamAPIWithRegionAndID returns a new ipam API with locality and ID extracted from the state
+func IpamAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, string, error) {
+	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
 
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -67,9 +69,9 @@ func expandIPSource(raw interface{}) *ipam.Source {
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	return &ipam.Source{
-		Zonal:            expandStringPtr(rawMap["zonal"].(string)),
-		PrivateNetworkID: expandStringPtr(expandID(rawMap["private_network_id"].(string))),
-		SubnetID:         expandStringPtr(rawMap["subnet_id"].(string)),
+		Zonal:            types.ExpandStringPtr(rawMap["zonal"].(string)),
+		PrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(rawMap["private_network_id"].(string))),
+		SubnetID:         types.ExpandStringPtr(rawMap["subnet_id"].(string)),
 	}
 }
 
@@ -79,9 +81,9 @@ func flattenIPSource(source *ipam.Source, privateNetworkID string) interface{} {
 	}
 	return []map[string]interface{}{
 		{
-			"zonal":              flattenStringPtr(source.Zonal),
+			"zonal":              types.FlattenStringPtr(source.Zonal),
 			"private_network_id": privateNetworkID,
-			"subnet_id":          flattenStringPtr(source.SubnetID),
+			"subnet_id":          types.FlattenStringPtr(source.SubnetID),
 		},
 	}
 }
@@ -94,8 +96,8 @@ func flattenIPResource(resource *ipam.Resource) interface{} {
 		{
 			"type":        resource.Type.String(),
 			"id":          resource.ID,
-			"mac_address": flattenStringPtr(resource.MacAddress),
-			"name":        flattenStringPtr(resource.Name),
+			"mac_address": types.FlattenStringPtr(resource.MacAddress),
+			"name":        types.FlattenStringPtr(resource.Name),
 		},
 	}
 }
@@ -107,7 +109,7 @@ func flattenIPReverse(reverse *ipam.Reverse) interface{} {
 
 	return map[string]interface{}{
 		"hostname": reverse.Hostname,
-		"address":  flattenIPPtr(reverse.Address),
+		"address":  types.FlattenIPPtr(reverse.Address),
 	}
 }
 

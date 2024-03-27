@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"strings"
 
@@ -8,9 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"golang.org/x/crypto/ssh"
 )
 
-func resourceScalewayIamSSKKey() *schema.Resource {
+func ResourceScalewayIamSSKKey() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIamSSKKeyCreate,
 		ReadContext:   resourceScalewayIamSSHKeyRead,
@@ -34,7 +38,21 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 				Description: "The public SSH key",
 				// We don't consider trailing \n as diff
 				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-					return strings.Trim(oldValue, "\n") == strings.Trim(newValue, "\n")
+					parsedOldValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(oldValue))
+					if err != nil {
+						return false
+					}
+
+					parsedNewValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(newValue))
+					if err != nil {
+						return false
+					}
+
+					marshalledOldValue := ssh.MarshalAuthorizedKey(parsedOldValue)
+					marshalledNewValue := ssh.MarshalAuthorizedKey(parsedNewValue)
+
+					areEqual := bytes.Equal(marshalledOldValue, marshalledNewValue)
+					return areEqual
 				},
 			},
 			"fingerprint": {
@@ -64,10 +82,10 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 	}
 }
 
-func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
 
-	res, err := iamAPI.CreateSSHKey(&iam.CreateSSHKeyRequest{
+	res, err := api.CreateSSHKey(&iam.CreateSSHKeyRequest{
 		Name:      d.Get("name").(string),
 		PublicKey: strings.Trim(d.Get("public_key").(string), "\n"),
 		ProjectID: (d.Get("project_id")).(string),
@@ -77,9 +95,9 @@ func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if _, disabledExists := d.GetOk("disabled"); disabledExists {
-		_, err = iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+		_, err = api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 			SSHKeyID: d.Id(),
-			Disabled: expandBoolPtr(getBool(d, "disabled")),
+			Disabled: types.ExpandBoolPtr(getBool(d, "disabled")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -88,17 +106,17 @@ func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(res.ID)
 
-	return resourceScalewayIamSSHKeyRead(ctx, d, meta)
+	return resourceScalewayIamSSHKeyRead(ctx, d, m)
 }
 
-func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
 
-	res, err := iamAPI.GetSSHKey(&iam.GetSSHKeyRequest{
+	res, err := api.GetSSHKey(&iam.GetSSHKeyRequest{
 		SSHKeyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -108,8 +126,8 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("public_key", res.PublicKey)
 	_ = d.Set("fingerprint", res.Fingerprint)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("disabled", res.Disabled)
@@ -117,8 +135,8 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
 
 	req := &iam.UpdateSSHKeyRequest{
 		SSHKeyID: d.Id(),
@@ -127,23 +145,23 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 	hasUpdated := false
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 		hasUpdated = true
 	}
 
 	if d.HasChange("disabled") {
 		if _, disabledExists := d.GetOk("disabled"); !disabledExists {
-			_, err := iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+			_, err := api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 				SSHKeyID: d.Id(),
-				Disabled: expandBoolPtr(false),
+				Disabled: types.ExpandBoolPtr(false),
 			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
-			_, err := iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+			_, err := api.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 				SSHKeyID: d.Id(),
-				Disabled: expandBoolPtr(getBool(d, "disabled")),
+				Disabled: types.ExpandBoolPtr(getBool(d, "disabled")),
 			})
 			if err != nil {
 				return diag.FromErr(err)
@@ -152,24 +170,32 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if hasUpdated {
-		_, err := iamAPI.UpdateSSHKey(req, scw.WithContext(ctx))
+		_, err := api.UpdateSSHKey(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayIamSSHKeyRead(ctx, d, meta)
+	return resourceScalewayIamSSHKeyRead(ctx, d, m)
 }
 
-func resourceScalewayIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func resourceScalewayIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
 
-	err := iamAPI.DeleteSSHKey(&iam.DeleteSSHKeyRequest{
+	err := api.DeleteSSHKey(&iam.DeleteSSHKeyRequest{
 		SSHKeyID: d.Id(),
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	return nil
+}
+
+func removePublicSSHKeyComment(publicKey string) string {
+	parts := strings.Split(publicKey, " ")
+	if len(parts) == 3 {
+		return strings.Join(parts[:2], " ")
+	}
+	return publicKey
 }

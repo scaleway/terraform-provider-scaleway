@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbBackends() *schema.Resource {
+func DataSourceScalewayLbBackends() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbBackendsRead,
 		Schema: map[string]*schema.Schema{
@@ -185,20 +187,20 @@ func dataSourceScalewayLbBackends() *schema.Resource {
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func dataSourceScalewayLbBackendsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbBackendsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -206,7 +208,7 @@ func dataSourceScalewayLbBackendsRead(ctx context.Context, d *schema.ResourceDat
 	res, err := lbAPI.ListBackends(&lb.ZonedAPIListBackendsRequest{
 		Zone: zone,
 		LBID: lbID,
-		Name: expandStringPtr(d.Get("name")),
+		Name: types.ExpandStringPtr(d.Get("name")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -215,29 +217,29 @@ func dataSourceScalewayLbBackendsRead(ctx context.Context, d *schema.ResourceDat
 	backends := []interface{}(nil)
 	for _, backend := range res.Backends {
 		rawBackend := make(map[string]interface{})
-		rawBackend["id"] = newZonedID(zone, backend.ID).String()
+		rawBackend["id"] = zonal.NewID(zone, backend.ID).String()
 		rawBackend["name"] = backend.Name
-		rawBackend["lb_id"] = newZonedIDString(zone, backend.LB.ID)
-		rawBackend["created_at"] = flattenTime(backend.CreatedAt)
-		rawBackend["update_at"] = flattenTime(backend.UpdatedAt)
+		rawBackend["lb_id"] = zonal.NewIDString(zone, backend.LB.ID)
+		rawBackend["created_at"] = types.FlattenTime(backend.CreatedAt)
+		rawBackend["update_at"] = types.FlattenTime(backend.UpdatedAt)
 		rawBackend["forward_protocol"] = backend.ForwardProtocol
 		rawBackend["forward_port"] = backend.ForwardPort
 		rawBackend["forward_port_algorithm"] = flattenLbForwardPortAlgorithm(backend.ForwardPortAlgorithm)
 		rawBackend["sticky_sessions"] = flattenLbStickySessionsType(backend.StickySessions)
 		rawBackend["sticky_sessions_cookie_name"] = backend.StickySessionsCookieName
 		rawBackend["server_ips"] = backend.Pool
-		rawBackend["timeout_server"] = flattenDuration(backend.TimeoutServer)
-		rawBackend["timeout_connect"] = flattenDuration(backend.TimeoutConnect)
-		rawBackend["timeout_tunnel"] = flattenDuration(backend.TimeoutTunnel)
+		rawBackend["timeout_server"] = types.FlattenDuration(backend.TimeoutServer)
+		rawBackend["timeout_connect"] = types.FlattenDuration(backend.TimeoutConnect)
+		rawBackend["timeout_tunnel"] = types.FlattenDuration(backend.TimeoutTunnel)
 		rawBackend["on_marked_down_action"] = flattenLbBackendMarkdownAction(backend.OnMarkedDownAction)
 		rawBackend["proxy_protocol"] = flattenLbProxyProtocol(backend.ProxyProtocol)
-		rawBackend["failover_host"] = flattenStringPtr(backend.FailoverHost)
-		rawBackend["ssl_bridging"] = flattenBoolPtr(backend.SslBridging)
-		rawBackend["ignore_ssl_server_verify"] = flattenBoolPtr(backend.IgnoreSslServerVerify)
+		rawBackend["failover_host"] = types.FlattenStringPtr(backend.FailoverHost)
+		rawBackend["ssl_bridging"] = types.FlattenBoolPtr(backend.SslBridging)
+		rawBackend["ignore_ssl_server_verify"] = types.FlattenBoolPtr(backend.IgnoreSslServerVerify)
 		rawBackend["health_check_port"] = backend.HealthCheck.Port
 		rawBackend["health_check_max_retries"] = backend.HealthCheck.CheckMaxRetries
-		rawBackend["health_check_timeout"] = flattenDuration(backend.HealthCheck.CheckTimeout)
-		rawBackend["health_check_delay"] = flattenDuration(backend.HealthCheck.CheckDelay)
+		rawBackend["health_check_timeout"] = types.FlattenDuration(backend.HealthCheck.CheckTimeout)
+		rawBackend["health_check_delay"] = types.FlattenDuration(backend.HealthCheck.CheckDelay)
 		rawBackend["health_check_tcp"] = flattenLbHCTCP(backend.HealthCheck.TCPConfig)
 		rawBackend["health_check_http"] = flattenLbHCHTTP(backend.HealthCheck.HTTPConfig)
 		rawBackend["health_check_https"] = flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig)

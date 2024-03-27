@@ -11,6 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -20,24 +26,21 @@ const (
 
 // newRedisApi returns a new Redis API
 func newRedisAPI(m interface{}) *redis.API {
-	meta := m.(*Meta)
-	return redis.NewAPI(meta.scwClient)
+	return redis.NewAPI(meta.ExtractScwClient(m))
 }
 
 // redisAPIWithZone returns a new Redis API and the zone for a Create request
 func redisAPIWithZone(d *schema.ResourceData, m interface{}) (*redis.API, scw.Zone, error) {
-	meta := m.(*Meta)
-
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 	return newRedisAPI(m), zone, nil
 }
 
-// redisAPIWithZoneAndID returns a Redis API with zone and ID extracted from the state
-func redisAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string, error) {
-	zone, ID, err := parseZonedID(id)
+// RedisAPIWithZoneAndID returns a Redis API with zone and ID extracted from the state
+func RedisAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string, error) {
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -46,8 +49,8 @@ func redisAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, stri
 
 func waitForRedisCluster(ctx context.Context, api *redis.API, zone scw.Zone, id string, timeout time.Duration) (*redis.Cluster, error) {
 	retryInterval := defaultWaitRedisClusterRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForCluster(&redis.WaitForClusterRequest{
@@ -66,7 +69,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 
 	for _, rawPN := range data {
 		pn := rawPN.(map[string]interface{})
-		pnID := expandID(pn["id"].(string))
+		pnID := locality.ExpandID(pn["id"].(string))
 		rawIPs := pn["service_ips"].([]interface{})
 		ips := []scw.IPNet(nil)
 		spec := &redis.EndpointSpecPrivateNetworkSpec{
@@ -74,7 +77,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 		}
 		if len(rawIPs) != 0 {
 			for _, rawIP := range rawIPs {
-				ip, err := expandIPNet(rawIP.(string))
+				ip, err := types.ExpandIPNet(rawIP.(string))
 				if err != nil {
 					return epSpecs, err
 				}
@@ -99,7 +102,7 @@ func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 		if ruleDescription, hasDescription := rawRule["description"]; hasDescription {
 			rule.Description = ruleDescription.(string)
 		}
-		ip, err := expandIPNet(rawRule["ip"].(string))
+		ip, err := types.ExpandIPNet(rawRule["ip"].(string))
 		if err != nil {
 			return nil, fmt.Errorf("failed to validate acl ip (%s): %w", rawRule["ip"].(string), err)
 		}
@@ -116,7 +119,7 @@ func flattenRedisACLs(aclRules []*redis.ACLRule) interface{} {
 		flat = append(flat, map[string]interface{}{
 			"id":          acl.ID,
 			"ip":          acl.IPCidr.String(),
-			"description": flattenStringPtr(acl.Description),
+			"description": types.FlattenStringPtr(acl.Description),
 		})
 	}
 	return flat
@@ -153,7 +156,7 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 		if err != nil {
 			return diag.FromErr(err), false
 		}
-		pnRegionalID := newRegionalIDString(fetchRegion, pn.ID)
+		pnRegionalID := regional.NewIDString(fetchRegion, pn.ID)
 		serviceIps := []interface{}(nil)
 		for _, ip := range pn.ServiceIPs {
 			serviceIps = append(serviceIps, ip.String())
@@ -193,7 +196,7 @@ func redisPrivateNetworkSetHash(v interface{}) int {
 
 	m := v.(map[string]interface{})
 	if pnID, ok := m["id"]; ok {
-		buf.WriteString(expandID(pnID))
+		buf.WriteString(locality.ExpandID(pnID))
 	}
 
 	if serviceIPs, ok := m["service_ips"]; ok {

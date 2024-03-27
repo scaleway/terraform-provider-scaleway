@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -8,17 +8,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	instanceName := "TestAccScalewayRdbPrivilege_Basic"
 	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -167,7 +169,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbPrivilegeExists(tt *TestTools, instance string, database string, user string) resource.TestCheckFunc {
+func testAccCheckRdbPrivilegeExists(tt *acctest.TestTools, instance string, database string, user string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]
 		if !ok {
@@ -184,17 +186,17 @@ func testAccCheckRdbPrivilegeExists(tt *TestTools, instance string, database str
 			return fmt.Errorf("resource not found: %s", user)
 		}
 
-		rdbAPI, _, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+		rdbAPI, _, _, err := scaleway.RdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, _, databaseName, err := resourceScalewayRdbDatabaseParseID(databaseResource.Primary.ID)
+		_, _, databaseName, err := scaleway.ResourceScalewayRdbDatabaseParseID(databaseResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		region, instanceID, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
+		region, instanceID, userName, err := scaleway.ResourceScalewayRdbUserParseID(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}

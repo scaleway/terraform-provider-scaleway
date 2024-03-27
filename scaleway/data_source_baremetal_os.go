@@ -8,9 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayBaremetalOs() *schema.Resource {
+func DataSourceScalewayBaremetalOs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayBaremetalOsRead,
 		Schema: map[string]*schema.Schema{
@@ -30,16 +33,16 @@ func dataSourceScalewayBaremetalOs() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "The ID of the os",
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"name"},
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 		},
 	}
 }
 
-func dataSourceScalewayBaremetalOsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := baremetalAPIWithZone(d, meta)
+func dataSourceScalewayBaremetalOsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -77,7 +80,7 @@ func dataSourceScalewayBaremetalOsRead(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	zoneID := datasourceNewZonedID(osID, zone)
+	zoneID := datasource.NewZonedID(osID, zone)
 	d.SetId(zoneID)
 
 	_ = d.Set("os_id", zoneID)

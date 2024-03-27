@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,18 +8,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayContainerToken_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	expiresAt := time.Now().Add(time.Hour * 24).Format(time.RFC3339)
-	if !*UpdateCassettes {
+	if !*acctest.UpdateCassettes {
 		expiresAt = "2023-01-05T14:12:46+01:00"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerTokenDestroy(tt),
 		Steps: []resource.TestStep{
@@ -55,14 +58,14 @@ func TestAccScalewayContainerToken_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayContainerTokenExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayContainerTokenExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -79,14 +82,14 @@ func testAccCheckScalewayContainerTokenExists(tt *TestTools, n string) resource.
 	}
 }
 
-func testAccCheckScalewayContainerTokenDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayContainerTokenDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_container_token" {
 				continue
 			}
 
-			api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -100,7 +103,7 @@ func testAccCheckScalewayContainerTokenDestroy(tt *TestTools) resource.TestCheck
 				return fmt.Errorf("container token (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

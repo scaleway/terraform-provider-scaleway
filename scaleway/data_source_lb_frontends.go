@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbFrontends() *schema.Resource {
+func DataSourceScalewayLbFrontends() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbFrontendsRead,
 		Schema: map[string]*schema.Schema{
@@ -74,20 +76,20 @@ func dataSourceScalewayLbFrontends() *schema.Resource {
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +97,7 @@ func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceDa
 	res, err := lbAPI.ListFrontends(&lb.ZonedAPIListFrontendsRequest{
 		Zone: zone,
 		LBID: lbID,
-		Name: expandStringPtr(d.Get("name")),
+		Name: types.ExpandStringPtr(d.Get("name")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -104,14 +106,14 @@ func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceDa
 	frontends := []interface{}(nil)
 	for _, frontend := range res.Frontends {
 		rawFrontend := make(map[string]interface{})
-		rawFrontend["id"] = newZonedIDString(zone, frontend.ID)
+		rawFrontend["id"] = zonal.NewIDString(zone, frontend.ID)
 		rawFrontend["name"] = frontend.Name
-		rawFrontend["lb_id"] = newZonedIDString(zone, frontend.LB.ID)
-		rawFrontend["created_at"] = flattenTime(frontend.CreatedAt)
-		rawFrontend["update_at"] = flattenTime(frontend.UpdatedAt)
+		rawFrontend["lb_id"] = zonal.NewIDString(zone, frontend.LB.ID)
+		rawFrontend["created_at"] = types.FlattenTime(frontend.CreatedAt)
+		rawFrontend["update_at"] = types.FlattenTime(frontend.UpdatedAt)
 		rawFrontend["inbound_port"] = frontend.InboundPort
 		rawFrontend["backend_id"] = frontend.Backend.ID
-		rawFrontend["timeout_client"] = flattenDuration(frontend.TimeoutClient)
+		rawFrontend["timeout_client"] = types.FlattenDuration(frontend.TimeoutClient)
 		rawFrontend["enable_http3"] = frontend.EnableHTTP3
 		if len(frontend.CertificateIDs) > 0 {
 			rawFrontend["certificate_ids"] = frontend.CertificateIDs

@@ -10,9 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIPAMIP() *schema.Resource {
+func DataSourceScalewayIPAMIP() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayIPAMIPRead,
 		Schema: map[string]*schema.Schema{
@@ -21,7 +26,7 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "The ID of the IPAM IP",
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"private_network_id", "resource", "mac_address", "type", "tags", "attached"},
 			},
 			"private_network_id": {
@@ -97,8 +102,8 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 				Description:   "Defines whether to filter only for IPs which are attached to a resource",
 				ConflictsWith: []string{"ipam_ip_id"},
 			},
-			"zonal":           zoneSchema(),
-			"region":          regionSchema(),
+			"zonal":           zonal.Schema(),
+			"region":          regional.Schema(),
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 			// Computed
@@ -116,8 +121,8 @@ func dataSourceScalewayIPAMIP() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := ipamAPIWithRegion(d, meta)
+func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := ipamAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -147,15 +152,15 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 
 		req := &ipam.ListIPsRequest{
 			Region:           region,
-			ProjectID:        expandStringPtr(d.Get("project_id")),
-			Zonal:            expandStringPtr(d.Get("zonal")),
-			ResourceID:       expandStringPtr(expandLastID(d.Get("resource.0.id"))),
+			ProjectID:        types.ExpandStringPtr(d.Get("project_id")),
+			Zonal:            types.ExpandStringPtr(d.Get("zonal")),
+			ResourceID:       types.ExpandStringPtr(expandLastID(d.Get("resource.0.id"))),
 			ResourceType:     ipam.ResourceType(d.Get("resource.0.type").(string)),
-			ResourceName:     expandStringPtr(d.Get("resource.0.name").(string)),
-			MacAddress:       expandStringPtr(d.Get("mac_address")),
-			Tags:             expandStrings(d.Get("tags")),
-			OrganizationID:   expandStringPtr(d.Get("organization_id")),
-			PrivateNetworkID: expandStringPtr(expandID(d.Get("private_network_id"))),
+			ResourceName:     types.ExpandStringPtr(d.Get("resource.0.name").(string)),
+			MacAddress:       types.ExpandStringPtr(d.Get("mac_address")),
+			Tags:             types.ExpandStrings(d.Get("tags")),
+			OrganizationID:   types.ExpandStringPtr(d.Get("organization_id")),
+			PrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("private_network_id"))),
 		}
 
 		ipType, ipTypeExist := d.GetOk("type")
@@ -177,7 +182,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 
 		attached, attachedExists := d.GetOk("attached")
 		if attachedExists {
-			req.Attached = expandBoolPtr(attached)
+			req.Attached = types.ExpandBoolPtr(attached)
 		}
 
 		err = retry.RetryContext(ctx, defaultIPAMIPRetryInterval, func() *retry.RetryError {
@@ -204,7 +209,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	} else {
 		res, err := api.GetIP(&ipam.GetIPRequest{
 			Region: region,
-			IPID:   expandID(IPID.(string)),
+			IPID:   locality.ExpandID(IPID.(string)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -214,7 +219,7 @@ func dataSourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	address = ip.IP.String()
-	addressCidr, err = flattenIPNet(ip)
+	addressCidr, err = types.FlattenIPNet(ip)
 	if err != nil {
 		return diag.FromErr(err)
 	}

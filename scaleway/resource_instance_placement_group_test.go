@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -20,12 +24,12 @@ func init() {
 func testSweepInstancePlacementGroup(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
 		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			l.Warningf("error listing placement groups in (%s) in sweeper: %s", zone, err)
+			logging.L.Warningf("error listing placement groups in (%s) in sweeper: %s", zone, err)
 			return nil
 		}
 
@@ -44,10 +48,10 @@ func testSweepInstancePlacementGroup(_ string) error {
 }
 
 func TestAccScalewayInstancePlacementGroup_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstancePlacementGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -90,10 +94,10 @@ func TestAccScalewayInstancePlacementGroup_Basic(t *testing.T) {
 }
 
 func TestAccScalewayInstancePlacementGroup_Rename(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstancePlacementGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -132,7 +136,7 @@ func TestAccScalewayInstancePlacementGroup_Rename(t *testing.T) {
 }
 
 func TestAccScalewayInstancePlacementGroup_Tags(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -173,14 +177,14 @@ func TestAccScalewayInstancePlacementGroup_Tags(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayInstancePlacementGroupExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstancePlacementGroupExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -197,14 +201,14 @@ func testAccCheckScalewayInstancePlacementGroupExists(tt *TestTools, n string) r
 	}
 }
 
-func testAccCheckScalewayInstancePlacementGroupDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayInstancePlacementGroupDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_placement_group" {
 				continue
 			}
 
-			instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -220,7 +224,7 @@ func testAccCheckScalewayInstancePlacementGroupDestroy(tt *TestTools) resource.T
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

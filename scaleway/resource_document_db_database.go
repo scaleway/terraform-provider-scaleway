@@ -8,9 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayDocumentDBDatabase() *schema.Resource {
+func ResourceScalewayDocumentDBDatabase() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBDatabaseCreate,
 		ReadContext:   resourceScalewayDocumentDBDatabaseRead,
@@ -29,7 +34,7 @@ func resourceScalewayDocumentDBDatabase() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "Instance on which the database is created",
 			},
 			"name": {
@@ -54,19 +59,19 @@ func resourceScalewayDocumentDBDatabase() *schema.Resource {
 				Description: "Size of the database",
 				Computed:    true,
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayDocumentDBDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBDatabaseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id"))
+	instanceID := locality.ExpandID(d.Get("instance_id"))
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -76,7 +81,7 @@ func resourceScalewayDocumentDBDatabaseCreate(ctx context.Context, d *schema.Res
 	database, err := api.CreateDatabase(&documentdb.CreateDatabaseRequest{
 		Region:     region,
 		InstanceID: instanceID,
-		Name:       expandOrGenerateString(d.Get("name").(string), "database"),
+		Name:       types.ExpandOrGenerateString(d.Get("name").(string), "database"),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -89,7 +94,7 @@ func resourceScalewayDocumentDBDatabaseCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBDatabaseRead(ctx, d, meta)
+	return resourceScalewayDocumentDBDatabaseRead(ctx, d, m)
 }
 
 func getDocumentDBDatabase(ctx context.Context, api *documentdb.API, region scw.Region, instanceID string, dbName string) (*documentdb.Database, error) {
@@ -109,19 +114,19 @@ func getDocumentDBDatabase(ctx context.Context, api *documentdb.API, region scw.
 	return res.Databases[0], nil
 }
 
-func resourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceLocalizedID, databaseName, err := resourceScalewayDocumentDBDatabaseName(d.Id())
+func resourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceLocalizedID, databaseName, err := ResourceScalewayDocumentDBDatabaseName(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	api, region, instanceID, err := documentDBAPIWithRegionAndID(meta, instanceLocalizedID)
+	api, region, instanceID, err := DocumentDBAPIWithRegionAndID(m, instanceLocalizedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	instance, err := waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -143,19 +148,19 @@ func resourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayDocumentDBDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceLocalizedID, databaseName, err := resourceScalewayDocumentDBDatabaseName(d.Id())
+func resourceScalewayDocumentDBDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceLocalizedID, databaseName, err := ResourceScalewayDocumentDBDatabaseName(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	api, region, instanceID, err := documentDBAPIWithRegionAndID(meta, instanceLocalizedID)
+	api, region, instanceID, err := DocumentDBAPIWithRegionAndID(m, instanceLocalizedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -172,7 +177,7 @@ func resourceScalewayDocumentDBDatabaseDelete(ctx context.Context, d *schema.Res
 	}
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

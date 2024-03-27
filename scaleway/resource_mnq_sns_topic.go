@@ -9,9 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func resourceScalewayMNQSNSTopic() *schema.Resource {
+func ResourceScalewayMNQSNSTopic() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSNSTopicCreate,
 		ReadContext:   resourceScalewayMNQSNSTopicRead,
@@ -78,20 +80,20 @@ func resourceScalewayMNQSNSTopic() *schema.Resource {
 				Computed:    true,
 				Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}'",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 		CustomizeDiff: resourceMNQSSNSTopicCustomizeDiff,
 	}
 }
 
-func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSNSAPI(d, meta)
+func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID, _, err := extractProjectID(d, meta.(*Meta))
+	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,12 +106,12 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project, go %q", snsInfo.Status))
 	}
 
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+	snsClient, _, err := SNSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -133,28 +135,28 @@ func resourceScalewayMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(composeMNQID(region, projectID, topicName))
 
-	return resourceScalewayMNQSNSTopicRead(ctx, d, meta)
+	return resourceScalewayMNQSNSTopicRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	snsClient, _, err := SNSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQID(d.Id())
+	region, projectID, topicName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
 	topicAttributes, err := snsClient.GetTopicAttributesWithContext(ctx, &sns.GetTopicAttributesInput{
-		TopicArn: scw.StringPtr(composeSNSARN(region, projectID, topicName)),
+		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, ResourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -169,18 +171,18 @@ func resourceScalewayMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	snsClient, _, err := SNSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQID(d.Id())
+	region, projectID, topicName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
-	topicARN := composeSNSARN(region, projectID, topicName)
+	topicARN := ComposeSNSARN(region, projectID, topicName)
 
 	changedAttributes := []string(nil)
 	for attributeName, schemaName := range SNSTopicAttributesToResourceMap {
@@ -189,7 +191,7 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceScalewayMNQSNSTopic().Schema, SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -213,22 +215,22 @@ func resourceScalewayMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return resourceScalewayMNQSNSTopicRead(ctx, d, meta)
+	return resourceScalewayMNQSNSTopicRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+func resourceScalewayMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	snsClient, _, err := SNSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	region, projectID, topicName, err := decomposeMNQID(d.Id())
+	region, projectID, topicName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = snsClient.DeleteTopicWithContext(ctx, &sns.DeleteTopicInput{
-		TopicArn: scw.StringPtr(composeSNSARN(region, projectID, topicName)),
+		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)

@@ -7,21 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayBaremetalServer() *schema.Resource {
+func DataSourceScalewayBaremetalServer() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayBaremetalServer().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayBaremetalServer().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"server_id"}
 	dsSchema["server_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the server",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 
@@ -31,8 +34,8 @@ func dataSourceScalewayBaremetalServer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBaremetalServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := baremetalAPIWithZone(d, meta)
+func dataSourceScalewayBaremetalServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -43,7 +46,7 @@ func dataSourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resour
 		res, err := api.ListServers(&baremetal.ListServersRequest{
 			Zone:      zone,
 			Name:      scw.StringPtr(serverName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -61,13 +64,13 @@ func dataSourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resour
 		serverID = foundServer.ID
 	}
 
-	zoneID := datasourceNewZonedID(serverID, zone)
+	zoneID := datasource.NewZonedID(serverID, zone)
 	d.SetId(zoneID)
 	err = d.Set("server_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	diags := resourceScalewayBaremetalServerRead(ctx, d, meta)
+	diags := resourceScalewayBaremetalServerRead(ctx, d, m)
 	if diags != nil {
 		return diags
 	}

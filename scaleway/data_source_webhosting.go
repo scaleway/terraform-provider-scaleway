@@ -7,19 +7,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayWebhosting() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayWebhosting().Schema)
+func DataSourceScalewayWebhosting() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayWebhosting().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "domain")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "domain")
 
 	dsSchema["domain"].ConflictsWith = []string{"webhosting_id"}
 	dsSchema["webhosting_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the Webhosting",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"domain"},
 	}
 	dsSchema["organization_id"] = organizationIDOptionalSchema()
@@ -27,7 +30,7 @@ func dataSourceScalewayWebhosting() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The project ID the resource is associated to",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -36,8 +39,8 @@ func dataSourceScalewayWebhosting() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := webhostingAPIWithRegion(d, meta)
+func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := webhostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -47,9 +50,9 @@ func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceDat
 		hostingDomain := d.Get("domain").(string)
 		res, err := api.ListHostings(&webhosting.ListHostingsRequest{
 			Region:         region,
-			Domain:         expandStringPtr(hostingDomain),
-			ProjectID:      expandStringPtr(d.Get("project_id")),
-			OrganizationID: expandStringPtr(d.Get("organization_id")),
+			Domain:         types.ExpandStringPtr(hostingDomain),
+			ProjectID:      types.ExpandStringPtr(d.Get("project_id")),
+			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -67,14 +70,14 @@ func dataSourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceDat
 		webhostingID = foundDomain.ID
 	}
 
-	regionalID := datasourceNewRegionalID(webhostingID, region)
+	regionalID := datasource.NewRegionalID(webhostingID, region)
 	d.SetId(regionalID)
 	err = d.Set("webhosting_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayWebhostingRead(ctx, d, meta)
+	diags := resourceScalewayWebhostingRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read hosting")...)
 	}

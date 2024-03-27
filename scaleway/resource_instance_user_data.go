@@ -9,9 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayInstanceUserData() *schema.Resource {
+func ResourceScalewayInstanceUserData() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceUserDataCreate,
 		ReadContext:   resourceScalewayInstanceUserDataRead,
@@ -21,11 +25,11 @@ func resourceScalewayInstanceUserData() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Read:    schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Update:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Delete:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
-			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Create:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Read:    schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Update:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Delete:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
+			Default: schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -33,7 +37,7 @@ func resourceScalewayInstanceUserData() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The ID of the server",
-				ValidateFunc: validationUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDWithLocality(),
 			},
 			"key": {
 				Type:        schema.TypeString,
@@ -45,19 +49,19 @@ func resourceScalewayInstanceUserData() *schema.Resource {
 				Required:    true,
 				Description: "The value of the user data to set.",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("server_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("server_id"),
 	}
 }
 
-func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	serverID := expandID(d.Get("server_id").(string))
+	serverID := locality.ExpandID(d.Get("server_id").(string))
 	server, err := waitForInstanceServer(ctx, instanceAPI, zone, serverID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -82,13 +86,13 @@ func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedNestedIDString(zone, key, server.ID))
+	d.SetId(zonal.NewNestedIDString(zone, key, server.ID))
 
-	return resourceScalewayInstanceUserDataRead(ctx, d, meta)
+	return resourceScalewayInstanceUserDataRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(meta, d.Id())
+func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, key, err := InstanceAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,7 +115,7 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 
 	serverUserDataRawValue, err := instanceAPI.GetServerUserData(requestGetUserData, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -122,7 +126,7 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("server_id", newZonedID(zone, server.ID).String())
+	_ = d.Set("server_id", zonal.NewID(zone, server.ID).String())
 	_ = d.Set("key", key)
 	_ = d.Set("value", string(userDataValue))
 	_ = d.Set("zone", zone.String())
@@ -130,8 +134,8 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(meta, d.Id())
+func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, key, err := InstanceAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,17 +170,17 @@ func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceUserDataRead(ctx, d, meta)
+	return resourceScalewayInstanceUserDataRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(meta, d.Id())
+func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, key, err := InstanceAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	deleteUserData := &instance.DeleteServerUserDataRequest{
-		ServerID: expandID(id),
+		ServerID: locality.ExpandID(id),
 		Key:      key,
 		Zone:     zone,
 	}
@@ -187,7 +191,7 @@ func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.Resou
 
 	err = instanceAPI.DeleteServerUserData(deleteUserData, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

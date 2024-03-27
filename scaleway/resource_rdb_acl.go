@@ -13,9 +13,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbACL() *schema.Resource {
+func ResourceScalewayRdbACL() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbACLCreate,
 		ReadContext:   resourceScalewayRdbACLRead,
@@ -37,7 +42,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "Instance on which the ACL is applied",
 			},
 			"acl_rules": {
@@ -62,20 +67,20 @@ func resourceScalewayRdbACL() *schema.Resource {
 				},
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
-func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, meta)
+func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	instanceID := d.Get("instance_id").(string)
-	_, err = waitForRDBInstance(ctx, api, region, expandID(instanceID), d.Timeout(schema.TimeoutCreate))
+	_, err = waitForRDBInstance(ctx, api, region, locality.ExpandID(instanceID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,7 +91,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
-		InstanceID: expandID(instanceID),
+		InstanceID: locality.ExpandID(instanceID),
 		Rules:      aclRules,
 	}
 
@@ -97,17 +102,17 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(instanceID)
 
-	return resourceScalewayRdbACLRead(ctx, d, meta)
+	return resourceScalewayRdbACLRead(ctx, d, m)
 }
 
-func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, instanceID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -116,14 +121,14 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		InstanceID: instanceID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	id := newRegionalID(region, instanceID).String()
+	id := regional.NewID(region, instanceID).String()
 	d.SetId(id)
 	_ = d.Set("instance_id", id)
 
@@ -150,14 +155,14 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
-func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, instanceID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -183,11 +188,11 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return resourceScalewayRdbACLRead(ctx, d, meta)
+	return resourceScalewayRdbACLRead(ctx, d, m)
 }
 
-func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, instanceID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -201,7 +206,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -210,12 +215,12 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		InstanceID: instanceID,
 		ACLRuleIPs: aclRuleIPs,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -230,7 +235,7 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 		ipRaw, ok := r["ip"]
 		if ok {
 			aclRule := &rdb.ACLRuleRequest{}
-			ip, err := expandIPNet(ipRaw.(string))
+			ip, err := types.ExpandIPNet(ipRaw.(string))
 			if err != nil {
 				return res, err
 			}
@@ -259,7 +264,7 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 	ruleMapFromSchema := map[string]struct{}{}
 	for _, ruleFromSchema := range dataFromSchema {
 		currentRule := ruleFromSchema.(map[string]interface{})
-		ip, err := expandIPNet(currentRule["ip"].(string))
+		ip, err := types.ExpandIPNet(currentRule["ip"].(string))
 		if err != nil {
 			errors = append(errors, err)
 			continue

@@ -9,9 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayInstanceImage() *schema.Resource {
+func ResourceScalewayInstanceImage() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceImageCreate,
 		ReadContext:   resourceScalewayInstanceImageRead,
@@ -39,7 +44,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "UUID of the snapshot from which the image is to be created",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"architecture": {
 				Type:        schema.TypeString,
@@ -57,7 +62,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validationUUIDorUUIDWithLocality(),
+					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description: "The IDs of the additional volumes attached to the image",
 			},
@@ -164,27 +169,27 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				},
 			},
 			// Common
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("root_volume_id", "additional_volume_ids.#"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("root_volume_id", "additional_volume_ids.#"),
 	}
 }
 
-func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &instance.CreateImageRequest{
 		Zone:       zone,
-		Name:       expandOrGenerateString(d.Get("name"), "image"),
-		RootVolume: expandZonedID(d.Get("root_volume_id").(string)).ID,
+		Name:       types.ExpandOrGenerateString(d.Get("name"), "image"),
+		RootVolume: zonal.ExpandID(d.Get("root_volume_id").(string)).ID,
 		Arch:       instance.Arch(d.Get("architecture").(string)),
-		Project:    expandStringPtr(d.Get("project_id")),
-		Public:     expandBoolPtr(d.Get("public")),
+		Project:    types.ExpandStringPtr(d.Get("project_id")),
+		Public:     types.ExpandBoolPtr(d.Get("public")),
 	}
 
 	extraVolumesIDs, volumesExist := d.GetOk("additional_volume_ids")
@@ -197,10 +202,10 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 	}
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
-		req.Tags = expandStrings(tags)
+		req.Tags = types.ExpandStrings(tags)
 	}
 	if _, exist := d.GetOk("public"); exist {
-		req.Public = expandBoolPtr(getBool(d, "public"))
+		req.Public = types.ExpandBoolPtr(getBool(d, "public"))
 	}
 
 	res, err := instanceAPI.CreateImage(req, scw.WithContext(ctx))
@@ -208,23 +213,23 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.Image.ID))
+	d.SetId(zonal.NewIDString(zone, res.Image.ID))
 
 	_, err = instanceAPI.WaitForImage(&instance.WaitForImageRequest{
 		ImageID:       res.Image.ID,
 		Zone:          zone,
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceImageRead(ctx, d, meta)
+	return resourceScalewayInstanceImageRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -234,7 +239,7 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 		ImageID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -242,13 +247,13 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_ = d.Set("name", image.Image.Name)
-	_ = d.Set("root_volume_id", newZonedIDString(image.Image.Zone, image.Image.RootVolume.ID))
+	_ = d.Set("root_volume_id", zonal.NewIDString(image.Image.Zone, image.Image.RootVolume.ID))
 	_ = d.Set("architecture", image.Image.Arch)
 	_ = d.Set("additional_volumes", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes, zone))
 	_ = d.Set("tags", image.Image.Tags)
 	_ = d.Set("public", image.Image.Public)
-	_ = d.Set("creation_date", flattenTime(image.Image.CreationDate))
-	_ = d.Set("modification_date", flattenTime(image.Image.ModificationDate))
+	_ = d.Set("creation_date", types.FlattenTime(image.Image.CreationDate))
+	_ = d.Set("modification_date", types.FlattenTime(image.Image.ModificationDate))
 	_ = d.Set("from_server_id", image.Image.FromServer)
 	_ = d.Set("state", image.Image.State)
 	_ = d.Set("zone", image.Image.Zone)
@@ -258,8 +263,8 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -270,15 +275,15 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 	if d.HasChange("architecture") {
 		req.Arch = instance.Arch(d.Get("architecture").(string))
 	}
 	if d.HasChange("public") {
-		req.Public = expandBoolPtr(getBool(d, "public"))
+		req.Public = types.ExpandBoolPtr(getBool(d, "public"))
 	}
-	req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+	req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 
 	image, err := instanceAPI.GetImage(&instance.GetImageRequest{
 		Zone:    zone,
@@ -327,11 +332,11 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceImageRead(ctx, d, meta)
+	return resourceScalewayInstanceImageRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceImageDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceImageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -346,14 +351,14 @@ func resourceScalewayInstanceImageDelete(ctx context.Context, d *schema.Resource
 		Zone:    zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
 
 	_, err = waitForInstanceImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}

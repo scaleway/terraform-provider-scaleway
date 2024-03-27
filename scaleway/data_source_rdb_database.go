@@ -6,33 +6,35 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
-func dataSourceScalewayRDBDatabase() *schema.Resource {
+func DataSourceScalewayRDBDatabase() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbDatabase().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayRdbDatabase().Schema)
 
-	fixDatasourceSchemaFlags(dsSchema, true, "instance_id", "name")
+	datasource.FixDatasourceSchemaFlags(dsSchema, true, "instance_id", "name")
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBDatabaseRead,
 		Schema:      dsSchema,
 	}
 }
 
-func dataSourceScalewayRDBDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, region, err := rdbAPIWithRegion(d, meta)
+func dataSourceScalewayRDBDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	instanceID, _ := d.GetOk("instance_id")
 	dbName, _ := d.GetOk("name")
 
-	_, _, err = parseLocalizedID(instanceID.(string))
+	_, _, err = locality.ParseLocalizedID(instanceID.(string))
 	if err != nil {
-		instanceID = datasourceNewRegionalID(instanceID, region)
+		instanceID = datasource.NewRegionalID(instanceID, region)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", instanceID, dbName.(string)))
@@ -40,5 +42,5 @@ func dataSourceScalewayRDBDatabaseRead(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayRdbDatabaseRead(ctx, d, meta)
+	return resourceScalewayRdbDatabaseRead(ctx, d, m)
 }

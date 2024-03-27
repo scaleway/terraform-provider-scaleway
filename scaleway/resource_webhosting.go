@@ -7,9 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayWebhosting() *schema.Resource {
+func ResourceScalewayWebhosting() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayWebhostingCreate,
 		ReadContext:   resourceScalewayWebhostingRead,
@@ -29,13 +33,13 @@ func resourceScalewayWebhosting() *schema.Resource {
 			"offer_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The ID of the selected offer for the hosting",
 			},
 			"email": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validationEmail(),
+				ValidateFunc: verify.IsEmail(),
 				Description:  "Contact email of the client for the hosting",
 			},
 			"domain": {
@@ -134,15 +138,15 @@ func resourceScalewayWebhosting() *schema.Resource {
 				Computed:    true,
 				Description: "Main hosting cPanel username",
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 		},
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 			if diff.HasChange("tags") {
 				oldTagsInterface, newTagsInterface := diff.GetChange("tags")
-				oldTags := expandStrings(oldTagsInterface)
-				newTags := expandStrings(newTagsInterface)
+				oldTags := types.ExpandStrings(oldTagsInterface)
+				newTags := types.ExpandStrings(newTagsInterface)
 				// If the 'internal' tag has been added, remove it from the diff
 				if sliceContainsString(oldTags, "internal") && !sliceContainsString(newTags, "internal") {
 					err := diff.SetNew("tags", oldTags)
@@ -156,13 +160,13 @@ func resourceScalewayWebhosting() *schema.Resource {
 	}
 }
 
-func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := webhostingAPIWithRegion(d, meta)
+func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := webhostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, offerID, err := parseRegionalID(d.Get("offer_id").(string))
+	_, offerID, err := regional.ParseID(d.Get("offer_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -172,22 +176,22 @@ func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceDat
 		OfferID:   offerID,
 		ProjectID: d.Get("project_id").(string),
 		Domain:    d.Get("domain").(string),
-		OptionIDs: expandStrings(d.Get("option_ids")),
+		OptionIDs: types.ExpandStrings(d.Get("option_ids")),
 	}
 
 	rawTags, tagsExist := d.GetOk("tags")
 	if tagsExist {
-		hostingCreateRequest.Tags = expandStrings(rawTags)
+		hostingCreateRequest.Tags = types.ExpandStrings(rawTags)
 	}
 
 	rawOptionIDs, rawOptionIDsExist := d.GetOk("option_ids")
 	if rawOptionIDsExist {
-		hostingCreateRequest.OptionIDs = expandStrings(rawOptionIDs)
+		hostingCreateRequest.OptionIDs = types.ExpandStrings(rawOptionIDs)
 	}
 
 	rawEmail, emailExist := d.GetOk("email")
 	if emailExist {
-		hostingCreateRequest.Email = expandStringPtr(rawEmail)
+		hostingCreateRequest.Email = types.ExpandStringPtr(rawEmail)
 	}
 
 	hostingResponse, err := api.CreateHosting(hostingCreateRequest, scw.WithContext(ctx))
@@ -195,25 +199,25 @@ func resourceScalewayWebhostingCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, hostingResponse.ID))
+	d.SetId(regional.NewIDString(region, hostingResponse.ID))
 
 	_, err = waitForHosting(ctx, api, region, hostingResponse.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayWebhostingRead(ctx, d, meta)
+	return resourceScalewayWebhostingRead(ctx, d, m)
 }
 
-func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := WebhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	webhostingResponse, err := waitForHosting(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -224,13 +228,13 @@ func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData,
 		_ = d.Set("tags", webhostingResponse.Tags)
 	}
 
-	_ = d.Set("offer_id", newRegionalIDString(region, webhostingResponse.OfferID))
+	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.OfferID))
 	_ = d.Set("domain", webhostingResponse.Domain)
-	_ = d.Set("created_at", flattenTime(webhostingResponse.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(webhostingResponse.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(webhostingResponse.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(webhostingResponse.UpdatedAt))
 	_ = d.Set("status", webhostingResponse.Status.String())
 	_ = d.Set("platform_hostname", webhostingResponse.PlatformHostname)
-	_ = d.Set("platform_number", flattenInt32Ptr(webhostingResponse.PlatformNumber))
+	_ = d.Set("platform_number", types.FlattenInt32Ptr(webhostingResponse.PlatformNumber))
 	_ = d.Set("options", flattenHostingOptions(webhostingResponse.Options))
 	_ = d.Set("offer_name", webhostingResponse.OfferName)
 	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String())
@@ -243,8 +247,8 @@ func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := WebhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -262,26 +266,26 @@ func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceDat
 	hasChanged := false
 
 	if d.HasChange("option_ids") {
-		updateRequest.OptionIDs = expandUpdatedStringsPtr(d.Get("option_ids"))
+		updateRequest.OptionIDs = types.ExpandUpdatedStringsPtr(d.Get("option_ids"))
 		hasChanged = true
 	}
 
 	if d.HasChange("offer_id") {
-		_, offerID, err := parseRegionalID(d.Get("offer_id").(string))
+		_, offerID, err := regional.ParseID(d.Get("offer_id").(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateRequest.OfferID = expandUpdatedStringPtr(offerID)
+		updateRequest.OfferID = types.ExpandUpdatedStringPtr(offerID)
 		hasChanged = true
 	}
 
 	if d.HasChange("email") {
-		updateRequest.Email = expandUpdatedStringPtr(d.Get("email"))
+		updateRequest.Email = types.ExpandUpdatedStringPtr(d.Get("email"))
 		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
@@ -292,11 +296,11 @@ func resourceScalewayWebhostingUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	return resourceScalewayWebhostingRead(ctx, d, meta)
+	return resourceScalewayWebhostingRead(ctx, d, m)
 }
 
-func resourceScalewayWebhostingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := webhostingAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayWebhostingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := WebhostingAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -310,7 +314,7 @@ func resourceScalewayWebhostingDelete(ctx context.Context, d *schema.ResourceDat
 		Region:    region,
 		HostingID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

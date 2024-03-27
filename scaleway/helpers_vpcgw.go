@@ -7,6 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -17,22 +21,20 @@ const (
 
 // vpcgwAPIWithZone returns a new VPC API and the zone for a Create request
 func vpcgwAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zone, error) {
-	meta := m.(*Meta)
-	vpcgwAPI := vpcgw.NewAPI(meta.scwClient)
+	vpcgwAPI := vpcgw.NewAPI(meta.ExtractScwClient(m))
 
-	zone, err := extractZone(d, meta)
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 	return vpcgwAPI, zone, nil
 }
 
-// vpcgwAPIWithZoneAndID
-func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string, error) {
-	meta := m.(*Meta)
-	vpcgwAPI := vpcgw.NewAPI(meta.scwClient)
+// VpcgwAPIWithZoneAndID
+func VpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string, error) {
+	vpcgwAPI := vpcgw.NewAPI(meta.ExtractScwClient(m))
 
-	zone, ID, err := parseZonedID(id)
+	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -41,8 +43,8 @@ func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, stri
 
 func waitForVPCPublicGateway(ctx context.Context, api *vpcgw.API, zone scw.Zone, id string, timeout time.Duration) (*vpcgw.Gateway, error) {
 	retryInterval := defaultVPCGatewayRetry
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	gateway, err := api.WaitForGateway(&vpcgw.WaitForGatewayRequest{
@@ -57,8 +59,8 @@ func waitForVPCPublicGateway(ctx context.Context, api *vpcgw.API, zone scw.Zone,
 
 func waitForVPCGatewayNetwork(ctx context.Context, api *vpcgw.API, zone scw.Zone, id string, timeout time.Duration) (*vpcgw.GatewayNetwork, error) {
 	retryIntervalGWNetwork := defaultVPCGatewayRetry
-	if DefaultWaitRetryInterval != nil {
-		retryIntervalGWNetwork = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryIntervalGWNetwork = *transport.DefaultWaitRetryInterval
 	}
 
 	gatewayNetwork, err := api.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
@@ -73,8 +75,8 @@ func waitForVPCGatewayNetwork(ctx context.Context, api *vpcgw.API, zone scw.Zone
 
 func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gatewayID string, macAddress string, timeout time.Duration) (*vpcgw.ListDHCPEntriesResponse, error) {
 	retryIntervalDHCPEntries := defaultVPCGatewayRetry
-	if DefaultWaitRetryInterval != nil {
-		retryIntervalDHCPEntries = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryIntervalDHCPEntries = *transport.DefaultWaitRetryInterval
 	}
 
 	req := &vpcgw.WaitForDHCPEntriesRequest{
@@ -121,7 +123,7 @@ func expandIpamConfig(raw interface{}) *vpcgw.CreateGatewayNetworkRequestIpamCon
 	}
 
 	if ipamIPID, ok := rawMap["ipam_ip_id"].(string); ok && ipamIPID != "" {
-		ipamConfig.IpamIPID = scw.StringPtr(expandRegionalID(ipamIPID).ID)
+		ipamConfig.IpamIPID = scw.StringPtr(regional.ExpandID(ipamIPID).ID)
 	}
 
 	return ipamConfig
@@ -138,7 +140,7 @@ func expandUpdateIpamConfig(raw interface{}) *vpcgw.UpdateGatewayNetworkRequestI
 	}
 
 	if ipamIPID, ok := rawMap["ipam_ip_id"].(string); ok && ipamIPID != "" {
-		updateIpamConfig.IpamIPID = scw.StringPtr(expandRegionalID(ipamIPID).ID)
+		updateIpamConfig.IpamIPID = scw.StringPtr(regional.ExpandID(ipamIPID).ID)
 	}
 
 	return updateIpamConfig

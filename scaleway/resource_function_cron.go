@@ -7,9 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayFunctionCron() *schema.Resource {
+func ResourceScalewayFunctionCron() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionCronCreate,
 		ReadContext:   resourceScalewayFunctionCronRead,
@@ -54,19 +58,19 @@ func resourceScalewayFunctionCron() *schema.Resource {
 				Computed:    true,
 				Description: "Cron job status.",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("function_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("function_id"),
 	}
 }
 
-func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	functionID := expandID(d.Get("function_id").(string))
+	functionID := locality.ExpandID(d.Get("function_id").(string))
 	f, err := waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -76,7 +80,7 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 		FunctionID: f.ID,
 		Schedule:   d.Get("schedule").(string),
 		Region:     region,
-		Name:       expandStringPtr(d.Get("name")),
+		Name:       types.ExpandStringPtr(d.Get("name")),
 	}
 
 	if args, ok := d.GetOk("args"); ok {
@@ -97,27 +101,27 @@ func resourceScalewayFunctionCronCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, cron.ID))
+	d.SetId(regional.NewIDString(region, cron.ID))
 
-	return resourceScalewayFunctionCronRead(ctx, d, meta)
+	return resourceScalewayFunctionCronRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	cron, err := waitForFunctionCron(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("function_id", newRegionalID(region, cron.FunctionID).String())
+	_ = d.Set("function_id", regional.NewID(region, cron.FunctionID).String())
 	_ = d.Set("schedule", cron.Schedule)
 	_ = d.Set("name", cron.Name)
 	args, err := scw.EncodeJSONObject(*cron.Args, scw.NoEscape)
@@ -131,8 +135,8 @@ func resourceScalewayFunctionCronRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -148,11 +152,11 @@ func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	shouldUpdate := false
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name").(string))
+		req.Name = types.ExpandStringPtr(d.Get("name").(string))
 		shouldUpdate = true
 	}
 	if d.HasChange("schedule") {
-		req.Schedule = expandStringPtr(d.Get("schedule").(string))
+		req.Schedule = types.ExpandStringPtr(d.Get("schedule").(string))
 		shouldUpdate = true
 	}
 
@@ -172,18 +176,18 @@ func resourceScalewayFunctionCronUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	return resourceScalewayFunctionCronRead(ctx, d, meta)
+	return resourceScalewayFunctionCronRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	cron, err := waitForFunctionCron(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -195,7 +199,7 @@ func resourceScalewayFunctionCronDelete(ctx context.Context, d *schema.ResourceD
 		CronID: cron.ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

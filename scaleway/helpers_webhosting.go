@@ -7,6 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -16,22 +19,20 @@ const (
 
 // webhostingAPIWithRegion returns a new Webhosting API and the region for a Create request
 func webhostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.API, scw.Region, error) {
-	meta := m.(*Meta)
-	api := webhosting.NewAPI(meta.scwClient)
+	api := webhosting.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 	return api, region, nil
 }
 
-// webhostingAPIWithRegionAndID returns a Webhosting API with region and ID extracted from the state
-func webhostingAPIWithRegionAndID(m interface{}, id string) (*webhosting.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := webhosting.NewAPI(meta.scwClient)
+// WebhostingAPIWithRegionAndID returns a Webhosting API with region and ID extracted from the state
+func WebhostingAPIWithRegionAndID(m interface{}, id string) (*webhosting.API, scw.Region, string, error) {
+	api := webhosting.NewAPI(meta.ExtractScwClient(m))
 
-	region, id, err := parseRegionalID(id)
+	region, id, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -83,8 +84,8 @@ func flattenHostingOptions(options []*webhosting.HostingOption) []map[string]int
 
 func waitForHosting(ctx context.Context, api *webhosting.API, region scw.Region, hostingID string, timeout time.Duration) (*webhosting.Hosting, error) {
 	retryInterval := hostingRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForHosting(&webhosting.WaitForHostingRequest{

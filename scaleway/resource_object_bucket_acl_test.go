@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -7,15 +7,16 @@ import (
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
 func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-basic")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
@@ -60,14 +61,14 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-grantee")
 
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	ownerIDChild := "50ab77d5-56bd-4981-a118-4e0fa5309b59"
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
@@ -163,12 +164,12 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-owner")
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
@@ -215,12 +216,12 @@ func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucketACL_WithBucketName(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-name")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{

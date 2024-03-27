@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -20,7 +24,7 @@ func init() {
 func testSweepVPCPublicGateway(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		vpcgwAPI := vpcgw.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the public gateways in (%+v)", zone)
+		logging.L.Debugf("sweeper: destroying the public gateways in (%+v)", zone)
 
 		listGatewayResponse, err := vpcgwAPI.ListGateways(&vpcgw.ListGatewaysRequest{
 			Zone: zone,
@@ -43,11 +47,11 @@ func testSweepVPCPublicGateway(_ string) error {
 }
 
 func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	publicGatewayName := "public-gateway-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDestroy(tt),
 		Steps: []resource.TestStep{
@@ -122,11 +126,11 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 }
 
 func TestAccScalewayVPCPublicGateway_Bastion(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	publicGatewayName := "public-gateway-bastion-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDestroy(tt),
 		Steps: []resource.TestStep{
@@ -170,11 +174,11 @@ func TestAccScalewayVPCPublicGateway_Bastion(t *testing.T) {
 }
 
 func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
@@ -204,14 +208,14 @@ func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayVPCPublicGatewayExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayVPCPublicGatewayExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		vpcgwAPI, zone, ID, err := scaleway.VpcgwAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -228,14 +232,14 @@ func testAccCheckScalewayVPCPublicGatewayExists(tt *TestTools, n string) resourc
 	}
 }
 
-func testAccCheckScalewayVPCPublicGatewayDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayVPCPublicGatewayDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_vpc_public_gateway" {
 				continue
 			}
 
-			vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			vpcgwAPI, zone, ID, err := scaleway.VpcgwAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -253,7 +257,7 @@ func testAccCheckScalewayVPCPublicGatewayDestroy(tt *TestTools) resource.TestChe
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

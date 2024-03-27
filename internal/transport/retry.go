@@ -1,30 +1,36 @@
-package scaleway
+package transport
 
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
-type retryableTransportOptions struct {
+// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
+var DefaultWaitRetryInterval *time.Duration
+
+type RetryableTransportOptions struct {
 	RetryMax     *int
 	RetryWaitMax *time.Duration
 	RetryWaitMin *time.Duration
 }
 
-func newRetryableTransportWithOptions(defaultTransport http.RoundTripper, options retryableTransportOptions) http.RoundTripper {
+func NewRetryableTransportWithOptions(defaultTransport http.RoundTripper, options RetryableTransportOptions) http.RoundTripper {
 	c := retryablehttp.NewClient()
 	c.HTTPClient = &http.Client{Transport: defaultTransport}
 
 	// Defaults
 	c.RetryMax = 3
 	c.RetryWaitMax = 2 * time.Minute
-	c.Logger = l
+	c.Logger = logging.L
 	c.RetryWaitMin = time.Second * 2
 	c.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
 		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
@@ -54,22 +60,22 @@ func newRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 		c.RetryWaitMin = *options.RetryWaitMin
 	}
 
-	return &retryableTransport{c}
+	return &RetryableTransport{c}
 }
 
+// NewRetryableTransport creates a http transport with retry capability.
 // TODO Retry logic should be moved in the SDK
-// newRetryableTransport creates a http transport with retry capability.
-func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
-	return newRetryableTransportWithOptions(defaultTransport, retryableTransportOptions{})
+func NewRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
+	return NewRetryableTransportWithOptions(defaultTransport, RetryableTransportOptions{})
 }
 
-// client is a bridge between scw.httpClient interface and retryablehttp.Client
-type retryableTransport struct {
+// RetryableTransport client is a bridge between scw.httpClient interface and retryablehttp.Client
+type RetryableTransport struct {
 	*retryablehttp.Client
 }
 
 // RoundTrip wraps calling an HTTP method with retries.
-func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	var body io.ReadSeeker
 	if r.Body != nil {
 		bs, err := ioutil.ReadAll(r.Body)
@@ -93,4 +99,17 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 		return io.NopCloser(bytes.NewReader(b)), err
 	}
 	return c.Client.Do(req)
+}
+
+func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) { //nolint:ireturn
+	t, err := action()
+	var transientStateError *scw.TransientStateError
+	if errors.As(err, &transientStateError) {
+		_, err := waiter()
+		if err != nil {
+			return t, err
+		}
+		return RetryOnTransientStateError(action, waiter)
+	}
+	return t, err
 }

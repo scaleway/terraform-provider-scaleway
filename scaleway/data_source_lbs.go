@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbs() *schema.Resource {
+func DataSourceScalewayLbs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbsRead,
 		Schema: map[string]*schema.Schema{
@@ -17,6 +19,14 @@ func dataSourceScalewayLbs() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "LBs with a name like it are listed.",
+			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "LBs with these exact tags are listed",
 			},
 			"lbs": {
 				Type:     schema.TypeList,
@@ -75,7 +85,7 @@ func dataSourceScalewayLbs() *schema.Resource {
 										Computed: true,
 										Type:     schema.TypeString,
 									},
-									"zone": zoneSchema(),
+									"zone": zonal.Schema(),
 								},
 							},
 						},
@@ -102,7 +112,7 @@ func dataSourceScalewayLbs() *schema.Resource {
 									},
 									"project_id":      projectIDSchema(),
 									"organization_id": organizationIDSchema(),
-									"zone":            zoneSchema(),
+									"zone":            zonal.Schema(),
 								},
 							},
 						},
@@ -138,28 +148,29 @@ func dataSourceScalewayLbs() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
-						"zone":            zoneSchema(),
+						"zone":            zonal.Schema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	res, err := lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
 		Zone:      zone,
-		Name:      expandStringPtr(d.Get("name")),
-		ProjectID: expandStringPtr(d.Get("project_id")),
+		Name:      types.ExpandStringPtr(d.Get("name")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -168,7 +179,7 @@ func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, meta
 	lbs := []interface{}(nil)
 	for _, loadbalancer := range res.LBs {
 		rawLb := make(map[string]interface{})
-		rawLb["id"] = newZonedID(loadbalancer.Zone, loadbalancer.ID).String()
+		rawLb["id"] = zonal.NewID(loadbalancer.Zone, loadbalancer.ID).String()
 		rawLb["description"] = loadbalancer.Description
 		rawLb["zone"] = string(zone)
 		rawLb["name"] = loadbalancer.Name

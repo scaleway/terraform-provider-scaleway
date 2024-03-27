@@ -7,21 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPCPublicGateway() *schema.Resource {
+func DataSourceScalewayVPCPublicGateway() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPublicGateway().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPCPublicGateway().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"public_gateway_id"}
 	dsSchema["public_gateway_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the public gateway",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 
@@ -31,8 +34,8 @@ func dataSourceScalewayVPCPublicGateway() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -46,9 +49,9 @@ func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resou
 		gwName := d.Get("name").(string)
 		res, err := vpcgwAPI.ListGateways(
 			&vpcgw.ListGatewaysRequest{
-				Name:      expandStringPtr(gwName),
+				Name:      types.ExpandStringPtr(gwName),
 				Zone:      zone,
-				ProjectID: expandStringPtr(d.Get("project_id")),
+				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -66,8 +69,8 @@ func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resou
 		publicGatewayID = foundGW.ID
 	}
 
-	zonedID := datasourceNewZonedID(publicGatewayID, zone)
+	zonedID := datasource.NewZonedID(publicGatewayID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("public_gateway_id", zonedID)
-	return resourceScalewayVPCPublicGatewayRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayRead(ctx, d, m)
 }

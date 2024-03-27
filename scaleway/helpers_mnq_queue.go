@@ -19,6 +19,8 @@ import (
 	natsjwt "github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -32,8 +34,7 @@ const (
 )
 
 func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
-	meta := m.(*Meta)
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -42,7 +43,7 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	sqsClient, err := newSQSClient(meta.httpClient, region.String(), endpoint, accessKey, secretKey)
+	sqsClient, err := NewSQSClient(meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -50,7 +51,7 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	return sqsClient, region, err
 }
 
-func newSQSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sqs.SQS, error) {
+func NewSQSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sqs.SQS, error) {
 	config := &aws.Config{}
 	config.WithRegion(region)
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
@@ -68,8 +69,7 @@ func newSQSClient(httpClient *http.Client, region string, endpoint string, acces
 }
 
 func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) { //nolint:ireturn
-	meta := m.(*Meta)
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -153,7 +153,7 @@ func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isSQ
 	if value, ok := prefix.(string); ok && value != "" {
 		output = id.PrefixedUniqueId(value)
 	} else {
-		output = newRandomName("queue")
+		output = types.NewRandomName("queue")
 	}
 	if isSQS && isSQSFifo {
 		return output + SQSFIFOQueueNameSuffix

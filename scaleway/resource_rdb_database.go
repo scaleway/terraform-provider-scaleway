@@ -12,9 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbDatabase() *schema.Resource {
+func ResourceScalewayRdbDatabase() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbDatabaseCreate,
 		ReadContext:   resourceScalewayRdbDatabaseRead,
@@ -33,7 +36,7 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDWithLocality(),
 				Description:  "Instance on which the database is created",
 			},
 			"name": {
@@ -72,15 +75,15 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Description: "Size of the database",
 				Computed:    true,
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
-func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
-	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))
+func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
+	region, instanceID, err := regional.ParseID(d.Get("instance_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -102,7 +105,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		currentDB, errCreateDB := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
 		if errCreateDB != nil {
 			// WIP: Issue on creation/write database. Need a database stable status
-			if is409Error(errCreateDB) {
+			if httperrors.Is409(errCreateDB) {
 				return retry.RetryableError(errCreateDB)
 			}
 			return retry.NonRetryableError(errCreateDB)
@@ -123,7 +126,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, db.Name))
 	_ = d.Set("region", region)
 
-	return resourceScalewayRdbDatabaseRead(ctx, d, meta)
+	return resourceScalewayRdbDatabaseRead(ctx, d, m)
 }
 
 func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, dbName string) (*rdb.Database, error) {
@@ -143,16 +146,16 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 	return res.Databases[0], nil
 }
 
-func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
-	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
+	region, instanceID, databaseName, err := ResourceScalewayRdbDatabaseParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	database, err := getDatabase(ctx, rdbAPI, region, instanceID, databaseName)
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -160,7 +163,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, database.Name))
-	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
 	_ = d.Set("name", database.Name)
 	_ = d.Set("owner", database.Owner)
 	_ = d.Set("managed", database.Managed)
@@ -170,9 +173,9 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
-	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
+	region, instanceID, databaseName, err := ResourceScalewayRdbDatabaseParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,7 +195,7 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -205,9 +208,9 @@ func resourceScalewayRdbDatabaseID(region scw.Region, instanceID string, databas
 	return fmt.Sprintf("%s/%s/%s", region, instanceID, databaseName)
 }
 
-// Extract instance ID and database from the resource identifier.
+// ResourceScalewayRdbDatabaseParseID extracts instance ID and database from the resource identifier.
 // The resource identifier format is "Region/InstanceId/DatabaseId"
-func resourceScalewayRdbDatabaseParseID(resourceID string) (region scw.Region, instanceID string, database string, err error) {
+func ResourceScalewayRdbDatabaseParseID(resourceID string) (region scw.Region, instanceID string, database string, err error) {
 	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)

@@ -14,9 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func resourceScalewayObjectBucketPolicy() *schema.Resource {
+func ResourceScalewayObjectBucketPolicy() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayObjectBucketPolicyCreate,
 		ReadContext:   resourceScalewayObjectBucketPolicyRead,
@@ -41,25 +42,25 @@ func resourceScalewayObjectBucketPolicy() *schema.Resource {
 				Description:      "The text of the policy.",
 				DiffSuppressFunc: SuppressEquivalentPolicyDiffs,
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -96,19 +97,19 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %s", err))
 	}
 
-	d.SetId(newRegionalIDString(region, bucket))
+	d.SetId(regional.NewIDString(region, bucket))
 
-	return resourceScalewayObjectBucketPolicyRead(ctx, d, meta)
+	return resourceScalewayObjectBucketPolicyRead(ctx, d, m)
 }
 
 //gocyclo:ignore
-func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, _, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, _, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Id())
+	regionalID := regional.ExpandID(d.Id())
 	bucket := regionalID.ID
 
 	_ = d.Set("region", region)
@@ -162,8 +163,8 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 	return diags
 }
 
-func resourceScalewayObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

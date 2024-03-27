@@ -7,28 +7,32 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPCPrivateNetwork() *schema.Resource {
+func DataSourceScalewayVPCPrivateNetwork() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPrivateNetwork().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPCPrivateNetwork().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"private_network_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the vpc to which the private network belongs to",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"private_network_id"},
 	}
 	dsSchema["private_network_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the private network",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name", "vpc_id"},
 	}
 
@@ -38,8 +42,8 @@ func dataSourceScalewayVPCPrivateNetwork() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
+func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -49,10 +53,10 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 		pnName := d.Get("name").(string)
 		res, err := vpcAPI.ListPrivateNetworks(
 			&vpc.ListPrivateNetworksRequest{
-				Name:      expandStringPtr(pnName),
+				Name:      types.ExpandStringPtr(pnName),
 				Region:    region,
-				ProjectID: expandStringPtr(d.Get("project_id")),
-				VpcID:     expandStringPtr(expandID(d.Get("vpc_id"))),
+				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+				VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -70,10 +74,10 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 		privateNetworkID = foundPN.ID
 	}
 
-	regionalID := datasourceNewRegionalID(privateNetworkID, region)
+	regionalID := datasource.NewRegionalID(privateNetworkID, region)
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
-	diags := resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
+	diags := resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read private network state")...)
 	}

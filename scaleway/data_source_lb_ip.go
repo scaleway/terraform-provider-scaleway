@@ -8,11 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayLbIP() *schema.Resource {
+func DataSourceScalewayLbIP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbIP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayLbIP().Schema)
 
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -25,7 +28,7 @@ func dataSourceScalewayLbIP() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IP address",
 		ConflictsWith: []string{"ip_address"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"].Optional = true
 
@@ -34,13 +37,13 @@ func dataSourceScalewayLbIP() *schema.Resource {
 		Schema:        dsSchema,
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: LbUpgradeV1SchemaUpgradeFunc},
 		},
 	}
 }
 
-func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -49,8 +52,8 @@ func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, met
 	if !ok { // Get IP by region and IP address.
 		res, err := api.ListIPs(&lbSDK.ZonedAPIListIPsRequest{
 			Zone:      zone,
-			IPAddress: expandStringPtr(d.Get("ip_address")),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			IPAddress: types.ExpandStringPtr(d.Get("ip_address")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -64,11 +67,11 @@ func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, met
 		ipID = res.IPs[0].ID
 	}
 
-	zoneID := datasourceNewZonedID(ipID, zone)
+	zoneID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zoneID)
 	err = d.Set("ip_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayLbIPRead(ctx, d, meta)
+	return resourceScalewayLbIPRead(ctx, d, m)
 }

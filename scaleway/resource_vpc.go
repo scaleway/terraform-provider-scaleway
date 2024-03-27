@@ -7,9 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayVPC() *schema.Resource {
+func ResourceScalewayVPC() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCCreate,
 		ReadContext:   resourceScalewayVPCRead,
@@ -35,7 +38,7 @@ func resourceScalewayVPC() *schema.Resource {
 				},
 			},
 			"project_id": projectIDSchema(),
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"is_default": {
@@ -57,15 +60,15 @@ func resourceScalewayVPC() *schema.Resource {
 	}
 }
 
-func resourceScalewayVPCCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
+func resourceScalewayVPCCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	res, err := vpcAPI.CreateVPC(&vpc.CreateVPCRequest{
-		Name:      expandOrGenerateString(d.Get("name"), "vpc"),
-		Tags:      expandStrings(d.Get("tags")),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "vpc"),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
 		Region:    region,
 	}, scw.WithContext(ctx))
@@ -73,13 +76,13 @@ func resourceScalewayVPCCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
-	return resourceScalewayVPCRead(ctx, d, meta)
+	return resourceScalewayVPCRead(ctx, d, m)
 }
 
-func resourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := VpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -89,7 +92,7 @@ func resourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta i
 		VpcID:  ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -99,8 +102,8 @@ func resourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta i
 	_ = d.Set("name", res.Name)
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_default", res.IsDefault)
 	_ = d.Set("region", region)
 
@@ -111,8 +114,8 @@ func resourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func resourceScalewayVPCUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := VpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -121,17 +124,17 @@ func resourceScalewayVPCUpdate(ctx context.Context, d *schema.ResourceData, meta
 		VpcID:  ID,
 		Region: region,
 		Name:   scw.StringPtr(d.Get("name").(string)),
-		Tags:   expandUpdatedStringsPtr(d.Get("tags")),
+		Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCRead(ctx, d, meta)
+	return resourceScalewayVPCRead(ctx, d, m)
 }
 
-func resourceScalewayVPCDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := VpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -9,24 +9,25 @@ import (
 
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
-	defaultCockpitTimeout = 5 * time.Minute
+	DefaultCockpitTimeout = 5 * time.Minute
 	pathMetricsURL        = "/api/v1/push"
 	pathLogsURL           = "/loki/api/v1/push"
 )
 
-// cockpitAPI returns a new cockpit API.
-func cockpitAPI(m interface{}) (*cockpit.API, error) {
-	meta := m.(*Meta)
-	api := cockpit.NewAPI(meta.scwClient)
+// CockpitAPI returns a new cockpit API.
+func CockpitAPI(m interface{}) (*cockpit.API, error) {
+	api := cockpit.NewAPI(meta.ExtractScwClient(m))
 
 	return api, nil
 }
 
-// cockpitAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
-func cockpitAPIGrafanaUserID(m interface{}, id string) (*cockpit.API, string, uint32, error) {
+// CockpitAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
+func CockpitAPIGrafanaUserID(m interface{}, id string) (*cockpit.API, string, uint32, error) {
 	projectID, resourceIDString, err := parseCockpitID(id)
 	if err != nil {
 		return nil, "", 0, err
@@ -37,7 +38,7 @@ func cockpitAPIGrafanaUserID(m interface{}, id string) (*cockpit.API, string, ui
 		return nil, "", 0, err
 	}
 
-	api, err := cockpitAPI(m)
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return nil, "", 0, err
 	}
@@ -117,8 +118,8 @@ func flattenCockpitTokenScopes(scopes *cockpit.TokenScopes) []map[string]interfa
 
 func waitForCockpit(ctx context.Context, api *cockpit.API, projectID string, timeout time.Duration) (*cockpit.Cockpit, error) {
 	retryInterval := defaultContainerRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForCockpit(&cockpit.WaitForCockpitRequest{

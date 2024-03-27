@@ -7,9 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayAccountProject() *schema.Resource {
+func ResourceScalewayAccountProject() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayAccountProjectCreate,
 		ReadContext:   resourceScalewayAccountProjectRead,
@@ -47,17 +50,17 @@ func resourceScalewayAccountProject() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				Computed:     true,
-				ValidateFunc: validationUUID(),
+				ValidateFunc: verify.IsUUID(),
 			},
 		},
 	}
 }
 
-func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := AccountV3ProjectAPI(m)
 
 	request := &accountV3.ProjectAPICreateProjectRequest{
-		Name:        expandOrGenerateString(d.Get("name"), "project"),
+		Name:        types.ExpandOrGenerateString(d.Get("name"), "project"),
 		Description: d.Get("description").(string),
 	}
 
@@ -72,16 +75,16 @@ func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(res.ID)
 
-	return resourceScalewayAccountProjectRead(ctx, d, meta)
+	return resourceScalewayAccountProjectRead(ctx, d, m)
 }
 
-func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := AccountV3ProjectAPI(m)
 	res, err := accountAPI.GetProject(&accountV3.ProjectAPIGetProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -90,15 +93,15 @@ func resourceScalewayAccountProjectRead(ctx context.Context, d *schema.ResourceD
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("description", res.Description)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("organization_id", res.OrganizationID)
 
 	return nil
 }
 
-func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := AccountV3ProjectAPI(m)
 
 	req := &accountV3.ProjectAPIUpdateProjectRequest{
 		ProjectID: d.Id(),
@@ -107,11 +110,11 @@ func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.Resourc
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
@@ -122,16 +125,16 @@ func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
-	return resourceScalewayAccountProjectRead(ctx, d, meta)
+	return resourceScalewayAccountProjectRead(ctx, d, m)
 }
 
-func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	accountAPI := accountV3ProjectAPI(meta)
+func resourceScalewayAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	accountAPI := AccountV3ProjectAPI(m)
 
 	err := accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

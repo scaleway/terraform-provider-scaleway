@@ -7,21 +7,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayLbFrontend() *schema.Resource {
+func DataSourceScalewayLbFrontend() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbFrontend().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayLbFrontend().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "lb_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "lb_id")
 
 	dsSchema["name"].ConflictsWith = []string{"frontend_id"}
 	dsSchema["frontend_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the frontend",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 
@@ -31,8 +35,8 @@ func dataSourceScalewayLbFrontend() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -42,8 +46,8 @@ func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceDat
 		frontName := d.Get("name").(string)
 		res, err := api.ListFrontends(&lbSDK.ZonedAPIListFrontendsRequest{
 			Zone: zone,
-			Name: expandStringPtr(frontName),
-			LBID: expandID(d.Get("lb_id")),
+			Name: types.ExpandStringPtr(frontName),
+			LBID: locality.ExpandID(d.Get("lb_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -60,11 +64,11 @@ func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceDat
 
 		frontID = foundFront.ID
 	}
-	zonedID := datasourceNewZonedID(frontID, zone)
+	zonedID := datasource.NewZonedID(frontID, zone)
 	d.SetId(zonedID)
 	err = d.Set("frontend_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayLbFrontendRead(ctx, d, meta)
+	return resourceScalewayLbFrontendRead(ctx, d, m)
 }

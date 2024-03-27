@@ -7,13 +7,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIamApplication() *schema.Resource {
+func DataSourceScalewayIamApplication() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIamApplication().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayIamApplication().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name")
 
 	dsSchema["name"].ConflictsWith = []string{"application_id"}
 	dsSchema["application_id"] = &schema.Schema{
@@ -21,7 +24,7 @@ func dataSourceScalewayIamApplication() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IAM application",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUID(),
+		ValidateFunc:  verify.IsUUID(),
 	}
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -35,16 +38,16 @@ func dataSourceScalewayIamApplication() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
 
 	appID, appIDExists := d.GetOk("application_id")
 
 	if !appIDExists {
 		applicationName := d.Get("name").(string)
 		res, err := api.ListApplications(&iam.ListApplicationsRequest{
-			OrganizationID: flattenStringPtr(getOrganizationID(meta, d)).(string),
-			Name:           expandStringPtr(applicationName),
+			OrganizationID: types.FlattenStringPtr(getOrganizationID(m, d)).(string),
+			Name:           types.ExpandStringPtr(applicationName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -68,7 +71,7 @@ func dataSourceScalewayIamApplicationRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayIamApplicationRead(ctx, d, meta)
+	diags := resourceScalewayIamApplicationRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read iam application state")...)
 	}

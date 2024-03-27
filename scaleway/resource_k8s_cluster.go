@@ -14,9 +14,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayK8SCluster() *schema.Resource {
+func ResourceScalewayK8SCluster() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayK8SClusterCreate,
 		ReadContext:   resourceScalewayK8SClusterRead,
@@ -163,10 +168,10 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "The ID of the cluster's private network",
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			// Computed elements
@@ -266,7 +271,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 							return nil
 						}
 						if planned != "" {
-							_, plannedPNID, err := parseLocalizedID(planned.(string))
+							_, plannedPNID, err := locality.ParseLocalizedID(planned.(string))
 							if err != nil {
 								return err
 							}
@@ -286,7 +291,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 				if diff.HasChange("type") && diff.Id() != "" {
-					k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(i, diff.Id())
+					k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(i, diff.Id())
 					if err != nil {
 						return err
 					}
@@ -316,8 +321,8 @@ func resourceScalewayK8SCluster() *schema.Resource {
 }
 
 //gocyclo:ignore
-func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
+func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -349,15 +354,15 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	req := &k8s.CreateClusterRequest{
 		Region:            region,
-		ProjectID:         expandStringPtr(d.Get("project_id")),
-		Name:              expandOrGenerateString(d.Get("name"), "cluster"),
+		ProjectID:         types.ExpandStringPtr(d.Get("project_id")),
+		Name:              types.ExpandOrGenerateString(d.Get("name"), "cluster"),
 		Type:              clusterType.(string),
 		Description:       description.(string),
 		Cni:               k8s.CNI(d.Get("cni").(string)),
-		Tags:              expandStrings(d.Get("tags")),
-		FeatureGates:      expandStrings(d.Get("feature_gates")),
-		AdmissionPlugins:  expandStrings(d.Get("admission_plugins")),
-		ApiserverCertSans: expandStrings(d.Get("apiserver_cert_sans")),
+		Tags:              types.ExpandStrings(d.Get("tags")),
+		FeatureGates:      types.ExpandStrings(d.Get("feature_gates")),
+		AdmissionPlugins:  types.ExpandStrings(d.Get("admission_plugins")),
+		ApiserverCertSans: types.ExpandStrings(d.Get("apiserver_cert_sans")),
 	}
 
 	// Autoscaler configuration
@@ -369,11 +374,11 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
-		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(scaleDownDelayAfterAdd)
+		autoscalerReq.ScaleDownDelayAfterAdd = types.ExpandStringPtr(scaleDownDelayAfterAdd)
 	}
 
 	if scaleDownUneededTime, ok := d.GetOk("autoscaler_config.0.scale_down_unneeded_time"); ok {
-		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(scaleDownUneededTime)
+		autoscalerReq.ScaleDownUnneededTime = types.ExpandStringPtr(scaleDownUneededTime)
 	}
 
 	if estimator, ok := d.GetOk("autoscaler_config.0.estimator"); ok {
@@ -431,7 +436,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if groupsClaim, ok := d.GetOk("open_id_connect_config.0.groups_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(expandStrings(groupsClaim))
+		createClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(types.ExpandStrings(groupsClaim))
 	}
 
 	if groupsPrefix, ok := d.GetOk("open_id_connect_config.0.groups_prefix"); ok {
@@ -439,7 +444,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if requiredClaim, ok := d.GetOk("open_id_connect_config.0.required_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(expandStrings(requiredClaim))
+		createClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(types.ExpandStrings(requiredClaim))
 	}
 
 	// Auto-upgrade configuration
@@ -494,7 +499,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	// Private network configuration
 
 	if pnID, ok := d.GetOk("private_network_id"); ok {
-		req.PrivateNetworkID = scw.StringPtr(expandRegionalID(pnID.(string)).ID)
+		req.PrivateNetworkID = scw.StringPtr(regional.ExpandID(pnID.(string)).ID)
 	}
 
 	// Cluster creation
@@ -504,7 +509,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return append(diag.FromErr(err), diags...)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 	if strings.Contains(clusterType.(string), "multicloud") {
 		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
 		_, err = waitK8SCluster(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -516,11 +521,11 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return append(diag.FromErr(err), diags...)
 	}
 
-	return append(resourceScalewayK8SClusterRead(ctx, d, meta), diags...)
+	return append(resourceScalewayK8SClusterRead(ctx, d, m), diags...)
 }
 
-func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -530,7 +535,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	cluster, err := waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -558,7 +563,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
 	version := cluster.Version
 	if cluster.AutoUpgrade != nil && cluster.AutoUpgrade.Enabled {
-		version, err = k8sGetMinorVersionFromFull(version)
+		version, err = K8sGetMinorVersionFromFull(version)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -573,7 +578,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	var diags diag.Diagnostics
 
 	// private_network
-	pnID := flattenStringPtr(cluster.PrivateNetworkID)
+	pnID := types.FlattenStringPtr(cluster.PrivateNetworkID)
 	clusterType := d.Get("type").(string)
 	_ = d.Set("private_network_id", pnID)
 	if pnID == "" && !strings.HasPrefix(clusterType, "multicloud") {
@@ -589,7 +594,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, region, clusterID)
 	if err != nil {
-		if is403Error(err) {
+		if httperrors.Is403(err) {
 			diags = append(diags, diag.Diagnostic{
 				Severity:      diag.Warning,
 				Summary:       "Cannot read kubeconfig: unauthorized",
@@ -606,8 +611,8 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 }
 
 //gocyclo:ignore
-func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -654,27 +659,27 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = expandStringPtr(d.Get("name"))
+		updateRequest.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandStringPtr(d.Get("description"))
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("apiserver_cert_sans") {
-		updateRequest.ApiserverCertSans = expandUpdatedStringsPtr(d.Get("apiserver_cert_sans"))
+		updateRequest.ApiserverCertSans = types.ExpandUpdatedStringsPtr(d.Get("apiserver_cert_sans"))
 	}
 
 	if d.HasChange("feature_gates") {
-		updateRequest.FeatureGates = expandUpdatedStringsPtr(d.Get("feature_gates"))
+		updateRequest.FeatureGates = types.ExpandUpdatedStringsPtr(d.Get("feature_gates"))
 	}
 
 	if d.HasChange("admission_plugins") {
-		updateRequest.AdmissionPlugins = expandUpdatedStringsPtr(d.Get("admission_plugins"))
+		updateRequest.AdmissionPlugins = types.ExpandUpdatedStringsPtr(d.Get("admission_plugins"))
 	}
 
 	////
@@ -744,11 +749,11 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_delay_after_add") {
-		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add"))
+		autoscalerReq.ScaleDownDelayAfterAdd = types.ExpandStringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add"))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_unneeded_time") {
-		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time"))
+		autoscalerReq.ScaleDownUnneededTime = types.ExpandStringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time"))
 	}
 
 	if d.HasChange("autoscaler_config.0.estimator") {
@@ -803,7 +808,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_claim") {
-		updateClusterRequestOpenIDConnectConfig.GroupsClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.groups_claim"))
+		updateClusterRequestOpenIDConnectConfig.GroupsClaim = types.ExpandUpdatedStringsPtr(d.Get("open_id_connect_config.0.groups_claim"))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_prefix") {
@@ -811,7 +816,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.required_claim") {
-		updateClusterRequestOpenIDConnectConfig.RequiredClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.required_claim"))
+		updateClusterRequestOpenIDConnectConfig.RequiredClaim = types.ExpandUpdatedStringsPtr(d.Get("open_id_connect_config.0.required_claim"))
 	}
 
 	updateRequest.OpenIDConnectConfig = updateClusterRequestOpenIDConnectConfig
@@ -826,7 +831,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			return append(diag.FromErr(errors.New("it is only possible to change the private network attached to the cluster, but not to remove it")), diags...)
 		}
 		if actual == "" {
-			err = migrateToPrivateNetworkCluster(ctx, d, meta)
+			err = migrateToPrivateNetworkCluster(ctx, d, m)
 			if err != nil {
 				return append(diag.FromErr(err), diags...)
 			}
@@ -865,13 +870,22 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return append(diag.FromErr(err), diags...)
 		}
+
+		if !strings.Contains(d.Get("type").(string), "multicloud") {
+			// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
+			// But if we are not, we can wait for the pool to be upgraded.
+			_, err = waitK8SClusterPool(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return append(diag.FromErr(err), diags...)
+			}
+		}
 	}
 
-	return append(resourceScalewayK8SClusterRead(ctx, d, meta), diags...)
+	return append(resourceScalewayK8SClusterRead(ctx, d, m), diags...)
 }
 
-func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -887,7 +901,7 @@ func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceDat
 		WithAdditionalResources: deleteAdditionalResources,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)

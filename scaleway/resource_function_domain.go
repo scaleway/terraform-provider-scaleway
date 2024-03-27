@@ -7,9 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayFunctionDomain() *schema.Resource {
+func ResourceScalewayFunctionDomain() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionDomainCreate,
 		ReadContext:   resourceScalewayFunctionDomainRead,
@@ -31,7 +34,7 @@ func resourceScalewayFunctionDomain() *schema.Resource {
 				Description:      "The ID of the function",
 				Required:         true,
 				ForceNew:         true,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"hostname": {
@@ -45,19 +48,19 @@ func resourceScalewayFunctionDomain() *schema.Resource {
 				Description: "URL to use to trigger the function",
 				Computed:    true,
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("function_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("function_id"),
 	}
 }
 
-func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	functionID := expandRegionalID(d.Get("function_id").(string)).ID
+	functionID := regional.ExpandID(d.Get("function_id").(string)).ID
 	_, err = waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -76,25 +79,25 @@ func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, domain.ID))
+	d.SetId(regional.NewIDString(region, domain.ID))
 
 	_, err = waitForFunctionDomain(ctx, api, region, domain.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFunctionDomainRead(ctx, d, meta)
+	return resourceScalewayFunctionDomainRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	domain, err := waitForFunctionDomain(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -102,22 +105,22 @@ func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	_ = d.Set("hostname", domain.Hostname)
-	_ = d.Set("function_id", newRegionalIDString(region, domain.FunctionID))
+	_ = d.Set("function_id", regional.NewIDString(region, domain.FunctionID))
 	_ = d.Set("url", domain.URL)
 	_ = d.Set("region", region)
 
 	return nil
 }
 
-func resourceScalewayFunctionDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForFunctionDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -133,7 +136,7 @@ func resourceScalewayFunctionDomainDelete(ctx context.Context, d *schema.Resourc
 	}
 
 	_, err = waitForFunctionDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

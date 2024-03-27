@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -8,13 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayDocumentDBPrivilege_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDocumentDBInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -170,7 +172,7 @@ func TestAccScalewayDocumentDBPrivilege_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckDocumentDBPrivilegeExists(tt *TestTools, instance string, database string, user string) resource.TestCheckFunc {
+func testAccCheckDocumentDBPrivilegeExists(tt *acctest.TestTools, instance string, database string, user string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]
 		if !ok {
@@ -187,17 +189,17 @@ func testAccCheckDocumentDBPrivilegeExists(tt *TestTools, instance string, datab
 			return fmt.Errorf("resource not found: %s", user)
 		}
 
-		api, _, _, err := documentDBAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+		api, _, _, err := scaleway.DocumentDBAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		region, instanceID, userName, err := resourceScalewayDocumentDBUserParseID(userResource.Primary.ID)
+		region, instanceID, userName, err := scaleway.ResourceScalewayDocumentDBUserParseID(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, databaseName, err := resourceScalewayDocumentDBDatabaseName(databaseResource.Primary.ID)
+		_, databaseName, err := scaleway.ResourceScalewayDocumentDBDatabaseName(databaseResource.Primary.ID)
 		if err != nil {
 			return err
 		}

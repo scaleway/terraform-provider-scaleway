@@ -7,13 +7,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayRDBInstance() *schema.Resource {
+func DataSourceScalewayRDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbInstance().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayRdbInstance().Schema)
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"instance_id"}
 	dsSchema["instance_id"] = &schema.Schema{
@@ -21,7 +24,7 @@ func dataSourceScalewayRDBInstance() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the RDB instance",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -30,8 +33,8 @@ func dataSourceScalewayRDBInstance() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, meta)
+func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -42,7 +45,7 @@ func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceDa
 		res, err := api.ListInstances(&rdb.ListInstancesRequest{
 			Region:    region,
 			Name:      scw.StringPtr(instanceName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -60,11 +63,11 @@ func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceDa
 		instanceID = foundInstance.ID
 	}
 
-	regionalID := datasourceNewRegionalID(instanceID, region)
+	regionalID := datasource.NewRegionalID(instanceID, region)
 	d.SetId(regionalID)
 	err = d.Set("instance_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayRdbInstanceRead(ctx, d, meta)
+	return resourceScalewayRdbInstanceRead(ctx, d, m)
 }

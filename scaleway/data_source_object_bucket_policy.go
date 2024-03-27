@@ -11,14 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func dataSourceScalewayObjectBucketPolicy() *schema.Resource {
+func DataSourceScalewayObjectBucketPolicy() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayObjectBucketPolicy().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayObjectBucketPolicy().Schema)
 
-	fixDatasourceSchemaFlags(dsSchema, true, "bucket")
-	addOptionalFieldsToSchema(dsSchema, "region", "project_id")
+	datasource.FixDatasourceSchemaFlags(dsSchema, true, "bucket")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayObjectBucketPolicyRead,
@@ -26,19 +28,19 @@ func dataSourceScalewayObjectBucketPolicy() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+func dataSourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -78,6 +80,6 @@ func dataSourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Res
 	}
 	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
-	d.SetId(newRegionalIDString(region, bucket))
+	d.SetId(regional.NewIDString(region, bucket))
 	return nil
 }

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"context"
@@ -7,20 +7,22 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAccScalewayDataSourceSecret_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	ctx := context.Background()
 	secretName := "scalewayDataSourceSecret"
-	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := iam.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProviderFactories: iam.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -54,6 +56,42 @@ func TestAccScalewayDataSourceSecret_Basic(t *testing.T) {
 
 					testAccCheckScalewaySecretExists(tt, "data.scaleway_secret.by_id"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.by_id", "name", secretName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayDataSourceSecret_Path(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		CheckDestroy:      testAccCheckScalewaySecretDestroy(tt),
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-secret-ds-path"
+					}
+
+					resource "scaleway_secret" "main" {
+					  name = "test-secret-ds-path"
+					  path = "/test-secret-ds-path-path"
+					  project_id = scaleway_account_project.project.id
+					}
+					
+					data "scaleway_secret" "by_name" {
+					  name = scaleway_secret.main.name
+					  path = "/test-secret-ds-path-path"
+					  project_id = scaleway_account_project.project.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecretExists(tt, "data.scaleway_secret.by_name"),
+					resource.TestCheckResourceAttr("data.scaleway_secret.by_name", "name", "test-secret-ds-path"),
 				),
 			},
 		},

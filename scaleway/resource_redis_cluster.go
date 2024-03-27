@@ -2,19 +2,26 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRedisCluster() *schema.Resource {
+func ResourceScalewayRedisCluster() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRedisClusterCreate,
 		ReadContext:   resourceScalewayRedisClusterRead,
@@ -123,7 +130,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
 					// Check if the key is for the 'id' attribute
 					if strings.HasSuffix(k, "id") {
-						return expandID(oldValue) == expandID(newValue)
+						return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
 					}
 					// For all other attributes, don't suppress the diff
 					return false
@@ -133,7 +140,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 						"id": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 							Description:  "UUID of the private network to be connected to the cluster",
 						},
 						"service_ips": {
@@ -152,7 +159,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 							Computed:    true,
 							Description: "UUID of the endpoint to be connected to the cluster",
 						},
-						"zone": zoneComputedSchema(),
+						"zone": zonal.ComputedSchema(),
 					},
 				},
 			},
@@ -200,15 +207,31 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description: "The date and time of the last update of the Redis cluster",
 			},
 			// Common
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			"project_id": projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("private_network.#.id"),
+		CustomizeDiff: customdiff.All(
+			CustomizeDiffLocalityCheck("private_network.#.id"),
+			customizeDiffMigrateClusterSize(),
+		),
 	}
 }
 
-func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	redisAPI, zone, err := redisAPIWithZone(d, meta)
+func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		oldSize, newSize := diff.GetChange("cluster_size")
+		if newSize == 2 {
+			return errors.New("cluster_size can be either 1 (standalone) ou >3 (cluster mode), not 2")
+		}
+		if oldSize == 1 && newSize != 1 || newSize.(int) < oldSize.(int) {
+			return diff.ForceNew("cluster_size")
+		}
+		return nil
+	}
+}
+
+func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	redisAPI, zone, err := redisAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,7 +239,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	createReq := &redis.CreateClusterRequest{
 		Zone:      zone,
 		ProjectID: d.Get("project_id").(string),
-		Name:      expandOrGenerateString(d.Get("name"), "redis"),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "redis"),
 		Version:   d.Get("version").(string),
 		NodeType:  d.Get("node_type").(string),
 		UserName:  d.Get("user_name").(string),
@@ -225,7 +248,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
-		createReq.Tags = expandStrings(tags)
+		createReq.Tags = types.ExpandStrings(tags)
 	}
 	clusterSize, clusterSizeExist := d.GetOk("cluster_size")
 	if clusterSizeExist {
@@ -262,18 +285,18 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRedisClusterRead(ctx, d, meta)
+	return resourceScalewayRedisClusterRead(ctx, d, m)
 }
 
-func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	redisAPI, zone, ID, err := RedisAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -284,7 +307,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	}
 	cluster, err := redisAPI.GetCluster(getReq, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -337,8 +360,8 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	redisAPI, zone, ID, err := RedisAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -349,16 +372,16 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 	if d.HasChange("user_name") {
-		req.UserName = expandStringPtr(d.Get("user_name"))
+		req.UserName = types.ExpandStringPtr(d.Get("user_name"))
 	}
 	if d.HasChange("password") {
-		req.Password = expandStringPtr(d.Get("password"))
+		req.Password = types.ExpandStringPtr(d.Get("password"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 	if d.HasChange("acl") {
 		diagnostics := resourceScalewayRedisClusterUpdateACL(ctx, d, redisAPI, zone, ID)
@@ -395,19 +418,19 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
 			Zone:      zone,
 			ClusterID: ID,
-			Version:   expandStringPtr(d.Get("version")),
+			Version:   types.ExpandStringPtr(d.Get("version")),
 		})
 	}
 	if d.HasChange("node_type") {
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
 			Zone:      zone,
 			ClusterID: ID,
-			NodeType:  expandStringPtr(d.Get("node_type")),
+			NodeType:  types.ExpandStringPtr(d.Get("node_type")),
 		})
 	}
 	for i := range migrateClusterRequests {
 		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 		_, err = redisAPI.MigrateCluster(&migrateClusterRequests[i], scw.WithContext(ctx))
@@ -416,7 +439,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		}
 
 		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -433,7 +456,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRedisClusterRead(ctx, d, meta)
+	return resourceScalewayRedisClusterRead(ctx, d, m)
 }
 
 func resourceScalewayRedisClusterUpdateACL(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
@@ -505,8 +528,8 @@ func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	redisAPI, zone, ID, err := RedisAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -525,7 +548,7 @@ func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

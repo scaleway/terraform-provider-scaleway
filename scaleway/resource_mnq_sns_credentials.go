@@ -7,9 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayMNQSNSCredentials() *schema.Resource {
+func ResourceScalewayMNQSNSCredentials() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSNSCredentialsCreate,
 		ReadContext:   resourceScalewayMNQSNSCredentialsRead,
@@ -54,7 +57,7 @@ func resourceScalewayMNQSNSCredentials() *schema.Resource {
 					},
 				},
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 
 			// Computed
@@ -74,8 +77,8 @@ func resourceScalewayMNQSNSCredentials() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSNSAPI(d, meta)
+func resourceScalewayMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -83,27 +86,27 @@ func resourceScalewayMNQSNSCredentialsCreate(ctx context.Context, d *schema.Reso
 	credentials, err := api.CreateSnsCredentials(&mnq.SnsAPICreateSnsCredentialsRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
-		Name:      expandOrGenerateString(d.Get("name").(string), "sns-credentials"),
+		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "sns-credentials"),
 		Permissions: &mnq.SnsPermissions{
-			CanPublish: expandBoolPtr(d.Get("permissions.0.can_publish")),
-			CanReceive: expandBoolPtr(d.Get("permissions.0.can_receive")),
-			CanManage:  expandBoolPtr(d.Get("permissions.0.can_manage")),
+			CanPublish: types.ExpandBoolPtr(d.Get("permissions.0.can_publish")),
+			CanReceive: types.ExpandBoolPtr(d.Get("permissions.0.can_receive")),
+			CanManage:  types.ExpandBoolPtr(d.Get("permissions.0.can_manage")),
 		},
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, credentials.ID))
+	d.SetId(regional.NewIDString(region, credentials.ID))
 
 	_ = d.Set("access_key", credentials.AccessKey)
 	_ = d.Set("secret_key", credentials.SecretKey)
 
-	return resourceScalewayMNQSNSCredentialsRead(ctx, d, meta)
+	return resourceScalewayMNQSNSCredentialsRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := MnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,7 +116,7 @@ func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.Resour
 		SnsCredentialsID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -135,8 +138,8 @@ func resourceScalewayMNQSNSCredentialsRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := MnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -147,22 +150,22 @@ func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("permissions.0") {
 		req.Permissions = &mnq.SnsPermissions{}
 
 		if d.HasChange("permissions.0.can_publish") {
-			req.Permissions.CanPublish = expandBoolPtr(d.Get("permissions.0.can_publish"))
+			req.Permissions.CanPublish = types.ExpandBoolPtr(d.Get("permissions.0.can_publish"))
 		}
 
 		if d.HasChange("permissions.0.can_receive") {
-			req.Permissions.CanReceive = expandBoolPtr(d.Get("permissions.0.can_receive"))
+			req.Permissions.CanReceive = types.ExpandBoolPtr(d.Get("permissions.0.can_receive"))
 		}
 
 		if d.HasChange("permissions.0.can_manage") {
-			req.Permissions.CanManage = expandBoolPtr(d.Get("permissions.0.can_manage"))
+			req.Permissions.CanManage = types.ExpandBoolPtr(d.Get("permissions.0.can_manage"))
 		}
 	}
 
@@ -170,11 +173,11 @@ func resourceScalewayMNQSNSCredentialsUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayMNQSNSCredentialsRead(ctx, d, meta)
+	return resourceScalewayMNQSNSCredentialsRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSCredentialsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := MnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,7 +186,7 @@ func resourceScalewayMNQSNSCredentialsDelete(ctx context.Context, d *schema.Reso
 		Region:           region,
 		SnsCredentialsID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

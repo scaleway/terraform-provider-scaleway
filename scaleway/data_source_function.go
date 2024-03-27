@@ -7,11 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayFunction() *schema.Resource {
+func DataSourceScalewayFunction() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayFunction().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayFunction().Schema)
 
 	dsSchema["function_id"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -19,8 +22,8 @@ func dataSourceScalewayFunction() *schema.Resource {
 		Computed:    true,
 	}
 
-	addOptionalFieldsToSchema(dsSchema, "name", "function_id", "project_id", "region")
-	fixDatasourceSchemaFlags(dsSchema, true, "namespace_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "function_id", "project_id", "region")
+	datasource.FixDatasourceSchemaFlags(dsSchema, true, "namespace_id")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayFunctionRead,
@@ -28,8 +31,8 @@ func dataSourceScalewayFunction() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -39,9 +42,9 @@ func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData,
 		functionName := d.Get("name").(string)
 		res, err := api.ListFunctions(&function.ListFunctionsRequest{
 			Region:      region,
-			NamespaceID: expandID(d.Get("namespace_id").(string)),
-			Name:        expandStringPtr(functionName),
-			ProjectID:   expandStringPtr(d.Get("project_id")),
+			NamespaceID: locality.ExpandID(d.Get("namespace_id").(string)),
+			Name:        types.ExpandStringPtr(functionName),
+			ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -59,9 +62,9 @@ func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData,
 		functionID = foundFunction.ID
 	}
 
-	regionalID := datasourceNewRegionalID(functionID, region)
+	regionalID := datasource.NewRegionalID(functionID, region)
 	d.SetId(regionalID)
 	_ = d.Set("function_id", regionalID)
 
-	return resourceScalewayFunctionRead(ctx, d, meta)
+	return resourceScalewayFunctionRead(ctx, d, m)
 }

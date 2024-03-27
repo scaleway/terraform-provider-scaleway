@@ -10,18 +10,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
-func resourceScalewayCockpitGrafanaUser() *schema.Resource {
+func ResourceScalewayCockpitGrafanaUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayCockpitGrafanaUserCreate,
 		ReadContext:   resourceScalewayCockpitGrafanaUserRead,
 		DeleteContext: resourceScalewayCockpitGrafanaUserDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Read:    schema.DefaultTimeout(defaultCockpitTimeout),
-			Delete:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Default: schema.DefaultTimeout(defaultCockpitTimeout),
+			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
+			Delete:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Default: schema.DefaultTimeout(DefaultCockpitTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -55,8 +56,8 @@ func resourceScalewayCockpitGrafanaUser() *schema.Resource {
 	}
 }
 
-func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -83,11 +84,11 @@ func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.Res
 
 	_ = d.Set("password", grafanaUser.Password)
 	d.SetId(cockpitIDWithProjectID(projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)))
-	return resourceScalewayCockpitGrafanaUserRead(ctx, d, meta)
+	return resourceScalewayCockpitGrafanaUserRead(ctx, d, m)
 }
 
-func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(meta, d.Id())
+func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, projectID, grafanaUserID, err := CockpitAPIGrafanaUserID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,7 +97,7 @@ func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.Resou
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -107,7 +108,7 @@ func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.Resou
 		ProjectID: projectID,
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -134,8 +135,8 @@ func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(meta, d.Id())
+func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, projectID, grafanaUserID, err := CockpitAPIGrafanaUserID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -144,7 +145,7 @@ func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.Res
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -155,7 +156,7 @@ func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.Res
 		GrafanaUserID: grafanaUserID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)

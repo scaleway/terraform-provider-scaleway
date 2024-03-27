@@ -8,9 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayLbIP() *schema.Resource {
+func ResourceScalewayLbIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayLbIPCreate,
 		ReadContext:   resourceScalewayLbIPRead,
@@ -27,7 +31,7 @@ func resourceScalewayLbIP() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: LbUpgradeV1SchemaUpgradeFunc},
 		},
 		Schema: map[string]*schema.Schema{
 			"reverse": {
@@ -36,7 +40,7 @@ func resourceScalewayLbIP() *schema.Resource {
 				Computed:    true,
 				Description: "The reverse domain name for this IP",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 			// Computed
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -50,13 +54,13 @@ func resourceScalewayLbIP() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the load balancer attached to this IP, if any",
 			},
-			"region": regionComputedSchema(),
+			"region": regional.ComputedSchema(),
 		},
 	}
 }
 
-func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -68,8 +72,8 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, met
 
 	createReq := &lbSDK.ZonedAPICreateIPRequest{
 		Zone:      zone,
-		ProjectID: expandStringPtr(d.Get("project_id")),
-		Reverse:   expandStringPtr(d.Get("reverse")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		Reverse:   types.ExpandStringPtr(d.Get("reverse")),
 	}
 
 	res, err := lbAPI.CreateIP(createReq, scw.WithContext(ctx))
@@ -77,13 +81,13 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
-	return resourceScalewayLbIPRead(ctx, d, meta)
+	return resourceScalewayLbIPRead(ctx, d, m)
 }
 
-func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -93,7 +97,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 		IPID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -104,7 +108,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 	if ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutRead))
 		if err != nil {
-			if is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -124,13 +128,13 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 	_ = d.Set("project_id", ip.ProjectID)
 	_ = d.Set("ip_address", ip.IPAddress)
 	_ = d.Set("reverse", ip.Reverse)
-	_ = d.Set("lb_id", flattenStringPtr(ip.LBID))
+	_ = d.Set("lb_id", types.FlattenStringPtr(ip.LBID))
 
 	return nil
 }
 
-func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,7 +146,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 			IPID: ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if is403Error(errGet) {
+			if httperrors.Is403(errGet) {
 				return resource.RetryableError(errGet)
 			}
 			return resource.NonRetryableError(errGet)
@@ -152,7 +156,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		return nil
 	})
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -162,7 +166,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 	if ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			if is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -174,7 +178,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		req := &lbSDK.ZonedAPIUpdateIPRequest{
 			Zone:    zone,
 			IPID:    ID,
-			Reverse: expandStringPtr(d.Get("reverse")),
+			Reverse: types.ExpandStringPtr(d.Get("reverse")),
 		}
 
 		_, err = lbAPI.UpdateIP(req, scw.WithContext(ctx))
@@ -186,7 +190,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 	if ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			if is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -194,12 +198,12 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	return resourceScalewayLbIPRead(ctx, d, meta)
+	return resourceScalewayLbIPRead(ctx, d, m)
 }
 
 //gocyclo:ignore
-func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -211,7 +215,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 			IPID: ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if is403Error(errGet) {
+			if httperrors.Is403(errGet) {
 				return resource.RetryableError(errGet)
 			}
 			return resource.NonRetryableError(errGet)
@@ -228,7 +232,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 	if ip != nil && ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			if is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -241,7 +245,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		IPID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -249,7 +253,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 	if ip != nil && ip.LBID != nil {
 		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			if is404Error(err) || is403Error(err) {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}

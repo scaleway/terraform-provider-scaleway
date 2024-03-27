@@ -13,7 +13,7 @@ as a node by the apiserver. This can be achieved manually ([method A](#method-a-
 ## Prerequisites
 
 * An SSH key, required to connect to your Elastic Metal server.
-    * If you need help generating an SSH key, visit [this tutorial](https://www.scaleway.com/en/docs/console/my-project/how-to/create-ssh-key/).
+    * If you need help generating an SSH key, visit [this tutorial](https://www.scaleway.com/en/docs/identity-and-access-management/organizations-and-projects/how-to/create-ssh-key/).
     * You can view your SSH keys in the [console](https://console.scaleway.com/project/credentials) and add a new one.
 
 ## Setup

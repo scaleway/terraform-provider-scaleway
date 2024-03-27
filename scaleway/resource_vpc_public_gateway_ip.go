@@ -8,9 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
+func ResourceScalewayVPCPublicGatewayIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayIPCreate,
 		ReadContext:   resourceScalewayVPCPublicGatewayIPRead,
@@ -35,7 +38,7 @@ func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
 				},
 			},
 			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"reverse": {
@@ -58,14 +61,14 @@ func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &vpcgw.CreateIPRequest{
-		Tags:      expandStrings(d.Get("tags")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
 		Zone:      zone,
 	}
@@ -75,15 +78,15 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	reverse := d.Get("reverse")
 	if len(reverse.(string)) > 0 {
 		updateRequest := &vpcgw.UpdateIPRequest{
 			IPID:    res.ID,
 			Zone:    zone,
-			Tags:    scw.StringsPtr(expandStrings(d.Get("tags"))),
-			Reverse: expandStringPtr(reverse.(string)),
+			Tags:    scw.StringsPtr(types.ExpandStrings(d.Get("tags"))),
+			Reverse: types.ExpandStringPtr(reverse.(string)),
 		}
 		_, err = vpcgwAPI.UpdateIP(updateRequest, scw.WithContext(ctx))
 		if err != nil {
@@ -91,11 +94,11 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 		}
 	}
 
-	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,7 +108,7 @@ func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.Resou
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -124,8 +127,8 @@ func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -138,12 +141,12 @@ func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.Res
 	hasChanged := false
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
 	if d.HasChange("reverse") {
-		updateRequest.Reverse = expandStringPtr(d.Get("reverse").(string))
+		updateRequest.Reverse = types.ExpandStringPtr(d.Get("reverse").(string))
 		hasChanged = true
 	}
 
@@ -154,11 +157,11 @@ func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.Res
 		}
 	}
 
-	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -169,7 +172,7 @@ func resourceScalewayVPCPublicGatewayIPDelete(ctx context.Context, d *schema.Res
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is409Error(err) || is412Error(err) || is404Error(err) {
+		if httperrors.Is409(err) || httperrors.Is412(err) || httperrors.Is404(err) {
 			return append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  err.Error(),

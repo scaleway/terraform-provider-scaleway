@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbRoutes() *schema.Resource {
+func DataSourceScalewayLbRoutes() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbRoutesRead,
 		Schema: map[string]*schema.Schema{
@@ -54,27 +56,27 @@ func dataSourceScalewayLbRoutes() *schema.Resource {
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func dataSourceScalewayLbRoutesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbRoutesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, frontID, err := parseZonedID(d.Get("frontend_id").(string))
+	_, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	res, err := lbAPI.ListRoutes(&lb.ZonedAPIListRoutesRequest{
 		Zone:       zone,
-		FrontendID: expandStringPtr(frontID),
+		FrontendID: types.ExpandStringPtr(frontID),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -83,13 +85,13 @@ func dataSourceScalewayLbRoutesRead(ctx context.Context, d *schema.ResourceData,
 	routes := []interface{}(nil)
 	for _, route := range res.Routes {
 		rawRoute := make(map[string]interface{})
-		rawRoute["id"] = newZonedID(zone, route.ID).String()
+		rawRoute["id"] = zonal.NewID(zone, route.ID).String()
 		rawRoute["frontend_id"] = route.FrontendID
 		rawRoute["backend_id"] = route.BackendID
-		rawRoute["created_at"] = flattenTime(route.CreatedAt)
-		rawRoute["update_at"] = flattenTime(route.UpdatedAt)
-		rawRoute["match_sni"] = flattenStringPtr(route.Match.Sni)
-		rawRoute["match_host_header"] = flattenStringPtr(route.Match.HostHeader)
+		rawRoute["created_at"] = types.FlattenTime(route.CreatedAt)
+		rawRoute["update_at"] = types.FlattenTime(route.UpdatedAt)
+		rawRoute["match_sni"] = types.FlattenStringPtr(route.Match.Sni)
+		rawRoute["match_host_header"] = types.FlattenStringPtr(route.Match.HostHeader)
 
 		routes = append(routes, rawRoute)
 	}

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -20,7 +24,7 @@ func init() {
 func testSweepInstanceSnapshot(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := instance.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying instance snapshots in (%+v)", zone)
+		logging.L.Debugf("sweeper: destroying instance snapshots in (%+v)", zone)
 
 		listSnapshotsResponse, err := api.ListSnapshots(&instance.ListSnapshotsRequest{
 			Zone: zone,
@@ -44,10 +48,10 @@ func testSweepInstanceSnapshot(_ string) error {
 }
 
 func TestAccScalewayInstanceSnapshot_BlockVolume(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
 		Steps: []resource.TestStep{
@@ -70,10 +74,10 @@ func TestAccScalewayInstanceSnapshot_BlockVolume(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSnapshot_Unified(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
 		Steps: []resource.TestStep{
@@ -112,10 +116,10 @@ func TestAccScalewayInstanceSnapshot_Unified(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSnapshot_Server(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
 		Steps: []resource.TestStep{
@@ -138,10 +142,10 @@ func TestAccScalewayInstanceSnapshot_Server(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSnapshot_ServerWithBlockVolume(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayInstanceVolumeDestroy(tt),
@@ -180,10 +184,10 @@ func TestAccScalewayInstanceSnapshot_ServerWithBlockVolume(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
 		Steps: []resource.TestStep{
@@ -224,14 +228,50 @@ func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayInstanceSnapShotExists(tt *TestTools, n string) resource.TestCheckFunc {
+func TestAccScalewayInstanceSnapshot_FromObject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_object_bucket" "bucket" {
+						name = "test-instance-snapshot-import-from-object"
+					}
+
+					resource "scaleway_object" "image" {
+						bucket = scaleway_object_bucket.bucket.name
+						key    = "image.qcow"
+						file   = "testfixture/empty.qcow2"
+					}
+
+					resource "scaleway_instance_snapshot" "snapshot" {
+						name = "test-instance-snapshot-import-from-object"
+						type = "b_ssd"
+						import {
+							bucket = scaleway_object.image.bucket
+							key    = scaleway_object.image.key
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.snapshot"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScalewayInstanceSnapShotExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -248,14 +288,14 @@ func testAccCheckScalewayInstanceSnapShotExists(tt *TestTools, n string) resourc
 	}
 }
 
-func testAccCheckScalewayInstanceSnapshotDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceSnapshotDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_snapshot" {
 				continue
 			}
 
-			instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -271,7 +311,7 @@ func testAccCheckScalewayInstanceSnapshotDestroy(tt *TestTools) resource.TestChe
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

@@ -11,6 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -20,28 +24,26 @@ const (
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
-	meta := m.(*Meta)
-	k8sAPI := k8s.NewAPI(meta.scwClient)
+	k8sAPI := k8s.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 	return k8sAPI, region, nil
 }
 
-func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	k8sAPI := k8s.NewAPI(meta.scwClient)
+func K8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
+	k8sAPI := k8s.NewAPI(meta.ExtractScwClient(m))
 
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
 	return k8sAPI, region, ID, nil
 }
 
-func k8sGetMinorVersionFromFull(version string) (string, error) {
+func K8sGetMinorVersionFromFull(version string) (string, error) {
 	versionSplit := strings.Split(version, ".")
 	if len(versionSplit) != 3 {
 		return "", errors.New("version is not a full x.y.z version") // shoud never happen
@@ -78,8 +80,8 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 
 func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
 	retryInterval := defaultK8SRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
@@ -94,8 +96,8 @@ func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clu
 
 func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
 	retryInterval := defaultK8SRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
@@ -108,8 +110,8 @@ func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region,
 
 func waitK8SClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Cluster, status k8s.ClusterStatus, timeout time.Duration) (*k8s.Cluster, error) {
 	retryInterval := defaultK8SRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
@@ -120,7 +122,7 @@ func waitK8SClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Clu
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if status == k8s.ClusterStatusDeleted && is404Error(err) {
+		if status == k8s.ClusterStatusDeleted && httperrors.Is404(err) {
 			return cluster, nil
 		}
 		return cluster, err
@@ -131,8 +133,8 @@ func waitK8SClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Clu
 
 func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string, timeout time.Duration) (*k8s.Pool, error) {
 	retryInterval := defaultK8SRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	pool, err := k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
@@ -293,11 +295,11 @@ func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, 
 }
 
 func migrateToPrivateNetworkCluster(ctx context.Context, d *schema.ResourceData, i interface{}) error {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(i, d.Id())
+	k8sAPI, region, clusterID, err := K8sAPIWithRegionAndID(i, d.Id())
 	if err != nil {
 		return err
 	}
-	pnID := expandRegionalID(d.Get("private_network_id").(string)).ID
+	pnID := regional.ExpandID(d.Get("private_network_id").(string)).ID
 	_, err = k8sAPI.MigrateToPrivateNetworkCluster(&k8s.MigrateToPrivateNetworkClusterRequest{
 		Region:           region,
 		ClusterID:        clusterID,

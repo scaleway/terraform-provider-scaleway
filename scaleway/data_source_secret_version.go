@@ -9,19 +9,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewaySecretVersion() *schema.Resource {
+func DataSourceScalewaySecretVersion() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewaySecretVersion().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewaySecretVersion().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "region", "revision")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "revision")
 	dsSchema["secret_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the secret",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"secret_name"},
 	}
 	dsSchema["secret_name"] = &schema.Schema{
@@ -40,7 +44,7 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The ID of the project to filter the secret version",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -49,9 +53,9 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 	}
 }
 
-func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	secretID, existSecretID := d.GetOk("secret_id")
-	api, region, err := secretAPIWithRegionAndDefault(d, meta, expandRegionalID(secretID).Region)
+	api, region, err := secretAPIWithRegionAndDefault(d, m, regional.ExpandID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -88,13 +92,13 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 
-		secretVersionIDStr = newRegionalIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
-		_ = d.Set("secret_id", newRegionalIDString(region, res.SecretID))
+		secretVersionIDStr = regional.NewIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
+		_ = d.Set("secret_id", regional.NewIDString(region, res.SecretID))
 		payloadSecretRaw = res.Data
 	} else {
 		request := &secret.AccessSecretVersionRequest{
 			Region:   region,
-			SecretID: expandID(secretID),
+			SecretID: locality.ExpandID(secretID),
 			Revision: d.Get("revision").(string),
 		}
 
@@ -103,7 +107,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 
-		secretVersionIDStr = newRegionalIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
+		secretVersionIDStr = regional.NewIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
 		payloadSecretRaw = res.Data
 	}
 
@@ -113,7 +117,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewaySecretVersionRead(ctx, d, meta)
+	diags := resourceScalewaySecretVersionRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read secret version")...)
 	}

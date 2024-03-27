@@ -9,9 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
-func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
+func ResourceScalewayInstanceIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceIPReverseDNSCreate,
 		ReadContext:   resourceScalewayInstanceIPReverseDNSRead,
@@ -37,26 +40,26 @@ func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 				Required:    true,
 				Description: "The reverse DNS for this IP",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("ip_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("ip_id"),
 	}
 }
 
-func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
-		IP:   expandID(d.Get("ip_id")),
+		IP:   locality.ExpandID(d.Get("ip_id")),
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(newZonedIDString(zone, res.IP.ID))
+	d.SetId(zonal.NewIDString(zone, res.IP.ID))
 
 	if _, ok := d.GetOk("reverse"); ok {
 		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
@@ -78,11 +81,11 @@ func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.R
 		}
 	}
 
-	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, meta)
+	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -93,7 +96,7 @@ func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.Res
 	}, scw.WithContext(ctx))
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -105,8 +108,8 @@ func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -130,11 +133,11 @@ func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.R
 		}
 	}
 
-	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, meta)
+	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

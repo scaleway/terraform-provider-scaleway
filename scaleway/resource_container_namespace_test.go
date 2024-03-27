@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -9,6 +9,10 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -22,7 +26,7 @@ func init() {
 func testSweepContainerNamespace(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		containerAPI := container.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the container namespaces in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the container namespaces in (%s)", region)
 		listNamespaces, err := containerAPI.ListNamespaces(
 			&container.ListNamespacesRequest{
 				Region: region,
@@ -37,7 +41,7 @@ func testSweepContainerNamespace(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
 			}
@@ -48,11 +52,11 @@ func testSweepContainerNamespace(_ string) error {
 }
 
 func TestAccScalewayContainerNamespace_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -162,11 +166,11 @@ func TestAccScalewayContainerNamespace_Basic(t *testing.T) {
 }
 
 func TestAccScalewayContainerNamespace_DestroyRegistry(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayContainerNamespaceDestroy(tt),
@@ -190,14 +194,14 @@ func TestAccScalewayContainerNamespace_DestroyRegistry(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayContainerNamespaceExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayContainerNamespaceExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -214,14 +218,14 @@ func testAccCheckScalewayContainerNamespaceExists(tt *TestTools, n string) resou
 	}
 }
 
-func testAccCheckScalewayContainerNamespaceDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayContainerNamespaceDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_container_namespace" { //nolint:goconst
 				continue
 			}
 
-			api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -235,7 +239,7 @@ func testAccCheckScalewayContainerNamespaceDestroy(tt *TestTools) resource.TestC
 				return fmt.Errorf("container namespace (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}
@@ -244,14 +248,14 @@ func testAccCheckScalewayContainerNamespaceDestroy(tt *TestTools) resource.TestC
 	}
 }
 
-func testAccCheckScalewayContainerRegistryDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayContainerRegistryDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_container_namespace" {
 				continue
 			}
 
-			api, region, _, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, _, err := scaleway.RegistryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -265,7 +269,7 @@ func testAccCheckScalewayContainerRegistryDestroy(tt *TestTools) resource.TestCh
 				return fmt.Errorf("registry namespace (%s) still exists", rs.Primary.Attributes["registry_namespace_id"])
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"crypto/x509"
@@ -11,6 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -23,7 +27,7 @@ func init() {
 func testSweepRedisCluster(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		redisAPI := redis.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the redis cluster in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the redis cluster in (%s)", zone)
 		listClusters, err := redisAPI.ListClusters(&redis.ListClustersRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
@@ -46,12 +50,12 @@ func testSweepRedisCluster(_ string) error {
 }
 
 func TestAccScalewayRedisCluster_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -115,11 +119,11 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 }
 
 func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -177,12 +181,248 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRedisCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
+	clusterID := ""
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource scaleway_vpc_private_network private_network {}
+			
+				resource "scaleway_redis_cluster" "main" {
+				  name         = "test_redis_migrate_cluster_size_ipam"
+				  version      = "%s"
+				  node_type    = "RED1-XS"
+				  user_name    = "my_initial_user"
+				  password     = "thiZ_is_v&ry_s3cret"
+				  cluster_size = 1
+				  tls_enabled  = "true"
+				  private_network {
+					id          = scaleway_vpc_private_network.private_network.id
+				  }
+				}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_cluster_size_ipam"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_redis_cluster.main", &clusterID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource scaleway_vpc_private_network private_network {}
+
+				resource "scaleway_redis_cluster" "main" {
+				  name         = "test_redis_migrate_cluster_size_ipam"
+				  version      = "%s"
+				  node_type    = "RED1-XS"
+				  user_name    = "my_initial_user"
+				  password     = "thiZ_is_v&ry_s3cret"
+				  cluster_size = 3
+				  tls_enabled  = "true"
+				  private_network {
+  					id          = scaleway_vpc_private_network.private_network.id
+				  }
+				}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_cluster_size_ipam"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "3"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
+					acctest.CheckResourceIDChanged("scaleway_redis_cluster.main", &clusterID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource scaleway_vpc_private_network private_network {}
+
+				resource "scaleway_redis_cluster" "main" {
+				  name         = "test_redis_migrate_cluster_size_ipam"
+				  version      = "%s"
+				  node_type    = "RED1-XS"
+				  user_name    = "my_initial_user"
+				  password     = "thiZ_is_v&ry_s3cret"
+				  cluster_size = 5
+				  tls_enabled  = "true"
+				  private_network {
+  					id          = scaleway_vpc_private_network.private_network.id
+				  }
+				}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_cluster_size_ipam"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "5"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_redis_cluster.main", &clusterID),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayRedisCluster_MigrateClusterSizeWithStaticEndpoint(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
+	clusterID := ""
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource scaleway_vpc_private_network private_network {}
+			
+				resource "scaleway_redis_cluster" "main" {
+				  name         = "test_redis_migrate_cluster_size_static"
+				  version      = "%s"
+				  node_type    = "RED1-XS"
+				  user_name    = "my_initial_user"
+				  password     = "thiZ_is_v&ry_s3cret"
+				  cluster_size = 1
+				  tls_enabled  = "true"
+				  private_network {
+					id          = scaleway_vpc_private_network.private_network.id
+					service_ips = [
+					  "192.168.99.1/24",
+					]
+				  }
+				}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_cluster_size_static"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "192.168.99.1/24"),
+					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_redis_cluster.main", &clusterID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource scaleway_vpc_private_network private_network {}
+
+				resource "scaleway_redis_cluster" "main" {
+				  name         = "test_redis_migrate_cluster_size_static"
+				  version      = "%s"
+				  node_type    = "RED1-XS"
+				  user_name    = "my_initial_user"
+				  password     = "thiZ_is_v&ry_s3cret"
+				  cluster_size = 3
+				  tls_enabled  = "true"
+				  private_network {
+  					id          = scaleway_vpc_private_network.private_network.id
+  					service_ips = [
+					  "192.168.99.1/24",
+					  "192.168.99.2/24",
+					  "192.168.99.3/24",
+					  "192.168.99.4/24",
+					  "192.168.99.5/24",
+					]
+				  }
+				}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_cluster_size_static"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "3"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "192.168.99.1/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.1", "192.168.99.2/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.2", "192.168.99.3/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.3", "192.168.99.4/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.4", "192.168.99.5/24"),
+					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
+					acctest.CheckResourceIDChanged("scaleway_redis_cluster.main", &clusterID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource scaleway_vpc_private_network private_network {}
+
+				resource "scaleway_redis_cluster" "main" {
+				  name         = "test_redis_migrate_cluster_size_static"
+				  version      = "%s"
+				  node_type    = "RED1-XS"
+				  user_name    = "my_initial_user"
+				  password     = "thiZ_is_v&ry_s3cret"
+				  cluster_size = 5
+				  tls_enabled  = "true"
+				  private_network {
+  					id          = scaleway_vpc_private_network.private_network.id
+  					service_ips = [
+					  "192.168.99.1/24",
+					  "192.168.99.2/24",
+					  "192.168.99.3/24",
+					  "192.168.99.4/24",
+					  "192.168.99.5/24",
+					]
+				  }
+				}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_cluster_size_static"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "5"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "192.168.99.1/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.1", "192.168.99.2/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.2", "192.168.99.3/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.3", "192.168.99.4/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.4", "192.168.99.5/24"),
+					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_redis_cluster.main", &clusterID),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayRedisCluster_ACL(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -254,11 +494,11 @@ func TestAccScalewayRedisCluster_ACL(t *testing.T) {
 }
 
 func TestAccScalewayRedisCluster_Settings(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -321,11 +561,11 @@ func TestAccScalewayRedisCluster_Settings(t *testing.T) {
 }
 
 func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -505,11 +745,11 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 }
 
 func TestAccScalewayRedisCluster_Endpoints_ClusterMode(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -569,11 +809,11 @@ func TestAccScalewayRedisCluster_Endpoints_ClusterMode(t *testing.T) {
 }
 
 func TestAccScalewayRedisCluster_Certificate(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -610,11 +850,11 @@ func TestAccScalewayRedisCluster_Certificate(t *testing.T) {
 }
 
 func TestAccScalewayRedisCluster_NoCertificate(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -650,14 +890,14 @@ func TestAccScalewayRedisCluster_NoCertificate(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayRedisClusterDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayRedisClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_redis_cluster" {
 				continue
 			}
 
-			redisAPI, zone, ID, err := redisAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			redisAPI, zone, ID, err := scaleway.RedisAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -671,7 +911,7 @@ func testAccCheckScalewayRedisClusterDestroy(tt *TestTools) resource.TestCheckFu
 				return fmt.Errorf("cluster (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}
@@ -679,14 +919,14 @@ func testAccCheckScalewayRedisClusterDestroy(tt *TestTools) resource.TestCheckFu
 	}
 }
 
-func testAccCheckScalewayRedisExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayRedisExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		redisAPI, zone, ID, err := redisAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		redisAPI, zone, ID, err := scaleway.RedisAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -781,8 +1021,8 @@ func testAccCheckScalewayRedisCertificateIsValid(name string) resource.TestCheck
 	}
 }
 
-func testAccScalewayRedisClusterGetLatestVersion(tt *TestTools) string {
-	api := redis.NewAPI(tt.Meta.scwClient)
+func testAccScalewayRedisClusterGetLatestVersion(tt *acctest.TestTools) string {
+	api := redis.NewAPI(tt.Meta.ScwClient())
 
 	versions, err := api.ListClusterVersions(&redis.ListClusterVersionsRequest{})
 	if err != nil {

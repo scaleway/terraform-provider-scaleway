@@ -9,9 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayLbCertificate() *schema.Resource {
+func ResourceScalewayLbCertificate() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayLbCertificateCreate,
 		ReadContext:   resourceScalewayLbCertificateRead,
@@ -26,7 +29,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: LbUpgradeV1SchemaUpgradeFunc},
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
@@ -126,13 +129,13 @@ func resourceScalewayLbCertificate() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
+func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	zone, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	lbAPI, _, err := lbAPIWithZone(d, meta)
+	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,7 +143,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 	createReq := &lbSDK.ZonedAPICreateCertificateRequest{
 		Zone:              zone,
 		LBID:              lbID,
-		Name:              expandOrGenerateString(d.Get("name"), "lb-cert"),
+		Name:              types.ExpandOrGenerateString(d.Get("name"), "lb-cert"),
 		Letsencrypt:       expandLbLetsEncrypt(d.Get("letsencrypt")),
 		CustomCertificate: expandLbCustomCertificate(d.Get("custom_certificate")),
 	}
@@ -150,7 +153,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is403Error(err) {
+		if httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -162,22 +165,22 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, certificate.ID))
+	d.SetId(zonal.NewIDString(zone, certificate.ID))
 
 	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is403Error(err) {
+		if httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbCertificateRead(ctx, d, meta)
+	return resourceScalewayLbCertificateRead(ctx, d, m)
 }
 
-func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,20 +190,20 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		Zone:          zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newZonedIDString(zone, certificate.LB.ID))
+	_ = d.Set("lb_id", zonal.NewIDString(zone, certificate.LB.ID))
 	_ = d.Set("name", certificate.Name)
 	_ = d.Set("common_name", certificate.CommonName)
 	_ = d.Set("subject_alternative_name", certificate.SubjectAlternativeName)
 	_ = d.Set("fingerprint", certificate.Fingerprint)
-	_ = d.Set("not_valid_before", flattenTime(certificate.NotValidBefore))
-	_ = d.Set("not_valid_after", flattenTime(certificate.NotValidAfter))
+	_ = d.Set("not_valid_before", types.FlattenTime(certificate.NotValidBefore))
+	_ = d.Set("not_valid_after", types.FlattenTime(certificate.NotValidAfter))
 	_ = d.Set("status", certificate.Status)
 
 	diags := diag.Diagnostics(nil)
@@ -219,8 +222,8 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 	return diags
 }
 
-func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -242,7 +245,7 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 			return diag.FromErr(err)
 		}
 		if err != nil {
-			if is403Error(err) {
+			if httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -250,11 +253,11 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	return resourceScalewayLbCertificateRead(ctx, d, meta)
+	return resourceScalewayLbCertificateRead(ctx, d, m)
 }
 
-func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, id, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, id, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -273,7 +276,7 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 	}
 
 	_, err = waitForLBCertificate(ctx, lbAPI, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is403Error(err) && !is404Error(err) {
+	if err != nil && !httperrors.Is403(err) && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

@@ -9,9 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayIotNetwork() *schema.Resource {
+func ResourceScalewayIotNetwork() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIotNetworkCreate,
 		ReadContext:   resourceScalewayIotNetworkRead,
@@ -75,17 +80,17 @@ func resourceScalewayIotNetwork() *schema.Resource {
 	}
 }
 
-func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, meta)
+func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &iot.CreateNetworkRequest{
 		Region: region,
-		Name:   expandOrGenerateString(d.Get("name"), "network"),
+		Name:   types.ExpandOrGenerateString(d.Get("name"), "network"),
 		Type:   iot.NetworkNetworkType(d.Get("type").(string)),
-		HubID:  expandID(d.Get("hub_id")),
+		HubID:  locality.ExpandID(d.Get("hub_id")),
 	}
 
 	if topicPrefix, ok := d.GetOk("topic_prefix"); ok {
@@ -97,16 +102,16 @@ func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.Network.ID))
+	d.SetId(regional.NewIDString(region, res.Network.ID))
 
 	// Secret key cannot be retrieved later
 	_ = d.Set("secret", res.Secret)
 
-	return resourceScalewayIotNetworkRead(ctx, d, meta)
+	return resourceScalewayIotNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, networkID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, networkID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,7 +121,7 @@ func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData,
 		NetworkID: networkID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -126,33 +131,33 @@ func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("name", network.Name)
 	_ = d.Set("type", network.Type.String())
 	_ = d.Set("endpoint", network.Endpoint)
-	_ = d.Set("hub_id", newRegionalID(region, network.HubID).String())
+	_ = d.Set("hub_id", regional.NewID(region, network.HubID).String())
 	_ = d.Set("created_at", network.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("topic_prefix", network.TopicPrefix)
 
 	return nil
 }
 
-func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, networkID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, networkID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	hubID := expandZonedID(d.Get("hub_id").(string)).ID
+	hubID := zonal.ExpandID(d.Get("hub_id").(string)).ID
 
 	err = iotAPI.DeleteNetwork(&iot.DeleteNetworkRequest{
 		Region:    region,
 		NetworkID: networkID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

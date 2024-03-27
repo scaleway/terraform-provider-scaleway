@@ -6,20 +6,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayDocumentDBInstance() *schema.Resource {
+func DataSourceScalewayDocumentDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayDocumentDBInstance().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayDocumentDBInstance().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["instance_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the instance",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -28,8 +31,8 @@ func dataSourceScalewayDocumentDBInstance() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -39,8 +42,8 @@ func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Res
 		instanceName := d.Get("name").(string)
 		res, err := api.ListInstances(&documentdb.ListInstancesRequest{
 			Region:    region,
-			Name:      expandStringPtr(instanceName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(instanceName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -58,14 +61,14 @@ func dataSourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.Res
 		instanceID = foundRawInstance.ID
 	}
 
-	regionID := datasourceNewRegionalID(instanceID, region)
+	regionID := datasource.NewRegionalID(instanceID, region)
 	d.SetId(regionID)
 	err = d.Set("instance_id", regionID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayDocumentDBInstanceRead(ctx, d, meta)
+	diags := resourceScalewayDocumentDBInstanceRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read instance state")...)
 	}

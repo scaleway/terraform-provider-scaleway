@@ -7,14 +7,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayK8SCluster() *schema.Resource {
+func DataSourceScalewayK8SCluster() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayK8SCluster().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayK8SCluster().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 	delete(dsSchema, "delete_additional_resources")
 
 	dsSchema["name"].ConflictsWith = []string{"cluster_id"}
@@ -22,7 +25,7 @@ func dataSourceScalewayK8SCluster() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the cluster",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 
@@ -33,8 +36,8 @@ func dataSourceScalewayK8SCluster() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
+func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -44,8 +47,8 @@ func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceDat
 		clusterName := d.Get("name").(string)
 		res, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{
 			Region:    region,
-			Name:      expandStringPtr(clusterName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(clusterName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -63,8 +66,8 @@ func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceDat
 		clusterID = foundCluster.ID
 	}
 
-	regionalizedID := datasourceNewRegionalID(clusterID, region)
+	regionalizedID := datasource.NewRegionalID(clusterID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("cluster_id", regionalizedID)
-	return resourceScalewayK8SClusterRead(ctx, d, meta)
+	return resourceScalewayK8SClusterRead(ctx, d, m)
 }

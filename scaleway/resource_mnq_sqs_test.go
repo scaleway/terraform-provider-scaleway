@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -11,6 +11,10 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -25,7 +29,7 @@ func testSweepMNQSQS(_ string) error {
 		accountAPI := accountV3.NewProjectAPI(scwClient)
 		mnqAPI := mnq.NewSqsAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the mnq sqss in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the mnq sqss in (%s)", region)
 
 		listProjects, err := accountAPI.ListProjects(&accountV3.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
@@ -41,7 +45,7 @@ func testSweepMNQSQS(_ string) error {
 				ProjectID: project.ID,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 				return err
 			}
 		}
@@ -51,11 +55,11 @@ func testSweepMNQSQS(_ string) error {
 }
 
 func TestAccScalewayMNQSQS_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayMNQSQSDestroy(tt),
 		Steps: []resource.TestStep{
@@ -80,11 +84,11 @@ func TestAccScalewayMNQSQS_Basic(t *testing.T) {
 }
 
 func TestAccScalewayMNQSQS_AlreadyActivated(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayMNQSQSDestroy(tt),
 		Steps: []resource.TestStep{
@@ -119,14 +123,14 @@ func TestAccScalewayMNQSQS_AlreadyActivated(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayMNQSQSExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayMNQSQSExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := mnqSQSAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.MnqSQSAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -147,14 +151,14 @@ func testAccCheckScalewayMNQSQSExists(tt *TestTools, n string) resource.TestChec
 	}
 }
 
-func testAccCheckScalewayMNQSQSDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayMNQSQSDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sqs" {
 				continue
 			}
 
-			api, region, id, err := mnqSQSAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.MnqSQSAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -164,7 +168,7 @@ func testAccCheckScalewayMNQSQSDestroy(tt *TestTools) resource.TestCheckFunc {
 				Region:    region,
 			})
 			if err != nil {
-				if is404Error(err) { // Project may have been deleted
+				if httperrors.Is404(err) { // Project may have been deleted
 					return nil
 				}
 				return err
@@ -174,7 +178,7 @@ func testAccCheckScalewayMNQSQSDestroy(tt *TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("mnq sqs (%s) should be disabled", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

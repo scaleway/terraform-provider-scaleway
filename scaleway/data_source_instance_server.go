@@ -7,21 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayInstanceServer() *schema.Resource {
+func DataSourceScalewayInstanceServer() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceServer().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayInstanceServer().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"server_id"}
 	dsSchema["server_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the server",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 
@@ -32,8 +35,8 @@ func dataSourceScalewayInstanceServer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -43,8 +46,8 @@ func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.Resourc
 		serverName := d.Get("name").(string)
 		res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(serverName),
-			Project: expandStringPtr(d.Get("project_id")),
+			Name:    types.ExpandStringPtr(serverName),
+			Project: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -62,8 +65,8 @@ func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.Resourc
 		serverID = foundServer.ID
 	}
 
-	zonedID := datasourceNewZonedID(serverID, zone)
+	zonedID := datasource.NewZonedID(serverID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("server_id", zonedID)
-	return resourceScalewayInstanceServerRead(ctx, d, meta)
+	return resourceScalewayInstanceServerRead(ctx, d, m)
 }

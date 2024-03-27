@@ -12,9 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayMNQSQSQueue() *schema.Resource {
+func ResourceScalewayMNQSQSQueue() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSQSQueueCreate,
 		ReadContext:   resourceScalewayMNQSQSQueueRead,
@@ -103,7 +107,7 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 				ValidateFunc: validation.IntBetween(1024, 262_144),
 				Description:  "The maximum size of a message. Should be in bytes.",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 
 			// Computed
@@ -125,13 +129,13 @@ func resourceScalewayMNQSQSQueue() *schema.Resource {
 	}
 }
 
-func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSQSAPI(d, meta)
+func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSQSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID, _, err := extractProjectID(d, meta.(*Meta))
+	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -148,7 +152,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("expected sqs to be enabled for given project, got: %q", sqsInfo.Status))
 	}
 
-	sqsClient, _, err := SQSClientWithRegion(d, meta)
+	sqsClient, _, err := SQSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,7 +160,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 	isFifo := d.Get("fifo_queue").(bool)
 	queueName := resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
-	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,7 +170,7 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 		QueueName:  scw.StringPtr(queueName),
 	}
 
-	_, err = retryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDeletedRecently}, &RetryWhenConfig[*sqs.CreateQueueOutput]{
+	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDeletedRecently}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.CreateQueueOutput, error) {
@@ -179,21 +183,21 @@ func resourceScalewayMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(composeMNQID(region, projectID, queueName))
 
-	return resourceScalewayMNQSQSQueueRead(ctx, d, meta)
+	return resourceScalewayMNQSQSQueueRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, meta)
+func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	sqsClient, _, err := SQSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	region, projectID, queueName, err := decomposeMNQID(d.Id())
+	region, projectID, queueName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	queue, err := retryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	queue, err := transport.RetryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutRead),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
@@ -214,7 +218,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("failed to get the SQS Queue attributes: %s", err)
 	}
 
-	values, err := awsAttributesToResourceData(queueAttributes.Attributes, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
+	values, err := awsAttributesToResourceData(queueAttributes.Attributes, ResourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.Errorf("failed to convert SQS Queue attributes to resource data: %s", err)
 	}
@@ -222,7 +226,7 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("name", queueName)
 	_ = d.Set("region", region)
 	_ = d.Set("project_id", projectID)
-	_ = d.Set("url", flattenStringPtr(queue.QueueUrl))
+	_ = d.Set("url", types.FlattenStringPtr(queue.QueueUrl))
 
 	for k, v := range values {
 		_ = d.Set(k, v) // lintignore: R001
@@ -231,18 +235,18 @@ func resourceScalewayMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, meta)
+func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	sqsClient, _, err := SQSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQID(d.Id())
+	_, _, queueName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	queue, err := retryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	queue, err := transport.RetryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutUpdate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
@@ -255,7 +259,7 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceScalewayMNQSQSQueue().Schema, SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -268,16 +272,16 @@ func resourceScalewayMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to update SQS Queue attributes: %s", err)
 	}
 
-	return resourceScalewayMNQSQSQueueRead(ctx, d, meta)
+	return resourceScalewayMNQSQSQueueRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, meta)
+func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	sqsClient, _, err := SQSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, _, queueName, err := decomposeMNQID(d.Id())
+	_, _, queueName, err := DecomposeMNQID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -304,7 +308,7 @@ func resourceScalewayMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("failed to delete SQS Queue (%s): %s", d.Id(), err)
 	}
 
-	_, _ = retryWhenAWSErrCodeNotEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	_, _ = transport.RetryWhenAWSErrCodeNotEquals(ctx, []string{sqs.ErrCodeQueueDoesNotExist}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {

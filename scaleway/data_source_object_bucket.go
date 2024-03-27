@@ -9,14 +9,16 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func dataSourceScalewayObjectBucket() *schema.Resource {
+func DataSourceScalewayObjectBucket() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayObjectBucket().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayObjectBucket().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayObjectStorageRead,
@@ -24,18 +26,18 @@ func dataSourceScalewayObjectBucket() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("name"))
+	regionalID := regional.ExpandID(d.Get("name"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -60,7 +62,7 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 	}
 	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
-	bucketRegionalID := newRegionalIDString(region, bucket)
+	bucketRegionalID := regional.NewIDString(region, bucket)
 	d.SetId(bucketRegionalID)
-	return resourceScalewayObjectBucketRead(ctx, d, meta)
+	return resourceScalewayObjectBucketRead(ctx, d, m)
 }

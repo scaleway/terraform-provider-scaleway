@@ -11,9 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
+func ResourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayPATRuleCreate,
 		ReadContext:   resourceScalewayVPCPublicGatewayPATRuleRead,
@@ -33,7 +36,7 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 			"gateway_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The ID of the gateway this PAT rule is applied to",
 			},
 			"private_ip": {
@@ -68,7 +71,7 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 				Default:     "both",
 				Description: "The protocol used in the PAT rule",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -82,17 +85,17 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 				Description: "The date and time of the last update of the PAT rule",
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("gateway_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("gateway_id"),
 	}
 }
 
-func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	gatewayID := zonal.ExpandID(d.Get("gateway_id").(string)).ID
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -117,18 +120,18 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, patRule.ID))
+	d.SetId(zonal.NewIDString(zone, patRule.ID))
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -138,14 +141,14 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 		Zone:      zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	gatewayID := newZonedID(zone, patRule.GatewayID).String()
+	gatewayID := zonal.NewID(zone, patRule.GatewayID).String()
 	_ = d.Set("created_at", patRule.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", patRule.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("gateway_id", gatewayID)
@@ -158,8 +161,8 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -214,7 +217,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 
 		patRule, err = vpcgwAPI.UpdatePATRule(req, scw.WithContext(ctx))
 		if err != nil {
-			if is404Error(err) {
+			if httperrors.Is404(err) {
 				d.SetId("")
 				return nil
 			}
@@ -228,11 +231,11 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -242,7 +245,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		Zone:      zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -251,7 +254,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 
 	// check gateway is in stable state.
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -260,12 +263,12 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		Zone:      zone,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

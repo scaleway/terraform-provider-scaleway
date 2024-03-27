@@ -8,9 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayFunctionTrigger() *schema.Resource {
+func ResourceScalewayFunctionTrigger() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionTriggerCreate,
 		ReadContext:   resourceScalewayFunctionTriggerRead,
@@ -32,7 +37,7 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The ID of the function to create a trigger for",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -56,10 +61,10 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"namespace_id": {
 							Optional:         true,
-							ForceNew:         true,
 							Type:             schema.TypeString,
 							Description:      "ID of the mnq namespace",
 							DiffSuppressFunc: diffSuppressFuncLocality,
+							Deprecated:       "The 'namespace_id' field is deprecated and will be removed in the next major version. It is no longer necessary to specify it",
 						},
 						"queue": {
 							Required:    true,
@@ -123,27 +128,27 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 					},
 				},
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("function_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("function_id"),
 	}
 }
 
-func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &function.CreateTriggerRequest{
 		Region:      region,
-		Name:        expandOrGenerateString(d.Get("name").(string), "trigger"),
-		FunctionID:  expandID(d.Get("function_id")),
-		Description: expandStringPtr(d.Get("description")),
+		Name:        types.ExpandOrGenerateString(d.Get("name").(string), "trigger"),
+		FunctionID:  locality.ExpandID(d.Get("function_id")),
+		Description: types.ExpandStringPtr(d.Get("description")),
 	}
 
 	if scwSqs, isScwSqs := d.GetOk("sqs.0"); isScwSqs {
-		err := completeFunctionTriggerMnqCreationConfig(scwSqs, d, meta, region)
+		err := completeFunctionTriggerMnqCreationConfig(scwSqs, d, m, region)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to complete sqs config: %w", err))
 		}
@@ -153,7 +158,7 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 	}
 
 	if scwNats, isScwNats := d.GetOk("nats.0"); isScwNats {
-		err := completeFunctionTriggerMnqCreationConfig(scwNats, d, meta, region)
+		err := completeFunctionTriggerMnqCreationConfig(scwNats, d, m, region)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to complete nats config: %w", err))
 		}
@@ -167,25 +172,25 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, trigger.ID))
+	d.SetId(regional.NewIDString(region, trigger.ID))
 
 	_, err = waitForFunctionTrigger(ctx, api, region, trigger.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFunctionTriggerRead(ctx, d, meta)
+	return resourceScalewayFunctionTriggerRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionTriggerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTriggerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	trigger, err := waitForFunctionTrigger(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -212,15 +217,15 @@ func resourceScalewayFunctionTriggerRead(ctx context.Context, d *schema.Resource
 	return diags
 }
 
-func resourceScalewayFunctionTriggerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTriggerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	trigger, err := waitForFunctionTrigger(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -233,22 +238,22 @@ func resourceScalewayFunctionTriggerUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if _, err := api.UpdateTrigger(req, scw.WithContext(ctx)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFunctionTriggerRead(ctx, d, meta)
+	return resourceScalewayFunctionTriggerRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionTriggerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTriggerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -267,7 +272,7 @@ func resourceScalewayFunctionTriggerDelete(ctx context.Context, d *schema.Resour
 	}
 
 	_, err = waitForFunctionTrigger(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

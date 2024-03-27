@@ -9,9 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayDomainZone() *schema.Resource {
+func ResourceScalewayDomainZone() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDomainZoneCreate,
 		ReadContext:   resourceScalewayDomainZoneRead,
@@ -80,15 +82,15 @@ func resourceScalewayDomainZone() *schema.Resource {
 	}
 }
 
-func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := NewDomainAPI(m)
 
 	domainName := strings.ToLower(d.Get("domain").(string))
 	subdomainName := strings.ToLower(d.Get("subdomain").(string))
 	zoneName := fmt.Sprintf("%s.%s", subdomainName, domainName)
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: expandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		DNSZone:   scw.StringPtr(zoneName),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -99,7 +101,7 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
 			d.SetId(fmt.Sprintf("%s.%s", subdomainName, domainName))
 
-			return resourceScalewayDomainZoneRead(ctx, d, meta)
+			return resourceScalewayDomainZoneRead(ctx, d, m)
 		}
 	}
 
@@ -111,27 +113,27 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 		Subdomain: subdomainName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is409Error(err) {
-			return resourceScalewayDomainZoneRead(ctx, d, meta)
+		if httperrors.Is409(err) {
+			return resourceScalewayDomainZoneRead(ctx, d, m)
 		}
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%s.%s", dnsZone.Subdomain, dnsZone.Domain))
 
-	return resourceScalewayDomainZoneRead(ctx, d, meta)
+	return resourceScalewayDomainZoneRead(ctx, d, m)
 }
 
-func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := NewDomainAPI(m)
 
 	var zone *domain.DNSZone
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: expandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		DNSZone:   scw.StringPtr(d.Id()),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -161,8 +163,8 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := NewDomainAPI(m)
 
 	if d.HasChangesExcept("subdomain") {
 		_, err := domainAPI.UpdateDNSZone(&domain.UpdateDNSZoneRequest{
@@ -174,15 +176,15 @@ func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 	}
-	return resourceScalewayDomainZoneRead(ctx, d, meta)
+	return resourceScalewayDomainZoneRead(ctx, d, m)
 }
 
-func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := NewDomainAPI(m)
 
 	_, err := waitForDNSZone(ctx, domainAPI, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -193,7 +195,7 @@ func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceDat
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) && !is403Error(err) {
+	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
 

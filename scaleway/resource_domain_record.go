@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
 var changeKeys = []string{
@@ -28,7 +30,7 @@ var changeKeys = []string{
 	"keep_empty_zone",
 }
 
-func resourceScalewayDomainRecord() *schema.Resource {
+func ResourceScalewayDomainRecord() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDomainRecordCreate,
 		ReadContext:   resourceScalewayDomainRecordRead,
@@ -262,8 +264,8 @@ func resourceScalewayDomainRecord() *schema.Resource {
 	}
 }
 
-func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := NewDomainAPI(m)
 
 	dnsZone := d.Get("dns_zone").(string)
 	geoIP, okGeoIP := d.GetOk("geo_ip")
@@ -324,11 +326,11 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(recordID)
 	tflog.Debug(ctx, fmt.Sprintf("record ID[%s]", recordID))
-	return resourceScalewayDomainRecordRead(ctx, d, meta)
+	return resourceScalewayDomainRecordRead(ctx, d, m)
 }
 
-func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := NewDomainAPI(m)
 	var record *domain.Record
 	var dnsZone string
 	var projectID string
@@ -349,7 +351,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			ID:      &recordID,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
-			if is404Error(err) || is403Error(err) {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -371,7 +373,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(errors.New("record type unknow"))
 		}
 
-		idRecord := expandID(d.Id())
+		idRecord := locality.ExpandID(d.Id())
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			Name:    d.Get("name").(string),
@@ -379,7 +381,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			ID:      &idRecord,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
-			if is404Error(err) || is403Error(err) {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
 				return nil
 			}
@@ -398,7 +400,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZone: scw.StringPtr(dnsZone)}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -434,12 +436,12 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	if !d.HasChanges(changeKeys...) {
-		return resourceScalewayDomainRecordRead(ctx, d, meta)
+		return resourceScalewayDomainRecordRead(ctx, d, m)
 	}
 
-	domainAPI := newDomainAPI(meta)
+	domainAPI := NewDomainAPI(m)
 
 	req := &domain.UpdateDNSZoneRecordsRequest{
 		DNSZone:          d.Get("dns_zone").(string),
@@ -462,7 +464,7 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 	req.Changes = []*domain.RecordChange{
 		{
 			Set: &domain.RecordChangeSet{
-				ID:      scw.StringPtr(expandID(d.Id())),
+				ID:      scw.StringPtr(locality.ExpandID(d.Id())),
 				Records: []*domain.Record{record},
 			},
 		},
@@ -478,13 +480,13 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDomainRecordRead(ctx, d, meta)
+	return resourceScalewayDomainRecordRead(ctx, d, m)
 }
 
-func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := NewDomainAPI(m)
 
-	recordID := expandID(d.Id())
+	recordID := locality.ExpandID(d.Id())
 	_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
 		DNSZone: d.Get("dns_zone").(string),
 		Changes: []*domain.RecordChange{
@@ -510,7 +512,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 		DNSZone: d.Get("dns_zone").(string),
 	})
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -526,7 +528,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 
 	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -537,7 +539,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 		ProjectID: d.Get("project_id").(string),
 	})
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
 		return diag.FromErr(err)

@@ -9,9 +9,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayVPCPrivateNetwork() *schema.Resource {
+func ResourceScalewayVPCPrivateNetwork() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPrivateNetworkCreate,
 		ReadContext:   resourceScalewayVPCPrivateNetworkRead,
@@ -159,9 +165,9 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				Deprecated:       "This field is deprecated and will be removed in the next major version, please use `region` instead",
-				ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
+				ValidateDiagFunc: locality.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -178,8 +184,8 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 	}
 }
 
-func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
+func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -190,15 +196,15 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 	}
 
 	req := &vpc.CreatePrivateNetworkRequest{
-		Name:      expandOrGenerateString(d.Get("name"), "pn"),
-		Tags:      expandStrings(d.Get("tags")),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "pn"),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
 		Region:    region,
 	}
 
 	if _, ok := d.GetOk("vpc_id"); ok {
-		vpcID := expandRegionalID(d.Get("vpc_id").(string)).ID
-		req.VpcID = expandUpdatedStringPtr(vpcID)
+		vpcID := regional.ExpandID(d.Get("vpc_id").(string)).ID
+		req.VpcID = types.ExpandUpdatedStringPtr(vpcID)
 	}
 
 	if ipv4Subnets != nil {
@@ -214,13 +220,13 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, pn.ID))
+	d.SetId(regional.NewIDString(region, pn.ID))
 
-	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := VpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -230,24 +236,24 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 		Region:           region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	zone, err := extractZone(d, meta.(*Meta))
+	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", pn.Name)
-	_ = d.Set("vpc_id", newRegionalIDString(region, pn.VpcID))
+	_ = d.Set("vpc_id", regional.NewIDString(region, pn.VpcID))
 	_ = d.Set("organization_id", pn.OrganizationID)
 	_ = d.Set("project_id", pn.ProjectID)
-	_ = d.Set("created_at", flattenTime(pn.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(pn.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(pn.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("region", region)
 	_ = d.Set("is_regional", true)
@@ -260,8 +266,8 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := VpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -270,17 +276,17 @@ func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.Reso
 		PrivateNetworkID: ID,
 		Region:           region,
 		Name:             scw.StringPtr(d.Get("name").(string)),
-		Tags:             expandUpdatedStringsPtr(d.Get("tags")),
+		Tags:             types.ExpandUpdatedStringsPtr(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, ID, err := vpcAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, ID, err := VpcAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -291,9 +297,9 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 			Region:           region,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if is412Error(err) {
+			if httperrors.Is412(err) {
 				return retry.RetryableError(err)
-			} else if !is404Error(err) {
+			} else if !httperrors.Is404(err) {
 				return retry.NonRetryableError(err)
 			}
 		}

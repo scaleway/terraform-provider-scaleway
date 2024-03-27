@@ -8,14 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayDomainRecord() *schema.Resource {
+func DataSourceScalewayDomainRecord() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayDomainRecord().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayDomainRecord().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "dns_zone", "name", "type", "data", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "dns_zone", "name", "type", "data", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"record_id"}
 	dsSchema["type"].ConflictsWith = []string{"record_id"}
@@ -24,7 +27,7 @@ func dataSourceScalewayDomainRecord() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the record",
-		ValidateFunc:  validationUUID(),
+		ValidateFunc:  verify.IsUUID(),
 		ConflictsWith: []string{"name", "type", "data"},
 	}
 
@@ -34,8 +37,8 @@ func dataSourceScalewayDomainRecord() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	domainAPI := newDomainAPI(meta)
+func dataSourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	domainAPI := NewDomainAPI(m)
 
 	recordID, ok := d.GetOk("record_id")
 	if !ok { // Get Record by dns_zone, name, type and data.
@@ -43,7 +46,7 @@ func dataSourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceD
 			DNSZone:   d.Get("dns_zone").(string),
 			Name:      d.Get("name").(string),
 			Type:      domain.RecordType(d.Get("type").(string)),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx), scw.WithAllPages())
 		if err != nil {
 			return diag.FromErr(err)
@@ -67,5 +70,5 @@ func dataSourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", d.Get("dns_zone"), recordID.(string)))
-	return resourceScalewayDomainRecordRead(ctx, d, meta)
+	return resourceScalewayDomainRecordRead(ctx, d, m)
 }

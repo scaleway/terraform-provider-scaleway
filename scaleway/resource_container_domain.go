@@ -7,9 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayContainerDomain() *schema.Resource {
+func ResourceScalewayContainerDomain() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayContainerDomainCreate,
 		ReadContext:   resourceScalewayContainerDomainRead,
@@ -37,7 +41,7 @@ func resourceScalewayContainerDomain() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				Description:      "Container the domain will be bound to",
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"url": {
@@ -45,20 +49,20 @@ func resourceScalewayContainerDomain() *schema.Resource {
 				Computed:    true,
 				Description: "URL used to query the container",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("container_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("container_id"),
 	}
 }
 
-func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	hostname := d.Get("hostname").(string)
-	containerID := expandID(d.Get("container_id"))
+	containerID := locality.ExpandID(d.Get("container_id"))
 
 	_, err = waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -81,20 +85,20 @@ func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, domain.ID))
+	d.SetId(regional.NewIDString(region, domain.ID))
 
-	return resourceScalewayContainerDomainRead(ctx, d, meta)
+	return resourceScalewayContainerDomainRead(ctx, d, m)
 }
 
-func resourceScalewayContainerDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, domainID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, domainID, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	domain, err := waitForContainerDomain(ctx, api, domainID, region, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -109,15 +113,15 @@ func resourceScalewayContainerDomainRead(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func resourceScalewayContainerDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, domainID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, domainID, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForContainerDomain(ctx, api, domainID, region, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -128,7 +132,7 @@ func resourceScalewayContainerDomainDelete(ctx context.Context, d *schema.Resour
 		Region:   region,
 		DomainID: domainID,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

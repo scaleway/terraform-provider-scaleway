@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayLbACLs() *schema.Resource {
+func DataSourceScalewayLbACLs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbACLsRead,
 		Schema: map[string]*schema.Schema{
@@ -125,20 +127,20 @@ func dataSourceScalewayLbACLs() *schema.Resource {
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func dataSourceScalewayLbACLsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbACLsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, frontID, err := parseZonedID(d.Get("frontend_id").(string))
+	_, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -146,7 +148,7 @@ func dataSourceScalewayLbACLsRead(ctx context.Context, d *schema.ResourceData, m
 	res, err := lbAPI.ListACLs(&lb.ZonedAPIListACLsRequest{
 		Zone:       zone,
 		FrontendID: frontID,
-		Name:       expandStringPtr(d.Get("name")),
+		Name:       types.ExpandStringPtr(d.Get("name")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -155,11 +157,11 @@ func dataSourceScalewayLbACLsRead(ctx context.Context, d *schema.ResourceData, m
 	acls := []interface{}(nil)
 	for _, acl := range res.ACLs {
 		rawACL := make(map[string]interface{})
-		rawACL["id"] = newZonedIDString(zone, acl.ID)
+		rawACL["id"] = zonal.NewIDString(zone, acl.ID)
 		rawACL["name"] = acl.Name
-		rawACL["frontend_id"] = newZonedIDString(zone, acl.Frontend.ID)
-		rawACL["created_at"] = flattenTime(acl.CreatedAt)
-		rawACL["update_at"] = flattenTime(acl.UpdatedAt)
+		rawACL["frontend_id"] = zonal.NewIDString(zone, acl.Frontend.ID)
+		rawACL["created_at"] = types.FlattenTime(acl.CreatedAt)
+		rawACL["update_at"] = types.FlattenTime(acl.UpdatedAt)
 		rawACL["index"] = acl.Index
 		rawACL["description"] = acl.Description
 		rawACL["action"] = flattenLbACLAction(acl.Action)

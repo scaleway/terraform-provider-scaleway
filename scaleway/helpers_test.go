@@ -1,233 +1,18 @@
-package scaleway
+package scaleway_test
 
 import (
-	"errors"
 	"fmt"
 	"net"
-	"net/http"
 	"regexp"
-	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-func TestParseLocalizedID(t *testing.T) {
-	testCases := []struct {
-		name       string
-		localityID string
-		id         string
-		locality   string
-		err        string
-	}{
-		{
-			name:       "simple",
-			localityID: "fr-par-1/my-id",
-			id:         "my-id",
-			locality:   "fr-par-1",
-		},
-		{
-			name:       "id with a region",
-			localityID: "fr-par/my-id",
-			id:         "my-id",
-			locality:   "fr-par",
-		},
-		{
-			name:       "empty",
-			localityID: "",
-			err:        "cant parse localized id: ",
-		},
-		{
-			name:       "without locality",
-			localityID: "my-id",
-			err:        "cant parse localized id: my-id",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			locality, id, err := parseLocalizedID(tc.localityID)
-			if tc.err != "" {
-				require.EqualError(t, err, tc.err)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, tc.locality, locality)
-				assert.Equal(t, tc.id, id)
-			}
-		})
-	}
-}
-
-func TestParseLocalizedNestedID(t *testing.T) {
-	testCases := []struct {
-		name       string
-		localityID string
-		innerID    string
-		outerID    string
-		locality   string
-		err        string
-	}{
-		{
-			name:       "id with a sub directory",
-			localityID: "fr-par/my-id/subdir",
-			innerID:    "my-id",
-			outerID:    "subdir",
-			locality:   "fr-par",
-		},
-		{
-			name:       "id with multiple sub directories",
-			localityID: "fr-par/my-id/subdir/foo/bar",
-			innerID:    "my-id",
-			outerID:    "subdir/foo/bar",
-			locality:   "fr-par",
-		},
-		{
-			name:       "simple",
-			localityID: "fr-par-1/my-id",
-			err:        "cant parse localized id: fr-par-1/my-id",
-		},
-		{
-			name:       "empty",
-			localityID: "",
-			err:        "cant parse localized id: ",
-		},
-		{
-			name:       "without locality",
-			localityID: "my-id",
-			err:        "cant parse localized id: my-id",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			locality, innerID, outerID, err := parseLocalizedNestedID(tc.localityID)
-			if tc.err != "" {
-				require.EqualError(t, err, tc.err)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, tc.locality, locality)
-				assert.Equal(t, tc.innerID, innerID)
-				assert.Equal(t, tc.outerID, outerID)
-			}
-		})
-	}
-}
-
-func TestParseZonedID(t *testing.T) {
-	testCases := []struct {
-		name       string
-		localityID string
-		id         string
-		zone       scw.Zone
-		err        string
-	}{
-		{
-			name:       "simple",
-			localityID: "fr-par-1/my-id",
-			id:         "my-id",
-			zone:       scw.ZoneFrPar1,
-		},
-		{
-			name:       "empty",
-			localityID: "",
-			err:        "cant parse localized id: ",
-		},
-		{
-			name:       "without locality",
-			localityID: "my-id",
-			err:        "cant parse localized id: my-id",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			zone, id, err := parseZonedID(tc.localityID)
-			if tc.err != "" {
-				require.EqualError(t, err, tc.err)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, tc.zone, zone)
-				assert.Equal(t, tc.id, id)
-			}
-		})
-	}
-}
-
-func TestParseRegionID(t *testing.T) {
-	testCases := []struct {
-		name       string
-		localityID string
-		id         string
-		region     scw.Region
-		err        string
-	}{
-		{
-			name:       "simple",
-			localityID: "fr-par/my-id",
-			id:         "my-id",
-			region:     scw.RegionFrPar,
-		},
-		{
-			name:       "empty",
-			localityID: "",
-			err:        "cant parse localized id: ",
-		},
-		{
-			name:       "without locality",
-			localityID: "my-id",
-			err:        "cant parse localized id: my-id",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			region, id, err := parseRegionalID(tc.localityID)
-			if tc.err != "" {
-				require.EqualError(t, err, tc.err)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, tc.region, region)
-				assert.Equal(t, tc.id, id)
-			}
-		})
-	}
-}
-
-func TestNewZonedId(t *testing.T) {
-	assert.Equal(t, "fr-par-1/my-id", newZonedIDString(scw.ZoneFrPar1, "my-id"))
-}
-
-func TestNewRegionalId(t *testing.T) {
-	assert.Equal(t, "fr-par/my-id", newRegionalIDString(scw.RegionFrPar, "my-id"))
-}
-
-func TestIsHTTPCodeError(t *testing.T) {
-	assert.True(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusBadRequest))
-	assert.False(t, isHTTPCodeError(nil, http.StatusBadRequest))
-	assert.False(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusNotFound))
-	assert.False(t, isHTTPCodeError(errors.New("not an http error"), http.StatusNotFound))
-}
-
-func TestIs404Error(t *testing.T) {
-	assert.True(t, is404Error(&scw.ResponseError{StatusCode: http.StatusNotFound}))
-	assert.False(t, is404Error(nil))
-	assert.False(t, is404Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
-}
-
-func TestIs403Error(t *testing.T) {
-	assert.True(t, is403Error(&scw.ResponseError{StatusCode: http.StatusForbidden}))
-	assert.False(t, is403Error(nil))
-	assert.False(t, is403Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
-}
-
-func TestGetRandomName(t *testing.T) {
-	name := newRandomName("test")
-	assert.True(t, strings.HasPrefix(name, "tf-test-"))
-}
 
 func testCheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -285,9 +70,9 @@ func testCheckResourceAttrIP(name string, key string) resource.TestCheckFunc {
 
 func TestStringHashcode(t *testing.T) {
 	v := "hello, world"
-	expected := StringHashcode(v)
+	expected := scaleway.StringHashcode(v)
 	for i := 0; i < 100; i++ {
-		actual := StringHashcode(v)
+		actual := scaleway.StringHashcode(v)
 		if actual != expected {
 			t.Fatalf("bad: %#v\n\t%#v", actual, expected)
 		}
@@ -298,8 +83,163 @@ func TestStringHashcode_positiveIndex(t *testing.T) {
 	// "2338615298" hashes to uint32(2147483648) which is math.MinInt32
 	ips := []string{"192.168.1.3", "192.168.1.5", "2338615298"}
 	for _, ip := range ips {
-		if index := StringHashcode(ip); index < 0 {
+		if index := scaleway.StringHashcode(ip); index < 0 {
 			t.Fatalf("Bad Index %#v for ip %s", index, ip)
 		}
+	}
+}
+
+func TestAcc_GetRawConfigForKey(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := testAccCheckScalewayRdbEngineGetLatestVersion(tt, postgreSQLEngineName)
+	instanceUnchangedConfig := fmt.Sprintf(`
+						name = "test-get-raw-config-for-key"
+						engine = %q
+						is_ha_cluster = false
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"`, latestEngineVersion)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayRdbInstanceDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_private_network pn {}
+
+					resource scaleway_rdb_instance main {%s
+						node_type = "db-dev-s"
+						disable_backup = false
+						volume_type = "lssd"
+						tags = [ "terraform-test", "core", "get-raw-config" ]
+						private_network {
+							pn_id = "${scaleway_vpc_private_network.pn.id}"
+							enable_ipam = true
+						}
+						settings = {
+							work_mem = "4"
+							max_connections = "200"
+						}
+					}
+				`, instanceUnchangedConfig),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					assertGetRawConfigResults(t, "is_ha_cluster", false, true, cty.Bool),
+					assertGetRawConfigResults(t, "disable_backup", false, true, cty.Bool),
+					assertGetRawConfigResults(t, "volume_type", "lssd", true, cty.String),
+					assertGetRawConfigResults(t, "volume_size_in_gb", nil, false, cty.Number),
+					assertGetRawConfigResults(t, "tags.0", "terraform-test", true, cty.String),
+					assertGetRawConfigResults(t, "tags.1", "core", true, cty.String),
+					assertGetRawConfigResults(t, "tags.2", "get-raw-config", true, cty.String),
+					assertGetRawConfigResults(t, "tags.3", nil, false, cty.String),
+					assertGetRawConfigResults(t, "private_network.0.ip_net", nil, false, cty.String),
+					assertGetRawConfigResults(t, "private_network.0.enable_ipam", true, true, cty.Bool),
+					assertGetRawConfigResults(t, "private_network.#.enable_ipam", true, true, cty.Bool),
+					assertGetRawConfigResults(t, "settings.work_mem", "4", true, cty.String),
+					assertGetRawConfigResults(t, "settings.max_connections", "200", true, cty.String),
+					assertGetRawConfigResults(t, "settings.not_in_map", nil, false, cty.String),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_private_network pn {}
+
+					resource scaleway_rdb_instance main {%s
+						node_type = "db-dev-s"
+						disable_backup = true
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+						tags = [ "terraform-test", "core", "get-raw-config-for-key" ]
+						private_network {
+							pn_id = "${scaleway_vpc_private_network.pn.id}"
+							ip_net = "172.16.32.1/24"
+						}
+						settings = {
+							work_mem = "2"
+							max_connections = "100"
+						}
+					}
+				`, instanceUnchangedConfig),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					assertGetRawConfigResults(t, "is_ha_cluster", false, true, cty.Bool),
+					assertGetRawConfigResults(t, "disable_backup", true, true, cty.Bool),
+					assertGetRawConfigResults(t, "volume_type", "bssd", true, cty.String),
+					assertGetRawConfigResults(t, "volume_size_in_gb", 10, true, cty.Number),
+					assertGetRawConfigResults(t, "tags.0", "terraform-test", true, cty.String),
+					assertGetRawConfigResults(t, "tags.1", "core", true, cty.String),
+					assertGetRawConfigResults(t, "tags.2", "get-raw-config-for-key", true, cty.String),
+					assertGetRawConfigResults(t, "tags.3", nil, false, cty.String),
+					assertGetRawConfigResults(t, "private_network.0.ip_net", "172.16.32.1/24", true, cty.String),
+					assertGetRawConfigResults(t, "private_network.0.enable_ipam", false, false, cty.Bool),
+					assertGetRawConfigResults(t, "private_network.#.enable_ipam", false, false, cty.Bool),
+					assertGetRawConfigResults(t, "private_network.#.not_in_list", false, false, cty.Bool),
+					assertGetRawConfigResults(t, "settings.work_mem", "2", true, cty.String),
+					assertGetRawConfigResults(t, "settings.max_connections", "100", true, cty.String),
+					assertGetRawConfigResults(t, "settings.not_in_map", nil, false, cty.String),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_private_network pn {}
+			
+					resource scaleway_rdb_instance main {%s
+						node_type = "db-gp-s"
+						tags = [ "terraform-test", "core", "get-raw-config" ]
+						private_network {
+							pn_id = "${scaleway_vpc_private_network.pn.id}"
+							enable_ipam = true
+						}
+						settings = {
+							work_mem = "4"
+							max_connections = "200"
+						}
+					}
+				`, instanceUnchangedConfig),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					assertGetRawConfigResults(t, "is_ha_cluster", false, true, cty.Bool),
+					assertGetRawConfigResults(t, "disable_backup", false, false, cty.Bool),
+					assertGetRawConfigResults(t, "volume_type", "lssd", true, cty.String),
+					assertGetRawConfigResults(t, "volume_size_in_gb", nil, false, cty.Number),
+					assertGetRawConfigResults(t, "tags.0", "terraform-test", true, cty.String),
+					assertGetRawConfigResults(t, "tags.1", "core", true, cty.String),
+					assertGetRawConfigResults(t, "tags.2", "get-raw-config", true, cty.String),
+					assertGetRawConfigResults(t, "tags.3", nil, false, cty.String),
+					assertGetRawConfigResults(t, "private_network.0.ip_net", nil, false, cty.String),
+					assertGetRawConfigResults(t, "private_network.0.enable_ipam", true, true, cty.Bool),
+					assertGetRawConfigResults(t, "private_network.#.enable_ipam", true, true, cty.Bool),
+					assertGetRawConfigResults(t, "settings.work_mem", "4", true, cty.String),
+					assertGetRawConfigResults(t, "settings.max_connections", "200", true, cty.String),
+					assertGetRawConfigResults(t, "settings.not_in_map", nil, false, cty.String),
+				),
+			},
+		},
+	})
+}
+
+func assertGetRawConfigResults(t *testing.T, key string, expectedValue any, expectedSet bool, ty cty.Type) resource.TestCheckFunc {
+	t.Helper()
+	return func(s *terraform.State) error {
+		resourceTFName := "scaleway_rdb_instance.main"
+		rs, ok := s.RootModule().Resources[resourceTFName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceTFName)
+		}
+		if rs.Primary.RawConfig.IsNull() {
+			return nil
+		}
+
+		actualValue, actualSet := scaleway.GetKeyInRawConfigMap(rs.Primary.RawConfig.AsValueMap(), key, ty)
+		assert.Equal(t, expectedSet, actualSet)
+		assert.Equal(t, expectedValue, actualValue)
+
+		return nil
 	}
 }

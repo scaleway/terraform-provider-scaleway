@@ -8,9 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayVPCPublicGateway() *schema.Resource {
+func ResourceScalewayVPCPublicGateway() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayCreate,
 		ReadContext:   resourceScalewayVPCPublicGatewayRead,
@@ -53,6 +56,7 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				Type:             schema.TypeString,
 				Computed:         true,
 				Optional:         true,
+				ForceNew:         true,
 				Description:      "attach an existing IP to the gateway",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
@@ -82,7 +86,7 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				Computed:    true,
 			},
 			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -104,17 +108,17 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 	}
 }
 
-func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &vpcgw.CreateGatewayRequest{
-		Name:               expandOrGenerateString(d.Get("name"), "pn"),
+		Name:               types.ExpandOrGenerateString(d.Get("name"), "pn"),
 		Type:               d.Get("type").(string),
-		Tags:               expandStrings(d.Get("tags")),
-		UpstreamDNSServers: expandStrings(d.Get("upstream_dns_servers")),
+		Tags:               types.ExpandStrings(d.Get("tags")),
+		UpstreamDNSServers: types.ExpandStrings(d.Get("upstream_dns_servers")),
 		ProjectID:          d.Get("project_id").(string),
 		EnableBastion:      d.Get("bastion_enabled").(bool),
 		Zone:               zone,
@@ -122,11 +126,11 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if bastionPort, ok := d.GetOk("bastion_port"); ok {
-		req.BastionPort = expandUint32Ptr(bastionPort.(int))
+		req.BastionPort = types.ExpandUint32Ptr(bastionPort.(int))
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.IPID = expandStringPtr(expandZonedID(ipID).ID)
+		req.IPID = types.ExpandStringPtr(zonal.ExpandID(ipID).ID)
 	}
 
 	gateway, err := vpcgwAPI.CreateGateway(req, scw.WithContext(ctx))
@@ -134,7 +138,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, gateway.ID))
+	d.SetId(zonal.NewIDString(zone, gateway.ID))
 
 	// check err waiting process
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gateway.ID, d.Timeout(schema.TimeoutCreate))
@@ -142,18 +146,18 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPublicGatewayRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, id, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, id, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -170,7 +174,7 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("zone", gateway.Zone)
 	_ = d.Set("tags", gateway.Tags)
 	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
-	_ = d.Set("ip_id", newZonedID(gateway.Zone, gateway.IP.ID).String())
+	_ = d.Set("ip_id", zonal.NewID(gateway.Zone, gateway.IP.ID).String())
 	_ = d.Set("bastion_enabled", gateway.BastionEnabled)
 	_ = d.Set("bastion_port", int(gateway.BastionPort))
 	_ = d.Set("enable_smtp", gateway.SMTPEnabled)
@@ -178,8 +182,8 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, id, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, id, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -199,7 +203,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("bastion_port") {
@@ -215,7 +219,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("upstream_dns_servers") {
-		updateRequest.UpstreamDNSServers = expandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
+		updateRequest.UpstreamDNSServers = types.ExpandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
 	}
 
 	_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))
@@ -228,11 +232,11 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPublicGatewayRead(ctx, d, meta)
+	return resourceScalewayVPCPublicGatewayRead(ctx, d, m)
 }
 
-func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, id, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, id, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -251,7 +255,7 @@ func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.Resou
 	}
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

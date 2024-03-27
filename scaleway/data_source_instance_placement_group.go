@@ -6,20 +6,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
+func DataSourceScalewayInstancePlacementGroup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstancePlacementGroup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayInstancePlacementGroup().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["placement_group_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the placementgroup",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"].Optional = true
 
@@ -29,8 +32,8 @@ func dataSourceScalewayInstancePlacementGroup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -39,8 +42,8 @@ func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema
 	if !placementGroupIDExists {
 		res, err := api.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(d.Get("name")),
-			Project: expandStringPtr(d.Get("project_id")),
+			Name:    types.ExpandStringPtr(d.Get("name")),
+			Project: types.ExpandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -59,14 +62,14 @@ func dataSourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema
 		}
 	}
 
-	zoneID := datasourceNewZonedID(placementGroupID, zone)
+	zoneID := datasource.NewZonedID(placementGroupID, zone)
 	d.SetId(zoneID)
 	err = d.Set("placement_group_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayInstancePlacementGroupRead(ctx, d, meta)
+	diags := resourceScalewayInstancePlacementGroupRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read placement group state")...)
 	}

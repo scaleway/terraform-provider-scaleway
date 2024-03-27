@@ -5,17 +5,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayLbRoute() *schema.Resource {
+func DataSourceScalewayLbRoute() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbRoute().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayLbRoute().Schema)
 
 	dsSchema["route_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
 		Description:  "The ID of the route",
-		ValidateFunc: validationUUIDorUUIDWithLocality(),
+		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -24,19 +26,19 @@ func dataSourceScalewayLbRoute() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	routeID, _ := d.GetOk("route_id")
 
-	zonedID := datasourceNewZonedID(routeID, zone)
+	zonedID := datasource.NewZonedID(routeID, zone)
 	d.SetId(zonedID)
 	err = d.Set("route_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayLbRouteRead(ctx, d, meta)
+	return resourceScalewayLbRouteRead(ctx, d, m)
 }

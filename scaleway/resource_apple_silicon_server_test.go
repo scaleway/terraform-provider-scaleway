@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -20,7 +24,7 @@ func init() {
 func testSweepAppleSiliconServer(_ string) error {
 	return sweepZones([]scw.Zone{scw.ZoneFrPar1}, func(scwClient *scw.Client, zone scw.Zone) error {
 		asAPI := applesilicon.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the apple silicon instance in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the apple silicon instance in (%s)", zone)
 		listServers, err := asAPI.ListServers(&applesilicon.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing apple silicon servers in (%s) in sweeper: %s", zone, err)
@@ -42,10 +46,10 @@ func testSweepAppleSiliconServer(_ string) error {
 
 func TestAccScalewayAppleSiliconServer_Basic(t *testing.T) {
 	t.Skip("Skipping AppleSilicon test as this kind of server can't be deleted before 24h")
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayAppleSiliconServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -71,14 +75,14 @@ func TestAccScalewayAppleSiliconServer_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayAppleSiliconExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayAppleSiliconExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		asAPI, zone, ID, err := asAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		asAPI, zone, ID, err := scaleway.AsAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -95,14 +99,14 @@ func testAccCheckScalewayAppleSiliconExists(tt *TestTools, n string) resource.Te
 	}
 }
 
-func testAccCheckScalewayAppleSiliconServerDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayAppleSiliconServerDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_apple_silicon_server" {
 				continue
 			}
 
-			asAPI, zone, ID, err := asAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			asAPI, zone, ID, err := scaleway.AsAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -118,7 +122,7 @@ func testAccCheckScalewayAppleSiliconServerDestroy(tt *TestTools) resource.TestC
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

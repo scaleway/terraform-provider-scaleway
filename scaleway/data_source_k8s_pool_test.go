@@ -1,20 +1,21 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
 func TestAccScalewayDataSourceK8SPool_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	clusterName := "tf-cluster-pool"
 	poolName := "tf-pool"
 	version := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),

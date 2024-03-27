@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -11,16 +11,19 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
@@ -78,11 +81,11 @@ func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 }
 
 func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
@@ -157,13 +160,13 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 }
 
 func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.placement_group"),
@@ -214,13 +217,13 @@ func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 }
 
 func TestAccScalewayK8SCluster_PoolUpgradePolicy(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.upgrade_policy"),
@@ -269,13 +272,13 @@ func TestAccScalewayK8SCluster_PoolUpgradePolicy(t *testing.T) {
 }
 
 func TestAccScalewayK8SCluster_PoolKubeletArgs(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.kubelet_args"),
@@ -308,13 +311,13 @@ func TestAccScalewayK8SCluster_PoolKubeletArgs(t *testing.T) {
 }
 
 func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.zone"),
@@ -337,13 +340,13 @@ func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
 }
 
 func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestK8SVersionMinor := testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.pool"),
@@ -414,13 +417,13 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 }
 
 func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.public_ip"),
@@ -518,13 +521,13 @@ func TestAccScalewayK8SCluster_PoolPublicIPDisabled(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, clusterTFName, poolTFName, pnTFName string) resource.TestCheckFunc {
+func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, clusterTFName, poolTFName, pnTFName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[clusterTFName]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", clusterTFName)
 		}
-		k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		k8sAPI, region, clusterID, err := scaleway.K8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -533,7 +536,7 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", poolTFName)
 		}
-		_, _, poolID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		_, _, poolID, err := scaleway.K8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -542,7 +545,7 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", pnTFName)
 		}
-		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		_, _, pnID, err := scaleway.VpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -556,7 +559,7 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 			return err
 		}
 
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 
 		for _, node := range nodes.Nodes {
 			providerIDSplit := strings.SplitN(node.ProviderID, "/", 5)
@@ -588,13 +591,13 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 	}
 }
 
-func testAccCheckScalewayK8SPoolPublicIP(tt *TestTools, clusterTFName, poolTFName string, disabled bool) resource.TestCheckFunc {
+func testAccCheckScalewayK8SPoolPublicIP(tt *acctest.TestTools, clusterTFName, poolTFName string, disabled bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[clusterTFName]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", clusterTFName)
 		}
-		k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		k8sAPI, region, clusterID, err := scaleway.K8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -603,7 +606,7 @@ func testAccCheckScalewayK8SPoolPublicIP(tt *TestTools, clusterTFName, poolTFNam
 		if !ok {
 			return fmt.Errorf("resource not found: %s", poolTFName)
 		}
-		_, _, poolID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		_, _, poolID, err := scaleway.K8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -617,7 +620,7 @@ func testAccCheckScalewayK8SPoolPublicIP(tt *TestTools, clusterTFName, poolTFNam
 			return err
 		}
 
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 
 		for _, node := range nodes.Nodes {
 			providerIDSplit := strings.SplitN(node.ProviderID, "/", 5)
@@ -646,14 +649,14 @@ func testAccCheckScalewayK8SPoolPublicIP(tt *TestTools, clusterTFName, poolTFNam
 	}
 }
 
-func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayK8SPoolDestroy(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return nil
 		}
 
-		k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		k8sAPI, region, poolID, err := scaleway.K8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -667,7 +670,7 @@ func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCh
 			return fmt.Errorf("pool (%s) still exists", rs.Primary.ID)
 		}
 		// Unexpected api error we return it
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return err
 		}
 
@@ -675,14 +678,14 @@ func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCh
 	}
 }
 
-func testAccCheckScalewayK8SPoolExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayK8SPoolExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		k8sAPI, region, poolID, err := scaleway.K8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

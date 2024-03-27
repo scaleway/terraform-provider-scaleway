@@ -9,9 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayInstanceServers() *schema.Resource {
+func DataSourceScalewayInstanceServers() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayInstanceServersRead,
 		Schema: map[string]*schema.Schema{
@@ -128,29 +130,29 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeBool,
 						},
-						"zone":            zoneSchema(),
+						"zone":            zonal.Schema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
 					},
 				},
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 		Zone:    zone,
-		Name:    expandStringPtr(d.Get("name")),
-		Project: expandStringPtr(d.Get("project_id")),
-		Tags:    expandStrings(d.Get("tags")),
+		Name:    types.ExpandStringPtr(d.Get("name")),
+		Project: types.ExpandStringPtr(d.Get("project_id")),
+		Tags:    types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -161,7 +163,7 @@ func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.Resour
 	servers := []interface{}(nil)
 	for _, server := range res.Servers {
 		rawServer := make(map[string]interface{})
-		rawServer["id"] = newZonedID(server.Zone, server.ID).String()
+		rawServer["id"] = zonal.NewID(server.Zone, server.ID).String()
 		if server.PublicIP != nil {
 			rawServer["public_ip"] = server.PublicIP.Address.String()
 		}
@@ -185,7 +187,7 @@ func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.Resour
 		if len(server.Tags) > 0 {
 			rawServer["tags"] = server.Tags
 		}
-		rawServer["security_group_id"] = newZonedID(zone, server.SecurityGroup.ID).String()
+		rawServer["security_group_id"] = zonal.NewID(zone, server.SecurityGroup.ID).String()
 		rawServer["enable_ipv6"] = server.EnableIPv6
 		rawServer["enable_dynamic_ip"] = server.DynamicIPRequired
 		rawServer["routed_ip_enabled"] = server.RoutedIPEnabled
@@ -195,7 +197,7 @@ func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.Resour
 			rawServer["image"] = server.Image.ID
 		}
 		if server.PlacementGroup != nil {
-			rawServer["placement_group_id"] = newZonedID(zone, server.PlacementGroup.ID).String()
+			rawServer["placement_group_id"] = zonal.NewID(zone, server.PlacementGroup.ID).String()
 			rawServer["placement_group_policy_respected"] = server.PlacementGroup.PolicyRespected
 		}
 		if server.IPv6 != nil {

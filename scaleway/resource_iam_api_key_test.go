@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -9,6 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -22,7 +26,7 @@ func testSweepIamAPIKey(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		api := iam.NewAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the api keys")
+		logging.L.Debugf("sweeper: destroying the api keys")
 
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {
@@ -51,7 +55,7 @@ func testSweepIamAPIKey(_ string) error {
 }
 
 func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -107,7 +111,7 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 }
 
 func TestAccScalewayIamApiKey_WithApplicationChange(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -171,7 +175,7 @@ func TestAccScalewayIamApiKey_WithApplicationChange(t *testing.T) {
 }
 
 func TestAccScalewayIamApiKey_Expires(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -204,7 +208,7 @@ func TestAccScalewayIamApiKey_Expires(t *testing.T) {
 }
 
 func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -249,14 +253,14 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayIamAPIKeyExists(tt *TestTools, name string) resource.TestCheckFunc {
+func testAccCheckScalewayIamAPIKeyExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", name)
 		}
 
-		iamAPI := iamAPI(tt.Meta)
+		iamAPI := scaleway.IamAPI(tt.Meta)
 
 		_, err := iamAPI.GetAPIKey(&iam.GetAPIKeyRequest{
 			AccessKey: rs.Primary.ID,
@@ -269,14 +273,14 @@ func testAccCheckScalewayIamAPIKeyExists(tt *TestTools, name string) resource.Te
 	}
 }
 
-func testAccCheckScalewayIamAPIKeyDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayIamAPIKeyDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_iam_api_key" {
 				continue
 			}
 
-			iamAPI := iamAPI(tt.Meta)
+			iamAPI := scaleway.IamAPI(tt.Meta)
 
 			_, err := iamAPI.GetAPIKey(&iam.GetAPIKeyRequest{
 				AccessKey: rs.Primary.ID,
@@ -288,7 +292,7 @@ func testAccCheckScalewayIamAPIKeyDestroy(tt *TestTools) resource.TestCheckFunc 
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

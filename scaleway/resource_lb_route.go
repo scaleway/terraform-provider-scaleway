@@ -7,9 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayLbRoute() *schema.Resource {
+func ResourceScalewayLbRoute() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayLbRouteCreate,
 		ReadContext:   resourceScalewayLbRouteRead,
@@ -23,20 +27,20 @@ func resourceScalewayLbRoute() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: LbUpgradeV1SchemaUpgradeFunc},
 		},
 		Schema: map[string]*schema.Schema{
 			"frontend_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The frontend ID origin of redirection",
 			},
 			"backend_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The backend ID destination of redirection",
 			},
 			"match_sni": {
@@ -65,18 +69,18 @@ func resourceScalewayLbRoute() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, _, err := lbAPIWithZone(d, meta)
+func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	frontZone, frontID, err := parseZonedID(d.Get("frontend_id").(string))
+	frontZone, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	backZone, backID, err := parseZonedID(d.Get("backend_id").(string))
+	backZone, backID, err := zonal.ParseID(d.Get("backend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -90,8 +94,8 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		FrontendID: frontID,
 		BackendID:  backID,
 		Match: &lbSDK.RouteMatch{
-			Sni:        expandStringPtr(d.Get("match_sni")),
-			HostHeader: expandStringPtr(d.Get("match_host_header")),
+			Sni:        types.ExpandStringPtr(d.Get("match_sni")),
+			HostHeader: types.ExpandStringPtr(d.Get("match_host_header")),
 		},
 	}
 
@@ -100,13 +104,13 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(frontZone, route.ID))
+	d.SetId(zonal.NewIDString(frontZone, route.ID))
 
-	return resourceScalewayLbRouteRead(ctx, d, meta)
+	return resourceScalewayLbRouteRead(ctx, d, m)
 }
 
-func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,30 +120,30 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 		RouteID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("frontend_id", newZonedIDString(zone, route.FrontendID))
-	_ = d.Set("backend_id", newZonedIDString(zone, route.BackendID))
-	_ = d.Set("match_sni", flattenStringPtr(route.Match.Sni))
-	_ = d.Set("match_host_header", flattenStringPtr(route.Match.HostHeader))
-	_ = d.Set("created_at", flattenTime(route.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(route.UpdatedAt))
+	_ = d.Set("frontend_id", zonal.NewIDString(zone, route.FrontendID))
+	_ = d.Set("backend_id", zonal.NewIDString(zone, route.BackendID))
+	_ = d.Set("match_sni", types.FlattenStringPtr(route.Match.Sni))
+	_ = d.Set("match_host_header", types.FlattenStringPtr(route.Match.HostHeader))
+	_ = d.Set("created_at", types.FlattenTime(route.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(route.UpdatedAt))
 
 	return nil
 }
 
-func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	backZone, backID, err := parseZonedID(d.Get("backend_id").(string))
+	backZone, backID, err := zonal.ParseID(d.Get("backend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -153,8 +157,8 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		RouteID:   ID,
 		BackendID: backID,
 		Match: &lbSDK.RouteMatch{
-			Sni:        expandStringPtr(d.Get("match_sni")),
-			HostHeader: expandStringPtr(d.Get("match_host_header")),
+			Sni:        types.ExpandStringPtr(d.Get("match_sni")),
+			HostHeader: types.ExpandStringPtr(d.Get("match_host_header")),
 		},
 	}
 
@@ -163,11 +167,11 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbRouteRead(ctx, d, meta)
+	return resourceScalewayLbRouteRead(ctx, d, m)
 }
 
-func resourceScalewayLbRouteDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -177,7 +181,7 @@ func resourceScalewayLbRouteDelete(ctx context.Context, d *schema.ResourceData, 
 		RouteID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

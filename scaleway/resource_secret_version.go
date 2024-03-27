@@ -9,9 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewaySecretVersion() *schema.Resource {
+func ResourceScalewaySecretVersion() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewaySecretVersionCreate,
 		ReadContext:   resourceScalewaySecretVersionRead,
@@ -38,7 +42,7 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				Sensitive:   true,
 				ForceNew:    true,
 				StateFunc: func(i interface{}) string {
-					return base64Encoded([]byte(i.(string)))
+					return Base64Encoded([]byte(i.(string)))
 				},
 			},
 			"description": {
@@ -66,18 +70,18 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				Computed:    true,
 				Description: "Date and time of secret version's creation (RFC 3339 format)",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
 
-func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := secretAPIWithRegion(d, meta)
+func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := secretAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	secretID := expandID(d.Get("secret_id").(string))
+	secretID := locality.ExpandID(d.Get("secret_id").(string))
 	payloadSecretRaw := []byte(d.Get("data").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -86,7 +90,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 		Region:      region,
 		SecretID:    secretID,
 		Data:        payloadSecretRaw,
-		Description: expandStringPtr(d.Get("description")),
+		Description: types.ExpandStringPtr(d.Get("description")),
 	}
 
 	secretResponse, err := api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
@@ -94,15 +98,15 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("data", base64Encoded(payloadSecretRaw))
+	_ = d.Set("data", Base64Encoded(payloadSecretRaw))
 
-	d.SetId(newRegionalIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
+	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
 
-	return resourceScalewaySecretVersionRead(ctx, d, meta)
+	return resourceScalewaySecretVersionRead(ctx, d, m)
 }
 
-func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, revision, err := SecretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,7 +117,7 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 		Revision: revision,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -122,18 +126,18 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 
 	revisionStr := strconv.Itoa(int(secretResponse.Revision))
 	_ = d.Set("revision", revisionStr)
-	_ = d.Set("secret_id", newRegionalIDString(region, id))
-	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(secretResponse.UpdatedAt))
+	_ = d.Set("secret_id", regional.NewIDString(region, id))
+	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
+	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
 	_ = d.Set("region", string(region))
 
 	return nil
 }
 
-func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, revision, err := SecretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -147,7 +151,7 @@ func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.Resource
 	hasChanged := false
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
@@ -158,11 +162,11 @@ func resourceScalewaySecretVersionUpdate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	return resourceScalewaySecretVersionRead(ctx, d, meta)
+	return resourceScalewaySecretVersionRead(ctx, d, m)
 }
 
-func resourceScalewaySecretVersionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, revision, err := secretVersionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretVersionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, revision, err := SecretVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -172,7 +176,7 @@ func resourceScalewaySecretVersionDelete(ctx context.Context, d *schema.Resource
 		SecretID: id,
 		Revision: revision,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

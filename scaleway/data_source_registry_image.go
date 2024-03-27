@@ -3,9 +3,14 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayRegistryImage() *schema.Resource {
+func DataSourceScalewayRegistryImage() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceScalewayRegistryImageRead,
 
@@ -21,14 +26,14 @@ func dataSourceScalewayRegistryImage() *schema.Resource {
 				Optional:      true,
 				Description:   "The ID of the registry image",
 				ConflictsWith: []string{"name"},
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 			},
 			"namespace_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				Description:  "The namespace ID of the registry image",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"size": {
 				Type:        schema.TypeInt,
@@ -53,15 +58,15 @@ func dataSourceScalewayRegistryImage() *schema.Resource {
 				Computed: true,
 				Type:     schema.TypeString,
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{}) error {
-	api, region, err := registryAPIWithRegion(d, meta)
+func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, m interface{}) error {
+	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}
@@ -71,14 +76,14 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 	if !ok {
 		var namespaceID *string
 		if d.Get("namespace_id") != "" {
-			namespaceID = expandStringPtr(expandID(d.Get("namespace_id")))
+			namespaceID = types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id")))
 		}
 		imageName := d.Get("name").(string)
 		res, err := api.ListImages(&registry.ListImagesRequest{
 			Region:      region,
-			Name:        expandStringPtr(imageName),
+			Name:        types.ExpandStringPtr(imageName),
 			NamespaceID: namespaceID,
-			ProjectID:   expandStringPtr(d.Get("project_id")),
+			ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return err
@@ -96,7 +101,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 	} else {
 		res, err := api.GetImage(&registry.GetImageRequest{
 			Region:  region,
-			ImageID: expandID(imageID),
+			ImageID: locality.ExpandID(imageID),
 		})
 		if err != nil {
 			return err
@@ -104,14 +109,14 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 		image = res
 	}
 
-	d.SetId(datasourceNewRegionalID(image.ID, region))
+	d.SetId(datasource.NewRegionalID(image.ID, region))
 	_ = d.Set("image_id", image.ID)
 	_ = d.Set("name", image.Name)
 	_ = d.Set("namespace_id", image.NamespaceID)
 	_ = d.Set("visibility", image.Visibility.String())
 	_ = d.Set("size", int(image.Size))
 	_ = d.Set("tags", image.Tags)
-	_ = d.Set("updated_at", flattenTime(image.UpdatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(image.UpdatedAt))
 
 	return nil
 }

@@ -4,14 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbReadReplica() *schema.Resource {
+func ResourceScalewayRdbReadReplica() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbReadReplicaCreate,
 		ReadContext:   resourceScalewayRdbReadReplicaRead,
@@ -89,7 +95,7 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 						"private_network_id": {
 							Type:             schema.TypeString,
 							Description:      "UUID of the private network to be connected to the read replica (UUID format)",
-							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: diffSuppressFuncLocality,
 							Required:         true,
 						},
@@ -98,14 +104,13 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 							Description:  "The IP network address within the private subnet",
 							Optional:     true,
 							Computed:     true,
-							AtLeastOneOf: []string{"private_network.0.enable_ipam"},
 							ValidateFunc: validation.IsCIDR,
 						},
 						"enable_ipam": {
-							Type:         schema.TypeBool,
-							Optional:     true,
-							AtLeastOneOf: []string{"private_network.0.service_ip"},
-							Description:  "Whether or not the private network endpoint should be configured with IPAM",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Whether or not the private network endpoint should be configured with IPAM",
 						},
 						"zone": {
 							Type:        schema.TypeString,
@@ -142,14 +147,14 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 				},
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
 	}
 }
 
-func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -158,53 +163,54 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 	if directAccess := expandReadReplicaEndpointsSpecDirectAccess(d.Get("direct_access")); directAccess != nil {
 		endpointSpecs = append(endpointSpecs, directAccess)
 	}
-	enableIpam := true
-	if _, ipSet := d.GetOk("private_network.0.service_ip"); ipSet {
-		enableIpam = false
-	}
-	if pn, err := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"), enableIpam); err != nil || pn != nil {
-		if err != nil {
-			return diag.FromErr(err)
+
+	ipamConfig, staticConfig := getIPConfigCreate(d, "service_ip")
+	if pn, diags := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"), ipamConfig, staticConfig); err != nil || pn != nil {
+		if diags.HasError() {
+			return diags
+		}
+		for _, warning := range diags {
+			tflog.Warn(ctx, warning.Detail)
 		}
 		endpointSpecs = append(endpointSpecs, pn)
 	}
 
 	rr, err := rdbAPI.CreateReadReplica(&rdb.CreateReadReplicaRequest{
 		Region:       region,
-		InstanceID:   expandID(d.Get("instance_id")),
+		InstanceID:   locality.ExpandID(d.Get("instance_id")),
 		EndpointSpec: endpointSpecs,
-		SameZone:     expandBoolPtr(d.Get("same_zone")),
+		SameZone:     types.ExpandBoolPtr(d.Get("same_zone")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
 	}
 
-	d.SetId(newRegionalIDString(region, rr.ID))
+	d.SetId(regional.NewIDString(region, rr.ID))
 
 	_, err = waitForRDBReadReplica(ctx, rdbAPI, region, rr.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRdbReadReplicaRead(ctx, d, meta)
+	return resourceScalewayRdbReadReplicaRead(ctx, d, m)
 }
 
-func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	rr, err := waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	enableIpam, err := isIpamEndpoint(rr, meta)
+	enableIpam, err := getIPAMConfigRead(rr, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -215,14 +221,14 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 	regionStr := region.String()
 	_ = d.Set("same_zone", rr.SameZone)
 	_ = d.Set("region", regionStr)
-	_ = d.Set("instance_id", newRegionalIDString(region, rr.InstanceID))
+	_ = d.Set("instance_id", regional.NewIDString(region, rr.InstanceID))
 
 	return nil
 }
 
 //gocyclo:ignore
-func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -230,7 +236,7 @@ func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.Resourc
 	// verify resource is ready
 	rr, err := waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -283,18 +289,13 @@ func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.Resourc
 		}
 		// create a new one if defined
 		if pn, pnExists := d.GetOk("private_network"); pnExists {
-			// "enable_ipam" is not readable from the API, so we just read the user's config
-			enableIpam := true
-			if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() {
-				pnRawConfig := rawConfig.AsValueMap()["private_network"].AsValueSlice()[0].AsValueMap()
-				if !pnRawConfig["enable_ipam"].IsNull() && pnRawConfig["enable_ipam"].False() ||
-					!pnRawConfig["service_ip"].IsNull() {
-					enableIpam = false
-				}
+			ipamConfig, staticConfig := getIPConfigUpdate(d, "service_ip")
+			pnEndpoint, diags := expandReadReplicaEndpointsSpecPrivateNetwork(pn, ipamConfig, staticConfig)
+			if diags.HasError() {
+				return diags
 			}
-			pnEndpoint, err := expandReadReplicaEndpointsSpecPrivateNetwork(pn, enableIpam)
-			if err != nil {
-				return diag.FromErr(err)
+			for _, warning := range diags {
+				tflog.Warn(ctx, warning.Detail)
 			}
 			newEndpoints = append(newEndpoints, pnEndpoint)
 		}
@@ -320,11 +321,11 @@ func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRdbReadReplicaRead(ctx, d, meta)
+	return resourceScalewayRdbReadReplicaRead(ctx, d, m)
 }
 
-func resourceScalewayRdbReadReplicaDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbReadReplicaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -345,7 +346,7 @@ func resourceScalewayRdbReadReplicaDelete(ctx context.Context, d *schema.Resourc
 
 	// Lastly wait in case the instance is in a transient state
 	_, err = waitForRDBReadReplica(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

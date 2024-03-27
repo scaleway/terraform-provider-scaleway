@@ -9,6 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -19,26 +22,24 @@ const (
 )
 
 func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Region, error) {
-	meta := m.(*Meta)
-	iotAPI := iot.NewAPI(meta.scwClient)
+	iotAPI := iot.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 
 	return iotAPI, region, err
 }
 
-func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	iotAPI := iot.NewAPI(meta.scwClient)
+func IotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, string, error) {
+	iotAPI := iot.NewAPI(meta.ExtractScwClient(m))
 
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	return iotAPI, region, ID, err
 }
 
 func waitIotHub(ctx context.Context, api *iot.API, region scw.Region, id string, timeout time.Duration) (*iot.Hub, error) {
 	retryInterval := defaultIoTRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	hub, err := api.WaitForHub(&iot.WaitForHubRequest{
@@ -70,13 +71,12 @@ func computeIotHubCaURL(productPlan iot.HubProductPlan, region scw.Region) strin
 }
 
 func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m interface{}) (string, error) {
-	meta := m.(*Meta)
 	if mqttCaURL == "" {
 		return "", nil
 	}
 	var mqttCa *http.Response
 	req, _ := http.NewRequestWithContext(ctx, "GET", mqttCaURL, nil)
-	mqttCa, err := meta.httpClient.Do(req)
+	mqttCa, err := meta.ExtractHTTPClient(m).Do(req)
 	if err != nil {
 		return "", err
 	}

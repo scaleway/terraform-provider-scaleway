@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -9,14 +9,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAccScalewayLbFrontend_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
 		Steps: []resource.TestStep{
@@ -92,11 +97,11 @@ func TestAccScalewayLbFrontend_Basic(t *testing.T) {
 // Even changing one alternative domain name is enough to count as a new certificate (which is rate limited by the 50 certificates per week limit and not the 5 duplicate certificates per week limit).
 // The only limitation is that all subdomains must resolve to the same IP address.
 func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
 		Steps: []resource.TestStep{
@@ -142,7 +147,7 @@ func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) resource.TestCheckFunc {
+func testAccCheckScalewayFrontendCertificateExist(tt *acctest.TestTools, f, c string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[f]
 		if !ok {
@@ -154,7 +159,7 @@ func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) re
 			return fmt.Errorf("resource not found: %s", c)
 		}
 
-		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := scaleway.LbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -168,7 +173,7 @@ func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) re
 		}
 
 		for _, id := range frEnd.CertificateIDs {
-			if expandID(cs.Primary.ID) == id {
+			if locality.ExpandID(cs.Primary.ID) == id {
 				return nil
 			}
 		}
@@ -177,14 +182,14 @@ func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) re
 	}
 }
 
-func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayLbFrontendExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := scaleway.LbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -201,14 +206,14 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 	}
 }
 
-func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayLbFrontendDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb_frontend" {
 				continue
 			}
 
-			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			lbAPI, zone, ID, err := scaleway.LbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -224,7 +229,7 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 			}
 
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}
@@ -234,10 +239,10 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 }
 
 func TestAccScalewayLbFrontend_ACLBasic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
 		Steps: []resource.TestStep{
@@ -446,10 +451,10 @@ func TestAccScalewayLbFrontend_ACLBasic(t *testing.T) {
 }
 
 func TestAccScalewayLbFrontend_ACLRedirectAction(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
 		Steps: []resource.TestStep{
@@ -504,7 +509,7 @@ func TestAccScalewayLbFrontend_ACLRedirectAction(t *testing.T) {
 								Redirect: &lbSDK.ACLActionRedirect{
 									Type:   lbSDK.ACLActionRedirectRedirectTypeLocation,
 									Target: "https://example.com",
-									Code:   expandInt32Ptr(307),
+									Code:   types.ExpandInt32Ptr(307),
 								},
 							},
 						},
@@ -523,7 +528,7 @@ func TestAccScalewayLbFrontend_ACLRedirectAction(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expectedAcls []*lbSDK.ACL) resource.TestCheckFunc {
+func testAccCheckScalewayACLAreCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lbSDK.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		// define a wrapper for acl comparison
 		testCompareAcls := func(testAcl, apiAcl lbSDK.ACL) bool {
@@ -534,7 +539,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 			if testAcl.Name == "" {
 				testAcl.Name = apiAcl.Name
 			}
-			return aclEquals(&testAcl, &apiAcl)
+			return scaleway.ACLEquals(&testAcl, &apiAcl)
 		}
 
 		rs, ok := s.RootModule().Resources[frontendName]
@@ -546,7 +551,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 			return errors.New("resource id is not set")
 		}
 
-		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := scaleway.LbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -610,24 +615,24 @@ func TestAclEqual(t *testing.T) {
 		Frontend: nil,
 		Index:    1,
 	}
-	assert.True(t, aclEquals(aclA, aclB))
+	assert.True(t, scaleway.ACLEquals(aclA, aclB))
 
 	// change name
 	aclA.Name = "nope"
-	assert.False(t, aclEquals(aclA, aclB))
+	assert.False(t, scaleway.ACLEquals(aclA, aclB))
 	aclA.Name = aclB.Name
 
 	// check action
 	aclA.Action = nil
-	assert.False(t, aclEquals(aclA, aclB))
+	assert.False(t, scaleway.ACLEquals(aclA, aclB))
 	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow}
-	assert.True(t, aclEquals(aclA, aclB))
+	assert.True(t, scaleway.ACLEquals(aclA, aclB))
 	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeDeny}
-	assert.False(t, aclEquals(aclA, aclB))
+	assert.False(t, scaleway.ACLEquals(aclA, aclB))
 	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow}
-	assert.True(t, aclEquals(aclA, aclB))
+	assert.True(t, scaleway.ACLEquals(aclA, aclB))
 
 	// check match
 	aclA.Match.IPSubnet = scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24", "0.0.0.0"})
-	assert.False(t, aclEquals(aclA, aclB))
+	assert.False(t, scaleway.ACLEquals(aclA, aclB))
 }

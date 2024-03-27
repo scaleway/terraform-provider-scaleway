@@ -9,9 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayK8SPool() *schema.Resource {
+func ResourceScalewayK8SPool() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayK8SPoolCreate,
 		ReadContext:   resourceScalewayK8SPoolRead,
@@ -165,8 +170,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 				ForceNew:    true,
 				Description: "Defines if the public IP should be removed from the nodes.",
 			},
-			"zone":   zoneSchema(),
-			"region": regionSchema(),
+			"zone":   zonal.Schema(),
+			"region": regional.Schema(),
 			// Computed elements
 			"created_at": {
 				Type:        schema.TypeString,
@@ -226,8 +231,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 }
 
 //gocyclo:ignore
-func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
+func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,13 +242,13 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	////
 	req := &k8s.CreatePoolRequest{
 		Region:           region,
-		ClusterID:        expandID(d.Get("cluster_id")),
-		Name:             expandOrGenerateString(d.Get("name"), "pool"),
+		ClusterID:        locality.ExpandID(d.Get("cluster_id")),
+		Name:             types.ExpandOrGenerateString(d.Get("name"), "pool"),
 		NodeType:         d.Get("node_type").(string),
 		Autoscaling:      d.Get("autoscaling").(bool),
 		Autohealing:      d.Get("autohealing").(bool),
 		Size:             uint32(d.Get("size").(int)),
-		Tags:             expandStrings(d.Get("tags")),
+		Tags:             types.ExpandStrings(d.Get("tags")),
 		Zone:             scw.Zone(d.Get("zone").(string)),
 		KubeletArgs:      expandKubeletArgs(d.Get("kubelet_args")),
 		PublicIPDisabled: d.Get("public_ip_disabled").(bool),
@@ -258,7 +263,7 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		req.PlacementGroupID = expandStringPtr(expandID(placementGroupID))
+		req.PlacementGroupID = types.ExpandStringPtr(locality.ExpandID(placementGroupID))
 	}
 
 	if minSize, ok := d.GetOk("min_size"); ok {
@@ -298,7 +303,7 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 
 	// check if the cluster is waiting for a pool
 	cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
-		ClusterID: expandID(d.Get("cluster_id")),
+		ClusterID: locality.ExpandID(d.Get("cluster_id")),
 		Region:    region,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -317,7 +322,7 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
 		_, err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -331,11 +336,11 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayK8SPoolRead(ctx, d, meta)
+	return resourceScalewayK8SPoolRead(ctx, d, m)
 }
 
-func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -350,7 +355,7 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	////
 	pool, err := k8sAPI.GetPool(req, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -362,7 +367,7 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("cluster_id", newRegionalIDString(region, pool.ClusterID))
+	_ = d.Set("cluster_id", regional.NewIDString(region, pool.ClusterID))
 	_ = d.Set("name", pool.Name)
 	_ = d.Set("node_type", pool.NodeType)
 	_ = d.Set("autoscaling", pool.Autoscaling)
@@ -391,14 +396,14 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
 
 	if pool.PlacementGroupID != nil {
-		_ = d.Set("placement_group_id", newZonedID(pool.Zone, *pool.PlacementGroupID).String())
+		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())
 	}
 
 	return nil
 }
 
-func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -432,7 +437,7 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("kubelet_args") {
@@ -464,11 +469,11 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	return resourceScalewayK8SPoolRead(ctx, d, meta)
+	return resourceScalewayK8SPoolRead(ctx, d, m)
 }
 
-func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := K8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -483,7 +488,7 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 
 	_, err = k8sAPI.DeletePool(req, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -493,7 +498,7 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}

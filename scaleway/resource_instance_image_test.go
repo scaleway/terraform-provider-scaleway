@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -21,7 +26,7 @@ func init() {
 func testSweepInstanceImage(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := instance.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying instance images in (%+v)", zone)
+		logging.L.Debugf("sweeper: destroying instance images in (%+v)", zone)
 
 		listImagesResponse, err := api.ListImages(&instance.ListImagesRequest{
 			Zone:   zone,
@@ -46,10 +51,10 @@ func testSweepInstanceImage(_ string) error {
 }
 
 func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayInstanceImageDestroy(tt),
@@ -142,10 +147,10 @@ func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 }
 
 func TestAccScalewayInstanceImage_Server(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayInstanceImageDestroy(tt),
@@ -216,10 +221,10 @@ func TestAccScalewayInstanceImage_Server(t *testing.T) {
 }
 
 func TestAccScalewayInstanceImage_ServerWithBlockVolume(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayInstanceImageDestroy(tt),
@@ -359,10 +364,10 @@ func TestAccScalewayInstanceImage_ServerWithBlockVolume(t *testing.T) {
 }
 
 func TestAccScalewayInstanceImage_ServerWithLocalVolume(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayInstanceImageDestroy(tt),
@@ -479,17 +484,17 @@ func TestAccScalewayInstanceImage_ServerWithLocalVolume(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceImageExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
-		zone, ID, err := parseZonedID(rs.Primary.ID)
+		zone, ID, err := zonal.ParseID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
 		_, err = instanceAPI.GetImage(&instance.GetImageRequest{
 			ImageID: ID,
 			Zone:    zone,
@@ -501,13 +506,13 @@ func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.T
 	}
 }
 
-func testAccCheckScalewayInstanceImageDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceImageDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_image" {
 				continue
 			}
-			instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -520,7 +525,7 @@ func testAccCheckScalewayInstanceImageDestroy(tt *TestTools) resource.TestCheckF
 				return fmt.Errorf("image (%s) still exists", rs.Primary.ID)
 			}
 			// Unexpected api error we return it
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

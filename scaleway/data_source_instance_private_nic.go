@@ -9,14 +9,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayInstancePrivateNIC() *schema.Resource {
+func DataSourceScalewayInstancePrivateNIC() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstancePrivateNIC().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayInstancePrivateNIC().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "private_network_id", "zone", "tags")
-	fixDatasourceSchemaFlags(dsSchema, true, "server_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "private_network_id", "zone", "tags")
+	datasource.FixDatasourceSchemaFlags(dsSchema, true, "server_id")
 
 	dsSchema["private_network_id"].ConflictsWith = []string{"private_nic_id"}
 
@@ -24,7 +29,7 @@ func dataSourceScalewayInstancePrivateNIC() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the Private NIC",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"private_network_id"},
 	}
 
@@ -34,13 +39,13 @@ func dataSourceScalewayInstancePrivateNIC() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	serverID := expandID(d.Get("server_id"))
+	serverID := locality.ExpandID(d.Get("server_id"))
 
 	id, ok := d.GetOk("private_nic_id")
 	var privateNICID string
@@ -48,7 +53,7 @@ func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Res
 		resp, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
 			Zone:     zone,
 			ServerID: serverID,
-			Tags:     expandStrings(d.Get("tags")),
+			Tags:     types.ExpandStrings(d.Get("tags")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to list instance private_nic: %w", err))
@@ -61,10 +66,10 @@ func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Res
 
 		privateNICID = privateNic.ID
 	} else {
-		_, privateNICID, _ = parseLocalizedID(id.(string))
+		_, privateNICID, _ = locality.ParseLocalizedID(id.(string))
 	}
 
-	zonedID := newZonedNestedIDString(
+	zonedID := zonal.NewNestedIDString(
 		zone,
 		serverID,
 		privateNICID,
@@ -75,7 +80,7 @@ func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayInstancePrivateNICRead(ctx, d, meta)
+	diags := resourceScalewayInstancePrivateNICRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read private nic state")...)
 	}
@@ -88,7 +93,7 @@ func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Res
 }
 
 func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.ResourceData) (*instance.PrivateNIC, error) {
-	privateNetworkID := expandID(d.Get("private_network_id"))
+	privateNetworkID := locality.ExpandID(d.Get("private_network_id"))
 
 	if privateNetworkID == "" {
 		switch {

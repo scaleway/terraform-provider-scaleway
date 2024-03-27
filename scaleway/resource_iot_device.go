@@ -9,6 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -16,7 +20,7 @@ const (
 	iotTopicsSuffix = ".topics"
 )
 
-func resourceScalewayIotDevice() *schema.Resource {
+func ResourceScalewayIotDevice() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIotDeviceCreate,
 		ReadContext:   resourceScalewayIotDeviceRead,
@@ -150,7 +154,7 @@ func resourceScalewayIotDevice() *schema.Resource {
 				},
 			},
 			// Computed elements
-			"region": regionSchema(),
+			"region": regional.Schema(),
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -177,20 +181,20 @@ func resourceScalewayIotDevice() *schema.Resource {
 				Description: "The MQTT connection status of the device",
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("hub_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("hub_id"),
 	}
 }
 
-func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, meta)
+func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &iot.CreateDeviceRequest{
 		Region: region,
-		HubID:  expandID(d.Get("hub_id")),
-		Name:   expandOrGenerateString(d.Get("name"), "device"),
+		HubID:  locality.ExpandID(d.Get("hub_id")),
+		Name:   types.ExpandOrGenerateString(d.Get("name"), "device"),
 	}
 
 	if allowInsecure, ok := d.GetOk("allow_insecure"); ok {
@@ -217,7 +221,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 				mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(policy.(string))
 			}
 			if topics, ok := d.GetOk(fqfnS + iotTopicsSuffix); ok {
-				mfSet.Topics = scw.StringsPtr(expandStringsOrEmpty(topics))
+				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
 			}
 
 			mf.Publish = &mfSet
@@ -231,7 +235,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 				mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(policy.(string))
 			}
 			if topics, ok := d.GetOk(fqfnP + iotTopicsSuffix); ok {
-				mfSet.Topics = scw.StringsPtr(expandStringsOrEmpty(topics))
+				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
 			}
 
 			mf.Subscribe = &mfSet
@@ -245,7 +249,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.Device.ID))
+	d.SetId(regional.NewIDString(region, res.Device.ID))
 
 	// If user certificate is provided.
 	if devCrt, ok := d.GetOk("certificate.0.crt"); ok {
@@ -268,11 +272,11 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 		_ = d.Set("certificate", []map[string]interface{}{cert})
 	}
 
-	return resourceScalewayIotDeviceRead(ctx, d, meta)
+	return resourceScalewayIotDeviceRead(ctx, d, m)
 }
 
-func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, deviceID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -282,7 +286,7 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 		DeviceID: deviceID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -291,7 +295,7 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 
 	_ = d.Set("name", device.Name)
 	_ = d.Set("status", device.Status)
-	_ = d.Set("hub_id", newRegionalID(region, device.HubID).String())
+	_ = d.Set("hub_id", regional.NewID(region, device.HubID).String())
 	_ = d.Set("created_at", device.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", device.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("last_activity_at", device.LastActivityAt.Format(time.RFC3339))
@@ -356,8 +360,8 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, deviceID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -385,7 +389,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 				d.Get(fqfnS + iotPolicySuffix).(string))
 
 			mfSet.Topics = scw.StringsPtr(
-				expandStringsOrEmpty(d.Get(fqfnS + iotTopicsSuffix)))
+				types.ExpandStringsOrEmpty(d.Get(fqfnS + iotTopicsSuffix)))
 		}
 
 		if d.HasChange(fqfn + ".subscribe") {
@@ -397,7 +401,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 				d.Get(fqfnP + iotPolicySuffix).(string))
 
 			mfSet.Topics = scw.StringsPtr(
-				expandStringsOrEmpty(d.Get(fqfnP + iotTopicsSuffix)))
+				types.ExpandStringsOrEmpty(d.Get(fqfnP + iotTopicsSuffix)))
 		}
 	}
 
@@ -410,7 +414,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	_, err = iotAPI.UpdateDevice(updateRequest, scw.WithContext(ctx))
@@ -430,11 +434,11 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	return resourceScalewayIotDeviceRead(ctx, d, meta)
+	return resourceScalewayIotDeviceRead(ctx, d, m)
 }
 
-func resourceScalewayIotDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, deviceID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, deviceID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -444,7 +448,7 @@ func resourceScalewayIotDeviceDelete(ctx context.Context, d *schema.ResourceData
 		DeviceID: deviceID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}

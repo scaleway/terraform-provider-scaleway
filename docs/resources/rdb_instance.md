@@ -79,7 +79,7 @@ resource "scaleway_rdb_instance" "main" {
   private_network {
     pn_id  = scaleway_vpc_private_network.pn.id
     ip_net = "172.16.20.4/22"   # IP address within a given IP network
-    (enable_ipam = false)
+    # enable_ipam = false
   }
 }
 ```
@@ -94,7 +94,7 @@ resource "scaleway_rdb_instance" "main" {
   engine         = "PostgreSQL-11"
   private_network {
     pn_id = scaleway_vpc_private_network.pn.id
-    (enable_ipam = true)
+    enable_ipam = true
   }
   load_balancer {}
 }
@@ -118,7 +118,7 @@ The following arguments are supported:
 - `node_type` - (Required) The type of database instance you want to create (e.g. `db-dev-s`).
 
 ~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any
-interruption. Keep in mind that you cannot downgrade a Database Instance.
+interruption.
 
 ~> **Important:** Once your instance reaches `disk_full` status, if you are using `lssd` storage, you should upgrade the node_type,
 and if you are using `bssd` storage, you should increase the volume size before making any other change to your instance.
@@ -178,9 +178,8 @@ Please consult the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-g
 - `private_network` - List of private networks endpoints of the database instance.
 
     - `pn_id` - (Required) The ID of the private network.
-    - `enable_ipam` - (Optional) Whether the endpoint should be configured with IPAM. Defaults to `false` if `ip_net` is defined, `true` otherwise.
-    - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation.
-    The IP network address within the private subnet is determined by the IP Address Management (IPAM) service if not set.
+    - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
+    - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
   
 ~> **NOTE:** Please calculate your host IP using [cidrhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, let IPAM service
 handle the host IP on the network.

@@ -14,9 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func resourceScalewayObjectBucket() *schema.Resource {
+func ResourceScalewayObjectBucket() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayObjectBucketCreate,
 		ReadContext:   resourceScalewayObjectBucketRead,
@@ -188,7 +189,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					},
 				},
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 			"versioning": {
 				Type:        schema.TypeList,
@@ -220,12 +221,12 @@ func resourceScalewayObjectBucket() *schema.Resource {
 	}
 }
 
-func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
 	objectLockEnabled := d.Get("object_lock_enabled").(bool)
 	acl := d.Get("acl").(string)
 
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+	s3Client, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -243,7 +244,7 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	tagsSet := expandObjectBucketTags(d.Get("tags"))
+	tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
 	if len(tagsSet) > 0 {
 		_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
@@ -257,13 +258,13 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	d.SetId(newRegionalIDString(region, bucketName))
+	d.SetId(regional.NewIDString(region, bucketName))
 
-	return resourceScalewayObjectBucketUpdate(ctx, d, meta)
+	return resourceScalewayObjectBucketUpdate(ctx, d, m)
 }
 
-func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -290,7 +291,7 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if d.HasChange("tags") {
-		tagsSet := expandObjectBucketTags(d.Get("tags"))
+		tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
 		if len(tagsSet) > 0 {
 			_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
@@ -321,7 +322,7 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	return resourceScalewayObjectBucketRead(ctx, d, meta)
+	return resourceScalewayObjectBucketRead(ctx, d, m)
 }
 
 //gocyclo:ignore
@@ -350,21 +351,25 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		rule := &s3.LifecycleRule{}
 
 		// Filter
-		tags := expandObjectBucketTags(r["tags"])
+		tags := ExpandObjectBucketTags(r["tags"])
+		ruleHasPrefix := len(r["prefix"].(string)) > 0
 		filter := &s3.LifecycleRuleFilter{}
-		if len(tags) == 1 {
-			filter.SetTag(tags[0])
-		}
-		if len(tags) > 1 {
+
+		if len(tags) > 1 || (ruleHasPrefix && len(tags) == 1) {
 			lifecycleRuleAndOp := &s3.LifecycleRuleAndOperator{}
-			if len(r["prefix"].(string)) > 0 {
+			lifecycleRuleAndOp.SetTags(tags)
+			if ruleHasPrefix {
 				lifecycleRuleAndOp.SetPrefix(r["prefix"].(string))
 			}
-			lifecycleRuleAndOp.SetTags(tags)
 			filter.SetAnd(lifecycleRuleAndOp)
-		} else if len(r["prefix"].(string)) > 0 {
+		}
+
+		if !ruleHasPrefix && len(tags) == 1 {
+			filter.SetTag(tags[0])
+		} else if ruleHasPrefix && len(tags) == 0 {
 			filter.SetPrefix(r["prefix"].(string))
 		}
+
 		rule.SetFilter(filter)
 
 		// ID
@@ -445,8 +450,8 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 }
 
 //gocyclo:ignore
-func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -650,8 +655,8 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -660,18 +665,18 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 		Bucket: scw.StringPtr(bucketName),
 	})
 
-	if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+	if IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 		return nil
 	}
 
-	if isS3Err(err, ErrCodeBucketNotEmpty, "") {
+	if IsS3Err(err, ErrCodeBucketNotEmpty, "") {
 		if d.Get("force_destroy").(bool) {
 			err = deleteS3ObjectVersions(ctx, s3Client, bucketName, true)
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
 			}
 			// Try to delete bucket again after deleting objects
-			return resourceScalewayObjectBucketDelete(ctx, d, meta)
+			return resourceScalewayObjectBucketDelete(ctx, d, m)
 		}
 	}
 	if err != nil {

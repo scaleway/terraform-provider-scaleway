@@ -1,14 +1,12 @@
-package internal
+package workerpool
 
-import (
-	"sync"
-)
+import "sync"
 
-type WorkerPoolTask func() error
+type Task func() error
 
 type WorkerPool struct {
-	tasksToDispatch   chan WorkerPoolTask
-	tasksToRun        chan WorkerPoolTask
+	tasksToDispatch   chan Task
+	tasksToRun        chan Task
 	errors            []error
 	errorsMutex       sync.Mutex
 	tasksWaitingGroup sync.WaitGroup
@@ -16,8 +14,8 @@ type WorkerPool struct {
 
 func NewWorkerPool(size int) *WorkerPool {
 	p := &WorkerPool{
-		tasksToDispatch: make(chan WorkerPoolTask),
-		tasksToRun:      make(chan WorkerPoolTask, size),
+		tasksToDispatch: make(chan Task),
+		tasksToRun:      make(chan Task, size),
 	}
 
 	for i := 0; i < size; i++ {
@@ -30,7 +28,7 @@ func NewWorkerPool(size int) *WorkerPool {
 }
 
 func (p *WorkerPool) dispatcher() {
-	var pendingTasks []WorkerPoolTask
+	var pendingTasks []Task
 
 	for {
 		if len(pendingTasks) > 0 {
@@ -75,7 +73,7 @@ func (p *WorkerPool) worker() {
 	}
 }
 
-func (p *WorkerPool) AddTask(task WorkerPoolTask) {
+func (p *WorkerPool) AddTask(task Task) {
 	p.tasksWaitingGroup.Add(1)
 	p.tasksToDispatch <- task
 }

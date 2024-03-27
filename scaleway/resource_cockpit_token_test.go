@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -10,6 +10,9 @@ import (
 	accountV3 "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -38,7 +41,7 @@ func testSweepCockpitToken(_ string) error {
 				ProjectID: project.ID,
 			}, scw.WithAllPages())
 			if err != nil {
-				if is404Error(err) {
+				if httperrors.Is404(err) {
 					return nil
 				}
 
@@ -50,7 +53,7 @@ func testSweepCockpitToken(_ string) error {
 					TokenID: token.ID,
 				})
 				if err != nil {
-					if !is404Error(err) {
+					if !httperrors.Is404(err) {
 						return fmt.Errorf("failed to delete token: %w", err)
 					}
 				}
@@ -62,14 +65,14 @@ func testSweepCockpitToken(_ string) error {
 }
 
 func TestAccScalewayCockpitToken_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_token_basic"
 	tokenName := projectName
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitTokenDestroy(tt),
 		Steps: []resource.TestStep{
@@ -112,14 +115,14 @@ func TestAccScalewayCockpitToken_Basic(t *testing.T) {
 }
 
 func TestAccScalewayCockpitToken_NoScopes(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_token_no_scopes"
 	tokenName := "tf_tests_cockpit_token_no_scopes"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitTokenDestroy(tt),
 		Steps: []resource.TestStep{
@@ -158,14 +161,14 @@ func TestAccScalewayCockpitToken_NoScopes(t *testing.T) {
 }
 
 func TestAccScalewayCockpitToken_Update(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_token_update"
 	tokenName := projectName
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitTokenDestroy(tt),
 		Steps: []resource.TestStep{
@@ -241,14 +244,14 @@ func TestAccScalewayCockpitToken_Update(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayCockpitTokenExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayCockpitTokenExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource cockpit token not found: %s", n)
 		}
 
-		api, err := cockpitAPI(tt.Meta)
+		api, err := scaleway.CockpitAPI(tt.Meta)
 		if err != nil {
 			return err
 		}
@@ -264,14 +267,14 @@ func testAccCheckScalewayCockpitTokenExists(tt *TestTools, n string) resource.Te
 	}
 }
 
-func testAccCheckScalewayCockpitTokenDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayCockpitTokenDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_cockpit_token" {
 				continue
 			}
 
-			api, err := cockpitAPI(tt.Meta)
+			api, err := scaleway.CockpitAPI(tt.Meta)
 			if err != nil {
 				return err
 			}
@@ -284,7 +287,7 @@ func testAccCheckScalewayCockpitTokenDestroy(tt *TestTools) resource.TestCheckFu
 			}
 
 			// Currently the API returns a 403 error when we try to delete a token that does not exist
-			if !is404Error(err) && !is403Error(err) {
+			if !httperrors.Is404(err) && !httperrors.Is403(err) {
 				return err
 			}
 		}

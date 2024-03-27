@@ -9,6 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -19,10 +22,9 @@ const (
 
 // documentDBAPIWithRegion returns a new documentdb API and the region for a Create request
 func documentDBAPIWithRegion(d *schema.ResourceData, m interface{}) (*documentdb.API, scw.Region, error) {
-	meta := m.(*Meta)
-	api := documentdb.NewAPI(meta.scwClient)
+	api := documentdb.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -31,11 +33,10 @@ func documentDBAPIWithRegion(d *schema.ResourceData, m interface{}) (*documentdb
 }
 
 // documentDBAPIWithRegionalAndID returns a new documentdb API with region and ID extracted from the state
-func documentDBAPIWithRegionAndID(m interface{}, regionalID string) (*documentdb.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := documentdb.NewAPI(meta.scwClient)
+func DocumentDBAPIWithRegionAndID(m interface{}, regionalID string) (*documentdb.API, scw.Region, string, error) {
+	api := documentdb.NewAPI(meta.ExtractScwClient(m))
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -45,8 +46,8 @@ func documentDBAPIWithRegionAndID(m interface{}, regionalID string) (*documentdb
 
 func waitForDocumentDBInstance(ctx context.Context, api *documentdb.API, region scw.Region, id string, timeout time.Duration) (*documentdb.Instance, error) {
 	retryInterval := defaultWaitDocumentDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	instance, err := api.WaitForInstance(&documentdb.WaitForInstanceRequest{
@@ -65,9 +66,9 @@ func resourceScalewayDocumentDBDatabaseID(region scw.Region, instanceID string, 
 	return fmt.Sprintf("%s/%s/%s", region, instanceID, databaseName)
 }
 
-// resourceScalewayDocumentDBDatabaseName extract regional instanceID and databaseName from composed ID
+// ResourceScalewayDocumentDBDatabaseName extract regional instanceID and databaseName from composed ID
 // returned by resourceScalewayDocumentDBDatabaseID()
-func resourceScalewayDocumentDBDatabaseName(id string) (string, string, error) {
+func ResourceScalewayDocumentDBDatabaseName(id string) (string, string, error) {
 	elems := strings.Split(id, "/")
 	if len(elems) != 3 {
 		return "", "", fmt.Errorf("cant parse terraform database id: %s", id)

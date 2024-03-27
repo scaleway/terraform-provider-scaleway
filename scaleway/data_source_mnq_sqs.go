@@ -7,13 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
-func dataSourceScalewayMNQSQS() *schema.Resource {
+func DataSourceScalewayMNQSQS() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayMNQSQS().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayMNQSQS().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayMNQSQSRead,
@@ -21,8 +22,8 @@ func dataSourceScalewayMNQSQS() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSQSAPI(d, meta)
+func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSQSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -39,10 +40,10 @@ func dataSourceScalewayMNQSQSRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("expected mnq sqs status to be enabled, got: %s", sqs.Status))
 	}
 
-	regionID := datasourceNewRegionalID(sqs.ProjectID, region)
+	regionID := datasource.NewRegionalID(sqs.ProjectID, region)
 	d.SetId(regionID)
 
-	diags := resourceScalewayMNQSQSRead(ctx, d, meta)
+	diags := resourceScalewayMNQSQSRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read sqs state")...)
 	}

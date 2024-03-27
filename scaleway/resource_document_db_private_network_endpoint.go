@@ -8,9 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource {
+func ResourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBInstanceEndpointCreate,
 		ReadContext:   resourceScalewayDocumentDBInstanceEndpointRead,
@@ -32,7 +38,7 @@ func resourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource
 			"private_network_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				Description:      "The private network ID",
 				ForceNew:         true,
@@ -68,19 +74,19 @@ func resourceScalewayDocumentDBInstancePrivateNetworkEndpoint() *schema.Resource
 				Computed:    true,
 				Description: "The hostname of your endpoint",
 			},
-			"zone":   zoneSchema(),
-			"region": regionSchema(),
+			"zone":   zonal.Schema(),
+			"region": regional.Schema(),
 		},
 	}
 }
 
-func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id"))
+	instanceID := locality.ExpandID(d.Get("instance_id"))
 	endpointSpecPN := &documentdb.EndpointSpecPrivateNetwork{}
 	createEndpointRequest := &documentdb.CreateEndpointRequest{
 		Region:       region,
@@ -88,10 +94,10 @@ func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *sc
 		EndpointSpec: &documentdb.EndpointSpec{},
 	}
 
-	endpointSpecPN.PrivateNetworkID = expandID(d.Get("private_network_id").(string))
+	endpointSpecPN.PrivateNetworkID = locality.ExpandID(d.Get("private_network_id").(string))
 	ipNet := d.Get("ip_net").(string)
 	if len(ipNet) > 0 {
-		ip, err := expandIPNet(ipNet)
+		ip, err := types.ExpandIPNet(ipNet)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -103,7 +109,7 @@ func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *sc
 	createEndpointRequest.EndpointSpec.PrivateNetwork = endpointSpecPN
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -117,20 +123,20 @@ func resourceScalewayDocumentDBInstanceEndpointCreate(ctx context.Context, d *sc
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, endpoint.ID))
+	d.SetId(regional.NewIDString(region, endpoint.ID))
 
-	return resourceScalewayDocumentDBInstanceEndpointRead(ctx, d, meta)
+	return resourceScalewayDocumentDBInstanceEndpointRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBInstanceEndpointRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceEndpointRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,15 +146,15 @@ func resourceScalewayDocumentDBInstanceEndpointRead(ctx context.Context, d *sche
 		Region:     region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	pnID := newRegionalIDString(region, endpoint.PrivateNetwork.PrivateNetworkID)
-	serviceIP, err := flattenIPNet(endpoint.PrivateNetwork.ServiceIP)
+	pnID := regional.NewIDString(region, endpoint.PrivateNetwork.PrivateNetworkID)
+	serviceIP, err := types.FlattenIPNet(endpoint.PrivateNetwork.ServiceIP)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,14 +165,14 @@ func resourceScalewayDocumentDBInstanceEndpointRead(ctx context.Context, d *sche
 	_ = d.Set("port", int(endpoint.Port))
 	_ = d.Set("name", endpoint.Name)
 	_ = d.Set("hostname", endpoint.Hostname)
-	_ = d.Set("ip", flattenIPPtr(endpoint.IP))
+	_ = d.Set("ip", types.FlattenIPPtr(endpoint.IP))
 	_ = d.Set("region", region.String())
 
 	return nil
 }
 
-func resourceScalewayDocumentDBInstanceEndpointUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceEndpointUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -177,7 +183,7 @@ func resourceScalewayDocumentDBInstanceEndpointUpdate(ctx context.Context, d *sc
 	}
 
 	if d.HasChange("instance_id") {
-		req.InstanceID = expandID(d.Get("instance_id"))
+		req.InstanceID = locality.ExpandID(d.Get("instance_id"))
 
 		if _, err := api.MigrateEndpoint(req, scw.WithContext(ctx)); err != nil {
 			return diag.FromErr(err)
@@ -189,11 +195,11 @@ func resourceScalewayDocumentDBInstanceEndpointUpdate(ctx context.Context, d *sc
 		}
 	}
 
-	return resourceScalewayDocumentDBInstanceEndpointRead(ctx, d, meta)
+	return resourceScalewayDocumentDBInstanceEndpointRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBInstanceEndpointDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceEndpointDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

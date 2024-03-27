@@ -20,11 +20,18 @@ data "scaleway_lbs" "my_key" {
   name = "foobar"
   zone = "fr-par-2"
 }
+
+# Find LBs that share the same tags
+data "scaleway_lbs" "lbs_by_tags" {
+  tags = [ "a tag" ]
+}
 ```
 
 ## Argument Reference
 
 - `name` - (Optional) The load balancer name used as a filter. LBs with a name like it are listed.
+
+- `tags` - (Optional)  List of tags used as filter. LBs with these exact tags are listed.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which LBs exist.
 

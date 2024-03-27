@@ -8,9 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayAppleSiliconServer() *schema.Resource {
+func ResourceScalewayAppleSiliconServer() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayAppleSiliconServerCreate,
 		ReadContext:   resourceScalewayAppleSiliconServerRead,
@@ -70,21 +73,21 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 			},
 
 			// Common
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	asAPI, zone, err := asAPIWithZone(d, meta)
+func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	asAPI, zone, err := asAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	createReq := &applesilicon.CreateServerRequest{
-		Name:      expandOrGenerateString(d.Get("name"), "m1"),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "m1"),
 		Type:      d.Get("type").(string),
 		ProjectID: d.Get("project_id").(string),
 	}
@@ -94,18 +97,18 @@ func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	_, err = waitForAppleSiliconServer(ctx, asAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayAppleSiliconServerRead(ctx, d, meta)
+	return resourceScalewayAppleSiliconServerRead(ctx, d, m)
 }
 
-func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	asAPI, zone, ID, err := asAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	asAPI, zone, ID, err := AsAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,7 +118,7 @@ func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.Resou
 		ServerID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -138,8 +141,8 @@ func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	asAPI, zone, ID, err := asAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	asAPI, zone, ID, err := AsAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,7 +153,7 @@ func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
@@ -158,11 +161,11 @@ func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayAppleSiliconServerRead(ctx, d, meta)
+	return resourceScalewayAppleSiliconServerRead(ctx, d, m)
 }
 
-func resourceScalewayAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	asAPI, zone, ID, err := asAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	asAPI, zone, ID, err := AsAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -172,7 +175,7 @@ func resourceScalewayAppleSiliconServerDelete(ctx context.Context, d *schema.Res
 		ServerID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

@@ -10,9 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func resourceObjectLockConfiguration() *schema.Resource {
+func ResourceObjectLockConfiguration() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceObjectLockConfigurationCreate,
 		ReadContext:   resourceObjectLockConfigurationRead,
@@ -70,24 +71,24 @@ func resourceObjectLockConfiguration() *schema.Resource {
 				},
 				Description: "Specifies the Object Lock rule for the specified object.",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(d, meta)
+func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		conn, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		conn, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -107,13 +108,13 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err))
 	}
 
-	d.SetId(newRegionalIDString(region, bucket))
+	d.SetId(regional.NewIDString(region, bucket))
 
-	return resourceObjectLockConfigurationRead(ctx, d, meta)
+	return resourceObjectLockConfigurationRead(ctx, d, m)
 }
 
-func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -123,7 +124,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 	}
 
 	output, err := conn.GetObjectLockConfigurationWithContext(ctx, input)
-	if !d.IsNewResource() && isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+	if !d.IsNewResource() && IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
 		return nil
@@ -148,13 +149,17 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
 	_ = d.Set("bucket", bucket)
-	_ = d.Set("rule", flattenBucketLockConfigurationRule(output.ObjectLockConfiguration.Rule))
+	if output.ObjectLockConfiguration != nil {
+		_ = d.Set("rule", flattenBucketLockConfigurationRule(output.ObjectLockConfiguration.Rule))
+	} else {
+		_ = d.Set("rule", flattenBucketLockConfigurationRule(nil))
+	}
 
 	return nil
 }
 
-func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -174,11 +179,11 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("error updating Object bucket lock configuration (%s): %w", d.Id(), err))
 	}
 
-	return resourceObjectLockConfigurationRead(ctx, d, meta)
+	return resourceObjectLockConfigurationRead(ctx, d, m)
 }
 
-func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
+func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,7 +197,7 @@ func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.Resour
 
 	_, err = conn.PutObjectLockConfigurationWithContext(ctx, input)
 
-	if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+	if IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 		return nil
 	}
 

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"context"
@@ -8,6 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,7 +37,7 @@ func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client, zone scw.Zone) e
 		}
 		err = f(client, zone)
 		if err != nil {
-			l.Warningf("error running sweepZones, ignoring: %s", err)
+			logging.L.Warningf("error running sweepZones, ignoring: %s", err)
 		}
 	}
 	return nil
@@ -54,40 +57,40 @@ func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw
 
 func sweep(f func(scwClient *scw.Client) error) error {
 	ctx := context.Background()
-	meta, err := buildMeta(ctx, &metaConfig{
-		terraformVersion: "terraform-tests",
+	m, err := meta.NewMeta(ctx, &meta.Config{
+		TerraformVersion: "terraform-tests",
 	})
 	if err != nil {
 		return err
 	}
-	return f(meta.scwClient)
+	return f(m.ScwClient())
 }
 
 // sharedClientForZone returns a Scaleway client needed for the sweeper
 // functions for a given zone
 func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
 	ctx := context.Background()
-	meta, err := buildMeta(ctx, &metaConfig{
-		terraformVersion: "terraform-tests",
-		forceZone:        zone,
+	m, err := meta.NewMeta(ctx, &meta.Config{
+		TerraformVersion: "terraform-tests",
+		ForceZone:        zone,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return meta.scwClient, nil
+	return m.ScwClient(), nil
 }
 
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
 func sharedS3ClientForRegion(region scw.Region) (*s3.S3, error) {
 	ctx := context.Background()
-	meta, err := buildMeta(ctx, &metaConfig{
-		terraformVersion: "terraform-tests",
-		forceZone:        region.GetZones()[0],
+	m, err := meta.NewMeta(ctx, &meta.Config{
+		TerraformVersion: "terraform-tests",
+		ForceZone:        region.GetZones()[0],
 	})
 	if err != nil {
 		return nil, err
 	}
-	return newS3ClientFromMeta(meta, region.String())
+	return scaleway.NewS3ClientFromMeta(m, region.String())
 }
 
 func TestIsTestResource(t *testing.T) {

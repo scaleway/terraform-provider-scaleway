@@ -6,14 +6,20 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbInstance() *schema.Resource {
+func ResourceScalewayRdbInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbInstanceCreate,
 		ReadContext:   resourceScalewayRdbInstanceRead,
@@ -146,15 +152,9 @@ func resourceScalewayRdbInstance() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: diffSuppressFuncLocality,
 							Description:      "The private network ID",
-						},
-						"enable_ipam": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Whether or not the private network endpoint should be configured with IPAM",
 						},
 						// Computed
 						"endpoint_id": {
@@ -191,7 +191,13 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							Computed:    true,
 							Description: "The hostname of your endpoint",
 						},
-						"zone": zoneSchema(),
+						"enable_ipam": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Whether or not the private network endpoint should be configured with IPAM",
+						},
+						"zone": zonal.Schema(),
 					},
 				},
 			},
@@ -274,24 +280,24 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				},
 			},
 			// Common
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("private_network.#.pn_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("private_network.#.pn_id"),
 	}
 }
 
-func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	createReq := &rdb.CreateInstanceRequest{
 		Region:        region,
-		ProjectID:     expandStringPtr(d.Get("project_id")),
-		Name:          expandOrGenerateString(d.Get("name"), "rdb"),
+		ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
+		Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 		NodeType:      d.Get("node_type").(string),
 		Engine:        d.Get("engine").(string),
 		IsHaCluster:   d.Get("is_ha_cluster").(bool),
@@ -307,18 +313,19 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	rawTag, tagExist := d.GetOk("tags")
 	if tagExist {
-		createReq.Tags = expandStrings(rawTag)
+		createReq.Tags = types.ExpandStrings(rawTag)
 	}
 
 	// Init Endpoints
 	if pn, pnExist := d.GetOk("private_network"); pnExist {
-		enableIpam := true
-		if _, ipNetSet := d.GetOk("private_network.0.ip_net"); ipNetSet {
-			enableIpam = false
+		ipamConfig, staticConfig := getIPConfigCreate(d, "ip_net")
+		var diags diag.Diagnostics
+		createReq.InitEndpoints, diags = expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
+		if diags.HasError() {
+			return diags
 		}
-		createReq.InitEndpoints, err = expandPrivateNetwork(pn, pnExist, enableIpam)
-		if err != nil {
-			return diag.FromErr(err)
+		for _, warning := range diags {
+			tflog.Warn(ctx, warning.Detail)
 		}
 	}
 	if _, lbExists := d.GetOk("load_balancer"); lbExists {
@@ -337,7 +344,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
@@ -347,7 +354,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			InstanceID: res.ID,
 		}
 
-		updateReq.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
+		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
@@ -384,11 +391,11 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return resourceScalewayRdbInstanceRead(ctx, d, meta)
+	return resourceScalewayRdbInstanceRead(ctx, d, m)
 }
 
-func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -396,7 +403,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	// verify resource is ready
 	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -411,9 +418,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
-	_ = d.Set("tags", flattenSliceString(res.Tags))
+	_ = d.Set("tags", types.FlattenSliceString(res.Tags))
 	if res.Endpoint != nil {
-		_ = d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
+		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP))
 		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
 	} else {
 		_ = d.Set("endpoint_ip", "")
@@ -467,7 +474,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
 
 	// set endpoints
-	enableIpam, err := isIpamEndpoint(res, meta)
+	enableIpam, err := getIPAMConfigRead(res, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -482,8 +489,8 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 }
 
 //gocyclo:ignore
-func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -561,7 +568,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 				rdb.UpgradeInstanceRequest{
 					Region:     region,
 					InstanceID: ID,
-					NodeType:   expandStringPtr(d.Get("node_type")),
+					NodeType:   types.ExpandStringPtr(d.Get("node_type")),
 				})
 		} else {
 			return diag.Diagnostics{
@@ -584,10 +591,22 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			})
 	}
 
+	// If we are switching to local storage, we have to make sure that the node_type upgrade is done first
+	if d.HasChange("volume_type") {
+		wantedVolumeType := d.Get("volume_type")
+		if wantedVolumeType == rdb.VolumeTypeLssd.String() {
+			for i, req := range upgradeInstanceRequests {
+				if req.NodeType != nil && i != 0 {
+					upgradeInstanceRequests[0], upgradeInstanceRequests[i] = upgradeInstanceRequests[i], upgradeInstanceRequests[0]
+				}
+			}
+		}
+	}
+
 	// Carry out the upgrades
 	for i := range upgradeInstanceRequests {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
@@ -597,7 +616,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -611,7 +630,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 	if d.HasChange("disable_backup") {
 		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
@@ -623,10 +642,10 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
 	}
 	if d.HasChange("backup_same_region") {
-		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
+		req.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
@@ -644,7 +663,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	////////////////////
 	if d.HasChange("settings") {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
@@ -670,7 +689,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			Region:     region,
 			InstanceID: ID,
 			Name:       d.Get("user_name").(string),
-			Password:   expandStringPtr(d.Get("password")),
+			Password:   types.ExpandStringPtr(d.Get("password")),
 		}
 
 		_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))
@@ -710,19 +729,13 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		// set new endpoint
 		pn, pnExist := d.GetOk("private_network")
 		if pnExist {
-			// "enable_ipam" is not readable from the API, so we just read the user's config
-			enableIpam := true
-			if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() {
-				pnRawConfig := rawConfig.AsValueMap()["private_network"].AsValueSlice()[0].AsValueMap()
-				if !pnRawConfig["enable_ipam"].IsNull() && pnRawConfig["enable_ipam"].False() ||
-					!pnRawConfig["ip_net"].IsNull() {
-					enableIpam = false
-				}
+			ipamConfig, staticConfig := getIPConfigUpdate(d, "ip_net")
+			privateEndpoints, diags := expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
+			if diags.HasError() {
+				return diags
 			}
-
-			privateEndpoints, err := expandPrivateNetwork(pn, pnExist, enableIpam)
-			if err != nil {
-				return diag.FromErr(err)
+			for _, warning := range diags {
+				tflog.Warn(ctx, warning.Detail)
 			}
 			for _, e := range privateEndpoints {
 				_, err := rdbAPI.CreateEndpoint(
@@ -770,11 +783,11 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return resourceScalewayRdbInstanceRead(ctx, d, meta)
+	return resourceScalewayRdbInstanceRead(ctx, d, m)
 }
 
-func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := RdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -795,7 +808,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 
 	// Lastly wait in case the instance is in a transient state
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

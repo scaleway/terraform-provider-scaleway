@@ -9,9 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func dataSourceScalewayK8SVersion() *schema.Resource {
+func DataSourceScalewayK8SVersion() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayK8SVersionRead,
 		Schema: map[string]*schema.Schema{
@@ -44,13 +45,13 @@ func dataSourceScalewayK8SVersion() *schema.Resource {
 				},
 				Description: "The list of supported feature gates for this version",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
 
-func dataSourceScalewayK8SVersionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
+func dataSourceScalewayK8SVersionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

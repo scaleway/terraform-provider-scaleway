@@ -11,9 +11,13 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayIPAMIP() *schema.Resource {
+func ResourceScalewayIPAMIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIPAMIPCreate,
 		ReadContext:   resourceScalewayIPAMIPRead,
@@ -77,7 +81,7 @@ func resourceScalewayIPAMIP() *schema.Resource {
 				},
 			},
 			"project_id": projectIDSchema(),
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			// Computed elements
 			"resource": {
 				Type:        schema.TypeList,
@@ -137,13 +141,13 @@ func resourceScalewayIPAMIP() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the IP",
 			},
-			"zone": zoneComputedSchema(),
+			"zone": zonal.ComputedSchema(),
 		},
 	}
 }
 
-func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, err := ipamAPIWithRegion(d, meta)
+func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, err := ipamAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -152,7 +156,7 @@ func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		IsIPv6:    d.Get("is_ipv6").(bool),
-		Tags:      expandStrings(d.Get("tags")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}
 
 	address, addressOk := d.GetOk("address")
@@ -177,17 +181,17 @@ func resourceScalewayIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
-	return resourceScalewayIPAMIPRead(ctx, d, meta)
+	return resourceScalewayIPAMIPRead(ctx, d, m)
 }
 
-func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	vpcAPI, err := vpcAPI(meta)
+	vpcAPI, err := vpcAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -197,7 +201,7 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 		IPID:   ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -231,7 +235,7 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	address, err := flattenIPNet(res.Address)
+	address, err := types.FlattenIPNet(res.Address)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -239,8 +243,8 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("source", flattenIPSource(res.Source, privateNetworkID))
 	_ = d.Set("resource", flattenIPResource(res.Resource))
 	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_ipv6", res.IsIPv6)
 	_ = d.Set("region", region)
 	if res.Zone != nil {
@@ -254,8 +258,8 @@ func resourceScalewayIPAMIPRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -263,17 +267,17 @@ func resourceScalewayIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m
 	_, err = ipamAPI.UpdateIP(&ipam.UpdateIPRequest{
 		IPID:   ID,
 		Region: region,
-		Tags:   expandUpdatedStringsPtr(d.Get("tags")),
+		Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayIPAMIPRead(ctx, d, meta)
+	return resourceScalewayIPAMIPRead(ctx, d, m)
 }
 
-func resourceScalewayIPAMIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -282,7 +286,7 @@ func resourceScalewayIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m
 		Region: region,
 		IPID:   ID,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

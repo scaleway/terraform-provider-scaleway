@@ -8,9 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayLbACL() *schema.Resource {
+func ResourceScalewayLbACL() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayLbACLCreate,
 		ReadContext:   resourceScalewayLbACLRead,
@@ -28,7 +32,7 @@ func resourceScalewayLbACL() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The frontend ID on which the ACL is applied",
 			},
 			"name": {
@@ -110,8 +114,9 @@ func resourceScalewayLbACL() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Optional:    true,
-							Description: "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
+							Optional:         true,
+							Description:      "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
+							DiffSuppressFunc: diffSuppressFunc32SubnetMask,
 						},
 						"http_filter": {
 							Type:     schema.TypeString,
@@ -161,13 +166,13 @@ func resourceScalewayLbACL() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbACLCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, _, err := lbAPIWithZone(d, meta)
+func resourceScalewayLbACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	frontZone, frontID, err := parseZonedID(d.Get("frontend_id").(string))
+	frontZone, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,13 +192,13 @@ func resourceScalewayLbACLCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(frontZone, res.ID))
+	d.SetId(zonal.NewIDString(frontZone, res.ID))
 
-	return resourceScalewayLbACLRead(ctx, d, meta)
+	return resourceScalewayLbACLRead(ctx, d, m)
 }
 
-func resourceScalewayLbACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -203,19 +208,19 @@ func resourceScalewayLbACLRead(ctx context.Context, d *schema.ResourceData, meta
 		ACLID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("frontend_id", newZonedIDString(zone, acl.Frontend.ID))
+	_ = d.Set("frontend_id", zonal.NewIDString(zone, acl.Frontend.ID))
 	_ = d.Set("name", acl.Name)
 	_ = d.Set("description", acl.Description)
 	_ = d.Set("index", int(acl.Index))
-	_ = d.Set("created_at", flattenTime(acl.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(acl.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(acl.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(acl.UpdatedAt))
 	_ = d.Set("action", flattenLbACLAction(acl.Action))
 
 	if acl.Match != nil {
@@ -225,8 +230,8 @@ func resourceScalewayLbACLRead(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func resourceScalewayLbACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -238,7 +243,7 @@ func resourceScalewayLbACLUpdate(ctx context.Context, d *schema.ResourceData, me
 		Action:      expandLbACLAction(d.Get("action")),
 		Index:       int32(d.Get("index").(int)),
 		Match:       expandLbACLMatch(d.Get("match")),
-		Description: expandUpdatedStringPtr(d.Get("description")),
+		Description: types.ExpandUpdatedStringPtr(d.Get("description")),
 	}
 
 	_, err = lbAPI.UpdateACL(req, scw.WithContext(ctx))
@@ -246,11 +251,11 @@ func resourceScalewayLbACLUpdate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbACLRead(ctx, d, meta)
+	return resourceScalewayLbACLRead(ctx, d, m)
 }
 
-func resourceScalewayLbACLDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayLbACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := LbAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

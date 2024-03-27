@@ -8,21 +8,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayTemDomain() *schema.Resource {
+func DataSourceScalewayTemDomain() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayTemDomain().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayTemDomain().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"domain_id"}
 	dsSchema["domain_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the tem domain",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 
@@ -33,8 +36,8 @@ func dataSourceScalewayTemDomain() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := temAPIWithRegion(d, meta)
+func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -43,8 +46,8 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 	if !ok {
 		res, err := api.ListDomains(&tem.ListDomainsRequest{
 			Region:    region,
-			Name:      expandStringPtr(d.Get("name")),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(d.Get("name")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -69,14 +72,14 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	regionalID := datasourceNewRegionalID(domainID, region)
+	regionalID := datasource.NewRegionalID(domainID, region)
 	d.SetId(regionalID)
 	err = d.Set("domain_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayTemDomainRead(ctx, d, meta)
+	diags := resourceScalewayTemDomainRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read tem domain state")...)
 	}

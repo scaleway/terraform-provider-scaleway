@@ -9,11 +9,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPCGatewayNetwork() *schema.Resource {
+func DataSourceScalewayVPCGatewayNetwork() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCGatewayNetwork().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPCGatewayNetwork().Schema)
 
 	// Set 'Optional' schema elements
 	searchFields := []string{
@@ -22,13 +26,13 @@ func dataSourceScalewayVPCGatewayNetwork() *schema.Resource {
 		"enable_masquerade",
 		"dhcp_id",
 	}
-	addOptionalFieldsToSchema(dsSchema, searchFields...)
+	datasource.AddOptionalFieldsToSchema(dsSchema, searchFields...)
 
 	dsSchema["gateway_network_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the gateway network",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: searchFields,
 	}
 
@@ -38,8 +42,8 @@ func dataSourceScalewayVPCGatewayNetwork() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -47,10 +51,10 @@ func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Reso
 	gatewayNetworkID, ok := d.GetOk("gateway_network_id")
 	if !ok {
 		res, err := vpcAPI.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
-			GatewayID:        expandStringPtr(expandID(d.Get("gateway_id"))),
-			PrivateNetworkID: expandStringPtr(expandID(d.Get("private_network_id"))),
-			EnableMasquerade: expandBoolPtr(getBool(d, "enable_masquerade")),
-			DHCPID:           expandStringPtr(expandID(d.Get("dhcp_id").(string))),
+			GatewayID:        types.ExpandStringPtr(locality.ExpandID(d.Get("gateway_id"))),
+			PrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("private_network_id"))),
+			EnableMasquerade: types.ExpandBoolPtr(getBool(d, "enable_masquerade")),
+			DHCPID:           types.ExpandStringPtr(locality.ExpandID(d.Get("dhcp_id").(string))),
 			Zone:             zone,
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -65,12 +69,12 @@ func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Reso
 		gatewayNetworkID = res.GatewayNetworks[0].ID
 	}
 
-	zonedID := datasourceNewZonedID(gatewayNetworkID, zone)
+	zonedID := datasource.NewZonedID(gatewayNetworkID, zone)
 	d.SetId(zonedID)
 
 	_ = d.Set("gateway_network_id", zonedID)
 
-	diags := resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
+	diags := resourceScalewayVPCGatewayNetworkRead(ctx, d, m)
 	if len(diags) > 0 {
 		return append(diags, diag.Errorf("failed to read gateway network state")...)
 	}

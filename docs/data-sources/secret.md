@@ -34,6 +34,9 @@ data "scaleway_secret" "by_name" {
 - `name` - (Optional) The secret name.
   Only one of `name` and `secret_id` should be specified.
 
+- `path` - (Optional) The secret path.
+  Conflicts with `secret_id`.
+
 - `secret_id` - (Optional) The secret id.
   Only one of `name` and `secret_id` should be specified.
 

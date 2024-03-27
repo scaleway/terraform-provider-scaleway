@@ -7,18 +7,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
-func resourceScalewayCockpitToken() *schema.Resource {
+func ResourceScalewayCockpitToken() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayCockpitTokenCreate,
 		ReadContext:   resourceScalewayCockpitTokenRead,
 		DeleteContext: resourceScalewayCockpitTokenDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Read:    schema.DefaultTimeout(defaultCockpitTimeout),
-			Delete:  schema.DefaultTimeout(defaultCockpitTimeout),
-			Default: schema.DefaultTimeout(defaultCockpitTimeout),
+			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
+			Delete:  schema.DefaultTimeout(DefaultCockpitTimeout),
+			Default: schema.DefaultTimeout(DefaultCockpitTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -37,7 +39,7 @@ func resourceScalewayCockpitToken() *schema.Resource {
 				ForceNew:    true,
 				MaxItems:    1,
 				Description: "Endpoints",
-				Elem:        resourceScalewayCockpitTokenScopes(),
+				Elem:        ResourceScalewayCockpitTokenScopes(),
 			},
 			"secret_key": {
 				Type:        schema.TypeString,
@@ -50,7 +52,7 @@ func resourceScalewayCockpitToken() *schema.Resource {
 	}
 }
 
-func resourceScalewayCockpitTokenScopes() *schema.Resource {
+func ResourceScalewayCockpitTokenScopes() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"query_metrics": {
@@ -120,8 +122,8 @@ func resourceScalewayCockpitTokenScopes() *schema.Resource {
 	}
 }
 
-func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -131,7 +133,7 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 	scopes := expandCockpitTokenScopes(d.Get("scopes"))
 
 	if scopes == nil {
-		schema := resourceScalewayCockpitTokenScopes().Schema
+		schema := ResourceScalewayCockpitTokenScopes().Schema
 		scopes = &cockpit.TokenScopes{
 			QueryMetrics:      schema["query_metrics"].Default.(bool),
 			WriteMetrics:      schema["write_metrics"].Default.(bool),
@@ -145,7 +147,7 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	l.Debugf("Creating token %+v", scopes)
+	logging.L.Debugf("Creating token %+v", scopes)
 
 	res, err := api.CreateToken(&cockpit.CreateTokenRequest{
 		Name:      name,
@@ -158,11 +160,11 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 
 	_ = d.Set("secret_key", res.SecretKey)
 	d.SetId(res.ID)
-	return resourceScalewayCockpitTokenRead(ctx, d, meta)
+	return resourceScalewayCockpitTokenRead(ctx, d, m)
 }
 
-func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -171,7 +173,7 @@ func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceDat
 		TokenID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -185,8 +187,8 @@ func resourceScalewayCockpitTokenRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScalewayCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func resourceScalewayCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

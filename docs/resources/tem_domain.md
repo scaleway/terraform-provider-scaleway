@@ -51,6 +51,37 @@ resource "scaleway_domain_record" "mx" {
 }
 ```
 
+
+### Configuring GitLab Project Variables
+
+```terraform
+
+variable "domain_name" {
+  type    = string
+}
+
+data "scaleway_tem_domain" "my_domain" {
+  name       = var.domain_name
+}
+
+resource "gitlab_project_variable" "smtp_host" {
+  key   = "SMTP_AUTH_USER"
+  value = data.scaleway_tem_domain.my_domain.smtps_auth_user
+}
+
+resource "gitlab_project_variable" "smtp_port" {
+  key   = "SMTP_PORT"
+  value = data.scaleway_tem_domain.my_domain.smtps_port
+}
+
+resource "gitlab_project_variable" "smtp_host" {
+  key   = "SMTP_HOST"
+  value = data.scaleway_tem_domain.my_domain.smtps_host
+}
+
+```
+
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -100,6 +131,8 @@ In addition to all arguments above, the following attributes are exported:
 - `smtps_port` - The SMTPS port to use to send emails over TLS Wrapper.
 
 - `smtps_port_alternative` - The SMTPS port to use to send emails over TLS Wrapper.
+
+- `smtps_auth_user` - SMTPS auth user refers to the identifier for a user authorized to send emails via SMTPS, ensuring secure email transmission.
 
 - `mx_blackhole` - The Scaleway's blackhole MX server to use if you do not have one.
 

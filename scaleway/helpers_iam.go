@@ -4,26 +4,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 // instanceAPIWithZone returns a new iam API for a Create request
-func iamAPI(m interface{}) *iam.API {
-	meta := m.(*Meta)
-	return iam.NewAPI(meta.scwClient)
+func IamAPI(m interface{}) *iam.API {
+	return iam.NewAPI(meta.ExtractScwClient(m))
 }
 
 func getOrganizationID(m interface{}, d *schema.ResourceData) *string {
-	meta := m.(*Meta)
-
 	orgID, orgIDExist := d.GetOk("organization_id")
 
 	if orgIDExist {
-		return expandStringPtr(orgID)
+		return types.ExpandStringPtr(orgID)
 	}
 
-	defaultOrgID, defaultOrgIDExists := meta.scwClient.GetDefaultOrganizationID()
+	defaultOrgID, defaultOrgIDExists := meta.ExtractScwClient(m).GetDefaultOrganizationID()
 	if defaultOrgIDExists {
-		return expandStringPtr(defaultOrgID)
+		return types.ExpandStringPtr(defaultOrgID)
 	}
 
 	return nil
@@ -60,7 +59,7 @@ func expandPolicyRuleSpecs(d interface{}) []*iam.RuleSpecs {
 			rule.OrganizationID = scw.StringPtr(orgID.(string))
 		}
 		if projIDs, projIDsExists := mapRule["project_ids"]; projIDsExists {
-			rule.ProjectIDs = expandStringsPtr(projIDs)
+			rule.ProjectIDs = types.ExpandStringsPtr(projIDs)
 		}
 		rules = append(rules, rule)
 	}
@@ -72,12 +71,12 @@ func flattenPolicyRules(rules []*iam.Rule) interface{} {
 	for _, rule := range rules {
 		rawRule := map[string]interface{}{}
 		if rule.OrganizationID != nil {
-			rawRule["organization_id"] = flattenStringPtr(rule.OrganizationID)
+			rawRule["organization_id"] = types.FlattenStringPtr(rule.OrganizationID)
 		} else {
 			rawRule["organization_id"] = nil
 		}
 		if rule.ProjectIDs != nil {
-			rawRule["project_ids"] = flattenSliceString(*rule.ProjectIDs)
+			rawRule["project_ids"] = types.FlattenSliceString(*rule.ProjectIDs)
 		}
 		if rule.PermissionSetNames != nil {
 			rawRule["permission_set_names"] = flattenPermissionSetNames(*rule.PermissionSetNames)

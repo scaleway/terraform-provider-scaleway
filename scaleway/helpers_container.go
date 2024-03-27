@@ -9,6 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -21,22 +26,20 @@ const (
 
 // containerAPIWithRegion returns a new container API and the region.
 func containerAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.API, scw.Region, error) {
-	meta := m.(*Meta)
-	api := container.NewAPI(meta.scwClient)
+	api := container.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 	return api, region, nil
 }
 
-// containerAPIWithRegionAndID returns a new container API, region and ID.
-func containerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := container.NewAPI(meta.scwClient)
+// ContainerAPIWithRegionAndID returns a new container API, region and ID.
+func ContainerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region, string, error) {
+	api := container.NewAPI(meta.ExtractScwClient(m))
 
-	region, id, err := parseRegionalID(id)
+	region, id, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -48,23 +51,23 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	nameRaw := d.Get("name")
 	namespaceID := d.Get("namespace_id")
 
-	name := expandOrGenerateString(nameRaw.(string), "co")
+	name := types.ExpandOrGenerateString(nameRaw.(string), "co")
 	privacyType := d.Get("privacy")
 	protocol := d.Get("protocol")
 	httpOption := d.Get("http_option")
 
 	req := &container.CreateContainerRequest{
 		Region:      region,
-		NamespaceID: expandID(namespaceID),
+		NamespaceID: locality.ExpandID(namespaceID),
 		Name:        name,
 		Privacy:     container.ContainerPrivacy(privacyType.(string)),
-		Protocol:    container.ContainerProtocol(*expandStringPtr(protocol)),
+		Protocol:    container.ContainerProtocol(*types.ExpandStringPtr(protocol)),
 		HTTPOption:  container.ContainerHTTPOption(httpOption.(string)),
 	}
 
 	// optional
 	if envVariablesRaw, ok := d.GetOk("environment_variables"); ok {
-		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(envVariablesRaw)
 	}
 
 	if secretEnvVariablesRaw, ok := d.GetOk("secret_environment_variables"); ok {
@@ -97,11 +100,11 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	}
 
 	if description, ok := d.GetOk("description"); ok {
-		req.Description = expandStringPtr(description)
+		req.Description = types.ExpandStringPtr(description)
 	}
 
 	if registryImage, ok := d.GetOk("registry_image"); ok {
-		req.RegistryImage = expandStringPtr(registryImage)
+		req.RegistryImage = types.ExpandStringPtr(registryImage)
 	}
 
 	if maxConcurrency, ok := d.GetOk("max_concurrency"); ok {
@@ -113,8 +116,8 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 
 func waitForContainerNamespace(ctx context.Context, containerAPI *container.API, region scw.Region, namespaceID string, timeout time.Duration) (*container.Namespace, error) {
 	retryInterval := defaultContainerRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	ns, err := containerAPI.WaitForNamespace(&container.WaitForNamespaceRequest{
@@ -129,8 +132,8 @@ func waitForContainerNamespace(ctx context.Context, containerAPI *container.API,
 
 func waitForContainerCron(ctx context.Context, api *container.API, cronID string, region scw.Region, timeout time.Duration) (*container.Cron, error) {
 	retryInterval := defaultContainerRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	request := container.WaitForCronRequest{
@@ -145,8 +148,8 @@ func waitForContainerCron(ctx context.Context, api *container.API, cronID string
 
 func waitForContainer(ctx context.Context, api *container.API, containerID string, region scw.Region, timeout time.Duration) (*container.Container, error) {
 	retryInterval := defaultContainerRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	request := container.WaitForContainerRequest{
@@ -161,8 +164,8 @@ func waitForContainer(ctx context.Context, api *container.API, containerID strin
 
 func waitForContainerDomain(ctx context.Context, api *container.API, domainID string, region scw.Region, timeout time.Duration) (*container.Domain, error) {
 	retryInterval := defaultContainerRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	request := container.WaitForDomainRequest{
@@ -182,7 +185,7 @@ func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
 	for k, v := range secretsMap {
 		secrets = append(secrets, &container.Secret{
 			Key:   k,
-			Value: expandStringPtr(v),
+			Value: types.ExpandStringPtr(v),
 		})
 	}
 

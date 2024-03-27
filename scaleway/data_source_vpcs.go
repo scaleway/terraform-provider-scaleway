@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func dataSourceScalewayVPCs() *schema.Resource {
+func DataSourceScalewayVPCs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayVPCsRead,
 		Schema: map[string]*schema.Schema{
@@ -58,30 +60,30 @@ func dataSourceScalewayVPCs() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeBool,
 						},
-						"region":          regionSchema(),
+						"region":          regional.Schema(),
 						"organization_id": organizationIDSchema(),
 						"project_id":      projectIDSchema(),
 					},
 				},
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func dataSourceScalewayVPCsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
+func dataSourceScalewayVPCsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	res, err := vpcAPI.ListVPCs(&vpc.ListVPCsRequest{
 		Region:    region,
-		Tags:      expandStrings(d.Get("tags")),
-		Name:      expandStringPtr(d.Get("name")),
-		ProjectID: expandStringPtr(d.Get("project_id")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
+		Name:      types.ExpandStringPtr(d.Get("name")),
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -90,10 +92,10 @@ func dataSourceScalewayVPCsRead(ctx context.Context, d *schema.ResourceData, met
 	vpcs := []interface{}(nil)
 	for _, virtualPrivateCloud := range res.Vpcs {
 		rawVpc := make(map[string]interface{})
-		rawVpc["id"] = newRegionalIDString(region, virtualPrivateCloud.ID)
+		rawVpc["id"] = regional.NewIDString(region, virtualPrivateCloud.ID)
 		rawVpc["name"] = virtualPrivateCloud.Name
-		rawVpc["created_at"] = flattenTime(virtualPrivateCloud.CreatedAt)
-		rawVpc["update_at"] = flattenTime(virtualPrivateCloud.UpdatedAt)
+		rawVpc["created_at"] = types.FlattenTime(virtualPrivateCloud.CreatedAt)
+		rawVpc["update_at"] = types.FlattenTime(virtualPrivateCloud.UpdatedAt)
 		rawVpc["is_default"] = virtualPrivateCloud.IsDefault
 		if len(virtualPrivateCloud.Tags) > 0 {
 			rawVpc["tags"] = virtualPrivateCloud.Tags

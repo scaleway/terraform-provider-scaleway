@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_documentdb_database"
 
 # scaleway_documentdb_database
 
-Gets information about DocumentDB database. More on our official [site](https://www.scaleway.com/en/developers/api/document_db/)
+Gets information about DocumentDB database.
 
 ## Example Usage
 

@@ -5,13 +5,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
-func dataSourceScalewayDocumentDBDatabase() *schema.Resource {
+func DataSourceScalewayDocumentDBDatabase() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayDocumentDBDatabase().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayDocumentDBDatabase().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["instance_id"].Required = true
 	dsSchema["instance_id"].Computed = false
@@ -22,13 +24,13 @@ func dataSourceScalewayDocumentDBDatabase() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, region, err := documentDBAPIWithRegion(d, meta)
+func dataSourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	_, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id").(string))
+	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 	databaseName := d.Get("name").(string)
 
 	id := resourceScalewayDocumentDBDatabaseID(region, instanceID, databaseName)
@@ -37,7 +39,7 @@ func dataSourceScalewayDocumentDBDatabaseRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayDocumentDBDatabaseRead(ctx, d, meta)
+	diags := resourceScalewayDocumentDBDatabaseRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read database state")...)
 	}

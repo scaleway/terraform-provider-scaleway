@@ -7,21 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
+func DataSourceScalewayInstanceSecurityGroup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceSecurityGroup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayInstanceSecurityGroup().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"security_group_id"}
 	dsSchema["security_group_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the security group",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 
@@ -32,8 +35,8 @@ func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -43,8 +46,8 @@ func dataSourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.
 		sgName := d.Get("name").(string)
 		res, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(sgName),
-			Project: expandStringPtr(d.Get("project_id")),
+			Name:    types.ExpandStringPtr(sgName),
+			Project: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -62,8 +65,8 @@ func dataSourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.
 		securityGroupID = foundSG.ID
 	}
 
-	zonedID := datasourceNewZonedID(securityGroupID, zone)
+	zonedID := datasource.NewZonedID(securityGroupID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("security_group_id", zonedID)
-	return resourceScalewayInstanceSecurityGroupRead(ctx, d, meta)
+	return resourceScalewayInstanceSecurityGroupRead(ctx, d, m)
 }

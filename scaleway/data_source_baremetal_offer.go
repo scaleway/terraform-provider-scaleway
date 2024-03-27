@@ -9,9 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
-func dataSourceScalewayBaremetalOffer() *schema.Resource {
+func DataSourceScalewayBaremetalOffer() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayBaremetalOfferRead,
 
@@ -45,7 +47,7 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 				Default:     false,
 				Description: "Include disabled offers",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 
 			"bandwidth": {
 				Type:        schema.TypeInt,
@@ -143,19 +145,19 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	baremetalAPI, fallBackZone, err := baremetalAPIWithZone(d, meta)
+func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	baremetalAPI, fallBackZone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	zone, offerID, _ := parseZonedID(datasourceNewZonedID(d.Get("offer_id"), fallBackZone))
+	zone, offerID, _ := zonal.ParseID(datasource.NewZonedID(d.Get("offer_id"), fallBackZone))
 
 	var offer *baremetal.Offer
 
 	if offerID != "" {
 		// Temporary fix because GetOffer doesn't fetch monthly subscription offers
-		offer, err = baremetalFindOfferByID(ctx, baremetalAPI, zone, offerID)
+		offer, err = BaremetalFindOfferByID(ctx, baremetalAPI, zone, offerID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -202,7 +204,7 @@ func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.Resourc
 		offer = matches[0]
 	}
 
-	zonedID := datasourceNewZonedID(offer.ID, zone)
+	zonedID := datasource.NewZonedID(offer.ID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("offer_id", zonedID)
 	_ = d.Set("zone", zone)

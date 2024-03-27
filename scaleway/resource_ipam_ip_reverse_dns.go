@@ -9,9 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayIPAMIPReverseDNS() *schema.Resource {
+func ResourceScalewayIPAMIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIPAMIPReverseDNSCreate,
 		ReadContext:   resourceScalewayIPAMIPReverseDNSRead,
@@ -43,26 +47,26 @@ func resourceScalewayIPAMIPReverseDNS() *schema.Resource {
 				Description:  "The IP corresponding to the hostname",
 				ValidateFunc: validation.IsIPAddress,
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
 
-func resourceScalewayIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, err := ipamAPIWithRegion(d, meta)
+func resourceScalewayIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, err := ipamAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	res, err := ipamAPI.GetIP(&ipam.GetIPRequest{
 		Region: region,
-		IPID:   expandID(d.Get("ipam_ip_id")),
+		IPID:   locality.ExpandID(d.Get("ipam_ip_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 	if hostname, ok := d.GetOk("hostname"); ok {
 		reverse := &ipam.Reverse{
 			Hostname: hostname.(string),
@@ -81,11 +85,11 @@ func resourceScalewayIPAMIPReverseDNSCreate(ctx context.Context, d *schema.Resou
 		}
 	}
 
-	return resourceScalewayIPAMIPReverseDNSRead(ctx, d, meta)
+	return resourceScalewayIPAMIPReverseDNSRead(ctx, d, m)
 }
 
-func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +99,7 @@ func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.Resourc
 		IPID:   ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -107,7 +111,7 @@ func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.Resourc
 	for _, reverse := range res.Reverses {
 		if reverse.Hostname == managedHostname && reverse.Address.String() == managedAddress {
 			_ = d.Set("hostname", reverse.Hostname)
-			_ = d.Set("address", flattenIPPtr(reverse.Address))
+			_ = d.Set("address", types.FlattenIPPtr(reverse.Address))
 			break
 		}
 	}
@@ -117,8 +121,8 @@ func resourceScalewayIPAMIPReverseDNSRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -141,11 +145,11 @@ func resourceScalewayIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.Resou
 		}
 	}
 
-	return resourceScalewayIPAMIPReverseDNSRead(ctx, d, meta)
+	return resourceScalewayIPAMIPReverseDNSRead(ctx, d, m)
 }
 
-func resourceScalewayIPAMIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ipamAPI, region, ID, err := ipamAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIPAMIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ipamAPI, region, ID, err := IpamAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

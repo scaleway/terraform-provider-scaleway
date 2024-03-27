@@ -10,9 +10,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayInstanceSnapshot() *schema.Resource {
+func ResourceScalewayInstanceSnapshot() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceSnapshotCreate,
 		ReadContext:   resourceScalewayInstanceSnapshotRead,
@@ -39,7 +45,7 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Description:   "ID of the volume to take a snapshot from",
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"import"},
 			},
 			"type": {
@@ -75,10 +81,14 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bucket": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "Bucket containing qcow",
+							Type:             schema.TypeString,
+							Required:         true,
+							ForceNew:         true,
+							Description:      "Bucket containing qcow",
+							DiffSuppressFunc: diffSuppressFuncLocality,
+							StateFunc: func(i interface{}) string {
+								return regional.ExpandID(i.(string)).ID
+							},
 						},
 						"key": {
 							Type:        schema.TypeString,
@@ -97,24 +107,24 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the creation of the snapshot",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("volume_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("volume_id"),
 	}
 }
 
-func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &instance.CreateSnapshotRequest{
 		Zone:    zone,
-		Project: expandStringPtr(d.Get("project_id")),
-		Name:    expandOrGenerateString(d.Get("name"), "snap"),
+		Project: types.ExpandStringPtr(d.Get("project_id")),
+		Name:    types.ExpandOrGenerateString(d.Get("name"), "snap"),
 	}
 
 	if volumeType, ok := d.GetOk("type"); ok {
@@ -122,15 +132,15 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		req.VolumeType = volumeType
 	}
 
-	req.Tags = expandStringsPtr(d.Get("tags"))
+	req.Tags = types.ExpandStringsPtr(d.Get("tags"))
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
-		req.VolumeID = scw.StringPtr(expandZonedID(volumeID).ID)
+		req.VolumeID = scw.StringPtr(zonal.ExpandID(volumeID).ID)
 	}
 
 	if _, isImported := d.GetOk("import"); isImported {
-		req.Bucket = expandStringPtr(d.Get("import.0.bucket"))
-		req.Key = expandStringPtr(d.Get("import.0.key"))
+		req.Bucket = types.ExpandStringPtr(regional.ExpandID(d.Get("import.0.bucket")).ID)
+		req.Key = types.ExpandStringPtr(d.Get("import.0.key"))
 	}
 
 	res, err := instanceAPI.CreateSnapshot(req, scw.WithContext(ctx))
@@ -138,23 +148,23 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.Snapshot.ID))
+	d.SetId(zonal.NewIDString(zone, res.Snapshot.ID))
 
 	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
 		SnapshotID:    res.Snapshot.ID,
 		Zone:          zone,
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
+	return resourceScalewayInstanceSnapshotRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,7 +174,7 @@ func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resourc
 		Zone:       zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -179,8 +189,8 @@ func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,9 +202,9 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 		Tags:       scw.StringsPtr([]string{}),
 	}
 
-	tags := expandStrings(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
 	}
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))
@@ -202,11 +212,11 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("couldn't update snapshot: %s", err))
 	}
 
-	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
+	return resourceScalewayInstanceSnapshotRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, id, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -221,14 +231,14 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 		Zone:       zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
 
 	_, err = waitForInstanceSnapshot(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if !is404Error(err) {
+		if !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}

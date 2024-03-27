@@ -10,9 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayMNQSNSTopicSubscription() *schema.Resource {
+func ResourceScalewayMNQSNSTopicSubscription() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSNSTopicSubscriptionCreate,
 		ReadContext:   resourceScalewayMNQSNSTopicSubscriptionRead,
@@ -79,19 +82,19 @@ func resourceScalewayMNQSNSTopicSubscription() *schema.Resource {
 				Computed:    true,
 				Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}:${subscription_id}'",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSNSAPI(d, meta)
+func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID, _, err := extractProjectID(d, meta.(*Meta))
+	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,12 +107,12 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project, go %q", snsInfo.Status))
 	}
 
-	snsClient, _, err := SNSClientWithRegion(d, meta)
+	snsClient, _, err := SNSClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, resourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -119,7 +122,7 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 	if topicARNRaw, ok := d.GetOk("topic_arn"); ok {
 		topicARN = topicARNRaw.(string)
 	} else {
-		topicRegion, topicProject, topicName, err := decomposeMNQID(d.Get("topic_id").(string))
+		topicRegion, topicProject, topicName, err := DecomposeMNQID(d.Get("topic_id").(string))
 		if err != nil {
 			return diag.Diagnostics{{
 				Severity:      diag.Error,
@@ -129,13 +132,13 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 			}}
 		}
 
-		topicARN = composeSNSARN(topicRegion, topicProject, topicName)
+		topicARN = ComposeSNSARN(topicRegion, topicProject, topicName)
 	}
 
 	input := &sns.SubscribeInput{
 		Attributes:            attributes,
-		Endpoint:              expandStringPtr(d.Get("endpoint")),
-		Protocol:              expandStringPtr(d.Get("protocol")),
+		Endpoint:              types.ExpandStringPtr(d.Get("endpoint")),
+		Protocol:              types.ExpandStringPtr(d.Get("protocol")),
 		ReturnSubscriptionArn: scw.BoolPtr(true),
 		TopicArn:              &topicARN,
 	}
@@ -156,16 +159,16 @@ func resourceScalewayMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schem
 
 	d.SetId(composeMNQSubscriptionID(arn.Region, arn.ProjectID, arn.ResourceName, arn.ExtraResourceID))
 
-	return resourceScalewayMNQSNSTopicSubscriptionRead(ctx, d, meta)
+	return resourceScalewayMNQSNSTopicSubscriptionRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, region, err := SNSClientWithRegionFromID(d, meta, d.Id())
+func resourceScalewayMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	snsClient, region, err := SNSClientWithRegionFromID(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	arn, err := decomposeMNQSubscriptionID(d.Id())
+	arn, err := DecomposeMNQSubscriptionID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
@@ -177,7 +180,7 @@ func resourceScalewayMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, resourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
+	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, ResourceScalewayMNQSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,13 +195,13 @@ func resourceScalewayMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceScalewayMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegionFromID(d, meta, d.Id())
+func resourceScalewayMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	snsClient, _, err := SNSClientWithRegionFromID(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	arn, err := decomposeMNQSubscriptionID(d.Id())
+	arn, err := DecomposeMNQSubscriptionID(d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}

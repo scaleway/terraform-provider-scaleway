@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -20,7 +24,7 @@ func init() {
 func testSweepFunctionCron(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := function.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the function cron in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the function cron in (%s)", region)
 		listCron, err := functionAPI.ListCrons(
 			&function.ListCronsRequest{
 				Region: region,
@@ -35,7 +39,7 @@ func testSweepFunctionCron(_ string) error {
 				Region: region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting cron in sweeper: %s", err)
 			}
@@ -46,11 +50,11 @@ func testSweepFunctionCron(_ string) error {
 }
 
 func TestAccScalewayFunctionCron_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{
@@ -86,11 +90,11 @@ func TestAccScalewayFunctionCron_Basic(t *testing.T) {
 }
 
 func TestAccScalewayFunctionCron_NameUpdate(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{
@@ -152,11 +156,11 @@ func TestAccScalewayFunctionCron_NameUpdate(t *testing.T) {
 }
 
 func TestAccScalewayFunctionCron_WithArgs(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{
@@ -192,14 +196,14 @@ func TestAccScalewayFunctionCron_WithArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayFunctionCronExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayFunctionCronExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.FunctionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -216,14 +220,14 @@ func testAccCheckScalewayFunctionCronExists(tt *TestTools, n string) resource.Te
 	}
 }
 
-func testAccCheckScalewayFunctionCronDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayFunctionCronDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_function_cron" {
 				continue
 			}
 
-			api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.FunctionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -237,7 +241,7 @@ func testAccCheckScalewayFunctionCronDestroy(tt *TestTools) resource.TestCheckFu
 				return fmt.Errorf("function cron (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

@@ -10,9 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayDocumentDBInstance() *schema.Resource {
+func ResourceScalewayDocumentDBInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayDocumentDBInstanceCreate,
 		ReadContext:   resourceScalewayDocumentDBInstanceRead,
@@ -96,28 +99,28 @@ func resourceScalewayDocumentDBInstance() *schema.Resource {
 				Optional:    true,
 				Description: " Enable telemetry to collects basic anonymous usage data and sends them to FerretDB telemetry service",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := documentDBAPIWithRegion(d, meta)
+func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := documentDBAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	createReq := &documentdb.CreateInstanceRequest{
 		Region:      region,
-		ProjectID:   expandStringPtr(d.Get("project_id")),
-		Name:        expandOrGenerateString(d.Get("name").(string), "document-instance"),
+		ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
+		Name:        types.ExpandOrGenerateString(d.Get("name").(string), "document-instance"),
 		NodeType:    d.Get("node_type").(string),
 		Engine:      d.Get("engine").(string),
 		IsHaCluster: d.Get("is_ha_cluster").(bool),
 		UserName:    d.Get("user_name").(string),
 		Password:    d.Get("password").(string),
-		Tags:        expandStrings(d.Get("tags")),
+		Tags:        types.ExpandStrings(d.Get("tags")),
 		VolumeType:  documentdb.VolumeType(d.Get("volume_type").(string)),
 	}
 
@@ -140,25 +143,25 @@ func resourceScalewayDocumentDBInstanceCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, instance.ID))
+	d.SetId(regional.NewIDString(region, instance.ID))
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, instance.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayDocumentDBInstanceRead(ctx, d, meta)
+	return resourceScalewayDocumentDBInstanceRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	instance, err := waitForDocumentDBInstance(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -193,15 +196,15 @@ func setInitSettings(d *schema.ResourceData, settings []*documentdb.InstanceSett
 	return nil
 }
 
-func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	instance, err := waitForDocumentDBInstance(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -214,11 +217,11 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
@@ -285,7 +288,7 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 			upgradeRequests = append(upgradeRequests, &documentdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: id,
-				NodeType:   expandStringPtr(d.Get("node_type")),
+				NodeType:   types.ExpandStringPtr(d.Get("node_type")),
 			})
 		}
 
@@ -293,7 +296,7 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 			upgradeRequests = append(upgradeRequests, &documentdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: id,
-				EnableHa:   expandBoolPtr(d.Get("is_ha_cluster")),
+				EnableHa:   types.ExpandBoolPtr(d.Get("is_ha_cluster")),
 			})
 		}
 	}
@@ -315,11 +318,11 @@ func resourceScalewayDocumentDBInstanceUpdate(ctx context.Context, d *schema.Res
 		}
 	}
 
-	return resourceScalewayDocumentDBInstanceRead(ctx, d, meta)
+	return resourceScalewayDocumentDBInstanceRead(ctx, d, m)
 }
 
-func resourceScalewayDocumentDBInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := documentDBAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayDocumentDBInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := DocumentDBAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -338,7 +341,7 @@ func resourceScalewayDocumentDBInstanceDelete(ctx context.Context, d *schema.Res
 	}
 
 	_, err = waitForDocumentDBInstance(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

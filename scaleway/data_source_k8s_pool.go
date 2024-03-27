@@ -7,14 +7,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayK8SPool() *schema.Resource {
+func DataSourceScalewayK8SPool() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayK8SPool().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayK8SPool().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "cluster_id", "size")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "cluster_id", "size")
 
 	dsSchema["name"].ConflictsWith = []string{"pool_id"}
 	dsSchema["cluster_id"].ConflictsWith = []string{"pool_id"}
@@ -23,7 +27,7 @@ func dataSourceScalewayK8SPool() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the pool",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name", "cluster_id"},
 	}
 
@@ -34,8 +38,8 @@ func dataSourceScalewayK8SPool() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
+func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -43,10 +47,10 @@ func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, 
 	poolID, ok := d.GetOk("pool_id")
 	if !ok {
 		poolName := d.Get("name").(string)
-		clusterID := expandRegionalID(d.Get("cluster_id"))
+		clusterID := regional.ExpandID(d.Get("cluster_id"))
 		res, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 			Region:    region,
-			Name:      expandStringPtr(poolName),
+			Name:      types.ExpandStringPtr(poolName),
 			ClusterID: clusterID.ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -65,8 +69,8 @@ func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, 
 		poolID = foundPool.ID
 	}
 
-	regionalizedID := datasourceNewRegionalID(poolID, region)
+	regionalizedID := datasource.NewRegionalID(poolID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
-	return resourceScalewayK8SPoolRead(ctx, d, meta)
+	return resourceScalewayK8SPoolRead(ctx, d, m)
 }

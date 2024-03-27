@@ -11,9 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbPrivilege() *schema.Resource {
+func ResourceScalewayRdbPrivilege() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbPrivilegeCreate,
 		ReadContext:   resourceScalewayRdbPrivilegeRead,
@@ -31,14 +35,14 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: rdbPrivilegeUpgradeV1SchemaType(), Upgrade: rdbPrivilegeV1SchemaUpgradeFunc},
+			{Version: 0, Type: rdbPrivilegeUpgradeV1SchemaType(), Upgrade: RdbPrivilegeV1SchemaUpgradeFunc},
 		},
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "Instance on which the database is created",
 			},
 			"user_name": {
@@ -64,19 +68,19 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 				Required: true,
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
-func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, meta)
+func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID := expandID(d.Get("instance_id").(string))
+	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 	_, err = waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -96,7 +100,7 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		_, errSetPrivilege := api.SetPrivilege(createReq, scw.WithContext(ctx))
 		if errSetPrivilege != nil {
-			if is409Error(errSetPrivilege) {
+			if httperrors.Is409(errSetPrivilege) {
 				_, errWait := waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -116,13 +120,13 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayRdbUserPrivilegeID(region, expandID(instanceID), databaseName, userName))
+	d.SetId(resourceScalewayRdbUserPrivilegeID(region, locality.ExpandID(instanceID), databaseName, userName))
 
-	return resourceScalewayRdbPrivilegeRead(ctx, d, meta)
+	return resourceScalewayRdbPrivilegeRead(ctx, d, m)
 }
 
-func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := newRdbAPI(meta)
+func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := newRdbAPI(m)
 
 	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
@@ -131,7 +135,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 
 	_, err = waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -144,7 +148,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -163,7 +167,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 		UserName:     &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -177,14 +181,14 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
 	_ = d.Set("permission", privilege.Permission)
-	_ = d.Set("instance_id", newRegionalIDString(region, instanceID))
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 	_ = d.Set("region", region)
 
 	return nil
 }
 
-func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
+func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
 	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -200,7 +204,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -224,7 +228,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
-			if is409Error(errSet) {
+			if httperrors.Is409(errSet) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -248,8 +252,8 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 }
 
 //gocyclo:ignore
-func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
+func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
 	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -267,7 +271,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -296,7 +300,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 			Name:       &userName,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if is404Error(err) {
+			if httperrors.Is404(err) {
 				d.SetId("")
 				return nil
 			}
@@ -309,7 +313,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		}
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
-			if is409Error(errSet) {
+			if httperrors.Is409(errSet) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)

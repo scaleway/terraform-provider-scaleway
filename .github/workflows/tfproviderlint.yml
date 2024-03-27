@@ -16,7 +16,7 @@ jobs:
       - name: Install tfproviderlint
         run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
       - name: Run tfproviderlint
-        run: tfproviderlint ./...
+        run: tfproviderlint -R014=false ./...
   tfproviderdocs:
     runs-on: ubuntu-latest
     steps:

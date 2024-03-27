@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -20,7 +24,7 @@ func init() {
 func testSweepDocumentDBInstance(_ string) error {
 	return sweepRegions((&documentdb.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		api := documentdb.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the documentdb instances in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the documentdb instances in (%s)", region)
 		listInstances, err := api.ListInstances(
 			&documentdb.ListInstancesRequest{
 				Region: region,
@@ -35,7 +39,7 @@ func testSweepDocumentDBInstance(_ string) error {
 				Region:     region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting instance in sweeper: %s", err)
 			}
@@ -46,11 +50,11 @@ func testSweepDocumentDBInstance(_ string) error {
 }
 
 func TestAccScalewayDocumentDBInstance_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDocumentDBInstanceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -76,14 +80,14 @@ func TestAccScalewayDocumentDBInstance_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayDocumentDBInstanceExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayDocumentDBInstanceExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := documentDBAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.DocumentDBAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -100,14 +104,14 @@ func testAccCheckScalewayDocumentDBInstanceExists(tt *TestTools, n string) resou
 	}
 }
 
-func testAccCheckScalewayDocumentDBInstanceDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayDocumentDBInstanceDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_documentdb_instance" {
 				continue
 			}
 
-			api, region, id, err := documentDBAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.DocumentDBAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -121,7 +125,7 @@ func testAccCheckScalewayDocumentDBInstanceDestroy(tt *TestTools) resource.TestC
 				return fmt.Errorf("documentdb instance (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

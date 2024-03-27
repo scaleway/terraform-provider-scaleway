@@ -9,9 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayIotRoute() *schema.Resource {
+func ResourceScalewayIotRoute() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIotRouteCreate,
 		ReadContext:   resourceScalewayIotRouteRead,
@@ -180,24 +184,24 @@ func resourceScalewayIotRoute() *schema.Resource {
 				},
 			},
 			// Computed elements
-			"region": regionSchema(),
+			"region": regional.Schema(),
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time of the creation of the IoT Route",
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("hub_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("hub_id"),
 	}
 }
 
-func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, err := iotAPIWithRegion(d, meta)
+func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	hubID := expandZonedID(d.Get("hub_id")).ID
+	hubID := zonal.ExpandID(d.Get("hub_id")).ID
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -205,8 +209,8 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 
 	req := &iot.CreateRouteRequest{
 		Region: region,
-		Name:   expandOrGenerateString(d.Get("name"), "route"),
-		HubID:  expandZonedID(d.Get("hub_id")).ID,
+		Name:   types.ExpandOrGenerateString(d.Get("name"), "route"),
+		HubID:  zonal.ExpandID(d.Get("hub_id")).ID,
 		Topic:  d.Get("topic").(string),
 	}
 
@@ -244,18 +248,18 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayIotRouteRead(ctx, d, meta)
+	return resourceScalewayIotRouteRead(ctx, d, m)
 }
 
-func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, routeID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, routeID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -265,7 +269,7 @@ func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m
 		RouteID: routeID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -310,13 +314,13 @@ func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceScalewayIotRouteDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, routeID, err := iotAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayIotRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iotAPI, region, routeID, err := IotAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	hubID := expandZonedID(d.Get("hub_id")).ID
+	hubID := zonal.ExpandID(d.Get("hub_id")).ID
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -327,14 +331,14 @@ func resourceScalewayIotRouteDelete(ctx context.Context, d *schema.ResourceData,
 		RouteID: routeID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

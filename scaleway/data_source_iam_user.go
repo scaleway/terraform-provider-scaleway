@@ -8,9 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIamUser() *schema.Resource {
+func DataSourceScalewayIamUser() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayIamUserRead,
 		Schema: map[string]*schema.Schema{
@@ -18,14 +19,14 @@ func dataSourceScalewayIamUser() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "The ID of the IAM user",
-				ValidateFunc:  validationUUID(),
+				ValidateFunc:  verify.IsUUID(),
 				ConflictsWith: []string{"email"},
 			},
 			"email": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "The email address of the IAM user",
-				ValidateFunc:  validationEmail(),
+				ValidateFunc:  verify.IsEmail(),
 				ConflictsWith: []string{"user_id"},
 			},
 			"organization_id": {
@@ -38,8 +39,8 @@ func dataSourceScalewayIamUser() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamAPI := iamAPI(meta)
+func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	iamAPI := IamAPI(m)
 
 	var email, organizationID string
 	userID, ok := d.GetOk("user_id")
@@ -55,7 +56,7 @@ func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, 
 		organizationID = res.OrganizationID
 	} else {
 		res, err := iamAPI.ListUsers(&iam.ListUsersRequest{
-			OrganizationID: getOrganizationID(meta, d),
+			OrganizationID: getOrganizationID(m, d),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

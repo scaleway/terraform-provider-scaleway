@@ -10,9 +10,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayVPCGatewayNetwork() *schema.Resource {
+func ResourceScalewayVPCGatewayNetwork() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCGatewayNetworkCreate,
 		ReadContext:   resourceScalewayVPCGatewayNetworkRead,
@@ -33,20 +39,20 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			"gateway_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The ID of the public gateway where connect to",
 			},
 			"private_network_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				Description:      "The ID of the private network where connect to",
 			},
 			"dhcp_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				Description:   "The ID of the public gateway DHCP config",
 				ConflictsWith: []string{"static_address", "ipam_config"},
 			},
@@ -94,7 +100,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 							Optional:         true,
 							Computed:         true,
 							Description:      "Use this IPAM-booked IP ID as the Gateway's IP in this Private Network",
-							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
 					},
@@ -121,19 +127,19 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the Public Gateway's connection to the Private Network",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
 	}
 }
 
-func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	gatewayID := zonal.ExpandID(d.Get("gateway_id").(string)).ID
 
 	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -143,14 +149,14 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 	req := &vpcgw.CreateGatewayNetworkRequest{
 		Zone:             zone,
 		GatewayID:        gateway.ID,
-		PrivateNetworkID: expandRegionalID(d.Get("private_network_id").(string)).ID,
-		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
-		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
+		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
+		EnableMasquerade: *types.ExpandBoolPtr(d.Get("enable_masquerade")),
+		EnableDHCP:       types.ExpandBoolPtr(d.Get("enable_dhcp")),
 		IpamConfig:       expandIpamConfig(d.Get("ipam_config")),
 	}
 	staticAddress, staticAddressExist := d.GetOk("static_address")
 	if staticAddressExist {
-		address, err := expandIPNet(staticAddress.(string))
+		address, err := types.ExpandIPNet(staticAddress.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -159,11 +165,11 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 
 	dhcpID, dhcpExist := d.GetOk("dhcp_id")
 	if dhcpExist {
-		dhcpZoned := expandZonedID(dhcpID.(string))
+		dhcpZoned := zonal.ExpandID(dhcpID.(string))
 		req.DHCPID = &dhcpZoned.ID
 	}
 
-	gatewayNetwork, err := retryOnTransientStateError(func() (*vpcgw.GatewayNetwork, error) {
+	gatewayNetwork, err := transport.RetryOnTransientStateError(func() (*vpcgw.GatewayNetwork, error) {
 		return vpcgwAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
 	}, func() (*vpcgw.Gateway, error) {
 		tflog.Warn(ctx, "Public gateway is in transient state after waiting, retrying...")
@@ -173,7 +179,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, gatewayNetwork.ID))
+	d.SetId(zonal.NewIDString(zone, gatewayNetwork.ID))
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -185,18 +191,18 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
+	return resourceScalewayVPCGatewayNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	gatewayNetwork, err := waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -208,11 +214,11 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	if dhcp := gatewayNetwork.DHCP; dhcp != nil {
-		_ = d.Set("dhcp_id", newZonedID(zone, dhcp.ID).String())
+		_ = d.Set("dhcp_id", zonal.NewID(zone, dhcp.ID).String())
 	}
 
 	if staticAddress := gatewayNetwork.Address; staticAddress != nil {
-		staticAddressValue, err := flattenIPNet(*staticAddress)
+		staticAddressValue, err := types.FlattenIPNet(*staticAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -220,7 +226,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
-		_ = d.Set("mac_address", flattenStringPtr(macAddress).(string))
+		_ = d.Set("mac_address", types.FlattenStringPtr(macAddress).(string))
 	}
 
 	if enableDHCP := gatewayNetwork.EnableDHCP; enableDHCP {
@@ -234,7 +240,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	var cleanUpDHCPValue bool
 	cleanUpDHCP, cleanUpDHCPExist := d.GetOk("cleanup_dhcp")
 	if cleanUpDHCPExist {
-		cleanUpDHCPValue = *expandBoolPtr(cleanUpDHCP)
+		cleanUpDHCPValue = *types.ExpandBoolPtr(cleanUpDHCP)
 	}
 
 	gatewayNetwork, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetwork.ID, d.Timeout(schema.TimeoutRead))
@@ -247,8 +253,8 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())
-	_ = d.Set("private_network_id", newRegionalIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
+	_ = d.Set("gateway_id", zonal.NewID(zone, gatewayNetwork.GatewayID).String())
+	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
 	_ = d.Set("enable_masquerade", gatewayNetwork.EnableMasquerade)
 	_ = d.Set("cleanup_dhcp", cleanUpDHCPValue)
 	_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))
@@ -259,8 +265,8 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, ID, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -276,13 +282,13 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("enable_masquerade") {
-		updateRequest.EnableMasquerade = expandBoolPtr(d.Get("enable_masquerade"))
+		updateRequest.EnableMasquerade = types.ExpandBoolPtr(d.Get("enable_masquerade"))
 	}
 	if d.HasChange("enable_dhcp") {
-		updateRequest.EnableDHCP = expandBoolPtr(d.Get("enable_dhcp"))
+		updateRequest.EnableDHCP = types.ExpandBoolPtr(d.Get("enable_dhcp"))
 	}
 	if d.HasChange("dhcp_id") {
-		dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
+		dhcpID := zonal.ExpandID(d.Get("dhcp_id").(string)).ID
 		updateRequest.DHCPID = &dhcpID
 	}
 	if d.HasChange("ipam_config") {
@@ -291,7 +297,7 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 	if d.HasChange("static_address") {
 		staticAddress, staticAddressExist := d.GetOk("static_address")
 		if staticAddressExist {
-			address, err := expandIPNet(staticAddress.(string))
+			address, err := types.ExpandIPNet(staticAddress.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -309,11 +315,11 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
+	return resourceScalewayVPCGatewayNetworkRead(ctx, d, m)
 }
 
-func resourceScalewayVPCGatewayNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, id, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayVPCGatewayNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcgwAPI, zone, id, err := VpcgwAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -326,7 +332,7 @@ func resourceScalewayVPCGatewayNetworkDelete(ctx context.Context, d *schema.Reso
 	req := &vpcgw.DeleteGatewayNetworkRequest{
 		GatewayNetworkID: gwNetwork.ID,
 		Zone:             gwNetwork.Zone,
-		CleanupDHCP:      *expandBoolPtr(d.Get("cleanup_dhcp")),
+		CleanupDHCP:      *types.ExpandBoolPtr(d.Get("cleanup_dhcp")),
 	}
 	err = vpcgwAPI.DeleteGatewayNetwork(req, scw.WithContext(ctx))
 	if err != nil {
@@ -334,12 +340,12 @@ func resourceScalewayVPCGatewayNetworkDelete(ctx context.Context, d *schema.Reso
 	}
 
 	_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gwNetwork.GatewayID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

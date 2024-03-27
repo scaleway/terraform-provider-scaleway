@@ -25,7 +25,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
 )
 
 const (
@@ -33,10 +37,7 @@ const (
 
 	maxObjectVersionDeletionWorkers = 8
 
-	objectTestsMainRegion      = "nl-ams"
-	objectTestsSecondaryRegion = "pl-waw"
-
-	errCodeForbidden = "Forbidden"
+	ErrCodeForbidden = "Forbidden"
 )
 
 func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {
@@ -60,37 +61,36 @@ func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (
 	return s3.New(s), nil
 }
 
-func newS3ClientFromMeta(meta *Meta, region string) (*s3.S3, error) {
-	accessKey, _ := meta.scwClient.GetAccessKey()
-	secretKey, _ := meta.scwClient.GetSecretKey()
+func NewS3ClientFromMeta(meta *meta.Meta, region string) (*s3.S3, error) {
+	accessKey, _ := meta.ScwClient().GetAccessKey()
+	secretKey, _ := meta.ScwClient().GetSecretKey()
 
-	projectID, _ := meta.scwClient.GetDefaultProjectID()
+	projectID, _ := meta.ScwClient().GetDefaultProjectID()
 	if projectID != "" {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 
 	if region == "" {
-		defaultRegion, _ := meta.scwClient.GetDefaultRegion()
+		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
 		region = defaultRegion.String()
 	}
 
-	return newS3Client(meta.httpClient, region, accessKey, secretKey)
+	return newS3Client(meta.HTTPClient(), region, accessKey, secretKey)
 }
 
 func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
-	meta := m.(*Meta)
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 
-	accessKey, _ := meta.scwClient.GetAccessKey()
-	if projectID, _, err := extractProjectID(d, meta); err == nil {
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
-	secretKey, _ := meta.scwClient.GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
-	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -99,8 +99,7 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 }
 
 func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string) (*s3.S3, scw.Region, string, error) {
-	meta := m.(*Meta)
-	region, name, err := parseRegionalID(id)
+	region, name, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -113,19 +112,19 @@ func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string)
 
 	d.SetId(fmt.Sprintf("%s/%s", region, name))
 
-	accessKey, _ := meta.scwClient.GetAccessKey()
-	secretKey, _ := meta.scwClient.GetSecretKey()
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
 	if len(parts) == 2 {
 		accessKey = accessKeyWithProjectID(accessKey, parts[1])
 	} else {
-		projectID, _, err := extractProjectID(d, meta)
+		projectID, _, err := meta.ExtractProjectID(d, m)
 		if err == nil {
 			accessKey = accessKeyWithProjectID(accessKey, projectID)
 		}
 	}
 
-	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -134,19 +133,18 @@ func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string)
 }
 
 func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
-	meta := m.(*Meta)
-	region, outerID, innerID, err := parseRegionalNestedID(name)
+	region, outerID, innerID, err := regional.ParseNestedID(name)
 	if err != nil {
 		return nil, "", "", "", err
 	}
 
-	accessKey, _ := meta.scwClient.GetAccessKey()
-	if projectID, _, err := extractProjectID(d, meta); err == nil {
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
-	secretKey, _ := meta.scwClient.GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
-	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -155,19 +153,18 @@ func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name
 }
 
 func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
-	meta := m.(*Meta)
-	region, name, outerID, err := parseLocalizedNestedOwnerID(name)
+	region, name, outerID, err := locality.ParseLocalizedNestedOwnerID(name)
 	if err != nil {
 		return nil, "", name, "", err
 	}
 
-	accessKey, _ := meta.scwClient.GetAccessKey()
-	if projectID, _, err := extractProjectID(d, meta); err == nil {
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
-	secretKey, _ := meta.scwClient.GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
-	s3Client, err := newS3Client(meta.httpClient, region, accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region, accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -175,15 +172,13 @@ func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name s
 }
 
 func s3ClientForceRegion(d *schema.ResourceData, m interface{}, region string) (*s3.S3, error) {
-	meta := m.(*Meta)
-
-	accessKey, _ := meta.scwClient.GetAccessKey()
-	if projectID, _, err := extractProjectID(d, meta); err == nil {
+	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
+	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
-	secretKey, _ := meta.scwClient.GetSecretKey()
+	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
-	s3Client, err := newS3Client(meta.httpClient, region, accessKey, secretKey)
+	s3Client, err := newS3Client(meta.ExtractHTTPClient(m), region, accessKey, secretKey)
 	if err != nil {
 		return nil, err
 	}
@@ -213,12 +208,12 @@ func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
 	return tags
 }
 
-func expandObjectBucketTags(tags interface{}) []*s3.Tag {
+func ExpandObjectBucketTags(tags interface{}) []*s3.Tag {
 	tagsSet := []*s3.Tag(nil)
 	for key, value := range tags.(map[string]interface{}) {
 		tagsSet = append(tagsSet, &s3.Tag{
 			Key:   scw.StringPtr(key),
-			Value: expandStringPtr(value),
+			Value: types.ExpandStringPtr(value),
 		})
 	}
 
@@ -233,11 +228,11 @@ func objectBucketAPIEndpointURL(region scw.Region) string {
 	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
 }
 
-// Returns true if the error matches all these conditions:
+// IsS3Err returns true if the error matches all these conditions:
 //   - err is of type aws err.Error
 //   - Error.Code() matches code
 //   - Error.Message() contains message
-func isS3Err(err error, code string, message string) bool {
+func IsS3Err(err error, code string, message string) bool {
 	var awsErr awserr.Error
 	if errors.As(err, &awsErr) {
 		return awsErr.Code() == code && strings.Contains(awsErr.Message(), message)
@@ -268,12 +263,12 @@ func flattenBucketCORS(corsResponse interface{}) []map[string]interface{} {
 		corsRules = make([]map[string]interface{}, 0, len(cors.CORSRules))
 		for _, ruleObject := range cors.CORSRules {
 			rule := make(map[string]interface{})
-			rule["allowed_headers"] = flattenSliceStringPtr(ruleObject.AllowedHeaders)
-			rule["allowed_methods"] = flattenSliceStringPtr(ruleObject.AllowedMethods)
-			rule["allowed_origins"] = flattenSliceStringPtr(ruleObject.AllowedOrigins)
+			rule["allowed_headers"] = types.FlattenSliceStringPtr(ruleObject.AllowedHeaders)
+			rule["allowed_methods"] = types.FlattenSliceStringPtr(ruleObject.AllowedMethods)
+			rule["allowed_origins"] = types.FlattenSliceStringPtr(ruleObject.AllowedOrigins)
 			// Both the "ExposeHeaders" and "MaxAgeSeconds" might not be set.
 			if ruleObject.AllowedOrigins != nil {
-				rule["expose_headers"] = flattenSliceStringPtr(ruleObject.ExposeHeaders)
+				rule["expose_headers"] = types.FlattenSliceStringPtr(ruleObject.ExposeHeaders)
 			}
 			if ruleObject.MaxAgeSeconds != nil {
 				rule["max_age_seconds"] = int(*ruleObject.MaxAgeSeconds)
@@ -375,7 +370,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 
 	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, _ bool) bool {
-		pool := internal.NewWorkerPool(deletionWorkers)
+		pool := workerpool.NewWorkerPool(deletionWorkers)
 
 		for _, objectVersion := range page.Versions {
 			objectVersion := objectVersion
@@ -385,7 +380,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 				objectVersionID := aws.StringValue(objectVersion.VersionId)
 				err := deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
 
-				if isS3Err(err, ErrCodeAccessDenied, "") && force {
+				if IsS3Err(err, ErrCodeAccessDenied, "") && force {
 					legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
 					if errLegal != nil {
 						return fmt.Errorf("failed to remove legal hold: %s", errLegal)
@@ -420,7 +415,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 
 	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, _ bool) bool {
-		pool := internal.NewWorkerPool(deletionWorkers)
+		pool := workerpool.NewWorkerPool(deletionWorkers)
 
 		for _, deleteMarkerEntry := range page.DeleteMarkers {
 			deleteMarkerEntry := deleteMarkerEntry
@@ -595,7 +590,7 @@ func normalizeOwnerID(id *string) *string {
 
 func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, awsResourceNotFoundCode string) (bucketFound bool, resourceFound bool) {
 	switch {
-	case isS3Err(err, s3.ErrCodeNoSuchBucket, ""):
+	case IsS3Err(err, s3.ErrCodeNoSuchBucket, ""):
 		*diags = append(*diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Bucket not found",
@@ -603,10 +598,10 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 		})
 		return false, false
 
-	case isS3Err(err, awsResourceNotFoundCode, ""):
+	case IsS3Err(err, awsResourceNotFoundCode, ""):
 		return true, false
 
-	case isS3Err(err, ErrCodeAccessDenied, ""):
+	case IsS3Err(err, ErrCodeAccessDenied, ""):
 		d := diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  fmt.Sprintf("Cannot read bucket %s: Forbidden", resource),

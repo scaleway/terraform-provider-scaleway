@@ -8,9 +8,13 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayFunctionToken() *schema.Resource {
+func ResourceScalewayFunctionToken() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionTokenCreate,
 		ReadContext:   resourceScalewayFunctionTokenRead,
@@ -52,38 +56,38 @@ func resourceScalewayFunctionToken() *schema.Resource {
 				Sensitive: true,
 			},
 
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("function_id", "namespace_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("function_id", "namespace_id"),
 	}
 }
 
-func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	token, err := api.CreateToken(&function.CreateTokenRequest{
 		Region:      region,
-		FunctionID:  expandStringPtr(expandID(d.Get("function_id"))),
-		NamespaceID: expandStringPtr(expandID(d.Get("namespace_id"))),
-		Description: expandStringPtr(d.Get("description")),
+		FunctionID:  types.ExpandStringPtr(locality.ExpandID(d.Get("function_id"))),
+		NamespaceID: types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id"))),
+		Description: types.ExpandStringPtr(d.Get("description")),
 		ExpiresAt:   expandTimePtr(d.Get("expires_at")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, token.ID))
+	d.SetId(regional.NewIDString(region, token.ID))
 
 	_ = d.Set("token", token.Token)
 
-	return resourceScalewayFunctionTokenRead(ctx, d, meta)
+	return resourceScalewayFunctionTokenRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,23 +96,23 @@ func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceDa
 		TokenID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("function_id", flattenStringPtr(token.FunctionID))
-	_ = d.Set("namespace_id", flattenStringPtr(token.NamespaceID))
-	_ = d.Set("description", flattenStringPtr(token.Description))
-	_ = d.Set("expires_at", flattenTime(token.ExpiresAt))
+	_ = d.Set("function_id", types.FlattenStringPtr(token.FunctionID))
+	_ = d.Set("namespace_id", types.FlattenStringPtr(token.NamespaceID))
+	_ = d.Set("description", types.FlattenStringPtr(token.Description))
+	_ = d.Set("expires_at", types.FlattenTime(token.ExpiresAt))
 
 	return nil
 }
 
-func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,7 +121,7 @@ func resourceScalewayFunctionTokenDelete(ctx context.Context, d *schema.Resource
 		Region:  region,
 		TokenID: ID,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

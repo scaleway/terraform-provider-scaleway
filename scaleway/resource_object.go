@@ -13,9 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayObject() *schema.Resource {
+func ResourceScalewayObject() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayObjectCreate,
 		ReadContext:   resourceScalewayObjectRead,
@@ -99,14 +101,14 @@ func resourceScalewayObject() *schema.Resource {
 					s3.ObjectCannedACLPublicRead,
 				}, false),
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, err := s3ClientWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -114,12 +116,12 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
-	regionalID := expandRegionalID(d.Get("bucket"))
+	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, meta, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -129,11 +131,11 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 	key := d.Get("key").(string)
 
 	req := &s3.PutObjectInput{
-		ACL:          expandStringPtr(d.Get("visibility").(string)),
-		Bucket:       expandStringPtr(bucket),
-		Key:          expandStringPtr(key),
-		StorageClass: expandStringPtr(d.Get("storage_class")),
-		Metadata:     expandMapStringStringPtr(d.Get("metadata")),
+		ACL:          types.ExpandStringPtr(d.Get("visibility").(string)),
+		Bucket:       types.ExpandStringPtr(bucket),
+		Key:          types.ExpandStringPtr(key),
+		StorageClass: types.ExpandStringPtr(d.Get("storage_class")),
+		Metadata:     types.ExpandMapStringStringPtr(d.Get("metadata")),
 	}
 
 	if filePath, hasFile := d.GetOk("file"); hasFile {
@@ -164,10 +166,10 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 
 	if rawTags, hasTags := d.GetOk("tags"); hasTags {
 		_, err := s3Client.PutObjectTaggingWithContext(ctx, &s3.PutObjectTaggingInput{
-			Bucket: expandStringPtr(bucket),
-			Key:    expandStringPtr(key),
+			Bucket: types.ExpandStringPtr(bucket),
+			Key:    types.ExpandStringPtr(key),
 			Tagging: &s3.Tagging{
-				TagSet: expandObjectBucketTags(rawTags),
+				TagSet: ExpandObjectBucketTags(rawTags),
 			},
 		})
 		if err != nil {
@@ -175,13 +177,13 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	d.SetId(newRegionalIDString(region, objectID(bucket, key)))
+	d.SetId(regional.NewIDString(region, objectID(bucket, key)))
 
-	return resourceScalewayObjectRead(ctx, d, meta)
+	return resourceScalewayObjectRead(ctx, d, m)
 }
 
-func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, meta, d.Id())
+func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -189,16 +191,16 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
 
-	bucketUpdated := expandRegionalID(d.Get("bucket")).ID
+	bucketUpdated := regional.ExpandID(d.Get("bucket")).ID
 	keyUpdated := d.Get("key").(string)
 
 	if d.HasChanges("file", "hash") {
 		req := &s3.PutObjectInput{
-			Bucket:       expandStringPtr(bucketUpdated),
-			Key:          expandStringPtr(keyUpdated),
-			StorageClass: expandStringPtr(d.Get("storage_class")),
-			Metadata:     expandMapStringStringPtr(d.Get("metadata")),
-			ACL:          expandStringPtr(d.Get("visibility").(string)),
+			Bucket:       types.ExpandStringPtr(bucketUpdated),
+			Key:          types.ExpandStringPtr(keyUpdated),
+			StorageClass: types.ExpandStringPtr(d.Get("storage_class")),
+			Metadata:     types.ExpandMapStringStringPtr(d.Get("metadata")),
+			ACL:          types.ExpandStringPtr(d.Get("visibility").(string)),
 		}
 
 		if filePath, hasFile := d.GetOk("file"); hasFile {
@@ -213,12 +215,12 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 		_, err = s3Client.PutObjectWithContext(ctx, req)
 	} else {
 		_, err = s3Client.CopyObjectWithContext(ctx, &s3.CopyObjectInput{
-			Bucket:       expandStringPtr(bucketUpdated),
-			Key:          expandStringPtr(keyUpdated),
-			StorageClass: expandStringPtr(d.Get("storage_class")),
+			Bucket:       types.ExpandStringPtr(bucketUpdated),
+			Key:          types.ExpandStringPtr(keyUpdated),
+			StorageClass: types.ExpandStringPtr(d.Get("storage_class")),
 			CopySource:   scw.StringPtr(fmt.Sprintf("%s/%s", bucket, key)),
-			Metadata:     expandMapStringStringPtr(d.Get("metadata")),
-			ACL:          expandStringPtr(d.Get("visibility").(string)),
+			Metadata:     types.ExpandMapStringStringPtr(d.Get("metadata")),
+			ACL:          types.ExpandStringPtr(d.Get("visibility").(string)),
 		})
 	}
 	if err != nil {
@@ -237,10 +239,10 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("tags") {
 		_, err := s3Client.PutObjectTaggingWithContext(ctx, &s3.PutObjectTaggingInput{
-			Bucket: expandStringPtr(bucketUpdated),
-			Key:    expandStringPtr(key),
+			Bucket: types.ExpandStringPtr(bucketUpdated),
+			Key:    types.ExpandStringPtr(key),
 			Tagging: &s3.Tagging{
-				TagSet: expandObjectBucketTags(d.Get("tags")),
+				TagSet: ExpandObjectBucketTags(d.Get("tags")),
 			},
 		})
 		if err != nil {
@@ -248,13 +250,13 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	d.SetId(newRegionalIDString(region, objectID(bucketUpdated, keyUpdated)))
+	d.SetId(regional.NewIDString(region, objectID(bucketUpdated, keyUpdated)))
 
-	return resourceScalewayObjectCreate(ctx, d, meta)
+	return resourceScalewayObjectCreate(ctx, d, m)
 }
 
-func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, meta, d.Id())
+func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -263,15 +265,15 @@ func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, met
 	defer cancel()
 
 	obj, err := s3Client.HeadObjectWithContext(ctx, &s3.HeadObjectInput{
-		Bucket: expandStringPtr(bucket),
-		Key:    expandStringPtr(key),
+		Bucket: types.ExpandStringPtr(bucket),
+		Key:    types.ExpandStringPtr(key),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("region", region)
-	_ = d.Set("bucket", newRegionalIDString(region, bucket))
+	_ = d.Set("bucket", regional.NewIDString(region, bucket))
 	_ = d.Set("key", key)
 
 	for k, v := range obj.Metadata {
@@ -280,11 +282,11 @@ func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, met
 			delete(obj.Metadata, k)
 		}
 	}
-	_ = d.Set("metadata", flattenMapStringStringPtr(obj.Metadata))
+	_ = d.Set("metadata", types.FlattenMapStringStringPtr(obj.Metadata))
 
 	tags, err := s3Client.GetObjectTaggingWithContext(ctx, &s3.GetObjectTaggingInput{
-		Bucket: expandStringPtr(bucket),
-		Key:    expandStringPtr(key),
+		Bucket: types.ExpandStringPtr(bucket),
+		Key:    types.ExpandStringPtr(key),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -293,8 +295,8 @@ func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("tags", flattenObjectBucketTags(tags.TagSet))
 
 	acl, err := s3Client.GetObjectAclWithContext(ctx, &s3.GetObjectAclInput{
-		Bucket: expandStringPtr(bucket),
-		Key:    expandStringPtr(key),
+		Bucket: types.ExpandStringPtr(bucket),
+		Key:    types.ExpandStringPtr(key),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -309,8 +311,8 @@ func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceScalewayObjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(d, meta, d.Id())
+func resourceScalewayObjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -319,8 +321,8 @@ func resourceScalewayObjectDelete(ctx context.Context, d *schema.ResourceData, m
 	defer cancel()
 
 	req := &s3.DeleteObjectInput{
-		Bucket: expandStringPtr(bucket),
-		Key:    expandStringPtr(key),
+		Bucket: types.ExpandStringPtr(bucket),
+		Key:    types.ExpandStringPtr(key),
 	}
 
 	_, err = s3Client.DeleteObjectWithContext(ctx, req)

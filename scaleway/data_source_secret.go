@@ -7,29 +7,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewaySecret() *schema.Resource {
+func DataSourceScalewaySecret() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewaySecret().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewaySecret().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "path")
 
 	dsSchema["name"].ConflictsWith = []string{"secret_id"}
+	dsSchema["path"].ConflictsWith = []string{"secret_id"}
 	dsSchema["secret_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the secret",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith: []string{"name", "path"},
 	}
 	dsSchema["organization_id"] = organizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The project ID the resource is associated to",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -38,8 +42,8 @@ func dataSourceScalewaySecret() *schema.Resource {
 	}
 }
 
-func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, projectID, err := secretAPIWithRegionAndProjectID(d, meta)
+func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, projectID, err := secretAPIWithRegionAndProjectID(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -49,9 +53,10 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 		secretName := d.Get("name").(string)
 		request := &secret.ListSecretsRequest{
 			Region:         region,
-			Name:           expandStringPtr(secretName),
-			ProjectID:      expandStringPtr(projectID),
-			OrganizationID: expandStringPtr(d.Get("organization_id")),
+			Name:           types.ExpandStringPtr(secretName),
+			ProjectID:      types.ExpandStringPtr(projectID),
+			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
+			Path:           types.ExpandStringPtr(d.Get("path")),
 		}
 
 		res, err := api.ListSecrets(request, scw.WithContext(ctx))
@@ -71,14 +76,14 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 		secretID = foundSecret.ID
 	}
 
-	regionalID := datasourceNewRegionalID(secretID, region)
+	regionalID := datasource.NewRegionalID(secretID, region)
 	d.SetId(regionalID)
 	err = d.Set("secret_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewaySecretRead(ctx, d, meta)
+	diags := resourceScalewaySecretRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read secret")...)
 	}

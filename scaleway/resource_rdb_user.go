@@ -11,9 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayRdbUser() *schema.Resource {
+func ResourceScalewayRdbUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbUserCreate,
 		ReadContext:   resourceScalewayRdbUserRead,
@@ -35,7 +40,7 @@ func resourceScalewayRdbUser() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "Instance on which the user is created",
 			},
 			"name": {
@@ -56,17 +61,17 @@ func resourceScalewayRdbUser() *schema.Resource {
 				Description: "Grant admin permissions to database user",
 			},
 			// Common
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("instance_id"),
 	}
 }
 
-func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
+func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
 	// resource depends on the instance locality
 	regionalID := d.Get("instance_id").(string)
-	region, instanceID, err := parseRegionalID(regionalID)
+	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
 		diag.FromErr(err)
 	}
@@ -89,7 +94,7 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		currentUser, errCreateUser := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
-			if is409Error(errCreateUser) {
+			if httperrors.Is409(errCreateUser) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, ins.ID, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -106,21 +111,21 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayRdbUserID(region, expandID(instanceID), user.Name))
+	d.SetId(resourceScalewayRdbUserID(region, locality.ExpandID(instanceID), user.Name))
 
-	return resourceScalewayRdbUserRead(ctx, d, meta)
+	return resourceScalewayRdbUserRead(ctx, d, m)
 }
 
-func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
-	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
+func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
+	region, instanceID, userName, err := ResourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -133,7 +138,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 		Name:       &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -146,7 +151,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	user := res.Users[0]
-	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
 	_ = d.Set("name", user.Name)
 	_ = d.Set("is_admin", user.IsAdmin)
 	_ = d.Set("region", string(region))
@@ -156,10 +161,10 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
+func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
 	// resource depends on the instance locality
-	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -176,7 +181,7 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("password") {
-		req.Password = expandStringPtr(d.Get("password"))
+		req.Password = types.ExpandStringPtr(d.Get("password"))
 	}
 	if d.HasChange("is_admin") {
 		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
@@ -187,13 +192,13 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRdbUserRead(ctx, d, meta)
+	return resourceScalewayRdbUserRead(ctx, d, m)
 }
 
-func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
+func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(m)
 	// resource depends on the instance locality
-	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
+	region, instanceID, userName, err := ResourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -210,7 +215,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 			Name:       userName,
 		}, scw.WithContext(ctx))
 		if errDeleteUser != nil {
-			if is409Error(errDeleteUser) {
+			if httperrors.Is409(errDeleteUser) {
 				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
@@ -223,7 +228,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		return nil
 	})
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -236,9 +241,9 @@ func resourceScalewayRdbUserID(region scw.Region, instanceID string, userName st
 	return fmt.Sprintf("%s/%s/%s", region, instanceID, userName)
 }
 
-// Extract instance ID and username from the resource identifier.
+// ResourceScalewayRdbUserParseID extracts instance ID and username from the resource identifier.
 // The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayRdbUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
+func ResourceScalewayRdbUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
 	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)

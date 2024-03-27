@@ -11,9 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayFunction() *schema.Resource {
+func ResourceScalewayFunction() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionCreate,
 		ReadContext:   resourceScalewayFunctionRead,
@@ -152,34 +155,34 @@ func resourceScalewayFunction() *schema.Resource {
 				Computed:    true,
 				Description: "The native function domain name.",
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("namespace_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("namespace_id"),
 	}
 }
 
-func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, namespace, err := parseRegionalID(d.Get("namespace_id").(string))
+	_, namespace, err := regional.ParseID(d.Get("namespace_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &function.CreateFunctionRequest{
-		Description:                expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
+		Description:                types.ExpandStringPtr(d.Get("description").(string)),
+		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandFunctionsSecrets(d.Get("secret_environment_variables")),
-		Handler:                    expandStringPtr(d.Get("handler").(string)),
-		MaxScale:                   expandUint32Ptr(d.Get("max_scale")),
-		MemoryLimit:                expandUint32Ptr(d.Get("memory_limit")),
-		MinScale:                   expandUint32Ptr(d.Get("min_scale")),
-		Name:                       expandOrGenerateString(d.Get("name").(string), "func"),
+		Handler:                    types.ExpandStringPtr(d.Get("handler").(string)),
+		MaxScale:                   types.ExpandUint32Ptr(d.Get("max_scale")),
+		MemoryLimit:                types.ExpandUint32Ptr(d.Get("memory_limit")),
+		MinScale:                   types.ExpandUint32Ptr(d.Get("min_scale")),
+		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "func"),
 		NamespaceID:                namespace,
 		Privacy:                    function.FunctionPrivacy(d.Get("privacy").(string)),
 		Region:                     region,
@@ -199,7 +202,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	var diags diag.Diagnostics
 
 	if zipFile, zipFileExists := d.GetOk("zip_file"); zipFileExists {
-		err = functionUpload(ctx, meta, api, region, f.ID, zipFile.(string))
+		err = functionUpload(ctx, m, api, region, f.ID, zipFile.(string))
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -237,25 +240,25 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 		})
 	}
 
-	d.SetId(newRegionalIDString(region, f.ID))
+	d.SetId(regional.NewIDString(region, f.ID))
 
 	_, err = waitForFunction(ctx, api, region, f.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return append(diags, resourceScalewayFunctionRead(ctx, d, meta)...)
+	return append(diags, resourceScalewayFunctionRead(ctx, d, m)...)
 }
 
-func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	f, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -299,15 +302,15 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	f, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -321,7 +324,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	updated := false
 
 	if d.HasChange("environment_variables") {
-		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("environment_variables"))
 		updated = true
 	}
 
@@ -331,27 +334,27 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		updated = true
 	}
 
 	if d.HasChange("memory_limit") {
-		req.MemoryLimit = expandUint32Ptr(d.Get("memory_limit"))
+		req.MemoryLimit = types.ExpandUint32Ptr(d.Get("memory_limit"))
 		updated = true
 	}
 
 	if d.HasChange("handler") {
-		req.Handler = expandStringPtr(d.Get("handler").(string))
+		req.Handler = types.ExpandStringPtr(d.Get("handler").(string))
 		updated = true
 	}
 
 	if d.HasChange("min_scale") {
-		req.MinScale = expandUint32Ptr(d.Get("min_scale"))
+		req.MinScale = types.ExpandUint32Ptr(d.Get("min_scale"))
 		updated = true
 	}
 
 	if d.HasChange("max_scale") {
-		req.MaxScale = expandUint32Ptr(d.Get("max_scale"))
+		req.MaxScale = types.ExpandUint32Ptr(d.Get("max_scale"))
 		updated = true
 	}
 
@@ -385,7 +388,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	shouldDeploy := d.Get("deploy").(bool)
 
 	if zipHasChanged {
-		err = functionUpload(ctx, meta, api, region, f.ID, d.Get("zip_file").(string))
+		err = functionUpload(ctx, m, api, region, f.ID, d.Get("zip_file").(string))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to upload function: %w", err))
 		}
@@ -402,11 +405,11 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	return resourceScalewayFunctionRead(ctx, d, meta)
+	return resourceScalewayFunctionRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -421,7 +424,7 @@ func resourceScalewayFunctionDelete(ctx context.Context, d *schema.ResourceData,
 		Region:     region,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

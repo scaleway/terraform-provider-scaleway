@@ -7,11 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayFlexibleIP() *schema.Resource {
+func DataSourceScalewayFlexibleIP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayFlexibleIP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayFlexibleIP().Schema)
 
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -24,7 +27,7 @@ func dataSourceScalewayFlexibleIP() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IPv4 address",
 		ConflictsWith: []string{"ip_address"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
@@ -32,7 +35,7 @@ func dataSourceScalewayFlexibleIP() *schema.Resource {
 		Optional:     true,
 		ForceNew:     true,
 		Computed:     true,
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -41,8 +44,8 @@ func dataSourceScalewayFlexibleIP() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, meta)
+func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -52,7 +55,7 @@ func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceDat
 	if !ipIDExists {
 		res, err := fipAPI.ListFlexibleIPs(&flexibleip.ListFlexibleIPsRequest{
 			Zone:      zone,
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -71,14 +74,14 @@ func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	zoneID := datasourceNewZonedID(ipID, zone)
+	zoneID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zoneID)
 	err = d.Set("flexible_ip_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayFlexibleIPRead(ctx, d, meta)
+	diags := resourceScalewayFlexibleIPRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read flexible ip state")...)
 	}

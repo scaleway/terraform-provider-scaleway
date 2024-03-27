@@ -8,9 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayInstancePlacementGroup() *schema.Resource {
+func ResourceScalewayInstancePlacementGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstancePlacementGroupCreate,
 		ReadContext:   resourceScalewayInstancePlacementGroupRead,
@@ -63,37 +66,37 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the placement group",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
 		Zone:       zone,
-		Name:       expandOrGenerateString(d.Get("name"), "pg"),
-		Project:    expandStringPtr(d.Get("project_id")),
+		Name:       types.ExpandOrGenerateString(d.Get("name"), "pg"),
+		Project:    types.ExpandStringPtr(d.Get("project_id")),
 		PolicyMode: instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType: instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
-		Tags:       expandStrings(d.Get("tags")),
+		Tags:       types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.PlacementGroup.ID))
-	return resourceScalewayInstancePlacementGroupRead(ctx, d, meta)
+	d.SetId(zonal.NewIDString(zone, res.PlacementGroup.ID))
+	return resourceScalewayInstancePlacementGroupRead(ctx, d, m)
 }
 
-func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,7 +106,7 @@ func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.R
 		PlacementGroupID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -122,8 +125,8 @@ func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.R
 	return nil
 }
 
-func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +139,7 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name").(string))
+		req.Name = types.ExpandStringPtr(d.Get("name").(string))
 		hasChanged = true
 	}
 
@@ -153,7 +156,7 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
@@ -164,11 +167,11 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 		}
 	}
 
-	return resourceScalewayInstancePlacementGroupRead(ctx, d, meta)
+	return resourceScalewayInstancePlacementGroupRead(ctx, d, m)
 }
 
-func resourceScalewayInstancePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstancePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -178,7 +181,7 @@ func resourceScalewayInstancePlacementGroupDelete(ctx context.Context, d *schema
 		PlacementGroupID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

@@ -9,9 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayTemDomain() *schema.Resource {
+func ResourceScalewayTemDomain() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayTemDomainCreate,
 		ReadContext:   resourceScalewayTemDomainRead,
@@ -20,8 +23,8 @@ func resourceScalewayTemDomain() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Delete:  schema.DefaultTimeout(defaultTemDomainTimeout),
-			Default: schema.DefaultTimeout(defaultTemDomainTimeout),
+			Delete:  schema.DefaultTimeout(DefaultTemDomainTimeout),
+			Default: schema.DefaultTimeout(DefaultTemDomainTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -111,6 +114,11 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Computed:    true,
 				Description: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPort),
 			},
+			"smtps_auth_user": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "SMTPS auth user refers to the identifier for a user authorized to send emails via SMTPS, ensuring secure email transmission",
+			},
 			"smtps_port_alternative": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -155,14 +163,14 @@ func resourceScalewayTemDomain() *schema.Resource {
 					},
 				},
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := temAPIWithRegion(d, meta)
+func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -177,13 +185,13 @@ func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, domain.ID))
+	d.SetId(regional.NewIDString(region, domain.ID))
 
-	return resourceScalewayTemDomainRead(ctx, d, meta)
+	return resourceScalewayTemDomainRead(ctx, d, m)
 }
 
-func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := temAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := TemAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -193,7 +201,7 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 		DomainID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -203,10 +211,10 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("name", domain.Name)
 	_ = d.Set("accept_tos", true)
 	_ = d.Set("status", domain.Status)
-	_ = d.Set("created_at", flattenTime(domain.CreatedAt))
-	_ = d.Set("next_check_at", flattenTime(domain.NextCheckAt))
-	_ = d.Set("last_valid_at", flattenTime(domain.LastValidAt))
-	_ = d.Set("revoked_at", flattenTime(domain.RevokedAt))
+	_ = d.Set("created_at", types.FlattenTime(domain.CreatedAt))
+	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
+	_ = d.Set("last_valid_at", types.FlattenTime(domain.LastValidAt))
+	_ = d.Set("revoked_at", types.FlattenTime(domain.RevokedAt))
 	_ = d.Set("last_error", domain.LastError)
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)
@@ -220,19 +228,19 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("reputation", flattenDomainReputation(domain.Reputation))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
-
+	_ = d.Set("smtps_auth_user", domain.ProjectID)
 	return nil
 }
 
-func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := temAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := TemAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	_, err = WaitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -244,12 +252,12 @@ func resourceScalewayTemDomainDelete(ctx context.Context, d *schema.ResourceData
 		Region:   region,
 		DomainID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	_, err = WaitForTemDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

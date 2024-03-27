@@ -8,9 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayBlockVolume() *schema.Resource {
+func ResourceScalewayBlockVolume() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayBlockVolumeCreate,
 		ReadContext:   resourceScalewayBlockVolumeRead,
@@ -62,7 +66,7 @@ func resourceScalewayBlockVolume() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the volume",
 			},
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			"project_id": projectIDSchema(),
 		},
 		CustomizeDiff: customdiff.All(
@@ -71,22 +75,22 @@ func resourceScalewayBlockVolume() *schema.Resource {
 	}
 }
 
-func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, meta)
+func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &block.CreateVolumeRequest{
 		Zone:      zone,
-		Name:      expandOrGenerateString(d.Get("name").(string), "volume"),
+		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "volume"),
 		ProjectID: d.Get("project_id").(string),
-		Tags:      expandStrings(d.Get("tags")),
-		PerfIops:  expandUint32Ptr(d.Get("iops")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
+		PerfIops:  types.ExpandUint32Ptr(d.Get("iops")),
 	}
 
 	if iops, ok := d.GetOk("iops"); ok {
-		req.PerfIops = expandUint32Ptr(iops)
+		req.PerfIops = types.ExpandUint32Ptr(iops)
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -98,7 +102,7 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 
 	if snapshotID, ok := d.GetOk("snapshot_id"); ok {
 		req.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
-			SnapshotID: expandID(snapshotID.(string)),
+			SnapshotID: locality.ExpandID(snapshotID.(string)),
 		}
 	}
 
@@ -107,25 +111,25 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, volume.ID))
+	d.SetId(zonal.NewIDString(zone, volume.ID))
 
 	_, err = waitForBlockVolume(ctx, api, zone, volume.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayBlockVolumeRead(ctx, d, meta)
+	return resourceScalewayBlockVolumeRead(ctx, d, m)
 }
 
-func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	volume, err := waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -135,7 +139,7 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("name", volume.Name)
 
 	if volume.Specs != nil {
-		_ = d.Set("iops", flattenUint32Ptr(volume.Specs.PerfIops))
+		_ = d.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
 	}
 	_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
 	_ = d.Set("zone", volume.Zone)
@@ -143,7 +147,7 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("tags", volume.Tags)
 
 	if volume.ParentSnapshotID != nil {
-		_ = d.Set("snapshot_id", newZonedIDString(zone, *volume.ParentSnapshotID))
+		_ = d.Set("snapshot_id", zonal.NewIDString(zone, *volume.ParentSnapshotID))
 	} else {
 		_ = d.Set("snapshot_id", "")
 	}
@@ -151,15 +155,15 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	volume, err := waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -172,7 +176,7 @@ func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("size") {
@@ -181,18 +185,18 @@ func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if _, err := api.UpdateVolume(req, scw.WithContext(ctx)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayBlockVolumeRead(ctx, d, meta)
+	return resourceScalewayBlockVolumeRead(ctx, d, m)
 }
 
-func resourceScalewayBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -211,7 +215,7 @@ func resourceScalewayBlockVolumeDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_, err = waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

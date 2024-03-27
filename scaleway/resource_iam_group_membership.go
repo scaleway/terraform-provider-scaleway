@@ -9,9 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayIamGroupMembership() *schema.Resource {
+func ResourceScalewayIamGroupMembership() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayIamGroupMembershipCreate,
 		ReadContext:   resourceScalewayIamGroupMembershipRead,
@@ -45,11 +47,11 @@ func resourceScalewayIamGroupMembership() *schema.Resource {
 	}
 }
 
-func resourceScalewayIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func resourceScalewayIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
 
-	userID := expandStringPtr(d.Get("user_id"))
-	applicationID := expandStringPtr(d.Get("application_id"))
+	userID := types.ExpandStringPtr(d.Get("user_id"))
+	applicationID := types.ExpandStringPtr(d.Get("application_id"))
 
 	group, err := api.AddGroupMember(&iam.AddGroupMemberRequest{
 		GroupID:       d.Get("group_id").(string),
@@ -60,14 +62,14 @@ func resourceScalewayIamGroupMembershipCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(groupMembershipID(group.ID, userID, applicationID))
+	d.SetId(GroupMembershipID(group.ID, userID, applicationID))
 
-	return resourceScalewayIamGroupMembershipRead(ctx, d, meta)
+	return resourceScalewayIamGroupMembershipRead(ctx, d, m)
 }
 
-func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
-	groupID, userID, applicationID, err := expandGroupMembershipID(d.Id())
+func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
+	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -76,7 +78,7 @@ func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.Resou
 		GroupID: groupID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 
 			return nil
@@ -115,9 +117,9 @@ func resourceScalewayIamGroupMembershipRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
-	groupID, userID, applicationID, err := expandGroupMembershipID(d.Id())
+func resourceScalewayIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
+	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,7 +136,7 @@ func resourceScalewayIamGroupMembershipDelete(ctx context.Context, d *schema.Res
 
 	_, err = api.RemoveGroupMember(req, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 
 			return nil
@@ -145,7 +147,7 @@ func resourceScalewayIamGroupMembershipDelete(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func groupMembershipID(groupID string, userID *string, applicationID *string) string {
+func GroupMembershipID(groupID string, userID *string, applicationID *string) string {
 	if userID != nil {
 		return fmt.Sprintf("%s/user/%s", groupID, *userID)
 	}
@@ -153,7 +155,7 @@ func groupMembershipID(groupID string, userID *string, applicationID *string) st
 	return fmt.Sprintf("%s/app/%s", groupID, *applicationID)
 }
 
-func expandGroupMembershipID(id string) (groupID string, userID string, applicationID string, err error) {
+func ExpandGroupMembershipID(id string) (groupID string, userID string, applicationID string, err error) {
 	elems := strings.Split(id, "/")
 	if len(elems) != 3 {
 		return "", "", "", fmt.Errorf("invalid group member id format, expected {groupID}/{type}/{memberID}, got: %s", id)

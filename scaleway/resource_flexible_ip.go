@@ -7,9 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayFlexibleIP() *schema.Resource {
+func ResourceScalewayFlexibleIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFlexibleIPCreate,
 		ReadContext:   resourceScalewayFlexibleIPRead,
@@ -58,7 +62,7 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the flexible IP",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			"ip_address": {
@@ -82,12 +86,12 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("server_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("server_id"),
 	}
 }
 
-func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, err := fipAPIWithZone(d, meta)
+func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,26 +100,26 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 		Zone:        zone,
 		ProjectID:   d.Get("project_id").(string),
 		Description: d.Get("description").(string),
-		Tags:        expandStrings(d.Get("tags")),
-		ServerID:    expandStringPtr(expandID(d.Get("server_id"))),
-		Reverse:     expandStringPtr(d.Get("reverse")),
+		Tags:        types.ExpandStrings(d.Get("tags")),
+		ServerID:    types.ExpandStringPtr(locality.ExpandID(d.Get("server_id"))),
+		Reverse:     types.ExpandStringPtr(d.Get("reverse")),
 		IsIPv6:      d.Get("is_ipv6").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, flexibleIP.ID))
+	d.SetId(zonal.NewIDString(zone, flexibleIP.ID))
 
 	_, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayFlexibleIPRead(ctx, d, meta)
+	return resourceScalewayFlexibleIPRead(ctx, d, m)
 }
 
-func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, ID, err := fipAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, ID, err := FipAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,7 +136,7 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		// We check for 403 because flexible API returns 403 for a deleted IP
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -144,13 +148,13 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("organization_id", flexibleIP.OrganizationID)
 	_ = d.Set("project_id", flexibleIP.ProjectID)
 	_ = d.Set("reverse", flexibleIP.Reverse)
-	_ = d.Set("created_at", flattenTime(flexibleIP.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(flexibleIP.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(flexibleIP.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(flexibleIP.UpdatedAt))
 	_ = d.Set("tags", flexibleIP.Tags)
 	_ = d.Set("status", flexibleIP.Status.String())
 
 	if flexibleIP.ServerID != nil {
-		_ = d.Set("server_id", newZonedIDString(zone, *flexibleIP.ServerID))
+		_ = d.Set("server_id", zonal.NewIDString(zone, *flexibleIP.ServerID))
 	} else {
 		_ = d.Set("server_id", "")
 	}
@@ -158,8 +162,8 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, ID, err := fipAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, ID, err := FipAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -176,17 +180,17 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 	hasChanged := false
 
 	if d.HasChanges("reverse") {
-		updateRequest.Reverse = expandUpdatedStringPtr(d.Get("reverse"))
+		updateRequest.Reverse = types.ExpandUpdatedStringPtr(d.Get("reverse"))
 		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
@@ -215,7 +219,7 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 			_, err = fipAPI.AttachFlexibleIP(&flexibleip.AttachFlexibleIPRequest{
 				Zone:     zone,
 				FipsIDs:  []string{ID},
-				ServerID: expandID(d.Get("server_id")),
+				ServerID: locality.ExpandID(d.Get("server_id")),
 			})
 			if err != nil {
 				return diag.FromErr(err)
@@ -228,11 +232,11 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFlexibleIPRead(ctx, d, meta)
+	return resourceScalewayFlexibleIPRead(ctx, d, m)
 }
 
-func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fipAPI, zone, ID, err := fipAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	fipAPI, zone, ID, err := FipAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -247,12 +251,12 @@ func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceDat
 		Zone:  zone,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) && !is403Error(err) {
+	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) && !is403Error(err) {
+	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
 

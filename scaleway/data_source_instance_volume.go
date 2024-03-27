@@ -7,21 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayInstanceVolume() *schema.Resource {
+func DataSourceScalewayInstanceVolume() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceVolume().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayInstanceVolume().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["volume_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the volume",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["name"].ConflictsWith = []string{"volume_id"}
 
@@ -31,8 +34,8 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -42,8 +45,8 @@ func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.Resourc
 		volumeName := d.Get("name").(string)
 		res, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
 			Zone:    zone,
-			Name:    expandStringPtr(volumeName),
-			Project: expandStringPtr(d.Get("project_id")),
+			Name:    types.ExpandStringPtr(volumeName),
+			Project: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -61,11 +64,11 @@ func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.Resourc
 		volumeID = foundVolume.ID
 	}
 
-	zonedID := datasourceNewZonedID(volumeID, zone)
+	zonedID := datasource.NewZonedID(volumeID, zone)
 	d.SetId(zonedID)
 	err = d.Set("volume_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
+	return resourceScalewayInstanceVolumeRead(ctx, d, m)
 }

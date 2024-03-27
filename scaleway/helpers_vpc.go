@@ -14,28 +14,30 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const defaultVPCPrivateNetworkRetryInterval = 30 * time.Second
 
 // vpcAPIWithRegion returns a new VPC API and the region for a Create request
 func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Region, error) {
-	meta := m.(*Meta)
-	vpcAPI := vpc.NewAPI(meta.scwClient)
+	vpcAPI := vpc.NewAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 	return vpcAPI, region, err
 }
 
-// vpcAPIWithRegionAndID returns a new VPC API with locality and ID extracted from the state
-func vpcAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	vpcAPI := vpc.NewAPI(meta.scwClient)
+// VpcAPIWithRegionAndID returns a new VPC API with locality and ID extracted from the state
+func VpcAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, string, error) {
+	vpcAPI := vpc.NewAPI(meta.ExtractScwClient(m))
 
-	region, ID, err := parseRegionalID(id)
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -43,19 +45,14 @@ func vpcAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, stri
 }
 
 func vpcAPI(m interface{}) (*vpc.API, error) {
-	meta, ok := m.(*Meta)
-	if !ok {
-		return nil, fmt.Errorf("wrong type: %T", m)
-	}
-
-	return vpc.NewAPI(meta.scwClient), nil
+	return vpc.NewAPI(meta.ExtractScwClient(m)), nil
 }
 
 func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets []scw.IPNet, err error) {
 	if v, ok := d.GetOk("ipv4_subnet"); ok {
 		for _, s := range v.([]interface{}) {
 			rawSubnet := s.(map[string]interface{})
-			ipNet, err := expandIPNet(rawSubnet["subnet"].(string))
+			ipNet, err := types.ExpandIPNet(rawSubnet["subnet"].(string))
 			if err != nil {
 				return nil, nil, err
 			}
@@ -66,7 +63,7 @@ func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets
 	if v, ok := d.GetOk("ipv6_subnets"); ok {
 		for _, s := range v.(*schema.Set).List() {
 			rawSubnet := s.(map[string]interface{})
-			ipNet, err := expandIPNet(rawSubnet["subnet"].(string))
+			ipNet, err := types.ExpandIPNet(rawSubnet["subnet"].(string))
 			if err != nil {
 				return nil, nil, err
 			}
@@ -98,7 +95,7 @@ func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) 
 	for _, s := range subnets {
 		// If it's an IPv4 subnet
 		if s.IP.To4() != nil {
-			sub, err := flattenIPNet(s)
+			sub, err := types.FlattenIPNet(s)
 			if err != nil {
 				return "", nil
 			}
@@ -109,7 +106,7 @@ func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) 
 				"prefix_length": getPrefixLength(s.Mask),
 			})
 		} else {
-			sub, err := flattenIPNet(s)
+			sub, err := types.FlattenIPNet(s)
 			if err != nil {
 				return "", nil
 			}
@@ -136,28 +133,28 @@ func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (interface{}, interface{}) {
 	for _, s := range subnets {
 		// If it's an IPv4 subnet
 		if s.Subnet.IP.To4() != nil {
-			sub, err := flattenIPNet(s.Subnet)
+			sub, err := types.FlattenIPNet(s.Subnet)
 			if err != nil {
 				return "", nil
 			}
 			flattenedipv4Subnets = append(flattenedipv4Subnets, map[string]interface{}{
 				"id":            s.ID,
-				"created_at":    flattenTime(s.CreatedAt),
-				"updated_at":    flattenTime(s.UpdatedAt),
+				"created_at":    types.FlattenTime(s.CreatedAt),
+				"updated_at":    types.FlattenTime(s.UpdatedAt),
 				"subnet":        sub,
 				"address":       s.Subnet.IP.String(),
 				"subnet_mask":   maskHexToDottedDecimal(s.Subnet.Mask),
 				"prefix_length": getPrefixLength(s.Subnet.Mask),
 			})
 		} else {
-			sub, err := flattenIPNet(s.Subnet)
+			sub, err := types.FlattenIPNet(s.Subnet)
 			if err != nil {
 				return "", nil
 			}
 			flattenedipv6Subnets = append(flattenedipv6Subnets, map[string]interface{}{
 				"id":            s.ID,
-				"created_at":    flattenTime(s.CreatedAt),
-				"updated_at":    flattenTime(s.UpdatedAt),
+				"created_at":    types.FlattenTime(s.CreatedAt),
+				"updated_at":    types.FlattenTime(s.UpdatedAt),
 				"subnet":        sub,
 				"address":       s.Subnet.IP.String(),
 				"subnet_mask":   maskHexToDottedDecimal(s.Subnet.Mask),
@@ -208,17 +205,17 @@ func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]inte
 }
 
 func vpcPrivateNetworkUpgradeV1ZonalToRegionalID(element string) (string, error) {
-	locality, id, err := parseLocalizedID(element)
-	// return error if can't parse
+	l, id, err := locality.ParseLocalizedID(element)
+	// return error if l cannot be parsed
 	if err != nil {
 		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
 	}
 	// if locality is already regional return
-	if validator.IsRegion(locality) {
+	if validator.IsRegion(l) {
 		return element, nil
 	}
 
-	fetchRegion, err := scw.Zone(locality).Region()
+	fetchRegion, err := scw.Zone(l).Region()
 	if err != nil {
 		return "", err
 	}

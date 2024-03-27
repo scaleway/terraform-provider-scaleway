@@ -8,9 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayBaremetalOption() *schema.Resource {
+func DataSourceScalewayBaremetalOption() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayBaremetalOptionRead,
 		Schema: map[string]*schema.Schema{
@@ -24,7 +27,7 @@ func dataSourceScalewayBaremetalOption() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "The ID of the option",
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"name"},
 			},
 			"manageable": {
@@ -32,13 +35,13 @@ func dataSourceScalewayBaremetalOption() *schema.Resource {
 				Computed:    true,
 				Description: "Is false if the option could not be added or removed",
 			},
-			"zone": zoneSchema(),
+			"zone": zonal.Schema(),
 		},
 	}
 }
 
-func dataSourceScalewayBaremetalOptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := baremetalAPIWithZone(d, meta)
+func dataSourceScalewayBaremetalOptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -75,7 +78,7 @@ func dataSourceScalewayBaremetalOptionRead(ctx context.Context, d *schema.Resour
 		}
 	}
 
-	zoneID := datasourceNewZonedID(optionID, zone)
+	zoneID := datasource.NewZonedID(optionID, zone)
 	d.SetId(zoneID)
 
 	_ = d.Set("option_id", zoneID)

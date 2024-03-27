@@ -9,7 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func dataSourceScalewayCockpitPlan() *schema.Resource {
+func DataSourceScalewayCockpitPlan() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayCockpitPlanRead,
 		Schema: map[string]*schema.Schema{
@@ -22,8 +22,8 @@ func dataSourceScalewayCockpitPlan() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayCockpitPlanRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := cockpitAPI(meta)
+func dataSourceScalewayCockpitPlanRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, err := CockpitAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

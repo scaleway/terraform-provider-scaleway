@@ -7,9 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func resourceScalewayBlockSnapshot() *schema.Resource {
+func ResourceScalewayBlockSnapshot() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayBlockSnapshotCreate,
 		ReadContext:   resourceScalewayBlockSnapshotRead,
@@ -35,7 +40,7 @@ func resourceScalewayBlockSnapshot() *schema.Resource {
 			"volume_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				Description:      "ID of the volume from which creates a snapshot",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
@@ -47,14 +52,14 @@ func resourceScalewayBlockSnapshot() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the snapshot",
 			},
-			"zone":       zoneSchema(),
+			"zone":       zonal.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, meta)
+func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -62,33 +67,33 @@ func resourceScalewayBlockSnapshotCreate(ctx context.Context, d *schema.Resource
 	snapshot, err := api.CreateSnapshot(&block.CreateSnapshotRequest{
 		Zone:      zone,
 		ProjectID: d.Get("project_id").(string),
-		Name:      expandOrGenerateString(d.Get("name").(string), "snapshot"),
-		VolumeID:  expandID(d.Get("volume_id")),
-		Tags:      expandStrings(d.Get("tags")),
+		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "snapshot"),
+		VolumeID:  locality.ExpandID(d.Get("volume_id")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, snapshot.ID))
+	d.SetId(zonal.NewIDString(zone, snapshot.ID))
 
 	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayBlockSnapshotRead(ctx, d, meta)
+	return resourceScalewayBlockSnapshotRead(ctx, d, m)
 }
 
-func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	snapshot, err := waitForBlockSnapshot(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -108,15 +113,15 @@ func resourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	snapshot, err := waitForBlockSnapshot(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -129,22 +134,22 @@ func resourceScalewayBlockSnapshotUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if _, err := api.UpdateSnapshot(req, scw.WithContext(ctx)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayBlockSnapshotRead(ctx, d, meta)
+	return resourceScalewayBlockSnapshotRead(ctx, d, m)
 }
 
-func resourceScalewayBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, id, err := blockAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, id, err := BlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -163,7 +168,7 @@ func resourceScalewayBlockSnapshotDelete(ctx context.Context, d *schema.Resource
 	}
 
 	_, err = waitForBlockSnapshot(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

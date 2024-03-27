@@ -7,21 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayLb() *schema.Resource {
+func DataSourceScalewayLb() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLb().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayLb().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"lb_id"}
 	dsSchema["lb_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the load-balancer",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 	dsSchema["release_ip"] = &schema.Schema{
@@ -37,8 +40,8 @@ func dataSourceScalewayLb() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := lbAPIWithZone(d, meta)
+func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -48,8 +51,8 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 		lbName := d.Get("name").(string)
 		res, err := api.ListLBs(&lbSDK.ZonedAPIListLBsRequest{
 			Zone:      zone,
-			Name:      expandStringPtr(lbName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(lbName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -71,11 +74,11 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	zonedID := datasourceNewZonedID(lbID, zone)
+	zonedID := datasource.NewZonedID(lbID, zone)
 	d.SetId(zonedID)
 	err = d.Set("lb_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayLbRead(ctx, d, meta)
+	return resourceScalewayLbRead(ctx, d, m)
 }

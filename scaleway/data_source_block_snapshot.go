@@ -6,20 +6,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayBlockSnapshot() *schema.Resource {
+func DataSourceScalewayBlockSnapshot() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayBlockSnapshot().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayBlockSnapshot().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "volume_id", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "volume_id", "project_id")
 
 	dsSchema["snapshot_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the snapshot",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -28,8 +31,8 @@ func dataSourceScalewayBlockSnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, meta)
+func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -38,9 +41,9 @@ func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.Resource
 	if !snapshotIDExists {
 		res, err := api.ListSnapshots(&block.ListSnapshotsRequest{
 			Zone:      zone,
-			Name:      expandStringPtr(d.Get("name")),
-			ProjectID: expandStringPtr(d.Get("project_id")),
-			VolumeID:  expandStringPtr(d.Get("volume_id")),
+			Name:      types.ExpandStringPtr(d.Get("name")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			VolumeID:  types.ExpandStringPtr(d.Get("volume_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -58,14 +61,14 @@ func dataSourceScalewayBlockSnapshotRead(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	zoneID := datasourceNewZonedID(snapshotID, zone)
+	zoneID := datasource.NewZonedID(snapshotID, zone)
 	d.SetId(zoneID)
 	err = d.Set("snapshot_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayBlockSnapshotRead(ctx, d, meta)
+	diags := resourceScalewayBlockSnapshotRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read snapshot state")...)
 	}

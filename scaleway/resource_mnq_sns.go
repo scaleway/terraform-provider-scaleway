@@ -7,9 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func resourceScalewayMNQSNS() *schema.Resource {
+func ResourceScalewayMNQSNS() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQSNSCreate,
 		ReadContext:   resourceScalewayMNQSNSRead,
@@ -24,14 +25,14 @@ func resourceScalewayMNQSNS() *schema.Resource {
 				Computed:    true,
 				Description: "Endpoint of the SNS service",
 			},
-			"region":     regionSchema(),
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayMNQSNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQSNSAPI(d, meta)
+func resourceScalewayMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -44,13 +45,13 @@ func resourceScalewayMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, sns.ProjectID))
+	d.SetId(regional.NewIDString(region, sns.ProjectID))
 
-	return resourceScalewayMNQSNSRead(ctx, d, meta)
+	return resourceScalewayMNQSNSRead(ctx, d, m)
 }
 
-func resourceScalewayMNQSNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := MnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -70,8 +71,8 @@ func resourceScalewayMNQSNSRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceScalewayMNQSNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqSNSAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := MnqSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

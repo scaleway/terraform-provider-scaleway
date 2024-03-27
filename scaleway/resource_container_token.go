@@ -7,9 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayContainerToken() *schema.Resource {
+func ResourceScalewayContainerToken() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayContainerTokenCreate,
 		ReadContext:   resourceScalewayContainerTokenRead,
@@ -51,38 +55,38 @@ func resourceScalewayContainerToken() *schema.Resource {
 				Sensitive: true,
 			},
 
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("container_id", "namespace_id"),
+		CustomizeDiff: CustomizeDiffLocalityCheck("container_id", "namespace_id"),
 	}
 }
 
-func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	token, err := api.CreateToken(&container.CreateTokenRequest{
 		Region:      region,
-		ContainerID: expandStringPtr(expandID(d.Get("container_id"))),
-		NamespaceID: expandStringPtr(expandID(d.Get("namespace_id"))),
-		Description: expandStringPtr(d.Get("description")),
+		ContainerID: types.ExpandStringPtr(locality.ExpandID(d.Get("container_id"))),
+		NamespaceID: types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id"))),
+		Description: types.ExpandStringPtr(d.Get("description")),
 		ExpiresAt:   expandTimePtr(d.Get("expires_at")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, token.ID))
+	d.SetId(regional.NewIDString(region, token.ID))
 
 	_ = d.Set("token", token.Token)
 
-	return resourceScalewayContainerTokenRead(ctx, d, meta)
+	return resourceScalewayContainerTokenRead(ctx, d, m)
 }
 
-func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -91,23 +95,23 @@ func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceD
 		TokenID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("container_id", flattenStringPtr(token.ContainerID))
-	_ = d.Set("namespace_id", flattenStringPtr(token.NamespaceID))
-	_ = d.Set("description", flattenStringPtr(token.Description))
-	_ = d.Set("expires_at", flattenTime(token.ExpiresAt))
+	_ = d.Set("container_id", types.FlattenStringPtr(token.ContainerID))
+	_ = d.Set("namespace_id", types.FlattenStringPtr(token.NamespaceID))
+	_ = d.Set("description", types.FlattenStringPtr(token.Description))
+	_ = d.Set("expires_at", types.FlattenTime(token.ExpiresAt))
 
 	return nil
 }
 
-func resourceScalewayContainerTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, ID, err := containerAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayContainerTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, ID, err := ContainerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,7 +120,7 @@ func resourceScalewayContainerTokenDelete(ctx context.Context, d *schema.Resourc
 		Region:  region,
 		TokenID: ID,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

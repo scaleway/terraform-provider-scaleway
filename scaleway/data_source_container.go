@@ -7,33 +7,37 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayContainer() *schema.Resource {
+func DataSourceScalewayContainer() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayContainer().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayContainer().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"container_id"}
 	dsSchema["container_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the Container",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 	dsSchema["namespace_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
 		Description:  "The ID of the Container namespace",
-		ValidateFunc: validationUUIDorUUIDWithLocality(),
+		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The ID of the project to filter the Container",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -42,8 +46,8 @@ func dataSourceScalewayContainer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := containerAPIWithRegion(d, meta)
+func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := containerAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -54,9 +58,9 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 		containerName := d.Get("name").(string)
 		res, err := api.ListContainers(&container.ListContainersRequest{
 			Region:      region,
-			Name:        expandStringPtr(containerName),
-			NamespaceID: expandID(namespaceID),
-			ProjectID:   expandStringPtr(d.Get("project_id")),
+			Name:        types.ExpandStringPtr(containerName),
+			NamespaceID: locality.ExpandID(namespaceID),
+			ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -74,9 +78,9 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 		containerID = foundContainer.ID
 	}
 
-	regionalID := datasourceNewRegionalID(containerID, region)
+	regionalID := datasource.NewRegionalID(containerID, region)
 	d.SetId(regionalID)
 	_ = d.Set("container_id", regionalID)
 
-	return resourceScalewayContainerRead(ctx, d, meta)
+	return resourceScalewayContainerRead(ctx, d, m)
 }

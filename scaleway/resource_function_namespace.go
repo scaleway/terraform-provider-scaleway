@@ -8,9 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayFunctionNamespace() *schema.Resource {
+func ResourceScalewayFunctionNamespace() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayFunctionNamespaceCreate,
 		ReadContext:   resourceScalewayFunctionNamespaceRead,
@@ -71,24 +74,24 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the registry namespace",
 			},
-			"region":          regionSchema(),
+			"region":          regional.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := functionAPIWithRegion(d, meta)
+func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	ns, err := api.CreateNamespace(&function.CreateNamespaceRequest{
-		Description:                expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
+		Description:                types.ExpandStringPtr(d.Get("description").(string)),
+		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandFunctionsSecrets(d.Get("secret_environment_variables")),
-		Name:                       expandOrGenerateString(d.Get("name").(string), "func"),
+		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "func"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
 	}, scw.WithContext(ctx))
@@ -96,25 +99,25 @@ func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, ns.ID))
+	d.SetId(regional.NewIDString(region, ns.ID))
 
 	_, err = waitForFunctionNamespace(ctx, api, region, ns.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFunctionNamespaceRead(ctx, d, meta)
+	return resourceScalewayFunctionNamespaceRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	ns, err := waitForFunctionNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -133,15 +136,15 @@ func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	ns, err := waitForFunctionNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -154,11 +157,11 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr(d.Get("description"))
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChanges("environment_variables") {
-		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("environment_variables"))
 	}
 
 	if d.HasChanges("secret_environment_variables") {
@@ -169,11 +172,11 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayFunctionNamespaceRead(ctx, d, meta)
+	return resourceScalewayFunctionNamespaceRead(ctx, d, m)
 }
 
-func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := FunctionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,7 +195,7 @@ func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.Reso
 	}
 
 	_, err = waitForFunctionNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

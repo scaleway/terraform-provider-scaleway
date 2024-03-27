@@ -103,8 +103,12 @@ you cannot downgrade a Redis Cluster.
 ~> **Important:** You cannot set `cluster_size` to 2, you either have to choose Standalone mode (1 node) or Cluster mode
 which is minimum 3 (1 main node + 2 secondary nodes)
 
-~> **Important:** You can set a bigger `cluster_size` than you initially did, it will migrate the Redis Cluster, but
-keep in mind that you cannot downgrade a Redis Cluster so setting a smaller `cluster_size` will not have any effect.
+~> **Important:** If you are using the Cluster mode (>=3 nodes), you can set a bigger `cluster_size` than you initially
+did, it will migrate the Redis Cluster but keep in mind that you cannot downgrade a Redis Cluster, so setting a smaller
+`cluster_size` will destroy and recreate your Cluster.
+
+~> **Important:** If you are using the Standalone mode (1 node), setting a bigger `cluster_size` will destroy and
+recreate your Cluster as you will be switching to the Cluster mode.
 
 - `tls_enabled` - (Defaults to false) Whether TLS is enabled or not.
 
@@ -121,24 +125,6 @@ keep in mind that you cannot downgrade a Redis Cluster so setting a smaller `clu
 - `private_network` - (Optional) Describes the private network you want to connect to your cluster. If not set, a public
   network will be provided. More details on the [Private Network section](#private-network)
 
-~> **Important:** The way to use private networks differs whether you are using redis in standalone or cluster mode.
-
-- Standalone mode (`cluster_size` = 1) : you can attach as many private networks as you want (each must be a separate
-  block). If you detach your only private network, your cluster won't be reachable until you define a new private or
-  public network. You can modify your private_network and its specs, you can have both a private and public network side
-  by side.
-
-- Cluster mode (`cluster_size` > 1) : you can define a single private network as you create your cluster, you won't be
-  able to edit or detach it afterward, unless you create another cluster. Your `service_ips` must be listed as follows:
-
-```terraform
-  service_ips = [
-  "10.12.1.10/20",
-  "10.12.1.11/20",
-  "10.12.1.12/20",
-]
-```
-
 ### ACL
 
 The `acl` block supports:
@@ -153,13 +139,34 @@ The `acl` block supports:
 
 The `private_network` block supports :
 
-- `id` - (Required) The UUID of the private network resource.
-- `service_ips` - (Required) Endpoint IPv4 addresses
-  in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). You must provide at
-  least one IP per node or The IP network address within the private subnet is determined by the IP Address Management (IPAM)
-  service if not set.
+- `id` - (Required) The UUID of the Private Network resource.
+- `service_ips` - (Optional) Endpoint IPv4 addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). You must provide at least one IP per node.
+  Keep in mind that in Cluster mode you cannot edit your Private Network after its creation so if you want to be able to
+  scale your Cluster horizontally (adding nodes) later, you should provide more IPs than nodes.
+  If not set, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
 
-~> The `private_network` conflict with `acl`. Only one should be specified.
+~> The `private_network` conflicts with `acl`. Only one should be specified.
+
+~> **Important:** The way to use private networks differs whether you are using Redis in Standalone or Cluster mode.
+
+- Standalone mode (`cluster_size` = 1) : you can attach as many Private Networks as you want (each must be a separate
+  block). If you detach your only private network, your cluster won't be reachable until you define a new Private or
+  Public Network. You can modify your `private_network` and its specs, you can have both a Private and Public Network side
+  by side.
+
+- Cluster mode (`cluster_size` > 2) : you can define a single Private Network as you create your Cluster, you won't be
+  able to edit or detach it afterward, unless you create another Cluster. This also means that, if you are using a static
+  configuration (`service_ips`), you won't be able to scale your Cluster horizontally (add more nodes) since it would
+  require updating the private network to add IPs.
+  Your `service_ips` must be listed as follows:
+
+```terraform
+  service_ips = [
+  "10.12.1.10/20",
+  "10.12.1.11/20",
+  "10.12.1.12/20",
+]
+```
 
 ## Attributes Reference
 

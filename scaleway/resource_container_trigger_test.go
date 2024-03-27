@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -20,7 +24,7 @@ func init() {
 func testSweepContainerTrigger(_ string) error {
 	return sweepRegions((&container.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		containerAPI := container.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the container triggers in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the container triggers in (%s)", region)
 		listTriggers, err := containerAPI.ListTriggers(
 			&container.ListTriggersRequest{
 				Region: region,
@@ -35,7 +39,7 @@ func testSweepContainerTrigger(_ string) error {
 				Region:    region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting trigger in sweeper: %s", err)
 			}
@@ -46,7 +50,7 @@ func testSweepContainerTrigger(_ string) error {
 }
 
 func TestAccScalewayContainerTrigger_SQS(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	basicConfig := `
@@ -95,7 +99,7 @@ func TestAccScalewayContainerTrigger_SQS(t *testing.T) {
 				`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerTriggerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -117,7 +121,7 @@ func TestAccScalewayContainerTrigger_SQS(t *testing.T) {
 }
 
 func TestAccScalewayContainerTrigger_Nats(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	basicConfig := `
@@ -142,7 +146,7 @@ func TestAccScalewayContainerTrigger_Nats(t *testing.T) {
 				`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerTriggerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -163,14 +167,14 @@ func TestAccScalewayContainerTrigger_Nats(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayContainerTriggerExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayContainerTriggerExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -187,14 +191,14 @@ func testAccCheckScalewayContainerTriggerExists(tt *TestTools, n string) resourc
 	}
 }
 
-func testAccCheckScalewayContainerTriggerStatusReady(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayContainerTriggerStatusReady(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -215,14 +219,14 @@ func testAccCheckScalewayContainerTriggerStatusReady(tt *TestTools, n string) re
 	}
 }
 
-func testAccCheckScalewayContainerTriggerDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayContainerTriggerDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_container_trigger" {
 				continue
 			}
 
-			api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -236,7 +240,7 @@ func testAccCheckScalewayContainerTriggerDestroy(tt *TestTools) resource.TestChe
 				return fmt.Errorf("container trigger (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}

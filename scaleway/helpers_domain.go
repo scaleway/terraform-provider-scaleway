@@ -10,6 +10,9 @@ import (
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -19,10 +22,8 @@ const (
 )
 
 // domainAPI returns a new domain API.
-func newDomainAPI(m interface{}) *domain.API {
-	meta := m.(*Meta)
-
-	return domain.NewAPI(meta.scwClient)
+func NewDomainAPI(m interface{}) *domain.API {
+	return domain.NewAPI(meta.ExtractScwClient(m))
 }
 
 func flattenDomainData(data string, recordType domain.RecordType) interface{} {
@@ -150,9 +151,9 @@ func flattenDomainHTTPService(config *domain.RecordHTTPServiceConfig) interface{
 	}
 	return []map[string]interface{}{
 		{
-			"must_contain": flattenStringPtr(config.MustContain),
+			"must_contain": types.FlattenStringPtr(config.MustContain),
 			"url":          config.URL,
-			"user_agent":   flattenStringPtr(config.UserAgent),
+			"user_agent":   types.FlattenStringPtr(config.UserAgent),
 			"strategy":     config.Strategy.String(),
 			"ips":          ips,
 		},
@@ -175,9 +176,9 @@ func expandDomainHTTPService(i interface{}, ok bool) *domain.RecordHTTPServiceCo
 	}
 
 	return &domain.RecordHTTPServiceConfig{
-		MustContain: expandStringPtr(rawMap["must_contain"]),
+		MustContain: types.ExpandStringPtr(rawMap["must_contain"]),
 		URL:         rawMap["url"].(string),
-		UserAgent:   expandStringPtr(rawMap["user_agent"]),
+		UserAgent:   types.ExpandStringPtr(rawMap["user_agent"]),
 		Strategy:    domain.RecordHTTPServiceConfigStrategy(rawMap["strategy"].(string)),
 		IPs:         ips,
 	}
@@ -264,8 +265,8 @@ func expandDomainView(i interface{}, ok bool) *domain.RecordViewConfig {
 
 func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, timeout time.Duration) (*domain.DNSZone, error) {
 	retryInterval := defaultDomainZoneRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
@@ -277,8 +278,8 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 
 func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, recordName string, recordType domain.RecordType, timeout time.Duration) (*domain.Record, error) {
 	retryInterval := defaultDomainZoneRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return domainAPI.WaitForDNSRecordExist(&domain.WaitForDNSRecordExistRequest{
@@ -290,7 +291,7 @@ func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, 
 	}, scw.WithContext(ctx))
 }
 
-func findDefaultReverse(address string) string {
+func FindDefaultReverse(address string) string {
 	parts := strings.Split(address, ".")
 	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
 		parts[i], parts[j] = parts[j], parts[i]

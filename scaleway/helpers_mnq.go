@@ -9,12 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Region, error) {
-	meta := m.(*Meta)
-	api := mnq.NewNatsAPI(meta.scwClient)
-	region, err := extractRegion(d, meta)
+	api := mnq.NewNatsAPI(meta.ExtractScwClient(m))
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -22,11 +23,10 @@ func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Reg
 	return api, region, nil
 }
 
-func mnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := mnq.NewNatsAPI(meta.scwClient)
+func MnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, scw.Region, string, error) {
+	api := mnq.NewNatsAPI(meta.ExtractScwClient(m))
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -35,10 +35,9 @@ func mnqNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, 
 }
 
 func newMNQSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error) {
-	meta := m.(*Meta)
-	api := mnq.NewSqsAPI(meta.scwClient)
+	api := mnq.NewSqsAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -46,11 +45,10 @@ func newMNQSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error
 	return api, region, nil
 }
 
-func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := mnq.NewSqsAPI(meta.scwClient)
+func MnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, scw.Region, string, error) {
+	api := mnq.NewSqsAPI(meta.ExtractScwClient(m))
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -59,10 +57,9 @@ func mnqSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, sc
 }
 
 func newMNQSNSAPI(d *schema.ResourceData, m any) (*mnq.SnsAPI, scw.Region, error) {
-	meta := m.(*Meta)
-	api := mnq.NewSnsAPI(meta.scwClient)
+	api := mnq.NewSnsAPI(meta.ExtractScwClient(m))
 
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
@@ -70,11 +67,10 @@ func newMNQSNSAPI(d *schema.ResourceData, m any) (*mnq.SnsAPI, scw.Region, error
 	return api, region, nil
 }
 
-func mnqSNSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SnsAPI, scw.Region, string, error) {
-	meta := m.(*Meta)
-	api := mnq.NewSnsAPI(meta.scwClient)
+func MnqSNSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SnsAPI, scw.Region, string, error) {
+	api := mnq.NewSnsAPI(meta.ExtractScwClient(m))
 
-	region, ID, err := parseRegionalID(regionalID)
+	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -86,7 +82,7 @@ func composeMNQID(region scw.Region, projectID string, queueName string) string 
 	return fmt.Sprintf("%s/%s/%s", region, projectID, queueName)
 }
 
-func decomposeMNQID(id string) (region scw.Region, projectID string, name string, err error) {
+func DecomposeMNQID(id string) (region scw.Region, projectID string, name string, err error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 3 {
 		return "", "", "", fmt.Errorf("invalid ID format: %q", id)
@@ -161,7 +157,7 @@ func composeARN(subject string, region scw.Region, projectID string, resourceNam
 	}.String()
 }
 
-func composeSNSARN(region scw.Region, projectID string, resourceName string) string {
+func ComposeSNSARN(region scw.Region, projectID string, resourceName string) string {
 	return composeARN("sns", region, projectID, resourceName)
 }
 

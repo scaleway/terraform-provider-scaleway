@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"errors"
@@ -11,14 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func TestAccScalewayMNQSNSTopic_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayMNQSNSTopicDestroy(tt),
 		Steps: []resource.TestStep{
@@ -137,25 +139,25 @@ func TestAccScalewayMNQSNSTopic_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayMNQSNSTopicExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayMNQSNSTopicExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		region, projectID, topicName, err := decomposeMNQID(rs.Primary.ID)
+		region, projectID, topicName, err := scaleway.DecomposeMNQID(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("failed to parse id: %w", err)
 		}
 
-		snsClient, err := newSNSClient(tt.Meta.httpClient, region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		snsClient, err := scaleway.NewSNSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
 
 		_, err = snsClient.GetTopicAttributes(&sns.GetTopicAttributesInput{
-			TopicArn: scw.StringPtr(composeSNSARN(region, projectID, topicName)),
+			TopicArn: scw.StringPtr(scaleway.ComposeSNSARN(region, projectID, topicName)),
 		})
 		if err != nil {
 			return err
@@ -165,25 +167,25 @@ func testAccCheckScalewayMNQSNSTopicExists(tt *TestTools, n string) resource.Tes
 	}
 }
 
-func testAccCheckScalewayMNQSNSTopicDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayMNQSNSTopicDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sns_topic" {
 				continue
 			}
 
-			region, projectID, topicName, err := decomposeMNQID(rs.Primary.ID)
+			region, projectID, topicName, err := scaleway.DecomposeMNQID(rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("failed to parse id: %w", err)
 			}
 
-			snsClient, err := newSNSClient(tt.Meta.httpClient, region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			snsClient, err := scaleway.NewSNSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}
 
 			_, err = snsClient.GetTopicAttributes(&sns.GetTopicAttributesInput{
-				TopicArn: scw.StringPtr(composeSNSARN(region, projectID, topicName)),
+				TopicArn: scw.StringPtr(scaleway.ComposeSNSARN(region, projectID, topicName)),
 			})
 			if err != nil {
 				if tfawserr.ErrCodeEquals(err, "AccessDeniedException") {

@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"bufio"
@@ -17,6 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 var testDockerIMG = "docker.io/library/nginx:alpine"
@@ -31,7 +35,7 @@ func init() {
 func testSweepContainer(_ string) error {
 	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		containerAPI := container.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the container in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the container in (%s)", region)
 		listNamespaces, err := containerAPI.ListContainers(
 			&container.ListContainersRequest{
 				Region: region,
@@ -46,7 +50,7 @@ func testSweepContainer(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting container in sweeper: %s", err)
 			}
@@ -57,10 +61,10 @@ func testSweepContainer(_ string) error {
 }
 
 func TestAccScalewayContainer_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -161,10 +165,10 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 }
 
 func TestAccScalewayContainer_Env(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -240,12 +244,12 @@ func TestAccScalewayContainer_Env(t *testing.T) {
 }
 
 func TestAccScalewayContainer_WithIMG(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	containerNamespace := "test-cr-ns-02"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -318,10 +322,10 @@ func TestAccScalewayContainer_WithIMG(t *testing.T) {
 }
 
 func TestAccScalewayContainer_HTTPOption(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -373,14 +377,14 @@ func TestAccScalewayContainer_HTTPOption(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayContainerExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource container not found: %s", n)
 		}
 
-		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -397,14 +401,14 @@ func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestC
 	}
 }
 
-func testAccCheckScalewayContainerDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayContainerDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_container_namespace" {
 				continue
 			}
 
-			api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -418,7 +422,7 @@ func testAccCheckScalewayContainerDestroy(tt *TestTools) resource.TestCheckFunc 
 				return fmt.Errorf("container (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}
@@ -427,10 +431,10 @@ func testAccCheckScalewayContainerDestroy(tt *TestTools) resource.TestCheckFunc 
 	}
 }
 
-func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFunc {
+func testConfigContainerNamespace(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		// Do not execute docker requests when running with cassettes
-		if !*UpdateCassettes {
+		if !*acctest.UpdateCassettes {
 			return nil
 		}
 
@@ -438,7 +442,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
-		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.ContainerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -452,10 +456,10 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 		}
 
 		meta := tt.Meta
-		var errorMessage ErrorRegistryMessage
+		var errorMessage scaleway.ErrorRegistryMessage
 
-		accessKey, _ := meta.scwClient.GetAccessKey()
-		secretKey, _ := meta.scwClient.GetSecretKey()
+		accessKey, _ := meta.ScwClient().GetAccessKey()
+		secretKey, _ := meta.ScwClient().GetSecretKey()
 		authConfig := registry.AuthConfig{
 			ServerAddress: ns.RegistryEndpoint,
 			Username:      accessKey,

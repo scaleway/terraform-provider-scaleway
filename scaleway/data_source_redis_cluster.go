@@ -8,13 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayRedisCluster() *schema.Resource {
+func DataSourceScalewayRedisCluster() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRedisCluster().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayRedisCluster().Schema)
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"cluster_id"}
 	dsSchema["cluster_id"] = &schema.Schema{
@@ -22,7 +26,7 @@ func dataSourceScalewayRedisCluster() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the Redis cluster",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -31,8 +35,8 @@ func dataSourceScalewayRedisCluster() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := redisAPIWithZone(d, meta)
+func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, zone, err := redisAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -42,8 +46,8 @@ func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceD
 		clusterName := d.Get("name").(string)
 		res, err := api.ListClusters(&redis.ListClustersRequest{
 			Zone:      zone,
-			Name:      expandStringPtr(clusterName),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(clusterName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -61,7 +65,7 @@ func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceD
 		clusterID = foundCluster.ID
 	}
 
-	zonedID := datasourceNewZonedID(clusterID, zone)
+	zonedID := datasource.NewZonedID(clusterID, zone)
 	d.SetId(zonedID)
 	err = d.Set("cluster_id", zonedID)
 	if err != nil {
@@ -72,12 +76,12 @@ func dataSourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceD
 	// clusterID may be zoned if using name in data source
 	getReq := &redis.GetClusterRequest{
 		Zone:      zone,
-		ClusterID: expandID(clusterID.(string)),
+		ClusterID: locality.ExpandID(clusterID.(string)),
 	}
 	_, err = api.GetCluster(getReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("no clusters found with the id %s", clusterID))
 	}
 
-	return resourceScalewayRedisClusterRead(ctx, d, meta)
+	return resourceScalewayRedisClusterRead(ctx, d, m)
 }

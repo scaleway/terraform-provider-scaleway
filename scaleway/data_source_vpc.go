@@ -7,19 +7,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayVPC() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPC().Schema)
+func DataSourceScalewayVPC() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayVPC().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "is_default", "region")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "is_default", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"vpc_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the VPC",
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
 	dsSchema["organization_id"] = organizationIDOptionalSchema()
@@ -27,7 +31,7 @@ func dataSourceScalewayVPC() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The project ID the resource is associated to",
-		ValidateFunc: validationUUID(),
+		ValidateFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -36,8 +40,8 @@ func dataSourceScalewayVPC() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcAPI, region, err := vpcAPIWithRegion(d, meta)
+func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -47,9 +51,9 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 
 	if d.Get("is_default").(bool) {
 		request := &vpc.ListVPCsRequest{
-			IsDefault: expandBoolPtr(d.Get("is_default").(bool)),
+			IsDefault: types.ExpandBoolPtr(d.Get("is_default").(bool)),
 			Region:    region,
-			ProjectID: expandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}
 
 		res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))
@@ -57,16 +61,16 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 			return diag.FromErr(err)
 		}
 
-		vpcID = newRegionalIDString(region, res.Vpcs[0].ID)
+		vpcID = regional.NewIDString(region, res.Vpcs[0].ID)
 	} else {
 		vpcID, ok = d.GetOk("vpc_id")
 		if !ok {
 			vpcName := d.Get("name").(string)
 			request := &vpc.ListVPCsRequest{
-				Name:           expandStringPtr(vpcName),
+				Name:           types.ExpandStringPtr(vpcName),
 				Region:         region,
-				ProjectID:      expandStringPtr(d.Get("project_id")),
-				OrganizationID: expandStringPtr(d.Get("organization_id")),
+				ProjectID:      types.ExpandStringPtr(d.Get("project_id")),
+				OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 			}
 
 			res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))
@@ -87,14 +91,14 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 
-	regionalID := datasourceNewRegionalID(vpcID, region)
+	regionalID := datasource.NewRegionalID(vpcID, region)
 	d.SetId(regionalID)
 	err = d.Set("vpc_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayVPCRead(ctx, d, meta)
+	diags := resourceScalewayVPCRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read VPC")...)
 	}

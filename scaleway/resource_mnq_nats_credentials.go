@@ -7,9 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayMNQNatsCredentials() *schema.Resource {
+func ResourceScalewayMNQNatsCredentials() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayMNQNatsCredentialsCreate,
 		ReadContext:   resourceScalewayMNQNatsCredentialsRead,
@@ -37,21 +41,21 @@ func resourceScalewayMNQNatsCredentials() *schema.Resource {
 				Computed:    true,
 				Description: "The credentials file",
 			},
-			"region": regionSchema(),
+			"region": regional.Schema(),
 		},
 	}
 }
 
-func resourceScalewayMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := newMNQNatsAPI(d, meta)
+func resourceScalewayMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := newMNQNatsAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	credentials, err := api.CreateNatsCredentials(&mnq.NatsAPICreateNatsCredentialsRequest{
 		Region:        region,
-		NatsAccountID: expandID(d.Get("account_id").(string)),
-		Name:          expandOrGenerateString(d.Get("name").(string), "nats-credentials"),
+		NatsAccountID: locality.ExpandID(d.Get("account_id").(string)),
+		Name:          types.ExpandOrGenerateString(d.Get("name").(string), "nats-credentials"),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -59,13 +63,13 @@ func resourceScalewayMNQNatsCredentialsCreate(ctx context.Context, d *schema.Res
 
 	_ = d.Set("file", credentials.Credentials.Content)
 
-	d.SetId(newRegionalIDString(region, credentials.ID))
+	d.SetId(regional.NewIDString(region, credentials.ID))
 
-	return resourceScalewayMNQNatsCredentialsRead(ctx, d, meta)
+	return resourceScalewayMNQNatsCredentialsRead(ctx, d, m)
 }
 
-func resourceScalewayMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := MnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -75,7 +79,7 @@ func resourceScalewayMNQNatsCredentialsRead(ctx context.Context, d *schema.Resou
 		NatsCredentialsID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -89,8 +93,8 @@ func resourceScalewayMNQNatsCredentialsRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayMNQNatsCredentialsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := MnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,18 +105,18 @@ func resourceScalewayMNQNatsCredentialsUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr(d.Get("name"))
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
 	if _, err := api.UpdateNatsAccount(req, scw.WithContext(ctx)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayMNQNatsAccountRead(ctx, d, meta)
+	return resourceScalewayMNQNatsAccountRead(ctx, d, m)
 }
 
-func resourceScalewayMNQNatsCredentialsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := mnqNatsAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayMNQNatsCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := MnqNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -121,7 +125,7 @@ func resourceScalewayMNQNatsCredentialsDelete(ctx context.Context, d *schema.Res
 		Region:            region,
 		NatsCredentialsID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

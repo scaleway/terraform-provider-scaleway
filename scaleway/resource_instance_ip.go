@@ -7,9 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewayInstanceIP() *schema.Resource {
+func ResourceScalewayInstanceIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceIPCreate,
 		ReadContext:   resourceScalewayInstanceIPRead,
@@ -57,7 +60,7 @@ func resourceScalewayInstanceIP() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the ip",
 			},
-			"zone":            zoneSchema(),
+			"zone":            zonal.Schema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -81,17 +84,17 @@ func resourceScalewayInstanceIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	iprequest := &instance.CreateIPRequest{
 		Zone:    zone,
-		Project: expandStringPtr(d.Get("project_id")),
+		Project: types.ExpandStringPtr(d.Get("project_id")),
 		Type:    instance.IPType(d.Get("type").(string)),
 	}
-	tags := expandStrings(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 	if len(tags) > 0 {
 		iprequest.Tags = tags
 	}
@@ -102,7 +105,7 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 
 	reverseRaw, ok := d.GetOk("reverse")
 	if ok {
-		reverseStrPtr := expandStringPtr(reverseRaw)
+		reverseStrPtr := types.ExpandStringPtr(reverseRaw)
 		req := &instance.UpdateIPRequest{
 			IP:      res.IP.ID,
 			Reverse: &instance.NullableStringValue{Value: *reverseStrPtr},
@@ -114,12 +117,12 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	d.SetId(newZonedIDString(zone, res.IP.ID))
-	return resourceScalewayInstanceIPRead(ctx, d, meta)
+	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+	return resourceScalewayInstanceIPRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,7 +132,7 @@ func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("type") {
@@ -141,11 +144,11 @@ func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceIPRead(ctx, d, meta)
+	return resourceScalewayInstanceIPRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,7 +159,7 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}
@@ -183,11 +186,11 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("type", res.IP.Type)
 
 	if len(res.IP.Tags) > 0 {
-		_ = d.Set("tags", flattenSliceString(res.IP.Tags))
+		_ = d.Set("tags", types.FlattenSliceString(res.IP.Tags))
 	}
 
 	if res.IP.Server != nil {
-		_ = d.Set("server_id", newZonedIDString(res.IP.Zone, res.IP.Server.ID))
+		_ = d.Set("server_id", zonal.NewIDString(res.IP.Zone, res.IP.Server.ID))
 	} else {
 		_ = d.Set("server_id", "")
 	}
@@ -195,8 +198,8 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayInstanceIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+func resourceScalewayInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -207,7 +210,7 @@ func resourceScalewayInstanceIPDelete(ctx context.Context, d *schema.ResourceDat
 	}, scw.WithContext(ctx))
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
-		if is404Error(err) || is403Error(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 			return nil
 		}

@@ -2,14 +2,18 @@ package scaleway
 
 import (
 	"context"
+	"path/filepath"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func resourceScalewaySecret() *schema.Resource {
+func ResourceScalewaySecret() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewaySecretCreate,
 		ReadContext:   resourceScalewaySecretRead,
@@ -61,14 +65,23 @@ func resourceScalewaySecret() *schema.Resource {
 				Computed:    true,
 				Description: "Date and time of secret's creation (RFC 3339 format)",
 			},
-			"region":     regionSchema(),
+			"path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Location of the secret in the directory structure.",
+				Default:     "/",
+				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+					return filepath.Clean(oldValue) == filepath.Clean(newValue)
+				},
+			},
+			"region":     regional.Schema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := secretAPIWithRegion(d, meta)
+func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := secretAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -81,12 +94,17 @@ func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m
 
 	rawTag, tagExist := d.GetOk("tags")
 	if tagExist {
-		secretCreateRequest.Tags = expandStrings(rawTag)
+		secretCreateRequest.Tags = types.ExpandStrings(rawTag)
 	}
 
 	rawDescription, descriptionExist := d.GetOk("description")
 	if descriptionExist {
-		secretCreateRequest.Description = expandStringPtr(rawDescription)
+		secretCreateRequest.Description = types.ExpandStringPtr(rawDescription)
+	}
+
+	rawPath, pathExist := d.GetOk("path")
+	if pathExist {
+		secretCreateRequest.Path = types.ExpandStringPtr(rawPath)
 	}
 
 	secretResponse, err := api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
@@ -94,13 +112,13 @@ func resourceScalewaySecretCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, secretResponse.ID))
+	d.SetId(regional.NewIDString(region, secretResponse.ID))
 
-	return resourceScalewaySecretRead(ctx, d, meta)
+	return resourceScalewaySecretRead(ctx, d, m)
 }
 
-func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := SecretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,7 +128,7 @@ func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, met
 		SecretID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -118,23 +136,24 @@ func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if len(secretResponse.Tags) > 0 {
-		_ = d.Set("tags", flattenSliceString(secretResponse.Tags))
+		_ = d.Set("tags", types.FlattenSliceString(secretResponse.Tags))
 	}
 
 	_ = d.Set("name", secretResponse.Name)
-	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(secretResponse.UpdatedAt))
+	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
+	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
 	_ = d.Set("version_count", int(secretResponse.VersionCount))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", secretResponse.ProjectID)
+	_ = d.Set("path", secretResponse.Path)
 
 	return nil
 }
 
-func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := SecretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -147,17 +166,22 @@ func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m
 	hasChanged := false
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = expandUpdatedStringPtr(d.Get("name"))
+		updateRequest.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("path") {
+		updateRequest.Path = types.ExpandUpdatedStringPtr(d.Get("path"))
 		hasChanged = true
 	}
 
@@ -172,11 +196,11 @@ func resourceScalewaySecretUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return resourceScalewaySecretRead(ctx, d, meta)
+	return resourceScalewaySecretRead(ctx, d, m)
 }
 
-func resourceScalewaySecretDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := secretAPIWithRegionAndID(meta, d.Id())
+func resourceScalewaySecretDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := SecretAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,7 +209,7 @@ func resourceScalewaySecretDelete(ctx context.Context, d *schema.ResourceData, m
 		Region:   region,
 		SecretID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

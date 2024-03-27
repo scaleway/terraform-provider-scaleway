@@ -7,12 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIotHub() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIotHub().Schema)
+func DataSourceScalewayIotHub() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayIotHub().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"hub_id"}
 	dsSchema["hub_id"] = &schema.Schema{
@@ -20,7 +23,7 @@ func dataSourceScalewayIotHub() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IOT Hub",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -29,8 +32,8 @@ func dataSourceScalewayIotHub() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := iotAPIWithRegion(d, meta)
+func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -40,8 +43,8 @@ func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m
 		hubName := d.Get("name").(string)
 		res, err := api.ListHubs(&iot.ListHubsRequest{
 			Region:    region,
-			ProjectID: expandStringPtr(d.Get("project_id")),
-			Name:      expandStringPtr(hubName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			Name:      types.ExpandStringPtr(hubName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -59,13 +62,13 @@ func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m
 		hubID = foundHub.ID
 	}
 
-	regionalID := datasourceNewRegionalID(hubID, region)
+	regionalID := datasource.NewRegionalID(hubID, region)
 	d.SetId(regionalID)
 	err = d.Set("hub_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	diags := resourceScalewayIotHubRead(ctx, d, meta)
+	diags := resourceScalewayIotHubRead(ctx, d, m)
 	if diags != nil {
 		return diags
 	}

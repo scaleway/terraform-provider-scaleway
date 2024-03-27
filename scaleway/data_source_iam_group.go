@@ -7,13 +7,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func dataSourceScalewayIamGroup() *schema.Resource {
+func DataSourceScalewayIamGroup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIamGroup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceScalewayIamGroup().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name")
 
 	dsSchema["name"].ConflictsWith = []string{"group_id"}
 	dsSchema["group_id"] = &schema.Schema{
@@ -21,7 +24,7 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IAM group",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUID(),
+		ValidateFunc:  verify.IsUUID(),
 	}
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -35,15 +38,15 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api := iamAPI(meta)
+func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := IamAPI(m)
 
 	groupID, groupIDExists := d.GetOk("group_id")
 	if !groupIDExists {
 		groupName := d.Get("name").(string)
 		req := &iam.ListGroupsRequest{
-			OrganizationID: flattenStringPtr(getOrganizationID(meta, d)).(string),
-			Name:           expandStringPtr(groupName),
+			OrganizationID: types.FlattenStringPtr(getOrganizationID(m, d)).(string),
+			Name:           types.ExpandStringPtr(groupName),
 		}
 
 		res, err := api.ListGroups(req, scw.WithContext(ctx))
@@ -69,7 +72,7 @@ func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	diags := resourceScalewayIamGroupRead(ctx, d, meta)
+	diags := resourceScalewayIamGroupRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read iam group state")...)
 	}

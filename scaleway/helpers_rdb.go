@@ -13,6 +13,11 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -22,24 +27,21 @@ const (
 
 // newRdbAPI returns a new RDB API
 func newRdbAPI(m interface{}) *rdb.API {
-	meta := m.(*Meta)
-	return rdb.NewAPI(meta.scwClient)
+	return rdb.NewAPI(meta.ExtractScwClient(m))
 }
 
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
 func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
-	meta := m.(*Meta)
-
-	region, err := extractRegion(d, meta)
+	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 	return newRdbAPI(m), region, nil
 }
 
-// rdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
-	region, ID, err := parseRegionalID(id)
+// RdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
+func RdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -70,8 +72,8 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 
 func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
 	retryInterval := defaultWaitRDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
@@ -84,8 +86,8 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 
 func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.DatabaseBackup, error) {
 	retryInterval := defaultWaitRDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
@@ -98,8 +100,8 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 
 func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.ReadReplica, error) {
 	retryInterval := defaultWaitRDBRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
 	return api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
@@ -110,35 +112,42 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 	}, scw.WithContext(ctx))
 }
 
-func expandPrivateNetwork(data interface{}, exist bool, enableIpam bool) ([]*rdb.EndpointSpec, error) {
+func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, staticConfig *string) ([]*rdb.EndpointSpec, diag.Diagnostics) {
 	if data == nil || !exist {
 		return nil, nil
 	}
+	var diags diag.Diagnostics
 
 	res := make([]*rdb.EndpointSpec, 0, len(data.([]interface{})))
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
-				PrivateNetworkID: expandID(r["pn_id"].(string)),
+				PrivateNetworkID: locality.ExpandID(r["pn_id"].(string)),
+				IpamConfig:       &rdb.EndpointSpecPrivateNetworkIpamConfig{},
 			},
 		}
-		if enableIpam {
-			spec.PrivateNetwork.IpamConfig = &rdb.EndpointSpecPrivateNetworkIpamConfig{}
-		} else {
-			ipNet := r["ip_net"].(string)
-			if len(ipNet) > 0 {
-				ip, err := expandIPNet(r["ip_net"].(string))
-				if err != nil {
-					return res, err
-				}
-				spec.PrivateNetwork.ServiceIP = &ip
+
+		if staticConfig != nil {
+			ip, err := types.ExpandIPNet(*staticConfig)
+			if err != nil {
+				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network ip_net (%s): %s", r["ip_net"], err))...)
 			}
+			spec.PrivateNetwork.ServiceIP = &ip
+			spec.PrivateNetwork.IpamConfig = nil
+			if ipamConfig != nil && *ipamConfig {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Detail:   "`ip_net` field is set so `enable_ipam` field will be ignored",
+				})
+			}
+		} else if ipamConfig == nil || !*ipamConfig {
+			return nil, diag.FromErr(errors.New("at least one of `ip_net` or `enable_ipam` (set to true) must be set"))
 		}
 		res = append(res, spec)
 	}
 
-	return res, nil
+	return res, diags
 }
 
 func expandLoadBalancer() *rdb.EndpointSpec {
@@ -156,19 +165,19 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint, enableIpam bool) (interfac
 			if err != nil {
 				return diag.FromErr(err), false
 			}
-			pnRegionalID := newRegionalIDString(fetchRegion, pn.PrivateNetworkID)
-			serviceIP, err := flattenIPNet(pn.ServiceIP)
+			pnRegionalID := regional.NewIDString(fetchRegion, pn.PrivateNetworkID)
+			serviceIP, err := types.FlattenIPNet(pn.ServiceIP)
 			if err != nil {
 				return pnI, false
 			}
 			pnI = append(pnI, map[string]interface{}{
 				"endpoint_id": endpoint.ID,
-				"ip":          flattenIPPtr(endpoint.IP),
+				"ip":          types.FlattenIPPtr(endpoint.IP),
 				"port":        int(endpoint.Port),
 				"name":        endpoint.Name,
 				"ip_net":      serviceIP,
 				"pn_id":       pnRegionalID,
-				"hostname":    flattenStringPtr(endpoint.Hostname),
+				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 				"enable_ipam": enableIpam,
 			})
 			return pnI, true
@@ -184,10 +193,10 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 		if endpoint.LoadBalancer != nil {
 			flat = append(flat, map[string]interface{}{
 				"endpoint_id": endpoint.ID,
-				"ip":          flattenIPPtr(endpoint.IP),
+				"ip":          types.FlattenIPPtr(endpoint.IP),
 				"port":        int(endpoint.Port),
 				"name":        endpoint.Name,
-				"hostname":    flattenStringPtr(endpoint.Hostname),
+				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 			})
 			return flat, true
 		}
@@ -199,7 +208,7 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 // expandTimePtr returns a time pointer for an RFC3339 time.
 // It returns nil if time is not valid, you should use validateDate to validate field.
 func expandTimePtr(i interface{}) *time.Time {
-	rawTime := expandStringPtr(i)
+	rawTime := types.ExpandStringPtr(i)
 	if rawTime == nil {
 		return nil
 	}
@@ -221,7 +230,7 @@ func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadRepli
 }
 
 // expandReadReplicaEndpointsSpecPrivateNetwork expand read-replica private network endpoints from schema to specs
-func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, enableIpam bool) (*rdb.ReadReplicaEndpointSpec, error) {
+func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *bool, staticConfig *string) (*rdb.ReadReplicaEndpointSpec, diag.Diagnostics) {
 	if data == nil || len(data.([]interface{})) == 0 {
 		return nil, nil
 	}
@@ -229,26 +238,33 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, enableIpam b
 	data = data.([]interface{})[0]
 
 	rawEndpoint := data.(map[string]interface{})
+	var diags diag.Diagnostics
 
-	endpoint := new(rdb.ReadReplicaEndpointSpec)
-	endpoint.PrivateNetwork = &rdb.ReadReplicaEndpointSpecPrivateNetwork{
-		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
+	endpoint := &rdb.ReadReplicaEndpointSpec{
+		PrivateNetwork: &rdb.ReadReplicaEndpointSpecPrivateNetwork{
+			PrivateNetworkID: locality.ExpandID(rawEndpoint["private_network_id"]),
+			IpamConfig:       &rdb.ReadReplicaEndpointSpecPrivateNetworkIpamConfig{},
+		},
 	}
 
-	if enableIpam {
-		endpoint.PrivateNetwork.IpamConfig = &rdb.ReadReplicaEndpointSpecPrivateNetworkIpamConfig{}
-	} else {
-		serviceIP := rawEndpoint["service_ip"].(string)
-		if len(serviceIP) > 0 {
-			ipNet, err := expandIPNet(serviceIP)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
-			}
-			endpoint.PrivateNetwork.ServiceIP = &ipNet
+	if staticConfig != nil {
+		ipNet, err := types.ExpandIPNet(*staticConfig)
+		if err != nil {
+			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network service_ip (%s): %s", rawEndpoint["service_ip"], err))...)
 		}
+		endpoint.PrivateNetwork.ServiceIP = &ipNet
+		endpoint.PrivateNetwork.IpamConfig = nil
+		if ipamConfig != nil && !*ipamConfig {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Detail:   "`service_ip` field is set so `enable_ipam` field will be ignored",
+			})
+		}
+	} else if ipamConfig == nil || !*ipamConfig {
+		return nil, diag.FromErr(errors.New("at least one of `service_ip` or `enable_ipam` (set to true) must be set"))
 	}
 
-	return endpoint, nil
+	return endpoint, diags
 }
 
 // flattenReadReplicaEndpoints flatten read-replica endpoints to directAccess and privateNetwork
@@ -256,10 +272,10 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 	for _, endpoint := range endpoints {
 		rawEndpoint := map[string]interface{}{
 			"endpoint_id": endpoint.ID,
-			"ip":          flattenIPPtr(endpoint.IP),
+			"ip":          types.FlattenIPPtr(endpoint.IP),
 			"port":        int(endpoint.Port),
 			"name":        endpoint.Name,
-			"hostname":    flattenStringPtr(endpoint.Hostname),
+			"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 		}
 		if endpoint.DirectAccess != nil {
 			directAccess = rawEndpoint
@@ -269,7 +285,7 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 			if err != nil {
 				return diag.FromErr(err), false
 			}
-			pnRegionalID := newRegionalIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
+			pnRegionalID := regional.NewIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
 			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
@@ -290,8 +306,8 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 	return directAccess, privateNetwork
 }
 
-// rdbPrivilegeV1SchemaUpgradeFunc allow upgrade the privilege ID on schema V1
-func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
+// RdbPrivilegeV1SchemaUpgradeFunc allow upgrade the privilege ID on schema V1
+func RdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
 	idRaw, exist := rawState["id"]
 	if !exist {
 		return nil, errors.New("upgrade: id not exist")
@@ -302,11 +318,10 @@ func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]inte
 		return rawState, nil
 	}
 
-	region, idStr, err := parseRegionalID(idRaw.(string))
+	region, idStr, err := regional.ParseID(idRaw.(string))
 	if err != nil {
 		// force the default region
-		meta := m.(*Meta)
-		defaultRegion, exist := meta.scwClient.GetDefaultRegion()
+		defaultRegion, exist := meta.ExtractScwClient(m).GetDefaultRegion()
 		if exist {
 			region = defaultRegion
 		}
@@ -326,20 +341,57 @@ func rdbPrivilegeUpgradeV1SchemaType() cty.Type {
 	})
 }
 
-func isIpamEndpoint(resource interface{}, meta interface{}) (bool, error) {
-	ipamAPI := ipam.NewAPI(meta.(*Meta).scwClient)
+func getIPConfigCreate(d *schema.ResourceData, ipFieldName string) (ipamConfig *bool, staticConfig *string) {
+	enableIpam, enableIpamSet := d.GetOk("private_network.0.enable_ipam")
+	if enableIpamSet {
+		ipamConfig = types.ExpandBoolPtr(enableIpam)
+	}
+	customIP, customIPSet := d.GetOk("private_network.0." + ipFieldName)
+	if customIPSet {
+		staticConfig = types.ExpandStringPtr(customIP)
+	}
+	return ipamConfig, staticConfig
+}
+
+// getIPConfigUpdate forces the provider to read the user's config instead of checking the state, because "enable_ipam" is not readable from the API
+func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *bool, staticConfig *string) {
+	if ipamConfigI, _ := getRawConfigForKey(d, "private_network.#.enable_ipam", cty.Bool); ipamConfigI != nil {
+		ipamConfig = types.ExpandBoolPtr(ipamConfigI)
+	}
+	if staticConfigI, _ := getRawConfigForKey(d, "private_network.#."+ipFieldName, cty.String); staticConfigI != nil {
+		staticConfig = types.ExpandStringPtr(staticConfigI)
+	}
+	return ipamConfig, staticConfig
+}
+
+func getIPAMConfigRead(resource interface{}, m interface{}) (bool, error) {
+	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
 	request := &ipam.ListIPsRequest{
 		ResourceType: "rdb_instance",
 		IsIPv6:       scw.BoolPtr(false),
 	}
+	var privateEndpoint *rdb.EndpointPrivateNetworkDetails
 
 	switch res := resource.(type) {
 	case *rdb.Instance:
 		request.Region = res.Region
 		request.ResourceID = &res.ID
+		for _, e := range res.Endpoints {
+			if e.PrivateNetwork != nil {
+				privateEndpoint = e.PrivateNetwork
+			}
+		}
 	case *rdb.ReadReplica:
 		request.Region = res.Region
 		request.ResourceID = &res.InstanceID
+		for _, e := range res.Endpoints {
+			if e.PrivateNetwork != nil {
+				privateEndpoint = e.PrivateNetwork
+			}
+		}
+	}
+	if privateEndpoint == nil {
+		return false, nil
 	}
 
 	ips, err := ipamAPI.ListIPs(request, scw.WithAllPages())
@@ -347,12 +399,10 @@ func isIpamEndpoint(resource interface{}, meta interface{}) (bool, error) {
 		return false, fmt.Errorf("could not list IPs: %w", err)
 	}
 
-	switch ips.TotalCount {
-	case 1:
-		return true, nil
-	case 0:
-		return false, nil
-	default:
-		return false, fmt.Errorf("expected no more than 1 IP for instance, got %d", ips.TotalCount)
+	for _, ip := range ips.IPs {
+		if ip.Address.String() == privateEndpoint.ServiceIP.String() {
+			return true, nil
+		}
 	}
+	return false, nil
 }

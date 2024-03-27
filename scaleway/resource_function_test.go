@@ -1,4 +1,4 @@
-package scaleway
+package scaleway_test
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func init() {
@@ -20,7 +24,7 @@ func init() {
 func testSweepFunction(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := function.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the function in (%s)", region)
+		logging.L.Debugf("sweeper: destroying the function in (%s)", region)
 		listFunctions, err := functionAPI.ListFunctions(
 			&function.ListFunctionsRequest{
 				Region: region,
@@ -34,8 +38,8 @@ func testSweepFunction(_ string) error {
 				FunctionID: f.ID,
 				Region:     region,
 			})
-			if err != nil && !is404Error(err) {
-				l.Debugf("sweeper: error (%s)", err)
+			if err != nil && !httperrors.Is404(err) {
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting functions in sweeper: %s", err)
 			}
@@ -46,11 +50,11 @@ func testSweepFunction(_ string) error {
 }
 
 func TestAccScalewayFunction_Basic(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -81,11 +85,11 @@ func TestAccScalewayFunction_Basic(t *testing.T) {
 }
 
 func TestAccScalewayFunction_Timeout(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -116,11 +120,11 @@ func TestAccScalewayFunction_Timeout(t *testing.T) {
 }
 
 func TestAccScalewayFunction_NoName(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
@@ -145,11 +149,11 @@ func TestAccScalewayFunction_NoName(t *testing.T) {
 }
 
 func TestAccScalewayFunction_EnvironmentVariables(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -208,11 +212,11 @@ func TestAccScalewayFunction_EnvironmentVariables(t *testing.T) {
 }
 
 func TestAccScalewayFunction_Upload(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -238,11 +242,11 @@ func TestAccScalewayFunction_Upload(t *testing.T) {
 }
 
 func TestAccScalewayFunction_Deploy(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -288,11 +292,11 @@ func TestAccScalewayFunction_Deploy(t *testing.T) {
 }
 
 func TestAccScalewayFunction_HTTPOption(t *testing.T) {
-	tt := NewTestTools(t)
+	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -353,14 +357,14 @@ func TestAccScalewayFunction_HTTPOption(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayFunctionExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayFunctionExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := scaleway.FunctionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -377,14 +381,14 @@ func testAccCheckScalewayFunctionExists(tt *TestTools, n string) resource.TestCh
 	}
 }
 
-func testAccCheckScalewayFunctionDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayFunctionDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_function" {
 				continue
 			}
 
-			api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := scaleway.FunctionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -398,7 +402,7 @@ func testAccCheckScalewayFunctionDestroy(tt *TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("function (%s) still exists", rs.Primary.ID)
 			}
 
-			if !is404Error(err) {
+			if !httperrors.Is404(err) {
 				return err
 			}
 		}
