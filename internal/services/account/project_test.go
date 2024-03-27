@@ -27,7 +27,7 @@ func testSweepAccountProject(_ string) error {
 
 		logging.L.Debugf("sweeper: destroying the project")
 
-		req := &accountV3.ProjectAPIListProjectsRequest{}
+		req := &accountSDK.ProjectAPIListProjectsRequest{}
 		listProjects, err := accountAPI.ListProjects(req, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list projects: %w", err)
