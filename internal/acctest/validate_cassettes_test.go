@@ -3,7 +3,7 @@ package acctest_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -16,29 +16,45 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
-const testDirectory = "testdata/"
+func exceptionsCassettesCases() map[string]struct{} {
+	return map[string]struct{}{
+		"../services/documentdb/testdata/privilege-basic.cassette.yaml":         {},
+		"../services/mnq/testdata/sns-topic-basic.cassette.yaml":                {},
+		"../services/mnq/testdata/sns-topic-subscription-basic.cassette.yaml":   {},
+		"../services/mnq/testdata/sqs-already-activated.cassette.yaml":          {},
+		"../services/object/testdata/bucket-cors-empty-origin.cassette.yaml":    {},
+		"../services/object/testdata/bucket-destroy-force.cassette.yaml":        {},
+		"../services/rdb/testdata/data-source-privilege-basic.cassette.yaml":    {},
+		"../services/rdb/testdata/privilege-basic.cassette.yaml":                {},
+		"../services/object/testdata/object-bucket-destroy-force.cassette.yaml": {},
+	}
+}
 
 // getTestFiles returns a map of cassettes files
 func getTestFiles() (map[string]struct{}, error) {
 	filesMap := make(map[string]struct{})
-	files, err := ioutil.ReadDir(testDirectory)
+	exceptions := exceptionsCassettesCases()
+	err := filepath.WalkDir("../services", func(path string, d fs.DirEntry, err error) error {
+		isCassette := strings.Contains(path, "cassette")
+		_, isException := exceptions[path]
+		if isCassette && !isException {
+			filesMap[fileNameWithoutExtSuffix(path)] = struct{}{}
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
-	}
-
-	for _, file := range files {
-		filesMap[fileNameWithoutExtSuffix(file.Name())] = struct{}{}
 	}
 
 	return filesMap, nil
 }
 
 func TestAccCassettes_Validator(t *testing.T) {
-	files, err := getTestFiles()
+	paths, err := getTestFiles()
 	require.NoError(t, err)
 
-	for name := range files {
-		c, err := cassette.Load(fmt.Sprintf("%s%s", testDirectory, name))
+	for path := range paths {
+		c, err := cassette.Load(path)
 		require.NoError(t, err)
 		assert.NoError(t, checkErrorCode(c))
 	}
@@ -53,19 +69,6 @@ func checkErrorCode(c *cassette.Cassette) error {
 	}
 
 	return nil
-}
-
-func exceptionsCassettesCases() map[string]struct{} {
-	return map[string]struct{}{
-		"testdata/object-bucket-destroy-force.cassette.yaml":     {},
-		"testdata/object-bucket-cors-empty-origin.cassette.yaml": {},
-		"testdata/rdb-privilege-basic.cassette.yaml":             {},
-		"testdata/data-source-rdb-privilege-basic.cassette.yaml": {},
-		"testdata/document-db-privilege-basic.cassette.yaml":     {},
-		"testdata/mnqsqs-already-activated.cassette.yaml":        {},
-		"testdata/mnqsns-topic-basic.cassette.yaml":              {},
-		"testdata/mnqsns-topic-subscription-basic.cassette.yaml": {},
-	}
 }
 
 func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...int) bool {
