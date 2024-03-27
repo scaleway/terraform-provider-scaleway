@@ -27,12 +27,14 @@ func testSweepAccountProject(_ string) error {
 
 		logging.L.Debugf("sweeper: destroying the project")
 
-		listProjects, err := accountAPI.ListProjects(&accountV3.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
+		req := &accountV3.ProjectAPIListProjectsRequest{}
+		listProjects, err := accountAPI.ListProjects(req, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}
 		for _, project := range listProjects.Projects {
-			if project.Name == "default" || !isTestResource(project.Name) {
+			// Do not delete default project
+			if project.ID == req.OrganizationID || !isTestResource(project.Name) {
 				continue
 			}
 			err = accountAPI.DeleteProject(&accountV3.ProjectAPIDeleteProjectRequest{
