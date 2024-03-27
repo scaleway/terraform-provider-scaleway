@@ -121,6 +121,8 @@ The following arguments are supported:
 
 - `assign_flexible_ip` - (Optional) Defines whether to automatically assign a flexible public IP to the load-balancer.
 
+- `assign_flexible_ipv6` - (Optional) Defines whether to automatically assign a flexible public IPv6 to the load-balancer.
+
 - `name` - (Optional) The name of the load-balancer.
 
 - `description` - (Optional) The description of the load-balancer.
