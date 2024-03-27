@@ -7,14 +7,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceDocumentDBDatabase_Basic(t *testing.T) {
+func TestAccDataSourceDatabase_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckDocumentDBInstanceDestroy(tt),
+			isInstanceDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -39,7 +39,7 @@ func TestAccDataSourceDocumentDBDatabase_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBDatabaseExists(tt, "scaleway_documentdb_database.main"),
+					isDatabasePresent(tt, "scaleway_documentdb_database.main"),
 
 					resource.TestCheckResourceAttrPair("scaleway_documentdb_database.main", "id", "data.scaleway_documentdb_database.main", "id"),
 				),

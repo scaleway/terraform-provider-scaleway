@@ -12,13 +12,13 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/documentdb"
 )
 
-func TestAccDocumentDBUser_Basic(t *testing.T) {
+func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDocumentDBInstanceDestroy(tt),
+		CheckDestroy:      isInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -39,7 +39,7 @@ func TestAccDocumentDBUser_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBUserExists(tt, "scaleway_documentdb_instance.main", "scaleway_documentdb_user.db_user"),
+					isUserPresent(tt, "scaleway_documentdb_instance.main", "scaleway_documentdb_user.db_user"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_user.db_user", "name", "foo"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_user.db_user", "is_admin", "true"),
 				),
@@ -63,7 +63,7 @@ func TestAccDocumentDBUser_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBUserExists(tt, "scaleway_documentdb_instance.main", "scaleway_documentdb_user.db_user"),
+					isUserPresent(tt, "scaleway_documentdb_instance.main", "scaleway_documentdb_user.db_user"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_user.db_user", "name", "bar"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_user.db_user", "is_admin", "false"),
 				),
@@ -72,7 +72,7 @@ func TestAccDocumentDBUser_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckDocumentDBUserExists(tt *acctest.TestTools, instance string, user string) resource.TestCheckFunc {
+func isUserPresent(tt *acctest.TestTools, instance string, user string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[instance]
 		if !ok {

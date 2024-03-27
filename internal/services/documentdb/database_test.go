@@ -12,19 +12,19 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/documentdb"
 )
 
-func TestAccDocumentDBDatabase_Basic(t *testing.T) {
+func TestAccDatabase_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDocumentDBInstanceDestroy(tt),
+		CheckDestroy:      isInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource scaleway_documentdb_instance main {
-						name = "test-documentdb-database-basic"
+						name = "test-document_db-database-basic"
 						node_type = "docdb-play2-pico"
 						engine = "FerretDB-1"
 						user_name = "my_initial_user"
@@ -35,20 +35,20 @@ func TestAccDocumentDBDatabase_Basic(t *testing.T) {
 
 					resource scaleway_documentdb_database main {
 						instance_id = scaleway_documentdb_instance.main.id
-						name        = "test-documentdb-database-basic"
+						name        = "test-document_db-database-basic"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBDatabaseExists(tt, "scaleway_documentdb_database.main"),
+					isDatabasePresent(tt, "scaleway_documentdb_database.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_database.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_documentdb_database.main", "name", "test-documentdb-database-basic"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_database.main", "name", "test-document_db-database-basic"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckDocumentDBDatabaseExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isDatabasePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {

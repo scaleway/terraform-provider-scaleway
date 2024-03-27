@@ -12,15 +12,15 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/documentdb"
 )
 
-func TestAccDocumentDBReadReplica_Basic(t *testing.T) {
+func TestAccReadReplica_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckDocumentDBInstanceDestroy(tt),
-			testAccCheckDocumentDBReadReplicaDestroy(tt),
+			isInstanceDestroyed(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -39,7 +39,7 @@ func TestAccDocumentDBReadReplica_Basic(t *testing.T) {
 					direct_access {}
 				}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_documentdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.port"),
@@ -50,15 +50,15 @@ func TestAccDocumentDBReadReplica_Basic(t *testing.T) {
 	})
 }
 
-func TestAccDocumentDBReadReplica_PrivateNetwork(t *testing.T) {
+func TestAccReadReplica_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckDocumentDBInstanceDestroy(tt),
-			testAccCheckDocumentDBReadReplicaDestroy(tt),
+			isInstanceDestroyed(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -83,7 +83,7 @@ func TestAccDocumentDBReadReplica_PrivateNetwork(t *testing.T) {
 					depends_on         = [scaleway_vpc_private_network.pn]
 				}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_documentdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.port"),
@@ -94,15 +94,15 @@ func TestAccDocumentDBReadReplica_PrivateNetwork(t *testing.T) {
 	})
 }
 
-func TestAccDocumentDBReadReplica_Update(t *testing.T) {
+func TestAccReadReplica_Update(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckDocumentDBInstanceDestroy(tt),
-			testAccCheckDocumentDBReadReplicaDestroy(tt),
+			isInstanceDestroyed(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -122,7 +122,7 @@ func TestAccDocumentDBReadReplica_Update(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_documentdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "direct_access.0.port"),
@@ -152,7 +152,7 @@ func TestAccDocumentDBReadReplica_Update(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_documentdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.port"),
@@ -164,15 +164,15 @@ func TestAccDocumentDBReadReplica_Update(t *testing.T) {
 	})
 }
 
-func TestAccDocumentDBReadReplica_MultipleEndpoints(t *testing.T) {
+func TestAccReadReplica_MultipleEndpoints(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckDocumentDBInstanceDestroy(tt),
-			testAccCheckDocumentDBReadReplicaDestroy(tt),
+			isInstanceDestroyed(tt),
+			isReadReplicaDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -199,7 +199,7 @@ func TestAccDocumentDBReadReplica_MultipleEndpoints(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBReadReplicaExists(tt, "scaleway_documentdb_read_replica.replica"),
+					isReadReplicaPresent(tt, "scaleway_documentdb_read_replica.replica"),
 					resource.TestCheckResourceAttrPair("scaleway_documentdb_read_replica.replica", "instance_id", "scaleway_documentdb_instance.instance", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_documentdb_read_replica.replica", "private_network.0.port"),
@@ -213,7 +213,7 @@ func TestAccDocumentDBReadReplica_MultipleEndpoints(t *testing.T) {
 	})
 }
 
-func testAccCheckDocumentDBReadReplicaExists(tt *acctest.TestTools, readReplica string) resource.TestCheckFunc {
+func isReadReplicaPresent(tt *acctest.TestTools, readReplica string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		readReplicaResource, ok := state.RootModule().Resources[readReplica]
 		if !ok {
@@ -237,7 +237,7 @@ func testAccCheckDocumentDBReadReplicaExists(tt *acctest.TestTools, readReplica 
 	}
 }
 
-func testAccCheckDocumentDBReadReplicaDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isReadReplicaDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_documentdb_read_replica" {

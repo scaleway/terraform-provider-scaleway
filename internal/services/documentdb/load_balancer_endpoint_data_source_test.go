@@ -7,14 +7,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccDataSourceDocumentDBInstanceLoadBalancer_Basic(t *testing.T) {
+func TestAccDataSourceInstanceLoadBalancer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckDocumentDBInstanceDestroy(tt),
+			isInstanceDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -37,8 +37,8 @@ func TestAccDataSourceDocumentDBInstanceLoadBalancer_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBInstanceEndpointExists(tt, "data.scaleway_documentdb_load_balancer_endpoint.find_by_name"),
-					testAccCheckDocumentDBInstanceEndpointExists(tt, "data.scaleway_documentdb_load_balancer_endpoint.find_by_id"),
+					isEndpointPresent(tt, "data.scaleway_documentdb_load_balancer_endpoint.find_by_name"),
+					isEndpointPresent(tt, "data.scaleway_documentdb_load_balancer_endpoint.find_by_id"),
 					resource.TestCheckResourceAttrPair("scaleway_documentdb_instance.main", "name", "data.scaleway_documentdb_load_balancer_endpoint.find_by_name", "instance_name"),
 					resource.TestCheckResourceAttrPair("scaleway_documentdb_instance.main", "name", "data.scaleway_documentdb_load_balancer_endpoint.find_by_id", "instance_name"),
 				),

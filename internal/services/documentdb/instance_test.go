@@ -17,11 +17,11 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_documentdb_instance", &resource.Sweeper{
 		Name: "scaleway_documentdb_instance",
-		F:    testSweepDocumentDBInstance,
+		F:    testSweepInstance,
 	})
 }
 
-func testSweepDocumentDBInstance(_ string) error {
+func testSweepInstance(_ string) error {
 	return acctest.SweepRegions((&documentdbSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		api := documentdbSDK.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying the documentdb instances in (%s)", region)
@@ -49,14 +49,14 @@ func testSweepDocumentDBInstance(_ string) error {
 	})
 }
 
-func TestAccDocumentDBInstance_Basic(t *testing.T) {
+func TestAccInstance_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDocumentDBInstanceDestroy(tt),
+		CheckDestroy:      isInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -71,7 +71,7 @@ func TestAccDocumentDBInstance_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBInstanceExists(tt, "scaleway_documentdb_instance.main"),
+					isInstancePresent(tt, "scaleway_documentdb_instance.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_instance.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-basic"),
 				),
@@ -80,7 +80,7 @@ func TestAccDocumentDBInstance_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckDocumentDBInstanceExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -104,7 +104,7 @@ func testAccCheckDocumentDBInstanceExists(tt *acctest.TestTools, n string) resou
 	}
 }
 
-func testAccCheckDocumentDBInstanceDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_documentdb_instance" {

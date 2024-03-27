@@ -12,14 +12,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/documentdb"
 )
 
-func TestAccDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
+func TestAccPrivateNetworkEndpoint_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDocumentDBInstanceEndpointDestroy(tt),
+		CheckDestroy:      isEndpointDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -44,7 +44,7 @@ func TestAccDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBInstanceEndpointExists(tt, "scaleway_documentdb_private_network_endpoint.main"),
+					isEndpointPresent(tt, "scaleway_documentdb_private_network_endpoint.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
 					resource.TestCheckResourceAttr(
@@ -86,7 +86,7 @@ func TestAccDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBInstanceEndpointExists(tt, "scaleway_documentdb_private_network_endpoint.main"),
+					isEndpointPresent(tt, "scaleway_documentdb_private_network_endpoint.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
 					resource.TestCheckResourceAttr(
@@ -128,7 +128,7 @@ func TestAccDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBInstanceEndpointExists(tt, "scaleway_documentdb_private_network_endpoint.main"),
+					isEndpointPresent(tt, "scaleway_documentdb_private_network_endpoint.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
 					resource.TestCheckResourceAttr(
@@ -157,14 +157,14 @@ func TestAccDocumentDBPrivateNetworkEndpoint_Basic(t *testing.T) {
 	})
 }
 
-func TestAccDocumentDBPrivateNetworkEndpoint_Migration(t *testing.T) {
+func TestAccPrivateNetworkEndpoint_Migration(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDocumentDBInstanceEndpointDestroy(tt),
+		CheckDestroy:      isEndpointDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -196,7 +196,7 @@ func TestAccDocumentDBPrivateNetworkEndpoint_Migration(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBInstanceEndpointExists(tt, "scaleway_documentdb_private_network_endpoint.main"),
+					isEndpointPresent(tt, "scaleway_documentdb_private_network_endpoint.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
 					resource.TestCheckResourceAttr(
 						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "10.10.64.4/22"),
@@ -220,7 +220,7 @@ func TestAccDocumentDBPrivateNetworkEndpoint_Migration(t *testing.T) {
 	})
 }
 
-func testAccCheckDocumentDBInstanceEndpointDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func isEndpointDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_documentdb_private_network_endpoint" {
@@ -250,7 +250,7 @@ func testAccCheckDocumentDBInstanceEndpointDestroy(tt *acctest.TestTools) resour
 	}
 }
 
-func testAccCheckDocumentDBInstanceEndpointExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isEndpointPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {

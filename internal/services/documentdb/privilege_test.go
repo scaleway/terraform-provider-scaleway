@@ -12,13 +12,13 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/documentdb"
 )
 
-func TestAccDocumentDBPrivilege_Basic(t *testing.T) {
+func TestAccPrivilege_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDocumentDBInstanceDestroy(tt),
+		CheckDestroy:      isInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -52,7 +52,7 @@ func TestAccDocumentDBPrivilege_Basic(t *testing.T) {
 				  permission    = "all"
 				}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBPrivilegeExists(tt, "scaleway_documentdb_instance.instance", "scaleway_documentdb_database.db01", "scaleway_documentdb_user.foo1"),
+					isPrivilegePresent(tt, "scaleway_documentdb_instance.instance", "scaleway_documentdb_database.db01", "scaleway_documentdb_user.foo1"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_privilege.priv_admin", "permission", "all"),
 				),
 			},
@@ -101,7 +101,7 @@ func TestAccDocumentDBPrivilege_Basic(t *testing.T) {
 				  permission    = "readwrite"
 				}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBPrivilegeExists(tt, "scaleway_documentdb_instance.instance", "scaleway_documentdb_database.db01", "scaleway_documentdb_user.foo2"),
+					isPrivilegePresent(tt, "scaleway_documentdb_instance.instance", "scaleway_documentdb_database.db01", "scaleway_documentdb_user.foo2"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_privilege.priv_foo_02", "permission", "readwrite"),
 				),
 			},
@@ -164,7 +164,7 @@ func TestAccDocumentDBPrivilege_Basic(t *testing.T) {
               depends_on    = [scaleway_documentdb_user.foo3]
 			}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDocumentDBPrivilegeExists(tt, "scaleway_documentdb_instance.instance", "scaleway_documentdb_database.db01", "scaleway_documentdb_user.foo3"),
+					isPrivilegePresent(tt, "scaleway_documentdb_instance.instance", "scaleway_documentdb_database.db01", "scaleway_documentdb_user.foo3"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_privilege.priv_foo_03", "permission", "none"),
 				),
 			},
@@ -172,7 +172,7 @@ func TestAccDocumentDBPrivilege_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckDocumentDBPrivilegeExists(tt *acctest.TestTools, instance string, database string, user string) resource.TestCheckFunc {
+func isPrivilegePresent(tt *acctest.TestTools, instance string, database string, user string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]
 		if !ok {

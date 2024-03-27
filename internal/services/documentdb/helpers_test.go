@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ResourceDocumentDBDatabaseName(t *testing.T) {
+func Test_ResourceDatabaseName(t *testing.T) {
 	localizedInstanceID, databaseName, err := documentdb.ResourceDocumentDBDatabaseName("fr-par/uuid/name")
 	require.NoError(t, err)
 	assert.Equal(t, "fr-par/uuid", localizedInstanceID)
