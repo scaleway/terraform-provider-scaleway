@@ -118,7 +118,7 @@ The following arguments are supported:
 - `node_type` - (Required) The type of database instance you want to create (e.g. `db-dev-s`).
 
 ~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any
-interruption. Keep in mind that you cannot downgrade a Database Instance.
+interruption.
 
 ~> **Important:** Once your instance reaches `disk_full` status, if you are using `lssd` storage, you should upgrade the node_type,
 and if you are using `bssd` storage, you should increase the volume size before making any other change to your instance.
