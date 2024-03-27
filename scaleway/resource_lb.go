@@ -188,7 +188,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, m int
 		Type:                  d.Get("type").(string),
 		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*types.ExpandStringPtr(d.Get("ssl_compatibility_level"))),
 		AssignFlexibleIP:      types.ExpandBoolPtr(getBool(d, "assign_flexible_ip")),
-    AssignFlexibleIPv6:    types.ExpandBoolPtr(getBool(d, "assign_flexible_ipv6")),
+		AssignFlexibleIPv6:    types.ExpandBoolPtr(getBool(d, "assign_flexible_ipv6")),
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
