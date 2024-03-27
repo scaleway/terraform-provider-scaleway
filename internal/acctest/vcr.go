@@ -14,12 +14,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dnaeon/go-vcr/cassette"
-	"github.com/dnaeon/go-vcr/recorder"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/dnaeon/go-vcr.v3/cassette"
+	"gopkg.in/dnaeon/go-vcr.v3/recorder"
 )
 
 // UpdateCassettes will update all cassettes of a given test
@@ -253,31 +253,36 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 // closed and saved after the requests.
 func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup func(), err error) {
 	t.Helper()
-	recorderMode := recorder.ModeReplaying
+	recorderMode := recorder.ModeReplayOnly
 	if update {
-		recorderMode = recorder.ModeRecording
+		recorderMode = recorder.ModeRecordOnly
 	}
 
 	// Setup recorder and scw client
-	r, err := recorder.NewAsMode(getTestFilePath(t, ".cassette"), recorderMode, nil)
+	r, err := recorder.NewWithOptions(&recorder.Options{
+		CassetteName:       getTestFilePath(t, ".cassette"),
+		Mode:               recorderMode,
+		SkipRequestLatency: true,
+	})
 	if err != nil {
 		return nil, nil, err
 	}
+	defer r.Stop()
 
 	// Add custom matcher for requests and cassettes
 	r.SetMatcher(cassetteMatcher)
 
 	// Add a filter which removes Authorization headers from all requests:
-	r.AddFilter(func(i *cassette.Interaction) error {
+	r.AddHook(func(i *cassette.Interaction) error {
 		i.Request.Headers = i.Request.Headers.Clone()
 		delete(i.Request.Headers, "x-auth-token")
 		delete(i.Request.Headers, "X-Auth-Token")
 		delete(i.Request.Headers, "Authorization")
 		return nil
-	})
+	}, recorder.BeforeSaveHook)
 
 	// Add a filter that will replace sensitive values with fixed values
-	r.AddSaveFilter(cassetteSensitiveFieldsAnonymizer)
+	r.AddHook(cassetteSensitiveFieldsAnonymizer, recorder.BeforeSaveHook)
 
 	retryOptions := transport.RetryableTransportOptions{}
 	if !*UpdateCassettes {

@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
 const testDirectory = "testdata/"
