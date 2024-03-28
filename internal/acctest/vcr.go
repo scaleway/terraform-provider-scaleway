@@ -14,8 +14,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
-
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
@@ -266,13 +264,13 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 	logging.L.Debugf("using %s.yaml", cassetteFilePath)
 
 	// If in record mode we check that the cassette exists
-	if recorderMode == recorder.ModeReplaying && errorCassette != nil {
+	if recorderMode == recorder.ModeReplayOnly && errorCassette != nil {
 		return nil, nil, fmt.Errorf("cannot stat file %s.yaml while in replay mode", cassetteFilePath)
 	}
 
 	// Setup recorder and scw client
 	r, err := recorder.NewWithOptions(&recorder.Options{
-		CassetteName:       getTestFilePath(t, ".cassette"),
+		CassetteName:       getTestFilePath(t, pkgFolder, ".cassette"),
 		Mode:               recorderMode,
 		SkipRequestLatency: true,
 	})
