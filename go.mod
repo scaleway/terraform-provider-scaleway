@@ -2,7 +2,6 @@ module github.com/scaleway/terraform-provider-scaleway/v2
 
 require (
 	github.com/aws/aws-sdk-go v1.51.8
-	github.com/dnaeon/go-vcr v1.2.0
 	github.com/docker/docker v26.0.0+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.6.0
@@ -19,6 +18,7 @@ require (
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.25.0.20240325161646-a49fad6abe89
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.21.0
+	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 )
 
 require (
