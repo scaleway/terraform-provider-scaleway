@@ -8,9 +8,9 @@ import (
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceScaleway{{.Resource}}() *schema.Resource {
+func DataSource{{.Resource}}() *schema.Resource {
     // Generate datasource schema from resource
-    dsSchema := datasourceSchemaFromResourceSchema(resourceScaleway{{.Resource}}().Schema)
+    dsSchema := datasourceSchemaFromResourceSchema(Resource{{.Resource}}().Schema)
     
     addOptionalFieldsToSchema(dsSchema, "name", "{{.Locality}}")
     
@@ -24,12 +24,12 @@ func DataSourceScaleway{{.Resource}}() *schema.Resource {
     dsSchema["project_id"].Optional = true
     
     return &schema.Resource{
-        ReadContext: dataSourceScaleway{{.Resource}}Read,
+        ReadContext: DataSource{{.Resource}}Read,
         Schema:      dsSchema,
     }
 }
 
-func dataSourceScaleway{{.Resource}}Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSource{{.Resource}}Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
     api, {{.Locality}}, err := {{.API}}APIWith{{.LocalityUpper}}(d, m)
     if err != nil {
         return diag.FromErr(err)
@@ -65,7 +65,7 @@ func dataSourceScaleway{{.Resource}}Read(ctx context.Context, d *schema.Resource
         return diag.FromErr(err)
     }
 
-    diags := resourceScaleway{{.Resource}}Read(ctx, d, m)
+    diags := Resource{{.Resource}}Read(ctx, d, m)
     if diags != nil {
         return append(diags, diag.Errorf("failed to read {{.ResourceCleanLow}} state")...)
     }

@@ -26,3 +26,17 @@ func FlattenTime(date *time.Time) interface{} {
 	}
 	return ""
 }
+
+// ExpandTimePtr returns a time pointer for an RFC3339 time.
+// It returns nil if time is not valid, you should use validateDate to validate field.
+func ExpandTimePtr(i interface{}) *time.Time {
+	rawTime := ExpandStringPtr(i)
+	if rawTime == nil {
+		return nil
+	}
+	parsedTime, err := time.Parse(time.RFC3339, *rawTime)
+	if err != nil {
+		return nil
+	}
+	return &parsedTime
+}

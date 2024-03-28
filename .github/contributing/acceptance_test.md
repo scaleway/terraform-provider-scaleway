@@ -98,13 +98,13 @@ This keeps the tests readable, and allows reuse of assertion functions across di
 The definition of a complete test looks like this:
 
 ```go
-func TestAccScalewayInstanceServerImport(t *testing.T) {
+func TestAccServerImport(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: testAccCheckScalewayInstanceServerDestroy(tt),
+		CheckDestroy: instancechecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -145,14 +145,14 @@ When executing the test, the following steps are taken for each `TestStep`:
    For example, to verify that the `scaleway_instance_server` described above was created successfully, a test function like this is used:
 
     ```go
-    func testAccCheckScalewayInstanceServerExists(tt *TestTools, n string) resource.TestCheckFunc {
+    func testAccCheckInstanceServerExists(tt *TestTools, n string) resource.TestCheckFunc {
     	return func(state *terraform.State) error {
     		rs, ok := state.RootModule().Resources[n]
     		if !ok {
     			return fmt.Errorf("resource not found: %s", n)
     		}
     
-    		instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+    		instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
     		if err != nil {
     			return err
     		}
@@ -183,14 +183,14 @@ When executing the test, the following steps are taken for each `TestStep`:
    The code to ensure that the `scaleway_instance_server` shown above has been destroyed looks like this:
 
     ```go
-    func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheckFunc {
+    func instancechecks.CheckServerDestroy(tt *TestTools) resource.TestCheckFunc {
        return func(state *terraform.State) error {
             for _, rs := range s.RootModule().Resources {
                 if rs.Type != "scaleway_instance_server" {
                     continue
                 }
         
-                instanceAPI, zone, ID, err := scaleway.InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+                instanceAPI, zone, ID, err := InstanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
                 if err != nil {
                     return err
                 }

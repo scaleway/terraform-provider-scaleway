@@ -9,6 +9,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+// NetIPNil define the nil string return by (*net.IP).String()
+const NetIPNil = "<nil>"
+
 func ExpandIPNet(raw string) (scw.IPNet, error) {
 	if raw == "" {
 		return scw.IPNet{}, nil
