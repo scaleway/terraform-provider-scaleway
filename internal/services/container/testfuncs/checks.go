@@ -10,11 +10,11 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types"
-	registry2 "github.com/docker/docker/api/types/registry"
+	dockerRegistrySDK "github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	container2 "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
@@ -38,7 +38,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 			return err
 		}
 
-		ns, err := api.WaitForNamespace(&container2.WaitForNamespaceRequest{
+		ns, err := api.WaitForNamespace(&containerSDK.WaitForNamespaceRequest{
 			NamespaceID: id,
 			Region:      region,
 		})
@@ -51,7 +51,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 
 		accessKey, _ := meta.ScwClient().GetAccessKey()
 		secretKey, _ := meta.ScwClient().GetSecretKey()
-		authConfig := registry2.AuthConfig{
+		authConfig := dockerRegistrySDK.AuthConfig{
 			ServerAddress: ns.RegistryEndpoint,
 			Username:      accessKey,
 			Password:      secretKey,
@@ -124,7 +124,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 			}
 		}
 
-		_, err = api.WaitForNamespace(&container2.WaitForNamespaceRequest{
+		_, err = api.WaitForNamespace(&containerSDK.WaitForNamespaceRequest{
 			NamespaceID: id,
 			Region:      region,
 		})
