@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
 const testDirectory = "testdata/"
@@ -47,7 +47,7 @@ func checkErrorCode(c *cassette.Cassette) error {
 	for _, i := range c.Interactions {
 		if !checkErrCodeExcept(i, c, http.StatusNotFound, http.StatusTooManyRequests, http.StatusForbidden, http.StatusGone) &&
 			!isTransientStateError(i) {
-			return fmt.Errorf("status: %v found on %s. method: %s, url %s\nrequest body = %v\nresponse body = %v", i.Code, c.Name, i.Request.Method, i.Request.URL, i.Request.Body, i.Response.Body)
+			return fmt.Errorf("status: %v found on %s. method: %s, url %s\nrequest body = %v\nresponse body = %v", i.Response.Code, c.Name, i.Request.Method, i.Request.URL, i.Request.Body, i.Response.Body)
 		}
 	}
 
@@ -75,13 +75,13 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 	}
 
 	// SQS returns 400 when the queue does not exist
-	if strings.Contains(i.Response.Body, sqs.ErrCodeQueueDoesNotExist) && i.Code == 400 {
+	if strings.Contains(i.Response.Body, sqs.ErrCodeQueueDoesNotExist) && i.Response.Code == 400 {
 		return true
 	}
 
-	if i.Code >= 400 {
+	if i.Response.Code >= 400 {
 		for _, httpCode := range codes {
-			if i.Code == httpCode {
+			if i.Response.Code == httpCode {
 				return true
 			}
 		}
@@ -102,7 +102,7 @@ func fileNameWithoutExtSuffix(fileName string) string {
 // when creating 2 gateway_network, one will fail with a transient state error
 // but the transient state error will be caught, it will wait again for the resource to be ready
 func isTransientStateError(i *cassette.Interaction) bool {
-	if i.Code != 409 {
+	if i.Response.Code != 409 {
 		return false
 	}
 
