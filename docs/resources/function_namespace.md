@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_function_namespace"
 # Resource: scaleway_function_namespace
 
 Creates and manages Scaleway Function Namespace.
-For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).
+For more information see [the documentation](https://www.scaleway.com/en/developers/api/serverless-functions/).
 
 ## Example Usage
 

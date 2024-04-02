@@ -11,9 +11,9 @@ The static associations are used to assign IP addresses based on the MAC address
 
 Statically assigned IP addresses should fall within the configured subnet, but be outside of the dynamic range.
 
-For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#dhcp-c05544) and [configuration guide](https://www.scaleway.com/en/docs/network/vpc/how-to/configure-a-public-gateway/#how-to-review-and-configure-dhcp).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-c05544) and [configuration guide](https://www.scaleway.com/en/docs/network/vpc/how-to/configure-a-public-gateway/#how-to-review-and-configure-dhcp).
 
-[DHCP reservations](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#dhcp-entries-e40fb6) hold both dynamic DHCP leases (IP addresses dynamically assigned by the gateway to instances) and static user-created DHCP reservations.
+[DHCP reservations](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-entries-e40fb6) hold both dynamic DHCP leases (IP addresses dynamically assigned by the gateway to instances) and static user-created DHCP reservations.
 
 ## Example Usage
 

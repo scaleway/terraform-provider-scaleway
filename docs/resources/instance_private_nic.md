@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_instance_private_nic"
 # Resource: scaleway_instance_private_nic
 
 Creates and manages Scaleway Instance Private NICs. For more information, see
-[the documentation](https://developers.scaleway.com/en/products/instance/api/#private-nics-a42eea).
+[the documentation](https://www.scaleway.com/en/developers/api/instance/#private-nics-a42eea).
 
 ## Example Usage
 

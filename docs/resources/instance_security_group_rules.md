@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_instance_security_group_rules"
 
 # Resource: scaleway_instance_security_group_rules
 
-Creates and manages Scaleway Compute Instance security group rules. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89).
+Creates and manages Scaleway Compute Instance security group rules. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#security-groups-8d7f89).
 
 This resource can be used to externalize rules from a `scaleway_instance_security_group` to solve circular dependency problems. When using this resource do not forget to set `external_rules = true` on the security group.
 

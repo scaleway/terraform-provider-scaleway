@@ -52,4 +52,4 @@ If you need to retrieve the raw ID of the resource, you can either :
 
 ---
 
-More information regarding zones and regions can be found [here](https://developers.scaleway.com/en/quickstart/#region-and-zone).
+More information regarding zones and regions can be found [here](https://www.scaleway.com/en/developers/api/#regions-and-zones).
