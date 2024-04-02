@@ -49,7 +49,7 @@ jobs:
         with:
           go-version: 1.21
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run Acceptance Tests
         run: go test -v ./internal/services/${{ matrix.products }} -timeout=4h
         env:
@@ -97,7 +97,7 @@ jobs:
         with:
           go-version: 1.21
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run sweepers
         run: make sweep
         env:
