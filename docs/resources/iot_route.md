@@ -9,7 +9,7 @@ page_title: "Scaleway: scaleway_iot_route"
 
 Creates and manages Scaleway IoT Routes. For more information, see the following:
 
-- [API documentation](https://developers.scaleway.com/en/products/iot/api).
+- [API documentation](https://www.scaleway.com/en/developers/api/iot/).
 - [Product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-route/)
 
 ## Example Usage

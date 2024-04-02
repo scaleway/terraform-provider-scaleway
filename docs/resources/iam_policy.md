@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_iam_policy"
 
 # Resource: scaleway_iam_policy
 
-Creates and manages Scaleway IAM Policies. For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#policies-54b8a7).
+Creates and manages Scaleway IAM Policies. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/iam/#policies-54b8a7).
 
 ~> You can find a detailed list of all permission sets available at Scaleway in the permission sets [reference page](https://www.scaleway.com/en/docs/identity-and-access-management/iam/reference-content/permission-sets/).
 

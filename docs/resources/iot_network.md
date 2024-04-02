@@ -9,7 +9,7 @@ page_title: "Scaleway: scaleway_iot_network"
 
 Creates and manages Scaleway IoT Networks. For more information, see the following:
 
-- [API documentation](https://developers.scaleway.com/en/products/iot/api).
+- [API documentation](https://www.scaleway.com/en/developers/api/iot/).
 - [Product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-networks/)
 
 For more step-by-step instructions on how to setup the networks on the external providers backends, you can follow these guides:

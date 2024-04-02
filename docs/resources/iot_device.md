@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_iot_device"
 
 -> **Note:** This terraform resource is currently in beta and might include breaking change in future releases.
 
-Creates and manages Scaleway IoT Hub Instances. For more information, see [the documentation](https://developers.scaleway.com/en/products/iot/api).
+Creates and manages Scaleway IoT Hub Instances. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/iot/).
 
 ## Example Usage
 

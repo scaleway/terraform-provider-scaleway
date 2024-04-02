@@ -6,6 +6,7 @@ page_title: "Scaleway: scaleway_account_project"
 # Resource: scaleway_account_project
 
 Manages organization's projects on Scaleway.
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/account/project-api/).
 
 ## Example Usage
 

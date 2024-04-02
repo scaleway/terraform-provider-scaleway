@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_baremetal_server"
 
 # Resource: scaleway_baremetal_server
 
-Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
+Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/elastic-metal).
 
 ## Example Usage
 
@@ -131,12 +131,12 @@ resource "scaleway_baremetal_server" "base" {
 The following arguments are supported:
 
 - `offer` - (Required) The offer name or UUID of the baremetal server.
-  Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-334154) to find the right offer.
+  Use [this endpoint](https://www.scaleway.com/en/developers/api/elastic-metal/#get-334154) to find the right offer.
 
 ~> **Important:** Updates to `offer` will recreate the server.
 
 - `os` - (Required) The UUID of the os to install on the server.
-  Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-87598a) to find the right OS ID.
+  Use [this endpoint](https://www.scaleway.com/en/developers/api/elastic-metal/#get-87598a) to find the right OS ID.
   ~> **Important:** Updates to `os` will reinstall the server.
 - `ssh_key_ids` - (Required) List of SSH keys allowed to connect to the server.
 - `user` - (Optional) User used for the installation.
@@ -152,7 +152,7 @@ The following arguments are supported:
 - `tags` - (Optional) The tags associated with the server.
 - `options` - (Optional) The options to enable on the server.
   ~> The `options` block supports:
-    - `id` - (Required) The id of the option to enable. Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-012dcc) to find the available options IDs.
+    - `id` - (Required) The id of the option to enable. Use [this endpoint](https://www.scaleway.com/en/developers/api/elastic-metal/#get-012dcc) to find the available options IDs.
     - `expires_at` - (Optional) The auto expiration date for compatible options
 - `private_network` - (Required) The private networks to attach to the server. For more information, see [the documentation](https://www.scaleway.com/en/docs/compute/elastic-metal/how-to/use-private-networks/)
     - `id` - (Required) The id of the private network to attach.

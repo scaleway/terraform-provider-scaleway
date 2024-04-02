@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_instance_image"
 # Resource: scaleway_instance_image
 
 Creates and manages Scaleway Compute Images.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#images-41389b).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#images-41389b).
 
 ## Example Usage
 

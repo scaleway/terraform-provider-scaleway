@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_function"
 # Resource: scaleway_function
 
 Creates and manages Scaleway Functions.
-For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).
+For more information see [the documentation](https://www.scaleway.com/en/developers/api/serverless-functions).
 
 ## Example Usage
 
@@ -62,9 +62,9 @@ The following arguments are supported:
 
 - `secret_environment_variables` - (Optional) The [secret environment](https://www.scaleway.com/en/docs/compute/functions/concepts/#secrets) variables of the function.
 
-- `privacy` - Privacy of the function. Can be either `private` or `public`. Read more on [authentication](https://developers.scaleway.com/en/products/functions/api/#authentication)
+- `privacy` - Privacy of the function. Can be either `private` or `public`. Read more on [authentication](https://www.scaleway.com/en/developers/api/serverless-functions/#authentication)
 
-- `runtime` - Runtime of the function. Runtimes can be fetched using [specific route](https://developers.scaleway.com/en/products/functions/api/#get-f7de6a)
+- `runtime` - Runtime of the function. Runtimes can be fetched using [specific route](https://www.scaleway.com/en/developers/api/serverless-functions/#get-f7de6a
 
 - `min_scale` - Minimum replicas for your function, defaults to 0, Note that a function is billed when it gets executed, and using a min_scale greater than 0 will cause your function container to run constantly.
 
@@ -72,7 +72,7 @@ The following arguments are supported:
 
 - `memory_limit` - Memory limit in MB for your function, defaults to 128MB
 
-- `handler` - Handler of the function. Depends on the runtime ([function guide](https://developers.scaleway.com/en/products/functions/api/#create-a-function))
+- `handler` - Handler of the function. Depends on the runtime ([function guide](https://www.scaleway.com/en/developers/api/serverless-functions/#create-a-function))
 
 - `timeout` - Holds the max duration (in seconds) the function is allowed for responding to a request
 
@@ -98,7 +98,7 @@ In addition to all arguments above, the following attributes are exported:
 - `namespace_id` - The namespace ID the function is associated with.
 - `domain_name` - The native domain name of the function
 - `organization_id` - The organization ID the function is associated with.
-- `cpu_limit` - The CPU limit in mCPU for your function. More infos on resources [here](https://developers.scaleway.com/en/products/functions/api/#functions)
+- `cpu_limit` - The CPU limit in mCPU for your function. More infos on resources [here](https://www.scaleway.com/en/developers/api/serverless-functions/#functions)
 
 ## Import
 

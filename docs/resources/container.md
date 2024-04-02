@@ -74,7 +74,7 @@ The following arguments are optional:
 
 - `timeout` - (Optional) The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to 300s.
 
-- `privacy` - (Optional) The privacy type define the way to authenticate to your container. Please check our dedicated [section](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8).
+- `privacy` - (Optional) The privacy type define the way to authenticate to your container. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8).
 
 - `registry_image` - (Optional) The registry image address. e.g: **"rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE"**.
 
@@ -82,7 +82,7 @@ The following arguments are optional:
 
 - `max_concurrency` - (Optional) The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
 
-- `protocol` - (Optional) The communication [protocol](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8) http1 or h2c. Defaults to http1.
+- `protocol` - (Optional) The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8) http1 or h2c. Defaults to http1.
 
 - `port` - (Optional) The port to expose the container. Defaults to 8080.
 
@@ -126,7 +126,7 @@ The supported protocols are:
 By default, creating a container will make it `public`, meaning that anybody knowing the endpoint could execute it.
 A container can be made `private` with the privacy parameter.
 
-Please check our [authentication](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8) section
+Please check our [authentication](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8) section
 
 ## Memory and vCPUs configuration
 
