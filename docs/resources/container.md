@@ -84,6 +84,8 @@ The following arguments are optional:
 
 - `protocol` - (Optional) The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8) http1 or h2c. Defaults to http1.
 
+- `http_option` - (Optional) Allow both HTTP and HTTPS (enabled) or redirect HTTP to HTTPS (redirected). Defaults to enabled.
+
 - `port` - (Optional) The port to expose the container. Defaults to 8080.
 
 - `deploy` - (Optional) Boolean controlling whether the container is on a production environment.
