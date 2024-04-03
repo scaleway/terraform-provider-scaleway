@@ -16,7 +16,7 @@ check [containers-limitations](https://www.scaleway.com/en/docs/compute/containe
 .
 
 You can check also
-our [containers cron api documentation](https://developers.scaleway.com/en/products/containers/api/#crons-942bf4).
+our [containers cron api documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#crons-942bf4).
 
 ## Example Usage
 

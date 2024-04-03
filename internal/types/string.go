@@ -1,6 +1,10 @@
 package types
 
 import (
+	"hash/crc32"
+	"reflect"
+	"sort"
+
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -152,4 +156,41 @@ func FlattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
 	}
 
 	return res
+}
+
+// StringHashcode hashes a string to a unique hashcode.
+//
+// crc32 returns a uint32, but for our use we need
+// and non-negative integer. Here we cast to an integer
+// and invert it if the result is negative.
+func StringHashcode(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
+}
+
+func SliceContainsString(slice []string, str string) bool {
+	for _, v := range slice {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+
+func CompareStringListsIgnoringOrder(oldListStr, newListStr []string) bool {
+	if len(oldListStr) != len(newListStr) {
+		return false // different lengths means there's definitely a change
+	}
+
+	sort.Strings(oldListStr)
+	sort.Strings(newListStr)
+
+	return reflect.DeepEqual(oldListStr, newListStr)
 }

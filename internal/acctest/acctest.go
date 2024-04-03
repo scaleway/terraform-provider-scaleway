@@ -2,6 +2,7 @@ package acctest
 
 import (
 	"context"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -26,8 +27,14 @@ type TestTools struct {
 func NewTestTools(t *testing.T) *TestTools {
 	t.Helper()
 	ctx := context.Background()
+
+	folder, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("cannot detect working directory for testing")
+	}
+
 	// Create a http client with recording capabilities
-	httpClient, cleanup, err := getHTTPRecoder(t, *UpdateCassettes)
+	httpClient, cleanup, err := getHTTPRecoder(t, folder, *UpdateCassettes)
 	require.NoError(t, err)
 
 	// Create meta that will be passed in the provider config
@@ -149,4 +156,15 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 		}
 	}
 	return true
+}
+
+// IsTestResource returns true if given resource identifier is from terraform test
+// identifier should be resource name but some resource don't have names
+// return true if identifier match regex "tf[-_]test"
+// common used prefixes are "tf_tests", "tf_test", "tf-tests", "tf-test"
+func IsTestResource(identifier string) bool {
+	return len(identifier) >= len("tf_test") &&
+		strings.HasPrefix(identifier, "tf") &&
+		(identifier[2] == '_' || identifier[2] == '-') &&
+		identifier[3:7] == "test"
 }

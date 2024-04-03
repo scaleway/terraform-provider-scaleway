@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_ip_reverse_dns"
 # Resource: scaleway_vpc_public_gateway_ip_reverse_dns
 
 Manages Scaleway VPC Public Gateways IPs reverse DNS.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#ips-268151).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/public-gateway/#ips-268151).
 
 ## Example Usage
 

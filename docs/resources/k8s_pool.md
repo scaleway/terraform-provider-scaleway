@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_k8s_pool"
 
 # Resource: scaleway_k8s_pool
 
-Creates and manages Scaleway Kubernetes cluster pools. For more information, see [the documentation](https://developers.scaleway.com/en/products/k8s/api/).
+Creates and manages Scaleway Kubernetes cluster pools. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
 
 ## Example Usage
 
@@ -55,7 +55,7 @@ The following arguments are supported:
 - `tags` - (Optional) The tags associated with the pool.
   > Note: As mentionned in [this document](https://github.com/scaleway/scaleway-cloud-controller-manager/blob/master/docs/tags.md#taints), taints of a pool's nodes are applied using tags. (Example: "taint=taintName=taineValue:Effect")
 
-- `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the nodes of the pool will be attached to.
+- `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#placement-groups-d8f653) the nodes of the pool will be attached to.
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `autoscaling` - (Defaults to `false`) Enables the autoscaling feature for this pool.

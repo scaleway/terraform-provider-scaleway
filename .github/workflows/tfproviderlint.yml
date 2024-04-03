@@ -9,19 +9,19 @@ jobs:
   tfproviderlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 1.21
       - name: Install tfproviderlint
         run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
       - name: Run tfproviderlint
-        run: tfproviderlint -R014=false ./...
+        run: tfproviderlint -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
   tfproviderdocs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
             go-version: 1.21
       - uses: hashicorp/setup-terraform@v3
