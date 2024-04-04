@@ -113,6 +113,29 @@ func TestAccIP_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIP_IPv6(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      lbchecks.IsIPDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip ipv6 {
+						is_ipv6 = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isIPPresent(tt, "scaleway_lb_ip.ipv6"),
+					acctest.CheckResourceAttrIPv6("scaleway_lb_ip.ipv6", "ip_address"),
+				),
+			},
+		},
+	})
+}
+
 func isIPPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

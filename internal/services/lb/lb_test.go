@@ -186,6 +186,115 @@ func TestAccLB_Private(t *testing.T) {
 	})
 }
 
+func TestAccLB_AssignedIPs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isLbDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb main {
+						name = "test-lb-assigned-ips"
+						description = "a description"
+						type = "LB-S"
+						tags = ["basic"]
+						assign_flexible_ip = true
+					    assign_flexible_ipv6 = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isLbPresent(tt, "scaleway_lb.main"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "assign_flexible_ip", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "assign_flexible_ipv6", "true"),
+					acctest.CheckResourceAttrIPv4("scaleway_lb.main", "ip_address"),
+					acctest.CheckResourceAttrIPv6("scaleway_lb.main", "ipv6_address"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLB_WithIPv6(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isLbDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "v4" {
+					}
+					
+					resource "scaleway_lb_ip" "v6" {
+					  is_ipv6 = true
+					}
+					resource scaleway_lb main {
+					    ip_ids = [scaleway_lb_ip.v4.id, scaleway_lb_ip.v6.id]
+						name   = "test-lb-ip-ids"
+						type   = "LB-S"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isLbPresent(tt, "scaleway_lb.main"),
+					acctest.CheckResourceAttrIPv4("scaleway_lb.main", "ip_address"),
+					acctest.CheckResourceAttrIPv6("scaleway_lb.main", "ipv6_address"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLB_UpdateToIPv6(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isLbDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "v4" {
+					}
+					resource scaleway_lb main {
+					    ip_ids = [scaleway_lb_ip.v4.id]
+						name   = "test-lb-ip-ids"
+						type   = "LB-S"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isLbPresent(tt, "scaleway_lb.main"),
+					acctest.CheckResourceAttrIPv4("scaleway_lb.main", "ip_address"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_lb_ip" "v4" {
+					}
+					resource "scaleway_lb_ip" "v6" {
+					  is_ipv6 = true
+					}
+					resource scaleway_lb main {
+					    ip_ids = [scaleway_lb_ip.v4.id, scaleway_lb_ip.v6.id]
+						name   = "test-lb-ip-ids"
+						type   = "LB-S"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isLbPresent(tt, "scaleway_lb.main"),
+					acctest.CheckResourceAttrIPv4("scaleway_lb.main", "ip_address"),
+					acctest.CheckResourceAttrIPv6("scaleway_lb.main", "ipv6_address"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccLB_Migrate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

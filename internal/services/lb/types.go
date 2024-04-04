@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -425,6 +426,17 @@ func flattenLbIPs(ips []*lb.IP) interface{} {
 			"zone":            ip.Zone,
 			"lb_id":           types.FlattenStringPtr(ip.LBID),
 		})
+	}
+	return flattenedIPs
+}
+
+func flattenLBIPIDs(zone scw.Zone, ips []*lb.IP) []string {
+	if ips == nil {
+		return nil
+	}
+	flattenedIPs := make([]string, len(ips))
+	for i, ip := range ips {
+		flattenedIPs[i] = zonal.NewIDString(zone, ip.ID)
 	}
 	return flattenedIPs
 }

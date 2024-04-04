@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -55,6 +55,13 @@ func ResourceIP() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the load balancer attached to this IP, if any",
 			},
+			"is_ipv6": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "If true, creates a Flexible IP with an IPv6 address",
+			},
 			"region": regional.ComputedSchema(),
 		},
 	}
@@ -75,6 +82,7 @@ func resourceLbIPCreate(ctx context.Context, d *schema.ResourceData, m interface
 		Zone:      zone,
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		Reverse:   types.ExpandStringPtr(d.Get("reverse")),
+		IsIPv6:    d.Get("is_ipv6").(bool),
 	}
 
 	res, err := lbAPI.CreateIP(createReq, scw.WithContext(ctx))
@@ -141,16 +149,16 @@ func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	var ip *lbSDK.IP
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 		res, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			if httperrors.Is403(errGet) {
-				return resource.RetryableError(errGet)
+				return retry.RetryableError(errGet)
 			}
-			return resource.NonRetryableError(errGet)
+			return retry.NonRetryableError(errGet)
 		}
 
 		ip = res
@@ -210,16 +218,16 @@ func resourceLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	var ip *lbSDK.IP
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		res, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			if httperrors.Is403(errGet) {
-				return resource.RetryableError(errGet)
+				return retry.RetryableError(errGet)
 			}
-			return resource.NonRetryableError(errGet)
+			return retry.NonRetryableError(errGet)
 		}
 
 		ip = res
