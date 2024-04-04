@@ -18,9 +18,9 @@ resource "scaleway_lb_ip" "main" {
 }
 
 resource "scaleway_lb" "base" {
-  ip_id  = scaleway_lb_ip.main.id
-  zone   = scaleway_lb_ip.main.zone
-  type   = "LB-S"
+  ip_ids  = [scaleway_lb_ip.main.id]
+  zone    = scaleway_lb_ip.main.zone
+  type    = "LB-S"
 }
 ```
 
@@ -29,10 +29,24 @@ resource "scaleway_lb" "base" {
 ```terraform
 
 resource "scaleway_lb" "base" {
-  ip_id  = scaleway_lb_ip.main.id
-  zone   = scaleway_lb_ip.main.zone
-  type   = "LB-S"
+  name               = "private-lb"
+  type               = "LB-S"
   assign_flexible_ip = false
+}
+```
+
+### With IPv6
+
+```terraform
+resource "scaleway_lb_ip" "v4" {
+}
+resource "scaleway_lb_ip" "v6" {
+  is_ipv6 = true
+}
+resource scaleway_lb main {
+  ip_ids = [scaleway_lb_ip.v4.id, scaleway_lb_ip.v6.id]
+  name   = "ipv6-lb"
+  type   = "LB-S"
 }
 ```
 
@@ -113,7 +127,9 @@ resource scaleway_lb main {
 
 The following arguments are supported:
 
-- `ip_id` - (Optional) The ID of the associated LB IP. See below.
+- `ip_ids` - (Optional) The List of IP IDs to attach to the Load Balancer.
+
+- `ip_id` - (Deprecated) The ID of the associated LB IP. See below.
 
 ~> **Important:** Updates to `ip_id` will recreate the load-balancer.
 
@@ -145,7 +161,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Load-Balancers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `ip_address` -  The load-balance public IP Address
+- `ip_address` -  The load-balancer public IPv4 Address.
+- `ipv6_address` -  The load-balancer public IPv6 Address.
 - `organization_id` - The organization ID the load-balancer is associated with.
 
 ~> **Important:** `release_ip` will not be supported. This prevents the destruction of the IP from releasing a LBs.

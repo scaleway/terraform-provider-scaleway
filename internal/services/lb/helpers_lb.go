@@ -237,3 +237,34 @@ func GetKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 	}
 	return nil, false
 }
+
+func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	oldIPIDs, newIPIDs := diff.GetChange("ip_ids")
+	oldIPIDsSet := make(map[string]struct{})
+	newIPIDsSet := make(map[string]struct{})
+
+	for _, id := range oldIPIDs.([]interface{}) {
+		oldIPIDsSet[id.(string)] = struct{}{}
+	}
+
+	for _, id := range newIPIDs.([]interface{}) {
+		newIPIDsSet[id.(string)] = struct{}{}
+	}
+
+	// Check if any IP ID is being removed
+	for id := range oldIPIDsSet {
+		if _, ok := newIPIDsSet[id]; !ok {
+			return diff.ForceNew("ip_ids")
+		}
+	}
+
+	return nil
+}
+
+func customizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	oldValue, newValue := diff.GetChange("assign_flexible_ipv6")
+	if oldValue.(bool) && !newValue.(bool) {
+		return diff.ForceNew("assign_flexible_ipv6")
+	}
+	return nil
+}
