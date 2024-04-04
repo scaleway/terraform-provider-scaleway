@@ -603,6 +603,17 @@ func flattenLbIPs(ips []*lbSDK.IP) interface{} {
 	return flattenedIPs
 }
 
+func flattenLBIPIDs(zone scw.Zone, ips []*lbSDK.IP) []string {
+	if ips == nil {
+		return nil
+	}
+	flattenedIPs := make([]string, len(ips))
+	for i, ip := range ips {
+		flattenedIPs[i] = zonal.NewIDString(zone, ip.ID)
+	}
+	return flattenedIPs
+}
+
 func ipv4Match(cidr, ipStr string) bool {
 	_, cidrNet, err := net.ParseCIDR(cidr)
 	if err != nil {
@@ -655,4 +666,35 @@ func normalizeIPSubnet(ip string) string {
 		return strings.TrimSuffix(ip, "/32")
 	}
 	return ip
+}
+
+func CustomizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	oldIPIDs, newIPIDs := diff.GetChange("ip_ids")
+	oldIPIDsSet := make(map[string]struct{})
+	newIPIDsSet := make(map[string]struct{})
+
+	for _, id := range oldIPIDs.([]interface{}) {
+		oldIPIDsSet[id.(string)] = struct{}{}
+	}
+
+	for _, id := range newIPIDs.([]interface{}) {
+		newIPIDsSet[id.(string)] = struct{}{}
+	}
+
+	// Check if any IP ID is being removed
+	for id := range oldIPIDsSet {
+		if _, ok := newIPIDsSet[id]; !ok {
+			return diff.ForceNew("ip_ids")
+		}
+	}
+
+	return nil
+}
+
+func CustomizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	oldValue, newValue := diff.GetChange("assign_flexible_ipv6")
+	if oldValue.(bool) && !newValue.(bool) {
+		return diff.ForceNew("assign_flexible_ipv6")
+	}
+	return nil
 }

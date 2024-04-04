@@ -123,6 +123,17 @@ func ExpandUpdatedStringsPtr(data interface{}) *[]string {
 	return &stringSlice
 }
 
+func ExpandSliceIDs(rawIDs interface{}) []string {
+	stringSlice := make([]string, 0, len(rawIDs.([]interface{})))
+	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
+		return stringSlice
+	}
+	for _, s := range rawIDs.([]interface{}) {
+		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
+	}
+	return stringSlice
+}
+
 func ExpandSliceIDsPtr(rawIDs interface{}) *[]string {
 	stringSlice := make([]string, 0, len(rawIDs.([]interface{})))
 	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {

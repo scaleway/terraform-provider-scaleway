@@ -3,11 +3,13 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -44,7 +46,11 @@ func ResourceScalewayLb() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: LbUpgradeV1SchemaUpgradeFunc},
 		},
-		CustomizeDiff: CustomizeDiffLocalityCheck("ip_id", "private_network.#.private_network_id"),
+		CustomizeDiff: customdiff.All(
+			CustomizeDiffLocalityCheck("ip_id", "private_network.#.private_network_id"),
+			CustomizeDiffLBIPIDs,
+			CustomizeDiffAssignFlexibleIPv6,
+		),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -74,15 +80,21 @@ func ResourceScalewayLb() *schema.Resource {
 			"ip_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
+				Computed:         true,
 				Description:      "The load-balance public IP ID",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				Deprecated:       "Please use ip_ids",
 			},
 			"ip_address": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The load-balance public IP address",
+				Description: "The load-balance public IPv4 address",
+			},
+			"ipv6_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The load-balance public IPv6 address",
 			},
 			"release_ip": {
 				Type:        schema.TypeBool,
@@ -154,16 +166,29 @@ func ResourceScalewayLb() *schema.Resource {
 				}, false),
 			},
 			"assign_flexible_ip": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Defines whether to automatically assign a flexible public IP to the load balancer",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "Defines whether to automatically assign a flexible public IP to the load balancer",
+				ConflictsWith: []string{"ip_ids"},
 			},
 			"assign_flexible_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Defines whether to automatically assign a flexible public IPv6 to the load balancer",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Description:   "Defines whether to automatically assign a flexible public IPv6 to the load balancer",
+				ConflictsWith: []string{"ip_ids"},
+			},
+			"ip_ids": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+				},
+				Description:      "List of IP IDs to attach to the Load Balancer",
+				DiffSuppressFunc: diffSuppressFuncOrderDiff,
+				ConflictsWith:    []string{"assign_flexible_ip", "assign_flexible_ipv6"},
 			},
 			"region":          regional.ComputedSchema(),
 			"zone":            zonal.Schema(),
@@ -181,6 +206,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
 		Zone:                  zone,
+		IPIDs:                 types.ExpandSliceIDs(d.Get("ip_ids")),
 		IPID:                  types.ExpandStringPtr(locality.ExpandID(d.Get("ip_id"))),
 		ProjectID:             types.ExpandStringPtr(d.Get("project_id")),
 		Name:                  types.ExpandOrGenerateString(d.Get("name"), "lb"),
@@ -263,9 +289,23 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m inter
 	// For now API return lowercase lb type. This should be fixed in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(lb.Type))
 	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())
+
 	if len(lb.IP) > 0 {
 		_ = d.Set("ip_id", zonal.NewIDString(zone, lb.IP[0].ID))
-		_ = d.Set("ip_address", lb.IP[0].IPAddress)
+		_ = d.Set("ip_ids", flattenLBIPIDs(zone, lb.IP))
+		var ipv4Address, ipv6Address string
+		for _, ip := range lb.IP {
+			parsedIP := net.ParseIP(ip.IPAddress)
+			if parsedIP != nil {
+				if parsedIP.To4() != nil {
+					ipv4Address = ip.IPAddress
+				} else {
+					ipv6Address = ip.IPAddress
+				}
+			}
+		}
+		_ = d.Set("ip_address", ipv4Address)
+		_ = d.Set("ipv6_address", ipv6Address)
 	}
 
 	// retrieve attached private networks
@@ -327,6 +367,88 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, m int
 		_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("ip_ids") {
+		oldIPIDs, newIPIDs := d.GetChange("ip_ids")
+		oldIPIDsSet := make(map[string]struct{})
+		newIPIDsSet := make(map[string]struct{})
+
+		for _, id := range oldIPIDs.([]interface{}) {
+			oldIPIDsSet[id.(string)] = struct{}{}
+		}
+
+		for _, id := range newIPIDs.([]interface{}) {
+			newIPIDsSet[id.(string)] = struct{}{}
+		}
+
+		// Check if an IPv6 address is being added to an existing LB with an IPv4 address
+		if len(oldIPIDsSet) == 1 && len(newIPIDsSet) == 2 {
+			var ipv4ID, ipv6ID string
+			for id := range oldIPIDsSet {
+				ipv4ID = id
+			}
+			for id := range newIPIDsSet {
+				if id != ipv4ID {
+					ipv6ID = id
+					break
+				}
+			}
+
+			res, err := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
+				Zone: zone,
+				IPID: locality.ExpandID(ipv6ID),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = lbAPI.UpdateIP(&lbSDK.ZonedAPIUpdateIPRequest{
+				Zone: zone,
+				IPID: res.ID,
+				LBID: types.ExpandStringPtr(ID),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChange("assign_flexible_ipv6") {
+		assignFlexibleIPv6 := d.Get("assign_flexible_ipv6").(bool)
+		if assignFlexibleIPv6 {
+			createReq := &lbSDK.ZonedAPICreateIPRequest{
+				Zone:      zone,
+				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+				IsIPv6:    true,
+			}
+
+			res, err := lbAPI.CreateIP(createReq, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			updateReq := &lbSDK.ZonedAPIUpdateIPRequest{
+				Zone: zone,
+				IPID: res.ID,
+				LBID: types.ExpandStringPtr(ID),
+			}
+
+			_, err = lbAPI.UpdateIP(updateReq, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

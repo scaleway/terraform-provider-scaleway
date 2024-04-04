@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -115,6 +116,29 @@ func TestAccScalewayLbIP_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbIP_IPv6(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip ipv6 {
+						is_ipv6 = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ipv6"),
+					testCheckResourceAttrIPv6("scaleway_lb_ip.ipv6", "ip_address"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayLbIPExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
@@ -172,16 +196,16 @@ func testAccCheckScalewayLbIPDestroy(tt *acctest.TestTools) resource.TestCheckFu
 				}
 			}
 
-			err = resource.RetryContext(context.Background(), scaleway.RetryLbIPInterval, func() *resource.RetryError {
+			err = retry.RetryContext(context.Background(), scaleway.RetryLbIPInterval, func() *retry.RetryError {
 				_, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 					Zone: zone,
 					IPID: ID,
 				})
 				if httperrors.Is403(errGet) {
-					return resource.RetryableError(errGet)
+					return retry.RetryableError(errGet)
 				}
 
-				return resource.NonRetryableError(errGet)
+				return retry.NonRetryableError(errGet)
 			})
 
 			// If no error resource still exist
