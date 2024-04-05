@@ -1,55 +1,16 @@
 package iam_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_iam_user", &resource.Sweeper{
-		Name: "scaleway_iam_user",
-		F:    testSweepUser,
-	})
-}
-
-func testSweepUser(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		api := iamSDK.NewAPI(scwClient)
-
-		orgID, exists := scwClient.GetDefaultOrganizationID()
-		if !exists {
-			return errors.New("missing organizationID")
-		}
-
-		listUsers, err := api.ListUsers(&iamSDK.ListUsersRequest{
-			OrganizationID: &orgID,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to list users: %w", err)
-		}
-		for _, user := range listUsers.Users {
-			if !acctest.IsTestResource(user.Email) {
-				continue
-			}
-			err = api.DeleteUser(&iamSDK.DeleteUserRequest{
-				UserID: user.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to delete user: %w", err)
-			}
-		}
-		return nil
-	})
-}
 
 func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

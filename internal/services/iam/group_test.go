@@ -1,55 +1,16 @@
 package iam_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_iam_group", &resource.Sweeper{
-		Name: "scaleway_iam_group",
-		F:    testSweepIamGroup,
-	})
-}
-
-func testSweepIamGroup(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		api := iamSDK.NewAPI(scwClient)
-
-		orgID, exists := scwClient.GetDefaultOrganizationID()
-		if !exists {
-			return errors.New("missing organizationID")
-		}
-
-		listApps, err := api.ListGroups(&iamSDK.ListGroupsRequest{
-			OrganizationID: orgID,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to list groups: %w", err)
-		}
-		for _, group := range listApps.Groups {
-			if !acctest.IsTestResource(group.Name) {
-				continue
-			}
-			err = api.DeleteGroup(&iamSDK.DeleteGroupRequest{
-				GroupID: group.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to delete group: %w", err)
-			}
-		}
-		return nil
-	})
-}
 
 func TestAccGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

@@ -20,6 +20,10 @@ const (
 	postgreSQLEngineName = "PostgreSQL"
 )
 
+func TestMain(m *testing.M) {
+	resource.TestMain(m)
+}
+
 func init() {
 	resource.AddTestSweepers("scaleway_rdb_instance", &resource.Sweeper{
 		Name: "scaleway_rdb_instance",

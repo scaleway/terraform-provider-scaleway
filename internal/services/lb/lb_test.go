@@ -24,6 +24,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
+func TestMain(m *testing.M) {
+	resource.TestMain(m)
+}
+
 func init() {
 	resource.AddTestSweepers("scaleway_lb", &resource.Sweeper{
 		Name: "scaleway_lb",

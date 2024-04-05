@@ -2,64 +2,15 @@ package cockpit_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_cockpit", &resource.Sweeper{
-		Name: "scaleway_cockpit",
-		F:    testSweepCockpit,
-	})
-}
-
-func testSweepCockpit(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		cockpitAPI := cockpitSDK.NewAPI(scwClient)
-
-		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("failed to list projects: %w", err)
-		}
-
-		for _, project := range listProjects.Projects {
-			if !strings.HasPrefix(project.Name, "tf_tests") {
-				continue
-			}
-
-			_, err = cockpitAPI.WaitForCockpit(&cockpitSDK.WaitForCockpitRequest{
-				ProjectID: project.ID,
-				Timeout:   scw.TimeDurationPtr(cockpit.DefaultCockpitTimeout),
-			})
-			if err != nil {
-				if !httperrors.Is404(err) {
-					return fmt.Errorf("failed to deactivate cockpit: %w", err)
-				}
-			}
-
-			_, err = cockpitAPI.DeactivateCockpit(&cockpitSDK.DeactivateCockpitRequest{
-				ProjectID: project.ID,
-			})
-			if err != nil {
-				if !httperrors.Is404(err) {
-					return fmt.Errorf("failed to deactivate cockpit: %w", err)
-				}
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccCockpit_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

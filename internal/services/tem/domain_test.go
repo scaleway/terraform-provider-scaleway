@@ -16,6 +16,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 )
 
+func TestMain(m *testing.M) {
+	resource.TestMain(m)
+}
+
 func init() {
 	resource.AddTestSweepers("scaleway_tem_domain", &resource.Sweeper{
 		Name: "scaleway_tem_domain",
