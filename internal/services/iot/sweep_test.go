@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	iottestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iot/testfuncs"
 )
 
 func init() {
