@@ -7,45 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	vpcgwchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw/testfuncs"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_vpc_public_gateway_dhcp", &resource.Sweeper{
-		Name: "scaleway_vpc_public_gateway_dhcp",
-		F:    testSweepVPCPublicGatewayDHCP,
-	})
-}
-
-func testSweepVPCPublicGatewayDHCP(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		api := vpcgwSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying public gateway dhcps in (%+v)", zone)
-
-		listDHCPsResponse, err := api.ListDHCPs(&vpcgwSDK.ListDHCPsRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing public gateway dhcps in sweeper: %w", err)
-		}
-
-		for _, dhcp := range listDHCPsResponse.Dhcps {
-			err := api.DeleteDHCP(&vpcgwSDK.DeleteDHCPRequest{
-				Zone:   zone,
-				DHCPID: dhcp.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting public gateway dhcp in sweeper: %w", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccVPCPublicGatewayDHCP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

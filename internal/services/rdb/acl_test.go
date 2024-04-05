@@ -9,13 +9,6 @@ import (
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_rdb_acl", &resource.Sweeper{
-		Name: "scaleway_rdb_acl",
-		F:    testSweepInstance,
-	})
-}
-
 func TestAccACL_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

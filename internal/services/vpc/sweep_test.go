@@ -16,5 +16,3 @@ func init() {
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
-
-// go test ./internal/services/vpc ./internal/services/ipam -sweep

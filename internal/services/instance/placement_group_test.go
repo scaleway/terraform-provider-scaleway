@@ -7,46 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_instance_placement_group", &resource.Sweeper{
-		Name: "scaleway_instance_placement_group",
-		F:    testSweepPlacementGroup,
-	})
-}
-
-func testSweepPlacementGroup(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		instanceAPI := instanceSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
-		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instanceSDK.ListPlacementGroupsRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
-		if err != nil {
-			logging.L.Warningf("error listing placement groups in (%s) in sweeper: %s", zone, err)
-			return nil
-		}
-
-		for _, pg := range listPlacementGroups.PlacementGroups {
-			err := instanceAPI.DeletePlacementGroup(&instanceSDK.DeletePlacementGroupRequest{
-				Zone:             zone,
-				PlacementGroupID: pg.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting placement group in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccPlacementGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

@@ -8,25 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	k8sSDK "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/k8s"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
-
-func TestMain(m *testing.M) {
-	resource.TestMain(m)
-}
-
-func init() {
-	resource.AddTestSweepers("scaleway_k8s_cluster", &resource.Sweeper{
-		Name: "scaleway_k8s_cluster",
-		F:    testSweepK8SCluster,
-	})
-}
 
 func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
@@ -80,48 +67,6 @@ func testAccK8SClusterGetPreviousK8SVersionMinor(tt *acctest.TestTools) string {
 		return previousK8SVersionMinor
 	}
 	return ""
-}
-
-func testSweepK8SCluster(_ string) error {
-	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
-		k8sAPI := k8sSDK.NewAPI(scwClient)
-
-		logging.L.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
-		listClusters, err := k8sAPI.ListClusters(&k8sSDK.ListClustersRequest{Region: region}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing clusters in (%s) in sweeper: %s", region, err)
-		}
-
-		for _, cluster := range listClusters.Clusters {
-			// remove pools
-			listPools, err := k8sAPI.ListPools(&k8sSDK.ListPoolsRequest{
-				Region:    region,
-				ClusterID: cluster.ID,
-			}, scw.WithAllPages())
-			if err != nil {
-				return fmt.Errorf("error listing pool in (%s) in sweeper: %s", region, err)
-			}
-
-			for _, pool := range listPools.Pools {
-				_, err := k8sAPI.DeletePool(&k8sSDK.DeletePoolRequest{
-					Region: region,
-					PoolID: pool.ID,
-				})
-				if err != nil {
-					return fmt.Errorf("error deleting pool in sweeper: %s", err)
-				}
-			}
-			_, err = k8sAPI.DeleteCluster(&k8sSDK.DeleteClusterRequest{
-				Region:    region,
-				ClusterID: cluster.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting cluster in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
 }
 
 func TestAccCluster_Basic(t *testing.T) {

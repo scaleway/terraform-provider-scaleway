@@ -12,18 +12,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/require"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_instance_security_group", &resource.Sweeper{
-		Name: "scaleway_instance_security_group",
-		F:    testSweepSecurityGroup,
-	})
-}
 
 func TestAccSecurityGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -588,37 +580,6 @@ func isSecurityGroupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 		return nil
 	}
-}
-
-func testSweepSecurityGroup(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		instanceAPI := instanceSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the security groups in (%s)", zone)
-
-		listResp, err := instanceAPI.ListSecurityGroups(&instanceSDK.ListSecurityGroupsRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
-		if err != nil {
-			logging.L.Warningf("error listing security groups in sweeper: %s", err)
-			return nil
-		}
-
-		for _, securityGroup := range listResp.SecurityGroups {
-			// Can't delete default security group.
-			if securityGroup.ProjectDefault {
-				continue
-			}
-			err = instanceAPI.DeleteSecurityGroup(&instanceSDK.DeleteSecurityGroupRequest{
-				Zone:            zone,
-				SecurityGroupID: securityGroup.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting security groups in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
 }
 
 func TestAccSecurityGroup_EnableDefaultSecurity(t *testing.T) {

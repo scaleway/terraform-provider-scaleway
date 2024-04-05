@@ -7,51 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	mnqSDK "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 )
-
-func TestMain(m *testing.M) {
-	resource.TestMain(m)
-}
-
-func init() {
-	resource.AddTestSweepers("scaleway_mnq_nats_account", &resource.Sweeper{
-		Name: "scaleway_mnq_nats_account",
-		F:    testSweepNatsAccount,
-	})
-}
-
-func testSweepNatsAccount(_ string) error {
-	return acctest.SweepRegions((&mnqSDK.NatsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		mnqAPI := mnqSDK.NewNatsAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the mnq nats accounts in (%s)", region)
-		listNatsAccounts, err := mnqAPI.ListNatsAccounts(
-			&mnqSDK.NatsAPIListNatsAccountsRequest{
-				Region: region,
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing nats account in (%s) in sweeper: %s", region, err)
-		}
-
-		for _, account := range listNatsAccounts.NatsAccounts {
-			err := mnqAPI.DeleteNatsAccount(&mnqSDK.NatsAPIDeleteNatsAccountRequest{
-				NatsAccountID: account.ID,
-				Region:        region,
-			})
-			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting nats account in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccNatsAccount_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

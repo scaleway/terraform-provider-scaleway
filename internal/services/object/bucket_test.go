@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -17,23 +16,11 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
-
-func TestMain(m *testing.M) {
-	resource.TestMain(m)
-}
-
-func init() {
-	resource.AddTestSweepers("scaleway_object_bucket", &resource.Sweeper{
-		Name: "scaleway_object_bucket",
-		F:    testSweepStorageObjectBucket,
-	})
-}
 
 func TestAccObjectBucket_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -478,34 +465,6 @@ func TestAccObjectBucket_ObjectLock(t *testing.T) {
 				ExpectError: regexp.MustCompile("versioning must be enabled when object lock is enabled"),
 			},
 		},
-	})
-}
-
-func testSweepStorageObjectBucket(_ string) error {
-	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(_ *scw.Client, region scw.Region) error {
-		s3client, err := object.SharedS3ClientForRegion(region)
-		if err != nil {
-			return fmt.Errorf("error getting client: %s", err)
-		}
-
-		listBucketResponse, err := s3client.ListBuckets(&s3.ListBucketsInput{})
-		if err != nil {
-			return fmt.Errorf("couldn't list buckets: %s", err)
-		}
-
-		for _, bucket := range listBucketResponse.Buckets {
-			logging.L.Debugf("Deleting %q bucket", *bucket.Name)
-			if strings.HasPrefix(*bucket.Name, "terraform-test") {
-				_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
-					Bucket: bucket.Name,
-				})
-				if err != nil {
-					return fmt.Errorf("error deleting bucket in Sweeper: %s", err)
-				}
-			}
-		}
-
-		return nil
 	})
 }
 

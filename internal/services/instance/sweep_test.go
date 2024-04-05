@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	iamtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
+	instancetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
 func init() {
-	iamtestfuncs.AddTestSweepers()
+	instancetestfuncs.AddTestSweepers()
 }
 
 func TestMain(m *testing.M) {

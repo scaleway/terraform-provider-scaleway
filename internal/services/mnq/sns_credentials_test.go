@@ -7,47 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	mnqSDK "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_mnq_sns_credentials", &resource.Sweeper{
-		Name: "scaleway_mnq_sns_credentials",
-		F:    testSweepSNSCredentials,
-	})
-}
-
-func testSweepSNSCredentials(_ string) error {
-	return acctest.SweepRegions((&mnqSDK.SnsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		mnqAPI := mnqSDK.NewSnsAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the mnq sns credentials in (%s)", region)
-		listSnsCredentials, err := mnqAPI.ListSnsCredentials(
-			&mnqSDK.SnsAPIListSnsCredentialsRequest{
-				Region: region,
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing sns credentials in (%s) in sweeper: %s", region, err)
-		}
-
-		for _, credentials := range listSnsCredentials.SnsCredentials {
-			err := mnqAPI.DeleteSnsCredentials(&mnqSDK.SnsAPIDeleteSnsCredentialsRequest{
-				SnsCredentialsID: credentials.ID,
-				Region:           region,
-			})
-			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting sns credentials in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccSNSCredentials_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
