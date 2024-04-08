@@ -1,4 +1,4 @@
-package vpcchecks
+package vpctestfuncs
 
 import (
 	"fmt"

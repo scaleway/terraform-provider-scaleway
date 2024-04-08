@@ -12,58 +12,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 	"github.com/stretchr/testify/require"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_instance_server", &resource.Sweeper{
-		Name: "scaleway_instance_server",
-		F:    testSweepServer,
-	})
-}
-
-func testSweepServer(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		instanceAPI := instanceSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the instanceSDK server in (%s)", zone)
-		listServers, err := instanceAPI.ListServers(&instanceSDK.ListServersRequest{Zone: zone}, scw.WithAllPages())
-		if err != nil {
-			logging.L.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
-			return nil
-		}
-
-		for _, srv := range listServers.Servers {
-			if srv.State == instanceSDK.ServerStateStopped || srv.State == instanceSDK.ServerStateStoppedInPlace {
-				err := instanceAPI.DeleteServer(&instanceSDK.DeleteServerRequest{
-					Zone:     zone,
-					ServerID: srv.ID,
-				})
-				if err != nil {
-					return fmt.Errorf("error deleting server in sweeper: %s", err)
-				}
-			} else if srv.State == instanceSDK.ServerStateRunning {
-				_, err := instanceAPI.ServerAction(&instanceSDK.ServerActionRequest{
-					Zone:     zone,
-					ServerID: srv.ID,
-					Action:   instanceSDK.ServerActionTerminate,
-				})
-				if err != nil {
-					return fmt.Errorf("error terminating server in sweeper: %s", err)
-				}
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccServer_Minimal1(t *testing.T) {
 	tt := acctest.NewTestTools(t)

@@ -1,56 +1,16 @@
 package iam_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_iam_application", &resource.Sweeper{
-		Name: "scaleway_iam_application",
-		F:    testSweepIamApplication,
-	})
-}
-
-func testSweepIamApplication(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		api := iamSDK.NewAPI(scwClient)
-
-		orgID, exists := scwClient.GetDefaultOrganizationID()
-		if !exists {
-			return errors.New("missing organizationID")
-		}
-
-		listApps, err := api.ListApplications(&iamSDK.ListApplicationsRequest{
-			OrganizationID: orgID,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to list applications: %w", err)
-		}
-		for _, app := range listApps.Applications {
-			if !acctest.IsTestResource(app.Name) {
-				continue
-			}
-
-			err = api.DeleteApplication(&iamSDK.DeleteApplicationRequest{
-				ApplicationID: app.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to delete application: %w", err)
-			}
-		}
-		return nil
-	})
-}
 
 func TestAccApplication_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

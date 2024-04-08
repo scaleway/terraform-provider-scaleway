@@ -1,58 +1,16 @@
 package iam_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_iam_api_key", &resource.Sweeper{
-		Name: "scaleway_iam_api_key",
-		F:    testSweepIamAPIKey,
-	})
-}
-
-func testSweepIamAPIKey(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		api := iamSDK.NewAPI(scwClient)
-
-		logging.L.Debugf("sweeper: destroying the api keys")
-
-		orgID, exists := scwClient.GetDefaultOrganizationID()
-		if !exists {
-			return errors.New("missing organizationID")
-		}
-
-		listAPIKeys, err := api.ListAPIKeys(&iamSDK.ListAPIKeysRequest{
-			OrganizationID: &orgID,
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("failed to list api keys: %w", err)
-		}
-		for _, key := range listAPIKeys.APIKeys {
-			if !acctest.IsTestResource(key.Description) {
-				continue
-			}
-			err = api.DeleteAPIKey(&iamSDK.DeleteAPIKeyRequest{
-				AccessKey: key.AccessKey,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to delete api key: %w", err)
-			}
-		}
-		return nil
-	})
-}
 
 func TestAccApiKey_WithApplication(t *testing.T) {
 	tt := acctest.NewTestTools(t)

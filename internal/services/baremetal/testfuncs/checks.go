@@ -1,4 +1,4 @@
-package baremetalchecks
+package baremetaltestfuncs
 
 import (
 	"fmt"

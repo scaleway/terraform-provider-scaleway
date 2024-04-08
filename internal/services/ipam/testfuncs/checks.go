@@ -1,4 +1,4 @@
-package ipamchecks
+package ipamtestfuncs
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package vpcgwchecks
+package vpcgwtestfuncs
 
 import (
 	"fmt"

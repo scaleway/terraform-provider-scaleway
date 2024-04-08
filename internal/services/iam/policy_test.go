@@ -2,56 +2,17 @@ package iam_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/stretchr/testify/require"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_iam_policy", &resource.Sweeper{
-		Name: "scaleway_iam_policy",
-		F:    testSweepIamPolicy,
-	})
-}
-
-func testSweepIamPolicy(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		api := iamSDK.NewAPI(scwClient)
-
-		orgID, exists := scwClient.GetDefaultOrganizationID()
-		if !exists {
-			return errors.New("missing organizationID")
-		}
-
-		listPols, err := api.ListPolicies(&iamSDK.ListPoliciesRequest{
-			OrganizationID: orgID,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to list policies: %w", err)
-		}
-		for _, pol := range listPols.Policies {
-			if !acctest.IsTestResource(pol.Name) {
-				continue
-			}
-			err = api.DeletePolicy(&iamSDK.DeletePolicyRequest{
-				PolicyID: pol.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to delete policy: %w", err)
-			}
-		}
-		return nil
-	})
-}
 
 func TestAccPolicy_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

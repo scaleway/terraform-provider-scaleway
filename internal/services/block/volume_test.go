@@ -7,47 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_block_volume", &resource.Sweeper{
-		Name: "scaleway_block_volume",
-		F:    testSweepBlockVolume,
-	})
-}
-
-func testSweepBlockVolume(_ string) error {
-	return acctest.SweepZones((&blockSDK.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
-		blockAPI := blockSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the block volumes in (%s)", zone)
-		listVolumes, err := blockAPI.ListVolumes(
-			&blockSDK.ListVolumesRequest{
-				Zone: zone,
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing volume in (%s) in sweeper: %s", zone, err)
-		}
-
-		for _, volume := range listVolumes.Volumes {
-			err := blockAPI.DeleteVolume(&blockSDK.DeleteVolumeRequest{
-				VolumeID: volume.ID,
-				Zone:     zone,
-			})
-			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting volume in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccVolume_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

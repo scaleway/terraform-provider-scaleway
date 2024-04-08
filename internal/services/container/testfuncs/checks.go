@@ -1,4 +1,4 @@
-package containerchecks
+package containertestfuncs
 
 import (
 	"bufio"

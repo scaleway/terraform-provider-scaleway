@@ -7,45 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	lbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb/testfuncs"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_lb_ip", &resource.Sweeper{
-		Name: "scaleway_lb_ip",
-		F:    testSweepIP,
-	})
-}
-
-func testSweepIP(_ string) error {
-	return acctest.SweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, zone scw.Zone) error {
-		lbAPI := lbSDK.NewZonedAPI(scwClient)
-
-		logging.L.Debugf("sweeper: destroying the lb ips in zone (%s)", zone)
-		listIPs, err := lbAPI.ListIPs(&lbSDK.ZonedAPIListIPsRequest{Zone: zone}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", zone, err)
-		}
-
-		for _, ip := range listIPs.IPs {
-			if ip.LBID == nil {
-				err := lbAPI.ReleaseIP(&lbSDK.ZonedAPIReleaseIPRequest{
-					Zone: zone,
-					IPID: ip.ID,
-				})
-				if err != nil {
-					return fmt.Errorf("error deleting lb ip in sweeper: %s", err)
-				}
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

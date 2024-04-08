@@ -8,44 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_instance_ip", &resource.Sweeper{
-		Name: "scaleway_instance_ip",
-		F:    testSweepIP,
-	})
-}
-
-func testSweepIP(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		instanceAPI := instanceSDK.NewAPI(scwClient)
-
-		listIPs, err := instanceAPI.ListIPs(&instanceSDK.ListIPsRequest{Zone: zone}, scw.WithAllPages())
-		if err != nil {
-			logging.L.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
-			return nil
-		}
-
-		for _, ip := range listIPs.IPs {
-			err := instanceAPI.DeleteIP(&instanceSDK.DeleteIPRequest{
-				IP:   ip.ID,
-				Zone: zone,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting ip in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

@@ -7,47 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	functionSDK "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_function_cron", &resource.Sweeper{
-		Name: "scaleway_function_cron",
-		F:    testSweepFunctionCron,
-	})
-}
-
-func testSweepFunctionCron(_ string) error {
-	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
-		functionAPI := functionSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the function cron in (%s)", region)
-		listCron, err := functionAPI.ListCrons(
-			&functionSDK.ListCronsRequest{
-				Region: region,
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing cron in (%s) in sweeper: %s", region, err)
-		}
-
-		for _, cron := range listCron.Crons {
-			_, err := functionAPI.DeleteCron(&functionSDK.DeleteCronRequest{
-				CronID: cron.ID,
-				Region: region,
-			})
-			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting cron in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccFunctionCron_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

@@ -7,47 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	functionSDK "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_function_trigger", &resource.Sweeper{
-		Name: "scaleway_function_trigger",
-		F:    testSweepFunctionTrigger,
-	})
-}
-
-func testSweepFunctionTrigger(_ string) error {
-	return acctest.SweepRegions((&functionSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		functionAPI := functionSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the function triggers in (%s)", region)
-		listTriggers, err := functionAPI.ListTriggers(
-			&functionSDK.ListTriggersRequest{
-				Region: region,
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing trigger in (%s) in sweeper: %s", region, err)
-		}
-
-		for _, trigger := range listTriggers.Triggers {
-			_, err := functionAPI.DeleteTrigger(&functionSDK.DeleteTriggerRequest{
-				TriggerID: trigger.ID,
-				Region:    region,
-			})
-			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting trigger in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccFunctionTrigger_SQS(t *testing.T) {
 	tt := acctest.NewTestTools(t)
