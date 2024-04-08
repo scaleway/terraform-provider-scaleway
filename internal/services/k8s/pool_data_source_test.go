@@ -35,7 +35,7 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 						version = "%s"
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_pool", "basic" ]
-						delete_additional_resources = true
+						delete_additional_resources = false
 						private_network_id = scaleway_vpc_private_network.main.id
 					}
 					
@@ -58,7 +58,7 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 						version = "%s"
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_cluster", "basic" ]
-						delete_additional_resources = true
+						delete_additional_resources = false
 						private_network_id = scaleway_vpc_private_network.main.id
 					}
 
