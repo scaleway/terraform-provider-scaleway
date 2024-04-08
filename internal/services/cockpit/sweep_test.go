@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit/cockpittestfuncs"
+	cockpittestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit/testfuncs"
 )
 
 func init() {
