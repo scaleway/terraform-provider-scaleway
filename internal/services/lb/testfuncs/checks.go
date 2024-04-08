@@ -1,4 +1,4 @@
-package lbchecks
+package lbtestfuncs
 
 import (
 	"context"

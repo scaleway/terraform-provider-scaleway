@@ -7,44 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	vpcgwchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw/testfuncs"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_vpc_public_gateway", &resource.Sweeper{
-		Name: "scaleway_vpc_public_gateway",
-		F:    testSweepVPCPublicGateway,
-	})
-}
-
-func testSweepVPCPublicGateway(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		api := vpcgwSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the public gateways in (%+v)", zone)
-
-		listGatewayResponse, err := api.ListGateways(&vpcgwSDK.ListGatewaysRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing public gateway in sweeper: %w", err)
-		}
-
-		for _, gateway := range listGatewayResponse.Gateways {
-			err := api.DeleteGateway(&vpcgwSDK.DeleteGatewayRequest{
-				Zone:      zone,
-				GatewayID: gateway.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting public gateway in sweeper: %w", err)
-			}
-		}
-		return nil
-	})
-}
 
 func TestAccVPCPublicGateway_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

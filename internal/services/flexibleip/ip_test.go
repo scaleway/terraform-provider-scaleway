@@ -9,48 +9,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	baremetalSDK "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	flexibleipSDK "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	baremetalchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 )
 
 const SSHKeyFlexibleIP = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
-
-func init() {
-	resource.AddTestSweepers("scaleway_flexible_ip", &resource.Sweeper{
-		Name: "scaleway_flexible_ip",
-		F:    testSweepFlexibleIP,
-	})
-}
-
-func testSweepFlexibleIP(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		fipAPI := flexibleipSDK.NewAPI(scwClient)
-
-		listIPs, err := fipAPI.ListFlexibleIPs(&flexibleipSDK.ListFlexibleIPsRequest{Zone: zone}, scw.WithAllPages())
-		if err != nil {
-			logging.L.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
-			return nil
-		}
-
-		for _, ip := range listIPs.FlexibleIPs {
-			err := fipAPI.DeleteFlexibleIP(&flexibleipSDK.DeleteFlexibleIPRequest{
-				FipID: ip.ID,
-				Zone:  zone,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting ip in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccFlexibleIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

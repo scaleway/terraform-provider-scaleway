@@ -3,68 +3,16 @@ package cockpit_test
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_cockpit_grafana_user", &resource.Sweeper{
-		Name: "scaleway_cockpit_grafana_user",
-		F:    testSweepCockpitGrafanaUser,
-	})
-}
-
-func testSweepCockpitGrafanaUser(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		cockpitAPI := cockpitSDK.NewAPI(scwClient)
-
-		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("failed to list projects: %w", err)
-		}
-
-		for _, project := range listProjects.Projects {
-			if !strings.HasPrefix(project.Name, "tf_tests") {
-				continue
-			}
-
-			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpitSDK.ListGrafanaUsersRequest{
-				ProjectID: project.ID,
-			}, scw.WithAllPages())
-			if err != nil {
-				if httperrors.Is404(err) {
-					return nil
-				}
-
-				return fmt.Errorf("failed to list grafana users: %w", err)
-			}
-
-			for _, grafanaUser := range listGrafanaUsers.GrafanaUsers {
-				err = cockpitAPI.DeleteGrafanaUser(&cockpitSDK.DeleteGrafanaUserRequest{
-					ProjectID:     project.ID,
-					GrafanaUserID: grafanaUser.ID,
-				})
-				if err != nil {
-					if !httperrors.Is404(err) {
-						return fmt.Errorf("failed to delete grafana user: %w", err)
-					}
-				}
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccGrafanaUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

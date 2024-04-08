@@ -1,4 +1,4 @@
-package rdbchecks
+package rdbtestfuncs
 
 import (
 	"fmt"

@@ -2,56 +2,15 @@ package mnq_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	mnqSDK "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_mnq_sns", &resource.Sweeper{
-		Name: "scaleway_mnq_sns",
-		F:    testSweepSNS,
-	})
-}
-
-func testSweepSNS(_ string) error {
-	return acctest.SweepRegions((&mnqSDK.SnsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		mnqAPI := mnqSDK.NewSnsAPI(scwClient)
-
-		logging.L.Debugf("sweeper: destroying the mnq sns in (%s)", region)
-
-		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("failed to list projects: %w", err)
-		}
-		for _, project := range listProjects.Projects {
-			if !strings.HasPrefix(project.Name, "tf_tests") {
-				continue
-			}
-
-			_, err := mnqAPI.DeactivateSns(&mnqSDK.SnsAPIDeactivateSnsRequest{
-				Region:    region,
-				ProjectID: project.ID,
-			})
-			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-				return err
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccSNS_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

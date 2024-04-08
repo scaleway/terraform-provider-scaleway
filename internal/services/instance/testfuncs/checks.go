@@ -1,4 +1,4 @@
-package instancechecks
+package instancetestfuncs
 
 import (
 	"fmt"

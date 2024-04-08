@@ -5,52 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	vpcSDK "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_vpc_private_network", &resource.Sweeper{
-		Name:         "scaleway_vpc_private_network",
-		F:            testSweepVPCPrivateNetwork,
-		Dependencies: []string{"scaleway_ipam_ip"},
-	})
-}
-
-func testSweepVPCPrivateNetwork(_ string) error {
-	err := acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
-		vpcAPI := vpcSDK.NewAPI(scwClient)
-
-		logging.L.Debugf("sweeper: destroying the private network in (%s)", region)
-
-		listPNResponse, err := vpcAPI.ListPrivateNetworks(&vpcSDK.ListPrivateNetworksRequest{
-			Region: region,
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing private network in sweeper: %s", err)
-		}
-
-		for _, pn := range listPNResponse.PrivateNetworks {
-			err := vpcAPI.DeletePrivateNetwork(&vpcSDK.DeletePrivateNetworkRequest{
-				Region:           region,
-				PrivateNetworkID: pn.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting private network in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

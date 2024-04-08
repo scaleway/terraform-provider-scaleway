@@ -5,10 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 )
 
@@ -16,40 +13,6 @@ const (
 	SSHKey               = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
 	SSHKeyWithoutComment = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_iam_ssh_key", &resource.Sweeper{
-		Name: "scaleway_iam_ssh_key",
-		F:    testSweepSSHKey,
-	})
-}
-
-func testSweepSSHKey(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		iamAPI := iamSDK.NewAPI(scwClient)
-
-		logging.L.Debugf("sweeper: destroying the SSH keys")
-
-		listSSHKeys, err := iamAPI.ListSSHKeys(&iamSDK.ListSSHKeysRequest{}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing SSH keys in sweeper: %s", err)
-		}
-
-		for _, sshKey := range listSSHKeys.SSHKeys {
-			if !acctest.IsTestResource(sshKey.Name) {
-				continue
-			}
-			err := iamAPI.DeleteSSHKey(&iamSDK.DeleteSSHKeyRequest{
-				SSHKeyID: sshKey.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting SSH key in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccSSHKey_basic(t *testing.T) {
 	name := "tf-test-iam-ssh-key-basic"

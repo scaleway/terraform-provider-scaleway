@@ -7,47 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	ipamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	vpcgwchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw/testfuncs"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_gateway_network", &resource.Sweeper{
-		Name: "scaleway_gateway_network",
-		F:    testSweepVPCGatewayNetwork,
-	})
-}
-
-func testSweepVPCGatewayNetwork(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		api := vpcgwSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the gateway network in (%s)", zone)
-
-		listPNResponse, err := api.ListGatewayNetworks(&vpcgwSDK.ListGatewayNetworksRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing gateway network in sweeper: %s", err)
-		}
-
-		for _, gn := range listPNResponse.GatewayNetworks {
-			err := api.DeleteGatewayNetwork(&vpcgwSDK.DeleteGatewayNetworkRequest{
-				GatewayNetworkID: gn.GatewayID,
-				Zone:             zone,
-				// Cleanup the dhcp resource related. DON'T CALL THE SWEEPER DHCP
-				CleanupDHCP: true,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting gateway network in sweeper: %s", err)
-			}
-		}
-		return nil
-	})
-}
 
 func TestAccVPCGatewayNetwork_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

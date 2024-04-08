@@ -7,47 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	functionSDK "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_function", &resource.Sweeper{
-		Name: "scaleway_function",
-		F:    testSweepFunction,
-	})
-}
-
-func testSweepFunction(_ string) error {
-	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
-		functionAPI := functionSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the function in (%s)", region)
-		listFunctions, err := functionAPI.ListFunctions(
-			&functionSDK.ListFunctionsRequest{
-				Region: region,
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing functions in (%s) in sweeper: %s", region, err)
-		}
-
-		for _, f := range listFunctions.Functions {
-			_, err := functionAPI.DeleteFunction(&functionSDK.DeleteFunctionRequest{
-				FunctionID: f.ID,
-				Region:     region,
-			})
-			if err != nil && !httperrors.Is404(err) {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting functions in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccFunction_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)

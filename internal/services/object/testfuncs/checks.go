@@ -1,4 +1,4 @@
-package objectchecks
+package objecttestfuncs
 
 import (
 	"errors"

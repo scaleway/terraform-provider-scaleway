@@ -12,13 +12,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_instance_private_nic", &resource.Sweeper{
-		Name: "scaleway_instance_private_nic",
-		F:    testSweepServer,
-	})
-}
-
 func TestAccPrivateNIC_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

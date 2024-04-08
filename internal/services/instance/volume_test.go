@@ -7,47 +7,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
+	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_instance_volume", &resource.Sweeper{
-		Name: "scaleway_instance_volume",
-		F:    testSweepVolume,
-	})
-}
-
-func testSweepVolume(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		instanceAPI := instance.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the volumes in (%s)", zone)
-
-		listVolumesResponse, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing volumes in sweeper: %s", err)
-		}
-
-		for _, volume := range listVolumesResponse.Volumes {
-			if volume.Server == nil {
-				err := instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
-					Zone:     zone,
-					VolumeID: volume.ID,
-				})
-				if err != nil {
-					return fmt.Errorf("error deleting volume in sweeper: %s", err)
-				}
-			}
-		}
-		return nil
-	})
-}
 
 func TestAccVolume_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -242,8 +206,8 @@ func isVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
-		_, err = instanceAPI.GetVolume(&instance.GetVolumeRequest{
+		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+		_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
 			VolumeID: id,
 			Zone:     zone,
 		})
@@ -257,7 +221,7 @@ func isVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 func isVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		instanceAPI := instance.NewAPI(tt.Meta.ScwClient())
+		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_volume" {
 				continue
@@ -268,7 +232,7 @@ func isVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = instanceAPI.GetVolume(&instance.GetVolumeRequest{
+			_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
 				Zone:     zone,
 				VolumeID: id,
 			})
