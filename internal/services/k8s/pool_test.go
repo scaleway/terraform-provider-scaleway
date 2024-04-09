@@ -19,7 +19,7 @@ import (
 	vpcgwchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw/testfuncs"
 )
 
-func TestAccCluster_PoolBasic(t *testing.T) {
+func TestAccPool_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -83,7 +83,7 @@ func TestAccCluster_PoolBasic(t *testing.T) {
 	})
 }
 
-func TestAccCluster_PoolWait(t *testing.T) {
+func TestAccPool_Wait(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
@@ -162,7 +162,7 @@ func TestAccCluster_PoolWait(t *testing.T) {
 	})
 }
 
-func TestAccCluster_PoolPlacementGroup(t *testing.T) {
+func TestAccPool_PlacementGroup(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -219,7 +219,7 @@ func TestAccCluster_PoolPlacementGroup(t *testing.T) {
 	})
 }
 
-func TestAccCluster_PoolUpgradePolicy(t *testing.T) {
+func TestAccPool_UpgradePolicy(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -274,7 +274,7 @@ func TestAccCluster_PoolUpgradePolicy(t *testing.T) {
 	})
 }
 
-func TestAccCluster_PoolKubeletArgs(t *testing.T) {
+func TestAccPool_KubeletArgs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -313,7 +313,7 @@ func TestAccCluster_PoolKubeletArgs(t *testing.T) {
 	})
 }
 
-func TestAccCluster_PoolZone(t *testing.T) {
+func TestAccPool_Zone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -342,7 +342,7 @@ func TestAccCluster_PoolZone(t *testing.T) {
 	})
 }
 
-func TestAccCluster_PoolSize(t *testing.T) {
+func TestAccPool_Size(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -366,7 +366,7 @@ func TestAccCluster_PoolSize(t *testing.T) {
 				  name    = "test-pool-size"
 				  version = "%s"
 				  cni     = "cilium"
-				  delete_additional_resources = true
+				  delete_additional_resources = false
 				  private_network_id = scaleway_vpc_private_network.test-pool-size.id
 				  auto_upgrade {
 				    enable = true
@@ -394,7 +394,7 @@ func TestAccCluster_PoolSize(t *testing.T) {
 				  name    = "test-pool-size"
 				  version = "%s"
 				  cni     = "cilium"
-				  delete_additional_resources = true
+				  delete_additional_resources = false
 				  private_network_id = scaleway_vpc_private_network.test-pool-size.id
 				  auto_upgrade {
 				    enable = true
@@ -419,7 +419,7 @@ func TestAccCluster_PoolSize(t *testing.T) {
 	})
 }
 
-func TestAccCluster_PoolPublicIPDisabled(t *testing.T) {
+func TestAccPool_PublicIPDisabled(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -449,7 +449,7 @@ func TestAccCluster_PoolPublicIPDisabled(t *testing.T) {
 				  cni     = "cilium"
 				  private_network_id = scaleway_vpc_private_network.public_ip.id
 				  tags = [ "terraform-test", "scaleway_k8s_cluster", "public_ip" ]
-				  delete_additional_resources = true
+				  delete_additional_resources = false
 				  depends_on = [scaleway_vpc_private_network.public_ip]
 				}
 			
@@ -495,7 +495,7 @@ func TestAccCluster_PoolPublicIPDisabled(t *testing.T) {
 				  cni     = "cilium"
 				  private_network_id = scaleway_vpc_private_network.public_ip.id
 				  tags = [ "terraform-test", "scaleway_k8s_cluster", "public_ip" ]
-				  delete_additional_resources = true
+				  delete_additional_resources = false
 				  depends_on = [
 					scaleway_vpc_private_network.public_ip,
 					scaleway_vpc_gateway_network.public_ip,
@@ -740,7 +740,7 @@ resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
-	delete_additional_resources = true
+	delete_additional_resources = false
 	private_network_id = scaleway_vpc_private_network.minimal.id
 }
 %s`, version, pool)
@@ -782,7 +782,7 @@ resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
-	delete_additional_resources = true
+	delete_additional_resources = false
 	private_network_id = scaleway_vpc_private_network.minimal.id
 }
 %s`, version, pool)
@@ -813,7 +813,7 @@ resource "scaleway_k8s_cluster" "placement_group" {
   cni	  = "calico"
   version = "%s"
   tags	  = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
-  delete_additional_resources = true
+  delete_additional_resources = false
   private_network_id = scaleway_vpc_private_network.placement_group.id
 }`, version)
 }
@@ -848,7 +848,7 @@ resource "scaleway_k8s_cluster" "placement_group_2" {
   version = "%s"
   tags	  = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
   region  = "nl-ams"
-  delete_additional_resources = true
+  delete_additional_resources = false
   private_network_id = scaleway_vpc_private_network.placement_group.id
 }`, version)
 }
@@ -879,7 +879,7 @@ resource "scaleway_k8s_cluster" "placement_group_2" {
   tags		= [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
   region	= "fr-par"
   type		= "multicloud"
-  delete_additional_resources = true
+  delete_additional_resources = false
 }`, version)
 }
 
@@ -908,7 +908,7 @@ resource "scaleway_k8s_cluster" "upgrade_policy" {
 	cni = "cilium"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade_policy" ]
-	delete_additional_resources = true
+	delete_additional_resources = false
 	private_network_id = scaleway_vpc_private_network.upgrade_policy.id
 }`, maxSurge, maxUnavailable, version)
 }
@@ -937,7 +937,7 @@ resource "scaleway_k8s_cluster" "kubelet_args" {
 	cni = "cilium"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "kubelet_args" ]
-	delete_additional_resources = true
+	delete_additional_resources = false
 	private_network_id = scaleway_vpc_private_network.kubelet_args.id
 }`, maxPods, version)
 }
@@ -964,7 +964,7 @@ resource "scaleway_k8s_cluster" "zone" {
 	cni = "cilium"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "zone" ]
-	delete_additional_resources = true
+	delete_additional_resources = false
 	private_network_id = scaleway_vpc_private_network.zone.id
 }`, zone, version)
 }
