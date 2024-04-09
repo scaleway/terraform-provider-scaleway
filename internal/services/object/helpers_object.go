@@ -561,7 +561,7 @@ func buildBucketOwnerID(id *string) *string {
 	return &s
 }
 
-func normalizeOwnerID(id *string) *string {
+func NormalizeOwnerID(id *string) *string {
 	tab := strings.Split(*id, ":")
 	if len(tab) != 2 {
 		return id

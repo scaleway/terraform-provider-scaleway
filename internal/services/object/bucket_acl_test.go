@@ -1,14 +1,25 @@
 package object_test
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/s3"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+)
+
+const (
+	s3ACLGranteeAllUsers           = "AllUsers"
+	s3ACLGranteeAuthenticatedUsers = "AuthenticatedUsers"
 )
 
 func TestAccObjectBucketACL_Basic(t *testing.T) {
@@ -262,4 +273,179 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccObjectBucketACL_Remove(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-remove")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+						acl = "authenticated-read"
+					}
+					`, testBucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main", "acl", "authenticated-read"),
+					testAccObjectBucketACLCheck(tt, "scaleway_object_bucket.main", "authenticated-read"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+						acl = "authenticated-read"
+					}
+				
+					resource "scaleway_object_bucket_acl" "main" {
+						bucket = scaleway_object_bucket.main.id
+						acl = "public-read"
+					}
+					`, testBucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main", "acl", "authenticated-read"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "public-read"),
+					testAccObjectBucketACLCheck(tt, "scaleway_object_bucket.main", "public-read"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+						acl = "authenticated-read"
+					}
+					`, testBucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main", "acl", "authenticated-read"),
+					testAccObjectBucketACLCheck(tt, "scaleway_object_bucket.main", "private"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+					}
+					`, testBucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main", "acl", "private"),
+					testAccObjectBucketACLCheck(tt, "scaleway_object_bucket.main", "private"),
+				),
+			},
+		},
+	})
+}
+
+func testAccObjectBucketACLCheck(tt *acctest.TestTools, name string, expectedACL string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+
+		bucketRegion := rs.Primary.Attributes["region"]
+		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		if err != nil {
+			return err
+		}
+		if rs.Primary.ID == "" {
+			return errors.New("no ID is set")
+		}
+
+		bucketName := rs.Primary.Attributes["name"]
+		actualACL, err := s3Client.GetBucketAcl(&s3.GetBucketAclInput{
+			Bucket: types.ExpandStringPtr(bucketName),
+		})
+		if err != nil {
+			return fmt.Errorf("could not get ACL for bucket %s: %v", bucketName, err)
+		}
+
+		errs := s3ACLAreEqual(expectedACL, actualACL)
+		if len(errs) > 0 {
+			return fmt.Errorf("unexpected result: %w", errors.Join(errs...))
+		}
+		return nil
+	}
+}
+
+func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error) {
+	ownerID := *object.NormalizeOwnerID(actual.Owner.ID)
+	grantsMap := make(map[string]string)
+	for _, actualACL := range actual.Grants {
+		if actualACL.Permission == nil {
+			return append(errs, errors.New("grant has no permission"))
+		}
+		if actualACL.Grantee.ID != nil {
+			grantsMap[*actualACL.Permission] = *object.NormalizeOwnerID(actualACL.Grantee.ID)
+		} else {
+			groupURI := strings.Split(*actualACL.Grantee.URI, "/")
+			grantsMap[*actualACL.Permission] = groupURI[len(groupURI)-1]
+		}
+	}
+
+	switch expected {
+	case "private":
+		if len(grantsMap) != 1 {
+			errs = append(errs, fmt.Errorf("expected 1 grant, but got %d", len(grantsMap)))
+			return errs
+		}
+		if grantsMap["FULL_CONTROL"] != ownerID {
+			errs = append(errs, fmt.Errorf("expected FULL_CONTROL to be granted to owner (%s), instead got %q", ownerID, grantsMap["FULL_CONTROL"]))
+		}
+
+	case "public-read":
+		if len(grantsMap) != 2 {
+			errs = append(errs, fmt.Errorf("expected 2 grants, but got %d", len(grantsMap)))
+			return errs
+		}
+		if grantsMap["FULL_CONTROL"] != ownerID {
+			errs = append(errs, fmt.Errorf("expected FULL_CONTROL to be granted to owner (%s), instead got %q", ownerID, grantsMap["FULL_CONTROL"]))
+		}
+		if grantsMap["READ"] != s3ACLGranteeAllUsers {
+			errs = append(errs, fmt.Errorf("expected READ to be granted to %q, instead got %q", s3ACLGranteeAllUsers, grantsMap["READ"]))
+		}
+
+	case "public-read-write":
+		if len(grantsMap) != 3 {
+			errs = append(errs, fmt.Errorf("expected 3 grants, but got %d", len(grantsMap)))
+			return errs
+		}
+		if grantsMap["FULL_CONTROL"] != ownerID {
+			errs = append(errs, fmt.Errorf("expected FULL_CONTROL to be granted to owner (%s), instead got %q", ownerID, grantsMap["FULL_CONTROL"]))
+		}
+		if grantsMap["READ"] != s3ACLGranteeAllUsers {
+			errs = append(errs, fmt.Errorf("expected READ to be granted to %q, instead got %q", s3ACLGranteeAllUsers, grantsMap["READ"]))
+		}
+		if grantsMap["WRITE"] != s3ACLGranteeAllUsers {
+			errs = append(errs, fmt.Errorf("expected WRITE to be granted to %q, instead got %q", s3ACLGranteeAllUsers, grantsMap["WRITE"]))
+		}
+
+	case "authenticated-read":
+		if len(grantsMap) != 2 {
+			errs = append(errs, fmt.Errorf("expected 2 grants, but got %d", len(grantsMap)))
+			return errs
+		}
+		if grantsMap["FULL_CONTROL"] != ownerID {
+			errs = append(errs, fmt.Errorf("expected FULL_CONTROL to be granted to owner (%s), instead got %q", ownerID, grantsMap["FULL_CONTROL"]))
+		}
+		if grantsMap["READ"] != s3ACLGranteeAuthenticatedUsers {
+			errs = append(errs, fmt.Errorf("expected READ to be granted to %q, instead got %q", s3ACLGranteeAuthenticatedUsers, grantsMap["READ"]))
+		}
+	}
+	return errs
 }

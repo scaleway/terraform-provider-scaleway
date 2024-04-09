@@ -2,6 +2,7 @@ module github.com/scaleway/terraform-provider-scaleway/v2
 
 require (
 	github.com/aws/aws-sdk-go v1.51.19
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.53.1
 	github.com/docker/docker v26.0.0+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.6.0
@@ -28,6 +29,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.1.0-alpha.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
+	github.com/aws/smithy-go v1.20.2 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

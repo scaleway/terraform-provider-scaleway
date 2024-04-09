@@ -112,7 +112,7 @@ func ResourceBucketACL() *schema.Resource {
 			"acl": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "ACL of the bucket: either 'public-read' or 'private'.",
+				Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
 				ValidateFunc: validation.StringInSlice([]string{
 					s3.ObjectCannedACLPrivate,
 					s3.ObjectCannedACLPublicRead,
@@ -333,11 +333,11 @@ func flattenBucketACLAccessControlPolicyGrantsGrantee(grantee *s3.Grantee) []int
 	m := make(map[string]interface{})
 
 	if grantee.DisplayName != nil {
-		m["display_name"] = aws.StringValue(normalizeOwnerID(grantee.DisplayName))
+		m["display_name"] = aws.StringValue(NormalizeOwnerID(grantee.DisplayName))
 	}
 
 	if grantee.ID != nil {
-		m["id"] = aws.StringValue(normalizeOwnerID(grantee.ID))
+		m["id"] = aws.StringValue(NormalizeOwnerID(grantee.ID))
 	}
 
 	if grantee.Type != nil {
@@ -355,11 +355,11 @@ func flattenBucketACLAccessControlPolicyOwner(owner *s3.Owner) []interface{} {
 	m := make(map[string]interface{})
 
 	if owner.DisplayName != nil {
-		m["display_name"] = aws.StringValue(normalizeOwnerID(owner.DisplayName))
+		m["display_name"] = aws.StringValue(NormalizeOwnerID(owner.DisplayName))
 	}
 
 	if owner.ID != nil {
-		m["id"] = aws.StringValue(normalizeOwnerID(owner.ID))
+		m["id"] = aws.StringValue(NormalizeOwnerID(owner.ID))
 	}
 
 	return []interface{}{m}
@@ -402,7 +402,7 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(fmt.Errorf("error setting access_control_policy: %w", err))
 	}
 	_ = d.Set("region", region)
-	_ = d.Set("project_id", normalizeOwnerID(output.Owner.ID))
+	_ = d.Set("project_id", NormalizeOwnerID(output.Owner.ID))
 	_ = d.Set("bucket", locality.ExpandID(bucket))
 
 	return nil
@@ -453,7 +453,25 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceBucketACLRead(ctx, d, m)
 }
 
-func resourceBucketACLDelete(ctx context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
-	tflog.Warn(ctx, "[WARN] Cannot destroy Object Bucket ACL. Terraform will remove this resource from the state file, however resources may remain.")
-	return nil
+func resourceBucketACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	conn, _, bucket, _, err := s3ClientWithRegionWithNameACL(d, m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = conn.PutBucketAclWithContext(ctx, &s3.PutBucketAclInput{
+		Bucket: &bucket,
+		ACL:    scw.StringPtr(s3.ObjectCannedACLPrivate),
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error putting bucket ACL: %w", err))
+	}
+
+	return diag.Diagnostics{
+		diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Deleting Object Bucket ACL resource resets ACL to private",
+			Detail:   "Deleting Object Bucket ACL resource resets the bucket's ACL to its default value: private.\nIf you wish to set it to something else, you should recreate a Bucket ACL resource with the `acl` field filled accordingly.",
+		},
+	}
 }
