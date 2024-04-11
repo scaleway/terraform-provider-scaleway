@@ -74,6 +74,7 @@ func ResourceCluster() *schema.Resource {
 					k8s.CNIFlannel.String(),
 					k8s.CNIWeave.String(),
 					k8s.CNIKilo.String(),
+					k8s.CNINone.String(),
 				}, false),
 			},
 			"tags": {
