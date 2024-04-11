@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -619,7 +620,7 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		updateHCRequest.TCPConfig = expandLbHCTCP(d.Get("health_check_tcp"))
 	}
 
-	_, healthCheckPortSetByUser := getRawConfigForKey(d, "health_check_port", cty.Number)
+	_, healthCheckPortSetByUser := meta.GetRawConfigForKey(d, "health_check_port", cty.Number)
 	if d.HasChange("forward_port") && !healthCheckPortSetByUser {
 		updateHCRequest.Port = int32(d.Get("forward_port").(int))
 	}
