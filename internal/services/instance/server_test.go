@@ -958,6 +958,7 @@ func TestAccServer_Bootscript(t *testing.T) {
 						image = "ubuntu_focal"
 						boot_type = "bootscript"
 						bootscript_id = "%s"
+						routed_ip_enabled = false
 					}
 				`, bootscript),
 				Check: resource.ComposeTestCheckFunc(
@@ -1485,6 +1486,7 @@ func TestAccServer_RoutedIPEnable(t *testing.T) {
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
 						state = "stopped"
+						routed_ip_enabled = false
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
@@ -1520,6 +1522,7 @@ func TestAccServer_RoutedIPEnableWithIP(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "main" {
+						type = "nat"
 					}
 
 					resource "scaleway_instance_server" "main" {
@@ -1528,6 +1531,7 @@ func TestAccServer_RoutedIPEnableWithIP(t *testing.T) {
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
 						state = "stopped"
+						routed_ip_enabled = false
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
@@ -1536,8 +1540,7 @@ func TestAccServer_RoutedIPEnableWithIP(t *testing.T) {
 			},
 			{
 				Config: `
-					resource "scaleway_instance_ip" "main" {
-					}
+					resource "scaleway_instance_ip" "main" {}
 
 					resource "scaleway_instance_server" "main" {
 						name  = "tf-tests-instance-server-routedip-enable-with-ip"
@@ -1779,13 +1782,16 @@ func TestAccServer_IPMigrate(t *testing.T) {
 			{
 				ProviderFactories: providerFactories,
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_ip" "ip" {}
+					resource "scaleway_instance_ip" "ip" {
+						type = "nat"
+					}
 
 					resource "scaleway_instance_server" "main" {
 						ip_id = scaleway_instance_ip.ip.id
 						image = "ubuntu_jammy"
 						type  = "PRO2-XXS"
 						state = "stopped"
+						routed_ip_enabled = false
 					}
 
 					resource "scaleway_iam_application" "app" {

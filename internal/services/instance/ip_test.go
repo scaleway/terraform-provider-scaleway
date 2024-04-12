@@ -109,6 +109,7 @@ func TestAccIP_RoutedMigrate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_instance_ip" "main" {
+							type = "nat"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -119,6 +120,7 @@ func TestAccIP_RoutedMigrate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_instance_ip" "main" {
+							type = "nat"
 						}
 						resource "scaleway_instance_ip" "copy" {
 						}
