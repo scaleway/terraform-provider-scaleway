@@ -49,6 +49,13 @@ resource "scaleway_domain_record" "mx" {
   type     = "MX"
   data     = "."
 }
+
+resource "scaleway_domain_record" "dmarc" {
+  dns_zone = var.domain_name
+  name     = scaleway_tem_domain.main.dmarc_name
+  type     = "TXT"
+  data     = scaleway_tem_domain.main.dmarc_config
+}
 ```
 
 
@@ -119,6 +126,10 @@ In addition to all arguments above, the following attributes are exported:
 - `spf_config` - The snippet of the SPF record that should be registered in the DNS zone.
 
 - `dkim_config` - The DKIM public key, as should be recorded in the DNS zone.
+
+- `dmarc_name` - DMARC name for the domain, as should be recorded in the DNS zone.
+
+- `dmarc_config` - DMARC record for the domain, as should be recorded in the DNS zone.
 
 - `smtp_host` - The SMTP host to use to send emails.
 
