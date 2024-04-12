@@ -111,9 +111,7 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func ResourceDomainValidationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_ = ctx
-	_ = meta
+func ResourceDomainValidationDelete(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	d.SetId("")
 	return nil
 }
