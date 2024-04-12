@@ -209,6 +209,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_secret":                              secret.ResourceSecret(),
 				"scaleway_secret_version":                      secret.ResourceVersion(),
 				"scaleway_tem_domain":                          tem.ResourceDomain(),
+				"scaleway_tem_domain_validation":               tem.ResourceDomainValidation(),
 				"scaleway_vpc":                                 vpc.ResourceVPC(),
 				"scaleway_vpc_gateway_network":                 vpcgw.ResourceNetwork(),
 				"scaleway_vpc_private_network":                 vpc.ResourcePrivateNetwork(),
