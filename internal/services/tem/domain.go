@@ -90,6 +90,16 @@ func ResourceDomain() *schema.Resource {
 				Computed:    true,
 				Description: "DKIM public key, as should be recorded in the DNS zone",
 			},
+			"dmarc_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "DMARC name for the domain, as should be recorded in the DNS zone",
+			},
+			"dmarc_config": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "DMARC record for the domain, as should be recorded in the DNS zone",
+			},
 			"smtp_host": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -219,6 +229,8 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("last_error", domain.LastError)
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)
+	_ = d.Set("dmarc_name", domain.Records.Dmarc.Name)
+	_ = d.Set("dmarc_config", domain.Records.Dmarc.Value)
 	_ = d.Set("smtp_host", tem.SMTPHost)
 	_ = d.Set("smtp_port_unsecure", tem.SMTPPortUnsecure)
 	_ = d.Set("smtp_port", tem.SMTPPort)
