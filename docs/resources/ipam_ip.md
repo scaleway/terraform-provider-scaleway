@@ -79,6 +79,9 @@ resource "scaleway_ipam_ip" "ip01" {
 The following arguments are supported:
 
 - `address` - (Optional) Request a specific IP in the requested source pool.
+
+  ~> **Important:** when requesting specific IP addresses, it is best ensure those are created before any other resource in the Private Network. This can be achieved by using `depends_on` relations, or moving the declarations to another terraform module. Otherwise, other resources may take the requested address first, blocking the whole terraform setup. Static IPs should be avoided unless necessary as we cannot guarantee full automation; and we recommend to use DNS or not request any specific IP.
+
 - `tags` - (Optional) The tags associated with the IP.
 - `source` - (Required) The source in which to book the IP.
     - `zonal` - The zone the IP lives in if the IP is a public zoned one
