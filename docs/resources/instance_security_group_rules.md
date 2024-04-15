@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_instance_security_group_rules"
 
 # Resource: scaleway_instance_security_group_rules
 
-Creates and manages Scaleway Compute Instance security group rules. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89).
+Creates and manages Scaleway Compute Instance security group rules. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#security-groups-8d7f89).
 
 This resource can be used to externalize rules from a `scaleway_instance_security_group` to solve circular dependency problems. When using this resource do not forget to set `external_rules = true` on the security group.
 
@@ -119,7 +119,6 @@ The `inbound_rule` and `outbound_rule` block supports:
 - `port`- (Optional) The port this rule apply to. If no port is specified, rule will apply to all port.
 
 - `port_range`- Need terraform >= 0.13.0 (Optional) The port range (e.g `22-23`) this rule applies to.
-  Port range MUST comply the Scaleway-notation: interval between ports must be a power of 2 `2^X-1` number (e.g 2^13-1=8191 in port_range = "10000-18191").
   If no `port` nor `port_range` are specified, rule will apply to all port.
   Only one of `port` and `port_range` should be specified.
 

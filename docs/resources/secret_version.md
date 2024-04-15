@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_secret_version"
 # Resource: scaleway_secret_version
 
 Creates and manages Scaleway Secret Versions.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/secret_manager/api/v1alpha1/#secret-versions-079501).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/secret-manager/#secret-versions-079501).
 
 ## Example Usage
 

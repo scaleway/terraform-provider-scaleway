@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_redis_cluster"
 # Resource: scaleway_redis_cluster
 
 Creates and manages Scaleway Redis Clusters.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/redis/api/v1alpha1/).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/managed-database-redis).
 
 ## Example Usage
 

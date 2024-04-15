@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_rdb_instance"
 # Resource: scaleway_rdb_instance
 
 Creates and manages Scaleway Database Instances.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
 
 ## Example Usage
 
@@ -118,7 +118,7 @@ The following arguments are supported:
 - `node_type` - (Required) The type of database instance you want to create (e.g. `db-dev-s`).
 
 ~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any
-interruption. Keep in mind that you cannot downgrade a Database Instance.
+interruption.
 
 ~> **Important:** Once your instance reaches `disk_full` status, if you are using `lssd` storage, you should upgrade the node_type,
 and if you are using `bssd` storage, you should increase the volume size before making any other change to your instance.
@@ -180,11 +180,13 @@ Please consult the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-g
     - `pn_id` - (Required) The ID of the private network.
     - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
     - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
+
+~> **Important:** One of `ip_net` or `enable_ipam=true` must be set.
+
+~> **Important:** Updates to `private_network` will recreate the Instance's endpoint
   
 ~> **NOTE:** Please calculate your host IP using [cidrhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, let IPAM service
 handle the host IP on the network.
-
-~> **Important:** Updates to `private_network` will recreate the Instance's endpoint
 
 - `load_balancer` - (Optional) List of load balancer endpoints of the database instance. A load-balancer endpoint will be set by default if no private network is.
 This block must be defined if you want a public endpoint in addition to your private endpoint.

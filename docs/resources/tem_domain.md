@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_tem_domain"
 # Resource: scaleway_tem_domain
 
 Creates and manages Scaleway Transactional Email Domains.
-For more information see [the documentation](https://developers.scaleway.com/en/products/transactional_email/api/).
+For more information see [the documentation](https://www.scaleway.com/en/developers/api/transactional-email).
 
 ## Example Usage
 

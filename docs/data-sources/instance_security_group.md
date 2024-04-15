@@ -57,6 +57,10 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 - `port`- The port this rule apply to. If no port is specified, rule will apply to all port.
 
+- `port_range`- The port range (e.g `22-23`) this rule applies to.
+  If no `port` nor `port_range` are specified, rule will apply to all port.
+  Only one of `port` and `port_range` should be specified.
+
 - `ip`- The ip this rule apply to.
 
 - `ip_range`- The ip range (e.g `192.168.1.0/24`) this rule apply to.

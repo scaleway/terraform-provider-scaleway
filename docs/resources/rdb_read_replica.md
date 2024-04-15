@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_rdb_read_replica"
 # Resource: scaleway_rdb_read_replica
 
 Creates and manages Scaleway Database read replicas.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
 
 ## Example Usage
 
@@ -93,6 +93,8 @@ The following arguments are supported:
     - `private_network_id` - (Required) UUID of the private network to be connected to the read replica.
     - `service_ip` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
     - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
+
+~> **Important:** One of `service_ip` or `enable_ipam=true` must be set.
 
 - `same_zone` - (Defaults to `true`) Defines whether to create the replica in the same availability zone as the main instance nodes or not.
 

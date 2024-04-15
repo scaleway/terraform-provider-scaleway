@@ -19,8 +19,8 @@ jobs:
   markdown-link-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: gaurav-nelson/github-action-markdown-link-check@1.0.13
+      - uses: actions/checkout@v4
+      - uses: gaurav-nelson/github-action-markdown-link-check@1.0.15
         with:
           use-quiet-mode: 'yes'
           use-verbose-mode: 'yes'
@@ -30,7 +30,7 @@ jobs:
   markdown-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: avto-dev/markdown-lint@v1.5.0
         with:
           config: '.markdownlint.yml'
@@ -38,11 +38,11 @@ jobs:
   misspell:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         continue-on-error: true
         timeout-minutes: 2
         with:

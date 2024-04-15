@@ -1,0 +1,1400 @@
+---
+version: 2
+interactions:
+- request:
+    body: '{"name":"tf_tests_mnq_sns_topic_subscription_basic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":""}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects
+    method: POST
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.298221Z","description":"","id":"7f0bcd40-7a45-4ada-9b90-607c01410849","name":"tf_tests_mnq_sns_topic_subscription_basic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2023-12-27T09:58:30.298221Z"}'
+    headers:
+      Content-Length:
+      - "261"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:30 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d586e512-ea40-4ef9-96ba-2a1bdcff8bf5
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: GET
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.298221Z","description":"","id":"7f0bcd40-7a45-4ada-9b90-607c01410849","name":"tf_tests_mnq_sns_topic_subscription_basic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2023-12-27T09:58:30.298221Z"}'
+    headers:
+      Content-Length:
+      - "261"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:30 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ed9d6fff-784a-4309-bc4e-a306e067d712
+    status: 200 OK
+    code: 200
+- request:
+    body: '{"project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/activate-sns
+    method: POST
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.681968995Z","project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","sns_endpoint_url":"https://sns.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-27T09:58:30.681968995Z"}'
+    headers:
+      Content-Length:
+      - "244"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:30 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d7970884-0c9b-4024-b508-4cf0fbb3e5d8
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-info?project_id=7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: GET
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.681968Z","project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","sns_endpoint_url":"https://sns.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-27T09:58:30.681968Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:30 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d750d25f-56f5-4492-b035-90c1dbc93e2e
+    status: 200 OK
+    code: 200
+- request:
+    body: '{"project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","name":"tf-sns-credentials-stupefied-chaplygin","permissions":{"can_publish":true,"can_receive":true,"can_manage":true}}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-credentials
+    method: POST
+  response:
+    body: '{"access_key":"WBoWp6pIOvEIUZTwBvrR","created_at":"2023-12-27T09:58:30.962786621Z","id":"72863cd7-ede6-4551-b54e-20e2e7f376c6","name":"tf-sns-credentials-stupefied-chaplygin","permissions":{"can_manage":true,"can_publish":true,"can_receive":true},"project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","secret_checksum":"a2ce217da5afeb078e23be796a0bb478ec9f01ec","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+    headers:
+      Content-Length:
+      - "487"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:30 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - c4e98e81-9f8c-43b2-b078-a03d2a17a9f9
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-credentials/72863cd7-ede6-4551-b54e-20e2e7f376c6
+    method: GET
+  response:
+    body: '{"access_key":"WBoWp6pIOvEIUZTwBvrR","created_at":"2023-12-27T09:58:30.962786Z","id":"72863cd7-ede6-4551-b54e-20e2e7f376c6","name":"tf-sns-credentials-stupefied-chaplygin","permissions":{"can_manage":true,"can_publish":true,"can_receive":true},"project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","secret_checksum":"a2ce217da5afeb078e23be796a0bb478ec9f01ec","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+    headers:
+      Content-Length:
+      - "420"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:31 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 6d0e3773-5a92-40c0-9158-073c28124cd4
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-info?project_id=7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: GET
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.681968Z","project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","sns_endpoint_url":"https://sns.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-27T09:58:30.681968Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:31 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - de2ea378-0724-4710-b043-cff398f1014a
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=CreateTopic&Attributes=&Name=test-mnq-sns-topic-basic&Version=2010-03-31
+    form:
+      Action:
+      - CreateTopic
+      Attributes:
+      - ""
+      Name:
+      - test-mnq-sns-topic-basic
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "79"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095831Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <CreateTopicResult>
+              <TopicArn>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</TopicArn>
+          </CreateTopicResult>
+          <ResponseMetadata>
+              <RequestId>txbcdb540f-1188-406b-9e6f-07d4bb1e28a9</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "362"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:31 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=GetTopicAttributes&TopicArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic&Version=2010-03-31
+    form:
+      Action:
+      - GetTopicAttributes
+      TopicArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "152"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095831Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <GetTopicAttributesResult>
+              <Attributes>
+                  <entry>
+                      <key>SubscriptionsPending</key>
+                      <value>0</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionsConfirmed</key>
+                      <value>0</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionsDeleted</key>
+                      <value>0</value>
+                  </entry>
+                  <entry>
+                      <key>TopicArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</value>
+                  </entry>
+                  <entry>
+                      <key>Owner</key>
+                      <value>project-7f0bcd40-7a45-4ada-9b90-607c01410849</value>
+                  </entry>
+              </Attributes>
+          </GetTopicAttributesResult>
+          <ResponseMetadata>
+              <RequestId>txaac54809-0141-46d1-9419-fe9d3dc4c57f</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "1016"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:31 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-info?project_id=7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: GET
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.681968Z","project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","sns_endpoint_url":"https://sns.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-27T09:58:30.681968Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:32 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2f46e89d-713f-41ea-8b41-70abe2025bde
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-info?project_id=7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: GET
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.681968Z","project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","sns_endpoint_url":"https://sns.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-27T09:58:30.681968Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:32 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d57a4479-5921-40f4-9226-2025798818c5
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=Subscribe&Attributes=&Endpoint=http%3A%2F%2Fscaleway.com&Protocol=http&ReturnSubscriptionArn=true&TopicArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic&Version=2010-03-31
+    form:
+      Action:
+      - Subscribe
+      Attributes:
+      - ""
+      Endpoint:
+      - http://scaleway.com
+      Protocol:
+      - http
+      ReturnSubscriptionArn:
+      - "true"
+      TopicArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "231"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095832Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <SubscribeResult>
+              <SubscriptionArn>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:5034c87e-c6c7-4b3d-a850-9b8a86ba517a</SubscriptionArn>
+          </SubscribeResult>
+          <ResponseMetadata>
+              <RequestId>txa5fafb04-8057-46fe-b32f-5e6781c93301</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "409"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:32 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=GetSubscriptionAttributes&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3A5034c87e-c6c7-4b3d-a850-9b8a86ba517a&Version=2010-03-31
+    form:
+      Action:
+      - GetSubscriptionAttributes
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:5034c87e-c6c7-4b3d-a850-9b8a86ba517a
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "205"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095832Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <GetSubscriptionAttributesResult>
+              <Attributes>
+                  <entry>
+                      <key>Owner</key>
+                      <value>project-7f0bcd40-7a45-4ada-9b90-607c01410849</value>
+                  </entry>
+                  <entry>
+                      <key>RawMessageDelivery</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>TopicArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</value>
+                  </entry>
+                  <entry>
+                      <key>Endpoint</key>
+                      <value>http://scaleway.com</value>
+                  </entry>
+                  <entry>
+                      <key>Protocol</key>
+                      <value>http</value>
+                  </entry>
+                  <entry>
+                      <key>PendingConfirmation</key>
+                      <value>true</value>
+                  </entry>
+                  <entry>
+                      <key>ConfirmationWasAuthenticated</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:5034c87e-c6c7-4b3d-a850-9b8a86ba517a</value>
+                  </entry>
+              </Attributes>
+          </GetSubscriptionAttributesResult>
+          <ResponseMetadata>
+              <RequestId>tx9186991b-6cf1-446b-b605-3c96536db3a3</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "1526"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:32 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=Subscribe&Attributes=&Endpoint=http%3A%2F%2Fscaleway.com&Protocol=http&ReturnSubscriptionArn=true&TopicArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic&Version=2010-03-31
+    form:
+      Action:
+      - Subscribe
+      Attributes:
+      - ""
+      Endpoint:
+      - http://scaleway.com
+      Protocol:
+      - http
+      ReturnSubscriptionArn:
+      - "true"
+      TopicArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "231"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095832Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <ErrorResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <Error>
+              <Type>Internal</Type>
+              <Code>InternalError</Code>
+              <Message>Internal service error</Message>
+          </Error>
+          <RequestId>tx35062a61-5245-426d-be1d-e370a978ced2</RequestId>
+      </ErrorResponse>
+    headers:
+      Content-Length:
+      - "288"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:37 GMT
+    status: 500 Internal Server Error
+    code: 500
+- request:
+    body: Action=Subscribe&Attributes=&Endpoint=http%3A%2F%2Fscaleway.com&Protocol=http&ReturnSubscriptionArn=true&TopicArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic&Version=2010-03-31
+    form:
+      Action:
+      - Subscribe
+      Attributes:
+      - ""
+      Endpoint:
+      - http://scaleway.com
+      Protocol:
+      - http
+      ReturnSubscriptionArn:
+      - "true"
+      TopicArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "231"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095832Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <SubscribeResult>
+              <SubscriptionArn>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e</SubscriptionArn>
+          </SubscribeResult>
+          <ResponseMetadata>
+              <RequestId>txad6b4afd-b706-4847-9c49-b1038dd0324b</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "409"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:39 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=GetSubscriptionAttributes&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3Adbe4ffea-6f51-4954-90a5-15c67a594d9e&Version=2010-03-31
+    form:
+      Action:
+      - GetSubscriptionAttributes
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "205"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095839Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <GetSubscriptionAttributesResult>
+              <Attributes>
+                  <entry>
+                      <key>Owner</key>
+                      <value>project-7f0bcd40-7a45-4ada-9b90-607c01410849</value>
+                  </entry>
+                  <entry>
+                      <key>RawMessageDelivery</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>TopicArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</value>
+                  </entry>
+                  <entry>
+                      <key>Endpoint</key>
+                      <value>http://scaleway.com</value>
+                  </entry>
+                  <entry>
+                      <key>Protocol</key>
+                      <value>http</value>
+                  </entry>
+                  <entry>
+                      <key>PendingConfirmation</key>
+                      <value>true</value>
+                  </entry>
+                  <entry>
+                      <key>ConfirmationWasAuthenticated</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e</value>
+                  </entry>
+              </Attributes>
+          </GetSubscriptionAttributesResult>
+          <ResponseMetadata>
+              <RequestId>tx508a9dc4-4df4-4642-856a-490eb1b6c476</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "1526"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:39 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=GetSubscriptionAttributes&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3A5034c87e-c6c7-4b3d-a850-9b8a86ba517a&Version=2010-03-31
+    form:
+      Action:
+      - GetSubscriptionAttributes
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:5034c87e-c6c7-4b3d-a850-9b8a86ba517a
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "205"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095839Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <GetSubscriptionAttributesResult>
+              <Attributes>
+                  <entry>
+                      <key>Owner</key>
+                      <value>project-7f0bcd40-7a45-4ada-9b90-607c01410849</value>
+                  </entry>
+                  <entry>
+                      <key>RawMessageDelivery</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>TopicArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</value>
+                  </entry>
+                  <entry>
+                      <key>Endpoint</key>
+                      <value>http://scaleway.com</value>
+                  </entry>
+                  <entry>
+                      <key>Protocol</key>
+                      <value>http</value>
+                  </entry>
+                  <entry>
+                      <key>PendingConfirmation</key>
+                      <value>true</value>
+                  </entry>
+                  <entry>
+                      <key>ConfirmationWasAuthenticated</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:5034c87e-c6c7-4b3d-a850-9b8a86ba517a</value>
+                  </entry>
+              </Attributes>
+          </GetSubscriptionAttributesResult>
+          <ResponseMetadata>
+              <RequestId>txcfb3b53b-24d8-4a50-9147-7898d7f283b4</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "1526"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:39 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=GetSubscriptionAttributes&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3Adbe4ffea-6f51-4954-90a5-15c67a594d9e&Version=2010-03-31
+    form:
+      Action:
+      - GetSubscriptionAttributes
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "205"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095839Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <GetSubscriptionAttributesResult>
+              <Attributes>
+                  <entry>
+                      <key>Owner</key>
+                      <value>project-7f0bcd40-7a45-4ada-9b90-607c01410849</value>
+                  </entry>
+                  <entry>
+                      <key>RawMessageDelivery</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>TopicArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</value>
+                  </entry>
+                  <entry>
+                      <key>Endpoint</key>
+                      <value>http://scaleway.com</value>
+                  </entry>
+                  <entry>
+                      <key>Protocol</key>
+                      <value>http</value>
+                  </entry>
+                  <entry>
+                      <key>PendingConfirmation</key>
+                      <value>true</value>
+                  </entry>
+                  <entry>
+                      <key>ConfirmationWasAuthenticated</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e</value>
+                  </entry>
+              </Attributes>
+          </GetSubscriptionAttributesResult>
+          <ResponseMetadata>
+              <RequestId>txbaf92f46-b8d2-4347-85f1-8678a513567e</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "1526"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:40 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: GET
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.298221Z","description":"","id":"7f0bcd40-7a45-4ada-9b90-607c01410849","name":"tf_tests_mnq_sns_topic_subscription_basic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2023-12-27T09:58:30.298221Z"}'
+    headers:
+      Content-Length:
+      - "261"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:43 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b8eb498f-3be3-402b-bd20-1d42ba550154
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-info?project_id=7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: GET
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.681968Z","project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","sns_endpoint_url":"https://sns.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-27T09:58:30.681968Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:43 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 61291f9f-19d1-4f2c-85cb-04acf7c3a117
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-credentials/72863cd7-ede6-4551-b54e-20e2e7f376c6
+    method: GET
+  response:
+    body: '{"access_key":"WBoWp6pIOvEIUZTwBvrR","created_at":"2023-12-27T09:58:30.962786Z","id":"72863cd7-ede6-4551-b54e-20e2e7f376c6","name":"tf-sns-credentials-stupefied-chaplygin","permissions":{"can_manage":true,"can_publish":true,"can_receive":true},"project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","secret_checksum":"a2ce217da5afeb078e23be796a0bb478ec9f01ec","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+    headers:
+      Content-Length:
+      - "420"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:43 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - c894bc34-95ea-4083-9597-daae7648ffa9
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=GetTopicAttributes&TopicArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic&Version=2010-03-31
+    form:
+      Action:
+      - GetTopicAttributes
+      TopicArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "152"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095843Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <GetTopicAttributesResult>
+              <Attributes>
+                  <entry>
+                      <key>SubscriptionsPending</key>
+                      <value>2</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionsConfirmed</key>
+                      <value>0</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionsDeleted</key>
+                      <value>0</value>
+                  </entry>
+                  <entry>
+                      <key>TopicArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</value>
+                  </entry>
+                  <entry>
+                      <key>Owner</key>
+                      <value>project-7f0bcd40-7a45-4ada-9b90-607c01410849</value>
+                  </entry>
+              </Attributes>
+          </GetTopicAttributesResult>
+          <ResponseMetadata>
+              <RequestId>tx16b9f4e5-65cb-4425-92d2-f22f9ae11f18</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "1016"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:43 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=GetSubscriptionAttributes&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3Adbe4ffea-6f51-4954-90a5-15c67a594d9e&Version=2010-03-31
+    form:
+      Action:
+      - GetSubscriptionAttributes
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "205"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095843Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <GetSubscriptionAttributesResult>
+              <Attributes>
+                  <entry>
+                      <key>Owner</key>
+                      <value>project-7f0bcd40-7a45-4ada-9b90-607c01410849</value>
+                  </entry>
+                  <entry>
+                      <key>RawMessageDelivery</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>TopicArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</value>
+                  </entry>
+                  <entry>
+                      <key>Endpoint</key>
+                      <value>http://scaleway.com</value>
+                  </entry>
+                  <entry>
+                      <key>Protocol</key>
+                      <value>http</value>
+                  </entry>
+                  <entry>
+                      <key>PendingConfirmation</key>
+                      <value>true</value>
+                  </entry>
+                  <entry>
+                      <key>ConfirmationWasAuthenticated</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e</value>
+                  </entry>
+              </Attributes>
+          </GetSubscriptionAttributesResult>
+          <ResponseMetadata>
+              <RequestId>txe676bd0d-f1a0-4076-abfd-44fdc1720115</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "1526"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:43 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=GetSubscriptionAttributes&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3A5034c87e-c6c7-4b3d-a850-9b8a86ba517a&Version=2010-03-31
+    form:
+      Action:
+      - GetSubscriptionAttributes
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:5034c87e-c6c7-4b3d-a850-9b8a86ba517a
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "205"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095843Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <GetSubscriptionAttributesResult>
+              <Attributes>
+                  <entry>
+                      <key>Owner</key>
+                      <value>project-7f0bcd40-7a45-4ada-9b90-607c01410849</value>
+                  </entry>
+                  <entry>
+                      <key>RawMessageDelivery</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>TopicArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic</value>
+                  </entry>
+                  <entry>
+                      <key>Endpoint</key>
+                      <value>http://scaleway.com</value>
+                  </entry>
+                  <entry>
+                      <key>Protocol</key>
+                      <value>http</value>
+                  </entry>
+                  <entry>
+                      <key>PendingConfirmation</key>
+                      <value>true</value>
+                  </entry>
+                  <entry>
+                      <key>ConfirmationWasAuthenticated</key>
+                      <value>false</value>
+                  </entry>
+                  <entry>
+                      <key>SubscriptionArn</key>
+                      <value>arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:5034c87e-c6c7-4b3d-a850-9b8a86ba517a</value>
+                  </entry>
+              </Attributes>
+          </GetSubscriptionAttributesResult>
+          <ResponseMetadata>
+              <RequestId>txd5f70da9-ef99-4868-948d-859af7522b25</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "1526"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:43 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=Unsubscribe&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3A5034c87e-c6c7-4b3d-a850-9b8a86ba517a&Version=2010-03-31
+    form:
+      Action:
+      - Unsubscribe
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:5034c87e-c6c7-4b3d-a850-9b8a86ba517a
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "191"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095847Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <ResponseMetadata>
+              <RequestId>txb8f72c32-71da-421f-9cca-bb2a0e037be1</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "195"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:47 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=Unsubscribe&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3Adbe4ffea-6f51-4954-90a5-15c67a594d9e&Version=2010-03-31
+    form:
+      Action:
+      - Unsubscribe
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "191"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095847Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <ResponseMetadata>
+              <RequestId>txb22d4562-948e-494d-b76f-7c7c229a5edf</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "195"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:47 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: Action=DeleteTopic&TopicArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic&Version=2010-03-31
+    form:
+      Action:
+      - DeleteTopic
+      TopicArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "145"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095847Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <xmlResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <ResponseMetadata>
+              <RequestId>tx70dd5b3e-1874-4309-b415-77d4b67e2df0</RequestId>
+          </ResponseMetadata>
+      </xmlResponse>
+    headers:
+      Content-Length:
+      - "195"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:47 GMT
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-credentials/72863cd7-ede6-4551-b54e-20e2e7f376c6
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:48 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 25ee0708-b9ed-485f-ba3d-6129fe68a6df
+    status: 204 No Content
+    code: 204
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sns-info?project_id=7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: GET
+  response:
+    body: '{"created_at":"2023-12-27T09:58:30.681968Z","project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","sns_endpoint_url":"https://sns.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-27T09:58:30.681968Z"}'
+    headers:
+      Content-Length:
+      - "238"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:48 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 3069f2c7-1133-4231-90c1-81e9279eb825
+    status: 200 OK
+    code: 200
+- request:
+    body: '{"project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/deactivate-sns
+    method: POST
+  response:
+    body: '{"created_at":null,"project_id":"7f0bcd40-7a45-4ada-9b90-607c01410849","region":"fr-par","sns_endpoint_url":"https://sns.mnq.fr-par.scaleway.com","status":"disabled","updated_at":null}'
+    headers:
+      Content-Length:
+      - "189"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:48 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - aba8b173-f137-4921-a746-fb1e34e92e36
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/7f0bcd40-7a45-4ada-9b90-607c01410849
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Dec 2023 09:58:49 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 5125d908-59e8-40db-9ee6-4d5d88ebc4ca
+    status: 204 No Content
+    code: 204
+- request:
+    body: Action=GetSubscriptionAttributes&SubscriptionArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-7f0bcd40-7a45-4ada-9b90-607c01410849%3Atest-mnq-sns-topic-basic%3Adbe4ffea-6f51-4954-90a5-15c67a594d9e&Version=2010-03-31
+    form:
+      Action:
+      - GetSubscriptionAttributes
+      SubscriptionArn:
+      - arn:scw:sns:fr-par:project-7f0bcd40-7a45-4ada-9b90-607c01410849:test-mnq-sns-topic-basic:dbe4ffea-6f51-4954-90a5-15c67a594d9e
+      Version:
+      - "2010-03-31"
+    headers:
+      Content-Length:
+      - "205"
+      Content-Type:
+      - application/x-www-form-urlencoded; charset=utf-8
+      User-Agent:
+      - aws-sdk-go/1.49.7 (go1.21.1; linux; amd64)
+      X-Amz-Date:
+      - 20231227T095849Z
+    url: https://sns.mnq.fr-par.scaleway.com/
+    method: POST
+  response:
+    body: |
+      <ErrorResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+          <Error>
+              <Type>Sender</Type>
+              <Code>AccessDeniedException</Code>
+              <Message>You do not have sufficient access to perform this action.</Message>
+          </Error>
+          <RequestId>tx179e5383-7aa3-47b9-889a-dae7cff61098</RequestId>
+      </ErrorResponse>
+    headers:
+      Content-Length:
+      - "329"
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Wed, 27 Dec 2023 09:58:49 GMT
+    status: 400 Bad Request
+    code: 400

@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_iam_application"
 
 # Resource: scaleway_iam_application
 
-Creates and manages Scaleway IAM Applications. For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#applications-83ce5e).
+Creates and manages Scaleway IAM Applications. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/iam/#applications-83ce5e).
 
 ## Example Usage
 

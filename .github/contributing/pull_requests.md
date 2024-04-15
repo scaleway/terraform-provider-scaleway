@@ -63,7 +63,7 @@ Below are some common items that will get flagged during documentation reviews:
 
 - [ ] __Reasoning for Change__: Documentation updates should include an explanation for why the update is needed.
 - [ ] __Prefer Scaleway Documentation__: Documentation about Scaleway service features and valid argument values that are likely to update over time should link to Scaleway service user guides and API references where possible.
-  You can find all those document at <https://developers.scaleway.com>
+  You can find all those document at <https://www.scaleway.com/en/developers>
 - [ ] __Terraform Configuration Language Features__: Individual resource documentation pages and examples should refrain from highlighting particular Terraform configuration language syntax workarounds or features such as `variable`, `local`, `count`, and built-in functions.
 
 ### Enhancement/Bugfix to a Resource

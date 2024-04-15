@@ -1,0 +1,1792 @@
+---
+version: 2
+interactions:
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=created_at_asc&type=instance_local&zone=fr-par-1
+    method: GET
+  response:
+    body: '{"local_images":[{"arch":"x86_64","compatible_commercial_types":["DEV1-L","DEV1-M","DEV1-S","DEV1-XL","GP1-L","GP1-M","GP1-S","GP1-XL","GP1-XS","START1-L","START1-M","START1-S","START1-XS","VC1L","VC1M","VC1S","X64-120GB","X64-15GB","X64-30GB","X64-60GB","ENT1-XXS","ENT1-XS","ENT1-S","ENT1-M","ENT1-L","ENT1-XL","ENT1-2XL","PRO2-XXS","PRO2-XS","PRO2-S","PRO2-M","PRO2-L","STARDUST1-S","PLAY2-MICRO","PLAY2-NANO","PLAY2-PICO","POP2-2C-8G","POP2-4C-16G","POP2-8C-32G","POP2-16C-64G","POP2-32C-128G","POP2-64C-256G","POP2-HM-2C-16G","POP2-HM-4C-32G","POP2-HM-8C-64G","POP2-HM-16C-128G","POP2-HM-32C-256G","POP2-HM-64C-512G","POP2-HC-2C-4G","POP2-HC-4C-8G","POP2-HC-8C-16G","POP2-HC-16C-32G","POP2-HC-32C-64G","POP2-HC-64C-128G"],"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","label":"ubuntu_focal","type":"unknown_type","zone":"fr-par-1"},{"arch":"arm64","compatible_commercial_types":["AMP2-C1","AMP2-C2","AMP2-C4","AMP2-C8","AMP2-C12","AMP2-C24","AMP2-C48","AMP2-C60"],"id":"10b2d3c3-bfa7-42d4-910b-389e95f95ccb","label":"ubuntu_focal","type":"unknown_type","zone":"fr-par-1"}],"total_count":2}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:27 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 7a71b311-25ae-4f72-b26d-fab818fba387
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers?page=1
+    method: GET
+  response:
+    body: '{"servers":{"DEV1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.04952,"mig_profile":null,"monthly_price":36.1496,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":8589934592,"volumes_constraint":{"max_size":80000000000,"min_size":0}},"DEV1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.02556,"mig_profile":null,"monthly_price":18.6588,"ncpus":3,"network":{"interfaces":[{"internal_bandwidth":300000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":300000000}],"ipv6_support":true,"sum_internal_bandwidth":300000000,"sum_internet_bandwidth":300000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":4294967296,"volumes_constraint":{"max_size":40000000000,"min_size":0}},"DEV1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.01368,"mig_profile":null,"monthly_price":9.9864,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":2147483648,"volumes_constraint":{"max_size":20000000000,"min_size":0}},"DEV1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.07308,"mig_profile":null,"monthly_price":53.3484,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":12884901888,"volumes_constraint":{"max_size":120000000000,"min_size":0}},"ENT1-2XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":3.53,"mig_profile":null,"monthly_price":2576.9,"ncpus":96,"network":{"interfaces":[{"internal_bandwidth":20000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":20000000000}],"ipv6_support":true,"sum_internal_bandwidth":20000000000,"sum_internet_bandwidth":20000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":412316860416,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.18,"mig_profile":null,"monthly_price":861.4,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.59,"mig_profile":null,"monthly_price":430.7,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.29,"mig_profile":null,"monthly_price":211.7,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.35,"mig_profile":null,"monthly_price":1715.5,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.147,"mig_profile":null,"monthly_price":107.31,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XXS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0735,"mig_profile":null,"monthly_price":53.655,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"GP1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.7894,"mig_profile":null,"monthly_price":576.262,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":5000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":5000000000}],"ipv6_support":true,"sum_internal_bandwidth":5000000000,"sum_internet_bandwidth":5000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":137438953472,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.4064,"mig_profile":null,"monthly_price":296.672,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":1500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1500000000}],"ipv6_support":true,"sum_internal_bandwidth":1500000000,"sum_internet_bandwidth":1500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":68719476736,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.2042,"mig_profile":null,"monthly_price":149.066,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":34359738368,"volumes_constraint":{"max_size":300000000000,"min_size":0}},"GP1-VIZ":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1,"mig_profile":null,"monthly_price":72,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":34359738368,"volumes_constraint":{"max_size":300000000000,"min_size":0}},"GP1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.6714,"mig_profile":null,"monthly_price":1220.122,"ncpus":48,"network":{"interfaces":[{"internal_bandwidth":10000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":10000000000}],"ipv6_support":true,"sum_internal_bandwidth":10000000000,"sum_internet_bandwidth":10000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":274877906944,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1016,"mig_profile":null,"monthly_price":74.168,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":17179869184,"volumes_constraint":{"max_size":150000000000,"min_size":0}},"PLAY2-MICRO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.054,"mig_profile":null,"monthly_price":39.42,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-NANO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.027,"mig_profile":null,"monthly_price":19.71,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4294967296,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-PICO":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.014,"mig_profile":null,"monthly_price":10.22,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":2147483648,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-16C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.59,"mig_profile":null,"monthly_price":430.7,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-2C-8G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0735,"mig_profile":null,"monthly_price":53.66,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-32C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.18,"mig_profile":null,"monthly_price":861.4,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-4C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.147,"mig_profile":null,"monthly_price":107.31,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-64C-256G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.35,"mig_profile":null,"monthly_price":1715.5,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-8C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.29,"mig_profile":null,"monthly_price":211.7,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-16C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.4256,"mig_profile":null,"monthly_price":310.69,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-2C-4G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0532,"mig_profile":null,"monthly_price":38.84,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4294967296,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-32C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.8512,"mig_profile":null,"monthly_price":621.38,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-4C-8G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1064,"mig_profile":null,"monthly_price":77.67,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-64C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.7024,"mig_profile":null,"monthly_price":1242.75,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-8C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.2128,"mig_profile":null,"monthly_price":155.34,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-16C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.824,"mig_profile":null,"monthly_price":601.52,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-2C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.103,"mig_profile":null,"monthly_price":75.19,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-32C-256G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.648,"mig_profile":null,"monthly_price":1203.04,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-4C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.206,"mig_profile":null,"monthly_price":150.38,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-64C-512G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":3.296,"mig_profile":null,"monthly_price":2406.08,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":549755813888,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-8C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.412,"mig_profile":null,"monthly_price":300.76,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.877,"mig_profile":null,"monthly_price":640.21,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6000000000}],"ipv6_support":true,"sum_internal_bandwidth":6000000000,"sum_internet_bandwidth":6000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.438,"mig_profile":null,"monthly_price":319.74,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3000000000}],"ipv6_support":true,"sum_internal_bandwidth":3000000000,"sum_internet_bandwidth":3000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.219,"mig_profile":null,"monthly_price":159.87,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1500000000}],"ipv6_support":true,"sum_internal_bandwidth":1500000000,"sum_internet_bandwidth":1500000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.11,"mig_profile":null,"monthly_price":80.3,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":700000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":700000000}],"ipv6_support":true,"sum_internal_bandwidth":700000000,"sum_internet_bandwidth":700000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-XXS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.055,"mig_profile":null,"monthly_price":40.15,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":350000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":350000000}],"ipv6_support":true,"sum_internal_bandwidth":350000000,"sum_internet_bandwidth":350000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"volumes_constraint":{"max_size":0,"min_size":0}},"RENDER-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":1,"hourly_price":1.2426,"mig_profile":null,"monthly_price":907.098,"ncpus":10,"network":{"interfaces":[{"internal_bandwidth":1000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1000000000}],"ipv6_support":true,"sum_internal_bandwidth":1000000000,"sum_internet_bandwidth":1000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":45097156608,"volumes_constraint":{"max_size":400000000000,"min_size":0}},"STARDUST1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"local","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.00459,"mig_profile":null,"monthly_price":3.3507,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":1073741824,"volumes_constraint":{"max_size":10000000000,"min_size":0}},"START1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.0368,"mig_profile":null,"monthly_price":26.864,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":8589934592,"volumes_constraint":{"max_size":200000000000,"min_size":200000000000}},"START1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.0194,"mig_profile":null,"monthly_price":14.162,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":300000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":300000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":4294967296,"volumes_constraint":{"max_size":100000000000,"min_size":100000000000}},"START1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.0106,"mig_profile":null,"monthly_price":7.738,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":2147483648,"volumes_constraint":{"max_size":50000000000,"min_size":50000000000}},"START1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.0062,"mig_profile":null,"monthly_price":4.526,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":1073741824,"volumes_constraint":{"max_size":25000000000,"min_size":25000000000}},"VC1L":{"alt_names":["X64-8GB"],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.02468,"mig_profile":null,"monthly_price":18.0164,"ncpus":6,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":8589934592,"volumes_constraint":{"max_size":200000000000,"min_size":200000000000}}}}'
+    headers:
+      Content-Length:
+      - "37931"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:28 GMT
+      Link:
+      - </products/servers?page=2&per_page=50&>; rel="next",</products/servers?page=2&per_page=50&>;
+        rel="last"
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 85c3e560-a908-4560-b8d1-7c2d62704eb0
+      X-Total-Count:
+      - "56"
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers?page=2
+    method: GET
+  response:
+    body: '{"servers":{"VC1M":{"alt_names":["X64-4GB"],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.01555,"mig_profile":null,"monthly_price":11.3515,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":4294967296,"volumes_constraint":{"max_size":100000000000,"min_size":100000000000}},"VC1S":{"alt_names":["X64-2GB"],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.00862,"mig_profile":null,"monthly_price":6.2926,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":2147483648,"volumes_constraint":{"max_size":50000000000,"min_size":50000000000}},"X64-120GB":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.42574,"mig_profile":null,"monthly_price":310.7902,"ncpus":12,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":1000000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":1000000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":128849018880,"volumes_constraint":{"max_size":1000000000000,"min_size":500000000000}},"X64-15GB":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.06032,"mig_profile":null,"monthly_price":44.0336,"ncpus":6,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":250000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":250000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":16106127360,"volumes_constraint":{"max_size":200000000000,"min_size":200000000000}},"X64-30GB":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.11906,"mig_profile":null,"monthly_price":86.9138,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":32212254720,"volumes_constraint":{"max_size":400000000000,"min_size":300000000000}},"X64-60GB":{"alt_names":[],"arch":"x86_64","baremetal":false,"capabilities":{"block_storage":true,"boot_types":["bootscript","rescue","local"],"default_boot_type":"bootscript","hot_snapshots_local_volume":true,"placement_groups":true,"private_network":0},"gpu":0,"hourly_price":0.213,"mig_profile":null,"monthly_price":155.49,"ncpus":10,"network":{"interfaces":[{"internal_bandwidth":null,"internet_bandwidth":1000000000}],"ipv6_support":true,"sum_internal_bandwidth":104857600,"sum_internet_bandwidth":1000000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":64424509440,"volumes_constraint":{"max_size":700000000000,"min_size":400000000000}}}}'
+    headers:
+      Content-Length:
+      - "4489"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:28 GMT
+      Link:
+      - </products/servers?page=1&per_page=50&>; rel="first",</products/servers?page=1&per_page=50&>;
+        rel="previous",</products/servers?page=2&per_page=50&>; rel="last"
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 41eccd6a-4049-4270-a3f1-fd57f42dafb3
+      X-Total-Count:
+      - "56"
+    status: 200 OK
+    code: 200
+- request:
+    body: '{"name":"tf-srv-condescending-curran","dynamic_ip_required":false,"commercial_type":"DEV1-S","image":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","volumes":{"0":{"boot":false,"size":20000000000,"volume_type":"l_ssd"}},"enable_ipv6":true,"boot_type":"local","project":"105bdce1-64c0-48ab-899d-868455867ecf"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers
+    method: POST
+  response:
+    body: '{"server":{"allowed_actions":["poweron","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:28.293856+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":null,"private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2662"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:28 GMT
+      Location:
+      - https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - e89edcf3-4769-4a56-bff2-6574f3b26623
+    status: 201 Created
+    code: 201
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweron","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:28.293856+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":null,"private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2662"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:28 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 60d1b503-01a4-4be9-922d-8bc20518ea79
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweron","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:28.293856+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":null,"private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2662"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:28 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 81b01e65-1571-4a7f-b0de-4394f42ed936
+    status: 200 OK
+    code: 200
+- request:
+    body: '{"action":"poweron"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/action
+    method: POST
+  response:
+    body: '{"task":{"description":"server_batch_poweron","href_from":"/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/action","href_result":"/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653","id":"cae8eb3e-e5cc-4479-91e3-e94a58713df8","started_at":"2023-08-28T14:35:29.164682+00:00","status":"pending","terminated_at":null}}'
+    headers:
+      Content-Length:
+      - "322"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:29 GMT
+      Location:
+      - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/cae8eb3e-e5cc-4479-91e3-e94a58713df8
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - a0e4ac38-51a5-4cba-947a-25f46c1034dc
+    status: 202 Accepted
+    code: 202
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:28.838245+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":null,"private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"starting","state_detail":"allocating node","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2684"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:29 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 987b013f-5a65-4292-95a1-fc756dc8ef24
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":{"address":"2001:bc8:65c:1503::1","gateway":"2001:bc8:65c:1503::","netmask":"64"},"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:28.838245+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"starting","state_detail":"provisioning node","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2874"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:34 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - dc641160-4e17-46b3-be4e-106de22c7bea
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":{"address":"2001:bc8:65c:1503::1","gateway":"2001:bc8:65c:1503::","netmask":"64"},"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:28.838245+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"starting","state_detail":"provisioning node","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2874"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:40 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 458e37b7-7668-456a-8ca3-8de06ccc84a0
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":{"address":"2001:bc8:65c:1503::1","gateway":"2001:bc8:65c:1503::","netmask":"64"},"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:45.000830+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2905"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:45 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - daed1952-b624-4af5-b305-77fcb1498c70
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":{"address":"2001:bc8:65c:1503::1","gateway":"2001:bc8:65c:1503::","netmask":"64"},"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:45.000830+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2905"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:46 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - c69c5f4d-aeb1-4072-9c7e-7e0520751edb
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/user_data
+    method: GET
+  response:
+    body: '{"user_data":[]}'
+    headers:
+      Content-Length:
+      - "17"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:46 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 8332f697-e9d0-4117-93ae-4a1bc6d59fa5
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics
+    method: GET
+  response:
+    body: '{"private_nics":[]}'
+    headers:
+      Content-Length:
+      - "20"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:48 GMT
+      Link:
+      - </servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics?page=0&per_page=50&>;
+        rel="last"
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 96b39a3e-621b-42b2-9d58-09c3fd27e670
+      X-Total-Count:
+      - "0"
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":{"address":"2001:bc8:65c:1503::1","gateway":"2001:bc8:65c:1503::","netmask":"64"},"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:45.000830+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2905"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:50 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 43fb06f3-4ff0-47b3-82a2-c5dfcbd55993
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":{"address":"2001:bc8:65c:1503::1","gateway":"2001:bc8:65c:1503::","netmask":"64"},"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:45.000830+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2905"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:50 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 10ddf619-b24c-4315-b7da-ed69fafbec41
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/user_data
+    method: GET
+  response:
+    body: '{"user_data":[]}'
+    headers:
+      Content-Length:
+      - "17"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - a6c16c47-399e-466d-a2f5-880e86f8598d
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics
+    method: GET
+  response:
+    body: '{"private_nics":[]}'
+    headers:
+      Content-Length:
+      - "20"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:53 GMT
+      Link:
+      - </servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics?page=0&per_page=50&>;
+        rel="last"
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 233539bb-9376-4c98-85cf-ec6c79b1ee20
+      X-Total-Count:
+      - "0"
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":{"address":"2001:bc8:65c:1503::1","gateway":"2001:bc8:65c:1503::","netmask":"64"},"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:45.000830+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2905"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:54 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b1a3437f-92e8-4718-848e-f66ea6b6c917
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/user_data
+    method: GET
+  response:
+    body: '{"user_data":[]}'
+    headers:
+      Content-Length:
+      - "17"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:54 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - cd0a3922-b95a-47a3-9fc9-bb4cee2052b9
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics
+    method: GET
+  response:
+    body: '{"private_nics":[]}'
+    headers:
+      Content-Length:
+      - "20"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:54 GMT
+      Link:
+      - </servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics?page=0&per_page=50&>;
+        rel="last"
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - da1056dd-68ae-4808-bf94-abd088b81fc8
+      X-Total-Count:
+      - "0"
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":true,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":{"address":"2001:bc8:65c:1503::1","gateway":"2001:bc8:65c:1503::","netmask":"64"},"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:45.000830+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2905"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:54 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 3caf1af4-dee3-4162-885b-38ce2fb78b4f
+    status: 200 OK
+    code: 200
+- request:
+    body: '{"enable_ipv6":false}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: PATCH
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:56.218752+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2824"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:57 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - e5aaaef8-4e51-4ee5-8daf-be293b8b5edb
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:56.218752+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2824"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 7d932dfc-5ad1-40b0-bf66-ad2c6eeeaaca
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:56.218752+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2824"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 83808854-037c-44ea-98db-d2ddcfe2cdbb
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/user_data
+    method: GET
+  response:
+    body: '{"user_data":[]}'
+    headers:
+      Content-Length:
+      - "17"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ec651631-aa44-414f-ba7c-ab34fb3461cc
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics
+    method: GET
+  response:
+    body: '{"private_nics":[]}'
+    headers:
+      Content-Length:
+      - "20"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:59 GMT
+      Link:
+      - </servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics?page=0&per_page=50&>;
+        rel="last"
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 68efcc19-e947-4772-9bbf-204b3007618b
+      X-Total-Count:
+      - "0"
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:56.218752+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2824"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 98ed0007-d496-49e6-b875-84f1a6dba910
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:56.218752+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2824"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 00d4bd53-fdd7-4a2c-9804-500bf2c39c01
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/user_data
+    method: GET
+  response:
+    body: '{"user_data":[]}'
+    headers:
+      Content-Length:
+      - "17"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d1a03a6e-bdf0-4523-8fb2-89baf06c6b67
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics
+    method: GET
+  response:
+    body: '{"private_nics":[]}'
+    headers:
+      Content-Length:
+      - "20"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:35:59 GMT
+      Link:
+      - </servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/private_nics?page=0&per_page=50&>;
+        rel="last"
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 045e0821-b767-4394-9bad-c8caa385db57
+      X-Total-Count:
+      - "0"
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:35:56.218752+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2824"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:00 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 6769a366-e59f-484d-9e0e-ad063e7c7dae
+    status: 200 OK
+    code: 200
+- request:
+    body: '{"action":"poweroff"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/action
+    method: POST
+  response:
+    body: '{"task":{"description":"server_poweroff","href_from":"/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653/action","href_result":"/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653","id":"76ba0af2-15ad-434c-8f5f-eb49d6c7c84f","started_at":"2023-08-28T14:36:00.577539+00:00","status":"pending","terminated_at":null}}'
+    headers:
+      Content-Length:
+      - "317"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:00 GMT
+      Location:
+      - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/76ba0af2-15ad-434c-8f5f-eb49d6c7c84f
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 487928b2-7dd6-4d7c-8dac-b716fd3247a6
+    status: 202 Accepted
+    code: 202
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2784"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:00 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 685df102-7da7-43c8-9742-159b17eccd2e
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2784"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:05 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 299648e6-0cbe-4533-ba27-7148532d03df
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2782"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:10 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b95bd427-ecec-4aef-b334-a3853ea83af2
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2782"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:16 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2b743718-fcf8-4d50-b1b8-fe75117bcfbb
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2782"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:21 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 6a0fb6a2-11a4-4be9-8984-2339183e9830
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2782"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:26 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 902cb3e2-49aa-4fb9-bb0f-590db455b283
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2782"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:31 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d59e016d-24c2-4d2e-8318-7b73af547906
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2782"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:36 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 80269e2e-6a38-4909-a165-49e571bb0a17
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2782"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:41 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 984ee91a-f984-48e7-80ca-953e820e0816
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["stop_in_place","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"34","hypervisor_id":"1102","node_id":"4","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:00.288393+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":"10.73.122.7","private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopping","state_detail":"booted","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2782"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:47 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 6b3fcc06-447c-4542-b9bb-441a6907b3e4
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweron","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:50.402384+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":null,"private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2663"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d4bfe237-db01-4c9a-be1b-28b0e71d4ad7
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"server":{"allowed_actions":["poweron","backup","enable_routed_ip"],"arch":"x86_64","boot_type":"local","bootscript":{"architecture":"x86_64","bootcmdargs":"LINUX_COMMON
+      scaleway boot=local nbd.max_part=16","default":true,"dtb":"","id":"fdfe150f-a870-4ce4-b432-9f56b5b995c1","initrd":"http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz","kernel":"http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230","organization":"11111111-1111-4111-8111-111111111111","project":"11111111-1111-4111-8111-111111111111","public":true,"title":"x86_64
+      mainline 4.4.230 rev1","zone":"fr-par-1"},"commercial_type":"DEV1-S","creation_date":"2023-08-28T14:35:28.293856+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-condescending-curran","id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","image":{"arch":"x86_64","creation_date":"2023-08-08T13:33:54.403199+00:00","default_bootscript":null,"extra_volumes":{},"from_server":null,"id":"e61b1d27-f80a-4cfd-9121-39f695f3bc68","modification_date":"2023-08-08T13:33:54.403199+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"e2ae7926-f93d-4d02-b859-84b2a13a060b","name":"Ubuntu
+      20.04 Focal Fossa","size":10000000000,"volume_type":"unified"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:22:7b:03","maintenances":[],"modification_date":"2023-08-28T14:36:50.402384+00:00","name":"tf-srv-condescending-curran","organization":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":null,"private_ip":null,"private_nics":[],"project":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":false,"security_group":{"id":"5881315f-2400-43a0-ac75-08adf6cb8c12","name":"Default
+      security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"creation_date":"2023-08-28T14:35:28.293856+00:00","export_uri":null,"id":"1289492e-99d4-4207-be5f-cffbb900dae4","modification_date":"2023-08-28T14:35:28.293856+00:00","name":"Ubuntu
+      20.04 Focal Fossa","organization":"105bdce1-64c0-48ab-899d-868455867ecf","project":"105bdce1-64c0-48ab-899d-868455867ecf","server":{"id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","name":"tf-srv-condescending-curran"},"size":20000000000,"state":"available","tags":[],"volume_type":"l_ssd","zone":"fr-par-1"}},"zone":"fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2663"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 253c7751-ff1e-4110-8f90-e9784e35ca2e
+    status: 200 OK
+    code: 200
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Date:
+      - Mon, 28 Aug 2023 14:36:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 862419b1-bb81-41b3-8d02-71afe6ca8b0a
+    status: 204 No Content
+    code: 204
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"message":"resource is not found","resource":"instance_server","resource_id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","type":"not_found"}'
+    headers:
+      Content-Length:
+      - "143"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 8b712fe2-e927-4fe6-8b8a-befaa991b1d0
+    status: 404 Not Found
+    code: 404
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/1289492e-99d4-4207-be5f-cffbb900dae4
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Date:
+      - Mon, 28 Aug 2023 14:36:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2b74af1e-adaf-48ba-b2a9-e25bdb5eb5db
+    status: 204 No Content
+    code: 204
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.4; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1dd5a5be-87f4-4d92-a9e1-c2e50a548653
+    method: GET
+  response:
+    body: '{"message":"resource is not found","resource":"instance_server","resource_id":"1dd5a5be-87f4-4d92-a9e1-c2e50a548653","type":"not_found"}'
+    headers:
+      Content-Length:
+      - "143"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Aug 2023 14:36:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 684b9422-72be-41fb-81e4-6a1021a04fea
+    status: 404 Not Found
+    code: 404
