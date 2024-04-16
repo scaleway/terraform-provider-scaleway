@@ -393,7 +393,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
 	if ok {
-		req.EnableIPv6 = enableIPv6.(bool)
+		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool))
 	}
 
 	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
