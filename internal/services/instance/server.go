@@ -171,7 +171,7 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Determines if IPv6 is enabled for the server",
-				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
 					// routed_ip enabled servers already support enable_ipv6. Let's ignore this argument if it is.
 					routedIPEnabled := types.GetBool(d, "routed_ip_enabled")
 					if routedIPEnabled == nil || routedIPEnabled.(bool) {
