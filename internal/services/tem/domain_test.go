@@ -36,6 +36,9 @@ func TestAccDomain_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainName),
+					resource.TestCheckResourceAttrSet("scaleway_tem_domain.cr01", "dmarc_config"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc"),
+
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
 			},
