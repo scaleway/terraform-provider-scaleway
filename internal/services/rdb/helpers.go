@@ -18,8 +18,10 @@ import (
 )
 
 const (
-	defaultInstanceTimeout   = 15 * time.Minute
-	defaultWaitRetryInterval = 30 * time.Second
+	defaultInstanceTimeout           = 15 * time.Minute
+	defaultWaitRetryInterval         = 30 * time.Second
+	defaultMaxAgeRetention    uint32 = 30
+	defaultTotalDiskRetention        = scw.Size(0)
 )
 
 // newAPI returns a new RDB API
@@ -144,4 +146,46 @@ func getIPAMConfigRead(resource interface{}, m interface{}) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func flattenSizePtr(i *scw.Size) interface{} {
+	if i == nil {
+		return 0
+	}
+	return *i
+}
+
+func expandSizePtr(data interface{}) *scw.Size {
+	if data == nil || data == "" {
+		return nil
+	}
+
+	size := scw.Size(data.(int))
+	return &size
+}
+
+func expandInstanceLogsPolicy(i interface{}) *rdb.LogsPolicy {
+	policyConfigRaw := i.([]interface{})
+	for _, policyRaw := range policyConfigRaw {
+		policy := policyRaw.(map[string]interface{})
+		return &rdb.LogsPolicy{
+			MaxAgeRetention:    types.ExpandUint32Ptr(policy["max_age_retention"]),
+			TotalDiskRetention: expandSizePtr(policy["total_disk_retention"]),
+		}
+	}
+
+	return nil
+}
+
+func flattenInstanceLogsPolicy(policy *rdb.LogsPolicy) interface{} {
+	p := []map[string]interface{}{}
+	if policy != nil {
+		p = append(p, map[string]interface{}{
+			"max_age_retention":    types.FlattenUint32Ptr(policy.MaxAgeRetention),
+			"total_disk_retention": flattenSizePtr(policy.TotalDiskRetention),
+		})
+	} else {
+		return nil
+	}
+	return p
 }

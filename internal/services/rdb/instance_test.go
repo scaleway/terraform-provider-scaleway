@@ -60,6 +60,8 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.endpoint_id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention"),
 				),
 			},
 			{
@@ -133,6 +135,66 @@ func TestAccInstance_WithCluster(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "minimal"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_LogsPolicy(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-log-policy"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = true
+						disable_backup = false
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s8cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "minimal" ]
+  						logs_policy {
+							max_age_retention    = 30
+							total_disk_retention = 100000000
+					  }
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention", "30"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention", "100000000"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-log-policy"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = true
+						disable_backup = false
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s8cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "minimal" ]
+  						logs_policy {
+							max_age_retention    = 30
+							total_disk_retention = 100000000
+					  }
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention", "30"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention", "200000000"),
 				),
 			},
 		},
