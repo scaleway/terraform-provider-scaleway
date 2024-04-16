@@ -49,42 +49,53 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*lbSDK.ZonedAPI, scw.Zone, s
 	return lbAPI, zone, ID, nil
 }
 
-func IsPrivateNetworkEqual(a, b interface{}) bool {
-	// Find out the diff Private Network or not
-	if _, ok := a.(*lbSDK.PrivateNetwork); ok {
-		if _, ok := b.(*lbSDK.PrivateNetwork); ok {
-			if a.(*lbSDK.PrivateNetwork).PrivateNetworkID == b.(*lbSDK.PrivateNetwork).PrivateNetworkID {
-				// if both has dhcp config should not update
-				if a.(*lbSDK.PrivateNetwork).DHCPConfig != nil && b.(*lbSDK.PrivateNetwork).DHCPConfig != nil {
-					return true
-				}
-				// check static config
-				aConfig := a.(*lbSDK.PrivateNetwork).StaticConfig
-				bConfig := b.(*lbSDK.PrivateNetwork).StaticConfig
-				if aConfig != nil && bConfig != nil {
-					// check if static config is different
-					return reflect.DeepEqual(aConfig.IPAddress, bConfig.IPAddress)
-				}
-			}
-		}
+func IsPrivateNetworkEqual(a, b *lbSDK.PrivateNetwork) bool {
+	if a == nil || b == nil {
+		return a == b
 	}
-	return false
+	if a.PrivateNetworkID != b.PrivateNetworkID {
+		return false
+	}
+	if !reflect.DeepEqual(a.DHCPConfig, b.DHCPConfig) {
+		return false
+	}
+	if !reflect.DeepEqual(a.StaticConfig, b.StaticConfig) {
+		return false
+	}
+
+	return true
 }
 
-func privateNetworksCompare(slice1, slice2 []*lbSDK.PrivateNetwork) []*lbSDK.PrivateNetwork {
-	var diff []*lbSDK.PrivateNetwork
+func PrivateNetworksCompare(oldPNs, newPNs []*lbSDK.PrivateNetwork) ([]*lbSDK.PrivateNetwork, []*lbSDK.PrivateNetwork) {
+	var toDetach, toAttach []*lbSDK.PrivateNetwork
 
-	m := make(map[string]struct{}, len(slice1))
-	for _, pn := range slice1 {
-		m[pn.PrivateNetworkID] = struct{}{}
+	oldPNMap := make(map[string]*lbSDK.PrivateNetwork, len(oldPNs))
+	for _, pn := range oldPNs {
+		oldPNMap[pn.PrivateNetworkID] = pn
 	}
-	// find the differences
-	for _, pn := range slice2 {
-		if _, foundID := m[pn.PrivateNetworkID]; !foundID || (foundID && !IsPrivateNetworkEqual(slice1, slice2)) {
-			diff = append(diff, pn)
+
+	newPNMap := make(map[string]*lbSDK.PrivateNetwork, len(newPNs))
+	for _, pn := range newPNs {
+		newPNMap[pn.PrivateNetworkID] = pn
+	}
+
+	for id, oldPN := range oldPNMap {
+		newPN, found := newPNMap[id]
+		if !found {
+			toDetach = append(toDetach, oldPN)
+		} else if !IsPrivateNetworkEqual(oldPN, newPN) {
+			toDetach = append(toDetach, oldPN)
+			toAttach = append(toAttach, newPN)
 		}
 	}
-	return diff
+
+	for id, newPN := range newPNMap {
+		if _, found := oldPNMap[id]; !found {
+			toAttach = append(toAttach, newPN)
+		}
+	}
+
+	return toDetach, toAttach
 }
 
 func lbUpgradeV1SchemaType() cty.Type {

@@ -465,45 +465,47 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 		}
 
 		// check that pns are in a stable state
-		pns, err := waitForPrivateNetworks(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		_, err := waitForPrivateNetworks(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
-		pnConfigs, err := expandPrivateNetworks(d.Get("private_network"))
+		oldPNs, newPNs := d.GetChange("private_network")
+		oldPNConfigs, err := expandPrivateNetworks(oldPNs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		// select only private networks that have changed
-		pnToDetach := privateNetworksCompare(pnConfigs, pns)
+		newPNConfigs, err := expandPrivateNetworks(newPNs)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		toDetach, toAttach := PrivateNetworksCompare(oldPNConfigs, newPNConfigs)
 
 		// detach private networks
-		for i := range pnToDetach {
+		for _, pn := range toDetach {
 			err = lbAPI.DetachPrivateNetwork(&lbSDK.ZonedAPIDetachPrivateNetworkRequest{
 				Zone:             zone,
 				LBID:             ID,
-				PrivateNetworkID: pnToDetach[i].PrivateNetworkID,
+				PrivateNetworkID: pn.PrivateNetworkID,
 			}, scw.WithContext(ctx))
 			if err != nil && !httperrors.Is404(err) {
 				return diag.FromErr(err)
 			}
 		}
 
-		// check load balancer state
 		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
-		// check that pns are in a stable state
-		pns, err = waitForPrivateNetworks(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForPrivateNetworks(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
-		pnToAttach := privateNetworksCompare(pns, pnConfigs)
-		// attach new/updated private networks
-		_, err = attachLBPrivateNetworks(ctx, lbAPI, zone, pnToAttach, ID, d.Timeout(schema.TimeoutUpdate))
+		// attach private networks
+		_, err = attachLBPrivateNetworks(ctx, lbAPI, zone, toAttach, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
