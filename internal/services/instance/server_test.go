@@ -716,6 +716,7 @@ func TestAccServer_Ipv6(t *testing.T) {
 						image = "ubuntu_focal"
 		  				type  = "DEV1-S"
 		  				enable_ipv6 = true
+						routed_ip_enabled = false
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -731,6 +732,7 @@ func TestAccServer_Ipv6(t *testing.T) {
 						image = "ubuntu_focal"
 		  				type  = "DEV1-S"
 		  				enable_ipv6 = false
+						routed_ip_enabled = false
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
