@@ -480,7 +480,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 			return diag.FromErr(err)
 		}
 
-		toDetach, toAttach := privateNetworksCompare(oldPNConfigs, newPNConfigs)
+		toDetach, toAttach := PrivateNetworksCompare(oldPNConfigs, newPNConfigs)
 
 		// detach private networks
 		for _, pn := range toDetach {

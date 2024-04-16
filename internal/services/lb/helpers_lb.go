@@ -66,7 +66,7 @@ func IsPrivateNetworkEqual(a, b *lbSDK.PrivateNetwork) bool {
 	return true
 }
 
-func privateNetworksCompare(oldPNs, newPNs []*lbSDK.PrivateNetwork) ([]*lbSDK.PrivateNetwork, []*lbSDK.PrivateNetwork) {
+func PrivateNetworksCompare(oldPNs, newPNs []*lbSDK.PrivateNetwork) ([]*lbSDK.PrivateNetwork, []*lbSDK.PrivateNetwork) {
 	var toDetach, toAttach []*lbSDK.PrivateNetwork
 
 	oldPNMap := make(map[string]*lbSDK.PrivateNetwork, len(oldPNs))
