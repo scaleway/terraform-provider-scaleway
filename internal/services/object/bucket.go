@@ -48,7 +48,7 @@ func ResourceBucket() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "private",
-				Description: "ACL of the bucket: either 'public-read' or 'private'.",
+				Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
 				ValidateFunc: validation.StringInSlice([]string{
 					s3.ObjectCannedACLPrivate,
 					s3.ObjectCannedACLPublicRead,
@@ -470,7 +470,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 			return diags
 		}
 	} else if acl != nil && acl.Owner != nil {
-		_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 	}
 
 	// Get object_lock_enabled

@@ -159,7 +159,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 			return diags
 		}
 	} else if acl != nil && acl.Owner != nil {
-		_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 	}
 
 	return diags

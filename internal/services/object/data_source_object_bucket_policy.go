@@ -78,7 +78,7 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
 	}
-	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
+	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	d.SetId(regional.NewIDString(region, bucket))
 	return nil
