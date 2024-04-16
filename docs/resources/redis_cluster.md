@@ -15,7 +15,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 ```terraform
 resource "scaleway_redis_cluster" "main" {
   name         = "test_redis_basic"
-  version      = "6.2.6"
+  version      = "6.2.7"
   node_type    = "RED1-MICRO"
   user_name    = "my_initial_user"
   password     = "thiZ_is_v&ry_s3cret"
@@ -35,7 +35,7 @@ resource "scaleway_redis_cluster" "main" {
 ```terraform
 resource "scaleway_redis_cluster" "main" {
   name      = "test_redis_basic"
-  version   = "6.2.6"
+  version   = "6.2.7"
   node_type = "RED1-MICRO"
   user_name = "my_initial_user"
   password  = "thiZ_is_v&ry_s3cret"
@@ -56,7 +56,7 @@ resource "scaleway_vpc_private_network" "pn" {
 
 resource "scaleway_redis_cluster" "main" {
   name         = "test_redis_endpoints"
-  version      = "6.2.6"
+  version      = "6.2.7"
   node_type    = "RED1-MICRO"
   user_name    = "my_initial_user"
   password     = "thiZ_is_v&ry_s3cret"
@@ -77,7 +77,7 @@ resource "scaleway_redis_cluster" "main" {
 
 The following arguments are supported:
 
-- `version` - (Required) Redis's Cluster version (e.g. `6.2.6`).
+- `version` - (Required) Redis's Cluster version (e.g. `6.2.7`).
 
 ~> **Important:** Updates to `version` will migrate the Redis Cluster to the desired `version`. Keep in mind that you
 cannot downgrade a Redis Cluster.
