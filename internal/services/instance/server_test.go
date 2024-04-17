@@ -943,6 +943,7 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 }
 
 func TestAccServer_Bootscript(t *testing.T) {
+	t.Skip("Creation of bootscript server is no longer supported")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	// Quick tip to get all the different bootscript:
