@@ -9,6 +9,15 @@ Gets information about IP managed by IPAM service. IPAM service is used for dhcp
 
 ## Examples
 
+### IPAM IP ID
+
+```terraform
+# Get info by ipam ip id
+data "scaleway_ipam_ip" "by_id" {
+  ipam_ip_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
 ### Instance Private Network IP
 
 Get Instance IP in a private network.
