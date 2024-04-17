@@ -173,7 +173,6 @@ func expandInstanceLogsPolicy(i interface{}) *rdb.LogsPolicy {
 			TotalDiskRetention: expandSizePtr(policy["total_disk_retention"]),
 		}
 	}
-
 	return nil
 }
 

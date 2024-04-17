@@ -285,6 +285,7 @@ func ResourceInstance() *schema.Resource {
 			"logs_policy": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Logs policy configuration",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -293,11 +294,13 @@ func ResourceInstance() *schema.Resource {
 						"max_age_retention": {
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Computed:    true,
 							Description: "The max age (in days) of remote logs to keep on the Database Instance",
 						},
 						"total_disk_retention": {
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Computed:    true,
 							Description: "The max disk size of remote logs to keep on the Database Instance.",
 						},
 					},
@@ -378,7 +381,6 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
-
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
@@ -683,7 +685,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	if d.HasChange("logs_policy") {
-		req.LogsPolicy = expandInstanceLogsPolicy(d.Get("logs_policy"))
+		policyRaw, exist := d.GetOk("logs_policy")
+		if exist {
+			req.LogsPolicy = expandInstanceLogsPolicy(policyRaw)
+		}
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))

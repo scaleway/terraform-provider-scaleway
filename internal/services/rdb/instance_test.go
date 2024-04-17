@@ -144,8 +144,8 @@ func TestAccInstance_WithCluster(t *testing.T) {
 func TestAccInstance_LogsPolicy(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -186,14 +186,14 @@ func TestAccInstance_LogsPolicy(t *testing.T) {
 						password = "thiZ_is_v&ry_s8cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "minimal" ]
   						logs_policy {
-							max_age_retention    = 30
-							total_disk_retention = 100000000
+							max_age_retention    = 10
+							total_disk_retention = 200000000
 					  }
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					isInstancePresent(tt, "scaleway_rdb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention", "30"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention", "10"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention", "200000000"),
 				),
 			},
