@@ -40,7 +40,7 @@ func TestAccPool_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.default"),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "node_type", "pro2_xxs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "autohealing", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "autoscaling", "true"),
@@ -57,7 +57,7 @@ func TestAccPool_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.minimal"),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "node_type", "pro2_xxs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "autohealing", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "autoscaling", "true"),
@@ -183,7 +183,7 @@ func TestAccPool_PlacementGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.placement_group"),
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.placement_group"),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group", "node_type", "pro2_xxs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group", "size", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.placement_group", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.placement_group", "placement_group_id"),
@@ -196,7 +196,7 @@ func TestAccPool_PlacementGroup(t *testing.T) {
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.placement_group_2"),
 					resource.TestCheckResourceAttrPair("scaleway_k8s_pool.placement_group_2", "placement_group_id", "scaleway_instance_placement_group.placement_group", "id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group_2", "zone", "nl-ams-2"),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group_2", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group_2", "node_type", "pro2_xxs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group_2", "size", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.placement_group_2", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.placement_group_2", "placement_group_id"),
@@ -209,7 +209,7 @@ func TestAccPool_PlacementGroup(t *testing.T) {
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.placement_group_2"),
 					resource.TestCheckResourceAttrPair("scaleway_k8s_pool.placement_group_2", "placement_group_id", "scaleway_instance_placement_group.placement_group", "id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group_2", "zone", "nl-ams-1"),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group_2", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group_2", "node_type", "pro2_xxs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.placement_group_2", "size", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.placement_group_2", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.placement_group_2", "placement_group_id"),
@@ -239,7 +239,7 @@ func TestAccPool_UpgradePolicy(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.upgrade_policy"),
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.upgrade_policy"),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "node_type", "pro2_xxs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "autohealing", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "autoscaling", "true"),
@@ -257,7 +257,7 @@ func TestAccPool_UpgradePolicy(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.upgrade_policy"),
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.upgrade_policy"),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "node_type", "pro2_xxs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "autohealing", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.upgrade_policy", "autoscaling", "true"),
@@ -378,7 +378,7 @@ func TestAccPool_Size(t *testing.T) {
 				resource "scaleway_k8s_pool" "pool" {
 				  cluster_id          = scaleway_k8s_cluster.test-pool-size.id
 				  name                = "pool"
-				  node_type           = "gp1_xs"
+				  node_type           = "pro2_xxs"
 				  size                = 1
 				  autoscaling         = false
 				  autohealing         = true
@@ -406,7 +406,7 @@ func TestAccPool_Size(t *testing.T) {
 				resource "scaleway_k8s_pool" "pool" {
 				  cluster_id          = scaleway_k8s_cluster.test-pool-size.id
 				  name                = "pool"
-				  node_type           = "gp1_xs"
+				  node_type           = "pro2_xxs"
 				  size                = 2
 				  autoscaling         = false
 				  autohealing         = true
@@ -456,7 +456,7 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 				resource "scaleway_k8s_pool" "public_ip" {
 				  cluster_id          = scaleway_k8s_cluster.public_ip.id
 				  name                = "test-k8s-public-ip"
-				  node_type           = "gp1_xs"
+				  node_type           = "pro2_xxs"
 				  size                = 1
 				  autoscaling         = false
 				  autohealing         = true
@@ -505,7 +505,7 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 				resource "scaleway_k8s_pool" "public_ip" {
 				  cluster_id          = scaleway_k8s_cluster.public_ip.id
 				  name                = "test-k8s-public-ip"
-				  node_type           = "gp1_xs"
+				  node_type           = "pro2_xxs"
 				  size                = 1
 				  autoscaling         = false
 				  autohealing         = true
@@ -712,7 +712,7 @@ func testAccCheckK8SPoolConfigMinimal(version string, otherPool bool) string {
 resource "scaleway_k8s_pool" "minimal" {
     name = "test-pool-minimal-2"
 	cluster_id = "${scaleway_k8s_cluster.minimal.id}"
-	node_type = "gp1_xs"
+	node_type = "pro2_xxs"
 	autohealing = true
 	autoscaling = true
 	size = 1
@@ -724,7 +724,7 @@ resource "scaleway_k8s_pool" "minimal" {
 resource "scaleway_k8s_pool" "default" {
     name = "test-pool-minimal"
 	cluster_id = "${scaleway_k8s_cluster.minimal.id}"
-	node_type = "gp1_xs"
+	node_type = "pro2_xxs"
 	autohealing = true
 	autoscaling = true
 	size = 1
@@ -753,7 +753,7 @@ func testAccCheckK8SPoolConfigWait(version string, otherPool bool, otherPoolSize
 resource "scaleway_k8s_pool" "minimal" {
     name = "test-pool-wait-2"
 	cluster_id = scaleway_k8s_cluster.minimal.id
-	node_type = "gp1_xs"
+	node_type = "pro2_xxs"
 	size = %d
 	min_size = 1
 	max_size = %d
@@ -766,7 +766,7 @@ resource "scaleway_k8s_pool" "minimal" {
 resource "scaleway_k8s_pool" "default" {
     name = "test-pool-wait"
 	cluster_id = scaleway_k8s_cluster.minimal.id
-	node_type = "gp1_xs"
+	node_type = "pro2_xxs"
 	size = 1
 	min_size = 1
 	max_size = 1
@@ -799,7 +799,7 @@ resource "scaleway_instance_placement_group" "placement_group" {
 resource "scaleway_k8s_pool" "placement_group" {
     name               = "test-pool-placement-group"
     cluster_id         = scaleway_k8s_cluster.placement_group.id
-    node_type          = "gp1_xs"
+    node_type          = "pro2_xxs"
     placement_group_id = scaleway_instance_placement_group.placement_group.id
     size               = 1
 }
@@ -830,7 +830,7 @@ resource "scaleway_instance_placement_group" "placement_group" {
 resource "scaleway_k8s_pool" "placement_group_2" {
   name               = "test-pool-placement-group-2"
   cluster_id         = scaleway_k8s_cluster.placement_group_2.id
-  node_type          = "gp1_xs"
+  node_type          = "pro2_xxs"
   placement_group_id = scaleway_instance_placement_group.placement_group.id
   size               = 1
   region             = scaleway_k8s_cluster.placement_group_2.region
@@ -865,7 +865,7 @@ resource "scaleway_instance_placement_group" "placement_group" {
 resource "scaleway_k8s_pool" "placement_group_2" {
   name               = "test-pool-placement-group-2"
   cluster_id         = scaleway_k8s_cluster.placement_group_2.id
-  node_type          = "gp1_xs"
+  node_type          = "pro2_xxs"
   placement_group_id = scaleway_instance_placement_group.placement_group.id
   size               = 1
   region             = scaleway_k8s_cluster.placement_group_2.region
@@ -888,7 +888,7 @@ func testAccCheckK8SPoolConfigUpgradePolicy(version string, maxSurge, maxUnavail
 resource "scaleway_k8s_pool" "upgrade_policy" {
     name = "test-pool-upgrade-policy"
 	cluster_id = "${scaleway_k8s_cluster.upgrade_policy.id}"
-	node_type = "gp1_xs"
+	node_type = "pro2_xxs"
 	autohealing = true
 	autoscaling = true
 	size = 1
@@ -918,7 +918,7 @@ func testAccCheckK8SPoolConfigKubeletArgs(version string, maxPods int) string {
 resource "scaleway_k8s_pool" "kubelet_args" {
     name = "test-pool-kubelet-args"
 	cluster_id = "${scaleway_k8s_cluster.kubelet_args.id}"
-	node_type = "gp1_xs"
+	node_type = "pro2_xxs"
 	autohealing = true
 	autoscaling = true
 	size = 1
@@ -947,7 +947,7 @@ func testAccCheckK8SPoolConfigZone(version string, zone string) string {
 resource "scaleway_k8s_pool" "zone" {
     name = "test-pool-zone"
 	cluster_id = "${scaleway_k8s_cluster.zone.id}"
-	node_type = "gp1_xs"
+	node_type = "pro2_xxs"
 	autohealing = true
 	autoscaling = true
 	size = 1
