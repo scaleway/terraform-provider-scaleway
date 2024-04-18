@@ -9,15 +9,21 @@ Gets information about IP managed by IPAM service. IPAM service is used for dhcp
 
 ## Examples
 
-### Instance Private Network IP
+### IPAM IP ID
 
-```hcl
+```terraform
 # Get info by ipam ip id
 data "scaleway_ipam_ip" "by_id" {
   ipam_ip_id = "11111111-1111-1111-1111-111111111111"
 }
+```
 
-# Get Instance IP in a private network
+### Instance Private Network IP
+
+Get Instance IP in a private network.
+
+```terraform
+# Connect your instance to a private network using a private nic.
 resource "scaleway_instance_private_nic" "nic" {
   server_id = scaleway_instance_server.server.id
   private_network_id = scaleway_vpc_private_network.pn.id
@@ -38,6 +44,12 @@ data "scaleway_ipam_ip" "by_id" {
   type = "ipv4"
 }
 
+
+```
+
+### RDB instance
+
+```terraform
 # Find the private IPv4 using resource name
 resource "scaleway_vpc_private_network" "pn" {}
 
@@ -61,7 +73,6 @@ data "scaleway_ipam_ip" "by_name" {
   }
   type = "ipv4"
 }
-
 ```
 
 ## Argument Reference
