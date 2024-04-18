@@ -55,3 +55,8 @@ website:
 
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website
 
+tfproviderlint:
+	go run github.com/bflad/tfproviderlint/cmd/tfproviderlint -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
+
+tfproviderdocs:
+	go run github.com/bflad/tfproviderdocs check -provider-name scaleway -enable-contents-check
