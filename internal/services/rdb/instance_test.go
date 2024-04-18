@@ -1030,6 +1030,7 @@ func TestAccInstance_ChangeVolumeType(t *testing.T) {
 		},
 	})
 }
+
 func TestAccInstance_ChangeNodeType(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
