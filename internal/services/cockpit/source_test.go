@@ -12,14 +12,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 )
 
-func TestAccCockpitDatasource_Basic(t *testing.T) {
+func TestAccCockpitSource_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isDatasourceDestroyed(tt),
+		CheckDestroy:      isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -27,34 +27,34 @@ func TestAccCockpitDatasource_Basic(t *testing.T) {
 						name = "tf_tests_cockpit_datasource_basic"
 				  	}
 
-					resource "scaleway_cockpit_datasource" "main" {
+					resource "scaleway_cockpit_source" "main" {
 					  project_id = scaleway_account_project.project.id
-					  name       = "my-datasource"
+					  name       = "my-source"
 					  type       = "metrics"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isDatasourcePresent(tt, "scaleway_cockpit_datasource.main"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_datasource.main", "name", "my-datasource"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_datasource.main", "type", "metrics"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_datasource.main", "region", "fr-par"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_datasource.main", "url"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_datasource.main", "origin"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_datasource.main", "created_at"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_datasource.main", "updated_at"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_datasource.main", "synchronized_with_grafana"),
-					resource.TestCheckResourceAttrPair("scaleway_cockpit_datasource.main", "project_id", "scaleway_account_project.project", "id"),
+					isSourcePresent(tt, "scaleway_cockpit_source.main"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "name", "my-source"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "type", "metrics"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "region", "fr-par"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "origin"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "updated_at"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "synchronized_with_grafana"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_source.main", "project_id", "scaleway_account_project.project", "id"),
 				),
 			},
 		},
 	})
 }
 
-func isDatasourcePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSourcePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("resource cockpit datasource not found: %s", n)
+			return fmt.Errorf("resource cockpit source not found: %s", n)
 		}
 
 		api, region, ID, err := cockpit.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
@@ -74,10 +74,10 @@ func isDatasourcePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 	}
 }
 
-func isDatasourceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSourceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_cockpit_datasource" {
+			if rs.Type != "scaleway_cockpit_source" {
 				continue
 			}
 
@@ -92,7 +92,7 @@ func isDatasourceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			})
 
 			if err == nil {
-				return fmt.Errorf("cockpit datasource (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("cockpit source (%s) still exists", rs.Primary.ID)
 			}
 
 			if !httperrors.Is404(err) {

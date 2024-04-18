@@ -123,7 +123,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_block_snapshot":                      block.ResourceSnapshot(),
 				"scaleway_block_volume":                        block.ResourceVolume(),
 				"scaleway_cockpit":                             cockpit.ResourceCockpit(),
-				"scaleway_cockpit_datasource":                  cockpit.ResourceCockpitDatasource(),
+				"scaleway_cockpit_source":                      cockpit.ResourceCockpitSource(),
 				"scaleway_cockpit_grafana_user":                cockpit.ResourceCockpitGrafanaUser(),
 				"scaleway_cockpit_token":                       cockpit.ResourceToken(),
 				"scaleway_container":                           container.ResourceContainer(),

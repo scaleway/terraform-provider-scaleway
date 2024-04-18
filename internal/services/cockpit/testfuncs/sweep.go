@@ -27,9 +27,9 @@ func AddTestSweepers() {
 		Name: "scaleway_cockpit_token",
 		F:    testSweepCockpitToken,
 	})
-	resource.AddTestSweepers("scaleway_cockpit_datasource", &resource.Sweeper{
-		Name: "scaleway_cockpit_datasource",
-		F:    testSweepCockpitDatasource,
+	resource.AddTestSweepers("scaleway_cockpit_source", &resource.Sweeper{
+		Name: "scaleway_cockpit_source",
+		F:    testSweepCockpitSource,
 	})
 }
 
@@ -157,7 +157,7 @@ func testSweepCockpit(_ string) error {
 	})
 }
 
-func testSweepCockpitDatasource(_ string) error {
+func testSweepCockpitSource(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
 		cockpitAPI := cockpitv1.NewRegionalAPI(scwClient)
@@ -181,7 +181,7 @@ func testSweepCockpitDatasource(_ string) error {
 					return nil
 				}
 
-				return fmt.Errorf("failed to list datasources: %w", err)
+				return fmt.Errorf("failed to list sources: %w", err)
 			}
 
 			for _, datsource := range listDatasources.DataSources {
@@ -191,7 +191,7 @@ func testSweepCockpitDatasource(_ string) error {
 				})
 				if err != nil {
 					if !httperrors.Is404(err) {
-						return fmt.Errorf("failed to delete cockpit datasource: %w", err)
+						return fmt.Errorf("failed to delete cockpit source: %w", err)
 					}
 				}
 			}

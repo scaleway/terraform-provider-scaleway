@@ -14,11 +14,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func ResourceCockpitDatasource() *schema.Resource {
+func ResourceCockpitSource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitDatasourceCreate,
-		ReadContext:   ResourceCockpitDatasourceRead,
-		DeleteContext: ResourceCockpitDatasourceDelete,
+		CreateContext: ResourceCockpitSourceCreate,
+		ReadContext:   ResourceCockpitSourceRead,
+		DeleteContext: ResourceCockpitSourceDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
 			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
@@ -78,7 +78,7 @@ func ResourceCockpitDatasource() *schema.Resource {
 	}
 }
 
-func ResourceCockpitDatasourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -95,10 +95,10 @@ func ResourceCockpitDatasourceCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(regional.NewIDString(region, res.ID))
-	return ResourceCockpitDatasourceRead(ctx, d, meta)
+	return ResourceCockpitSourceRead(ctx, d, meta)
 }
 
-func ResourceCockpitDatasourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -129,7 +129,7 @@ func ResourceCockpitDatasourceRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func ResourceCockpitDatasourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
