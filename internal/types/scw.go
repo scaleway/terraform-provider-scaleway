@@ -8,3 +8,12 @@ func FlattenSize(size *scw.Size) interface{} {
 	}
 	return *size
 }
+
+func ExpandSize(data interface{}) *scw.Size {
+	if data == nil || data == "" {
+		return nil
+	}
+
+	size := scw.Size(data.(int))
+	return &size
+}

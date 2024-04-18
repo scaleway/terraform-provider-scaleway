@@ -282,6 +282,30 @@ func ResourceInstance() *schema.Resource {
 					},
 				},
 			},
+			"logs_policy": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "Logs policy configuration",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// Computed
+						"max_age_retention": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The max age (in days) of remote logs to keep on the Database Instance",
+						},
+						"total_disk_retention": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The max disk size of remote logs to keep on the Database Instance.",
+						},
+					},
+				},
+			},
 			// Common
 			"region":          regional.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
@@ -349,16 +373,15 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
+	mustUpdate := false
+	updateReq := &rdb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: res.ID,
+	}
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
-		updateReq := &rdb.UpdateInstanceRequest{
-			Region:     region,
-			InstanceID: res.ID,
-		}
-
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
-
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
 			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
@@ -366,12 +389,20 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
 			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
 		}
+		mustUpdate = true
+	}
 
+	policyRaw, exist := d.GetOk("logs_policy")
+	if exist {
+		updateReq.LogsPolicy = expandInstanceLogsPolicy(policyRaw)
+		mustUpdate = true
+	}
+
+	if mustUpdate {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 		_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -412,7 +443,6 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 		}
 		return diag.FromErr(err)
 	}
-
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
@@ -475,6 +505,9 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
 	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
+
+	// set logs policy
+	_ = d.Set("logs_policy", flattenInstanceLogsPolicy(res.LogsPolicy))
 
 	// set endpoints
 	enableIpam, err := getIPAMConfigRead(res, m)
@@ -649,6 +682,13 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	}
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	if d.HasChange("logs_policy") {
+		policyRaw, exist := d.GetOk("logs_policy")
+		if exist {
+			req.LogsPolicy = expandInstanceLogsPolicy(policyRaw)
+		}
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
