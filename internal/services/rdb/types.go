@@ -212,3 +212,28 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 
 	return directAccess, privateNetwork
 }
+
+func expandInstanceLogsPolicy(i interface{}) *rdb.LogsPolicy {
+	policyConfigRaw := i.([]interface{})
+	for _, policyRaw := range policyConfigRaw {
+		policy := policyRaw.(map[string]interface{})
+		return &rdb.LogsPolicy{
+			MaxAgeRetention:    types.ExpandUint32Ptr(policy["max_age_retention"]),
+			TotalDiskRetention: types.ExpandSize(policy["total_disk_retention"]),
+		}
+	}
+	return nil
+}
+
+func flattenInstanceLogsPolicy(policy *rdb.LogsPolicy) interface{} {
+	p := []map[string]interface{}{}
+	if policy != nil {
+		p = append(p, map[string]interface{}{
+			"max_age_retention":    types.FlattenUint32Ptr(policy.MaxAgeRetention),
+			"total_disk_retention": types.FlattenSize(policy.TotalDiskRetention),
+		})
+	} else {
+		return nil
+	}
+	return p
+}
