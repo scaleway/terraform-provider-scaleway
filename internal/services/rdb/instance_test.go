@@ -1193,10 +1193,6 @@ func TestAccInstance_Endpoints(t *testing.T) {
 	})
 }
 
-func TestAccInstance_VolumeUpdate(t *testing.T) {
-
-}
-
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
