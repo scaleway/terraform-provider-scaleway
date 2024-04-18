@@ -41,7 +41,7 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 					resource "scaleway_k8s_pool" "default" {
 						name = "default"
 						cluster_id = "${scaleway_k8s_cluster.main.id}"
-						node_type = "gp1_xs"
+						node_type = "pro2_xxs"
 						autohealing = true
 						autoscaling = true
 						size = 1
