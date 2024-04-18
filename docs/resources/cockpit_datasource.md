@@ -26,7 +26,7 @@ resource "scaleway_cockpit_datasource" "main" {
 ## Argument Reference
 
 - `name` - (Required) The name of the cockpit datasource.
-- `type` - (Required) The type of the cockpit datasource.
+- `type` - (Required) The type of the cockpit datasource. Possible values are: `metrics`, `logs` or `traces`.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the cockpit datasource.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit datasource is associated with.
 
