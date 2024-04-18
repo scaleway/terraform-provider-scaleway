@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go v1.51.19
 	github.com/bflad/tfproviderdocs v0.12.0
 	github.com/bflad/tfproviderlint v0.29.0
-	github.com/docker/docker v26.0.0+incompatible
+	github.com/docker/docker v26.0.2+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/aws-sdk-go-base v1.1.0
