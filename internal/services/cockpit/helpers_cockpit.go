@@ -7,8 +7,11 @@ import (
 	"strings"
 	"time"
 
-	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
+	cockpitv1beta1 "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -21,14 +24,34 @@ const (
 )
 
 // NewAPI returns a new cockpit API.
-func NewAPI(m interface{}) (*cockpit.API, error) {
-	api := cockpit.NewAPI(meta.ExtractScwClient(m))
+func NewAPI(m interface{}) (*cockpitv1beta1.API, error) {
+	api := cockpitv1beta1.NewAPI(meta.ExtractScwClient(m))
 
 	return api, nil
 }
 
+func cockpitAPIWithRegion(d *schema.ResourceData, m interface{}) (*cockpit.RegionalAPI, scw.Region, error) {
+	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
+
+	region, err := meta.ExtractRegion(d, m)
+	if err != nil {
+		return nil, "", err
+	}
+	return api, region, err
+}
+
+func NewAPIWithRegionAndID(m interface{}, id string) (*cockpit.RegionalAPI, scw.Region, string, error) {
+	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
+
+	region, id, err := regional.ParseID(id)
+	if err != nil {
+		return nil, "", "", err
+	}
+	return api, region, id, nil
+}
+
 // NewAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
-func NewAPIGrafanaUserID(m interface{}, id string) (*cockpit.API, string, uint32, error) {
+func NewAPIGrafanaUserID(m interface{}, id string) (*cockpitv1beta1.API, string, uint32, error) {
 	projectID, resourceIDString, err := parseCockpitID(id)
 	if err != nil {
 		return nil, "", 0, err
@@ -61,13 +84,13 @@ func parseCockpitID(id string) (projectID string, cockpitID string, err error) {
 	return parts[0], parts[1], nil
 }
 
-func waitForCockpit(ctx context.Context, api *cockpit.API, projectID string, timeout time.Duration) (*cockpit.Cockpit, error) {
+func waitForCockpit(ctx context.Context, api *cockpitv1beta1.API, projectID string, timeout time.Duration) (*cockpitv1beta1.Cockpit, error) {
 	retryInterval := defaultCockpitRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForCockpit(&cockpit.WaitForCockpitRequest{
+	return api.WaitForCockpit(&cockpitv1beta1.WaitForCockpitRequest{
 		ProjectID:     projectID,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
