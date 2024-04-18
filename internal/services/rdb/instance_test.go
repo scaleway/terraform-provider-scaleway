@@ -1030,7 +1030,6 @@ func TestAccInstance_ChangeVolumeType(t *testing.T) {
 		},
 	})
 }
-
 func TestAccInstance_ChangeNodeType(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1038,7 +1037,8 @@ func TestAccInstance_ChangeNodeType(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
+		PreCheck: func() { acctest.PreCheck(t) },
+
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
