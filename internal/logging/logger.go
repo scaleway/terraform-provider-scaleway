@@ -7,6 +7,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/logger"
 )
 
+func init() {
+	logger.SetLogger(L)
+}
+
 // Logger is the implementation of the SDK Logger interface for this terraform plugin.
 //
 // cf. https://godoc.org/github.com/scaleway/scaleway-sdk-go/logger#Logger
