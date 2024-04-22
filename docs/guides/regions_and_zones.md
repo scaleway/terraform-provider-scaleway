@@ -29,8 +29,11 @@ List of availability zones by regions:
 - The Netherlands - Amsterdam (`nl-ams`)
     - `nl-ams-1`
     - `nl-ams-2`
+    - `nl-ams-3`
 - Poland - Warsaw (`pl-waw`)
     - `pl-waw-1`
+    - `pl-waw-2`
+    - `pl-waw-3`
 
 ## Resource IDs
 
