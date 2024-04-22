@@ -30,6 +30,13 @@ func NewAPI(m interface{}) (*cockpitv1beta1.API, error) {
 	return api, nil
 }
 
+// NewGlobalAPI returns a new global cockpit API.
+func NewGlobalAPI(m interface{}) (*cockpit.GlobalAPI, error) {
+	api := cockpit.NewGlobalAPI(meta.ExtractScwClient(m))
+
+	return api, nil
+}
+
 func cockpitAPIWithRegion(d *schema.ResourceData, m interface{}) (*cockpit.RegionalAPI, scw.Region, error) {
 	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
 
@@ -51,7 +58,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*cockpit.RegionalAPI, scw.
 }
 
 // NewAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
-func NewAPIGrafanaUserID(m interface{}, id string) (*cockpitv1beta1.API, string, uint32, error) {
+func NewAPIGrafanaUserID(m interface{}, id string) (*cockpit.GlobalAPI, string, uint32, error) {
 	projectID, resourceIDString, err := parseCockpitID(id)
 	if err != nil {
 		return nil, "", 0, err
@@ -62,7 +69,7 @@ func NewAPIGrafanaUserID(m interface{}, id string) (*cockpitv1beta1.API, string,
 		return nil, "", 0, err
 	}
 
-	api, err := NewAPI(m)
+	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return nil, "", 0, err
 	}

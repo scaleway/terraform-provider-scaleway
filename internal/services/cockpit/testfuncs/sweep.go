@@ -78,7 +78,7 @@ func testSweepCockpitToken(_ string) error {
 func testSweepCockpitGrafanaUser(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		cockpitAPI := cockpitv1beta1.NewAPI(scwClient)
+		cockpitAPI := cockpitv1.NewGlobalAPI(scwClient)
 
 		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
@@ -90,7 +90,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 				continue
 			}
 
-			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpitv1beta1.ListGrafanaUsersRequest{
+			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpitv1.GlobalAPIListGrafanaUsersRequest{
 				ProjectID: project.ID,
 			}, scw.WithAllPages())
 			if err != nil {
@@ -102,7 +102,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 			}
 
 			for _, grafanaUser := range listGrafanaUsers.GrafanaUsers {
-				err = cockpitAPI.DeleteGrafanaUser(&cockpitv1beta1.DeleteGrafanaUserRequest{
+				err = cockpitAPI.DeleteGrafanaUser(&cockpitv1.GlobalAPIDeleteGrafanaUserRequest{
 					ProjectID:     project.ID,
 					GrafanaUserID: grafanaUser.ID,
 				})

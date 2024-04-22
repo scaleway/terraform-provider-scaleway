@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -58,7 +58,7 @@ func ResourceCockpitGrafanaUser() *schema.Resource {
 }
 
 func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewAPI(m)
+	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -67,14 +67,7 @@ func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceDat
 	login := d.Get("login").(string)
 	role := cockpit.GrafanaUserRole(d.Get("role").(string))
 
-	_, err = api.WaitForCockpit(&cockpit.WaitForCockpitRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	grafanaUser, err := api.CreateGrafanaUser(&cockpit.CreateGrafanaUserRequest{
+	grafanaUser, err := api.CreateGrafanaUser(&cockpit.GlobalAPICreateGrafanaUserRequest{
 		ProjectID: projectID,
 		Login:     login,
 		Role:      role,
@@ -94,18 +87,7 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForCockpit(&cockpit.WaitForCockpitRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	res, err := api.ListGrafanaUsers(&cockpit.ListGrafanaUsersRequest{
+	res, err := api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{
 		ProjectID: projectID,
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
@@ -142,17 +124,7 @@ func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForCockpit(&cockpit.WaitForCockpitRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	err = api.DeleteGrafanaUser(&cockpit.DeleteGrafanaUserRequest{
+	err = api.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{
 		ProjectID:     projectID,
 		GrafanaUserID: grafanaUserID,
 	}, scw.WithContext(ctx))
