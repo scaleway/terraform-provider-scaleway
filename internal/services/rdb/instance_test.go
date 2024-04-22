@@ -1031,6 +1031,64 @@ func TestAccInstance_ChangeVolumeType(t *testing.T) {
 	})
 }
 
+func TestAccInstance_ChangeNodeType(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() { acctest.PreCheck(t) },
+
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-play2-pico"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-play2-pico"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-play2-nano"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance"]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-play2-nano"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccInstance_Endpoints(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
