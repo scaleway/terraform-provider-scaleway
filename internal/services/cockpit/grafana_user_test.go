@@ -2,12 +2,11 @@ package cockpit_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -32,19 +31,15 @@ func TestAccGrafanaUser_Basic(t *testing.T) {
 						name = "%[1]s"
 					}
 
-					resource scaleway_cockpit main {
-						project_id = scaleway_account_project.project.id
-					}
-
 					resource scaleway_cockpit_grafana_user main {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 						login = "%[2]s"
 						role = "editor"
 					}
 				`, projectName, grafanaTestUsername),
 				Check: resource.ComposeTestCheckFunc(
 					isGrafanaUserPresent(tt, "scaleway_cockpit_grafana_user.main"),
-					resource.TestCheckResourceAttrPair("scaleway_cockpit_grafana_user.main", "project_id", "scaleway_cockpit.main", "project_id"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_grafana_user.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_grafana_user.main", "login", grafanaTestUsername),
 					resource.TestCheckResourceAttr("scaleway_cockpit_grafana_user.main", "role", "editor"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_grafana_user.main", "password"),
@@ -72,19 +67,15 @@ func TestAccGrafanaUser_Update(t *testing.T) {
 						name = "%[1]s"
 				  	}
 
-					resource scaleway_cockpit main {
-						project_id = scaleway_account_project.project.id
-					}
-
 					resource scaleway_cockpit_grafana_user main {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 						login = "%[2]s"
 						role = "editor"
 					}
 				`, projectName, grafanaTestUsername),
 				Check: resource.ComposeTestCheckFunc(
 					isGrafanaUserPresent(tt, "scaleway_cockpit_grafana_user.main"),
-					resource.TestCheckResourceAttrPair("scaleway_cockpit_grafana_user.main", "project_id", "scaleway_cockpit.main", "project_id"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_grafana_user.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_grafana_user.main", "login", grafanaTestUsername),
 					resource.TestCheckResourceAttr("scaleway_cockpit_grafana_user.main", "role", "editor"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_grafana_user.main", "password"),
@@ -96,53 +87,19 @@ func TestAccGrafanaUser_Update(t *testing.T) {
 						name = "%[1]s"
 					}
 
-					resource scaleway_cockpit main {
-						project_id = scaleway_account_project.project.id
-					}
-
 					resource scaleway_cockpit_grafana_user main {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 						login = "%[2]s"
 						role = "viewer"
 					}
 				`, projectName, grafanaTestUsername),
 				Check: resource.ComposeTestCheckFunc(
 					isGrafanaUserPresent(tt, "scaleway_cockpit_grafana_user.main"),
-					resource.TestCheckResourceAttrPair("scaleway_cockpit_grafana_user.main", "project_id", "scaleway_cockpit.main", "project_id"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_grafana_user.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_grafana_user.main", "login", grafanaTestUsername),
 					resource.TestCheckResourceAttr("scaleway_cockpit_grafana_user.main", "role", "viewer"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_grafana_user.main", "password"),
 				),
-			},
-		},
-	})
-}
-
-func TestAccGrafanaUser_NonExistentCockpit(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	projectName := "tf_tests_cockpit_grafana_user_non_existent_cockpit"
-	grafanaTestUsername := "testnonexistentuser"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isGrafanaUserDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "%[1]s"
-					}
-
-					resource scaleway_cockpit_grafana_user main {
-						project_id = scaleway_account_project.project.id
-						login = "%[2]s"
-						role = "editor"
-					}
-				`, projectName, grafanaTestUsername),
-				ExpectError: regexp.MustCompile("not found"),
 			},
 		},
 	})
@@ -160,7 +117,7 @@ func isGrafanaUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFun
 			return err
 		}
 
-		res, err := api.ListGrafanaUsers(&cockpitSDK.ListGrafanaUsersRequest{
+		res, err := api.ListGrafanaUsers(&cockpitSDK.GlobalAPIListGrafanaUsersRequest{
 			ProjectID: projectID,
 		}, scw.WithAllPages())
 		if err != nil {
@@ -195,7 +152,7 @@ func isGrafanaUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			err = api.DeleteGrafanaUser(&cockpitSDK.DeleteGrafanaUserRequest{
+			err = api.DeleteGrafanaUser(&cockpitSDK.GlobalAPIDeleteGrafanaUserRequest{
 				ProjectID:     projectID,
 				GrafanaUserID: grafanaUserID,
 			})

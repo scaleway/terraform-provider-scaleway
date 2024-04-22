@@ -12,13 +12,12 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 ## Example Usage
 
 ```terraform
-// Get the cockpit of the default project
-data "scaleway_cockpit" "main" {}
+resource "scaleway_account_project" "project" {
+  name = "test project grafana user"
+}
 
-// Create an editor grafana user for the cockpit
 resource "scaleway_cockpit_grafana_user" "main" {
-  project_id = data.scaleway_cockpit.main.project_id
-  
+  project_id = scaleway_account_project.project.id
   login = "my-awesome-user"
   role = "editor"
 }
