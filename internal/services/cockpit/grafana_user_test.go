@@ -45,6 +45,13 @@ func TestAccGrafanaUser_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_grafana_user.main", "password"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "%[1]s"
+					}
+				`, projectName),
+			},
 		},
 	})
 }
@@ -100,6 +107,13 @@ func TestAccGrafanaUser_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_cockpit_grafana_user.main", "role", "viewer"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_grafana_user.main", "password"),
 				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "%[1]s"
+					}
+				`, projectName),
 			},
 		},
 	})
