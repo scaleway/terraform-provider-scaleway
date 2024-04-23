@@ -18,7 +18,7 @@ func DataSourcePrivateNetwork() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivateNetwork().Schema)
 
 	// Set 'Optional' schema elements
-	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "project_id", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"private_network_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
