@@ -7,10 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	cockpitv1beta1 "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -102,4 +104,29 @@ func waitForCockpit(ctx context.Context, api *cockpitv1beta1.API, projectID stri
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+}
+
+func cockpitTokenUpgradeV1SchemaType() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id": cty.String,
+	})
+}
+
+func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
+	defaultRegion := scw.RegionFrPar
+
+	if _, ok := rawState["region"]; !ok {
+		rawState["region"] = defaultRegion.String()
+	}
+
+	if id, ok := rawState["id"].(string); ok && validation.IsUUID(id) {
+		locality, ID, _ := regional.ParseID(id)
+		if locality == "" {
+			rawState["id"] = regional.NewIDString(defaultRegion, ID)
+		}
+	} else {
+		return nil, fmt.Errorf("upgrade: expected 'id' to be a string, got %T", rawState["id"])
+	}
+
+	return rawState, nil
 }

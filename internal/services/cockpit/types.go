@@ -1,8 +1,23 @@
 package cockpit
 
-import cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+import (
+	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
+	cockpitv1beta1 "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+)
 
-func flattenCockpitEndpoints(endpoints *cockpit.CockpitEndpoints) []map[string]interface{} {
+var scopeMapping = map[string]cockpit.TokenScope{
+	"query_metrics":       cockpit.TokenScopeReadOnlyMetrics,
+	"write_metrics":       cockpit.TokenScopeWriteOnlyMetrics,
+	"setup_metrics_rules": cockpit.TokenScopeFullAccessMetricsRules,
+	"query_logs":          cockpit.TokenScopeReadOnlyLogs,
+	"write_logs":          cockpit.TokenScopeWriteOnlyLogs,
+	"setup_logs_rules":    cockpit.TokenScopeFullAccessLogsRules,
+	"setup_alerts":        cockpit.TokenScopeFullAccessAlertManager,
+	"query_traces":        cockpit.TokenScopeReadOnlyTraces,
+	"write_traces":        cockpit.TokenScopeWriteOnlyTraces,
+}
+
+func flattenCockpitEndpoints(endpoints *cockpitv1beta1.CockpitEndpoints) []map[string]interface{} {
 	return []map[string]interface{}{
 		{
 			"metrics_url":      endpoints.MetricsURL,
@@ -14,7 +29,7 @@ func flattenCockpitEndpoints(endpoints *cockpit.CockpitEndpoints) []map[string]i
 	}
 }
 
-func createCockpitPushURL(endpoints *cockpit.CockpitEndpoints) []map[string]interface{} {
+func createCockpitPushURL(endpoints *cockpitv1beta1.CockpitEndpoints) []map[string]interface{} {
 	return []map[string]interface{}{
 		{
 			"push_metrics_url": endpoints.MetricsURL + pathMetricsURL,
@@ -23,37 +38,42 @@ func createCockpitPushURL(endpoints *cockpit.CockpitEndpoints) []map[string]inte
 	}
 }
 
-func expandCockpitTokenScopes(raw interface{}) *cockpit.TokenScopes {
-	if raw == nil || len(raw.([]interface{})) != 1 {
-		return nil
+func expandCockpitTokenScopes(raw interface{}) []cockpit.TokenScope {
+	var expandedScopes []cockpit.TokenScope
+
+	scopesList, ok := raw.([]interface{})
+	if !ok || len(scopesList) == 0 {
+		return expandedScopes
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	return &cockpit.TokenScopes{
-		QueryMetrics:      rawMap["query_metrics"].(bool),
-		WriteMetrics:      rawMap["write_metrics"].(bool),
-		SetupMetricsRules: rawMap["setup_metrics_rules"].(bool),
-		QueryLogs:         rawMap["query_logs"].(bool),
-		WriteLogs:         rawMap["write_logs"].(bool),
-		SetupLogsRules:    rawMap["setup_logs_rules"].(bool),
-		SetupAlerts:       rawMap["setup_alerts"].(bool),
-		QueryTraces:       rawMap["query_traces"].(bool),
-		WriteTraces:       rawMap["write_traces"].(bool),
+	scopesMap, ok := scopesList[0].(map[string]interface{})
+	if !ok {
+		return expandedScopes
 	}
+
+	for key, tokenScope := range scopeMapping {
+		if value, ok := scopesMap[key].(bool); ok && value {
+			expandedScopes = append(expandedScopes, tokenScope)
+		}
+	}
+
+	return expandedScopes
 }
 
-func flattenCockpitTokenScopes(scopes *cockpit.TokenScopes) []map[string]interface{} {
-	return []map[string]interface{}{
-		{
-			"query_metrics":       scopes.QueryMetrics,
-			"write_metrics":       scopes.WriteMetrics,
-			"setup_metrics_rules": scopes.SetupMetricsRules,
-			"query_logs":          scopes.QueryLogs,
-			"write_logs":          scopes.WriteLogs,
-			"setup_logs_rules":    scopes.SetupLogsRules,
-			"setup_alerts":        scopes.SetupAlerts,
-			"query_traces":        scopes.QueryTraces,
-			"write_traces":        scopes.WriteTraces,
-		},
+func flattenCockpitTokenScopes(scopes []cockpit.TokenScope) []interface{} {
+	result := map[string]interface{}{}
+	for key := range scopeMapping {
+		result[key] = false
 	}
+
+	for _, scope := range scopes {
+		for key, mappedScope := range scopeMapping {
+			if scope == mappedScope {
+				result[key] = true
+				break
+			}
+		}
+	}
+
+	return []interface{}{result}
 }

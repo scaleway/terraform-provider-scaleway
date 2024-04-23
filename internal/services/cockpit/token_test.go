@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
@@ -30,12 +30,8 @@ func TestAccToken_Basic(t *testing.T) {
 						name = "%[1]s"
 				  	}
 
-					resource scaleway_cockpit main {
-						project_id = scaleway_account_project.project.id
-					}
-
 					resource scaleway_cockpit_token main {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 						name = "%[2]s"
 						scopes {
 							query_metrics = true
@@ -45,7 +41,7 @@ func TestAccToken_Basic(t *testing.T) {
 				`, projectName, tokenName),
 				Check: resource.ComposeTestCheckFunc(
 					isTokenPresent(tt, "scaleway_cockpit_token.main"),
-					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_cockpit.main", "project_id"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_token.main", "secret_key"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "name", tokenName),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_metrics", "true"),
@@ -80,18 +76,14 @@ func TestAccToken_NoScopes(t *testing.T) {
 						name = "%[1]s"
 				  	}
 
-					resource scaleway_cockpit main {
-						project_id = scaleway_account_project.project.id
-					}
-
 					resource scaleway_cockpit_token main {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 						name = "%[2]s"
 					}
 				`, projectName, tokenName),
 				Check: resource.ComposeTestCheckFunc(
 					isTokenPresent(tt, "scaleway_cockpit_token.main"),
-					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_cockpit.main", "project_id"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_token.main", "secret_key"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "name", tokenName),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_metrics", "false"),
@@ -126,12 +118,8 @@ func TestAccToken_Update(t *testing.T) {
 						name = "%[1]s"
 				  	}
 
-					resource scaleway_cockpit main {
-						project_id = scaleway_account_project.project.id
-					}
-
 					resource scaleway_cockpit_token main {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 						name = "%[2]s"
 						scopes {
 							query_metrics = true
@@ -141,7 +129,7 @@ func TestAccToken_Update(t *testing.T) {
 				`, projectName, tokenName),
 				Check: resource.ComposeTestCheckFunc(
 					isTokenPresent(tt, "scaleway_cockpit_token.main"),
-					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_cockpit.main", "project_id"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_token.main", "secret_key"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "name", tokenName),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_metrics", "true"),
@@ -160,12 +148,8 @@ func TestAccToken_Update(t *testing.T) {
 						name = "%[1]s"
 					}
 
-					resource scaleway_cockpit main {
-						project_id = scaleway_account_project.project.id
-					}
-
 					resource scaleway_cockpit_token main {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 						name = "%[2]s"
 						scopes {
 							query_metrics = true
@@ -175,7 +159,7 @@ func TestAccToken_Update(t *testing.T) {
 				`, projectName, tokenName),
 				Check: resource.ComposeTestCheckFunc(
 					isTokenPresent(tt, "scaleway_cockpit_token.main"),
-					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_cockpit.main", "project_id"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_token.main", "secret_key"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "name", tokenName),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_metrics", "true"),
@@ -199,13 +183,14 @@ func isTokenPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return fmt.Errorf("resource cockpit token not found: %s", n)
 		}
 
-		api, err := cockpit.NewAPI(tt.Meta)
+		api, region, ID, err := cockpit.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = api.GetToken(&cockpitSDK.GetTokenRequest{
-			TokenID: rs.Primary.ID,
+		_, err = api.GetToken(&cockpitSDK.RegionalAPIGetTokenRequest{
+			TokenID: ID,
+			Region:  region,
 		})
 		if err != nil {
 			return err
@@ -222,13 +207,14 @@ func isTokenDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			api, err := cockpit.NewAPI(tt.Meta)
+			api, region, ID, err := cockpit.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			err = api.DeleteToken(&cockpitSDK.DeleteTokenRequest{
-				TokenID: rs.Primary.ID,
+			err = api.DeleteToken(&cockpitSDK.RegionalAPIDeleteTokenRequest{
+				TokenID: ID,
+				Region:  region,
 			})
 			if err == nil {
 				return fmt.Errorf("cockpit token (%s) still exists", rs.Primary.ID)
