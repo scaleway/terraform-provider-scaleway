@@ -24,7 +24,7 @@ resource "scaleway_cockpit_token" "main" {
 
 ```terraform
 resource "scaleway_account_project" "project" {
-  name = "test project token"
+  name = "my-project"
 }
 
 // Create a token that can read metrics and logs but not write
