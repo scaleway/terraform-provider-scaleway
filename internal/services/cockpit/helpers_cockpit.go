@@ -113,7 +113,7 @@ func cockpitTokenUpgradeV1SchemaType() cty.Type {
 }
 
 func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
-	defaultRegion := scw.RegionFrPar
+	defaultRegion := scw.RegionFrPar // Default to the 'fr-par' region as all tokens created with the v1beta1 API were implicitly set to this region
 
 	if _, ok := rawState["region"]; !ok {
 		rawState["region"] = defaultRegion.String()
