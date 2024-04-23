@@ -13,7 +13,7 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 
 ```terraform
 resource "scaleway_account_project" "project" {
-  name = "test project token"
+  name = "my-project"
 }
 
 resource "scaleway_cockpit_token" "main" {
