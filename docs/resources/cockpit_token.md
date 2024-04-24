@@ -12,24 +12,24 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 ## Example Usage
 
 ```terraform
-// Get the cockpit of the default project
-data "scaleway_cockpit" "main" {}
+resource "scaleway_account_project" "project" {
+  name = "my-project"
+}
 
-// Create a token for the cockpit that can write metrics and logs
 resource "scaleway_cockpit_token" "main" {
-  project_id = data.scaleway_cockpit.main.project_id
-  
-  name = "my-awesome-token"
+  project_id = scaleway_account_project.project.id
+  name       = "my-awesome-token"
 }
 ```
 
 ```terraform
-// Get the cockpit of the default project
-data "scaleway_cockpit" "main" {}
+resource "scaleway_account_project" "project" {
+  name = "my-project"
+}
 
-// Create a token for the cockpit that can read metrics and logs but not write
+// Create a token that can read metrics and logs but not write
 resource "scaleway_cockpit_token" "main" {
-  project_id = data.scaleway_cockpit.main.project_id
+  project_id = scaleway_account_project.project.id
   
   name = "my-awesome-token"
   scopes {
@@ -55,18 +55,23 @@ resource "scaleway_cockpit_token" "main" {
     - `setup_alerts` - (Defaults to `false`) Setup alerts.
     - `query_traces` - (Defaults to `false`) Query traces.
     - `write_traces` - (Defaults to `false`) Write traces.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the cockpit token.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
+- `id` - The ID of the cockpit token.
+
+~> **Important:** cockpit tokens' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
+
 - `secret_key` - The secret key of the token.
 
 ## Import
 
-Cockpits can be imported using the token ID, e.g.
+Cockpits tokens can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_cockpit_token.main 11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_cockpit_token.main fr-par/11111111-1111-1111-1111-111111111111
 ```
