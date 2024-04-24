@@ -448,6 +448,7 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 		"mac_address": pn.MacAddress,
 		"status":      pn.State.String(),
 		"zone":        loc,
+		"pnic_id":     pn.ID,
 	}, nil
 }
 

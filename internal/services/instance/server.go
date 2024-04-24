@@ -302,6 +302,11 @@ func ResourceServer() *schema.Resource {
 							Computed:    true,
 							Description: "The private NIC state",
 						},
+						"pnic_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the NIC",
+						},
 						"zone": zonal.Schema(),
 					},
 				},
