@@ -2080,7 +2080,32 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 							pn_id = scaleway_vpc_private_network.pn.id
 						}
 					}
-`,
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
+						"scaleway_vpc_private_network.pn", "id"),
+				),
+				ExpectNonEmptyPlan: true, // pnic get deleted and the plan is not empty after the apply as private_network is now missing
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn {}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn.id
+						}
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),

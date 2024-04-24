@@ -427,7 +427,7 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 		keyValue := d.Get(pnKey)
 		keyRaw, err := ph.get(keyValue.(string))
 		if err != nil {
-			return err
+			continue
 		}
 		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
 	}
