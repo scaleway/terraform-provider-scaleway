@@ -427,7 +427,7 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 		keyValue := d.Get(pnKey)
 		keyRaw, err := ph.get(keyValue.(string))
 		if err != nil {
-			return err
+			continue
 		}
 		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
 	}
@@ -448,6 +448,7 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 		"mac_address": pn.MacAddress,
 		"status":      pn.State.String(),
 		"zone":        loc,
+		"pnic_id":     pn.ID,
 	}, nil
 }
 

@@ -14,6 +14,7 @@ import (
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
@@ -1952,6 +1953,169 @@ func TestAccServer_BlockExternal(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn {}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn.id
+						}
+					}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
+						"scaleway_vpc_private_network.pn", "id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn {}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn.id
+						}
+					}
+
+					resource scaleway_instance_private_nic pnic {
+						private_network_id = scaleway_vpc_private_network.pn.id
+						server_id = scaleway_instance_server.main.id
+					}
+`,
+				ResourceName: "scaleway_instance_private_nic.pnic",
+				ImportState:  true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					serverID := state.RootModule().Resources["scaleway_instance_server.main"].Primary.ID
+					pnicID, exists := state.RootModule().Resources["scaleway_instance_server.main"].Primary.Attributes["private_network.0.pnic_id"]
+					if !exists {
+						return "", errors.New("private_network.0.pnic_id not found")
+					}
+
+					id := serverID + "/" + pnicID
+
+					return id, nil
+				},
+				ImportStatePersist: true,
+			},
+			{ // We import private nic as a separate resource to trigger its deletion.
+				Config: `
+					resource scaleway_vpc_private_network pn {}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn.id
+						}
+					}
+
+					resource scaleway_instance_private_nic pnic {
+						private_network_id = scaleway_vpc_private_network.pn.id
+						server_id = scaleway_instance_server.main.id
+					}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
+						"scaleway_vpc_private_network.pn", "id"),
+					func(state *terraform.State) error {
+						serverPNICID, exists := state.RootModule().Resources["scaleway_instance_server.main"].Primary.Attributes["private_network.0.pnic_id"]
+						if !exists {
+							return errors.New("private_network.0.pnic_id not found")
+						}
+						localizedPNICID := state.RootModule().Resources["scaleway_instance_private_nic.pnic"].Primary.ID
+						_, pnicID, _, err := zonal.ParseNestedID(localizedPNICID)
+						if err != nil {
+							return err
+						}
+
+						if serverPNICID != pnicID {
+							return fmt.Errorf("expected server pnic (%s) to equal standalone pnic id (%s)", serverPNICID, pnicID)
+						}
+
+						return nil
+					},
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn {}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn.id
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
+						"scaleway_vpc_private_network.pn", "id"),
+				),
+				ExpectNonEmptyPlan: true, // pnic get deleted and the plan is not empty after the apply as private_network is now missing
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn {}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn.id
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
+						"scaleway_vpc_private_network.pn", "id"),
 				),
 			},
 		},
