@@ -5,6 +5,10 @@ page_title: "Scaleway: scaleway_cockpit"
 
 # Resource: scaleway_cockpit
 
+-> **Note:**
+As of April 2024, Cockpit has introduced regionalization to offer more flexibility and resilience.
+If you have customized dashboards in Grafana for monitoring Scaleway resources, please update your queries to accommodate the new regionalized [data sources](./cockpit_source.md).
+
 Creates and manages Scaleway Cockpit.
 
 For more information consult the [documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/).
