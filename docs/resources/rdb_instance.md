@@ -127,7 +127,7 @@ and if you are using `bssd` storage, you should increase the volume size before 
 
 ~> **Important:** Updates to `engine` will recreate the Database Instance.
 
-- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd`, `lssd` or `sbs_5k`).
+- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd`, `lssd`, `sbs_5k` or `sbs_15k`).
 
 - `volume_size_in_gb` - (Optional) Volume size (in GB). Cannot be used when `volume_type` is set to `lssd`.
 
