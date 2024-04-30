@@ -126,6 +126,8 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_cockpit_source":                      cockpit.ResourceCockpitSource(),
 				"scaleway_cockpit_grafana_user":                cockpit.ResourceCockpitGrafanaUser(),
 				"scaleway_cockpit_token":                       cockpit.ResourceToken(),
+				"scaleway_cockpit_alert_manager":               cockpit.ResourceCockpitAlertManager(),
+				"scaleway_cockpit_contact_point":               cockpit.ResourceCockpitContactPoint(),
 				"scaleway_container":                           container.ResourceContainer(),
 				"scaleway_container_cron":                      container.ResourceCron(),
 				"scaleway_container_domain":                    container.ResourceDomain(),

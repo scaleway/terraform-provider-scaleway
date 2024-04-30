@@ -5,9 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -33,26 +32,24 @@ func ResourceCockpitAlertManager() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
-			"region": regional.Schema(),
 		},
 	}
 }
 
-func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewRegionalAPI(m)
+func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, _, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	projectID := d.Get("project_id").(string)
 	enable := d.Get("enable").(bool)
-	region := d.Get("region").(string)
 
 	if enable {
-		_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableAlertManagerRequest{
+		_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
 			ProjectID: projectID,
-			Region:    region,
-		}, scw.WithContext(ctx))
+		})
+
 	} else {
 		_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
 			ProjectID: projectID,
@@ -63,7 +60,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	return ResourceCockpitAlertManagerRead(ctx, d, m)
+	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
 func ResourceCockpitAlertManagerRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
@@ -71,8 +68,8 @@ func ResourceCockpitAlertManagerRead(_ context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewAPI(m)
+func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, _, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -81,11 +78,12 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("enable") {
 		enable := d.Get("enable").(bool)
 		if enable {
-			err = api.EnableManagedAlerts(&cockpit.EnableManagedAlertsRequest{
+			_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
 				ProjectID: projectID,
-			}, scw.WithContext(ctx))
+			})
+
 		} else {
-			err = api.DisableManagedAlerts(&cockpit.DisableManagedAlertsRequest{
+			_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
 				ProjectID: projectID,
 			}, scw.WithContext(ctx))
 		}
@@ -95,17 +93,17 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return ResourceCockpitAlertManagerRead(ctx, d, m)
+	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
-func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewAPI(m)
+func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, _, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	projectID := d.Get("project_id").(string)
-	err = api.DisableManagedAlerts(&cockpit.DisableManagedAlertsRequest{
+	_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 
