@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	"net"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -138,6 +139,15 @@ func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	_ = d.Set("ip_address", ip.IPAddress)
 	_ = d.Set("reverse", ip.Reverse)
 	_ = d.Set("lb_id", types.FlattenStringPtr(ip.LBID))
+
+	isIPv6 := false
+	if ip.IPAddress != "" {
+		parsedIP := net.ParseIP(ip.IPAddress)
+		if parsedIP != nil && parsedIP.To4() == nil {
+			isIPv6 = true
+		}
+	}
+	_ = d.Set("is_ipv6", isIPv6)
 
 	return nil
 }
