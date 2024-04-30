@@ -135,6 +135,7 @@ func ResourceInstance() *schema.Resource {
 					rdb.VolumeTypeLssd.String(),
 					rdb.VolumeTypeBssd.String(),
 					rdb.VolumeTypeSbs5k.String(),
+					rdb.VolumeTypeSbs15k.String(),
 				}, false),
 				Description: "Type of volume where data are stored",
 			},
