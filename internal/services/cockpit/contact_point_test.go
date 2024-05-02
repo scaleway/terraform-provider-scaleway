@@ -52,7 +52,6 @@ func testAccCheckCockpitContactPointExists(resourceName string) resource.TestChe
 
 func isContactPointDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_cockpit_contact_point" {
 				continue
@@ -70,7 +69,6 @@ func isContactPointDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				Region:    region,
 				ProjectID: projectID,
 			})
-
 			if err != nil {
 				if !httperrors.Is404(err) {
 					return fmt.Errorf("error retrieving contact points for project %s: %s", projectID, err)

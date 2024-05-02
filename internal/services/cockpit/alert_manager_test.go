@@ -82,5 +82,4 @@ func isAlertManagerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		}
 		return nil
 	}
-
 }

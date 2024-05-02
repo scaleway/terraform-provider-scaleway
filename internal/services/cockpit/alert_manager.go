@@ -50,7 +50,6 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
 			ProjectID: projectID,
 		})
-
 	} else {
 		_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
 			ProjectID: projectID,
@@ -64,7 +63,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
-func ResourceCockpitAlertManagerRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerRead(_ context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	return nil
 }
 
@@ -81,7 +80,6 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 			_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
 				ProjectID: projectID,
 			})
-
 		} else {
 			_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
 				ProjectID: projectID,
@@ -106,7 +104,6 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,6 +113,6 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func ResourceCockpitAlertManagerID(region scw.Region, projectId string) (resourceID string) {
-	return fmt.Sprintf("%s/%s/1", region, projectId)
+func ResourceCockpitAlertManagerID(region scw.Region, projectID string) (resourceID string) {
+	return fmt.Sprintf("%s/%s/1", region, projectID)
 }

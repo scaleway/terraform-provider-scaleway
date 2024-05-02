@@ -54,18 +54,14 @@ func ResourceCockpitContactPointCreate(ctx context.Context, d *schema.ResourceDa
 		ProjectID: projectID,
 		Email:     email,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	d.SetId(ResourceCockpitContactPointID(contactPoint.Region, contactPoint.Email.To))
-
 	return ResourceCockpitContactPointRead(ctx, d, meta)
 }
 
 func ResourceCockpitContactPointRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	api, _, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
