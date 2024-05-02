@@ -57,7 +57,8 @@ func isContactPointDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 			if rs.Type != "scaleway_cockpit_contact_point" {
 				continue
 			}
-			api, _, _, err := cockpit.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+
+			api, region, _, err := cockpit.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -66,6 +67,7 @@ func isContactPointDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 			email := rs.Primary.Attributes["email"]
 
 			contactPoints, err := api.ListContactPoints(&cockpitSDK.RegionalAPIListContactPointsRequest{
+				Region:    region,
 				ProjectID: projectID,
 			})
 

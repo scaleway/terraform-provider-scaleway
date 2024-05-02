@@ -2,7 +2,7 @@ package cockpit
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,16 +50,16 @@ func ResourceCockpitContactPointCreate(ctx context.Context, d *schema.ResourceDa
 		To: d.Get("email").(string),
 	}
 
-	_, err = api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
+	contactPoint, err := api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
 		ProjectID: projectID,
-		Email	 n :     email,
+		Email:     email,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(cockpitIDWithProjectID(projectID, strconv.FormatUint(uint64(0), 10)))
+	d.SetId(ResourceCockpitContactPointID(contactPoint.Region, contactPoint.Email.To))
 
 	return ResourceCockpitContactPointRead(ctx, d, meta)
 }
@@ -93,7 +93,6 @@ func ResourceCockpitContactPointRead(ctx context.Context, d *schema.ResourceData
 		d.SetId("")
 		return nil
 	}
-	d.SetId(projectID)
 	_ = d.Set("email", found.Email.To)
 	return nil
 }
@@ -148,4 +147,8 @@ func ResourceCockpitContactPointDelete(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId("")
 	return nil
+}
+
+func ResourceCockpitContactPointID(region scw.Region, email string) (resourceID string) {
+	return fmt.Sprintf("%s/%s", region, email)
 }

@@ -64,9 +64,10 @@ func isAlertManagerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}
 
 			api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
+			projectID := rs.Primary.Attributes["project_id"]
 
 			alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-				ProjectID: rs.Primary.ID,
+				ProjectID: projectID,
 			})
 
 			if !httperrors.Is404(err) && !httperrors.Is403(err) {

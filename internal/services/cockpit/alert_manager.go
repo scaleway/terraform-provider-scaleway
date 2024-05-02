@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -37,7 +38,7 @@ func ResourceCockpitAlertManager() *schema.Resource {
 }
 
 func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := cockpitAPIWithRegion(d, meta)
+	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -59,12 +60,11 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	d.SetId(ResourceCockpitAlertManagerID(region, projectID))
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
 func ResourceCockpitAlertManagerRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
-	d.SetId(d.Get("project_id").(string))
 	return nil
 }
 
@@ -114,4 +114,8 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	d.SetId("")
 
 	return nil
+}
+
+func ResourceCockpitAlertManagerID(region scw.Region, projectId string) (resourceID string) {
+	return fmt.Sprintf("%s/%s/1", region, projectId)
 }
