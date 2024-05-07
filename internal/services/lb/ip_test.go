@@ -101,6 +101,46 @@ func TestAccIP_IPv6(t *testing.T) {
 	})
 }
 
+func TestAccIP_WithTags(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      lbchecks.IsIPDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip tags {
+					  tags = [ "terraform-test", "lb", "ip" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isIPPresent(tt, "scaleway_lb_ip.tags"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.1", "lb"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.2", "ip")),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip tags {
+					  tags = [ "terraform-test", "lb", "ip", "updated" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isIPPresent(tt, "scaleway_lb_ip.tags"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.#", "4"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.1", "lb"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.2", "ip"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.tags", "tags.3", "updated"),
+				),
+			},
+		},
+	})
+}
+
 func isIPPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
