@@ -36,6 +36,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scw_config"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/sdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
@@ -238,6 +239,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_block_volume":                        block.DataSourceVolume(),
 				"scaleway_cockpit":                             cockpit.DataSourceCockpit(),
 				"scaleway_cockpit_plan":                        cockpit.DataSourcePlan(),
+				"scaleway_config":                              scw_config.DataSourceConfig(),
 				"scaleway_container":                           container.DataSourceContainer(),
 				"scaleway_container_namespace":                 container.DataSourceNamespace(),
 				"scaleway_documentdb_database":                 documentdb.DataSourceDatabase(),
