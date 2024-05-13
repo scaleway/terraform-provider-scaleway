@@ -10,11 +10,26 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ## Example Usage
 
+### Basic
+
 ```terraform
 resource "scaleway_vpc_public_gateway" "main" {
     name = "public_gateway_demo"
     type = "VPC-GW-S"
     tags = ["demo", "terraform"]
+}
+```
+
+### With bastion
+
+```terraform
+resource "scaleway_vpc_public_gateway" "main" {
+    name             = "public_gateway_demo"
+    type             = "VPC-GW-S"
+    tags             = ["demo", "terraform"]
+    bastion_enabled  = true
+    bastion_port     = 61000
+    refresh_ssh_keys = timestamp()
 }
 ```
 
@@ -28,10 +43,11 @@ The following arguments are supported:
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the public gateway should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the public gateway is associated with.
 - `upstream_dns_servers` - (Optional) override the gateway's default recursive DNS servers, if DNS features are enabled.
-- `ip_id` - (Optional) attach an existing flexible IP to the gateway
-- `bastion_enabled` - (Optional) Enable SSH bastion on the gateway
+- `ip_id` - (Optional) attach an existing flexible IP to the gateway.
+- `bastion_enabled` - (Optional) Enable SSH bastion on the gateway.
 - `bastion_port` - (Optional) The port on which the SSH bastion will listen.
-- `enable_smtp` - (Optional) Enable SMTP on the gateway
+- `enable_smtp` - (Optional) Enable SMTP on the gateway.
+- `refresh_ssh_keys` - (Optional) Trigger a refresh of the SSH keys on the public gateway by changing this field's value.
 
 ## Attributes Reference
 
