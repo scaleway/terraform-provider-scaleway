@@ -30,7 +30,7 @@ resource "scaleway_iam_ssh_key" "key1" {
 
 resource "scaleway_iam_ssh_key" "key2" {
   name       = "key2"
-  public_key = file("~/.ssh/id_rsa.pub")}
+  public_key = file("~/.ssh/another_key.pub")}
 
 # Use a local variable to compute a hash of the SSH keys
 locals {
