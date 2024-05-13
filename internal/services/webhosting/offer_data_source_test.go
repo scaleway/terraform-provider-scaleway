@@ -17,7 +17,7 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_webhosting_offer" "by_name" {
-						name = "performance"
+						name = "professional"
 					}
 
 					data "scaleway_webhosting_offer" "by_id" {
@@ -26,10 +26,10 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_webhosting_offer.by_id", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_id", "name", "performance"),
+					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_id", "name", "professional"),
 
 					resource.TestCheckResourceAttrSet("data.scaleway_webhosting_offer.by_name", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "name", "performance"),
+					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "name", "professional"),
 					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "product.0.option", "false"),
 					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "product.0.email_accounts_quota", "10"),
 					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "product.0.email_storage_quota", "5"),
