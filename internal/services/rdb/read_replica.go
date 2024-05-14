@@ -167,7 +167,7 @@ func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	ipamConfig, staticConfig := getIPConfigCreate(d, "service_ip")
-	if pn, diags := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"), ipamConfig, staticConfig); err != nil || pn != nil {
+	if pn, diags := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"), ipamConfig, staticConfig); len(diags) > 0 || pn != nil {
 		if diags.HasError() {
 			return diags
 		}
@@ -212,11 +212,7 @@ func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
-	enableIpam, err := getIPAMConfigRead(rr, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	directAccess, privateNetwork := flattenReadReplicaEndpoints(rr.Endpoints, enableIpam)
+	directAccess, privateNetwork := flattenReadReplicaEndpoints(rr.Endpoints)
 	_ = d.Set("direct_access", directAccess)
 	_ = d.Set("private_network", privateNetwork)
 
