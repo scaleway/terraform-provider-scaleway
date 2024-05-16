@@ -87,6 +87,11 @@ func ResourcePublicGateway() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"refresh_ssh_keys": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Trigger a refresh of the SSH keys for a given Public Gateway by changing this field's value",
+			},
 			"project_id": account.ProjectIDSchema(),
 			"zone":       zonal.Schema(),
 			// Computed elements
@@ -222,6 +227,21 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("upstream_dns_servers") {
 		updateRequest.UpstreamDNSServers = types.ExpandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
+	}
+
+	if d.HasChange("refresh_ssh_keys") {
+		_, err := api.RefreshSSHKeys(&vpcgw.RefreshSSHKeysRequest{
+			Zone:      gateway.Zone,
+			GatewayID: gateway.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	_, err = waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	_, err = api.UpdateGateway(updateRequest, scw.WithContext(ctx))
