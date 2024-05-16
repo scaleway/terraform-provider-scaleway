@@ -77,7 +77,7 @@ func expandLoadBalancer() *rdb.EndpointSpec {
 	}
 }
 
-func flattenPrivateNetwork(endpoints []*rdb.Endpoint, enableIpam bool) (interface{}, bool) {
+func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	pnI := []map[string]interface{}(nil)
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork != nil {
@@ -90,6 +90,10 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint, enableIpam bool) (interfac
 			serviceIP, err := types.FlattenIPNet(pn.ServiceIP)
 			if err != nil {
 				return pnI, false
+			}
+			enableIpam := false
+			if endpoint.PrivateNetwork.ProvisioningMode == rdb.EndpointPrivateNetworkDetailsProvisioningModeIpam {
+				enableIpam = true
 			}
 			pnI = append(pnI, map[string]interface{}{
 				"endpoint_id": endpoint.ID,
@@ -175,7 +179,7 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *
 }
 
 // flattenReadReplicaEndpoints flatten read-replica endpoints to directAccess and privateNetwork
-func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (directAccess, privateNetwork interface{}) {
+func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, privateNetwork interface{}) {
 	for _, endpoint := range endpoints {
 		rawEndpoint := map[string]interface{}{
 			"endpoint_id": endpoint.ID,
@@ -193,6 +197,10 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint, enableIpam bool) (di
 				return diag.FromErr(err), false
 			}
 			pnRegionalID := regional.NewIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
+			enableIpam := false
+			if endpoint.PrivateNetwork.ProvisioningMode == rdb.EndpointPrivateNetworkDetailsProvisioningModeIpam {
+				enableIpam = true
+			}
 			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
