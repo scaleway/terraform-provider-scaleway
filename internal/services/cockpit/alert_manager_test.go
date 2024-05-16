@@ -26,16 +26,20 @@ func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"initial@example.com"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "initial@example.com"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
 			{
 				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"updated@example.com"}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "updated@example.com"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
@@ -56,19 +60,22 @@ func TestAccCockpitAlertManager_CreateWithMultipleContacts(t *testing.T) {
 				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"initial1@example.com", "initial2@example.com"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "initial1@example.com"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.1", "initial2@example.com"),
-
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
 			{
 				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"updated1@example.com", "updated2@example.com"}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "updated1@example.com"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.1", "updated2@example.com"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
@@ -89,18 +96,22 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"notupdated@example.com", "initial1@example.com"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "notupdated@example.com"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.1", "initial1@example.com"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
 			{
 				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"notupdated@example.com", "updated1@example.com"}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "notupdated@example.com"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.1", "updated1@example.com"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
@@ -120,14 +131,16 @@ func TestAccCockpitAlertManager_EnableDisable(t *testing.T) {
 			{
 				Config: testAccCockpitAlertManagerEnableConfig(true),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckAlertManagerEnabled(tt, "scaleway_cockpit_alert_manager.alert_manager", true),
 				),
 			},
 			{
 				Config: testAccCockpitAlertManagerEnableConfig(false),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable", "false"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "false"),
 					testAccCheckAlertManagerEnabled(tt, "scaleway_cockpit_alert_manager.alert_manager", false),
 				),
 			},
@@ -152,7 +165,7 @@ func testAccCockpitAlertManagerConfigWithContacts(emails []string) string {
 
 		resource "scaleway_cockpit_alert_manager" "alert_manager" {
 			project_id = scaleway_account_project.project.id
-			enable     = true
+			enable_managed_alerts     = true
 			emails     = %s
 		}
 	`, emailsConfig)
@@ -166,7 +179,7 @@ func testAccCockpitAlertManagerEnableConfig(enable bool) string {
 
         resource "scaleway_cockpit_alert_manager" "alert_manager" {
             project_id = scaleway_account_project.project.id
-            enable     = %t
+            enable_managed_alerts     = %t
         }
     `, enable)
 }

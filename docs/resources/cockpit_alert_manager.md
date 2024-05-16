@@ -19,7 +19,7 @@ resource "scaleway_account_project" "project" {
 
 resource "scaleway_cockpit_alert_manager" "alert_manager" {
   project_id = scaleway_account_project.project.id
-  enable     = true
+  enable_managed_alerts     = true
   emails     = ["alert1@example.com", "alert2@example.com"]
 }
 ```
@@ -27,17 +27,16 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 
 ## Argument Reference
 
-- `enable` - (Optional, Boolean) Indicates whether the alert manager should be enabled. Defaults to true.
+- `enable_managed_alerts` - (Optional, Boolean) Indicates whether the alert manager should be enabled. Defaults to true.
 - `emails` - (Optional, List of String) A list of email addresses for the alert receivers.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which alert_manager should be created.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `project_id` - The ID of the associated project.
-- `enable` - Indicates whether the alert manager is enabled.
-- `project_id` - A list of email addresses for the alert receivers.
+- `alert_manager_url` - Alert manager URL.
 
 
 ## Import
