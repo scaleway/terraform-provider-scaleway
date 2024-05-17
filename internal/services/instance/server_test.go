@@ -1955,6 +1955,24 @@ func TestAccServer_BlockExternal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
 				),
 			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "volume" {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						additional_volume_ids = [scaleway_block_volume.volume.id]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
+				),
+			},
 		},
 	})
 }

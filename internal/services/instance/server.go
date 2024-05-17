@@ -830,27 +830,19 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 		for i, volumeID := range raw.([]interface{}) {
 			volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
-			// local volumes can only be added when the instanceSDK is stopped
-			if volumeHasChange && !isStopped {
-				volumeResp, err := api.API.GetVolume(&instanceSDK.GetVolumeRequest{
-					Zone:     zone,
-					VolumeID: zonal.ExpandID(volumeID).ID,
-				})
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("failed to get updated volume: %w", err))
-				}
+			volume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+				VolumeID: zonal.ExpandID(volumeID).ID,
+				Zone:     zone,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to get updated volume: %w", err))
+			}
 
-				// We must be able to tell whether a volume is already present in the server or not
-				if volumeResp.Volume.Server != nil {
-					if volumeResp.Volume.VolumeType == instanceSDK.VolumeVolumeTypeLSSD && volumeResp.Volume.Server.ID != "" {
-						return diag.FromErr(errors.New("instanceSDK must be stopped to change local volumes"))
-					}
-				}
+			// local volumes can only be added when the server is stopped
+			if volumeHasChange && !isStopped && volume.IsLocal() && volume.IsAttached() {
+				return diag.FromErr(errors.New("instanceSDK must be stopped to change local volumes"))
 			}
-			volumes[strconv.Itoa(i+1)] = &instanceSDK.VolumeServerTemplate{
-				ID:   scw.StringPtr(zonal.ExpandID(volumeID).ID),
-				Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
-			}
+			volumes[strconv.Itoa(i+1)] = volume.VolumeTemplateUpdate()
 		}
 
 		serverShouldUpdate = true
