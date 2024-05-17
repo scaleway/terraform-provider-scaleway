@@ -566,29 +566,3 @@ func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Z
 
 	return nil, err
 }
-
-func instanceServerAdditionalVolumeIsLocalAndAttached(api *BlockAndInstanceAPI, zone scw.Zone, volumeID string) (bool, error) {
-	instanceVol, instanceErr := api.API.GetVolume(&instance.GetVolumeRequest{
-		Zone:     zone,
-		VolumeID: volumeID,
-	})
-	if instanceErr == nil {
-		return instanceVol.Volume.VolumeType == instance.VolumeVolumeTypeLSSD && instanceVol.Volume.Server != nil && instanceVol.Volume.Server.ID != "", nil
-	}
-	if !httperrors.Is404(instanceErr) {
-		return false, instanceErr
-	}
-
-	_, blockErr := api.blockAPI.GetVolume(&blockSDK.GetVolumeRequest{
-		Zone:     zone,
-		VolumeID: volumeID,
-	})
-	if blockErr == nil {
-		return false, nil
-	}
-	if !httperrors.Is404(blockErr) {
-		return false, fmt.Errorf("block volume %s not found: %w", volumeID, blockErr)
-	}
-
-	return false, instanceErr
-}
