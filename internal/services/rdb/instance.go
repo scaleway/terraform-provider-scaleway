@@ -511,11 +511,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("logs_policy", flattenInstanceLogsPolicy(res.LogsPolicy))
 
 	// set endpoints
-	enableIpam, err := getIPAMConfigRead(res, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints, enableIpam); pnExist {
+	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
 		_ = d.Set("private_network", pnI)
 	}
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
