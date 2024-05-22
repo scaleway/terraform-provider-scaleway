@@ -30,6 +30,7 @@ func TestAccIP_Basic(t *testing.T) {
 					isIPPresent(tt, "scaleway_lb_ip.ipZone"),
 					acctest.CheckResourceAttrIPv4("scaleway_lb_ip.ipZone", "ip_address"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_ip.ipZone", "reverse"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.ipZone", "is_ipv6", "false"),
 					resource.TestCheckResourceAttr("scaleway_lb_ip.ipZone", "zone", "nl-ams-1"),
 				),
 			},
@@ -95,6 +96,7 @@ func TestAccIP_IPv6(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isIPPresent(tt, "scaleway_lb_ip.ipv6"),
 					acctest.CheckResourceAttrIPv6("scaleway_lb_ip.ipv6", "ip_address"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.ipv6", "is_ipv6", "true"),
 				),
 			},
 		},
