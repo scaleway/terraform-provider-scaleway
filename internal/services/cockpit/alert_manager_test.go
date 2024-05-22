@@ -23,21 +23,25 @@ func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"initial@example.com"}),
+				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
+					{"email": "initial@example.com"},
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "initial@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "initial@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"updated@example.com"}),
+				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
+					{"email": "updated@example.com"},
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "updated@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "updated@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
@@ -57,23 +61,29 @@ func TestAccCockpitAlertManager_CreateWithMultipleContacts(t *testing.T) {
 		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"initial1@example.com", "initial2@example.com"}),
+				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
+					{"email": "initial1@example.com"},
+					{"email": "initial2@example.com"},
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "initial1@example.com"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.1", "initial2@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "initial1@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "initial2@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"updated1@example.com", "updated2@example.com"}),
+				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
+					{"email": "updated1@example.com"},
+					{"email": "updated2@example.com"},
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "updated1@example.com"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.1", "updated2@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "updated1@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "updated2@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
@@ -93,23 +103,29 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"notupdated@example.com", "initial1@example.com"}),
+				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
+					{"email": "notupdated@example.com"},
+					{"email": "initial1@example.com"},
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "notupdated@example.com"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.1", "initial1@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "notupdated@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "initial1@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]string{"notupdated@example.com", "updated1@example.com"}),
+				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
+					{"email": "notupdated@example.com"},
+					{"email": "updated1@example.com"},
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "enable_managed_alerts", "true"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.0", "notupdated@example.com"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "emails.1", "updated1@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "notupdated@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "updated1@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
@@ -148,15 +164,14 @@ func TestAccCockpitAlertManager_EnableDisable(t *testing.T) {
 	})
 }
 
-func testAccCockpitAlertManagerConfigWithContacts(emails []string) string {
-	emailsConfig := "["
-	for _, email := range emails {
-		emailsConfig += fmt.Sprintf(`"%s", `, email)
+func testAccCockpitAlertManagerConfigWithContacts(contactPoints []map[string]string) string {
+	contactsConfig := ""
+	for _, contact := range contactPoints {
+		contactsConfig += fmt.Sprintf(`
+		contact_points {
+			email = "%s"
+		}`, contact["email"])
 	}
-	if len(emails) > 0 {
-		emailsConfig = emailsConfig[:len(emailsConfig)-2] // Remove the last comma and space
-	}
-	emailsConfig += "]"
 
 	return fmt.Sprintf(`
 		resource "scaleway_account_project" "project" {
@@ -165,10 +180,10 @@ func testAccCockpitAlertManagerConfigWithContacts(emails []string) string {
 
 		resource "scaleway_cockpit_alert_manager" "alert_manager" {
 			project_id = scaleway_account_project.project.id
-			enable_managed_alerts     = true
-			emails     = %s
+			enable_managed_alerts = true
+			%s
 		}
-	`, emailsConfig)
+	`, contactsConfig)
 }
 
 func testAccCockpitAlertManagerEnableConfig(enable bool) string {
@@ -224,7 +239,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 			return err
 		}
 		for _, cp := range contactPoints.ContactPoints {
-			if cp.Email != nil && cp.Email.To == rs.Primary.Attributes["emails.0"] {
+			if cp.Email != nil && cp.Email.To == rs.Primary.Attributes["contact_points.0.email"] {
 				return nil
 			}
 		}

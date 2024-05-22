@@ -11,7 +11,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -32,11 +31,21 @@ func ResourceCockpitAlertManager() *schema.Resource {
 				Default:     true,
 				Description: "Enable or disable the alert manager",
 			},
-			"emails": {
+
+			"contact_points": {
 				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: verify.IsEmail()},
 				Optional:    true,
-				Description: "A list of email addresses for the alert receivers",
+				Description: "A list of contact points",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"email": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: verify.IsEmail(),
+							Description:  "Email addresses for the alert receivers",
+						},
+					},
+				},
 			},
 			"region": regional.Schema(),
 			"alert_manager_url": {
@@ -55,7 +64,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	projectID := d.Get("project_id").(string)
-	emails := d.Get("emails").([]interface{})
+	contactPoints := d.Get("contact_points").([]interface{})
 	EnableManagedAlerts := d.Get("enable_managed_alerts").(bool)
 
 	_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
@@ -75,16 +84,23 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	if len(emails) > 0 {
-		for _, email := range emails {
-			emailStr, ok := email.(string)
+	if len(contactPoints) > 0 {
+		for _, cp := range contactPoints {
+			cpMap, ok := cp.(map[string]interface{})
+			if !ok {
+				return diag.FromErr(errors.New("invalid contact point format"))
+			}
+
+			email, ok := cpMap["email"].(string)
 			if !ok {
 				return diag.FromErr(errors.New("invalid email format"))
 			}
+
 			emailCP := &cockpit.ContactPointEmail{
-				To: emailStr,
+				To: email,
 			}
-			_, err := api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
+
+			_, err = api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
 				ProjectID: projectID,
 				Email:     emailCP,
 				Region:    region,
@@ -127,13 +143,16 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	var emails []string
+	var contactPointsList []map[string]interface{}
 	for _, cp := range contactPoints.ContactPoints {
 		if cp.Email != nil {
-			emails = append(emails, cp.Email.To)
+			contactPoint := map[string]interface{}{
+				"email": cp.Email.To,
+			}
+			contactPointsList = append(contactPointsList, contactPoint)
 		}
 	}
-	_ = d.Set("emails", emails)
+	_ = d.Set("contact_points", contactPointsList)
 	return nil
 }
 
@@ -161,13 +180,26 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 	}
-	if d.HasChange("emails") {
-		oldEmailsInterface, newEmailsInterface := d.GetChange("emails")
-		oldEmails := types.ExpandStrings(oldEmailsInterface.([]interface{}))
-		newEmails := types.ExpandStrings(newEmailsInterface.([]interface{}))
+	if d.HasChange("contact_points") {
+		oldContactPointsInterface, newContactPointsInterface := d.GetChange("contact_points")
+		oldContactPoints := oldContactPointsInterface.([]interface{})
+		newContactPoints := newContactPointsInterface.([]interface{})
 
-		for _, email := range oldEmails {
-			if !types.SliceContainsString(newEmails, email) {
+		oldContactMap := make(map[string]map[string]interface{})
+		for _, oldCP := range oldContactPoints {
+			cp := oldCP.(map[string]interface{})
+			email := cp["email"].(string)
+			oldContactMap[email] = cp
+		}
+
+		newContactMap := make(map[string]map[string]interface{})
+		for _, newCP := range newContactPoints {
+			cp := newCP.(map[string]interface{})
+			email := cp["email"].(string)
+			newContactMap[email] = cp
+		}
+		for email := range oldContactMap {
+			if _, found := newContactMap[email]; !found {
 				err := api.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
 					Region:    region,
 					ProjectID: projectID,
@@ -179,12 +211,13 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 			}
 		}
 
-		for _, email := range newEmails {
-			if !types.SliceContainsString(oldEmails, email) {
-				_, err := api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
+		for email := range newContactMap {
+			if _, found := oldContactMap[email]; !found {
+				contactPointEmail := &cockpit.ContactPointEmail{To: email}
+				_, err = api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
 					Region:    region,
 					ProjectID: projectID,
-					Email:     &cockpit.ContactPointEmail{To: email},
+					Email:     contactPointEmail,
 				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)
@@ -214,7 +247,7 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 
 	for _, cp := range contactPoints.ContactPoints {
 		if cp.Email != nil {
-			err := api.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
+			err = api.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
 				Region:    region,
 				ProjectID: projectID,
 				Email:     &cockpit.ContactPointEmail{To: cp.Email.To},
