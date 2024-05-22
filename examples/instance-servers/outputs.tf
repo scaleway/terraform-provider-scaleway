@@ -1,3 +1,4 @@
 output "ips_v4" {
-  value = scaleway_instance_server.server[*].public_ip
+  description = "The public IPv4 addresses of the created instance servers"
+  value       = scaleway_instance_server.server[*].public_ip
 }
