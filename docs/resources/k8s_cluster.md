@@ -50,7 +50,7 @@ resource "scaleway_k8s_pool" "friend_from_outer_space" {
 }
 ```
 
-For a detailed example of how to add or run Elastic Metal servers instead of instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
+For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
 
 ### With additional configuration
 

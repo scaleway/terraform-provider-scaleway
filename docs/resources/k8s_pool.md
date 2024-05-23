@@ -55,7 +55,7 @@ The following arguments are supported:
 - `tags` - (Optional) The tags associated with the pool.
   > Note: As mentionned in [this document](https://github.com/scaleway/scaleway-cloud-controller-manager/blob/master/docs/tags.md#taints), taints of a pool's nodes are applied using tags. (Example: "taint=taintName=taineValue:Effect")
 
-- `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#placement-groups-d8f653) the nodes of the pool will be attached to.
+- `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#path-placement-groups-create-a-placement-group) the nodes of the pool will be attached to.
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `autoscaling` - (Defaults to `false`) Enables the autoscaling feature for this pool.

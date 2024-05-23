@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_instance_placement_group"
 
 # Resource: scaleway_instance_placement_group
 
-Creates and manages Compute Instance Placement Groups. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#placement-groups-d8f653).
+Creates and manages Compute Instance Placement Groups. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#path-placement-groups-list-placement-groups).
 
 ## Example Usage
 
@@ -18,8 +18,8 @@ resource "scaleway_instance_placement_group" "availability_group" {}
 The following arguments are supported:
 
 - `name` - (Optional) The name of the placement group.
-- `policy_type` - (Defaults to `max_availability`) The [policy type](https://www.scaleway.com/en/developers/api/instance/#placement-groups-d8f653) of the placement group. Possible values are: `low_latency` or `max_availability`.
-- `policy_mode` - (Defaults to `optional`) The [policy mode](https://www.scaleway.com/en/developers/api/instance/#placement-groups-d8f653) of the placement group. Possible values are: `optional` or `enforced`.
+- `policy_type` - (Defaults to `max_availability`) The [policy type](https://www.scaleway.com/en/developers/api/instance/#path-placement-groups-create-a-placement-grou) of the placement group. Possible values are: `low_latency` or `max_availability`.
+- `policy_mode` - (Defaults to `optional`) The [policy mode](https://www.scaleway.com/en/developers/api/instance/#path-placement-groups-create-a-placement-group) of the placement group. Possible values are: `optional` or `enforced`.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the placement group should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the placement group is associated with.
 - `tags` - (Optional) A list of tags to apply to the placement group.

@@ -5,8 +5,8 @@ page_title: "Scaleway: scaleway_instance_volume"
 
 # Resource: scaleway_instance_volume
 
-Creates and manages Scaleway Compute Instance Volumes.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#volumes-7e8a39).
+Creates and manages Scaleway compute Instance Volumes.
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#path-volumes-list-volumes).
 
 ## Example Usage
 

@@ -5,8 +5,8 @@ page_title: "Scaleway: scaleway_apple_silicon"
 
 # Resource: scaleway_apple_silicon
 
-Creates and manages Scaleway Apple silicon M1. For more information,
-see [the documentation](https://www.scaleway.com/en/docs/compute/apple-silicon/concepts).
+Creates and manages Scaleway Apple silicon. For more information,
+see [the documentation](https://www.scaleway.com/en/developers/api/apple-silicon/).
 
 ## Example Usage
 
@@ -24,7 +24,7 @@ resource scaleway_apple_silicon_server server {
 The following arguments are supported:
 
 - `type` - (Required) The commercial type of the server. You find all the available types on
-  the [pricing page](https://www.scaleway.com/en/pricing/#apple-silicon). Updates to this field will recreate a new
+  the [pricing page](https://www.scaleway.com/en/pricing/apple-silicon/). Updates to this field will recreate a new
   resource.
 
 - `name` - (Optional) The name of the server.
