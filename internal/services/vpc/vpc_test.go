@@ -110,6 +110,41 @@ func TestAccVPC_WithTags(t *testing.T) {
 	})
 }
 
+func TestAccVPC_EnableRouting(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckVPCDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc vpc01 {
+						name           = "test-vpc-enable-routing"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCExists(tt, "scaleway_vpc.vpc01"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_routing", "false"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc vpc01 {
+						name           = "test-vpc-enable-routing"
+                        enable_routing = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCExists(tt, "scaleway_vpc.vpc01"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_routing", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckVPCExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
