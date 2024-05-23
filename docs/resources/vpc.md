@@ -10,10 +10,20 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/n
 
 ## Example Usage
 
+### Basic
 ```terraform
 resource "scaleway_vpc" "vpc01" {
     name = "my-vpc"
     tags = ["demo", "terraform"]
+}
+```
+
+### Enable routing
+```terraform
+resource "scaleway_vpc" "vpc01" {
+  name           = "my-vpc"
+  tags           = ["demo", "terraform", "routing"]
+  enable_routing = true
 }
 ```
 
@@ -23,6 +33,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the VPC. If not provided it will be randomly generated.
 - `tags` - (Optional) The tags associated with the VPC.
+- `enable_routing` - (Optional) Enable routing between Private Networks in the VPC. Note that you will not be able to deactivate it afterwards.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the VPC.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the VPC is associated with.
 
