@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	defaultInstanceTimeout   = 15 * time.Minute
+	defaultInstanceTimeout   = 30 * time.Minute
 	defaultWaitRetryInterval = 30 * time.Second
 )
 
