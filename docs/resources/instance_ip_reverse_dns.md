@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_instance_ip_reverse_dns"
 
 # Resource: scaleway_instance_ip_reverse_dns
 
-Manages Scaleway Compute Instance IPs Reverse DNS.
+Manages Scaleway compute Instance IPs Reverse DNS.
 
 Please check our [guide](https://www.scaleway.com/en/docs/compute/instances/how-to/configure-reverse-dns/) for more details
 

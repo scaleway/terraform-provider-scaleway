@@ -3,13 +3,11 @@ package rdb
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -18,7 +16,7 @@ import (
 )
 
 const (
-	defaultInstanceTimeout   = 15 * time.Minute
+	defaultInstanceTimeout   = 30 * time.Minute
 	defaultWaitRetryInterval = 30 * time.Second
 )
 
@@ -101,47 +99,4 @@ func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 		staticConfig = types.ExpandStringPtr(staticConfigI)
 	}
 	return ipamConfig, staticConfig
-}
-
-func getIPAMConfigRead(resource interface{}, m interface{}) (bool, error) {
-	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
-	request := &ipam.ListIPsRequest{
-		ResourceType: "rdb_instance",
-		IsIPv6:       scw.BoolPtr(false),
-	}
-	var privateEndpoint *rdb.EndpointPrivateNetworkDetails
-
-	switch res := resource.(type) {
-	case *rdb.Instance:
-		request.Region = res.Region
-		request.ResourceID = &res.ID
-		for _, e := range res.Endpoints {
-			if e.PrivateNetwork != nil {
-				privateEndpoint = e.PrivateNetwork
-			}
-		}
-	case *rdb.ReadReplica:
-		request.Region = res.Region
-		request.ResourceID = &res.InstanceID
-		for _, e := range res.Endpoints {
-			if e.PrivateNetwork != nil {
-				privateEndpoint = e.PrivateNetwork
-			}
-		}
-	}
-	if privateEndpoint == nil {
-		return false, nil
-	}
-
-	ips, err := ipamAPI.ListIPs(request, scw.WithAllPages())
-	if err != nil {
-		return false, fmt.Errorf("could not list IPs: %w", err)
-	}
-
-	for _, ip := range ips.IPs {
-		if ip.Address.String() == privateEndpoint.ServiceIP.String() {
-			return true, nil
-		}
-	}
-	return false, nil
 }

@@ -225,10 +225,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	if len(webhostingResponse.Tags) > 0 {
-		_ = d.Set("tags", webhostingResponse.Tags)
-	}
-
+	_ = d.Set("tags", webhostingResponse.Tags)
 	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.OfferID))
 	_ = d.Set("domain", webhostingResponse.Domain)
 	_ = d.Set("created_at", types.FlattenTime(webhostingResponse.CreatedAt))
