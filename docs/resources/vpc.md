@@ -11,6 +11,7 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/n
 ## Example Usage
 
 ### Basic
+
 ```terraform
 resource "scaleway_vpc" "vpc01" {
     name = "my-vpc"
@@ -19,6 +20,7 @@ resource "scaleway_vpc" "vpc01" {
 ```
 
 ### Enable routing
+
 ```terraform
 resource "scaleway_vpc" "vpc01" {
   name           = "my-vpc"
