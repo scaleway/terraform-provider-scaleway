@@ -21,3 +21,25 @@ func IsEmail() schema.SchemaValidateFunc {
 		return
 	}
 }
+
+func IsEmailList() schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (warnings []string, errors []error) {
+		list, ok := i.([]interface{})
+		if !ok {
+			errors = append(errors, fmt.Errorf("invalid type for key '%s': expected a list of strings", k))
+			return warnings, errors
+		}
+
+		for _, li := range list {
+			email, isString := li.(string)
+			if !isString {
+				errors = append(errors, fmt.Errorf("invalid type for key '%s': each item must be a string", k))
+				continue
+			}
+			if _, err := IsEmail()(email, k); len(err) > 0 {
+				errors = append(errors, err...)
+			}
+		}
+		return warnings, errors
+	}
+}
