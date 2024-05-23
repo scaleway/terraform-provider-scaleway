@@ -176,10 +176,17 @@ func TestAccLB_WithIPv6(t *testing.T) {
 				Config: `
 					resource "scaleway_lb_ip" "v4" {
 					}
+				`,
+			},
+			{
+				Config: `
+					resource "scaleway_lb_ip" "v4" {
+					}
 					
 					resource "scaleway_lb_ip" "v6" {
 					  is_ipv6 = true
 					}
+
 					resource scaleway_lb main {
 					    ip_ids = [scaleway_lb_ip.v4.id, scaleway_lb_ip.v6.id]
 						name   = "test-lb-ip-ids"
