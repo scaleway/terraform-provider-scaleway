@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_tem_domain"
 # Resource: scaleway_tem_domain
 
 Creates and manages Scaleway Transactional Email Domains.
-For more information see [the documentation](https://www.scaleway.com/en/developers/api/transactional-email).
+For more information refer to [the API documentation](https://www.scaleway.com/en/developers/api/transactional-email).
 
 ## Example Usage
 
@@ -58,7 +58,6 @@ resource "scaleway_domain_record" "dmarc" {
 }
 ```
 
-
 ### Configuring GitLab Project Variables
 
 ```terraform
@@ -88,16 +87,15 @@ resource "gitlab_project_variable" "smtp_host" {
 
 ```
 
-
 ## Argument Reference
 
 The following arguments are supported:
 
 - `name` - (Required) The domain name, must not be used in another Transactional Email Domain.
-~> **Important:** Updates to `name` will recreate the domain.
+  ~> **Important:** Updates to `name` will recreate the domain.
 
 - `accept_tos` - (Required) Acceptation of the [Term of Service](https://tem.s3.fr-par.scw.cloud/antispam_policy.pdf).
-~> **Important:**  This attribute must be set to `true`.
+  ~> **Important:** This attribute must be set to `true`.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the domain should be created.
 
@@ -148,11 +146,11 @@ In addition to all arguments above, the following attributes are exported:
 - `mx_blackhole` - The Scaleway's blackhole MX server to use if you do not have one.
 
 - `reputation` - The domain's reputation.
-    - `status` - The status of the domain's reputation.
-    - `score` - A range from 0 to 100 that determines your domain's reputation score.
-    - `scored_at` - The time and date the score was calculated.
-    - `previous_score` - The previously-calculated domain's reputation score.
-    - `previous_scored_at` - The time and date the previous reputation score was calculated.
+  - `status` - The status of the domain's reputation.
+  - `score` - A range from 0 to 100 that determines your domain's reputation score.
+  - `scored_at` - The time and date the score was calculated.
+  - `previous_score` - The previously-calculated domain's reputation score.
+  - `previous_scored_at` - The time and date the previous reputation score was calculated.
 
 ## Import
 

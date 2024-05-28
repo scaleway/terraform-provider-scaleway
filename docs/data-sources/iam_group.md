@@ -5,8 +5,9 @@ page_title: "Scaleway: scaleway_iam_group"
 
 # scaleway_iam_group
 
-Gets information about an existing IAM group. For more information, please
-check [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#applications-83ce5e)
+Gets information about an existing IAM group.
+
+For more information, refer to the [IAM API documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#applications-83ce5e)
 
 ## Example Usage
 
@@ -25,10 +26,10 @@ data "scaleway_iam_group" "find_by_id" {
 ## Argument Reference
 
 - `name` - (Optional) The name of the IAM group.
-  Only one of the `name` and `group_id` should be specified.
 
 - `group_id` - (Optional) The ID of the IAM group.
-  Only one of the `name` and `group_id` should be specified.
+
+  -> **Note** You must specify at least one: `name` and/or `group_id`.
 
 - `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
   organization the group is associated with.

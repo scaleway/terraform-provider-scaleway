@@ -5,8 +5,8 @@ page_title: "Scaleway: scaleway_rdb_database_backup"
 
 # Resource: scaleway_rdb_database_backup
 
-Creates and manages Scaleway RDB database backup.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+Creates and manages database backups.
+For more information, refer to [the API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
 
 ## Example Usage
 
@@ -33,9 +33,9 @@ resource scaleway_rdb_database_backup "main" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) UUID of the rdb instance.
+- `instance_id` - (Required) UUID of the Database Instance.
 
-~> **Important:** Updates to `instance_id` will recreate the Backup.
+~> **Important:** Updates to `instance_id` will recreate the backup.
 
 - `name` - (Required) Name of the database (e.g. `my-database`).
 
@@ -57,7 +57,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-RDB Database can be imported using the `{region}/{id}`, e.g.
+Databases can be imported using the `{region}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_rdb_database_backup.mybackup fr-par/11111111-1111-1111-1111-111111111111

@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_registry_image"
 
 # scaleway_registry_image
 
-Gets information about a registry image.
+Gets information about a Container Registry image.
 
 ## Example Usage
 
@@ -25,10 +25,10 @@ data "scaleway_registry_image" "my_image" {
 ## Argument Reference
 
 - `name` - (Optional) The image name.
-  Only one of `name` and `image_id` should be specified.
 
 - `image_id` - (Optional) The image ID.
-  Only one of `name` and `image_id` should be specified.
+
+  -> **Note** You must specify at least one: `name` and/or `image_id`.
 
 - `namespace_id` - (Optional) The namespace ID in which the image is.
 

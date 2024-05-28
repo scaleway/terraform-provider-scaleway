@@ -6,8 +6,7 @@ page_title: "Scaleway: scaleway_iam_ssh_key"
 # Resource: scaleway_iam_ssh_key
 
 Creates and manages Scaleway IAM SSH Keys.
-For more information,
-see [the documentation](https://www.scaleway.com/en/developers/api/iam/#ssh-keys-d8ccd4).
+For more information refer to the [IAM API documentation](https://www.scaleway.com/en/developers/api/iam/#ssh-keys-d8ccd4).
 
 ## Example Usage
 
