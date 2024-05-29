@@ -115,25 +115,25 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_flexible_ip" "base" {
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
-					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-1"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 						data "scaleway_baremetal_os" "by_id" {
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 							name = "Ubuntu"
 							version = "22.04 LTS (Jammy Jellyfish)"						
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
-							zone = "fr-par-2"
-							name = "EM-B112X-SSD"
+							name = "EM-A115X-SSD"
+					  		zone = "fr-par-1"
 						}				
 
 						resource "scaleway_iam_ssh_key" "main" {
@@ -143,7 +143,7 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 
 						resource "scaleway_baremetal_server" "base" {
 							name        = "%s"
-							zone        = "fr-par-2"
+							zone        = "fr-par-1"
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.by_id.os_id
 
@@ -154,14 +154,14 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 						data "scaleway_baremetal_os" "by_id" {
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 							name = "Ubuntu"
 							version = "22.04 LTS (Jammy Jellyfish)"						
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
-							zone = "fr-par-2"
-							name = "EM-B112X-SSD"
+							name = "EM-A115X-SSD"
+					  		zone = "fr-par-1"
 						}				
 
 						resource "scaleway_iam_ssh_key" "main" {
@@ -171,7 +171,7 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 
 						resource "scaleway_baremetal_server" "base" {
 							name        = "%s"
-							zone        = "fr-par-2"
+							zone        = "fr-par-1"
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.by_id.os_id
 
@@ -180,13 +180,13 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 
 						resource "scaleway_flexible_ip" "base" {
 							server_id = scaleway_baremetal_server.base.id
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 						}
 					`, SSHKeyName, SSHKeyFlexibleIP, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
 					testAccCheckFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-1"),
 				),
 			},
 		},
@@ -209,25 +209,25 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_flexible_ip" "base" {
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
-					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-1"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 						data "scaleway_baremetal_os" "by_id" {
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 							name = "Ubuntu"
 							version = "22.04 LTS (Jammy Jellyfish)"						
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
-							zone = "fr-par-2"
-							name = "EM-B112X-SSD"
+							name = "EM-A115X-SSD"
+					  		zone = "fr-par-1"
 						}		
 
 						resource "scaleway_iam_ssh_key" "main" {
@@ -237,7 +237,7 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 
 						resource "scaleway_baremetal_server" "base" {
 							name        = "%s"
-							zone        = "fr-par-2"
+							zone        = "fr-par-1"
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.by_id.os_id
 
@@ -248,14 +248,14 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 						data "scaleway_baremetal_os" "by_id" {
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 							name = "Ubuntu"
 							version = "22.04 LTS (Jammy Jellyfish)"						
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
-							zone = "fr-par-2"
-							name = "EM-B112X-SSD"
+							name = "EM-A115X-SSD"
+					  		zone = "fr-par-1"
 						}		
 
 						resource "scaleway_iam_ssh_key" "main" {
@@ -265,7 +265,7 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 
 						resource "scaleway_baremetal_server" "base" {
 							name        = "%s"
-							zone        = "fr-par-2"
+							zone        = "fr-par-1"
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.by_id.os_id
 
@@ -274,24 +274,24 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 
 						resource "scaleway_flexible_ip" "base" {
 							server_id = scaleway_baremetal_server.base.id
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 						}
 					`, SSHKeyName, SSHKeyFlexibleIP, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
 					testAccCheckFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-1"),
 				),
 			},
 			{
 				Config: `
 						resource "scaleway_flexible_ip" "base" {
-							zone = "fr-par-2"
+							zone = "fr-par-1"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
-					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-1"),
 				),
 			},
 		},
