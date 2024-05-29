@@ -16,7 +16,7 @@ import (
 const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 
 func TestAccServer_Basic(t *testing.T) {
-	//t.Skip("Skipping Baremetal Server test as no stock is available currently")
+	// t.Skip("Skipping Baremetal Server test as no stock is available currently")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
