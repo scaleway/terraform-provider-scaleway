@@ -109,7 +109,8 @@ func TestAccFlexibleIPMACAddress_DuplicateOnOtherFlexibleIPs(t *testing.T) {
 			{
 				Config: `
 						data "scaleway_baremetal_offer" "my_offer" {
-					      name = "EM-B112X-SSD"
+					      	zone = "fr-par-1"
+							name = "EM-A115X-SSD"
 				     	}
 
 						resource "scaleway_baremetal_server" "base" {
@@ -148,7 +149,8 @@ func TestAccFlexibleIPMACAddress_DuplicateOnOtherFlexibleIPs(t *testing.T) {
 			{
 				Config: `
 						data "scaleway_baremetal_offer" "my_offer" {
-					      name = "EM-B112X-SSD"
+					      	zone = "fr-par-1"
+							name = "EM-A115X-SSD"
 				     	}
 
 						resource "scaleway_baremetal_server" "base" {
