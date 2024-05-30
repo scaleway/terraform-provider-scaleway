@@ -29,10 +29,27 @@ func DataSourceConfig() *schema.Resource {
 				Computed: true,
 			},
 			"secret_key": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
+			"secret_key_source": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"secret_key_source": {
+			"zone": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"zone_source": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"region": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"region_source": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -41,48 +58,29 @@ func DataSourceConfig() *schema.Resource {
 }
 
 func dataSourceConfigRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := meta.ExtractScwClient(m)
+	providerMeta := m.(*meta.Meta)
 	d.SetId("0")
 
-	projectID, isDefault, err := meta.ExtractProjectID(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	err = d.Set("project_id", projectID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	accessKey, _ := client.GetAccessKey()
+	_ = d.Set("access_key", accessKey)
+	_ = d.Set("access_key_source", providerMeta.AccessKeySource())
 
-	if isDefault {
-		err = d.Set("project_id_source", "default project ID")
-	} else {
-		err = d.Set("project_id_source", "resource configuration")
-	}
+	secretKey, _ := client.GetSecretKey()
+	_ = d.Set("secret_key", secretKey)
+	_ = d.Set("secret_key_source", providerMeta.SecretKeySource())
 
-	var diags diag.Diagnostics
-	client := meta.ExtractScwClient(m)
-	if accessKey, ok := client.GetAccessKey(); ok {
-		err = d.Set("access_key", accessKey)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Access key not found",
-		})
-	}
+	projectID, _ := client.GetDefaultProjectID()
+	_ = d.Set("project_id", projectID)
+	_ = d.Set("project_id_source", providerMeta.ProjectIDSource())
 
-	if secretKey, ok := client.GetSecretKey(); ok {
-		err = d.Set("secret_key", secretKey)
-		if err != nil {
-			diags = append(diags, diag.FromErr(err)...)
-		}
-	} else {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Secret key not found",
-		})
-	}
+	zone, _ := client.GetDefaultZone()
+	_ = d.Set("zone", zone)
+	_ = d.Set("zone_source", providerMeta.ZoneSource())
 
-	return diags
+	region, _ := client.GetDefaultRegion()
+	_ = d.Set("region", region)
+	_ = d.Set("region_source", providerMeta.RegionSource())
+
+	return nil
 }
