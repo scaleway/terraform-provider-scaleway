@@ -166,10 +166,6 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 		DefaultRegion: scw.StringPtr(scw.RegionFrPar.String()),
 		DefaultZone:   scw.StringPtr(scw.ZoneFrPar1.String()),
 	}
-	credentialsSource := &CredentialsSource{
-		DefaultZone:   CredentialsSourceDefault,
-		DefaultRegion: CredentialsSourceDefault,
-	}
 
 	activeProfile, err := config.GetActiveProfile()
 	if err != nil {
@@ -183,35 +179,25 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 			profileFromConfig, err := config.GetProfile(profileName.(string))
 			if err == nil {
 				providerProfile = profileFromConfig
-				credentialsSource.AccessKey = CredentialsSourceActiveProfile
-				credentialsSource.SecretKey = CredentialsSourceActiveProfile
-				credentialsSource.ProjectID = CredentialsSourceActiveProfile
-				credentialsSource.DefaultRegion = CredentialsSourceActiveProfile
-				credentialsSource.DefaultZone = CredentialsSourceActiveProfile
 			}
 		}
 		if accessKey, exist := d.GetOk("access_key"); exist {
 			providerProfile.AccessKey = scw.StringPtr(accessKey.(string))
-			credentialsSource.AccessKey = CredentialsSourceProviderProfile
 		}
 		if secretKey, exist := d.GetOk("secret_key"); exist {
 			providerProfile.SecretKey = scw.StringPtr(secretKey.(string))
-			credentialsSource.SecretKey = CredentialsSourceProviderProfile
 		}
 		if projectID, exist := d.GetOk("project_id"); exist {
 			providerProfile.DefaultProjectID = scw.StringPtr(projectID.(string))
-			credentialsSource.ProjectID = CredentialsSourceProviderProfile
 		}
 		if orgID, exist := d.GetOk("organization_id"); exist {
 			providerProfile.DefaultOrganizationID = scw.StringPtr(orgID.(string))
 		}
 		if region, exist := d.GetOk("region"); exist {
 			providerProfile.DefaultRegion = scw.StringPtr(region.(string))
-			credentialsSource.DefaultRegion = CredentialsSourceProviderProfile
 		}
 		if zone, exist := d.GetOk("zone"); exist {
 			providerProfile.DefaultZone = scw.StringPtr(zone.(string))
-			credentialsSource.DefaultZone = CredentialsSourceProviderProfile
 		}
 		if apiURL, exist := d.GetOk("api_url"); exist {
 			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
@@ -219,22 +205,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 	}
 
 	profile := scw.MergeProfiles(defaultZoneProfile, activeProfile, providerProfile, envProfile)
-
-	if profile.AccessKey == envProfile.AccessKey {
-		credentialsSource.AccessKey = CredentialsSourceEnvironment
-	}
-	if profile.SecretKey == envProfile.SecretKey {
-		credentialsSource.SecretKey = CredentialsSourceEnvironment
-	}
-	if profile.DefaultProjectID == envProfile.DefaultProjectID {
-		credentialsSource.ProjectID = CredentialsSourceEnvironment
-	}
-	if profile.DefaultRegion == envProfile.DefaultRegion {
-		credentialsSource.DefaultRegion = CredentialsSourceEnvironment
-	}
-	if profile.DefaultZone == envProfile.DefaultZone {
-		credentialsSource.DefaultZone = CredentialsSourceEnvironment
-	}
+	credentialsSource := GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, envProfile)
 
 	// If profile have a defaultZone but no defaultRegion we set the defaultRegion
 	// to the one of the defaultZone
@@ -251,4 +222,55 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 		}
 	}
 	return profile, credentialsSource, nil
+}
+
+// GetCredentialsSource infers the source of the credentials based on the priority order of the different profiles
+func GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, envProfile *scw.Profile) *CredentialsSource {
+	type SourceProfilePair struct {
+		Source  string
+		Profile *scw.Profile
+	}
+
+	profilesInOrder := []SourceProfilePair{
+		{
+			CredentialsSourceDefault,
+			defaultZoneProfile,
+		},
+		{
+			CredentialsSourceActiveProfile,
+			activeProfile,
+		},
+		{
+			CredentialsSourceProviderProfile,
+			providerProfile,
+		},
+		{
+			CredentialsSourceEnvironment,
+			envProfile,
+		},
+	}
+	credentialsSource := &CredentialsSource{}
+
+	for _, pair := range profilesInOrder {
+		source := pair.Source
+		profile := pair.Profile
+
+		if profile.AccessKey != nil {
+			credentialsSource.AccessKey = source
+		}
+		if profile.SecretKey != nil {
+			credentialsSource.SecretKey = source
+		}
+		if profile.DefaultProjectID != nil {
+			credentialsSource.ProjectID = source
+		}
+		if profile.DefaultRegion != nil {
+			credentialsSource.DefaultRegion = source
+		}
+		if profile.DefaultZone != nil {
+			credentialsSource.DefaultZone = source
+		}
+	}
+
+	return credentialsSource
 }
