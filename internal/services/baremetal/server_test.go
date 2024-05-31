@@ -16,7 +16,7 @@ import (
 const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 
 func TestAccServer_Basic(t *testing.T) {
-	t.Skip("Skipping Baremetal Server test as no stock is available currently")
+	// t.Skip("Skipping Baremetal Server test as no stock is available currently")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -31,7 +31,7 @@ func TestAccServer_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-2"
+					  zone    = "fr-par-1"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
@@ -43,9 +43,9 @@ func TestAccServer_Basic(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-2"
+						zone        = "fr-par-1"
 						description = "test a description"
-						offer       = "EM-B112X-SSD"
+						offer       = "EM-A115X-SSD"
 						os    = data.scaleway_baremetal_os.my_os.os_id
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
@@ -55,8 +55,8 @@ func TestAccServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/a5065ba4-dde2-45f3-adec-1ebbb27b766b"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-2/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/f7241870-c383-4fa2-bbca-5189600df5c4"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
@@ -68,7 +68,7 @@ func TestAccServer_Basic(t *testing.T) {
 				// Trigger a reinstall and update tags
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-2"
+					  zone    = "fr-par-1"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
@@ -80,9 +80,9 @@ func TestAccServer_Basic(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-2"
+						zone        = "fr-par-1"
 						description = "test a description"
-						offer       = "EM-B112X-SSD"
+						offer       = "EM-A115X-SSD"
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
@@ -92,8 +92,8 @@ func TestAccServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/a5065ba4-dde2-45f3-adec-1ebbb27b766b"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-2/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/f7241870-c383-4fa2-bbca-5189600df5c4"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
@@ -120,8 +120,8 @@ func TestAccServer_RequiredInstallConfig(t *testing.T) {
 				Config: `
 					resource "scaleway_baremetal_server" "base" {
 						name        = "TestAccServer_RequiredInstallConfig"
-						zone        = "fr-par-2"
-						offer       = "EM-B112X-SSD"
+						zone        = "fr-par-1"
+						offer       = "EM-A115X-SSD"
 						os          = "7e865c16-1a63-4dc7-8181-dabc020fc21b" // Proxmox
 
 						ssh_key_ids = []
@@ -144,20 +144,20 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-2"
-					  name = "EM-B112X-SSD"
+					  zone = "fr-par-1"
+					  name = "EM-A115X-SSD"
 					}
 
 					resource "scaleway_baremetal_server" "base" {
 					  name 			             = "TestAccScalewayBaremetalServer_WithoutInstallConfig"
-                      zone     			         = "fr-par-2"
+                      zone     			         = "fr-par-1"
 					  offer     				 = data.scaleway_baremetal_offer.my_offer.offer_id
 					  install_config_afterward   = true
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", "TestAccScalewayBaremetalServer_WithoutInstallConfig"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/a5065ba4-dde2-45f3-adec-1ebbb27b766b"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/f7241870-c383-4fa2-bbca-5189600df5c4"),
 					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "os"),
 				),
 			},
@@ -180,18 +180,18 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				data "scaleway_baremetal_os" "my_os" {
-				  zone    = "fr-par-2"
+				  zone    = "fr-par-1"
 				  name    = "Ubuntu"
 				  version = "22.04 LTS (Jammy Jellyfish)"
 				}
 				
 				data "scaleway_baremetal_offer" "my_offer" {
-				  zone = "fr-par-2"
-				  name = "EM-B112X-SSD"
+				  zone = "fr-par-1"
+				  name = "EM-A115X-SSD"
 				}
 				
 				data "scaleway_baremetal_option" "private_network" {
-				  zone = "fr-par-2"
+				  zone = "fr-par-1"
 				  name = "Private Network"
 				}
 				
@@ -202,7 +202,7 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 				
 				resource "scaleway_baremetal_server" "base" {
 				  name  = "%s"
-				  zone  = "fr-par-2"
+				  zone  = "fr-par-1"
 				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 				  os    = data.scaleway_baremetal_os.my_os.os_id
 				
@@ -242,14 +242,14 @@ func TestAccServer_AddOption(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "by_id" {
-					  zone    = "fr-par-2"
+					  zone    = "fr-par-1"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
 					
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-2"
-					  name = "EM-B112X-SSD"
+					  zone = "fr-par-1"
+					  name = "EM-A115X-SSD"
 					}
 					
 					resource "scaleway_iam_ssh_key" "base" {
@@ -259,7 +259,7 @@ func TestAccServer_AddOption(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 					  name  = "%s"
-					  zone  = "fr-par-2"
+					  zone  = "fr-par-1"
 					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os    = data.scaleway_baremetal_os.by_id.os_id
 					
@@ -273,18 +273,18 @@ func TestAccServer_AddOption(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				data "scaleway_baremetal_os" "my_os" {
-				  zone    = "fr-par-2"
+				  zone    = "fr-par-1"
 				  name    = "Ubuntu"
 				  version = "22.04 LTS (Jammy Jellyfish)"
 				}
 				
 				data "scaleway_baremetal_offer" "my_offer" {
-				  zone = "fr-par-2"
-				  name = "EM-B112X-SSD"
+				  zone = "fr-par-1"
+				  name = "EM-A115X-SSD"
 				}
 				
 				data "scaleway_baremetal_option" "private_network" {
-				  zone = "fr-par-2"
+				  zone = "fr-par-1"
 				  name = "Private Network"
 				}
 				
@@ -295,7 +295,7 @@ func TestAccServer_AddOption(t *testing.T) {
 				
 				resource "scaleway_baremetal_server" "base" {
 				  name  = "%s"
-				  zone  = "fr-par-2"
+				  zone  = "fr-par-1"
 				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 				  os    = data.scaleway_baremetal_os.my_os.os_id
 				
@@ -330,14 +330,14 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "by_id" {
-					  zone    = "fr-par-2"
+					  zone    = "fr-par-1"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
 					
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-2"
-					  name = "EM-B112X-SSD"
+					  zone = "fr-par-1"
+					  name = "EM-A115X-SSD"
 					}
 					
 					resource "scaleway_iam_ssh_key" "base" {
@@ -347,7 +347,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 					  name  = "%s"
-					  zone  = "fr-par-2"
+					  zone  = "fr-par-1"
 					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os    = data.scaleway_baremetal_os.by_id.os_id
 					
@@ -361,23 +361,23 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-2"
+					  zone    = "fr-par-1"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
 					
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-2"
-					  name = "EM-B112X-SSD"
+					  zone = "fr-par-1"
+					  name = "EM-A115X-SSD"
 					}
 					
 					data "scaleway_baremetal_option" "remote_access" {
-					  zone = "fr-par-2"
+					  zone = "fr-par-1"
 					  name = "Remote Access"
 					}
 					
 					data "scaleway_baremetal_option" "private_network" {
-					  zone = "fr-par-2"
+					  zone = "fr-par-1"
 					  name = "Private Network"
 					}
 					
@@ -388,7 +388,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 					  name        = "%s"
-					  zone        = "fr-par-2"
+					  zone        = "fr-par-1"
 					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os          = data.scaleway_baremetal_os.my_os.os_id
 					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
@@ -408,29 +408,29 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id":         "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2",
+						"id":         "fr-par-1/931df052-d713-4674-8b58-96a63244c8e2",
 						"expires_at": "2025-07-06T09:00:00Z",
 					}),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id": "fr-par-2/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
+						"id": "fr-par-1/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
 					}),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-2"
+					  zone    = "fr-par-1"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
 					
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-2"
-					  name = "EM-B112X-SSD"
+					  zone = "fr-par-1"
+					  name = "EM-A115X-SSD"
 					}
 					
 					data "scaleway_baremetal_option" "remote_access" {
-					  zone = "fr-par-2"
+					  zone = "fr-par-1"
 					  name = "Remote Access"
 					}
 					
@@ -441,7 +441,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 					  name        = "%s"
-					  zone        = "fr-par-2"
+					  zone        = "fr-par-1"
 					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os          = data.scaleway_baremetal_os.my_os.os_id
 					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
@@ -457,7 +457,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id":         "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2",
+						"id":         "fr-par-1/931df052-d713-4674-8b58-96a63244c8e2",
 						"expires_at": "2025-07-06T09:00:00Z",
 					}),
 				),
@@ -483,18 +483,18 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
+						zone = "fr-par-1"
+						name = "EM-A115X-SSD"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Private Network"
 					}
 
@@ -509,7 +509,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-2"
+						zone        = "fr-par-1"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -549,18 +549,18 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
+						zone = "fr-par-1"
+						name = "EM-A115X-SSD"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Private Network"
 					}
 
@@ -575,7 +575,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-2"
+						zone        = "fr-par-1"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -592,18 +592,18 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
+						zone = "fr-par-1"
+						name = "EM-A115X-SSD"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Private Network"
 					}
 
@@ -618,7 +618,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-2"
+						zone        = "fr-par-1"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -658,18 +658,18 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
+						zone = "fr-par-1"
+						name = "EM-A115X-SSD"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Private Network"
 					}
 
@@ -684,7 +684,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-2"
+						zone        = "fr-par-1"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -706,18 +706,18 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
+						zone = "fr-par-1"
+						name = "EM-A115X-SSD"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-2"
+						zone = "fr-par-1"
 						name = "Private Network"
 					}
 
@@ -736,7 +736,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-2"
+						zone        = "fr-par-1"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
