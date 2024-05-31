@@ -1,4 +1,4 @@
-package scw_config
+package scwconfig
 
 import (
 	"context"
