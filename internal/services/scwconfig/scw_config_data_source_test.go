@@ -14,6 +14,10 @@ import (
 )
 
 func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
+	// Skip if we are running coverage tests on CI
+	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == "SCWXXXXXXXXXXXXXFAKE" {
+		t.Skip("Skipping TestAccDataSourceConfig_ActiveProfile")
+	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -60,6 +64,10 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 }
 
 func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
+	// Skip if we are running coverage tests on CI
+	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == "SCWXXXXXXXXXXXXXFAKE" {
+		t.Skip("Skipping TestAccDataSourceConfig_OtherProfile")
+	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -107,6 +115,10 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 }
 
 func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
+	// Skip if we are running coverage tests on CI
+	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == "SCWXXXXXXXXXXXXXFAKE" {
+		t.Skip("Skipping TestAccDataSourceConfig_MixedProfile")
+	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
