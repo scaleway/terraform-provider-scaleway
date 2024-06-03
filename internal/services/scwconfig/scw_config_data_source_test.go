@@ -29,7 +29,7 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
-			_ = os.Setenv("SCW_CONFIG_PATH", "./test_config.yaml")
+			_ = os.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
 			metaDefault, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
 				HTTPClient:       tt.Meta.HTTPClient(),
@@ -79,7 +79,7 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
-			_ = os.Setenv("SCW_CONFIG_PATH", "./test_config.yaml")
+			_ = os.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
 			_ = os.Setenv("SCW_PROFILE", "other")
 			metaOther, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
@@ -130,7 +130,7 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
-			_ = os.Setenv("SCW_CONFIG_PATH", "./test_config.yaml")
+			_ = os.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
 			_ = os.Setenv("SCW_PROFILE", "incomplete")
 			_ = os.Setenv("SCW_DEFAULT_PROJECT_ID", "77777777-7777-7777-7777-777777777777")
 			metaMixed, err := meta.NewMeta(ctx, &meta.Config{
