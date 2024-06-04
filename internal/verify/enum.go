@@ -30,7 +30,7 @@ func getValues[T EnumValues[T]]() []string {
 
 // filterUnknownValues removes "unknown" and "unknown_*" values from the slice
 func filterUnknownValues(values []string) []string {
-	var filtered []string
+	filtered := make([]string, 0, len(values))
 	for _, v := range values {
 		if v == "unknown" || strings.HasPrefix(v, "unknown_") {
 			continue
