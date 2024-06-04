@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -49,14 +48,11 @@ func ResourceImage() *schema.Resource {
 				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"architecture": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     instanceSDK.ArchX86_64.String(),
-				Description: "Architecture of the image (default = x86_64)",
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.ArchArm.String(),
-					instanceSDK.ArchX86_64.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          instanceSDK.ArchX86_64.String(),
+				Description:      "Architecture of the image (default = x86_64)",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.Arch](),
 			},
 			"additional_volume_ids": {
 				Type:     schema.TypeList,

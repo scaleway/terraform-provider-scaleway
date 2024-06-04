@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 const (
@@ -75,15 +75,12 @@ func ResourceDevice() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"policy": {
-										Type:         schema.TypeString,
-										Optional:     true,
-										Description:  "Publish message filter policy",
-										Default:      iot.DeviceMessageFiltersRulePolicyReject.String(),
-										RequiredWith: []string{"message_filters.0.publish.0.topics"},
-										ValidateFunc: validation.StringInSlice([]string{
-											iot.DeviceMessageFiltersRulePolicyAccept.String(),
-											iot.DeviceMessageFiltersRulePolicyReject.String(),
-										}, false),
+										Type:             schema.TypeString,
+										Optional:         true,
+										Description:      "Publish message filter policy",
+										Default:          iot.DeviceMessageFiltersRulePolicyReject.String(),
+										RequiredWith:     []string{"message_filters.0.publish.0.topics"},
+										ValidateDiagFunc: verify.ValidateEnum[iot.DeviceMessageFiltersRulePolicy](),
 									},
 									"topics": {
 										Type:         schema.TypeList,
@@ -105,15 +102,12 @@ func ResourceDevice() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"policy": {
-										Type:         schema.TypeString,
-										Optional:     true,
-										Description:  "Subscribe message filter policy",
-										Default:      iot.DeviceMessageFiltersRulePolicyReject.String(),
-										RequiredWith: []string{"message_filters.0.subscribe.0.topics"},
-										ValidateFunc: validation.StringInSlice([]string{
-											iot.DeviceMessageFiltersRulePolicyAccept.String(),
-											iot.DeviceMessageFiltersRulePolicyReject.String(),
-										}, false),
+										Type:             schema.TypeString,
+										Optional:         true,
+										Description:      "Subscribe message filter policy",
+										Default:          iot.DeviceMessageFiltersRulePolicyReject.String(),
+										RequiredWith:     []string{"message_filters.0.subscribe.0.topics"},
+										ValidateDiagFunc: verify.ValidateEnum[iot.DeviceMessageFiltersRulePolicy](),
 									},
 									"topics": {
 										Type:         schema.TypeList,

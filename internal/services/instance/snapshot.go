@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -52,17 +51,12 @@ func ResourceSnapshot() *schema.Resource {
 				ConflictsWith: []string{"import"},
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The snapshot's volume type",
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.SnapshotVolumeTypeUnknownVolumeType.String(),
-					instanceSDK.SnapshotVolumeTypeBSSD.String(),
-					instanceSDK.SnapshotVolumeTypeLSSD.String(),
-					instanceSDK.SnapshotVolumeTypeUnified.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				ForceNew:         true,
+				Description:      "The snapshot's volume type",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SnapshotVolumeType](),
 			},
 			"size_in_gb": {
 				Type:        schema.TypeInt,

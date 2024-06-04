@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceSecurityGroup() *schema.Resource {
@@ -48,24 +49,18 @@ func ResourceSecurityGroup() *schema.Resource {
 				Description: "The description of the security group",
 			},
 			"inbound_default_policy": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "accept",
-				Description: "Default inbound traffic policy for this security group",
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.SecurityGroupPolicyAccept.String(),
-					instanceSDK.SecurityGroupPolicyDrop.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "accept",
+				Description:      "Default inbound traffic policy for this security group",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SecurityGroupPolicy](),
 			},
 			"outbound_default_policy": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "accept",
-				Description: "Default outbound traffic policy for this security group",
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.SecurityGroupPolicyAccept.String(),
-					instanceSDK.SecurityGroupPolicyDrop.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "accept",
+				Description:      "Default outbound traffic policy for this security group",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SecurityGroupPolicy](),
 			},
 			"inbound_rule": {
 				Type:          schema.TypeList,
@@ -372,25 +367,17 @@ func securityGroupRuleSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"action": {
-				Type:     schema.TypeString,
-				Required: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.SecurityGroupRuleActionAccept.String(),
-					instanceSDK.SecurityGroupRuleActionDrop.String(),
-				}, false),
-				Description: "Action when rule match request (drop or accept)",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SecurityGroupRuleAction](),
+				Description:      "Action when rule match request (drop or accept)",
 			},
 			"protocol": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  instanceSDK.SecurityGroupRuleProtocolTCP.String(),
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.SecurityGroupRuleProtocolICMP.String(),
-					instanceSDK.SecurityGroupRuleProtocolTCP.String(),
-					instanceSDK.SecurityGroupRuleProtocolUDP.String(),
-					instanceSDK.SecurityGroupRuleProtocolANY.String(),
-				}, false),
-				Description: "Protocol for this rule (TCP, UDP, ICMP or ANY)",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          instanceSDK.SecurityGroupRuleProtocolTCP.String(),
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SecurityGroupRuleProtocol](),
+				Description:      "Protocol for this rule (TCP, UDP, ICMP or ANY)",
 			},
 			"port": {
 				Type:        schema.TypeInt,

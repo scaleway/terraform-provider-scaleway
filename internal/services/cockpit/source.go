@@ -5,13 +5,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceCockpitSource() *schema.Resource {
@@ -36,15 +36,11 @@ func ResourceCockpitSource() *schema.Resource {
 				Description: "Name of the datasource",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The type of the datasource",
-				ValidateFunc: validation.StringInSlice([]string{
-					cockpit.DataSourceTypeMetrics.String(),
-					cockpit.DataSourceTypeLogs.String(),
-					cockpit.DataSourceTypeTraces.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "The type of the datasource",
+				ValidateDiagFunc: verify.ValidateEnum[cockpit.DataSourceType](),
 			},
 			// computed
 			"url": {

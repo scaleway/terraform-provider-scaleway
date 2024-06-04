@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceFunction() *schema.Resource {
@@ -79,13 +80,10 @@ func ResourceFunction() *schema.Resource {
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
 			"privacy": {
-				Type:        schema.TypeString,
-				Description: "Privacy of the function. Can be either `private` or `public`",
-				Required:    true,
-				ValidateFunc: validation.StringInSlice([]string{
-					function.FunctionPrivacyPublic.String(),
-					function.FunctionPrivacyPrivate.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Description:      "Privacy of the function. Can be either `private` or `public`",
+				Required:         true,
+				ValidateDiagFunc: verify.ValidateEnum[function.FunctionPrivacy](),
 			},
 			"runtime": {
 				Type:        schema.TypeString,
@@ -139,14 +137,11 @@ func ResourceFunction() *schema.Resource {
 				Description: "Define if the function should be deployed, terraform will wait for function to be deployed",
 			},
 			"http_option": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "HTTP traffic configuration",
-				Default:     function.FunctionHTTPOptionEnabled.String(),
-				ValidateFunc: validation.StringInSlice([]string{
-					function.FunctionHTTPOptionEnabled.String(),
-					function.FunctionHTTPOptionRedirected.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "HTTP traffic configuration",
+				Default:          function.FunctionHTTPOptionEnabled.String(),
+				ValidateDiagFunc: verify.ValidateEnum[function.FunctionHTTPOption](),
 			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,

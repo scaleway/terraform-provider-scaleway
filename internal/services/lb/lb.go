@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -157,16 +156,11 @@ func ResourceLb() *schema.Resource {
 				},
 			},
 			"ssl_compatibility_level": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Enforces minimal SSL version (in SSL/TLS offloading context)",
-				Default:     lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
-				ValidateFunc: validation.StringInSlice([]string{
-					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelUnknown.String(),
-					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
-					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelModern.String(),
-					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelOld.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Enforces minimal SSL version (in SSL/TLS offloading context)",
+				Default:          lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
+				ValidateDiagFunc: verify.ValidateEnum[lbSDK.SSLCompatibilityLevel](),
 			},
 			"assign_flexible_ip": {
 				Type:          schema.TypeBool,

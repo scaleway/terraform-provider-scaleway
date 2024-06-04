@@ -63,15 +63,11 @@ func ResourcePATRule() *schema.Resource {
 				Description: "The private port used in the PAT rule",
 			},
 			"protocol": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					vpcgw.PATRuleProtocolTCP.String(),
-					vpcgw.PATRuleProtocolUDP.String(),
-					vpcgw.PATRuleProtocolBoth.String(),
-				}, true),
-				Default:     "both",
-				Description: "The protocol used in the PAT rule",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnum[vpcgw.PATRuleProtocol](),
+				Default:          "both",
+				Description:      "The protocol used in the PAT rule",
 			},
 			"zone": zonal.Schema(),
 			// Computed elements
