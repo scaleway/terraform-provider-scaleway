@@ -541,7 +541,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	// Volume type and size
 	if d.HasChanges("volume_type", "volume_size_in_gb") {
 		switch volType {
-		case rdb.VolumeTypeBssd, rdb.VolumeTypeSbs5k:
+		case rdb.VolumeTypeBssd, rdb.VolumeTypeSbs5k, rdb.VolumeTypeSbs15k:
 			if d.HasChange("volume_type") {
 				upgradeInstanceRequests = append(upgradeInstanceRequests,
 					rdb.UpgradeInstanceRequest{
