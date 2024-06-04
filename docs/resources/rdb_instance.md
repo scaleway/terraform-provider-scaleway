@@ -16,11 +16,27 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 resource "scaleway_rdb_instance" "main" {
   name           = "test-rdb"
   node_type      = "DB-DEV-S"
-  engine         = "PostgreSQL-11"
+  engine         = "PostgreSQL-15"
   is_ha_cluster  = true
   disable_backup = true
   user_name      = "my_initial_user"
   password       = "thiZ_is_v&ry_s3cret"
+}
+```
+
+### Example Block Storage Low Latency
+
+```terraform
+resource "scaleway_rdb_instance" "main" {
+  name              = "test-rdb-sbs"
+  node_type         = "db-play2-pico"
+  engine            = "PostgreSQL-15"
+  is_ha_cluster     = true
+  disable_backup    = true
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_type       = "sbs_15k"
+  volume_size_in_gb = 10
 }
 ```
 
@@ -49,7 +65,7 @@ resource "scaleway_rdb_instance" "main" {
 resource "scaleway_rdb_instance" "main" {
   name          = "test-rdb"
   node_type     = "DB-DEV-S"
-  engine        = "PostgreSQL-11"
+  engine        = "PostgreSQL-15"
   is_ha_cluster = true
   user_name     = "my_initial_user"
   password      = "thiZ_is_v&ry_s3cret"
@@ -75,7 +91,7 @@ resource "scaleway_vpc_private_network" "pn" {
 
 resource "scaleway_rdb_instance" "main" {
   node_type         = "db-dev-s"
-  engine            = "PostgreSQL-11"
+  engine            = "PostgreSQL-15"
   private_network {
     pn_id  = scaleway_vpc_private_network.pn.id
     ip_net = "172.16.20.4/22"   # IP address within a given IP network
@@ -91,7 +107,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_rdb_instance" "main" {
   node_type      = "DB-DEV-S"
-  engine         = "PostgreSQL-11"
+  engine         = "PostgreSQL-15"
   private_network {
     pn_id = scaleway_vpc_private_network.pn.id
     enable_ipam = true
@@ -105,7 +121,7 @@ resource "scaleway_rdb_instance" "main" {
 ```terraform
 resource "scaleway_rdb_instance" "main" {
   node_type         = "db-dev-s"
-  engine            = "PostgreSQL-11"
+  engine            = "PostgreSQL-15"
 }  
 ```
 
