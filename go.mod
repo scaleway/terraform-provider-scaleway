@@ -6,9 +6,9 @@ toolchain go1.22.2
 
 require (
 	github.com/aws/aws-sdk-go v1.52.0
-	github.com/bflad/tfproviderdocs v0.12.0
+	github.com/bflad/tfproviderdocs v0.12.1
 	github.com/bflad/tfproviderlint v0.30.0
-	github.com/docker/docker v26.1.1+incompatible
+	github.com/docker/docker v26.1.3+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/aws-sdk-go-base v1.1.0
@@ -18,9 +18,9 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.5
 	github.com/hashicorp/terraform-plugin-go v0.23.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/hashicorp/terraform-plugin-mux v0.15.0
+	github.com/hashicorp/terraform-plugin-mux v0.16.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
-	github.com/nats-io/jwt/v2 v2.5.6
+	github.com/nats-io/jwt/v2 v2.5.7
 	github.com/nats-io/nats.go v1.35.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.26.0.20240503144623-358f61d22470
