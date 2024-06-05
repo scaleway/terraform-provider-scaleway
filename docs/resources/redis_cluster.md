@@ -180,14 +180,14 @@ the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 - `public_network` - (Optional) Public network details. Only one of `private_network` and `public_network` may be set.
   ~> The `public_network` block exports:
 
-  - `id` - (Required) The UUID of the endpoint.
-  - `ips` - Lis of IPv4 address of the endpoint (IP address).
-  - `port` - TCP port of the endpoint.
+    - `id` - (Required) The UUID of the endpoint.
+    - `ips` - Lis of IPv4 address of the endpoint (IP address).
+    - `port` - TCP port of the endpoint.
 
 - `private_network` - List of Private Networks endpoints of the Redis™ cluster.
 
-  - `endpoint_id` - The ID of the endpoint.
-  - `zone` - The zone of the Private Network.
+    - `endpoint_id` - The ID of the endpoint.
+    - `zone` - The zone of the Private Network.
 
 - `created_at` - The date and time of creation of the Redis™ cluster.
 - `updated_at` - The date and time of the last update of the Redis™ cluster.

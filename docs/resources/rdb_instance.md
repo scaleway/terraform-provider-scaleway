@@ -192,9 +192,9 @@ interruption.
 
 - `private_network` - List of Private Networks endpoints of the Database Instance.
 
-  - `pn_id` - (Required) The ID of the Private Network.
-  - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
-  - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
+    - `pn_id` - (Required) The ID of the Private Network.
+    - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
+    - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
 
 ~> **Important** One of `ip_net` or `enable_ipam=true` must be set.
 
@@ -218,21 +218,21 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
 - `endpoint_ip` - (Deprecated) The IP of the Database Instance.
 - `endpoint_port` - (Deprecated) The port of the Database Instance.
 - `read_replicas` - List of read replicas of the Database Instance.
-  - `ip` - IP of the replica.
-  - `port` - Port of the replica.
-  - `name` - Name of the replica.
+    - `ip` - IP of the replica.
+    - `port` - Port of the replica.
+    - `name` - Name of the replica.
 - `load_balancer` - List of Load Balancer endpoints of the Database Instance.
-  - `endpoint_id` - The ID of the endpoint of the Load Balancer.
-  - `ip` - IP of the endpoint.
-  - `port` - Port of the endpoint.
-  - `name` - Name of the endpoint.
-  - `hostname` - Name of the endpoint.
+    - `endpoint_id` - The ID of the endpoint of the Load Balancer.
+    - `ip` - IP of the endpoint.
+    - `port` - Port of the endpoint.
+    - `name` - Name of the endpoint.
+    - `hostname` - Name of the endpoint.
 - `private_network` - List of Private Networks endpoints of the Database Instance.
-  - `endpoint_id` - The ID of the endpoint.
-  - `ip` - IPv4 address on the network.
-  - `port` - Port in the Private Network.
-  - `name` - Name of the endpoint.
-  - `hostname` - Hostname of the endpoint.
+    - `endpoint_id` - The ID of the endpoint.
+    - `ip` - IPv4 address on the network.
+    - `port` - Port in the Private Network.
+    - `name` - Name of the endpoint.
+    - `hostname` - Hostname of the endpoint.
 - `certificate` - Certificate of the Database Instance.
 - `organization_id` - The organization ID the Database Instance is associated with.
 

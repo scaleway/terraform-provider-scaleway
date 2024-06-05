@@ -107,12 +107,12 @@ The following arguments are supported:
 
 - `rule` - List of rules in the policy.
 
-  - `organization_id` - ID of organization scoped to the rule, this can be used to create a rule for all projects in an organization.
-  - `project_ids` - List of project IDs scoped to the rule.
+    - `organization_id` - ID of organization scoped to the rule, this can be used to create a rule for all projects in an organization.
+    - `project_ids` - List of project IDs scoped to the rule.
 
-  ~> **Important** One `organization_id` or `project_ids` must be set per rule.
+    ~> **Important** One `organization_id` or `project_ids` must be set per rule.
 
-  - `permission_set_names` - Names of permission sets bind to the rule.
+    - `permission_set_names` - Names of permission sets bind to the rule.
 
   **_TIP:_** You can use the Scaleway CLI to list the permissions details. e.g:
 

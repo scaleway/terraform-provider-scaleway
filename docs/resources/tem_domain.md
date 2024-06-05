@@ -146,11 +146,11 @@ In addition to all arguments above, the following attributes are exported:
 - `mx_blackhole` - The Scaleway's blackhole MX server to use if you do not have one.
 
 - `reputation` - The domain's reputation.
-  - `status` - The status of the domain's reputation.
-  - `score` - A range from 0 to 100 that determines your domain's reputation score.
-  - `scored_at` - The time and date the score was calculated.
-  - `previous_score` - The previously-calculated domain's reputation score.
-  - `previous_scored_at` - The time and date the previous reputation score was calculated.
+    - `status` - The status of the domain's reputation.
+    - `score` - A range from 0 to 100 that determines your domain's reputation score.
+    - `scored_at` - The time and date the score was calculated.
+    - `previous_score` - The previously-calculated domain's reputation score.
+    - `previous_scored_at` - The time and date the previous reputation score was calculated.
 
 ## Import
 

@@ -90,9 +90,9 @@ The following arguments are supported:
 - `direct_access` - (Optional) Creates a direct access endpoint to rdb replica.
 
 - `private_network` - (Optional) Create an endpoint in a Private Netork.
-  - `private_network_id` - (Required) UUID of the Private Netork to be connected to the Read Replica.
-  - `service_ip` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
-  - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
+    - `private_network_id` - (Required) UUID of the Private Netork to be connected to the Read Replica.
+    - `service_ip` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. If not set, The IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
+    - `enable_ipam` - (Optional) If true, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
 
 ~> **Important:** One of `service_ip` or `enable_ipam=true` must be set.
 
@@ -111,18 +111,18 @@ In addition to all arguments above, the following attributes are exported:
 they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `direct_access` - List of Load Balancer endpoints of the Read Replica.
-  - `endpoint_id` - The ID of the endpoint of the Read Replica.
-  - `ip` - IPv4 address of the endpoint (IP address). Only one of IP and hostname may be set.
-  - `port` - TCP port of the endpoint.
-  - `name` - Name of the endpoint.
-  - `hostname` - Hostname of the endpoint. Only one of IP and hostname may be set.
+    - `endpoint_id` - The ID of the endpoint of the Read Replica.
+    - `ip` - IPv4 address of the endpoint (IP address). Only one of IP and hostname may be set.
+    - `port` - TCP port of the endpoint.
+    - `name` - Name of the endpoint.
+    - `hostname` - Hostname of the endpoint. Only one of IP and hostname may be set.
 - `private_network` - List of Private Netorks endpoints of the Read Replica.
-  - `endpoint_id` - The ID of the endpoint of the Read Replica.
-  - `ip` - IPv4 address of the endpoint (IP address). Only one of IP and hostname may be set.
-  - `port` - TCP port of the endpoint.
-  - `name` - Name of the endpoint.
-  - `hostname` - Hostname of the endpoint. Only one of IP and hostname may be set.
-  - `enable_ipam` - Indicates whether the IP is managed by IPAM.
+    - `endpoint_id` - The ID of the endpoint of the Read Replica.
+    - `ip` - IPv4 address of the endpoint (IP address). Only one of IP and hostname may be set.
+    - `port` - TCP port of the endpoint.
+    - `name` - Name of the endpoint.
+    - `hostname` - Hostname of the endpoint. Only one of IP and hostname may be set.
+    - `enable_ipam` - Indicates whether the IP is managed by IPAM.
 
 ## Import
 
