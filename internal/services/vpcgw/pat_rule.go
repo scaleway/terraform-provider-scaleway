@@ -65,7 +65,7 @@ func ResourcePATRule() *schema.Resource {
 			"protocol": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnum[vpcgw.PATRuleProtocol](),
+				ValidateDiagFunc: verify.ValidateEnumIgnoreCase[vpcgw.PATRuleProtocol](),
 				Default:          "both",
 				Description:      "The protocol used in the PAT rule",
 			},
