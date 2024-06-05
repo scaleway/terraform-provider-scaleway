@@ -3,7 +3,9 @@ package object
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
@@ -70,6 +72,12 @@ func ResourceObject() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "File hash to trigger upload",
+			},
+			"sse_customer_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Customer key used for server-side encryption (SSE-C)",
+				Sensitive:   true,
 			},
 			"storage_class": {
 				Type:         schema.TypeString,
@@ -141,6 +149,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		Metadata:     types.ExpandMapStringStringPtr(d.Get("metadata")),
 	}
 
+	// Object content
 	if filePath, hasFile := d.GetOk("file"); hasFile {
 		file, err := os.Open(filePath.(string))
 		if err != nil {
@@ -160,6 +169,15 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		req.Body = bytes.NewReader(decoded)
 	} else {
 		req.Body = bytes.NewReader([]byte{})
+	}
+
+	// Server-side encryption
+	if customerKey := d.Get("sse_customer_key").(string); customerKey != "" {
+		//TODO: encode the following fields to base64 before adding them to the request ?
+		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+		req.SSECustomerKey = &customerKey
+		hash := md5.Sum([]byte(customerKey))
+		req.SSECustomerKeyMD5 = scw.StringPtr(hex.EncodeToString(hash[:]))
 	}
 
 	_, err = s3Client.PutObjectWithContext(ctx, req)

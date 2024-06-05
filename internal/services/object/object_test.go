@@ -684,6 +684,66 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 	})
 }
 
+func TestAccObject_SSECustomer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-sse-customer")
+
+	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+	fileContentStep2 := "This is a different content"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region = "%s"
+					}
+					
+					resource scaleway_object "sse-c-encrypted" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "test-sse-c-encrypted"
+						content = "%s"
+						sse_customer_key = "mY5up3r4w3s0meK3y"
+					}
+				`, bucketName, objectTestsMainRegion, fileContentStep1),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckObjectExists(tt, "scaleway_object.sse-c-encrypted"),
+					resource.TestCheckResourceAttr("scaleway_object.sse-c-encrypted", "content", fileContentStep1),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region = "%s"
+					}
+					
+					resource scaleway_object "sse-c-encrypted" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "test-by-content"
+						content = "%s"
+						sse_customer_key = "mY5up3r4w3s0meK3y"
+					}
+				`, bucketName, objectTestsMainRegion, fileContentStep2),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckObjectExists(tt, "scaleway_object.sse-c-encrypted"),
+					resource.TestCheckResourceAttr("scaleway_object.sse-c-encrypted", "content", fileContentStep2),
+				),
+			},
+		},
+	})
+}
+
 func TestAccObject_WithBucketName(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
