@@ -124,15 +124,12 @@ func ResourceServer() *schema.Resource {
 							Description: "Size of the root volume in gigabytes",
 						},
 						"volume_type": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							ForceNew:    true,
-							Description: "Volume type of the root volume",
-							ValidateFunc: validation.StringInSlice([]string{
-								instanceSDK.VolumeVolumeTypeBSSD.String(),
-								instanceSDK.VolumeVolumeTypeLSSD.String(),
-							}, false),
+							Type:             schema.TypeString,
+							Optional:         true,
+							Computed:         true,
+							ForceNew:         true,
+							Description:      "Volume type of the root volume",
+							ValidateDiagFunc: verify.ValidateEnum[instanceSDK.VolumeVolumeType](),
 						},
 						"delete_on_termination": {
 							Type:        schema.TypeBool,
@@ -241,15 +238,11 @@ func ResourceServer() *schema.Resource {
 				}, false),
 			},
 			"boot_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The boot type of the server",
-				Default:     instanceSDK.BootTypeLocal,
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.BootTypeLocal.String(),
-					instanceSDK.BootTypeRescue.String(),
-					instanceSDK.BootTypeBootscript.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The boot type of the server",
+				Default:          instanceSDK.BootTypeLocal,
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.BootType](),
 			},
 			"bootscript_id": {
 				Type:         schema.TypeString,

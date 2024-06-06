@@ -6,11 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func DataSourceOffer() *schema.Resource {
@@ -25,15 +25,11 @@ func DataSourceOffer() *schema.Resource {
 				ConflictsWith: []string{"offer_id"},
 			},
 			"subscription_period": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					baremetal.OfferSubscriptionPeriodUnknownSubscriptionPeriod.String(),
-					baremetal.OfferSubscriptionPeriodHourly.String(),
-					baremetal.OfferSubscriptionPeriodMonthly.String(),
-				}, false),
-				Description:   "Period of subscription the desired offer",
-				ConflictsWith: []string{"offer_id"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnum[baremetal.OfferSubscriptionPeriod](),
+				Description:      "Period of subscription the desired offer",
+				ConflictsWith:    []string{"offer_id"},
 			},
 			"offer_id": {
 				Type:          schema.TypeString,

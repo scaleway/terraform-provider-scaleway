@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -41,14 +40,10 @@ func ResourceMACAddress() *schema.Resource {
 				Description:  "The ID of the flexible IP for which to generate a virtual MAC",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The type of the virtual MAC",
-				ValidateFunc: validation.StringInSlice([]string{
-					flexibleip.MACAddressTypeVmware.String(),
-					flexibleip.MACAddressTypeXen.String(),
-					flexibleip.MACAddressTypeKvm.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The type of the virtual MAC",
+				ValidateDiagFunc: verify.ValidateEnum[flexibleip.MACAddressType](),
 			},
 			"flexible_ip_ids_to_duplicate": {
 				Type: schema.TypeSet,

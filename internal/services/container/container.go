@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 const (
@@ -106,14 +107,11 @@ func ResourceContainer() *schema.Resource {
 				Description: "The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to 300s.",
 			},
 			"privacy": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The privacy type define the way to authenticate to your container",
-				Default:     container.ContainerPrivacyPublic,
-				ValidateFunc: validation.StringInSlice([]string{
-					container.ContainerPrivacyPublic.String(),
-					container.ContainerPrivacyPrivate.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The privacy type define the way to authenticate to your container",
+				Default:          container.ContainerPrivacyPublic,
+				ValidateDiagFunc: verify.ValidateEnum[container.ContainerPrivacy](),
 			},
 			"registry_image": {
 				Type:        schema.TypeString,
@@ -140,14 +138,11 @@ func ResourceContainer() *schema.Resource {
 				Description: "The native container domain name.",
 			},
 			"protocol": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The communication protocol http1 or h2c. Defaults to http1.",
-				Default:     container.ContainerProtocolHTTP1.String(),
-				ValidateFunc: validation.StringInSlice([]string{
-					container.ContainerProtocolH2c.String(),
-					container.ContainerProtocolHTTP1.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The communication protocol http1 or h2c. Defaults to http1.",
+				Default:          container.ContainerProtocolHTTP1.String(),
+				ValidateDiagFunc: verify.ValidateEnum[container.ContainerProtocol](),
 			},
 			"port": {
 				Type:        schema.TypeInt,
@@ -162,14 +157,11 @@ func ResourceContainer() *schema.Resource {
 				Default:     false,
 			},
 			"http_option": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "HTTP traffic configuration",
-				Default:     container.ContainerHTTPOptionEnabled.String(),
-				ValidateFunc: validation.StringInSlice([]string{
-					container.ContainerHTTPOptionEnabled.String(),
-					container.ContainerHTTPOptionRedirected.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "HTTP traffic configuration",
+				Default:          container.ContainerHTTPOptionEnabled.String(),
+				ValidateDiagFunc: verify.ValidateEnum[container.ContainerHTTPOption](),
 			},
 			// computed
 			"status": {

@@ -128,16 +128,11 @@ func ResourceInstance() *schema.Resource {
 				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
 			},
 			"volume_type": {
-				Type:     schema.TypeString,
-				Default:  rdb.VolumeTypeLssd,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					rdb.VolumeTypeLssd.String(),
-					rdb.VolumeTypeBssd.String(),
-					rdb.VolumeTypeSbs5k.String(),
-					rdb.VolumeTypeSbs15k.String(),
-				}, false),
-				Description: "Type of volume where data are stored",
+				Type:             schema.TypeString,
+				Default:          rdb.VolumeTypeLssd,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnum[rdb.VolumeType](),
+				Description:      "Type of volume where data are stored",
 			},
 			"volume_size_in_gb": {
 				Type:         schema.TypeInt,

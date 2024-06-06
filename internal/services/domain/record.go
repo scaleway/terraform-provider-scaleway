@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var changeKeys = []string{
@@ -81,24 +82,11 @@ func ResourceRecord() *schema.Resource {
 				},
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Description: "The type of the record",
-				ValidateFunc: validation.StringInSlice([]string{
-					domain.RecordTypeA.String(),
-					domain.RecordTypeAAAA.String(),
-					domain.RecordTypeALIAS.String(),
-					domain.RecordTypeCNAME.String(),
-					domain.RecordTypeDNAME.String(),
-					domain.RecordTypeMX.String(),
-					domain.RecordTypeNS.String(),
-					domain.RecordTypePTR.String(),
-					domain.RecordTypeSRV.String(),
-					domain.RecordTypeTXT.String(),
-					domain.RecordTypeTLSA.String(),
-					domain.RecordTypeCAA.String(),
-				}, false),
-				ForceNew: true,
-				Required: true,
+				Type:             schema.TypeString,
+				Description:      "The type of the record",
+				ValidateDiagFunc: verify.ValidateEnum[domain.RecordType](),
+				ForceNew:         true,
+				Required:         true,
 			},
 			"data": {
 				Type:        schema.TypeString,
@@ -200,14 +188,10 @@ func ResourceRecord() *schema.Resource {
 							Description: "User-agent used when checking the URL",
 						},
 						"strategy": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Strategy to return an IP from the IPs list",
-							ValidateFunc: validation.StringInSlice([]string{
-								domain.RecordHTTPServiceConfigStrategyRandom.String(),
-								domain.RecordHTTPServiceConfigStrategyHashed.String(),
-								domain.RecordHTTPServiceConfigStrategyAll.String(),
-							}, false),
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "Strategy to return an IP from the IPs list",
+							ValidateDiagFunc: verify.ValidateEnum[domain.RecordHTTPServiceConfigStrategy](),
 						},
 					},
 				},
