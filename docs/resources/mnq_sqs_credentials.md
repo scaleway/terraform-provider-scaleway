@@ -40,9 +40,9 @@ The following arguments are supported:
     - `can_manage` - (Optional). Defines whether the user can manage the associated resource(s).
 
 
-- `region` - (Defaults to [provider](../index.mds#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which SQS is enabled.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which SQS is enabled.
 
-- `project_id` - (Defaults to [provider](../index.mds#arguments-reference) `project_id`) The ID of the Project in which SQS is enabled.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project in which SQS is enabled.
 
 
 ## Attributes Reference

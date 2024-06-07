@@ -26,7 +26,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The unique name of the NATS account.
 
-- `region` - (Defaults to [provider](../index.mds#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions)
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions)
   in which the account should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the
