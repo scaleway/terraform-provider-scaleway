@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_mnq_sns_topic_subscription"
 
 # Resource: scaleway_mnq_sns_topic_subscription
 
-Manage Scaleway Messaging and queuing SNS Topic Subscriptions.
-For further information please check
-our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sns-overview/)
+Manages Scaleway Messaging and Queuing SNS topic subscriptions.
+For further information, see
+our [main documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sns-overview/).
 
 ## Example Usage
 
@@ -48,7 +48,7 @@ resource scaleway_mnq_sns_topic_subscription main {
 The following arguments are supported:
 
 
-- `protocol` - (Required) Protocol of the SNS Topic Subscription.
+- `protocol` - (Required) Protocol of the SNS topic subscription.
 
 - `topic_id` - (Optional) The ID of the topic. Either `topic_id` or `topic_arn` is required. Conflicts with `topic_arn`.
 
@@ -58,14 +58,14 @@ The following arguments are supported:
 
 - `secret_key` - (Optional) The secret key of the SNS credentials.
 
-- `redrive_policy` - (Optional) Activate JSON Redrive Policy.
+- `redrive_policy` - (Optional) Activate JSON redrive policy.
 
 - `sns_endpoint` - (Optional) The endpoint of the SNS service. Can contain a {region} placeholder. Defaults to `https://sns.mnq.{region}.scaleway.com`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions)
-  in which sns is enabled.
+- `region` - (Defaults to [provider](../index.mds#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions)
+  in which SNS is enabled.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the sns is enabled for.
+- `project_id` - (Defaults to [provider](../index.mds#arguments-reference) `project_id`) The ID of the Project in which SNS is enabled.
 
 ## Attributes Reference
 
@@ -77,7 +77,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-SNS topic subscriptions can be imported using the `{region}/{project-id}/{topic-name}/{subscription-id}`, e.g.
+SNS topic subscriptions can be imported using `{region}/{project-id}/{topic-name}/{subscription-id}`, e.g.
 
 ```bash
 $ terraform import scaleway_mnq_sns_topic_subscription.main fr-par/11111111111111111111111111111111/my-topic/11111111111111111111111111111111
