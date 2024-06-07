@@ -37,7 +37,7 @@ func ResourcePrivateNetworkEndpoint() *schema.Resource {
 				Description: "Instance on which the endpoint is attached",
 			},
 			"private_network": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Private network specs details",
 				MaxItems:    1,
@@ -97,7 +97,17 @@ func resourceDocumentDBInstanceEndpointCreate(ctx context.Context, d *schema.Res
 	}
 
 	instanceID := locality.ExpandID(d.Get("instance_id"))
-	privateNetwork := d.Get("private_network").(*schema.Set).List()[0].(map[string]interface{})
+	privateNetworkRaw := d.Get("private_network")
+	privateNetworkList, ok := privateNetworkRaw.([]interface{})
+	if !ok || len(privateNetworkList) == 0 {
+		return diag.Errorf("expected private_network to be a non-empty list, got %T", privateNetworkRaw)
+	}
+
+	privateNetworkMap, ok := privateNetworkList[0].(map[string]interface{})
+	if !ok {
+		return diag.Errorf("expected first element of private_network to be a map, got %T", privateNetworkList[0])
+	}
+
 	endpointSpecPN := &documentdb.EndpointSpecPrivateNetwork{}
 	createEndpointRequest := &documentdb.CreateEndpointRequest{
 		Region:       region,
@@ -105,8 +115,8 @@ func resourceDocumentDBInstanceEndpointCreate(ctx context.Context, d *schema.Res
 		EndpointSpec: &documentdb.EndpointSpec{},
 	}
 
-	endpointSpecPN.PrivateNetworkID = locality.ExpandID(privateNetwork["id"].(string))
-	ipNet := privateNetwork["ip_net"].(string)
+	endpointSpecPN.PrivateNetworkID = locality.ExpandID(privateNetworkMap["id"].(string))
+	ipNet := privateNetworkMap["ip_net"].(string)
 	if len(ipNet) > 0 {
 		ip, err := types.ExpandIPNet(ipNet)
 		if err != nil {

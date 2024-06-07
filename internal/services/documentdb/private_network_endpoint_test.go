@@ -37,18 +37,19 @@ func TestAccPrivateNetworkEndpoint_Basic(t *testing.T) {
 				}
 				
 				resource "scaleway_documentdb_private_network_endpoint" "main" {
-				  instance_id        = scaleway_documentdb_instance.main.id
-				  ip_net             = "172.16.32.3/22"
-				  private_network_id = scaleway_vpc_private_network.pn.id
-				  depends_on         = [scaleway_vpc_private_network.pn]
+				  instance_id = scaleway_documentdb_instance.main.id
+				  private_network {
+				    id = scaleway_vpc_private_network.pn.id
+				    ip_net = "172.16.32.3/22"
+				  }
+				  depends_on = [scaleway_vpc_private_network.pn]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isEndpointPresent(tt, "scaleway_documentdb_private_network_endpoint.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
-					resource.TestCheckResourceAttr(
-						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "172.16.32.3/22"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_private_network_endpoint.main", "private_network.0.ip_net", "172.16.32.3/22"),
 				),
 			},
 			{
@@ -70,7 +71,7 @@ func TestAccPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  name = "my vpc"
 				}
 
-				// Creation to the new private network with new subnet
+				// Création du nouveau réseau privé avec un nouveau sous-réseau
 				resource "scaleway_vpc_private_network" "pn02" {
 				  ipv4_subnet {
 					subnet = "172.16.64.0/22"
@@ -79,18 +80,19 @@ func TestAccPrivateNetworkEndpoint_Basic(t *testing.T) {
 				}
 
 				resource "scaleway_documentdb_private_network_endpoint" "main" {
-				  instance_id        = scaleway_documentdb_instance.main.id
-				  ip_net             = "172.16.32.3/22"
-				  private_network_id = scaleway_vpc_private_network.pn.id
-				  depends_on         = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
+				  instance_id = scaleway_documentdb_instance.main.id
+				  private_network {
+				    id = scaleway_vpc_private_network.pn.id
+				    ip_net = "172.16.32.3/22"
+				  }
+				  depends_on = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isEndpointPresent(tt, "scaleway_documentdb_private_network_endpoint.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
-					resource.TestCheckResourceAttr(
-						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "172.16.32.3/22"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_private_network_endpoint.main", "private_network.0.ip_net", "172.16.32.3/22"),
 				),
 			},
 			{
@@ -119,20 +121,21 @@ func TestAccPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  vpc_id = scaleway_vpc.vpc.id
 				}
 
-				// Replace the ip on the new private network
+				// Remplacement de l'IP sur le nouveau réseau privé
 				resource "scaleway_documentdb_private_network_endpoint" "main" {
-				  instance_id        = scaleway_documentdb_instance.main.id
-				  ip_net             = "172.16.64.4/22"
-				  private_network_id = scaleway_vpc_private_network.pn02.id
-				  depends_on         = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
+				  instance_id = scaleway_documentdb_instance.main.id
+				  private_network {
+				    id = scaleway_vpc_private_network.pn02.id
+				    ip_net = "172.16.64.4/22"
+				  }
+				  depends_on = [scaleway_vpc_private_network.pn02, scaleway_vpc.vpc]
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isEndpointPresent(tt, "scaleway_documentdb_private_network_endpoint.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_documentdb_instance.main", "name", "test-documentdb-instance-endpoint-basic"),
-					resource.TestCheckResourceAttr(
-						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "172.16.64.4/22"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_private_network_endpoint.main", "private_network.0.ip_net", "172.16.64.4/22"),
 				),
 			},
 			{
@@ -190,23 +193,24 @@ func TestAccPrivateNetworkEndpoint_Migration(t *testing.T) {
 				}
 
 				resource "scaleway_documentdb_private_network_endpoint" "main" {
-				  instance_id         = scaleway_documentdb_instance.main.id
-				  ip_net              = "10.10.64.4/22"
-				  private_network_id = scaleway_vpc_private_network.pn.id
+				  instance_id = scaleway_documentdb_instance.main.id
+				  private_network {
+				    id = scaleway_vpc_private_network.pn.id
+				    ip_net = "10.10.64.4/22"
+				  }
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isEndpointPresent(tt, "scaleway_documentdb_private_network_endpoint.main"),
 					acctest.CheckResourceAttrUUID("scaleway_documentdb_private_network_endpoint.main", "id"),
-					resource.TestCheckResourceAttr(
-						"scaleway_documentdb_private_network_endpoint.main", "ip_net", "10.10.64.4/22"),
+					resource.TestCheckResourceAttr("scaleway_documentdb_private_network_endpoint.main", "private_network.0.ip_net", "10.10.64.4/22"),
 				),
 			},
 			{
 				Config: `
-				resource scaleway_vpc vpc {
-					name = "vpc"
-				}
+				resource "scaleway_vpc" "vpc" {
+				  name = "vpc"
+				 }
 
 				resource "scaleway_vpc_private_network" "pn" {
 					ipv4_subnet {
