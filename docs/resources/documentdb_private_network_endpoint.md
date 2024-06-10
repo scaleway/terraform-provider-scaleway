@@ -32,15 +32,17 @@ The following arguments are supported:
 
 - `instance_id` - (Required) UUID of the documentdb instance.
 
-- `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a
-  CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
-  service if not set.
+- `private_network` - (Optional) The private network specs details. This is a list with maximum one element and supports the following attributes:
+    - `id` - (Required) The private network ID.
+    - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM) service if not set.
+    - `ip` - (Computed) The IP of your private network service.
+    - `port` - (Optional, Computed) The port of your private service.
+    - `name` - (Computed) The name of your private service.
+    - `hostname` - (Computed) The hostname of your endpoint.
+    - `zone` - (Computed) The zone of your endpoint.
 
-- `private_network_id` - (Required) The ID of the private network.
+- `region` - (Optional) The region of the endpoint.
 
-## Private Network
-
-~> **Important:** Updates to `private_network_id` will recreate the attachment Instance.
 
 ~> **NOTE:** Please calculate your host IP.
 using [cirhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, lets IPAM service
