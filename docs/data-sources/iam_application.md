@@ -23,13 +23,13 @@ data "scaleway_iam_application" "find_by_id" {
 ## Argument Reference
 
 - `name` - (Optional) The name of the IAM application.
-  Only one of the `name` and `application_id` should be specified.
 
 - `application_id` - (Optional) The ID of the IAM application.
-  Only one of the `name` and `application_id` should be specified.
+
+  -> **Note** You must specify at least one: `name` and/or `application_id`.
 
 - `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
-  organization the application is associated with.
+  Organization the application is associated with.
 
 ## Attribute Reference
 

@@ -5,8 +5,8 @@ page_title: "Scaleway: scaleway_rdb_user"
 
 # Resource: scaleway_rdb_user
 
-Creates and manages Scaleway Database Users.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+Creates and manages database users.
+For more information refer to [the API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
 
 ## Example Usage
 
@@ -30,17 +30,17 @@ resource "scaleway_rdb_user" "db_admin" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) UUID of the rdb instance.
+- `instance_id` - (Required) UUID of the Database Instance.
 
-~> **Important:** Updates to `instance_id` will recreate the Database User.
+~> **Important:** Updates to `instance_id` will recreate the database user.
 
-- `name` - (Required) Database User name.
+- `name` - (Required) database user name.
 
-~> **Important:** Updates to `name` will recreate the Database User.
+~> **Important:** Updates to `name` will recreate the database user.
 
-- `password` - (Required) Database User password.
+- `password` - (Required) database user password.
 
-- `is_admin` - (Optional) Grant admin permissions to the Database User.
+- `is_admin` - (Optional) Grant admin permissions to the database user.
 
 - `region` - The Scaleway region this resource resides in.
 
@@ -52,7 +52,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Database User can be imported using `{region}/{instance_id}/{user_name}`, e.g.
+Database users can be imported using `{region}/{instance_id}/{user_name}`, e.g.
 
 ```bash
 $ terraform import scaleway_rdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin

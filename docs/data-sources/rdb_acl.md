@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_rdb_acl"
 
 # scaleway_rdb_acl
 
-Gets information about the RDB instance network Access Control List.
+Gets information about the Database Instance network Access Control List.
 
 ## Example Usage
 

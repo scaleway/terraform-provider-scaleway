@@ -5,8 +5,8 @@ page_title: "Scaleway: scaleway_rdb_database"
 
 # Resource: scaleway_rdb_database
 
-Creates and manages Scaleway RDB database.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+Creates and manages databases.
+For more information, refer to [the API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
 
 ## Example Usage
 
@@ -23,9 +23,9 @@ resource "scaleway_rdb_database" "main" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) UUID of the rdb instance.
+- `instance_id` - (Required) UUID of the Database Instance.
 
-~> **Important:** Updates to `instance_id` will recreate the Database.
+~> **Important:** Updates to `instance_id` will recreate the database.
 
 - `name` - (Required) Name of the database (e.g. `my-new-database`).
 

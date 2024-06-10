@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_redis_instance"
 
 # scaleway_redis_cluster
 
-Gets information about a Redis cluster. For further information check our [api documentation](https://developers.scaleway.com/en/products/redis/api/v1alpha1/#clusters-a85816)
+Gets information about a Redis™ cluster.
+
+For further information refer to the Managed Database for Redis™ [API documentation](https://developers.scaleway.com/en/products/redis/api/v1alpha1/#clusters-a85816).
 
 ## Example Usage
 
@@ -24,10 +26,10 @@ data "scaleway_redis_cluster" "my_cluster" {
 ## Argument Reference
 
 - `name` - (Optional) The name of the Redis cluster.
-  Only one of the `name` and `cluster_id` should be specified.
 
 - `cluster_id` - (Optional) The Redis cluster ID.
-  Only one of the `name` and `cluster_id` should be specified.
+
+  -> **Note** You must specify at least one: `name` and/or `cluster_id`.
 
 - `zone` - (Default to [provider](../index.md) `region`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
 
@@ -55,4 +57,4 @@ In addition to all above arguments, the following attributes are exported:
 - `tags` - The tags associated with the Redis Cluster.
 
 
-~> **Important:** Redis clusters' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+~> **Important:** Redis™ cluster IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`

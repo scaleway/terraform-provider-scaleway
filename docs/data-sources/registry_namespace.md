@@ -24,10 +24,10 @@ data "scaleway_registry_namespace" "my_namespace" {
 ## Argument Reference
 
 - `name` - (Optional) The namespace name.
-  Only one of `name` and `namespace_id` should be specified.
 
 - `namespace_id` - (Optional) The namespace id.
-  Only one of `name` and `namespace_id` should be specified.
+
+  -> **Note** You must specify at least one: `name` and/or `image_id`.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the namespace exists.
 

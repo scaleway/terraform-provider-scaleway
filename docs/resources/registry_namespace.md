@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_registry_namespace"
 # Resource: scaleway_registry_namespace
 
 Creates and manages Scaleway Container Registry.
-For more information see [the documentation](https://www.scaleway.com/en/developers/api/registry).
+For more information refer to [the API documentation](https://www.scaleway.com/en/developers/api/registry).
 
 ## Example Usage
 
@@ -45,7 +45,7 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Registry namespaces' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `endpoint` - Endpoint reachable by Docker.
-- `organization_id` - The organization ID the namespace is associated with.
+- `organization_id` - The Organization ID the namespace is associated with.
 
 ## Import
 
