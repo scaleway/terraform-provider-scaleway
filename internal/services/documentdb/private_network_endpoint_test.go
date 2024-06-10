@@ -71,7 +71,7 @@ func TestAccPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  name = "my vpc"
 				}
 
-				// Création du nouveau réseau privé avec un nouveau sous-réseau
+				// Creation to the new private network with new subnet
 				resource "scaleway_vpc_private_network" "pn02" {
 				  ipv4_subnet {
 					subnet = "172.16.64.0/22"
@@ -121,7 +121,7 @@ func TestAccPrivateNetworkEndpoint_Basic(t *testing.T) {
 				  vpc_id = scaleway_vpc.vpc.id
 				}
 
-				// Remplacement de l'IP sur le nouveau réseau privé
+				// Replace the ip on the new private network
 				resource "scaleway_documentdb_private_network_endpoint" "main" {
 				  instance_id = scaleway_documentdb_instance.main.id
 				  private_network {
