@@ -63,6 +63,14 @@ func ResourceIP() *schema.Resource {
 				Default:     false,
 				Description: "If true, creates a Flexible IP with an IPv6 address",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the flexible IP",
+			},
 			"region": regional.ComputedSchema(),
 		},
 	}
@@ -84,6 +92,7 @@ func resourceLbIPCreate(ctx context.Context, d *schema.ResourceData, m interface
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		Reverse:   types.ExpandStringPtr(d.Get("reverse")),
 		IsIPv6:    d.Get("is_ipv6").(bool),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}
 
 	res, err := lbAPI.CreateIP(createReq, scw.WithContext(ctx))
@@ -139,6 +148,7 @@ func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	_ = d.Set("ip_address", ip.IPAddress)
 	_ = d.Set("reverse", ip.Reverse)
 	_ = d.Set("lb_id", types.FlattenStringPtr(ip.LBID))
+	_ = d.Set("tags", ip.Tags)
 
 	isIPv6 := false
 	if ip.IPAddress != "" {
@@ -193,14 +203,25 @@ func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		}
 	}
 
-	if d.HasChange("reverse") {
-		req := &lbSDK.ZonedAPIUpdateIPRequest{
-			Zone:    zone,
-			IPID:    ID,
-			Reverse: types.ExpandStringPtr(d.Get("reverse")),
-		}
+	updateRequest := &lbSDK.ZonedAPIUpdateIPRequest{
+		Zone: zone,
+		IPID: ID,
+	}
 
-		_, err = lbAPI.UpdateIP(req, scw.WithContext(ctx))
+	hasChanged := false
+
+	if d.HasChange("reverse") {
+		updateRequest.Reverse = types.ExpandStringPtr(d.Get("reverse"))
+		hasChanged = true
+	}
+
+	if d.HasChange("tags") {
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if hasChanged {
+		_, err = lbAPI.UpdateIP(updateRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

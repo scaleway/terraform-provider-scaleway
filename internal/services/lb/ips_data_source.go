@@ -23,6 +23,25 @@ func DataSourceIPs() *schema.Resource {
 				ValidateFunc: validation.IsCIDR,
 				Description:  "IPs within a CIDR block like it are listed.",
 			},
+			"ip_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  lb.ListIPsRequestIPTypeAll.String(),
+				ValidateFunc: validation.StringInSlice([]string{
+					lb.ListIPsRequestIPTypeIPv4.String(),
+					lb.ListIPsRequestIPTypeIPv6.String(),
+					lb.ListIPsRequestIPTypeAll.String(),
+				}, false),
+				Description: "IP type to filter for",
+			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "IPs with these exact tags are listed",
+			},
 			"ips": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -43,6 +62,13 @@ func DataSourceIPs() *schema.Resource {
 						"reverse": {
 							Computed: true,
 							Type:     schema.TypeString,
+						},
+						"tags": {
+							Computed: true,
+							Type:     schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 						"zone":            zonal.Schema(),
 						"organization_id": account.OrganizationIDSchema(),
@@ -65,16 +91,22 @@ func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interfac
 	res, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{
 		Zone:      zone,
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
+		IPType:    lb.ListIPsRequestIPType(d.Get("ip_type").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var filteredList []*lb.IP
-	for i := range res.IPs {
-		if ipv4Match(d.Get("ip_cidr_range").(string), res.IPs[i].IPAddress) {
-			filteredList = append(filteredList, res.IPs[i])
+	if cidrRange, ok := d.GetOk("ip_cidr_range"); ok {
+		for i := range res.IPs {
+			if ipv4Match(cidrRange.(string), res.IPs[i].IPAddress) {
+				filteredList = append(filteredList, res.IPs[i])
+			}
 		}
+	} else {
+		filteredList = res.IPs
 	}
 
 	ips := []interface{}(nil)
@@ -87,6 +119,9 @@ func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interfac
 		rawIP["zone"] = string(zone)
 		rawIP["organization_id"] = ip.OrganizationID
 		rawIP["project_id"] = ip.ProjectID
+		if len(ip.Tags) > 0 {
+			rawIP["tags"] = ip.Tags
+		}
 
 		ips = append(ips, rawIP)
 	}

@@ -34,6 +34,7 @@ The following arguments are supported:
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the IP is associated with.
 - `reverse` - (Optional) The reverse domain associated with this IP.
 - `is_ipv6` - (Optional) If true, creates a Flexible IP with an IPv6 address.
+- `tags` - (Optional) The tags associated with this IP.
 
 ## Attributes Reference
 
