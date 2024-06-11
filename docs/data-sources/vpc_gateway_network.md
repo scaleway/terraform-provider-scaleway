@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_vpc_gateway_network"
 
 # scaleway_vpc_gateway_network
 
-Gets information about a gateway network.
+Gets information about a GatewayNetwork (a connection between a Public Gateway and a Private Network)/
 
 ## Example Usage
 
@@ -30,14 +30,14 @@ data scaleway_vpc_gateway_network by_gateway_and_pn {
 
 ## Argument Reference
 
-* `gateway_network_id` - (Optional) ID of the gateway network.
+* `gateway_network_id` - (Optional) ID of the GatewayNetwork.
 
-~> Only one of `gateway_network_id` or filters should be specified. You can use all the filters you want.
+~> Only one of `gateway_network_id` or usage of the following filters should be specified. If using filters, you can use as many as you want.
 
-* `gateway_id` - (Optional) ID of the public gateway the gateway network is linked to
-* `private_network_id` - (Optional) ID of the private network the gateway network is linked to
-* `enable_masquerade` - (Optional) If masquerade is enabled on requested network
-* `dhcp_id` - (Optional) ID of the public gateway DHCP config
+* `gateway_id` - (Optional) ID of the Public Gateway the GatewayNetwork is linked to
+* `private_network_id` - (Optional) ID of the Private Network the GatewayNetwork is linked to
+* `enable_masquerade` - (Optional) Whether masquerade (dynamic NAT) is enabled on requested GatewayNetwork
+* `dhcp_id` - (Optional) ID of the Public Gateway's DHCP configuration
 
 ## Attributes Reference
 

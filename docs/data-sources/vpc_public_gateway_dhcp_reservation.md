@@ -5,8 +5,8 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp_reservation"
 
 # scaleway_vpc_public_gateway_dhcp_reservation
 
-Gets information about a dhcp entries. For further information please check the
-API [documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#dhcp-entries-e40fb6)
+Gets information about a DHCP entry. For further information, please see the
+API [documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-dhcp-entries-list-dhcp-entries)/
 
 ## Example Dynamic
 
@@ -53,7 +53,7 @@ data "scaleway_vpc_public_gateway_dhcp_reservation" "by_mac_address_and_gw_netwo
 }
 ```
 
-## Example Static and PAT rule
+## Example Static and PAT Rule
 
 ```terraform
 resource "scaleway_vpc_private_network" "main" {}
@@ -124,15 +124,15 @@ data "scaleway_vpc_public_gateway_dhcp_reservation" "by_id" {
 
 ## Argument Reference
 
-- `reservation_id`  (Optional) The ID of the Reservation to retrieve.
+- `reservation_id`  (Optional) The ID of the reservation (DHCP entry) to retrieve.
 - `mac_address`  (Optional) The MAC address of the reservation to retrieve.
 - `gateway_network_id` (Optional) The ID of the owning GatewayNetwork.
 
 ~> Only one of `reservation_id` or `mac_address` with `gateway_network_id` should be specified.
 
-- `wait_for_dhcp` (Optional) Boolean to wait for mac_address to exist in dhcp.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
+- `wait_for_dhcp` (Optional) Whether to wait for `mac_address` to exist in DHCP.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`). The [zone](../guides/regions_and_zones.md#zones) in which the reservation exists.
 
 ## Attributes Reference
 
-Exported attributes are the ones from `scaleway_vpc_public_gateway_dhcp_reservation` [resource](../resources/vpc_public_gateway_dhcp_reservation.md)
+Exported attributes are those of the `scaleway_vpc_public_gateway_dhcp_reservation` [resource](../resources/vpc_public_gateway_dhcp_reservation.md)

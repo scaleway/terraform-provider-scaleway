@@ -5,13 +5,14 @@ page_title: "Scaleway: scaleway_vpc_gateway_network"
 
 # Resource: scaleway_vpc_gateway_network
 
-Creates and manages Scaleway VPC Public Gateway Network.
-It allows attaching Private Networks to the VPC Public Gateway and your DHCP config
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/public-gateway/#step-3-attach-private-networks-to-the-vpc-public-gateway).
+Creates and manages GatewayNetworks (connections between a Public Gateway and a Private Network).
+
+It allows the attachment of Private Networks to Public Gateways and DHCP configurations. 
+For more information, see [the API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#step-3-attach-private-networks-to-the-vpc-public-gateway).
 
 ## Example Usage
 
-### Create a gateway network with IPAM config
+### Create a GatewayNetwork with IPAM configuration
 
 ```terraform
 resource scaleway_vpc vpc01 {
@@ -41,7 +42,7 @@ resource scaleway_vpc_gateway_network main {
 }
 ```
 
-### Create a gateway network with a booked IPAM IP
+### Create a GatewayNetwork with a booked IPAM IP
 
 ```terraform
 resource scaleway_vpc vpc01 {
@@ -79,7 +80,7 @@ resource scaleway_vpc_gateway_network main {
 }
 ```
 
-### Create a gateway network with DHCP
+### Create a GatewayNetwork with DHCP
 
 ```terraform
 resource "scaleway_vpc_private_network" "pn01" {
@@ -109,7 +110,7 @@ resource "scaleway_vpc_gateway_network" "main" {
 }
 ```
 
-### Create a gateway network with a static IP address
+### Create a GatewayNetwork with a static IP address
 
 ```terraform
 resource scaleway_vpc_private_network pn01 {
@@ -134,15 +135,15 @@ resource scaleway_vpc_gateway_network main {
 
 The following arguments are supported:
 
-- `gateway_id` - (Required) The ID of the public gateway.
-- `private_network_id` - (Required) The ID of the private network.
-- `dhcp_id` - (Required) The ID of the public gateway DHCP config. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
-- `enable_masquerade` - (Defaults to true) Enable masquerade on this network
-- `enable_dhcp` - (Defaults to true) Enable DHCP config on this network. It requires DHCP id.
-- `cleanup_dhcp` - (Defaults to false) Remove DHCP config on this network on destroy. It requires DHCP id.
-- `static_address` - Enable DHCP config on this network. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
-- `ipam_config` - Auto-configure the Gateway Network using Scaleway's IPAM (IP address management service). Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
-    - `push_default_route` - Defines whether the default route is enabled on that Gateway Network.
+- `gateway_id` - (Required) The ID of the Public Gateway.
+- `private_network_id` - (Required) The ID of the Private Network.
+- `dhcp_id` - (Required) The ID of the Public Gateway DHCP configuration. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
+- `enable_masquerade` - (Defaults to true) Whether masquerade (dynamic NAT) should be enabled on this GatewayNetwork
+- `enable_dhcp` - (Defaults to true) WWhether a DHCP configuration should be enabled on this GatewayNetwork. Requires a DHCP ID.
+- `cleanup_dhcp` - (Defaults to false) Whether to remove DHCP configuration on this GatewayNetwork upon destroy. Requires DHCP ID.
+- `static_address` - Enable DHCP configration on this GatewayNetwork. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
+- `ipam_config` - Auto-configure the GatewayNetwork using Scaleway's IPAM (IP address management service). Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
+    - `push_default_route` - Defines whether to enable the default route on the GatewayNetwork.
     - `ipam_ip_id` - Use this IPAM-booked IP ID as the Gateway's IP in this Private Network.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the gateway network should be created.
 
@@ -150,18 +151,18 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the gateway network.
+- `id` - The ID of the GatewayNetwork
 
-~> **Important:** Gateway networks' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+~> **Important:** GatewayNetwork IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `mac_address` - The mac address of the creation of the gateway network.
-- `created_at` - The date and time of the creation of the gateway network.
-- `updated_at` - The date and time of the last update of the gateway network.
+- `mac_address` - The MAC address of the GatewayNetwork.
+- `created_at` - The date and time of the creation of the GatewayNetwork.
+- `updated_at` - The date and time of the last update of the GatewayNetwork.
 - `status` - The status of the Public Gateway's connection to the Private Network.
 
 ## Import
 
-Gateway network can be imported using the `{zone}/{id}`, e.g.
+GatewayNetwork can be imported using `{zone}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_vpc_gateway_network.main fr-par-1/11111111-1111-1111-1111-111111111111
