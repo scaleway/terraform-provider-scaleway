@@ -10,11 +10,23 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ## Example Usage
 
+### Basic
+
 ```terraform
 resource "scaleway_block_volume" "block_volume" {
     iops       = 5000
     name       = "some-volume-name"
     size_in_gb = 20
+}
+```
+
+### With snapshot
+
+```terraform
+resource "scaleway_block_volume" "block_volume" {
+    iops         = 5000
+    name         = "some-volume-name"
+    snapshot_id  = "11111111-1111-1111-1111-111111111111"
 }
 ```
 

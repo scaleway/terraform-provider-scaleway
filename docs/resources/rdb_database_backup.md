@@ -13,9 +13,24 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 ### Basic
 
 ```terraform
+resource "scaleway_rdb_instance" "main" {
+  name           = "test-rdb"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-15"
+  is_ha_cluster  = true
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+resource "scaleway_rdb_database" "main" {
+  instance_id    = scaleway_rdb_instance.main.id
+  name           = "database"
+}
+
 resource scaleway_rdb_database_backup "main" {
-  instance_id = data.scaleway_rdb_instance.main.id
-  database_name = data.scaleway_rdb_database.main.name
+  instance_id = scaleway_rdb_instance.main.id
+  database_name = scaleway_rdb_database.main.name
 }
 ```
 

@@ -10,6 +10,8 @@ check [the documentation](https://www.scaleway.com/en/developers/api/iam/#api-ke
 
 ## Example Usage
 
+### With application
+
 ```terraform
 resource "scaleway_iam_application" "ci_cd" {
   name = "My application"
@@ -17,6 +19,19 @@ resource "scaleway_iam_application" "ci_cd" {
 
 resource "scaleway_iam_api_key" "main" {
   application_id = scaleway_iam_application.main.id
+  description    = "a description"
+}
+```
+
+### With user
+
+```terraform
+resource "scaleway_iam_user" "main" {
+  email = "test@test.com"
+}
+
+resource "scaleway_iam_api_key" "main" {
+  application_id = scaleway_iam_user.main.id
   description    = "a description"
 }
 ```

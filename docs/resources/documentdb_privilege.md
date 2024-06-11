@@ -10,8 +10,17 @@ Create and manage Scaleway DocumentDB database privilege.
 ## Example Usage
 
 ```terraform
+resource "scaleway_documentdb_instance" "instance" {
+  name              = "test-document_db-basic"
+  node_type         = "docdb-play2-pico"
+  engine            = "FerretDB-1"
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 20
+}
+
 resource "scaleway_documentdb_privilege" "main" {
-  instance_id   = "11111111-1111-1111-1111-111111111111"
+  instance_id   = scaleway_documentdb_instance.instance.id
   user_name     = "my-db-user"
   database_name = "my-db-name"
   permission    = "all"
