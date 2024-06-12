@@ -31,7 +31,7 @@ resource "scaleway_iam_user" "main" {
 }
 
 resource "scaleway_iam_api_key" "main" {
-  application_id = scaleway_iam_user.main.id
+  user_id = scaleway_iam_user.main.id
   description    = "a description"
 }
 ```
