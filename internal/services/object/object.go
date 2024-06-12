@@ -3,7 +3,7 @@ package object
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
+	"crypto/md5" // #nosec
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -173,10 +173,10 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	// Server-side encryption
 	if customerKey := d.Get("sse_customer_key").(string); customerKey != "" {
-		//TODO: encode the following fields to base64 before adding them to the request ?
+		// TODO: encode the following fields to base64 before adding them to the request ?
 		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
 		req.SSECustomerKey = &customerKey
-		hash := md5.Sum([]byte(customerKey))
+		hash := md5.Sum([]byte(customerKey)) // #nosec
 		req.SSECustomerKeyMD5 = scw.StringPtr(hex.EncodeToString(hash[:]))
 	}
 

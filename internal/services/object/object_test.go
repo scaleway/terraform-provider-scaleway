@@ -20,8 +20,10 @@ import (
 
 // Service information constants
 const (
-	ServiceName = "scw"       // Name of service.
-	EndpointsID = ServiceName // ID to look up a service endpoint with.
+	ServiceName      = "scw"       // Name of service.
+	EndpointsID      = ServiceName // ID to look up a service endpoint with.
+	fileContentStep2 = "This is a different content"
+	fileContentStep1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 )
 
 func TestAccObject_Basic(t *testing.T) {
@@ -556,9 +558,6 @@ func TestAccObject_ByContent(t *testing.T) {
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content")
 
-	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-	fileContentStep2 := "This is a different content"
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -614,8 +613,6 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content-base64")
 
-	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-	fileContentStep2 := "This is a different content"
 	fileEncodedStep1 := base64.StdEncoding.EncodeToString([]byte(fileContentStep1))
 	fileEncodedStep2 := base64.StdEncoding.EncodeToString([]byte(fileContentStep2))
 
@@ -688,9 +685,6 @@ func TestAccObject_SSECustomer(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-sse-customer")
-
-	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-	fileContentStep2 := "This is a different content"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
