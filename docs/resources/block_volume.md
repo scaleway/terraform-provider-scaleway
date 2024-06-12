@@ -14,19 +14,30 @@ For more information, see [the documentation](https://www.scaleway.com/en/develo
 
 ```terraform
 resource "scaleway_block_volume" "block_volume" {
-    iops       = 5000
-    name       = "some-volume-name"
-    size_in_gb = 20
+  iops       = 5000
+  name       = "some-volume-name"
+  size_in_gb = 20
 }
 ```
 
 ### With snapshot
 
 ```terraform
-resource "scaleway_block_volume" "block_volume" {
-    iops         = 5000
-    name         = "some-volume-name"
-    snapshot_id  = "11111111-1111-1111-1111-111111111111"
+resource "scaleway_block_volume" "base" {
+  name       = "block-volume-base"
+  iops       = 5000
+  size_in_gb = 20
+}
+
+resource "scaleway_block_snapshot" "main" {
+  name      = "block-volume-from-snapshot"
+  volume_id = scaleway_block_volume.base.id
+}
+
+resource "scaleway_block_volume" "main" {
+  name        = "block-volume-from-snapshot"
+  iops        = 5000
+  snapshot_id = scaleway_block_snapshot.main.id
 }
 ```
 
