@@ -5,10 +5,13 @@ page_title: "Scaleway: scaleway_block_snapshot"
 
 # Resource: scaleway_block_snapshot
 
-Creates and manages Scaleway Block Snapshots.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/block/).
+The `scaleway_block_snapshot` resource is used to create and manage snapshots of Block Storage volumes.
 
-## Example Usage
+Refer to the Block Storage [product documentation](https://www.scaleway.com/en/docs/storage/block/) and [API documentation](https://www.scaleway.com/en/developers/api/block/) for more information.
+
+## Create a snapshot of a Block Storage volume
+
+The following command shows you how to create a snapshot named `some-snapshot-name` from a Block Storage volume specified by its ID.
 
 ```terraform
 resource "scaleway_block_volume" "block_volume" {
@@ -23,27 +26,29 @@ resource "scaleway_block_snapshot" "block_snapshot" {
 }
 ```
 
-## Argument Reference
+## Arguments reference
 
 The following arguments are supported:
 
 - `volume_id` - (Optional) The ID of the volume to take a snapshot from.
-- `name` - (Optional) The name of the snapshot. If not provided it will be randomly generated.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the snapshot is associated with.
+- `name` - (Optional) The name of the snapshot. If not provided, a name will be randomly generated.
+- `zone` - (Defaults to the zone specified in the [provider's configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the snapshot should be created.
+- `project_id` - (Defaults to the Project ID specified in the [provider's configuration](../index.md#project_id)). The ID of the Scaleway Project the snapshot is associated with.
 - `tags` - (Optional) A list of tags to apply to the snapshot.
 
-## Attributes Reference
+## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+This section lists the attributes that are exported by the `scaleway_block_snapshot` resource:
 
 - `id` - The ID of the snapshot.
 
-~> **Important:** Block snapshots' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+~> **Important:** The IDs of Block Storage volumes snapshots are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the form `{zone}/{id}`. For example, a snapshot ID migt be `fr-par-1/11111111-1111-1111-1111-111111111111`.
 
 ## Import
 
-Block Snapshots can be imported using the `{zone}/{id}`, e.g.
+This section explains how to import the snapshot of a Block Storage volume using the zoned ID format:
+
+The following command shows you how to import snapshots using the `{zone}/{id}` format.
 
 ```bash
 terraform import scaleway_block_snapshot.main fr-par-1/11111111-1111-1111-1111-111111111111
