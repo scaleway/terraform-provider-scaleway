@@ -5,9 +5,17 @@ page_title: "Scaleway: scaleway_block_snapshot"
 
 # scaleway_block_snapshot
 
-Gets information about a Block Snapshot.
+`scaleway_block_snapshot` is used to retrieve information about a Block Storage volume snapshot.
 
-## Example Usage
+Refer to the Block Storage [product documentation](https://www.scaleway.com/en/docs/storage/block/) and [API documentation](https://www.scaleway.com/en/developers/api/block/) for more information.
+
+## Retrieve a volume's snapshot
+
+The following commands allow you to retrieve information about a Block Storage volume snapshot, using several methods:
+
+- retrieve a snapshot specified by its name
+- retrieve a snapshot specified by its name and the ID of the Block Storage volume it is associated with
+- retrieve a snapshot specified by its ID
 
 ```terraform
 // Get info by snapshot name
@@ -27,16 +35,16 @@ data "scaleway_block_snapshot" "my_snapshot" {
 }
 ```
 
-## Argument Reference
+## Arguments reference
 
-The following arguments are supported:
+This section lists the arguments that you can provide to the `scaleway_block_snapshot` data source to filter and retrieve the desired snapshot. Each argument has a specific purpose:
 
-- `snapshot_id` - (Optional) The ID of the snapshot. Only one of `name` and `snapshot_id` should be specified.
-- `name` - (Optional) The name of the snapshot. Only one of `name` and `snapshot_id` should be specified.
-- `volume_id` - (Optional) The ID of the volume from which the snapshot has been created.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot exists.
-- `project_id` - (Optional) The ID of the project the snapshot is associated with.
+- `snapshot_id` - (Optional) The unique identifier of the snapshot. Only one of `name` and `snapshot_id` should be specified.
+- `name` - (Optional) The name of the snapshot. Only one of name or snapshot_id should be specified.
+- `volume_id` - (Optional) The unique identifier of the volume from which the snapshot was created.
+- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot exists.
+- `project_id` - (Optional) The unique identifier of the Project to which the snapshot is associated.
 
-## Attributes Reference
+## Attributes reference
 
-Exported attributes are the ones from `scaleway_block_snapshot` [resource](../resources/block_snapshot.md)
+The `scaleway_block_snapshot` data source exports certain attributes once the snapshot information is retrieved. These attributes can be referenced in other parts of your Terraform configuration. The exported attributes are those that come from the `scaleway_block_snapshot` [resource](../resources/block_snapshot.md)

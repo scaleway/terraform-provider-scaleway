@@ -5,82 +5,92 @@ page_title: "Scaleway: scaleway_secret_version"
 
 # scaleway_secret_version
 
-Gets information about Scaleway a Secret Version.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/secret_manager/api/v1alpha1/#secret-versions-079501).
+The `scaleway_secret_version` data source is used to get information about a specific version of a secret stored in Scaleway's Secret Manager.
 
-## Examples
+Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/identity-and-access-management/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
 
-### Basic
+
+## Use Secret Manager
+
+The following commands show you how to:
+
+- create a secret named `fooii`
+- create a new version of `fooii` containing data (`your_secret`)
+- retrieve the secret version specified by the secret ID and the desired version
+- retrieve the secret version specified by the secret name and the desired version
+
+The output blocks display the sensitive data contained in your secret version.
+
 
 ```hcl
+# Create a secret named fooii
 resource "scaleway_secret" "main" {
   name        = "fooii"
   description = "barr"
 }
 
+# Create a version of fooii containing data
 resource "scaleway_secret_version" "main" {
   description = "your description"
   secret_id   = scaleway_secret.main.id
   data        = "your_secret"
 }
 
+# Retrieve the secret version specified by the secret ID and the desired version
 data "scaleway_secret_version" "data_by_secret_id" {
   secret_id  = scaleway_secret.main.id
   revision   = "1"
   depends_on = [scaleway_secret_version.main]
 }
 
+# Retrieve the secret version specified by the secret name and the desired version
 data "scaleway_secret_version" "data_by_secret_name" {
   secret_name = scaleway_secret.main.name
   revision    = "1"
   depends_on  = [scaleway_secret_version.main]
 }
 
-#Output Sensitive data
+# Display sensitive data
 output "scaleway_secret_access_payload" {
   value = data.scaleway_secret_version.data_by_secret_name.data
 }
 
-#Output Sensitive data
+# Display sensitive data
 output "scaleway_secret_access_payload_by_id" {
   value = data.scaleway_secret_version.data_by_secret_id.data
 }
 ```
 
-## Arguments Reference
+## Arguments reference
 
-The following arguments are supported:
+This section lists the arguments that can be provided to the scaleway_secret_version data source:
 
-- `secret_id` - (Optional) The Secret ID associated wit the secret version.
+- `secret_id` - (Optional) The ID of the secret associated with the secret version. Only one of `secret_id` and `secret_name` should be specified.
+
+- `secret_name` - (Optional) The name of the secret associated with the secret version.
   Only one of `secret_id` and `secret_name` should be specified.
 
-- `secret_name` - (Optional) The Name of Secret associated wit the secret version.
-  Only one of `secret_id` and `secret_name` should be specified.
+- `revision` - The revision for this secret version. Refer to alternative values (ex: `latest`) in the [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/#path-secret-versions-access-a-secrets-version-using-the-secrets-id)
 
-- `revision` - The revision for this Secret Version. Alternative values (ex: `latest`) can be found in [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/#path-secret-versions-access-a-secrets-version-using-the-secrets-id)
+- `project_id` - (Optional) The ID of the Scaleway Project associated with the secret version.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
-  in which the resource exists.
+## Data information
 
-- `project_id` - (Optional) The ID of the project the Secret version is associated with.
+Note: This data source provides you with access to the secret payload, which is encoded in base64.
 
-## Data
-
-Note: This Data Source give you **access** to the secret payload encoded en base64.
-
-Be aware that this is a sensitive attribute. For more information,
+Keep in mind that this is a sensitive attribute. For more information,
 see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
 
-~> **Important:**  This property is sensitive and will not be displayed in the plan.
+~> **Important:**  This property is sensitive and will not be displayed in the Terraform plan, for security reasons.
 
-## Attributes Reference
+## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+This section lists the attributes that are exported by the scaleway_secret_version data source:
 
-- `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
-- `data` - The data payload of the secret version. more on the [data section](#data)
-- `status` - The status of the Secret Version.
-- `created_at` - Date and time of secret version's creation (RFC 3339 format).
-- `updated_at` - Date and time of secret version's last update (RFC 3339 format).
+- `description` - (Optional) The description of the secret version (e.g. `my-new-description`).
+- `data` - The data payload of the secret version. This is a sensitive attribute containing the secret value. Learn more in the [data section](#data)
+- `status` - The status of the secret version.
+- `created_at` - The date and time of the secret version's creation in RFC 3339 format.
+- `updated_at` - The date and time of the secret version's last update in RFC 3339 format.
 
-Exported attributes are the ones from `scaleway_secret_version` [resource](../resources/secret_version.md)
+Exported attributes are the ones from the `scaleway_secret_version` [resource](../resources/secret_version.md).
