@@ -12,9 +12,18 @@ Creates and manages Scaleway DocumentDB database.
 ### Basic
 
 ```terraform
+resource "scaleway_documentdb_instance" "instance" {
+  name              = "test-document_db-basic"
+  node_type         = "docdb-play2-pico"
+  engine            = "FerretDB-1"
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 20
+}
+
 resource "scaleway_documentdb_database" "main" {
-  instance_id    = "11111111-1111-1111-1111-111111111111"
-  name           = "my-new-database"
+  instance_id = scaleway_documentdb_instance.instance.id
+  name        = "my-new-database"
 }
 ```
 
