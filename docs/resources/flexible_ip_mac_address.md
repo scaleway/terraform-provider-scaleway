@@ -60,8 +60,8 @@ resource "scaleway_flexible_ip_mac_address" "main" {
 
 The following arguments are supported:
 
-- `flexible_ip_id`: (Required) The ID of the flexible IP for which to generate a virtual MAC.
-- `type`: (Required) The type of the virtual MAC.
+- `flexible_ip_id` - (Required) The ID of the flexible IP for which to generate a virtual MAC.
+- `type` - (Required) The type of the virtual MAC.
 - `flexible_ip_ids_to_duplicate` - (Optional) The IDs of the flexible IPs on which to duplicate the virtual MAC.
 ~> **Important:** The flexible IPs need to be attached to the same server for the operation to work.
 
