@@ -5,11 +5,18 @@ page_title: "Scaleway: scaleway_cockpit_token"
 
 # Resource: scaleway_cockpit_token
 
-Creates and manages Scaleway Cockpit Tokens.
+The `scaleway_cockpit_token` resource allows you to create and manage your Cockpit [tokens](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#tokens).
 
-For more information consult the [documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#tokens).
+Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
 ## Example Usage
+
+The following commands show you how to:
+
+- create a Scaleway Project named `my-project`
+- create a Cockpit token named `my-awesome-token` in the Project
+- assign `read` permissions for metrics and logs to the token
+- disable `write` permissions for metrics and logs
 
 ```terraform
 resource "scaleway_account_project" "project" {
@@ -42,35 +49,35 @@ resource "scaleway_cockpit_token" "main" {
 }
 ```
 
-## Argument Reference
+## Arguments reference
 
 - `name` - (Required) The name of the token.
-- `scopes` - (Optional) Allowed scopes.
-    - `query_metrics` - (Defaults to `false`) Query metrics.
-    - `write_metrics` - (Defaults to `true`) Write metrics.
-    - `setup_metrics_rules` - (Defaults to `false`) Setup metrics rules.
-    - `query_logs` - (Defaults to `false`) Query logs.
-    - `write_logs` - (Defaults to `true`) Write logs.
-    - `setup_logs_rules` - (Defaults to `false`) Setup logs rules.
-    - `setup_alerts` - (Defaults to `false`) Setup alerts.
-    - `query_traces` - (Defaults to `false`) Query traces.
-    - `write_traces` - (Defaults to `false`) Write traces.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the cockpit token.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
+- `scopes` - (Optional) Scopes allowed, each with default values:
+    - `query_metrics` - (Defaults to `false`) Permission to query metrics.
+    - `write_metrics` - (Defaults to `true`) Permission to write metrics.
+    - `setup_metrics_rules` - (Defaults to `false`) Permission to set up metrics rules.
+    - `query_logs` - (Defaults to `false`) Permission to query logs.
+    - `write_logs` - (Defaults to `true`) Permission to write logs.
+    - `setup_logs_rules` - (Defaults to `false`) Permission to set up logs rules.
+    - `setup_alerts` - (Defaults to `false`) Permission to set up alerts.
+    - `query_traces` - (Defaults to `false`) Permission to query traces.
+    - `write_traces` - (Defaults to `false`) Permission to write traces.
+- `region` - (Defaults to the region specified in the [provider's configuration](../index.md#region)) The [region](../guides/regions_and_zones.md#regions) where the Cockpit token is located.
+- `project_id` - (Defaults to the Project ID specified in the [provider's configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 
-## Attributes Reference
+## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+This section lists the attributes that are automatically exported when the `cockpit_token` resource is created:
 
-- `id` - The ID of the cockpit token.
+- `id` - The ID of the Cockpit token.
 
-~> **Important:** cockpit tokens' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
+~> **Important:** Cockpit tokens' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they include the region, in the format `{region}/{id}`. For example, if your token is located in the `fr-par` region, its ID would look like the following: `fr-par/11111111-1111-1111-1111-111111111111`.
 
 - `secret_key` - The secret key of the token.
 
 ## Import
 
-Cockpits tokens can be imported using the `{region}/{id}`, e.g.
+This section explains how to import Cockpit tokens using the `{region}/{id}` format.
 
 ```bash
 terraform import scaleway_cockpit_token.main fr-par/11111111-1111-1111-1111-111111111111

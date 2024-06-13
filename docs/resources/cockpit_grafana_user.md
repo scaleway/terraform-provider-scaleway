@@ -5,11 +5,13 @@ page_title: "Scaleway: scaleway_cockpit_grafana_user"
 
 # Resource: scaleway_cockpit_grafana_user
 
-Creates and manages Scaleway Cockpit Grafana Users.
+The `scaleway_cockpit_grafana_user` resource allows you to create and manage [Grafana users](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#grafana-users) in Scaleway Cockpit.
 
-For more information consult the [documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#grafana-users).
+Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-## Example Usage
+## Create a Grafana user
+
+The following command shows you how to create a Grafana user within a specific Scaleway Project.
 
 ```terraform
 resource "scaleway_account_project" "project" {
@@ -24,21 +26,21 @@ resource "scaleway_cockpit_grafana_user" "main" {
 ```
 
 
-## Argument Reference
+## Arguments reference
 
-- `login` - (Required) The login of the grafana user.
-- `role` - (Required) The role of the grafana user. Must be `editor` or `viewer`.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
+- `login` - (Required) The username of the Grafana user. The `admin` user is not yet available for creation. You need your Grafana username to log in to your Grafana dashboard.
+- `role` - (Required) The role assigned to the Grafana user. Must be `editor` or `viewer`.
+- `project_id` - (Defaults to Project ID speficied in the [provider's configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 
-## Attributes Reference
+## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+This section lists the attributes that are automatically exported when the `cockpit_grafana_user` resource is created:
 
-- `password` - The password of the grafana user
+- `password` - The password of the Grafana user.
 
 ## Import
 
-Cockpits Grafana Users can be imported using the project ID and the grafana user ID formatted `{project_id}/{grafana_user_id}`, e.g.
+This section explains how to import Grafana users using the ID of the Project associated with Cockpit, and the Grafana user ID in the format `{project_id}/{grafana_user_id}`.
 
 ```bash
 terraform import scaleway_cockpit_grafana_user.main 11111111-1111-1111-1111-111111111111/2

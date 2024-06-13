@@ -48,7 +48,7 @@ resource "scaleway_block_volume" "main" {
 
 This section lists the arguments that can be provided to the `scaleway_block_volume` resource:
 
-- `iops` - (Required) The maximum IO/s expected, must match available options.
+- `iops` - (Required) The maximum [IOPs](https://www.scaleway.com/en/docs/storage/block/concepts/#iops) expected, must match available options.
 - `name` - (Optional) The name of the volume. If not provided, a name will be randomly generated.
 - `size_in_gb` - (Optional) The size of the volume in gigabytes. Only one of `size_in_gb`, and `snapshot_id` should be specified.
 - `snapshot_id` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `snapshot_id` should be specified.
@@ -58,7 +58,7 @@ This section lists the arguments that can be provided to the `scaleway_block_vol
 
 ## Attributes reference
 
-This section lists the attributes that are exported by the `scaleway_block_volume` resource:
+This section lists the attributes that are exported when the `scaleway_block_volume` resource is created:
 
 - `id` - The ID of the volume.
 
@@ -68,9 +68,7 @@ This section lists the attributes that are exported by the `scaleway_block_volum
 
 ## Import
 
-This section explains how to import a Block Storage volume using the zoned ID format:
-
-The following command shows you how to import volumes using the `{zone}/{id}` format.
+This section explains how to import a Block Storage volume using the zoned ID (`{zone}/{id}`) format.
 
 ```bash
 terraform import scaleway_block_volume.block_volume fr-par-1/11111111-1111-1111-1111-111111111111
