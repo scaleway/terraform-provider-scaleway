@@ -205,6 +205,8 @@ resource "scaleway_lb" "main" {
 
 - ~> **Important:** Updates to `private_network` will recreate the attachment.
 
+- `static_config` - (Deprecated) Please use `dhcp_config`. Define a local ip address of your choice for the load balancer instance.
+
 - `dhcp_config` - (Optional) Set to true if you want to let DHCP assign IP addresses. See below.
 
 ~> **Important:**  Only dhcp_config may be set.
