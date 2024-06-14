@@ -16,7 +16,7 @@ resource "scaleway_vpc_private_network" "hedy" {}
 
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
-  version = "1.24.3"
+  version = "1.29.1"
   cni     = "cilium"
   private_network_id = scaleway_vpc_private_network.hedy.id
   delete_additional_resources = false
@@ -36,7 +36,7 @@ resource "scaleway_k8s_pool" "john" {
 resource "scaleway_k8s_cluster" "henry" {
   name = "henry"
   type = "multicloud"
-  version = "1.24.3"
+  version = "1.29.1"
   cni     = "kilo"
   delete_additional_resources = false
 }
@@ -60,7 +60,7 @@ resource "scaleway_vpc_private_network" "hedy" {}
 resource "scaleway_k8s_cluster" "john" {
   name             = "john"
   description      = "my awesome cluster"
-  version          = "1.24.3"
+  version          = "1.29.1"
   cni              = "calico"
   tags             = ["i'm an awesome tag", "yay"]
   private_network_id = scaleway_vpc_private_network.hedy.id
@@ -96,8 +96,8 @@ resource "scaleway_vpc_private_network" "hedy" {}
 
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
-  version = "1.24.3"
-  cni     = "flannel"
+  version = "1.29.1"
+  cni     = "cilium"
   private_network_id = scaleway_vpc_private_network.hedy.id
   delete_additional_resources = false
 }
@@ -137,8 +137,8 @@ resource "scaleway_vpc_private_network" "hedy" {}
 
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
-  version = "1.24.3"
-  cni     = "flannel"
+  version = "1.29.1"
+  cni     = "cilium"
   delete_additional_resources = false
   private_network_id = scaleway_vpc_private_network.hedy.id
 }
