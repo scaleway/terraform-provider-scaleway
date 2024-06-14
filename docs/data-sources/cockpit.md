@@ -8,28 +8,27 @@ page_title: "Scaleway: scaleway_cockpit"
 ~> **Important:**  The data source `scaleway_cockpit` has been deprecated and will no longer be supported. Instead, use resource `scaleway_cockpit`.
 
 -> **Note:**
-As of April 2024, Cockpit has introduced regionalization to offer more flexibility and resilience.
+As of April 2024, Cockpit has introduced [regionalization](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#region) to offer more flexibility and resilience.
 If you have created customized dashboards with data for your Scaleway resources before April 2024, you will need to update your queries in Grafana, with the new regionalized [data sources](../resources/cockpit_source.md).
 
-`scaleway_cockpit` is used to retrieve information about a Scaleway Cockpit associated with a given Project. This can be the default Project or a specific Project identified by its ID.
+The `scaleway_cockpit` data source is used to retrieve information about a Scaleway Cockpit associated with a given Project. This can be the default Project or a specific Project identified by its ID.
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-## Retrieve the Cockpit associated with the default Scaleway Project
+## Retrieve a Cockpit
 
-The following command allows you to get information on the Cockpit associated with your Scaleway default Project.
+The following commands allow you to:
+
+- get information on the Cockpit associated with your Scaleway default Project
+- get information on the Cockpit associated with a specific Scaleway Project
 
 ```hcl
-// Get default project's cockpit
+// Get the default Project's Cockpit
 data "scaleway_cockpit" "main" {}
 ```
 
-## Retrieve a specific Cockpit
-
-The following command allows you to get information about a given Scaleway Project specified by the Project ID.
-
 ```hcl
-// Get a specific project's cockpit
+// Get a specific Project's Cockpit
 data "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
 }

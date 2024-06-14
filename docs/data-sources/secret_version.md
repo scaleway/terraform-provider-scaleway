@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_secret_version"
 
 # scaleway_secret_version
 
-The `scaleway_secret_version` data source is used to get information about a specific version of a secret stored in Scaleway's Secret Manager.
+The `scaleway_secret_version` data source is used to get information about a specific secret version stored in Scaleway Secret Manager.
 
 Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/identity-and-access-management/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
 
@@ -63,7 +63,7 @@ output "scaleway_secret_access_payload_by_id" {
 
 ## Arguments reference
 
-This section lists the arguments that can be provided to the scaleway_secret_version data source:
+This section lists the arguments that can be provided to the `scaleway_secret_version` data source:
 
 - `secret_id` - (Optional) The ID of the secret associated with the secret version. Only one of `secret_id` and `secret_name` should be specified.
 
@@ -85,7 +85,7 @@ see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language
 
 ## Attributes reference
 
-This section lists the attributes that are exported by the scaleway_secret_version data source:
+This section lists the attributes that are exported when the `scaleway_secret_version` data source is created:
 
 - `description` - (Optional) The description of the secret version (e.g. `my-new-description`).
 - `data` - The data payload of the secret version. This is a sensitive attribute containing the secret value. Learn more in the [data section](#data)

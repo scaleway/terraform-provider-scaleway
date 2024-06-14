@@ -5,12 +5,13 @@ page_title: "Scaleway: scaleway_secret"
 
 # Resource: scaleway_secret
 
-Creates and manages Scaleway Secrets.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/secret-manager/).
+The `scaleway_secret` resource allows you to create and manage secrets in Scaleway Secret Manager.
 
-## Example Usage
+Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/identity-and-access-management/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
 
-### Basic
+## Create a secret
+
+The following command shows you how to create a secret named `foo`.
 
 ```terraform
 resource "scaleway_secret" "main" {
@@ -20,7 +21,11 @@ resource "scaleway_secret" "main" {
 }
 ```
 
-### Ephemeral Policy
+### Apply the ephemeral policy on a secret
+
+The following command shows you how to apply the [ephemeral policy](https://www.scaleway.com/en/docs/identity-and-access-management/secret-manager/concepts/#ephemeral-policy) on your secret named `foo`.
+
+In the example below, your secret's lifetime is of 24 hours, your secret versions will expire once they are accessed, and they are disabled after being accessed.
 
 ```terraform
 resource "scaleway_secret" "ephemeral" {
@@ -35,7 +40,7 @@ resource "scaleway_secret" "ephemeral" {
 
 ## Argument Reference
 
-The following arguments are supported:
+This section lists the arguments that can be provided to the `scaleway_secret` resource:
 
 - `name` - (Required) Name of the secret (e.g. `my-secret`).
 - `path` - (Optional) Path of the secret, defaults to `/`.
@@ -50,18 +55,18 @@ The following arguments are supported:
   in which the resource exists.
 - `project_id` - (Optional) The project ID containing is the secret.
 
-## Attributes Reference
+## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+This section lists the attributes that are exported when the `scaleway_secret` resource is created:
 
-- `version_count` - The number of versions for this Secret.
-- `status` - The status of the Secret.
-- `created_at` - Date and time of secret's creation (RFC 3339 format).
-- `updated_at` - Date and time of secret's last update (RFC 3339 format).
+- `version_count` - The amount of secret versions.
+- `status` - The status of the secret.
+- `created_at` - Date and time of the secret's creation (in RFC 3339 format).
+- `updated_at` - Date and time of the secret's last update (in RFC 3339 format).
 
 ## Import
 
-The Secret can be imported using the `{region}/{id}`, e.g.
+This section explains how to import a secret using the `{region}/{id}` format.
 
 ```bash
 terraform import scaleway_secret.main fr-par/11111111-1111-1111-1111-111111111111

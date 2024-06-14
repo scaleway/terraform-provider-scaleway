@@ -5,12 +5,16 @@ page_title: "Scaleway: scaleway_secret_version"
 
 # Resource: scaleway_secret_version
 
-Creates and manages Scaleway Secret Versions.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/secret-manager/#secret-versions-079501).
+The `scaleway_secret_version` resource allows you to create and manage secret versions in Scaleway Secret Manager.
 
-## Example Usage
+Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/identity-and-access-management/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
 
-### Basic
+## Create a secret and a version
+
+The following commands show you how to:
+
+- create a secret named `foo`
+- create a version of this secret containing the `my_new_secret` data
 
 ```terraform
 resource "scaleway_secret" "main" {
@@ -26,40 +30,39 @@ resource "scaleway_secret_version" "v1" {
 }
 ```
 
-## Argument Reference
+## Arguments reference
 
-The following arguments are supported:
+This section lists the arguments that can be provided to the `secret_version` resource:
 
-- `secret_id` - (Required) The Secret ID associated wit the secret version.
-- `data` - (Required) The data payload of the secret version. Must be no larger than 64KiB. (e.g. `my-secret-version-payload`). more on the [data section](#data)
+- `secret_id` - (Required) The ID of the secret associated with the version.
+- `data` - (Required) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data)
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
-  in which the resource exists.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)) The [region](../guides/regions_and_zones.md#regions) where the resource exists.
 
 ### Data
 
-Note: The `data` should be a base64 encoded string when sent from the API. **It is already handled by the provider so you don't need to encode it yourself.**
+Note: The `data` should be a base64-encoded string when sent from the API. **The provider handles this encoding so you do not need to encode the data yourself.**
 
-Updating `data` will force creating a new the secret version.
+Updating `data` will force the creation of a new secret version.
 
-Be aware that this is a sensitive attribute. For more information, see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
+Keep in mind that this is a sensitive attribute. For more information, see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
 
-~> **Important:**  This property is sensitive and will not be displayed in the plan.
+~> **Important:**  This property will not be displayed in the Terraform plan, for security reasons.
 
-## Attributes Reference
+## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+This section lists the attributes that are exported when the `scaleway_secret_version` resource is created:
 
-- `revision` - The revision for this Secret Version.
-- `status` - The status of the Secret Version.
-- `created_at` - Date and time of secret version's creation (RFC 3339 format).
-- `updated_at` - Date and time of secret version's last update (RFC 3339 format).
+- `revision` - The revision number of the secret version.
+- `status` - The status of the secret version.
+- `created_at` - The date and time of the secret version's creation (in RFC 3339 format).
+- `updated_at` - The date and time of the secret version's last update (in RFC 3339 format).
 
 ## Import
 
-The Secret Version can be imported using the `{region}/{id}/{revision}`, e.g.
+This section explains how to import a secret version using the `{region}/{id}/{revision}` format.
 
-~> **Important:** Be aware if you import with revision `latest` you will overwrite the version you used before.
+~> **Important:** Keep in mind that if you import with the `latest` revision, you will overwrite the previous version you might have been using.
 
 ```bash
 terraform import scaleway_secret_version.main fr-par/11111111-1111-1111-1111-111111111111/2
