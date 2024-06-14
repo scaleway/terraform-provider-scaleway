@@ -79,6 +79,7 @@ func DataSourceClusterRead(ctx context.Context, d *schema.ResourceData, m interf
 		ClusterID: locality.ExpandID(clusterID.(string)),
 	}
 	_, err = api.GetCluster(getReq, scw.WithContext(ctx))
+
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("no clusters found with the id %s", clusterID))
 	}
