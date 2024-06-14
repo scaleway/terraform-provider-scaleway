@@ -5,11 +5,11 @@ page_title: "Scaleway: scaleway_lb_certificate"
 
 # scaleway_lb_certificate
 
-Get information about Scaleway Load-Balancer Certificates.
+Get information about Scaleway Load Balancer certificates.
 
-This data source can prove useful when a module accepts an LB Certificate as an input variable and needs to, for example, determine the security of a certificate for your LB Frontend associated with your domain, etc.
+This data source can prove useful when a module accepts a Load Balancer certificate as an input variable and needs to, for example, determine the security of a certificate for the frontend associated with your domain.
 
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-certificate).
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/how-to/add-certificate/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-certificate).
 
 ## Examples
 
@@ -47,14 +47,14 @@ data "scaleway_lb_certificate" "byName" {
 
 The following arguments are supported:
 
-- `certificate_id` - (Optional) The certificate id.
+- `certificate_id` - (Optional) The certificate ID.
     - Only one of `name` and `certificate_id` should be specified.
 
 - `name` - (Optional) The name of the certificate backend.
     - When using a certificate `name` you should specify the `lb-id`
 
-- `lb_id` - (Required) The load-balancer ID this certificate is attached to.
+- `lb_id` - (Required) The Load Balancer ID this certificate is attached to.
 
 ## Attributes Reference
 
-See the [LB Certificate Resource](../resources/lb_certificate.md) for details on the returned attributes - they are identical.
+See the [Load Balancer certificate resource](../resources/lb_certificate.md) for details on the returned attributes - they are identical.

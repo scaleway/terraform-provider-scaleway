@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_lb_acl"
 
 # Resource: scaleway_lb_acl
 
-Creates and manages Scaleway Load-Balancer ACLs. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-acls).
+Creates and manages Scaleway Load Balancer ACLs. 
+
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/reference-content/acls/) or [API reference](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-acls-get-an-acl).
 
 ## Example Usage
 
@@ -31,13 +33,13 @@ resource "scaleway_lb_acl" "acl01" {
 
 The following arguments are supported:
 
-- `frontend_id` - (Required) The load-balancer Frontend ID to attach the ACL to.
+- `frontend_id` - (Required) The ID of the Load Balancer frontend to attach the ACL to.
 
 - `name` - (Optional) The ACL name. If not provided it will be randomly generated.
 
 - `description` - (Optional) The ACL description.
 
-- `index` - (Required) The Priority of this ACL (ACLs are applied in ascending order, 0 is the first ACL executed).
+- `index` - (Required) The priority of this ACL (ACLs are applied in ascending order, 0 is the first ACL executed).
 
 - `action` - (Required) Action to undertake when an ACL filter matches.
 
@@ -53,14 +55,14 @@ The following arguments are supported:
 
 - `match` - (Required) The ACL match rule. At least `ip_subnet` or `http_filter` and `http_filter_value` are required.
 
-    - `ip_subnet` - (Optional) A list of IPs or CIDR v4/v6 addresses of the client of the session to match.
+    - `ip_subnet` - (Optional) A list of IPs, or CIDR v4/v6 addresses of the session client, to match.
 
     - `http_filter` - (Optional) The HTTP filter to match. This filter is supported only if your backend protocol has an HTTP forward protocol.
       It extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part).
       Possible values are: `acl_http_filter_none`, `path_begin`, `path_end`, `http_header_match` or `regex`.
 
     - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
-      Keep in mind that in the case of `http_header_match` the HTTP header field name is case-insensitive.
+      Keep in mind that in the case of `http_header_match` the HTTP header field name is case insensitive.
 
     - `http_filter_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
 
@@ -70,14 +72,14 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the load-balancer ACL.
+- `id` - The ID of the Load Balancer ACL.
 
-~> **Important:** Load-Balancers ACLs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+~> **Important:** Load-Balancer ACL IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 
 ## Import
 
-Load-Balancer ACL can be imported using the `{zone}/{id}`, e.g.
+Load Balancer ACLs can be imported using `{zone}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_lb_acl.acl01 fr-par-1/11111111-1111-1111-1111-111111111111
