@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_lb_acl"
 
 # Resource: scaleway_lb_acl
 
-Creates and manages Scaleway Load Balancer ACLs. 
+Creates and manages Scaleway Load Balancer ACLs.
 
 For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/reference-content/acls/) or [API reference](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-acls-get-an-acl).
 

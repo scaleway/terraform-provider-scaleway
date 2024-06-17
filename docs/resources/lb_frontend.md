@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_lb_frontend"
 
 # Resource: scaleway_lb_frontend
 
-Creates and manages Scaleway Load Balancer frontends. 
+Creates and manages Scaleway Load Balancer frontends.
 
 For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/reference-content/configuring-frontends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
 
