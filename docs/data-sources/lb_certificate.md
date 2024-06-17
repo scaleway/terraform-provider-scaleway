@@ -50,7 +50,7 @@ The following arguments are supported:
 - `certificate_id` - (Optional) The certificate ID.
     - Only one of `name` and `certificate_id` should be specified.
 
-- `name` - (Optional) The name of the certificate backend.
+- `name` - (Optional) The name of the Load Balancer certificate.
     - When using a certificate `name` you should specify the `lb-id`
 
 - `lb_id` - (Required) The Load Balancer ID this certificate is attached to.

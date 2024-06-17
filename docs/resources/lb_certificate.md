@@ -91,7 +91,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional notes
 
-* Ensure that all domain names used in tthe configuration are pointing to the Load Balancer IP.
+* Ensure that all domain names used in the configuration are pointing to the Load Balancer IP.
   You can achieve this by creating a DNS record through Terraform pointing to  the `ip_address` property of the `lb_beta` entity.
 * If there are any issues with the certificate, you will receive a `400` error from the `apply` operation.
   Use `export TF_LOG=DEBUG` to view the exact problem returned by the API.

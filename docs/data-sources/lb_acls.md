@@ -43,7 +43,7 @@ In addition to all arguments above, the following attributes are exported:
     - `update_at` - The date on which the ACL was last updated (RFC 3339 format).
     - `index` - The priority of this ACL in the ordered list.
     - `description` - The description of the ACL resource.
-    - `action` - The action to undertaken when an ACL filter matches.
+    - `action` - The action to be undertaken when an ACL filter matches.
         - `type` - The action type.
         - `redirect` - Redirect parameters when using an ACL with `redirect` action.
             - `type`  - The redirect type.
