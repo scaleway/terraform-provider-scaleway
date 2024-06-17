@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_ipam_ips"
 
 # scaleway_ipam_ips
 
-Gets information about multiple IPs managed by IPAM service.
+Gets information about multiple IP addresses managed by Scaleway's IP Address Management (IPAM) service.
+
+For more information about IPAM, see the main [documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/#ipam).
 
 ## Examples
 
@@ -54,49 +56,49 @@ data "scaleway_ipam_ips" "by_type_and_resource" {
 
 ## Argument Reference
 
-- `type` - (Optional) The type of IP used as filter (ipv4, ipv6).
+- `type` - (Optional) The type of IP to filter for (`ipv4` or `ipv6`).
 
-- `private_network_id` - (Optional) The ID of the private network used as filter.
+- `private_network_id` - (Optional) The ID of the Private Network to filter for.
 
-- `resource` - (Optional) Filter by resource ID, type or name.
-    - `id` - The ID of the resource that the IP is bound to.
-    - `type` - The type of the resource to get the IP from. [Documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/ipam/v1#pkg-constants) with type list.
-    - `name` - The name of the resource to get the IP from.
+- `resource` - (Optional) Filter for a resource attached to the IP, using resource ID, type or name.
+    - `id` - The ID of the attached resource.
+    - `type` - The type of the attached resource. [Documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/ipam/v1#pkg-constants) with type list.
+    - `name` - The name of the attached resource.
 
-- `mac_address` - (Optional) The Mac Address used as filter.
+- `mac_address` - (Optional) The linked MAC address to filter for.
 
-- `tags` (Optional) The tags used as filter.
+- `tags` (Optional) The IP tags to filter for.
 
 - `attached` - (Optional) Defines whether to filter only for IPs which are attached to a resource.
 
 - `zonal` - (Optional) Only IPs that are zonal, and in this zone, will be returned.
 
-- `region` - (Optional) The region used as filter.
+- `region` - (Optional) The region to filter for.
 
-- `project_id` - (Optional) The ID of the project used as filter.
+- `project_id` - (Optional) The ID of the Project to filter for.
 
-- `organization_id` - (Optional) The ID of the organization used as filter.
+- `organization_id` - (Optional) The ID of the Organization to filter for.
 
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The region of the IPS
-- `ips` - List of found IPs
+- `id` - The region of the IPs.
+- `ips` - List of found IPs.
     - `id` - The ID of the IP.
 
-    ~> **Important:** IPAM IPs' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+    ~> **Important:** IPAM IP IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-    - `address` - The Scaleway internal IP address of the server.
-    - `resource` - The list of public IPs of the server.
+    - `address` - The Scaleway internal IP address of the resource.
+    - `resource` - The list of public IPs attached to the resource.
         - `id` - The ID of the resource.
         - `type` - The type of resource.
-        - `mac_address` - The mac address.
+        - `mac_address` - The associated MAC address.
         - `name` - The name of the resource.
     - `tags` - The tags associated with the IP.
     - `created_at` - The date and time of the creation of the IP.
     - `updated_at` - The date and time of the last update of the IP.
-    - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the IP is.
-    - `region` - The [region](../guides/regions_and_zones.md#regions) in which the IP is.
-    - `project_id` - The ID of the project the server is associated with.
+    - `zone` - The [zone](../guides/regions_and_zones.md#zones) of the IP.
+    - `region` - The [region](../guides/regions_and_zones.md#regions) of the IP.
+    - `project_id` - The ID of the Project the resource is associated with.
   

@@ -12,19 +12,19 @@ Creates and manages Scaleway Kubernetes clusters. For more information, see [the
 ### Basic
 
 ```terraform
-resource "scaleway_vpc_private_network" "hedy" {}
+resource "scaleway_vpc_private_network" "pn" {}
 
-resource "scaleway_k8s_cluster" "jack" {
-  name    = "jack"
-  version = "1.24.3"
+resource "scaleway_k8s_cluster" "cluster" {
+  name    = "tf-cluster"
+  version = "1.29.1"
   cni     = "cilium"
-  private_network_id = scaleway_vpc_private_network.hedy.id
+  private_network_id = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
 }
 
-resource "scaleway_k8s_pool" "john" {
-  cluster_id = scaleway_k8s_cluster.jack.id
-  name       = "john"
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id = scaleway_k8s_cluster.cluster.id
+  name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
 }
@@ -33,17 +33,17 @@ resource "scaleway_k8s_pool" "john" {
 ### Multicloud
 
 ```terraform
-resource "scaleway_k8s_cluster" "henry" {
-  name = "henry"
+resource "scaleway_k8s_cluster" "cluster" {
+  name = "tf-cluster"
   type = "multicloud"
-  version = "1.24.3"
+  version = "1.29.1"
   cni     = "kilo"
   delete_additional_resources = false
 }
 
-resource "scaleway_k8s_pool" "friend_from_outer_space" {
-  cluster_id = scaleway_k8s_cluster.henry.id
-  name = "henry_friend"
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id = scaleway_k8s_cluster.cluster.id
+  name = "tf-pool"
   node_type = "external"
   size = 0
   min_size = 0
@@ -55,15 +55,15 @@ For a detailed example of how to add or run Elastic Metal servers instead of Ins
 ### With additional configuration
 
 ```terraform
-resource "scaleway_vpc_private_network" "hedy" {}
+resource "scaleway_vpc_private_network" "pn" {}
 
-resource "scaleway_k8s_cluster" "john" {
-  name             = "john"
-  description      = "my awesome cluster"
-  version          = "1.24.3"
+resource "scaleway_k8s_cluster" "cluster" {
+  name             = "tf-cluster"
+  description      = "cluster made in terraform"
+  version          = "1.29.1"
   cni              = "calico"
-  tags             = ["i'm an awesome tag", "yay"]
-  private_network_id = scaleway_vpc_private_network.hedy.id
+  tags             = ["terraform"]
+  private_network_id = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
 
   autoscaler_config {
@@ -77,9 +77,9 @@ resource "scaleway_k8s_cluster" "john" {
   }
 }
 
-resource "scaleway_k8s_pool" "john" {
-  cluster_id  = scaleway_k8s_cluster.john.id
-  name        = "john"
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id  = scaleway_k8s_cluster.cluster.id
+  name        = "tf-pool"
   node_type   = "DEV1-M"
   size        = 3
   autoscaling = true
@@ -92,29 +92,29 @@ resource "scaleway_k8s_pool" "john" {
 ### With the kubernetes provider
 
 ```terraform
-resource "scaleway_vpc_private_network" "hedy" {}
+resource "scaleway_vpc_private_network" "pn" {}
 
-resource "scaleway_k8s_cluster" "joy" {
-  name    = "joy"
-  version = "1.24.3"
-  cni     = "flannel"
-  private_network_id = scaleway_vpc_private_network.hedy.id
+resource "scaleway_k8s_cluster" "cluster" {
+  name    = "tf-cluster"
+  version = "1.29.1"
+  cni     = "cilium"
+  private_network_id = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
 }
 
-resource "scaleway_k8s_pool" "john" {
-  cluster_id = scaleway_k8s_cluster.joy.id
-  name       = "john"
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id = scaleway_k8s_cluster.cluster.id
+  name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
 }
 
 resource "null_resource" "kubeconfig" {
-  depends_on = [scaleway_k8s_pool.john] # at least one pool here
+  depends_on = [scaleway_k8s_pool.pool] # at least one pool here
   triggers = {
-    host                   = scaleway_k8s_cluster.joy.kubeconfig[0].host
-    token                  = scaleway_k8s_cluster.joy.kubeconfig[0].token
-    cluster_ca_certificate = scaleway_k8s_cluster.joy.kubeconfig[0].cluster_ca_certificate
+    host                   = scaleway_k8s_cluster.cluster.kubeconfig[0].host
+    token                  = scaleway_k8s_cluster.cluster.kubeconfig[0].token
+    cluster_ca_certificate = scaleway_k8s_cluster.cluster.kubeconfig[0].cluster_ca_certificate
   }
 }
 
@@ -133,29 +133,29 @@ It leads the `kubernetes` provider to start creating its objects, but the DNS en
 ### With the Helm provider
 
 ```terraform
-resource "scaleway_vpc_private_network" "hedy" {}
+resource "scaleway_vpc_private_network" "pn" {}
 
-resource "scaleway_k8s_cluster" "joy" {
-  name    = "joy"
-  version = "1.24.3"
-  cni     = "flannel"
+resource "scaleway_k8s_cluster" "cluster" {
+  name    = "tf-cluster"
+  version = "1.29.1"
+  cni     = "cilium"
   delete_additional_resources = false
-  private_network_id = scaleway_vpc_private_network.hedy.id
+  private_network_id = scaleway_vpc_private_network.pn.id
 }
 
-resource "scaleway_k8s_pool" "john" {
-  cluster_id = scaleway_k8s_cluster.joy.id
-  name       = "john"
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id = scaleway_k8s_cluster.cluster.id
+  name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
 }
 
 resource "null_resource" "kubeconfig" {
-  depends_on = [scaleway_k8s_pool.john] # at least one pool here
+  depends_on = [scaleway_k8s_pool.pool] # at least one pool here
   triggers = {
-    host                   = scaleway_k8s_cluster.joy.kubeconfig[0].host
-    token                  = scaleway_k8s_cluster.joy.kubeconfig[0].token
-    cluster_ca_certificate = scaleway_k8s_cluster.joy.kubeconfig[0].cluster_ca_certificate
+    host                   = scaleway_k8s_cluster.cluster.kubeconfig[0].host
+    token                  = scaleway_k8s_cluster.cluster.kubeconfig[0].token
+    cluster_ca_certificate = scaleway_k8s_cluster.cluster.kubeconfig[0].cluster_ca_certificate
   }
 }
 
@@ -171,7 +171,7 @@ provider "helm" {
 
 resource "scaleway_lb_ip" "nginx_ip" {
   zone       = "fr-par-1"
-  project_id = scaleway_k8s_cluster.joy.project_id
+  project_id = scaleway_k8s_cluster.cluster.project_id
 }
 
 resource "helm_release" "nginx_ingress" {
@@ -346,8 +346,8 @@ $ terraform import scaleway_k8s_cluster.mycluster fr-par/11111111-1111-1111-1111
 Before:
 
 ```terraform
-resource "scaleway_k8s_cluster" "jack" {
-  name    = "jack"
+resource "scaleway_k8s_cluster" "cluster" {
+  name    = "tf-cluster"
   version = "1.18.0"
   cni     = "cilium"
 
@@ -361,8 +361,8 @@ resource "scaleway_k8s_cluster" "jack" {
 After:
 
 ```terraform
-resource "scaleway_k8s_cluster" "jack" {
-  name    = "jack"
+resource "scaleway_k8s_cluster" "cluster" {
+  name    = "tf-cluster"
   version = "1.18.0"
   cni     = "cilium"
 }
