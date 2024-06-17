@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_vpc_gateway_network"
 
 # scaleway_vpc_gateway_network
 
-Gets information about a GatewayNetwork (a connection between a Public Gateway and a Private Network)/
+Gets information about a GatewayNetwork (a connection between a Public Gateway and a Private Network).
 
 ## Example Usage
 
