@@ -22,7 +22,7 @@ data "scaleway_ipam_ip" "by_id" {
 
 ### Instance Private Network IP
 
-Get an Instance's IP on a private network.
+Get an Instance's IP on a Private Network.
 
 ```terraform
 # Connect your instance to a private network using a private nic.

@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_ip"
 
 Gets information about a Public Gateway public flexible IP address.
 
-For further information, please see the API [documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-ips-list-ips)
+For further information, please see the API [documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-ips-list-ips).
 
 ## Example Usage
 

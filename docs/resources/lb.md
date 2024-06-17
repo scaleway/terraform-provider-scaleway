@@ -101,7 +101,7 @@ resource scaleway_lb_ip main {
 
 ### Scaleway Private Network
 resource scaleway_vpc_private_network "main" {
-    name = "private network with static config"
+    name = "private network with DHCP config"
 }
 
 ### Scaleway Load Balancer
@@ -109,11 +109,6 @@ resource scaleway_lb main {
     ip_id = scaleway_lb_ip.main.id
     name = "MyTest"
     type = "LB-S"
-
-    private_network {
-        private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100"]
-    }
 
     private_network {
         private_network_id = scaleway_vpc_private_network.main.id
@@ -205,39 +200,17 @@ resource "scaleway_lb" "main" {
 }
 ```
 
-## Private Network with static config
-
-```terraform
-resource scaleway_lb_ip main {
-}
-
-resource scaleway_vpc_private_network main {
-    name = "MyTest"
-}
-
-resource scaleway_lb main {
-    ip_id = scaleway_lb_ip.main.id
-    name = "MyTest"
-    type = "LB-S"
-    release_ip = false
-    private_network {
-        private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100"]
-    }
-}
-```
-
 ## Attributes Reference
 
 - `private_network_id` - (Required) The ID of the Private Network to attach to.
 
 - ~> **Important:** Updates to `private_network` will recreate the attachment.
 
-- `static_config` - (Optional) Define a local IP address of your choice for the Load Balancer. See below.
+- `static_config` - (Deprecated) Please use `dhcp_config`. Define a local ip address of your choice for the load balancer instance.
 
 - `dhcp_config` - (Optional) Set to `true` if you want to let DHCP assign IP addresses. See below.
 
-~> **Important:**  Only one of `static_config` and `dhcp_config` may be set.
+~> **Important:**  Only dhcp_config may be set.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Private Network was created.
 
