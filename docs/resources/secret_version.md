@@ -11,7 +11,7 @@ Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/
 
 ## Create a secret and a version
 
-The following commands show you how to:
+The following commands allow you to:
 
 - create a secret named `foo`
 - create a version of this secret containing the `my_new_secret` data
@@ -32,12 +32,12 @@ resource "scaleway_secret_version" "v1" {
 
 ## Arguments reference
 
-This section lists the arguments that can be provided to the `secret_version` resource:
+The following arguments are supported:
 
 - `secret_id` - (Required) The ID of the secret associated with the version.
-- `data` - (Required) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data)
+- `data` - (Required) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)) The [region](../guides/regions_and_zones.md#regions) where the resource exists.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
 
 ### Data
 

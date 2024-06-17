@@ -12,7 +12,7 @@ Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en
 
 ## Query domain records
 
-The following commands allow you to query domain records using two methods:
+The following commands allow you to:
 
 - query a domain record specified by the DNS zone (`domain.tld`), the record name (`www`), the record type (`A`), and the record content (`1.2.3.4`).
 - query a domain record specified by the DNS zone (`domain.tld`) and the unique record ID (`11111111-1111-1111-1111-111111111111`).
@@ -35,7 +35,7 @@ data "scaleway_domain_record" "by_id" {
 
 ## Arguments reference
 
-This section lists the arguments that can be provided to the `scaleway_domain_record` data source:
+This section lists the arguments that you can provide to the `scaleway_domain_record` data source to filter and retrieve the desired record:
 
 - `dns_zone` - (Optional) The DNS zone (domain) to which the record belongs. This is a required field in both examples above but is optional in the context of defining the data source.
 
@@ -47,13 +47,11 @@ This section lists the arguments that can be provided to the `scaleway_domain_re
 
 - `record_id` - (Optional) The unique identifier of the record. Cannot be used with `name`, `type`, and `data`.
 
-- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the project associated with the domain.
+- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the Project associated with the domain.
 
 ## Attributes reference
 
-This section lists the attributes that are exported by the scaleway_domain_record data source. These attributes can be referenced in other parts of your Terraform configuration:
-
-In addition to all arguments above, the following attributes are exported:
+This section lists the attributes that are exported when the `scaleway_domain_record` data source is created. These attributes can be referenced in other parts of your Terraform configuration:
 
 - `id` - The unique identifier of the record.
 

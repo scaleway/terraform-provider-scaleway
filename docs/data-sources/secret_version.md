@@ -12,7 +12,7 @@ Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/
 
 ## Use Secret Manager
 
-The following commands show you how to:
+The following commands allow you to:
 
 - create a secret named `fooii`
 - create a new version of `fooii` containing data (`your_secret`)
@@ -63,7 +63,7 @@ output "scaleway_secret_access_payload_by_id" {
 
 ## Arguments reference
 
-This section lists the arguments that can be provided to the `scaleway_secret_version` data source:
+This section lists the arguments that you can provide to the `scaleway_secret_version` data source to filter and retrieve the desired version:
 
 - `secret_id` - (Optional) The ID of the secret associated with the secret version. Only one of `secret_id` and `secret_name` should be specified.
 
@@ -85,10 +85,10 @@ see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language
 
 ## Attributes reference
 
-This section lists the attributes that are exported when the `scaleway_secret_version` data source is created:
+This section lists the attributes that are exported by the `scaleway_secret_version` data source. These attributes can be referenced in other parts of your Terraform configuration:
 
 - `description` - (Optional) The description of the secret version (e.g. `my-new-description`).
-- `data` - The data payload of the secret version. This is a sensitive attribute containing the secret value. Learn more in the [data section](#data)
+- `data` - The data payload of the secret version. This is a sensitive attribute containing the secret value. Learn more in the [data section](#data).
 - `status` - The status of the secret version.
 - `created_at` - The date and time of the secret version's creation in RFC 3339 format.
 - `updated_at` - The date and time of the secret version's last update in RFC 3339 format.

@@ -5,13 +5,13 @@ page_title: "Scaleway: scaleway_block_snapshot"
 
 # scaleway_block_snapshot
 
-`scaleway_block_snapshot` is used to retrieve information about a Block Storage volume snapshot.
+The `scaleway_block_snapshot` data source is used to retrieve information about a Block Storage volume snapshot.
 
 Refer to the Block Storage [product documentation](https://www.scaleway.com/en/docs/storage/block/) and [API documentation](https://www.scaleway.com/en/developers/api/block/) for more information.
 
 ## Retrieve a volume's snapshot
 
-The following commands allow you to retrieve information about a Block Storage volume snapshot, using several methods:
+The following commands allow you to:
 
 - retrieve a snapshot specified by its name
 - retrieve a snapshot specified by its name and the ID of the Block Storage volume it is associated with

@@ -13,7 +13,7 @@ Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en
 
 ### Create basic DNS records
 
-The folllowing commands show you how to:
+The folllowing commands allow you to:
 
 - create an A record for the `www.domain.tld` domain, pointing to `1.2.3.4` and another one pointing to `1.2.3.5`
 
@@ -57,7 +57,7 @@ resource "scaleway_domain_record" "mx2" {
 
 ## Create dynamic records
 
-The folllowing commands show you how to:
+The folllowing commands allow you to:
 
 - create a Geo IP record for `images.domain.tld` that points to different IPs based on the user's location: `1.2.3.5` for users in France (EU), and `4.3.2.1` for users in North America (NA)
 
@@ -144,9 +144,9 @@ resource "scaleway_domain_record" "weighted" {
 
 ### Create an Instance and add records with the new Instance IP
 
-The following commands show you how to:
+The following commands allow you to:
 
-- creates a Scaleway Instance
+- create a Scaleway Instance
 - assign The Instance's IP address to various DNS records for a specified DNS zone
 
 ```terraform
@@ -207,7 +207,7 @@ The following arguments are supported:
 
 - `dns_zone` - (Required) The DNS zone of the domain. If the domain has no DNS zone, one will be automatically created.
 
-- `keep_empty_zone` - (Optional, defaults to `false`) When destroying a resource, if only NS records remain and this is set to `false`, the zone will be deleted. Note that each zone not deleted will [be billed](https://www.scaleway.com/en/dns/)
+- `keep_empty_zone` - (Optional, defaults to `false`) When destroying a resource, if only NS records remain and this is set to `false`, the zone will be deleted. Note that each zone not deleted will [be billed](https://www.scaleway.com/en/dns/).
 
 - `name` - (Optional) The name of the record (can be an empty string for a root record).
 
@@ -217,43 +217,43 @@ The following arguments are supported:
 
 - `ttl` - (Optional, defaults to `3600`) Time To Live of the record in seconds.
 
-- `priority` - (Optional, defaults to `0`) The priority of the record (mostly used with an `MX` record)
+- `priority` - (Optional, defaults to `0`) The priority of the record (mostly used with an `MX` record).
 
 ### Dynamic records
 
-- `geo_ip` - (Optional) The Geo IP provides DNS resolution based on the user’s geographical location. You can define a default IP that resolves if no Geo IP rule matches, and specify IPs for each geographical zone. [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#geo-ip-records)
-    - `matches` - (Required) The list of matches. *(Can be more than one)*
-        - `countries` - (Optional) List of countries (eg: `FR` for France, `US` for the United States, `GB` for Great Britain, etc.). [Check the list of all country codes](https://api.scaleway.com/domain-private/v2beta1/countries)
-        - `continents` - (Optional) List of continents (eg: `EU` for Europe, `NA` for North America, `AS` for Asia, etc.). [Check the list of all continent codes](https://api.scaleway.com/domain-private/v2beta1/continents)
-        - `data` (Required) The data of the match result
+- `geo_ip` - (Optional) The Geo IP provides DNS resolution based on the user’s geographical location. You can define a default IP that resolves if no Geo IP rule matches, and specify IPs for each geographical zone. [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#geo-ip-records).
+    - `matches` - (Required) The list of matches. *(Can be more than one)*.
+        - `countries` - (Optional) List of countries (eg: `FR` for France, `US` for the United States, `GB` for Great Britain, etc.). [Check the list of all country codes](https://api.scaleway.com/domain-private/v2beta1/countries).
+        - `continents` - (Optional) List of continents (eg: `EU` for Europe, `NA` for North America, `AS` for Asia, etc.). [Check the list of all continent codes](https://api.scaleway.com/domain-private/v2beta1/continents).
+        - `data` (Required) The data of the match result.
 
 
-- `http_service` - (Optional) The DNS service checks the provided URL on the configured IPs and resolves the request to one of the IPs, by excluding the ones not responding to the given string to check. [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#healthcheck-records)
-    - `ips` - (Required) List of IPs to check
-    - `must_contain` - (Required) Text to search
-    - `url` - (Required) URL to match the `must_contain` text to validate an IP
-    - `user_agent` - (Optional) User-agent used when checking the URL
-    - `strategy` - (Required) Strategy to return an IP from the IPs list. Can be `random`, `hashed`, or `all`
+- `http_service` - (Optional) The DNS service checks the provided URL on the configured IPs and resolves the request to one of the IPs, by excluding the ones not responding to the given string to check. [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#healthcheck-records).
+    - `ips` - (Required) List of IPs to check.
+    - `must_contain` - (Required) Text to search.
+    - `url` - (Required) URL to match the `must_contain` text to validate an IP.
+    - `user_agent` - (Optional) User-agent used when checking the URL.
+    - `strategy` - (Required) Strategy to return an IP from the IPs list. Can be `random`, `hashed`, or `all`.
 
 
-- `view` - (Optional) The answer to a DNS request is based on the client’s (resolver) subnet. *(Can be more than 1)* [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#views-records)
-    - `subnet` - (Required) The subnet of the view
-    - `data` - (Required) The data of the view record
+- `view` - (Optional) The answer to a DNS request is based on the client’s (resolver) subnet. *(Can be more than 1)* [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#views-records).
+    - `subnet` - (Required) The subnet of the view.
+    - `data` - (Required) The data of the view record.
 
 
-- `weighted` - (Optional) You provide a list of IPs with their corresponding weights. These weights are used to proportionally direct requests to each IP. Depending on the weight of a record more or fewer requests are answered with their related IP compared to the others in the list. *(Can be more than 1)* [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#weight-records)
-    - `ip` - (Required) The weighted IP
+- `weighted` - (Optional) You provide a list of IPs with their corresponding weights. These weights are used to proportionally direct requests to each IP. Depending on the weight of a record more or fewer requests are answered with their related IP compared to the others in the list. *(Can be more than 1)* [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#weight-records).
+    - `ip` - (Required) The weighted IP.
     - `weight` - (Required) The weight of the IP as an integer UInt32.
 
 ## Attributes reference
 
-This section lists the attributes that are automatically exported when the `domain_record` resource is created:
+This section lists the attributes that are exported when the `scaleway_domain_record` resource is created:
 
 - `id` - The ID of the record.
 
 - `fqdn` - The FQDN of the record.
 
-~> **Important:** Domain records' IDs are of the form `{dns_zone}/{id}`. The ID of a record should look like the following: `subdomain.domain.tld/11111111-1111-1111-1111-111111111111`.
+~> **Important:** Domain records' IDs are in the `{dns_zone}/{id}` format. The ID of a record should look like the following: `subdomain.domain.tld/11111111-1111-1111-1111-111111111111`.
 
 ## Multiple records
 

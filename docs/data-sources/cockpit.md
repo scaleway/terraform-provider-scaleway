@@ -36,14 +36,16 @@ data "scaleway_cockpit" "main" {
 
 ## Arguments reference
 
-- `project_id` - Specifies the ID of the Scaleway Project that the Cockpit is associated with. If not specified, it defaults to the [provider's](../index.md#project_id) `project_id`.
+This section lists the arguments that you can provide to the `scaleway_cockpit` data source to filter and retrieve the desired Cockpit.
+
+- `project_id` - Specifies the ID of the Scaleway Project that the Cockpit is associated with. If not specified, it defaults to the Project ID specified in the [provider configuration](../index.md#project_id).
 
 - `plan` - (Optional) Specifies the name or ID of the pricing plan to use.
 
 
 ## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_cockpit` data source exports certain attributes once the Cockpit information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
 - `plan_id` - (Deprecated) ID of the current pricing plan
 - `endpoints` - (Deprecated) A list of [endpoints](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#endpoints) related to Cockpit, each with specific URLs:

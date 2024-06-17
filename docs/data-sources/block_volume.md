@@ -10,7 +10,7 @@ Refer to the Block Storage [product documentation](https://www.scaleway.com/en/d
 
 ## Retrieve a Block Storage volume
 
-The following commands allow you to retrieve information about a Block Storage volume, using two methods:
+The following commands allow you to:
 
 - retrieve a Block Storage volume specified by its name
 - retrieve a Block Storage volume specified by its ID
@@ -30,7 +30,7 @@ data "scaleway_block_volume" "my_volume" {
 
 ## Arguments reference
 
-This section lists the arguments that you can provide to the `scaleway_block_volume` data source to filter and retrieve the desired volume. Each argument has a specific purpose:
+This section lists the arguments that you can provide to the `scaleway_block_volume` data source to filter and retrieve the desired volume.
 
 - `volume_id` - (Optional) The unique identifier of the volume. Only one of `name` and `volume_id` should be specified.
 - `name` - (Optional) The name of the volume. Only one of `name` and `volume_id` should be specified.

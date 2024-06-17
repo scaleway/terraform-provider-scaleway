@@ -11,7 +11,7 @@ Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en
 
 ## Create a DNS zone
 
-The following command shows you how to create a DNS zone for the `test.scaleway-terraform.com` subdomain.
+The following command allows you to create a DNS zone for the `test.scaleway-terraform.com` subdomain.
 
 
 ```terraform
@@ -23,6 +23,7 @@ resource "scaleway_domain_zone" "test" {
 
 ## Arguments reference
 
+The following arguments are supported:
 
 - `domain` - (Required) The main domain where the DNS zone will be created.
 
@@ -33,21 +34,21 @@ resource "scaleway_domain_zone" "test" {
 
 ## Attributes reference
 
-This section lists the attributes that are automatically exported when the `domain_zone` resource is created:
+This section lists the attributes that are exported when the `scaleway_domain_zone` resource is created:
 
-- `id` - The ID of the zone, formatted as `{subdomain}.{domain}`
+- `id` - The ID of the zone, in the `{subdomain}.{domain}` format.
 
-- `ns` - The list of same servers for the zone
+- `ns` - The list of same servers for the zone.
 
-- `ns_default` -  The default list of same servers for the zone
+- `ns_default` -  The default list of same servers for the zone.
 
-- `ns_master` - The master list of same servers for the zone
+- `ns_master` - The master list of same servers for the zone.
 
-- `status` - The status of the domain zone
+- `status` - The status of the domain zone.
 
-- `message` - Message
+- `message` - Message.
 
-- `updated_at` - The date and time at which the DNS zone was last updated
+- `updated_at` - The date and time at which the DNS zone was last updated.
 
 ## Import
 

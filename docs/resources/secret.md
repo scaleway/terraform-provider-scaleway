@@ -11,7 +11,7 @@ Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/
 
 ## Create a secret
 
-The following command shows you how to create a secret named `foo`.
+The following command allows you to create a secret named `foo` with a description (`barr`), and tags (`foo` and `terraform`).
 
 ```terraform
 resource "scaleway_secret" "main" {
@@ -40,7 +40,7 @@ resource "scaleway_secret" "ephemeral" {
 
 ## Argument Reference
 
-This section lists the arguments that can be provided to the `scaleway_secret` resource:
+The following arguments are supported:
 
 - `name` - (Required) Name of the secret (e.g. `my-secret`).
 - `path` - (Optional) Path of the secret, defaults to `/`.

@@ -11,7 +11,7 @@ Refer to the Block Storage [product documentation](https://www.scaleway.com/en/d
 
 ## Create a Block Storage volume
 
-The following command shows you how to create a Block Storage volume of 20 GB with the desired [IOPS](https://www.scaleway.com/en/docs/storage/block/concepts/#iops).
+The following command allows you to create a Block Storage volume of 20 GB with a 5000 [IOPS](https://www.scaleway.com/en/docs/storage/block/concepts/#iops).
 
 ### Basic
 
@@ -46,15 +46,15 @@ resource "scaleway_block_volume" "main" {
 
 ## Arguments reference
 
-This section lists the arguments that can be provided to the `scaleway_block_volume` resource:
+This section lists the arguments that are supported:
 
 - `iops` - (Required) The maximum [IOPs](https://www.scaleway.com/en/docs/storage/block/concepts/#iops) expected, must match available options.
 - `name` - (Optional) The name of the volume. If not provided, a name will be randomly generated.
 - `size_in_gb` - (Optional) The size of the volume in gigabytes. Only one of `size_in_gb`, and `snapshot_id` should be specified.
 - `snapshot_id` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `snapshot_id` should be specified.
 - `tags` - (Optional) A list of tags to apply to the volume.
-- `zone` - (Defaults to the zone specified in the [provider's configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
-- `project_id` - (Defaults to the Project ID specified in the [provider's configurqtion](../index.md#project_id)). The ID of the Project the volume is associated with.
+- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
+- `project_id` - (Defaults to the Project ID specified in the [provider configurqtion](../index.md#project_id)). The ID of the Project the volume is associated with.
 
 ## Attributes reference
 
@@ -62,7 +62,7 @@ This section lists the attributes that are exported when the `scaleway_block_vol
 
 - `id` - The ID of the volume.
 
-~> **Important:** The IDs of Block Storage volumes are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the form `{zone}/{id}`. For example, a volume ID migt be `fr-par-1/11111111-1111-1111-1111-111111111111`.
+~> **Important:** The IDs of Block Storage volumes are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the `{zone}/{id}` format. For example, a volume ID might look like the following: `fr-par-1/11111111-1111-1111-1111-111111111111`.
 
 - `organization_id` - The Organization ID the volume is associated with.
 

@@ -13,11 +13,18 @@ The `scaleway_cockpit` resource allows you to create and manage Scaleway Cockpit
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-For more information consult the [documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/).
-
 ## Use Cockpit
 
+<<<<<<< HEAD
 ### Manage Cockpit in the Scaleway default Project
+=======
+The following commands allow you to:
+
+- activate Cockpit in the Scaleway default Project
+- activate Cockpit in a given Project specified by the Project ID
+- create a Grafana user in the default Project
+- create a Grafana folder
+>>>>>>> 3679c45b (docs(add): review)
 
 ```terraform
 // Activate Cockpit in the default Project
@@ -66,12 +73,12 @@ resource "grafana_folder" "test_folder" {
 
 ## Arguments reference
 
-- `project_id` - - `project_id` - (Defaults to the Project specified in the [provider's configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
+- `project_id` - (Defaults to the Project specified in the [provider's configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 - `plan` - (Optional) Name of the plan to use. Available plans are: free, premium, and custom.
 
 ## Attributes reference
 
-This section lists the attributes that are automatically exported when the `scaleway_cockpit` resource is created:
+This section lists the attributes that are exported when the `scaleway_cockpit` resource is created:
 
 - `plan_id` - (Deprecated) The ID of the current pricing plan.
 - `endpoints` - (Deprecated) A list of [endpoints](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#endpoints) related to Cockpit, each with specific URLs:
@@ -83,7 +90,7 @@ This section lists the attributes that are automatically exported when the `scal
 
 ## Import
 
-This section explains how to import Cockpits using its `{project_id}`:
+This section explains how to import a Cockpit using its `{project_id}`.
 
 ```bash
 terraform import scaleway_cockpit.main 11111111-1111-1111-1111-111111111111

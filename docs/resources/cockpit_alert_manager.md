@@ -11,7 +11,7 @@ Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/obse
 
 ## Enable the alert manager and configure managed alerts
 
-The following commands show you how to:
+The following commands allow you to:
 
 - enable the alert manager in a Project named `tf_test_project`
 - enable [managed alerts](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#managed-alerts)
@@ -39,14 +39,16 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 
 ## Arguments reference
 
+This section lists the arguments that are supported:
+
 - `enable_managed_alerts` - (Optional, Boolean) Specifies whether the alert manager should be enabled. Defaults to true.
-- `contact_points` - (Optional, List of Map) A list of contact points with email addresses that will receive alert. Each map should contain a single key email.
-- `project_id` - (Defaults to the Project ID specified in the [provider's configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
-- `region` - (Defaults to the region specified in the [provider's configuration](../index.md#arguments-reference)) The [region](../guides/regions_and_zones.md#regions) where the [alert manager](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#alert-manager) should be enabled.
+- `contact_points` - (Optional, List of Map) A list of contact points with email addresses that will receive alerts. Each map should contain a single key email.
+- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)) The [region](../guides/regions_and_zones.md#regions) where the [alert manager](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#alert-manager) should be enabled.
 
 ## Attributes reference
 
-This section lists the attributes that are automatically exported when the `cockpit_alert_manager` resource is created:
+This section lists the attributes that are exported when the `scaleway_cockpit_alert_manager` resource is created:
 
 - `alert_manager_url` - The URL of the alert manager.
 
