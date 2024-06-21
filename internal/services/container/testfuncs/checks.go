@@ -9,7 +9,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
+
 	dockerRegistrySDK "github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -70,7 +71,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 		ctx := context.Background()
 		authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 
-		out, err := cli.ImagePull(ctx, testDockerIMG, types.ImagePullOptions{})
+		out, err := cli.ImagePull(ctx, testDockerIMG, image.PullOptions{})
 		if err != nil {
 			return fmt.Errorf("could not pull image: %v", err)
 		}
@@ -101,7 +102,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 			return fmt.Errorf("could not tag image: %v", err)
 		}
 
-		pusher, err := cli.ImagePush(ctx, scwTag, types.ImagePushOptions{RegistryAuth: authStr})
+		pusher, err := cli.ImagePush(ctx, scwTag, image.PushOptions{RegistryAuth: authStr})
 		if err != nil {
 			return fmt.Errorf("could not push image: %v", err)
 		}
