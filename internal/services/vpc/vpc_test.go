@@ -23,8 +23,8 @@ func TestAccVPC_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-				      name = "test-vpc"
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -50,8 +50,8 @@ func TestAccVPC_WithRegion(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-                      name = "test-vpc"
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -61,9 +61,9 @@ func TestAccVPC_WithRegion(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-                      name = "test-vpc"
-                      region = "nl-ams"
+					resource "scaleway_vpc" "vpc01" {
+					  name   = "test-vpc"
+					  region = "nl-ams"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -85,8 +85,8 @@ func TestAccVPC_WithTags(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-                      name = "test-vpc"
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -96,9 +96,9 @@ func TestAccVPC_WithTags(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-                      name = "test-vpc"
-					  tags = [ "terraform-test", "vpc" ]
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc"
+					  tags = ["terraform-test", "vpc"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -122,8 +122,8 @@ func TestAccVPC_DisableRouting(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-                      name = "test-vpc-disable-routing"
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc-disable-routing"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -133,7 +133,7 @@ func TestAccVPC_DisableRouting(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
+					resource "scaleway_vpc" "vpc01" {
 					  name           = "test-vpc-disable-routing"
 					  enable_routing = false
 					}
