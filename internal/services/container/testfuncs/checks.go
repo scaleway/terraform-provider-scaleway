@@ -10,7 +10,6 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types/image"
-
 	dockerRegistrySDK "github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
