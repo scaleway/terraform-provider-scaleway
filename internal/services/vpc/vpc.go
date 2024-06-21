@@ -2,7 +2,7 @@ package vpc
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -66,15 +66,9 @@ func ResourceVPC() *schema.Resource {
 			},
 		},
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
-			rawConfig := diff.GetRawConfig().AsValueMap()
 			before, after := diff.GetChange("enable_routing")
-
-			// If the field was set to true and now it is either false or not set, force recreation
-			if before != nil && before.(bool) && (rawConfig["enable_routing"].IsNull() || (after != nil && !after.(bool))) {
-				if err := diff.SetNew("enable_routing", false); err != nil {
-					return fmt.Errorf("error setting enable_routing value: %s", err)
-				}
-				return diff.ForceNew("enable_routing")
+			if before != nil && before.(bool) && after != nil && !after.(bool) {
+				return errors.New("routing cannot be disabled on this VPC")
 			}
 
 			return nil
