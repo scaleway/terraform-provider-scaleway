@@ -57,12 +57,14 @@ func DataSourceRoutes() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The associated route ID",
 						},
 						"vpc_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The VPC ID associated with the route",
 						},
 						"tags": {
 							Computed: true,
@@ -70,38 +72,47 @@ func DataSourceRoutes() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Description: "The tags associated with the route",
 						},
 						"created_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Date and time of route's creation (RFC 3339 format)",
 						},
 						"description": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The description of the route",
 						},
 						"destination": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The destination IP or IP range of the route",
 						},
 						"nexthop_resource_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The resource ID of the route's next hop",
 						},
 						"nexthop_private_network_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The private network ID of the route's next hop",
 						},
 						"nexthop_ip": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The IP of the route's next hop",
 						},
 						"nexthop_name": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The name of the route's next hop",
 						},
 						"nexthop_resource_type": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The resource type of the route's next hop",
 						},
 						"region": regional.Schema(),
 					},

@@ -41,6 +41,12 @@ data "scaleway_vpc_routes" "routes_by_pn_id" {
   vpc_id  = scaleway_vpc.vpc01.id
   is_ipv6 = true
 }
+
+# Find routes with a nexthop resource type
+data "scaleway_vpc_routes" "routes_by_pn_id" {
+  vpc_id                = scaleway_vpc.vpc01.id
+  nexthop_resource_type = "vpc_gateway_network"
+}
 ```
 
 ## Argument Reference
@@ -64,10 +70,10 @@ data "scaleway_vpc_routes" "routes_by_pn_id" {
 In addition to all arguments above, the following attributes are exported:
 
 - `routes` - List of retrieved routes
-    - `id` - The associated route ID.
+    - `id` - The ID of the route.
       ~> **Important:** route IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
-    - `created_at` - Date and time of route's creation (RFC 3339 format).
-    - `destination` - Yhe destination IP or IP range of the route.
+    - `created_at` - The date on which the route was created (RFC 3339 format).
+    - `destination` - The destination IP or IP range of the route.
     - `description` - The description of the route.
     - `nexthop_ip` - The IP of the route's next hop.
     - `nexthop_name` - The name of the route's next hop.
