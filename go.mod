@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.2
 
 require (
-	github.com/aws/aws-sdk-go v1.53.15
+	github.com/aws/aws-sdk-go v1.54.6
 	github.com/bflad/tfproviderdocs v0.12.1
 	github.com/bflad/tfproviderlint v0.30.0
 	github.com/docker/docker v26.1.3+incompatible
