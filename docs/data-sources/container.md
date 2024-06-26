@@ -4,15 +4,17 @@ page_title: "Scaleway: scaleway_container"
 ---
 # scaleway_container
 
-Gets information about the Scaleway Container.
+The `scaleway_container` data source is used to retrieve information about a Serverless Container.
 
-For more information consult the [documentation](https://www.scaleway.com/en/docs/faq/serverless-containers/).
+Refer to the Serverless Containers [product documentation](https://www.scaleway.com/en/docs/serverless/containers/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/) for more information.
 
-For more details about the limitation check [containers-limitations](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/).
+For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/).
 
-You can check also our [containers guide](https://www.scaleway.com/en/docs/compute/containers/concepts/).
+## Retrieve a Serverless Container
 
-## Example Usage
+The following commands allow you to:
+- retrieve a container by its name
+- retrieve a container by its ID
 
 ```hcl
 resource scaleway_container_namespace main {
@@ -38,17 +40,19 @@ data "scaleway_container" "by_id" {
 
 ## Arguments Reference
 
-The following arguments are required:
+This section lists the arguments that you can provide to the `scaleway_container` data source to filter and retrieve the desired namespace. Each argument has a specific purpose:
 
-- `name` - (Required) The unique name of the container name.
+- `name` - (Required) The unique name of the container.
 
 - `namespace_id` - (Required) The container namespace ID of the container.
 
-- `project_id` - (Optional) The ID of the project the container is associated with.
+- `project_id` - (Optional) The unique identifier of the project with which the container is associated.
 
-~> **Important** Updates to `name` will recreate the container.
+~> **Important** Updating the `name` argument will recreate the container.
 
 ## Attributes Reference
+
+The `scaleway_container` data source exports certain attributes once the namespace information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
 In addition to all arguments above, the following attributes are exported:
 
@@ -60,19 +64,19 @@ In addition to all arguments above, the following attributes are exported:
 
 - `environment_variables` - The [environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) variables of the container.
 
-- `min_scale` - The minimum of running container instances continuously. Defaults to 0.
+- `min_scale` - The minimum number of container instances running continuously. Defaults to 0.
 
-- `max_scale` - The maximum of number of instances this container can scale to. Default to 20.
+- `max_scale` - The maximum number of instances the container can scale to. Defaults to 20.
 
-- `memory_limit` - The memory computing resources in MB to allocate to each container. Defaults to 128.
+- `memory_limit` - The memory resources in MB to allocate to each container. Defaults to 128.
 
-- `cpu_limit` - The amount of vCPU computing resources to allocate to each container. Defaults  to 70.
+- `cpu_limit` - The amount of vCPU computing resources to allocate to each container. Defaults to 70.
 
-- `timeout` - The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to 300s.
+- `timeout` - The maximum length of time your container can spend processing a request before being stopped. Defaults to 300s.
 
-- `privacy` - The privacy type define the way to authenticate to your container. Please check our dedicated [section](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8).
+- `privacy` - The privacy type define the way to authenticate to your container. Refer to the [dedicated documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) for more information.
 
-- `registry_image` - The registry image address. e.g: **"rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE"**.
+- `registry_image` - The registry image address (e.g. `rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE`).
 
 - `registry_sha256` - The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string.
 
@@ -80,7 +84,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `domain_name` - The container domain name.
 
-- `protocol` - The communication [protocol](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8) http1 or h2c. Defaults to http1.
+- `protocol` - The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) `http1` or `h2c`. Defaults to `http1`.
 
 - `port` - The port to expose the container. Defaults to 8080.
 
@@ -94,4 +98,4 @@ In addition to all arguments above, the following attributes are exported:
 
 - `error_message` - The error message of the container.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container exists.
