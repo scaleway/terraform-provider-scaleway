@@ -537,3 +537,44 @@ func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Z
 	}
 	return vol.VolumeTemplate(), nil
 }
+
+func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerType, image string) *UnknownVolume {
+	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
+
+	rootVolumeIsBootVolume := types.ExpandBoolPtr(types.GetMapValue[bool](rootVolumeI, "boot"))
+	rootVolumeType := types.GetMapValue[string](rootVolumeI, "volume_type")
+	sizeInput := types.GetMapValue[int](rootVolumeI, "size_in_gb")
+	rootVolumeID := zonal.ExpandID(types.GetMapValue[string](rootVolumeI, "volume_id")).ID
+
+	// If the rootVolumeType is not defined, define it depending on the offer
+	if rootVolumeType == "" {
+		if serverTypeCanBootOnBlock {
+			rootVolumeType = instance.VolumeVolumeTypeBSSD.String()
+		} else {
+			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
+		}
+	}
+
+	rootVolumeName := ""
+	if image == "" { // When creating an instance from an image, volume should not have a name
+		rootVolumeName = types.NewRandomName("vol")
+	}
+
+	var rootVolumeSize *scw.Size
+	if sizeInput == 0 && rootVolumeType == instance.VolumeVolumeTypeLSSD.String() {
+		// Compute the rootVolumeSize so it will be valid against the local volume constraints
+		// It wouldn't be valid if another local volume is added, but in this case
+		// the user would be informed that it does not fulfill the local volume constraints
+		rootVolumeSize = scw.SizePtr(serverType.VolumesConstraint.MaxSize)
+	} else if sizeInput > 0 {
+		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
+	}
+
+	return &UnknownVolume{
+		Name:               rootVolumeName,
+		ID:                 rootVolumeID,
+		InstanceVolumeType: instance.VolumeVolumeType(rootVolumeType),
+		Size:               rootVolumeSize,
+		Boot:               rootVolumeIsBootVolume,
+	}
+}
