@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -88,7 +88,7 @@ func ResourceEdgeServicesTLSStageCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	tlsStage, err := api.CreateTLSStage(&edge_services.CreateTLSStageRequest{
+	tlsStage, err := api.CreateTLSStage(&edgeservices.CreateTLSStageRequest{
 		ProjectID:          d.Get("project_id").(string),
 		BackendStageID:     types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 		CacheStageID:       types.ExpandStringPtr(d.Get("cache_stage_id").(string)),
@@ -107,7 +107,7 @@ func ResourceEdgeServicesTLSStageCreate(ctx context.Context, d *schema.ResourceD
 func ResourceEdgeServicesTLSStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	tlsStage, err := api.GetTLSStage(&edge_services.GetTLSStageRequest{
+	tlsStage, err := api.GetTLSStage(&edgeservices.GetTLSStageRequest{
 		TLSStageID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -138,7 +138,7 @@ func ResourceEdgeServicesTLSStageUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	hasChanged := false
 
-	updateRequest := &edge_services.UpdateTLSStageRequest{
+	updateRequest := &edgeservices.UpdateTLSStageRequest{
 		TLSStageID: d.Id(),
 	}
 
@@ -175,7 +175,7 @@ func ResourceEdgeServicesTLSStageUpdate(ctx context.Context, d *schema.ResourceD
 func ResourceEdgeServicesTLSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := api.DeleteTLSStage(&edge_services.DeleteTLSStageRequest{
+	err := api.DeleteTLSStage(&edgeservices.DeleteTLSStageRequest{
 		TLSStageID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is403(err) {

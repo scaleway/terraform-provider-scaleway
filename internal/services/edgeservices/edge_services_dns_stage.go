@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -78,7 +78,7 @@ func ResourceEdgeServicesDNSStage() *schema.Resource {
 func ResourceEdgeServicesDNSStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	dnsStage, err := api.CreateDNSStage(&edge_services.CreateDNSStageRequest{
+	dnsStage, err := api.CreateDNSStage(&edgeservices.CreateDNSStageRequest{
 		ProjectID:      d.Get("project_id").(string),
 		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 		CacheStageID:   types.ExpandStringPtr(d.Get("cache_stage_id").(string)),
@@ -97,7 +97,7 @@ func ResourceEdgeServicesDNSStageCreate(ctx context.Context, d *schema.ResourceD
 func ResourceEdgeServicesDNSStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	dnsStage, err := api.GetDNSStage(&edge_services.GetDNSStageRequest{
+	dnsStage, err := api.GetDNSStage(&edgeservices.GetDNSStageRequest{
 		DNSStageID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -127,7 +127,7 @@ func ResourceEdgeServicesDNSStageRead(ctx context.Context, d *schema.ResourceDat
 	// add all FQDNs from the API response
 	for _, fqdn := range dnsStage.Fqdns {
 		if oldFQDNsSet[fqdn] || len(oldFQDNs) == 0 {
-			// Keep FQDNs that were in the old state or if there were no old FQDNs
+			// keep FQDNs that were in the old state or if there were no old FQDNs
 			newFQDNs = append(newFQDNs, fqdn)
 		}
 	}
@@ -144,7 +144,7 @@ func ResourceEdgeServicesDNSStageRead(ctx context.Context, d *schema.ResourceDat
 			newFQDNs = append(newFQDNs, oldFQDN.(string))
 		}
 	}
-	if err := d.Set("fqdns", newFQDNs); err != nil {
+	if err = d.Set("fqdns", newFQDNs); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -156,7 +156,7 @@ func ResourceEdgeServicesDNSStageUpdate(ctx context.Context, d *schema.ResourceD
 
 	hasChanged := false
 
-	updateRequest := &edge_services.UpdateDNSStageRequest{
+	updateRequest := &edgeservices.UpdateDNSStageRequest{
 		DNSStageID: d.Id(),
 	}
 
@@ -193,7 +193,7 @@ func ResourceEdgeServicesDNSStageUpdate(ctx context.Context, d *schema.ResourceD
 func ResourceEdgeServicesDNSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := api.DeleteDNSStage(&edge_services.DeleteDNSStageRequest{
+	err := api.DeleteDNSStage(&edgeservices.DeleteDNSStageRequest{
 		DNSStageID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is403(err) {

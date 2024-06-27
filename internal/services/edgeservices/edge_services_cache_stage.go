@@ -124,15 +124,6 @@ func ResourceEdgeServicesCacheStageRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(cacheStage.BackendStageID))
 	_ = d.Set("fallback_ttl", cacheStage.FallbackTTL.Seconds)
 
-	/*	prs, err := api.ListPurgeRequests(&edge_services.ListPurgeRequestsRequest{
-			ProjectID:  scw.StringPtr(cacheStage.ProjectID),
-			PipelineID: cacheStage.PipelineID,
-		})
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		_ = d.Set("purge", flattenEdgeServicesPurge(prs.PurgeRequests))
-	*/
 	return nil
 }
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -70,7 +70,7 @@ func ResourceEdgeServicesPipeline() *schema.Resource {
 func ResourceEdgeServicesPipelineCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	pipeline, err := api.CreatePipeline(&edge_services.CreatePipelineRequest{
+	pipeline, err := api.CreatePipeline(&edgeservices.CreatePipelineRequest{
 		Description: d.Get("description").(string),
 		ProjectID:   d.Get("project_id").(string),
 		Name:        d.Get("name").(string),
@@ -88,7 +88,7 @@ func ResourceEdgeServicesPipelineCreate(ctx context.Context, d *schema.ResourceD
 func ResourceEdgeServicesPipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	pipeline, err := api.GetPipeline(&edge_services.GetPipelineRequest{
+	pipeline, err := api.GetPipeline(&edgeservices.GetPipelineRequest{
 		PipelineID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -115,7 +115,7 @@ func ResourceEdgeServicesPipelineUpdate(ctx context.Context, d *schema.ResourceD
 
 	hasChanged := false
 
-	updateRequest := &edge_services.UpdatePipelineRequest{
+	updateRequest := &edgeservices.UpdatePipelineRequest{
 		PipelineID: d.Id(),
 	}
 
@@ -147,7 +147,7 @@ func ResourceEdgeServicesPipelineUpdate(ctx context.Context, d *schema.ResourceD
 func ResourceEdgeServicesPipelineDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := api.DeletePipeline(&edge_services.DeletePipelineRequest{
+	err := api.DeletePipeline(&edgeservices.DeletePipelineRequest{
 		PipelineID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {

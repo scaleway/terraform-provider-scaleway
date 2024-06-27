@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -70,7 +70,7 @@ func ResourceEdgeServicesBackendStage() *schema.Resource {
 func ResourceEdgeServicesBackendStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	backendStage, err := api.CreateBackendStage(&edge_services.CreateBackendStageRequest{
+	backendStage, err := api.CreateBackendStage(&edgeservices.CreateBackendStageRequest{
 		ProjectID:  d.Get("project_id").(string),
 		ScalewayS3: expandEdgeServicesScalewayS3BackendConfig(d.Get("s3_backend_config")),
 	}, scw.WithContext(ctx))
@@ -86,7 +86,7 @@ func ResourceEdgeServicesBackendStageCreate(ctx context.Context, d *schema.Resou
 func ResourceEdgeServicesBackendStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	backendStage, err := api.GetBackendStage(&edge_services.GetBackendStageRequest{
+	backendStage, err := api.GetBackendStage(&edgeservices.GetBackendStageRequest{
 		BackendStageID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -111,7 +111,7 @@ func ResourceEdgeServicesBackendStageUpdate(ctx context.Context, d *schema.Resou
 
 	hasChanged := false
 
-	updateRequest := &edge_services.UpdateBackendStageRequest{
+	updateRequest := &edgeservices.UpdateBackendStageRequest{
 		BackendStageID: d.Id(),
 	}
 
@@ -133,7 +133,7 @@ func ResourceEdgeServicesBackendStageUpdate(ctx context.Context, d *schema.Resou
 func ResourceEdgeServicesBackendStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := api.DeleteBackendStage(&edge_services.DeleteBackendStageRequest{
+	err := api.DeleteBackendStage(&edgeservices.DeleteBackendStageRequest{
 		BackendStageID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is403(err) {
