@@ -800,7 +800,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			if volumeHasChange && !isStopped && volume.IsLocal() && volume.IsAttached() {
 				return diag.FromErr(errors.New("instanceSDK must be stopped to change local volumes"))
 			}
-			volumes[strconv.Itoa(i+1)] = volume.VolumeTemplateUpdate()
+			volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
 		}
 
 		serverShouldUpdate = true
