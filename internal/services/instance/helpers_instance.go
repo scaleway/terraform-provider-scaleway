@@ -283,13 +283,6 @@ func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[st
 					Boot: v.Boot,
 				}
 			}
-		// For the root volume (index 0) if the size is 0, it is considered as a volume created from an image.
-		// The size is not passed to the API, so it's computed by the API
-		case index == "0" && v.Size == nil:
-			v = &instance.VolumeServerTemplate{
-				VolumeType: v.VolumeType,
-				Boot:       v.Boot,
-			}
 		// If none of the above conditions are met, the volume is passed as it to the API
 		default:
 		}
@@ -535,34 +528,12 @@ func instanceIPHasMigrated(d *schema.ResourceData) bool {
 }
 
 func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Zone, volumeID string) (*instance.VolumeServerTemplate, error) {
-	vol, err := api.GetVolume(&instance.GetVolumeRequest{
-		Zone:     zone,
+	vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
 		VolumeID: locality.ExpandID(volumeID),
+		Zone:     zone,
 	})
-	if err == nil {
-		return &instance.VolumeServerTemplate{
-			ID:         &vol.Volume.ID,
-			Name:       &vol.Volume.Name,
-			VolumeType: vol.Volume.VolumeType,
-			Size:       &vol.Volume.Size,
-		}, nil
-	}
-	if !httperrors.Is404(err) {
+	if err != nil {
 		return nil, err
 	}
-
-	blockVol, err := api.blockAPI.GetVolume(&blockSDK.GetVolumeRequest{
-		Zone:     zone,
-		VolumeID: locality.ExpandID(volumeID),
-	})
-	if err == nil {
-		return &instance.VolumeServerTemplate{
-			ID:         &blockVol.ID,
-			Name:       &blockVol.Name,
-			VolumeType: "sbs_volume",
-			Size:       &blockVol.Size,
-		}, nil
-	}
-
-	return nil, err
+	return vol.VolumeTemplate(), nil
 }

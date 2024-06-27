@@ -459,14 +459,13 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	} else if sizeInput > 0 {
 		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
 	}
-
-	req.Volumes["0"] = &instanceSDK.VolumeServerTemplate{
-		Name:       types.ExpandStringPtr(rootVolumeName),
-		ID:         types.ExpandStringPtr(rootVolumeID),
-		VolumeType: instanceSDK.VolumeVolumeType(rootVolumeType),
-		Size:       rootVolumeSize,
-		Boot:       rootVolumeIsBootVolume,
-	}
+	req.Volumes["0"] = (&UnknownVolume{
+		Name:               rootVolumeName,
+		ID:                 rootVolumeID,
+		InstanceVolumeType: instanceSDK.VolumeVolumeType(rootVolumeType),
+		Size:               rootVolumeSize,
+		Boot:               rootVolumeIsBootVolume,
+	}).VolumeTemplate()
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
 			// We have to get the volume to know whether it is a local or a block volume
@@ -482,9 +481,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	if err = validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
 		return diag.FromErr(err)
 	}
-
-	// Sanitize the volume map to respect API schemas
-	req.Volumes = sanitizeVolumeMap(req.Volumes)
 
 	res, err := api.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {

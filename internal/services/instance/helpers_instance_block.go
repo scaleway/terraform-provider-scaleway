@@ -25,8 +25,9 @@ type UnknownVolume struct {
 	Zone     scw.Zone
 	ID       string
 	Name     string
-	Size     scw.Size
+	Size     *scw.Size
 	ServerID *string
+	Boot     *bool
 
 	// IsBlockVolume is true if volume is managed by block API
 	IsBlockVolume bool
@@ -34,11 +35,34 @@ type UnknownVolume struct {
 	InstanceVolumeType instance.VolumeVolumeType
 }
 
+func (volume *UnknownVolume) VolumeTemplate() *instance.VolumeServerTemplate {
+	template := &instance.VolumeServerTemplate{}
+	if volume.ID != "" {
+		template.ID = &volume.ID
+	} else {
+		template.Size = volume.Size
+	}
+
+	if volume.Boot != nil {
+		template.Boot = volume.Boot
+	}
+
+	if volume.IsBlockVolume {
+		template.VolumeType = volume.InstanceVolumeType
+	} else {
+		template.Name = &volume.Name
+	}
+
+	return template
+}
+
 // VolumeTemplateUpdate return a VolumeServerTemplate for an UpdateServer request
 func (volume *UnknownVolume) VolumeTemplateUpdate() *instance.VolumeServerTemplate {
 	template := &instance.VolumeServerTemplate{
-		ID:   scw.StringPtr(volume.ID),
 		Name: &volume.Name, // name is ignored by the API, any name will work here
+	}
+	if volume.ID != "" {
+		template.ID = scw.StringPtr(volume.ID)
 	}
 	if volume.IsBlockVolume {
 		template.Name = nil
@@ -73,7 +97,7 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 			Zone:               getVolumeResponse.Volume.Zone,
 			ID:                 getVolumeResponse.Volume.ID,
 			Name:               getVolumeResponse.Volume.Name,
-			Size:               getVolumeResponse.Volume.Size,
+			Size:               &getVolumeResponse.Volume.Size,
 			IsBlockVolume:      false,
 			InstanceVolumeType: getVolumeResponse.Volume.VolumeType,
 		}
@@ -96,7 +120,7 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 		Zone:               blockVolume.Zone,
 		ID:                 blockVolume.ID,
 		Name:               blockVolume.Name,
-		Size:               blockVolume.Size,
+		Size:               &blockVolume.Size,
 		IsBlockVolume:      true,
 		InstanceVolumeType: instance.VolumeVolumeTypeSbsVolume,
 	}
