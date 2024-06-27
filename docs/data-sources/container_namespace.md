@@ -12,6 +12,7 @@ Refer to the Serverless Containers [product documentation](https://www.scaleway.
 ## Retrieve a Serverless Containers namespace
 
 The following commands allow you to:
+
 - retrieve a namespace by its name
 - retrieve a namespace by its ID
 

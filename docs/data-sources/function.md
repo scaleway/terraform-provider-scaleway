@@ -14,6 +14,7 @@ For more information on the limitations of Serverless Functions, refer to the [d
 ## Retrieve a Serverless Function
 
 The following commands allow you to:
+
 - retrieve a function by its name
 - retrieve a function by its ID
 

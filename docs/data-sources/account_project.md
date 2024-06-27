@@ -13,6 +13,7 @@ Refer to the Organizations and Projects [documentation](https://www.scaleway.com
 ## Retrieve a Scaleway Project
 
 The following commands allow you to:
+
 - retrieve a Project by its name
 - retrieve a Project by its ID
 - retrieve the default project of an Organization

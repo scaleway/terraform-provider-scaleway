@@ -13,6 +13,7 @@ For more information on the limitations of Serverless Containers, refer to the [
 ## Retrieve a Serverless Container
 
 The following commands allow you to:
+
 - retrieve a container by its name
 - retrieve a container by its ID
 
