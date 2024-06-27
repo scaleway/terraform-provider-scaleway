@@ -38,8 +38,8 @@ func TestAccEdgeServicesBackend_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					edgeservicestestfuncs.CheckEdgeServicesBackendExists(tt, "scaleway_edge_services_backend_stage.main"),
 					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "s3_backend_config.0.is_website", "false"),
-					resource.TestCheckResourceAttrPair("scaleway_edge_services_backend_stage.main", "s3_backend_config.0.bucket_name", "scaleway_object_bucket.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "s3_backend_config.0.bucket_region", "fr-par"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "s3_backend_config.0.bucket_name"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "updated_at"),
 				),

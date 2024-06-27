@@ -19,12 +19,12 @@ func TestAccEdgeServicesDNS_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_edge_services_dns_stage" "main" {
-					  fqdns        = ["ttttt.test-multistreaming.fr"]
+					  fqdns        = ["subodomain.example.fr"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					edgeservicestestfuncs.CheckEdgeServicesDNSExists(tt, "scaleway_edge_services_dns_stage.main"),
-					resource.TestCheckResourceAttr("scaleway_edge_services_dns_stage.main", "fqdns.0", "ttttt.test-multistreaming.fr"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_dns_stage.main", "fqdns.0", "subodomain.example.fr"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_dns_stage.main", "type"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_dns_stage.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_dns_stage.main", "updated_at"),
