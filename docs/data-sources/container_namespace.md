@@ -28,7 +28,7 @@ data "scaleway_container_namespace" "by_id" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 This section lists the arguments that you can provide to the `scaleway_container_namespace` data source to filter and retrieve the desired namespace. Each argument has a specific purpose:
 

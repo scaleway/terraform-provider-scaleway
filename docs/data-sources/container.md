@@ -39,7 +39,7 @@ data "scaleway_container" "by_id" {
 }
 ```
 
-## Arguments Reference
+## Arguments reference
 
 This section lists the arguments that you can provide to the `scaleway_container` data source to filter and retrieve the desired namespace. Each argument has a specific purpose:
 
@@ -51,9 +51,9 @@ This section lists the arguments that you can provide to the `scaleway_container
 
 ~> **Important** Updating the `name` argument will recreate the container.
 
-## Attributes Reference
+## Attributes reference
 
-The `scaleway_container` data source exports certain attributes once the namespace information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
+The `scaleway_container` data source exports certain attributes once the container information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
 In addition to all arguments above, the following attributes are exported:
 
