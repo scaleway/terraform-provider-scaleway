@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	defaultLbLbTimeout = 10 * time.Minute
+	defaultLbLbTimeout = 15 * time.Minute
 	RetryLbIPInterval  = 5 * time.Second
 )
 
