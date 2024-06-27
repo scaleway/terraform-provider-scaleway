@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_iam_group_membership"
 # Resource: scaleway_iam_group_membership
 
 Add members to an IAM group.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/iam/#groups-f592eb).
+For more information refer to the [IAM API documentation](https://www.scaleway.com/en/developers/api/iam/#groups-f592eb).
 
 ## Example Usage
 
@@ -63,7 +63,7 @@ resource "scaleway_iam_group_membership" "members" {
 
 - `user_id` - (Optional) The ID of the user that will be added to the group
 
-- ~> Only one of `application_id` or `user_id` must be specified
+  -> **Note** You must specify at least one: `application_id` and/or `user_id`.
 
 ## Attributes Reference
 

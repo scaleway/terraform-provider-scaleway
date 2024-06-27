@@ -36,46 +36,55 @@ func ResourcePrivateNetworkEndpoint() *schema.Resource {
 				Required:    true,
 				Description: "Instance on which the endpoint is attached",
 			},
-			"private_network_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-				Description:      "The private network ID",
-				ForceNew:         true,
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Private network specs details",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: dsf.Locality,
+							Description:      "The private network ID",
+						},
+						// Computed
+						"ip_net": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							ValidateFunc: validation.IsCIDR,
+							Description:  "The IP with the given mask within the private subnet",
+						},
+						"ip": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP of your private network service",
+						},
+						"port": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsPortNumber,
+							Description:  "The port of your private service",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of your private service",
+						},
+						"hostname": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The hostname of your endpoint",
+						},
+						"zone": zonal.Schema(),
+					},
+				},
 			},
-			// Computed
-			"ip_net": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.IsCIDR,
-				Description:  "The IP with the given mask within the private subnet",
-			},
-			"ip": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP of your private network service",
-			},
-			"port": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IsPortNumber,
-				Description:  "The port of your private service",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of your private service",
-			},
-			"hostname": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The hostname of your endpoint",
-			},
-			"zone":   zonal.Schema(),
 			"region": regional.Schema(),
 		},
 	}
@@ -88,6 +97,17 @@ func resourceDocumentDBInstanceEndpointCreate(ctx context.Context, d *schema.Res
 	}
 
 	instanceID := locality.ExpandID(d.Get("instance_id"))
+	privateNetworkRaw := d.Get("private_network")
+	privateNetworkList, ok := privateNetworkRaw.([]interface{})
+	if !ok || len(privateNetworkList) == 0 {
+		return diag.Errorf("expected private_network to be a non-empty list, got %T", privateNetworkRaw)
+	}
+
+	privateNetworkMap, ok := privateNetworkList[0].(map[string]interface{})
+	if !ok {
+		return diag.Errorf("expected first element of private_network to be a map, got %T", privateNetworkList[0])
+	}
+
 	endpointSpecPN := &documentdb.EndpointSpecPrivateNetwork{}
 	createEndpointRequest := &documentdb.CreateEndpointRequest{
 		Region:       region,
@@ -95,8 +115,8 @@ func resourceDocumentDBInstanceEndpointCreate(ctx context.Context, d *schema.Res
 		EndpointSpec: &documentdb.EndpointSpec{},
 	}
 
-	endpointSpecPN.PrivateNetworkID = locality.ExpandID(d.Get("private_network_id").(string))
-	ipNet := d.Get("ip_net").(string)
+	endpointSpecPN.PrivateNetworkID = locality.ExpandID(privateNetworkMap["id"].(string))
+	ipNet := privateNetworkMap["ip_net"].(string)
 	if len(ipNet) > 0 {
 		ip, err := types.ExpandIPNet(ipNet)
 		if err != nil {
@@ -160,13 +180,19 @@ func resourceDocumentDBInstanceEndpointRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("private_network_id", pnID)
-	_ = d.Set("ip_net", serviceIP)
-	_ = d.Set("zone", endpoint.PrivateNetwork.Zone)
-	_ = d.Set("port", int(endpoint.Port))
-	_ = d.Set("name", endpoint.Name)
-	_ = d.Set("hostname", endpoint.Hostname)
-	_ = d.Set("ip", types.FlattenIPPtr(endpoint.IP))
+	privateNetwork := map[string]interface{}{
+		"id":       pnID,
+		"ip_net":   serviceIP,
+		"ip":       types.FlattenIPPtr(endpoint.IP),
+		"port":     endpoint.Port,
+		"name":     endpoint.Name,
+		"hostname": endpoint.Hostname,
+		"zone":     endpoint.PrivateNetwork.Zone,
+	}
+
+	if err := d.Set("private_network", []interface{}{privateNetwork}); err != nil {
+		return diag.FromErr(err)
+	}
 	_ = d.Set("region", region.String())
 
 	return nil

@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_mnq_sqs_queue"
 
 # Resource: scaleway_mnq_sqs_queue
 
-Creates and manages Scaleway Messaging and queuing SQS Queues.
-For further information please check
-our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/how-to/create-manage-queues/)
+Creates and manages Scaleway Messaging and Queuing SQS queues.
+For further information, see
+our [main documentation](https://www.scaleway.com/en/docs/serverless/messaging/how-to/create-manage-queues/).
 
 ## Example Usage
 
@@ -40,7 +40,7 @@ resource scaleway_mnq_sqs_queue main {
 
 The following arguments are supported:
 
-- `name` - (Optional) The unique name of the sqs queue. Either `name` or `name_prefix` is required. Conflicts with `name_prefix`.
+- `name` - (Optional) The unique name of the SQS queue. Either `name` or `name_prefix` is required. Conflicts with `name_prefix`.
 
 - `name_prefix` - (Optional) Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 
@@ -62,9 +62,9 @@ The following arguments are supported:
 
 - `message_max_size` - (Optional) The maximum size of a message. Should be in bytes. Must be between 1024 and 262_144. Defaults to 262_144.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which sqs is enabled.
+- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which SQS is enabled.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the sqs is enabled for.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project in which SQS is enabled.
 
 
 ## Attributes Reference

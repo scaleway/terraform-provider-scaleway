@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
@@ -53,7 +52,7 @@ func testAccCheckDomainZoneExists(tt *acctest.TestTools, n string) resource.Test
 
 		domainAPI := domain.NewDomainAPI(tt.Meta)
 		listDNSZones, err := domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
-			DNSZone: scw.StringPtr(fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])),
+			DNSZones: []string{fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])},
 		})
 		if err != nil {
 			return err
@@ -80,7 +79,7 @@ func testAccCheckDomainZoneDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 			// check if the zone still exists
 			domainAPI := domain.NewDomainAPI(tt.Meta)
 			listDNSZones, err := domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
-				DNSZone: scw.StringPtr(fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])),
+				DNSZones: []string{fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])},
 			})
 
 			if httperrors.Is403(err) { // forbidden: subdomain not found
