@@ -254,44 +254,6 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 	return nil
 }
 
-// sanitizeVolumeMap removes extra data for API validation.
-//
-// On the api side, there are two possibles validation schemas for volumes and the validator will be chosen dynamically depending on the passed JSON request
-// - With an image (in that case the root volume can be skipped because it is taken from the image)
-// - Without an image (in that case, the root volume must be defined)
-func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[string]*instance.VolumeServerTemplate {
-	m := make(map[string]*instance.VolumeServerTemplate)
-
-	for index, v := range volumes {
-		// Remove extra data for API validation.
-		switch {
-		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
-		// TODO: Fix once instance accept volume type in the schema validation
-		case v.ID != nil:
-			if strings.HasPrefix(string(v.VolumeType), "sbs") {
-				// If volume is from SBS api, the type must be passed
-				// This rules come from instance API and may not be documented
-				v = &instance.VolumeServerTemplate{
-					ID:         v.ID,
-					Boot:       v.Boot,
-					VolumeType: v.VolumeType,
-				}
-			} else {
-				v = &instance.VolumeServerTemplate{
-					ID:   v.ID,
-					Name: v.Name,
-					Boot: v.Boot,
-				}
-			}
-		// If none of the above conditions are met, the volume is passed as it to the API
-		default:
-		}
-		m[index] = v
-	}
-
-	return m
-}
-
 func preparePrivateNIC(
 	ctx context.Context, data interface{},
 	server *instance.Server, vpcAPI *vpc.API,
