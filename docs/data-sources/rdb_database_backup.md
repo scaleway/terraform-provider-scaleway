@@ -26,13 +26,13 @@ data scaleway_rdb_database_backup find_by_id {
 
 ## Argument Reference
 
-- `backup_id` - (Optional) The RDB backup ID.
-  Only one of the `name` and `backup_id` should be specified.
+- `instance_id` - (Optional) The Database Instance ID.
 
-- `instance_id` - (Optional) The RDB instance ID.
+- `backup_id` - (Optional) The backup ID.
 
 - `name` - (Optional) The name of the RDB instance.
-  Only one of the `name` and `backup_id` should be specified.
+
+  -> **Note** You must specify at least one: `name` and/or `backup_id`.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Backup is associated with.
 

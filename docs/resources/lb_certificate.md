@@ -5,8 +5,9 @@ page_title: "Scaleway: scaleway_lb_certificate"
 
 # Resource: scaleway_lb_certificate
 
-Creates and manages Scaleway Load-Balancer Certificates.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-certificate).
+Creates and manages Scaleway Load Balancer certificates.
+
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/how-to/add-certificate/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-certificate).
 
 ## Example Usage
 
@@ -51,25 +52,25 @@ The following arguments are supported:
 
 ### Basic arguments
 
-- `lb_id` - (Required) The load-balancer ID this certificate is attached to.
+- `lb_id` - (Required) The ID of the Load Balancer this certificate is attached to.
 
-~> **Important:** Updates to `lb_id` will recreate the load-balancer certificate.
+~> **Important:** Updates to `lb_id` will recreate the Load Balancer certificate.
 
 - `name` - (Optional) The name of the certificate backend.
 
-- `letsencrypt` - (Optional) Configuration block for Let's Encrypt configuration. Only one of `letsencrypt` and `custom_certificate` should be specified.
+- `letsencrypt` - (Optional) Block for Let's Encrypt configuration. Only one of `letsencrypt` and `custom_certificate` should be specified.
 
     - `common_name` - (Required) Main domain of the certificate. A new certificate will be created if this field is changed.
 
-    - `subject_alternative_name` - (Optional) Array of alternative domain names.  A new certificate will be created if this field is changed.
+    - `subject_alternative_name` - (Optional) Array of alternative domain names. A new certificate will be created if this field is changed.
 
-~> **Important:** Updates to `letsencrypt` will recreate the load-balancer certificate.
+~> **Important:** Updates to `letsencrypt` will recreate the Load Balancer certificate.
 
-- `custom_certificate` - (Optional) Configuration block for custom certificate chain. Only one of `letsencrypt` and `custom_certificate` should be specified.
+- `custom_certificate` - (Optional) Block for custom certificate chain configuration. Only one of `letsencrypt` and `custom_certificate` should be specified.
 
     - `certificate_chain` - (Required) Full PEM-formatted certificate chain.
 
-~> **Important:** Updates to `custom_certificate` will recreate the load-balancer certificate.
+~> **Important:** Updates to `custom_certificate` will recreate the Load Balancer certificate.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the certificate.
 
@@ -77,7 +78,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the load-balancer certificate.
+- `id` - The ID of the Load Balancer certificate.
 
 ~> **Important:** Load-Balancers certificates' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
@@ -90,9 +91,9 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional notes
 
-* Ensure that all domain names used in configuration are pointing to the load balancer IP.
-  You can achieve this by creating a DNS record through terraform pointing to  `ip_address` property of `lb_beta` entity.
-* In case there are any issues with the certificate, you will receive a `400` error from the `apply` operation.
-  Use `export TF_LOG=DEBUG` to view exact problem returned by the api.
-* Wildcards are not supported with Let's Encrypt yet.
+* Ensure that all domain names used in the configuration are pointing to the Load Balancer IP.
+  You can achieve this by creating a DNS record through Terraform pointing to  the `ip_address` property of the `lb_beta` entity.
+* If there are any issues with the certificate, you will receive a `400` error from the `apply` operation.
+  Use `export TF_LOG=DEBUG` to view the exact problem returned by the API.
+* Wildcards are not yet supported with Let's Encrypt.
 * Use `lifecycle` instruction with `create_before_destroy = true` to permit correct certificate replacement and prevent a `400` error from the `apply` operation.

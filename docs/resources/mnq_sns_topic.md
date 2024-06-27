@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_mnq_sns_topic"
 
 # Resource: scaleway_mnq_sns_topic
 
-Manage Scaleway Messaging and queuing SNS Topics.
-For further information please check
-our [documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sns-overview/)
+Manage Scaleway Messaging and queuing SNS topics.
+For further information, see
+our [main documentation](https://www.scaleway.com/en/docs/serverless/messaging/how-to/create-manage-topics/).
 
 ## Example Usage
 
@@ -36,7 +36,7 @@ resource "scaleway_mnq_sns_topic" "topic" {
 The following arguments are supported:
 
 
-- `name` - (Optional) The unique name of the sns topic. Either `name` or `name_prefix` is required. Conflicts with `name_prefix`.
+- `name` - (Optional) The unique name of the SNS topic. Either `name` or `name_prefix` is required. Conflicts with `name_prefix`.
 
 - `name_prefix` - (Optional) Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 
@@ -46,14 +46,14 @@ The following arguments are supported:
 
 - `content_based_deduplication` - (Optional) Specifies whether to enable content-based deduplication.
 
-- `fifo_topic` - (Optional) Whether the topic is a FIFO. If true, the topic name must end with .fifo.
+- `fifo_topic` - (Optional) Whether the topic is a FIFO topic. If true, the topic name must end with .fifo.
 
 - `sns_endpoint` - (Optional) The endpoint of the SNS service. Can contain a {region} placeholder. Defaults to `https://sns.mnq.{region}.scaleway.com`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions)
-  in which sns is enabled.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions)
+  in which SNS is enabled.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the sns is enabled for.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project in which SNS is enabled.
 
 ## Attributes Reference
 
@@ -65,7 +65,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-SNS topic can be imported using the `{region}/{project-id}/{topic-name}`, e.g.
+SNS topics can be imported using `{region}/{project-id}/{topic-name}`, e.g.
 
 ```bash
 $ terraform import scaleway_mnq_sns_topic.main fr-par/11111111111111111111111111111111/my-topic
