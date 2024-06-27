@@ -17,7 +17,7 @@ resource "scaleway_edge_services_tls_stage" "main" {
 }
 ```
 
-### With a certificate stored in Scaleway Secret Manager.
+### With a certificate stored in Scaleway Secret Manager
 
 ```terraform
 resource "scaleway_edge_services_tls_stage" "main" {

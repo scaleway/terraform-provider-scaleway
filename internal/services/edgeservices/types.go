@@ -48,29 +48,6 @@ func expandEdgeServicesPurge(raw interface{}) []*edge_services.PurgeRequest {
 	return purgeRequests
 }
 
-/*func flattenEdgeServicesPurge(purgeRequests []*edge_services.PurgeRequest) interface{} {
-	if len(purgeRequests) == 0 || purgeRequests == nil {
-		return nil
-	}
-
-	prI := []map[string]interface{}(nil)
-	for _, pr := range purgeRequests {
-		prMap := map[string]interface{}{
-			"id":          pr.ID,
-			"pipeline_id": pr.PipelineID,
-			"status":      pr.Status.String(),
-			"all":         types.FlattenBoolPtr(pr.All),
-			"created_at":  types.FlattenTime(pr.CreatedAt),
-			"updated_at":  types.FlattenTime(pr.UpdatedAt),
-		}
-		if pr.Assets != nil {
-			prMap["assets"] = types.FlattenSliceString(*pr.Assets)
-		}
-		prI = append(prI, prMap)
-	}
-	return prI
-}*/
-
 func expandEdgeServicesTLSSecrets(raw interface{}, region scw.Region) []*edge_services.TLSSecret {
 	secrets := []*edge_services.TLSSecret(nil)
 	rawSecrets := raw.([]interface{})

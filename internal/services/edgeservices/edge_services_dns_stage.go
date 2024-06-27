@@ -123,18 +123,15 @@ func ResourceEdgeServicesDNSStageRead(ctx context.Context, d *schema.ResourceDat
 		oldFQDNsSet[fqdn.(string)] = true
 	}
 
-	// Create a new slice to store the updated FQDNs
 	newFQDNs := make([]string, 0)
-
-	// Add all FQDNs from the API response
+	// add all FQDNs from the API response
 	for _, fqdn := range dnsStage.Fqdns {
 		if oldFQDNsSet[fqdn] || len(oldFQDNs) == 0 {
 			// Keep FQDNs that were in the old state or if there were no old FQDNs
 			newFQDNs = append(newFQDNs, fqdn)
 		}
 	}
-
-	// Add any FQDNs from the old state that aren't in the API response
+	// add any FQDNs from the old state that aren't in the API response
 	for _, oldFQDN := range oldFQDNs {
 		found := false
 		for _, newFQDN := range newFQDNs {
@@ -147,11 +144,10 @@ func ResourceEdgeServicesDNSStageRead(ctx context.Context, d *schema.ResourceDat
 			newFQDNs = append(newFQDNs, oldFQDN.(string))
 		}
 	}
-
-	// Set the updated FQDNs in the state
 	if err := d.Set("fqdns", newFQDNs); err != nil {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }
 
