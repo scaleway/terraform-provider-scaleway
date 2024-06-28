@@ -72,7 +72,7 @@ func ResourceEdgeServicesBackendStageCreate(ctx context.Context, d *schema.Resou
 
 	backendStage, err := api.CreateBackendStage(&edgeservices.CreateBackendStageRequest{
 		ProjectID:  d.Get("project_id").(string),
-		ScalewayS3: expandEdgeServicesScalewayS3BackendConfig(d.Get("s3_backend_config")),
+		ScalewayS3: expandS3BackendConfig(d.Get("s3_backend_config")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -101,7 +101,7 @@ func ResourceEdgeServicesBackendStageRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("created_at", types.FlattenTime(backendStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(backendStage.UpdatedAt))
 	_ = d.Set("project_id", backendStage.ProjectID)
-	_ = d.Set("s3_backend_config", flattenEdgeServicesScalewayS3BackendConfig(backendStage.ScalewayS3))
+	_ = d.Set("s3_backend_config", flattenS3BackendConfig(backendStage.ScalewayS3))
 
 	return nil
 }
@@ -116,7 +116,7 @@ func ResourceEdgeServicesBackendStageUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("s3_backend_config") {
-		updateRequest.ScalewayS3 = expandEdgeServicesScalewayS3BackendConfig(d.Get("s3_backend_config"))
+		updateRequest.ScalewayS3 = expandS3BackendConfig(d.Get("s3_backend_config"))
 		hasChanged = true
 	}
 

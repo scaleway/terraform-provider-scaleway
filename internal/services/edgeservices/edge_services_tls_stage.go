@@ -93,7 +93,7 @@ func ResourceEdgeServicesTLSStageCreate(ctx context.Context, d *schema.ResourceD
 		BackendStageID:     types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 		CacheStageID:       types.ExpandStringPtr(d.Get("cache_stage_id").(string)),
 		ManagedCertificate: types.ExpandBoolPtr(d.Get("managed_certificate").(bool)),
-		Secrets:            expandEdgeServicesTLSSecrets(d.Get("secrets"), region),
+		Secrets:            expandTLSSecrets(d.Get("secrets"), region),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -122,7 +122,7 @@ func ResourceEdgeServicesTLSStageRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("cache_stage_id", types.FlattenStringPtr(tlsStage.CacheStageID))
 	_ = d.Set("pipeline_id", types.FlattenStringPtr(tlsStage.PipelineID))
 	_ = d.Set("managed_certificate", tlsStage.ManagedCertificate)
-	_ = d.Set("secrets", flattenEdgeServicesTLSSecrets(tlsStage.Secrets))
+	_ = d.Set("secrets", flattenTLSSecrets(tlsStage.Secrets))
 	_ = d.Set("certificate_expires_at", types.FlattenTime(tlsStage.CertificateExpiresAt))
 	_ = d.Set("created_at", types.FlattenTime(tlsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(tlsStage.UpdatedAt))
@@ -158,7 +158,7 @@ func ResourceEdgeServicesTLSStageUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if d.HasChange("secrets") {
-		updateRequest.TLSSecretsConfig = wrapSecretsInConfig(expandEdgeServicesTLSSecrets(d.Get("secrets"), region))
+		updateRequest.TLSSecretsConfig = wrapSecretsInConfig(expandTLSSecrets(d.Get("secrets"), region))
 		hasChanged = true
 	}
 

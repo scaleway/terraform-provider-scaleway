@@ -154,7 +154,7 @@ func ResourceEdgeServicesCacheStageUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChanges("purge_requests", "refresh_cache") {
-		for _, pr := range expandEdgeServicesPurge(d.Get("purge_requests")) {
+		for _, pr := range expandPurge(d.Get("purge_requests")) {
 			res, err := api.CreatePurgeRequest(&edge_services.CreatePurgeRequestRequest{
 				PipelineID: pr.PipelineID,
 				Assets:     pr.Assets,
