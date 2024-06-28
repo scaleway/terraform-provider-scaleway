@@ -38,9 +38,14 @@ type UnknownVolume struct {
 // VolumeTemplate returns a template to be used for servers requests.
 func (volume *UnknownVolume) VolumeTemplate() *instance.VolumeServerTemplate {
 	template := &instance.VolumeServerTemplate{}
+
 	if volume.ID != "" {
 		template.ID = &volume.ID
+		if !volume.IsBlockVolume {
+			template.Name = &volume.Name
+		}
 	} else {
+		template.VolumeType = volume.InstanceVolumeType
 		template.Size = volume.Size
 	}
 
@@ -50,8 +55,6 @@ func (volume *UnknownVolume) VolumeTemplate() *instance.VolumeServerTemplate {
 
 	if volume.IsBlockVolume {
 		template.VolumeType = volume.InstanceVolumeType
-	} else {
-		template.Name = &volume.Name
 	}
 
 	return template
