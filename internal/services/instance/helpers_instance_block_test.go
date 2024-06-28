@@ -62,7 +62,6 @@ func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 				ID:                 "cc380989-b71b-47f0-829f-062e329f4097",
 				InstanceVolumeType: instanceSDK.VolumeVolumeTypeSbsVolume,
 				Size:               scw.SizePtr(10000000000),
-				IsBlockVolume:      true,
 			},
 			want: &instanceSDK.VolumeServerTemplate{
 				ID:         scw.StringPtr("cc380989-b71b-47f0-829f-062e329f4097"),
