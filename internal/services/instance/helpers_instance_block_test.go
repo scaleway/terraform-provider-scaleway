@@ -1,10 +1,11 @@
-package instance
+package instance_test
 
 import (
 	"testing"
 
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,38 +18,38 @@ func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 		ServerID           *string
 		Boot               *bool
 		IsBlockVolume      bool
-		InstanceVolumeType instance.VolumeVolumeType
+		InstanceVolumeType instanceSDK.VolumeVolumeType
 	}
 	tests := []struct {
 		name   string
-		volume *UnknownVolume
-		want   *instance.VolumeServerTemplate
+		volume *instance.UnknownVolume
+		want   *instanceSDK.VolumeServerTemplate
 	}{
 		{
 			name: "Root Volume",
-			volume: &UnknownVolume{
+			volume: &instance.UnknownVolume{
 				Name:               "",
 				ID:                 "",
-				InstanceVolumeType: instance.VolumeVolumeTypeLSSD,
+				InstanceVolumeType: instanceSDK.VolumeVolumeTypeLSSD,
 				Size:               scw.SizePtr(20000000000),
 				Boot:               scw.BoolPtr(false),
 			},
-			want: &instance.VolumeServerTemplate{
+			want: &instanceSDK.VolumeServerTemplate{
 				Boot:       scw.BoolPtr(false),
 				Size:       scw.SizePtr(20000000000),
-				VolumeType: instance.VolumeVolumeTypeLSSD,
+				VolumeType: instanceSDK.VolumeVolumeTypeLSSD,
 			},
 		},
 		{
 			name: "Root Volume from ID",
-			volume: &UnknownVolume{
+			volume: &instance.UnknownVolume{
 				Name:               "tf-vol-stoic-johnson",
 				ID:                 "25152794-d15a-4dd5-abfc-b19ec276aa20",
-				InstanceVolumeType: instance.VolumeVolumeTypeLSSD,
+				InstanceVolumeType: instanceSDK.VolumeVolumeTypeLSSD,
 				Size:               scw.SizePtr(20000000000),
 				Boot:               scw.BoolPtr(true),
 			},
-			want: &instance.VolumeServerTemplate{
+			want: &instanceSDK.VolumeServerTemplate{
 				ID:   scw.StringPtr("25152794-d15a-4dd5-abfc-b19ec276aa20"),
 				Boot: scw.BoolPtr(true),
 				Name: scw.StringPtr("tf-vol-stoic-johnson"),
@@ -56,16 +57,16 @@ func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 		},
 		{
 			name: "Additional Volume sbs",
-			volume: &UnknownVolume{
+			volume: &instance.UnknownVolume{
 				Name:               "tf-volume-elegant-minsky",
 				ID:                 "cc380989-b71b-47f0-829f-062e329f4097",
-				InstanceVolumeType: instance.VolumeVolumeTypeSbsVolume,
+				InstanceVolumeType: instanceSDK.VolumeVolumeTypeSbsVolume,
 				Size:               scw.SizePtr(10000000000),
 				IsBlockVolume:      true,
 			},
-			want: &instance.VolumeServerTemplate{
+			want: &instanceSDK.VolumeServerTemplate{
 				ID:         scw.StringPtr("cc380989-b71b-47f0-829f-062e329f4097"),
-				VolumeType: instance.VolumeVolumeTypeSbsVolume,
+				VolumeType: instanceSDK.VolumeVolumeTypeSbsVolume,
 			},
 		},
 	}
