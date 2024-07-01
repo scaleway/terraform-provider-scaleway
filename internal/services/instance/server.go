@@ -150,6 +150,13 @@ func ResourceServer() *schema.Resource {
 							Description:  "Volume ID of the root volume",
 							ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
 						},
+						"sbs_iops": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Optional:    true,
+							Description: "SBS Volume IOPS, only with volume_type as sbs_volume",
+							//RequiredWith: []string{"root_volume.0.volume_type"},
+						},
 					},
 				},
 			},
@@ -374,7 +381,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 			CommercialType: commercialType,
 			Zone:           zone,
 			ImageLabel:     imageLabel,
-			Type:           marketplace.LocalImageTypeInstanceLocal,
+			Type:           volumeTypeToMarketplaceFilter(d.Get("root_volume.0.volume_type")),
 		})
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
