@@ -29,18 +29,20 @@ type UnknownVolume struct {
 	ServerID *string
 	Boot     *bool
 
-	// IsBlockVolume is true if volume is managed by block API
-	IsBlockVolume bool
-
 	InstanceVolumeType instance.VolumeVolumeType
 }
 
 // VolumeTemplate returns a template to be used for servers requests.
 func (volume *UnknownVolume) VolumeTemplate() *instance.VolumeServerTemplate {
 	template := &instance.VolumeServerTemplate{}
+
 	if volume.ID != "" {
 		template.ID = &volume.ID
+		if !volume.IsBlockVolume() {
+			template.Name = &volume.Name
+		}
 	} else {
+		template.VolumeType = volume.InstanceVolumeType
 		template.Size = volume.Size
 	}
 
@@ -48,10 +50,8 @@ func (volume *UnknownVolume) VolumeTemplate() *instance.VolumeServerTemplate {
 		template.Boot = volume.Boot
 	}
 
-	if volume.IsBlockVolume {
+	if volume.IsBlockVolume() {
 		template.VolumeType = volume.InstanceVolumeType
-	} else {
-		template.Name = &volume.Name
 	}
 
 	return template
@@ -59,7 +59,12 @@ func (volume *UnknownVolume) VolumeTemplate() *instance.VolumeServerTemplate {
 
 // IsLocal returns true if the volume is a local volume
 func (volume *UnknownVolume) IsLocal() bool {
-	return !volume.IsBlockVolume && volume.InstanceVolumeType == instance.VolumeVolumeTypeLSSD
+	return !volume.IsBlockVolume() && volume.InstanceVolumeType == instance.VolumeVolumeTypeLSSD
+}
+
+// IsBlockVolume is true if volume is managed by block API
+func (volume *UnknownVolume) IsBlockVolume() bool {
+	return volume.InstanceVolumeType == instance.VolumeVolumeTypeSbsVolume
 }
 
 // IsAttached returns true if the volume is attached to a server
@@ -83,7 +88,6 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 			ID:                 getVolumeResponse.Volume.ID,
 			Name:               getVolumeResponse.Volume.Name,
 			Size:               &getVolumeResponse.Volume.Size,
-			IsBlockVolume:      false,
 			InstanceVolumeType: getVolumeResponse.Volume.VolumeType,
 		}
 		if getVolumeResponse.Volume.Server != nil {
@@ -106,7 +110,6 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 		ID:                 blockVolume.ID,
 		Name:               blockVolume.Name,
 		Size:               &blockVolume.Size,
-		IsBlockVolume:      true,
 		InstanceVolumeType: instance.VolumeVolumeTypeSbsVolume,
 	}
 	for _, ref := range blockVolume.References {
