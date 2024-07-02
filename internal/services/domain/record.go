@@ -383,7 +383,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	}
 
-	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZone: scw.StringPtr(dnsZone)}, scw.WithAllPages(), scw.WithContext(ctx))
+	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
