@@ -29,7 +29,7 @@ resource scaleway_function_trigger main {
 
 ```terraform
 resource scaleway_function_trigger main {
-  container_id = scaleway_container.main.id
+  function_id = scaleway_function.main.id
   name = "my-trigger"
   nats {
     account_id = scaleway_mnq_nats_account.main.id

@@ -92,7 +92,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-		DNSZone:   scw.StringPtr(zoneName),
+		DNSZones:  []string{zoneName},
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -131,7 +131,7 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-		DNSZone:   scw.StringPtr(d.Id()),
+		DNSZones:  []string{d.Id()},
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {

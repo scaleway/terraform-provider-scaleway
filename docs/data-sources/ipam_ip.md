@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_ipam_ip"
 
 # scaleway_ipam_ip
 
-Gets information about IP managed by IPAM service. IPAM service is used for dhcp bundled in VPCs' private networks.
+Gets information about IP addresses managed by Scaleway's IP Address Management (IPAM) service. IPAM is used for the DHCP bundled with VPC Private Networks.
+
+For more information about IPAM, see the main [documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/#ipam).
 
 ## Examples
 
@@ -20,7 +22,7 @@ data "scaleway_ipam_ip" "by_id" {
 
 ### Instance Private Network IP
 
-Get Instance IP in a private network.
+Get an Instance's IP on a Private Network.
 
 ```terraform
 # Connect your instance to a private network using a private nic.
@@ -77,19 +79,19 @@ data "scaleway_ipam_ip" "by_name" {
 
 ## Argument Reference
 
-- `ipam_ip_id` - (Optional) The IPAM IP ID. Cannot be used with the rest of the arguments.
+- `ipam_ip_id` - (Optional) The IPAM IP ID. Cannot be used with any other arguments.
 
-- `type` - (Optional) The type of IP to search for (ipv4, ipv6). Cannot be used with `ipam_ip_id`.
+- `type` - (Optional) The type of IP to search for (`ipv4` or `ipv6`). Cannot be used with `ipam_ip_id`.
 
-- `private_network_id` - (Optional) The ID of the private network the IP belong to. Cannot be used with `ipam_ip_id`.
+- `private_network_id` - (Optional) The ID of the Private Network the IP belongs to. Cannot be used with `ipam_ip_id`.
 
 - `resource` - (Optional) Filter by resource ID, type or name. Cannot be used with `ipam_ip_id`.
 If specified, `type` is required, and at least one of `id` or `name` must be set.
-    - `id` - The ID of the resource that the IP is bound to.
-    - `type` - The type of the resource to get the IP from. [Documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/ipam/v1#pkg-constants) with type list.
-    - `name` - The name of the resource to get the IP from.
+    - `id` - The ID of the resource that the IP is attached to.
+    - `type` - The type of the resource the IP is attached to. [Documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/ipam/v1#pkg-constants) with type list.
+    - `name` - The name of the resource the IP is attached to.
 
-- `mac_address` - (Optional) The Mac Address linked to the IP. Cannot be used with `ipam_ip_id`.
+- `mac_address` - (Optional) The MAC address linked to the IP. Cannot be used with `ipam_ip_id`.
 
 - `region` - (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#regions) in which the IP exists.
 
@@ -100,9 +102,9 @@ If specified, `type` is required, and at least one of `id` or `name` must be set
 
 - `attached` - (Optional) Defines whether to filter only for IPs which are attached to a resource. Cannot be used with `ipam_ip_id`.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the IP is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the IP is associated with.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the IP is in.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the Organization the IP is in.
 
 ## Attributes Reference
 
@@ -110,4 +112,4 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the IP in IPAM.
 - `address` - The IP address.
-- `address_cidr` - the IP address with a CIDR notation.
+- `address_cidr` - the IP address in CIDR notation.

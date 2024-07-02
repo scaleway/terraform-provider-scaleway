@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_lb_frontend"
 
 # Resource: scaleway_lb_frontend
 
-Creates and manages Scaleway Load-Balancer Frontends. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
+Creates and manages Scaleway Load Balancer frontends.
+
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/reference-content/configuring-frontends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
 
 ## Example Usage
 
@@ -149,27 +151,27 @@ resource "scaleway_lb_frontend" "frontend01" {
 
 The following arguments are supported:
 
-- `lb_id` - (Required) The load-balancer ID this frontend is attached to.
+- `lb_id` - (Required) The ID of the Load Balancer this frontend is attached to.
 
-- `backend_id` - (Required) The load-balancer backend ID this frontend is attached to.
+- `backend_id` - (Required) The ID of the Load Balancer backend this frontend is attached to.
 
 ~> **Important:** Updates to `lb_id` or `backend_id` will recreate the frontend.
 
-- `inbound_port` - (Required) TCP port to listen on the front side.
+- `inbound_port` - (Required) TCP port to listen to on the front side.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the load-balancer was created.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancer was created.
 
-- `name` - (Optional) The name of the load-balancer frontend.
+- `name` - (Optional) The name of the Load Balancer frontend.
 
-- `timeout_client` - (Optional) Maximum inactivity time on the client side. (e.g.: `1s`)
+- `timeout_client` - (Optional) Maximum inactivity time on the client side. (e.g. `1s`)
 
-- `certificate_ids` - (Optional) List of Certificate IDs that should be used by the frontend.
+- `certificate_ids` - (Optional) List of certificate IDs that should be used by the frontend.
 
 ~> **Important:** Certificates are not allowed on port 80.
 
 - `enable_http3` - (Default: `false`) Activates HTTP/3 protocol.
 
-- `acl` - (Optional) A list of ACL rules to apply to the load-balancer frontend.  Defined below.
+- `acl` - (Optional) A list of ACL rules to apply to the Load Balancer frontend.  Defined below.
 
 ## acl
 
@@ -183,42 +185,42 @@ The following arguments are supported:
   
         - `type`  - (Optional) The redirect type. Possible values are: `location` or `scheme`.
 
-        - `target`  - (Optional) An URL can be used in case of a location redirect (e.g. `https://scaleway.com` will redirect to this same URL). A scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme.
+        - `target`  - (Optional) A URL can be used in case of a location redirect (e.g. `https://scaleway.com` will redirect to this same URL). A scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme.
 
         - `code`  - (Optional) The HTTP redirect code to use. Valid values are `301`, `302`, `303`, `307` and `308`.
 
 - `match` - (Required) The ACL match rule. At least `ip_subnet` or `http_filter` and `http_filter_value` are required.
 
-    - `ip_subnet` - (Optional) A list of IPs or CIDR v4/v6 addresses of the client of the session to match.
+    - `ip_subnet` - (Optional) A list of IPs, or CIDR v4/v6 addresses of the session client, to match.
 
     - `http_filter` - (Optional) The HTTP filter to match. This filter is supported only if your backend protocol has an HTTP forward protocol.
        It extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part).
        Possible values are: `acl_http_filter_none`, `path_begin`, `path_end`, `http_header_match` or `regex`.
 
     - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
-      Keep in mind that in the case of `http_header_match` the HTTP header field name is case-insensitive.
+      Keep in mind that in the case of `http_header_match` the HTTP header field name is case insensitive.
 
     - `http_filter_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
 
     - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
   
 - `external_acls` - (Defaults to `false`) A boolean to specify whether to use [lb_acl](../resources/lb_acl.md).
-  If `external_acls` is set to `true`, `acl` can not be set directly in the lb frontend.
+  If `external_acls` is set to `true`, `acl` can not be set directly in the Load Balancer frontend.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the load-balancer frontend.
+- `id` - The ID of the Load Balancer frontend.
 
-~> **Important:** Load-Balancers frontends' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+~> **Important:** Load Balancer frontend IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `certificate_id` - (Deprecated) first certificate ID used by the frontend.
+- `certificate_id` - (Deprecated) First certificate ID used by the frontend.
 
 
 ## Import
 
-Load-Balancer frontend can be imported using the `{zone}/{id}`, e.g.
+Load Balancer frontends can be imported using `{zone}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_lb_frontend.frontend01 fr-par-1/11111111-1111-1111-1111-111111111111

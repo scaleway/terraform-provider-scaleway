@@ -90,7 +90,7 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		ServerID:         zonal.ExpandID(d.Get("server_id").(string)).ID,
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
 		Tags:             types.ExpandStrings(d.Get("tags")),
-		IPIDs:            types.ExpandStrings(d.Get("ip_ids")),
+		IPIDs:            types.ExpandStringsPtr(d.Get("ip_ids")),
 	}
 
 	privateNIC, err := instanceAPI.CreatePrivateNIC(

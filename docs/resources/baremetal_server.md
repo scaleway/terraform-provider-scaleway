@@ -92,8 +92,8 @@ data "scaleway_baremetal_option" "private_network" {
 }
 
 resource "scaleway_vpc_private_network" "pn" {
-  zone = "fr-par-2"
-  name = "baremetal_private_network"
+  region = "fr-par"
+  name   = "baremetal_private_network"
 }
 
 resource "scaleway_baremetal_server" "base" {

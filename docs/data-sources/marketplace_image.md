@@ -17,7 +17,7 @@ data "scaleway_marketplace_image" "my_image" {
 
 ## Argument Reference
 
-- `label` - (Required) Exact label of the desired image. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
+- `label` - (Required) Exact label of the desired image. You can use [this endpoint](https://www.scaleway.com/en/developers/api/marketplace/#path-marketplace-images-list-marketplace-images)
 to find the right `label`.
 
 - `instance_type` - (Optional, default `DEV1-S`) The instance type the image is compatible with.

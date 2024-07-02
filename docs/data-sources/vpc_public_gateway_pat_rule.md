@@ -5,8 +5,8 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_pat_rule"
 
 # scaleway_vpc_public_gateway_pat_rule
 
-Gets information about a public gateway PAT rule. For further information please check the
-API [documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#get-8faeea)
+Gets information about a Public Gateway PAT rule. For further information, please see the
+API [documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-pat-rules-list-pat-rules).
 
 ## Example Usage
 
@@ -81,18 +81,18 @@ data "scaleway_vpc_public_gateway_pat_rule" "main" {
 
 - `pat_rule_id`  (Required) The ID of the PAT rule to retrieve
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
-  the image exists.
+  the rule exists.
 
 ## Attributes Reference
 
-`id` is set to the ID of the found public gateway PAT rule.
+`id` is set to the ID of the retrieved Public Gateway PAT rule.
 
-~> **Important:** Public gateway PAT rules' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+~> **Important:** Public Gateway PAT rule IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 The following arguments are exported:
 
-- `gateway_id` - The ID of the public gateway.
-- `private_ip` - The Private IP to forward data to (IP address).
-- `public_port` - The Public port to listen on.
-- `private_port` - The Private port to translate to.
-- `protocol` - The Protocol the rule should apply to. Possible values are both, tcp and udp.
+- `gateway_id` - The ID of the Public Gateway.
+- `private_ip` - The private IP address to forward data to.
+- `public_port` - The public port to listen on.
+- `private_port` - The private port to translate to.
+- `protocol` - The protocol the rule should apply to. Possible values are `both`, `tcp` and `udp`.

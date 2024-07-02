@@ -9,6 +9,8 @@ Creates and manages Scaleway API Keys. For more information, refer to the [IAM A
 
 ## Example Usage
 
+### With application
+
 ```terraform
 resource "scaleway_iam_application" "ci_cd" {
   name = "My application"
@@ -16,6 +18,19 @@ resource "scaleway_iam_application" "ci_cd" {
 
 resource "scaleway_iam_api_key" "main" {
   application_id = scaleway_iam_application.main.id
+  description    = "a description"
+}
+```
+
+### With user
+
+```terraform
+resource "scaleway_iam_user" "main" {
+  email = "test@test.com"
+}
+
+resource "scaleway_iam_api_key" "main" {
+  user_id = scaleway_iam_user.main.id
   description    = "a description"
 }
 ```

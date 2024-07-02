@@ -28,11 +28,11 @@ data "scaleway_vpc" "default" {
 
 ## Argument Reference
 
-* `name` - (Optional) Name of the VPC. One of `name` and `vpc_id` should be specified.
-* `vpc_id` - (Optional) ID of the VPC. One of `name` and `vpc_id` should be specified.
-* `is_default` - (Optional) To get default VPC's information.
-* `organization_id` - The ID of the organization the VPC is associated with.
-* `project_id` - (Optional. Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the VPC is associated with.
+* `name` - (Optional) Name of the VPC. A maximum of one of `name` and `vpc_id` should be specified.
+* `vpc_id` - (Optional) ID of the VPC. A maximum of one of `name` and `vpc_id` should be specified.
+* `is_default` - (Optional) Whether the targeted VPC is the default VPC.
+* `organization_id` - The ID of the Organization the VPC is associated with.
+* `project_id` - (Optional. Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the VPC is associated with.
 
 ## Attributes Reference
 

@@ -16,8 +16,17 @@ resource "scaleway_vpc_private_network" "pn" {
   name = "my_private_network"
 }
 
+resource "scaleway_documentdb_instance" "instance" {
+  name              = "test-document_db-basic"
+  node_type         = "docdb-play2-pico"
+  engine            = "FerretDB-1"
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 20
+}
+
 resource "scaleway_documentdb_private_network_endpoint" "main" {
-  instance_id    = "11111111-1111-1111-1111-111111111111"
+  instance_id    = scaleway_documentdb_instance.instance.id
   private_network {
     ip_net = "172.16.32.3/22"
     id     = scaleway_vpc_private_network.pn.id

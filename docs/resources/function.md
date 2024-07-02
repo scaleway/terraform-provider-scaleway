@@ -52,6 +52,8 @@ resource scaleway_function main {
 
 The following arguments are supported:
 
+- `namespace_id` - (Required) The function namespace ID of the function.
+
 - `name` - (Required) The unique name of the function.
 
 ~> **Important** Updates to `name` will recreate the function.

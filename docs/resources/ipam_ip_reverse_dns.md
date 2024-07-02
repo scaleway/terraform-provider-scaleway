@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_ipam_ip_reverse_dns"
 
 # Resource: scaleway_ipam_ip_reverse_dns
 
-Manages Scaleway IPAM IP Reverse DNS.
+Manage the reverse DNS of IP addresses managed by Scaleway's IP Address Management (IPAM) service.
+
+For more information about IPAM, see the main [documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/#ipam).
 
 ## Example Usage
 
@@ -60,13 +62,13 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the IPAM IP for which the DNS reverse is configured.
+- `id` - The ID of the IPAM IP for which reverse DNS is configured.
 
-~> **Important:** IPAM IPs' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
+~> **Important:** IPAM IP IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 ## Import
 
-IPAM IP reverse DNS can be imported using the `{region}/{id}`, e.g.
+IPAM IP reverse DNS can be imported using `{region}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_ipam_ip_reverse_dns.main fr-par/11111111-1111-1111-1111-111111111111

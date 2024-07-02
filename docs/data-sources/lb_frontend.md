@@ -5,8 +5,9 @@ page_title: "Scaleway: scaleway_lb_frontend"
 
 # scaleway_lb_frontend
 
-Get information about Scaleway Load-Balancer Frontends.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
+Get information about Scaleway Load Balancer frontends.
+
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/reference-content/configuring-frontends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
 
 ## Example Usage
 
@@ -43,14 +44,14 @@ data "scaleway_lb_frontend" "byName" {
 
 The following arguments are supported:
 
-- `frontend_id` - (Optional) The frontend id.
+- `frontend_id` - (Optional) The frontend ID.
     - Only one of `name` and `frontend_id` should be specified.
 
 - `name` - (Optional) The name of the frontend.
     - When using the `name` you should specify the `lb-id`
 
-- `lb_id` - (Required) The load-balancer ID this frontend is attached to.
+- `lb_id` - (Required) The Load Balancer ID this frontend is attached to.
 
 ## Attributes Reference
 
-See the [LB Frontend Resource](../resources/lb_frontend.md) for details on the returned attributes - they are identical.
+See the [Load Balancer frontend resource](../resources/lb_frontend.md) for details on the returned attributes - they are identical.

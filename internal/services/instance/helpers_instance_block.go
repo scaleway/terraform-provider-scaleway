@@ -25,23 +25,32 @@ type UnknownVolume struct {
 	Zone     scw.Zone
 	ID       string
 	Name     string
-	Size     scw.Size
+	Size     *scw.Size
 	ServerID *string
-
-	// IsBlockVolume is true if volume is managed by block API
-	IsBlockVolume bool
+	Boot     *bool
 
 	InstanceVolumeType instance.VolumeVolumeType
 }
 
-// VolumeTemplateUpdate return a VolumeServerTemplate for an UpdateServer request
-func (volume *UnknownVolume) VolumeTemplateUpdate() *instance.VolumeServerTemplate {
-	template := &instance.VolumeServerTemplate{
-		ID:   scw.StringPtr(volume.ID),
-		Name: &volume.Name, // name is ignored by the API, any name will work here
+// VolumeTemplate returns a template to be used for servers requests.
+func (volume *UnknownVolume) VolumeTemplate() *instance.VolumeServerTemplate {
+	template := &instance.VolumeServerTemplate{}
+
+	if volume.ID != "" {
+		template.ID = &volume.ID
+		if !volume.IsBlockVolume() {
+			template.Name = &volume.Name
+		}
+	} else {
+		template.VolumeType = volume.InstanceVolumeType
+		template.Size = volume.Size
 	}
-	if volume.IsBlockVolume {
-		template.Name = nil
+
+	if volume.Boot != nil {
+		template.Boot = volume.Boot
+	}
+
+	if volume.IsBlockVolume() {
 		template.VolumeType = volume.InstanceVolumeType
 	}
 
@@ -50,7 +59,12 @@ func (volume *UnknownVolume) VolumeTemplateUpdate() *instance.VolumeServerTempla
 
 // IsLocal returns true if the volume is a local volume
 func (volume *UnknownVolume) IsLocal() bool {
-	return !volume.IsBlockVolume && volume.InstanceVolumeType == instance.VolumeVolumeTypeLSSD
+	return !volume.IsBlockVolume() && volume.InstanceVolumeType == instance.VolumeVolumeTypeLSSD
+}
+
+// IsBlockVolume is true if volume is managed by block API
+func (volume *UnknownVolume) IsBlockVolume() bool {
+	return volume.InstanceVolumeType == instance.VolumeVolumeTypeSbsVolume
 }
 
 // IsAttached returns true if the volume is attached to a server
@@ -73,8 +87,7 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 			Zone:               getVolumeResponse.Volume.Zone,
 			ID:                 getVolumeResponse.Volume.ID,
 			Name:               getVolumeResponse.Volume.Name,
-			Size:               getVolumeResponse.Volume.Size,
-			IsBlockVolume:      false,
+			Size:               &getVolumeResponse.Volume.Size,
 			InstanceVolumeType: getVolumeResponse.Volume.VolumeType,
 		}
 		if getVolumeResponse.Volume.Server != nil {
@@ -96,8 +109,7 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 		Zone:               blockVolume.Zone,
 		ID:                 blockVolume.ID,
 		Name:               blockVolume.Name,
-		Size:               blockVolume.Size,
-		IsBlockVolume:      true,
+		Size:               &blockVolume.Size,
 		InstanceVolumeType: instance.VolumeVolumeTypeSbsVolume,
 	}
 	for _, ref := range blockVolume.References {

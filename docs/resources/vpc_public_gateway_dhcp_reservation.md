@@ -5,15 +5,15 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp_reservation"
 
 # Resource: scaleway_vpc_public_gateway_dhcp_reservation
 
-Creates and manages the [Scaleway DHCP Reservations](https://www.scaleway.com/en/docs/network/vpc/concepts/#dhcp).
+Creates and manages [Scaleway DHCP Reservations](https://www.scaleway.com/en/docs/network/vpc/concepts/#dhcp).
 
-The static associations are used to assign IP addresses based on the MAC addresses of the Instance.
+These static associations are used to assign IP addresses based on the MAC addresses of the resource.
 
 Statically assigned IP addresses should fall within the configured subnet, but be outside of the dynamic range.
 
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-c05544) and [configuration guide](https://www.scaleway.com/en/docs/network/vpc/how-to/configure-a-public-gateway/#how-to-review-and-configure-dhcp).
+For more information, see [the API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-c05544).
 
-[DHCP reservations](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-entries-e40fb6) hold both dynamic DHCP leases (IP addresses dynamically assigned by the gateway to instances) and static user-created DHCP reservations.
+[DHCP reservations](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-entries-e40fb6) hold both dynamic DHCP leases (IP addresses dynamically assigned by the gateway to resources) and static user-created DHCP reservations.
 
 ## Example Usage
 
@@ -66,26 +66,26 @@ resource scaleway_vpc_public_gateway_dhcp_reservation main {
 The following arguments are supported:
 
 - `gateway_network_id` - (Required) The ID of the owning GatewayNetwork.
-- `ip_address` - (Required) The IP address to give to the machine (IP address).
-- `mac_address` - (Required) The MAC address to give a static entry to.
+- `ip_address` - (Required) The IP address to give to the machine.
+- `mac_address` - (Required) The MAC address for the static entry.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the public gateway DHCP config should be created.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the public gateway DHCP Reservation config.
+- `id` - The ID of the Public Gateway DHCP reservation configuration.
 
-~> **Important:** Public gateway DHCP reservations configurations' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+~> **Important:** Public Gateway DHCP reservations configurations IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `hostname` - The Hostname of the client machine.
-- `type` - The reservation type, either static (DHCP reservation) or dynamic (DHCP lease). Possible values are reservation and lease.
-- `created_at` - The date and time of the creation of the public gateway DHCP config.
-- `updated_at` - The date and time of the last update of the public gateway DHCP config.
+- `hostname` - The hostname of the client machine.
+- `type` - The reservation type, either static (DHCP reservation) or dynamic (DHCP lease). Possible values are `reservation` and `lease`.
+- `created_at` - The date and time of the creation of the Public Gateway DHCP configuration.
+- `updated_at` - The date and time of the last update of the Public Gateway DHCP configuration.
 
 ## Import
 
-Public gateway DHCP Reservation config can be imported using the `{zone}/{id}`, e.g.
+Public Gateway DHCP reservation configurations can be imported using `{zone}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_vpc_public_gateway_dhcp_reservation.main fr-par-1/11111111-1111-1111-1111-111111111111

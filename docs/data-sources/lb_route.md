@@ -5,8 +5,9 @@ page_title: "Scaleway: scaleway_lb_route"
 
 # scaleway_lb_route
 
-Get information about Scaleway Load-Balancer Routes.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-route).
+Get information about Scaleway Load Balancer routes.
+
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/how-to/create-manage-routes/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-route).
 
 ## Example Usage
 
@@ -43,8 +44,8 @@ data "scaleway_lb_route" "byID" {
 
 The following argument is supported:
 
-- `route_id` - (Required) The route id.
+- `route_id` - (Required) The route ID.
 
 ## Attributes Reference
 
-See the [LB Route Resource](../resources/lb_route.md) for details on the returned attributes - they are identical.
+See the [Load Balancer route resource](../resources/lb_route.md) for details on the returned attributes - they are identical.

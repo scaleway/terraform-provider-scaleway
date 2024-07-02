@@ -44,6 +44,17 @@ func NewAPI(m interface{}) (*vpc.API, error) {
 	return vpc.NewAPI(meta.ExtractScwClient(m)), nil
 }
 
+// routesAPIWithRegion returns a new VPC API and the region for a Create request
+func routesAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.RoutesWithNexthopAPI, scw.Region, error) {
+	routesAPI := vpc.NewRoutesWithNexthopAPI(meta.ExtractScwClient(m))
+
+	region, err := meta.ExtractRegion(d, m)
+	if err != nil {
+		return nil, "", err
+	}
+	return routesAPI, region, err
+}
+
 func vpcPrivateNetworkUpgradeV1SchemaType() cty.Type {
 	return cty.Object(map[string]cty.Type{
 		"id": cty.String,

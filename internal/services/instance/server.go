@@ -430,43 +430,9 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	req.Volumes = make(map[string]*instanceSDK.VolumeServerTemplate)
-	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
-	rootVolumeIsBootVolume := types.ExpandBoolPtr(d.Get("root_volume.0.boot"))
-	rootVolumeType := d.Get("root_volume.0.volume_type").(string)
-	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
-	rootVolumeID := zonal.ExpandID(d.Get("root_volume.0.volume_id").(string)).ID
+	rootVolume := d.Get("root_volume.0").(map[string]any)
 
-	// If the rootVolumeType is not defined, define it depending on the offer
-	if rootVolumeType == "" {
-		if serverTypeCanBootOnBlock {
-			rootVolumeType = instanceSDK.VolumeVolumeTypeBSSD.String()
-		} else {
-			rootVolumeType = instanceSDK.VolumeVolumeTypeLSSD.String()
-		}
-	}
-
-	rootVolumeName := ""
-	if req.Image == "" { // When creating an instanceSDK from an image, volume should not have a name
-		rootVolumeName = types.NewRandomName("vol")
-	}
-
-	var rootVolumeSize *scw.Size
-	if sizeInput == 0 && rootVolumeType == instanceSDK.VolumeVolumeTypeLSSD.String() {
-		// Compute the rootVolumeSize so it will be valid against the local volume constraints
-		// It wouldn't be valid if another local volume is added, but in this case
-		// the user would be informed that it does not fulfill the local volume constraints
-		rootVolumeSize = scw.SizePtr(serverType.VolumesConstraint.MaxSize)
-	} else if sizeInput > 0 {
-		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
-	}
-
-	req.Volumes["0"] = &instanceSDK.VolumeServerTemplate{
-		Name:       types.ExpandStringPtr(rootVolumeName),
-		ID:         types.ExpandStringPtr(rootVolumeID),
-		VolumeType: instanceSDK.VolumeVolumeType(rootVolumeType),
-		Size:       rootVolumeSize,
-		Boot:       rootVolumeIsBootVolume,
-	}
+	req.Volumes["0"] = prepareRootVolume(rootVolume, serverType, req.Image).VolumeTemplate()
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
 			// We have to get the volume to know whether it is a local or a block volume
@@ -482,9 +448,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	if err = validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
 		return diag.FromErr(err)
 	}
-
-	// Sanitize the volume map to respect API schemas
-	req.Volumes = sanitizeVolumeMap(req.Volumes)
 
 	res, err := api.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {
@@ -612,7 +575,9 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("zone", string(zone))
 		_ = d.Set("name", server.Name)
 		_ = d.Set("boot_type", server.BootType)
-		_ = d.Set("bootscript_id", server.Bootscript.ID)
+		if server.Bootscript != nil {
+			_ = d.Set("bootscript_id", server.Bootscript.ID)
+		}
 		_ = d.Set("type", server.CommercialType)
 		if len(server.Tags) > 0 {
 			_ = d.Set("tags", server.Tags)
@@ -835,7 +800,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			if volumeHasChange && !isStopped && volume.IsLocal() && volume.IsAttached() {
 				return diag.FromErr(errors.New("instanceSDK must be stopped to change local volumes"))
 			}
-			volumes[strconv.Itoa(i+1)] = volume.VolumeTemplateUpdate()
+			volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
 		}
 
 		serverShouldUpdate = true
