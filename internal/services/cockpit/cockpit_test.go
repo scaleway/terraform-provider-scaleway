@@ -128,7 +128,7 @@ func TestAccCockpit_WithSourceEndpoints(t *testing.T) {
 }
 
 func isCockpitDestroyed(_ *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
+	return func(_ *terraform.State) error {
 		return nil
 	}
 }
