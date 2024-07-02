@@ -6,12 +6,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
-	cockpitv1 "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
-	cockpitv1beta1 "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 )
 
 func AddTestSweepers() {
@@ -36,7 +34,7 @@ func AddTestSweepers() {
 func testSweepCockpitToken(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		cockpitAPI := cockpitv1beta1.NewAPI(scwClient)
+		cockpitAPI := cockpit.NewRegionalAPI(scwClient)
 
 		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
@@ -48,7 +46,7 @@ func testSweepCockpitToken(_ string) error {
 				continue
 			}
 
-			listTokens, err := cockpitAPI.ListTokens(&cockpitv1beta1.ListTokensRequest{
+			listTokens, err := cockpitAPI.ListTokens(&cockpit.RegionalAPIListTokensRequest{
 				ProjectID: project.ID,
 			}, scw.WithAllPages())
 			if err != nil {
@@ -60,7 +58,7 @@ func testSweepCockpitToken(_ string) error {
 			}
 
 			for _, token := range listTokens.Tokens {
-				err = cockpitAPI.DeleteToken(&cockpitv1beta1.DeleteTokenRequest{
+				err = cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
 					TokenID: token.ID,
 				})
 				if err != nil {
@@ -78,7 +76,7 @@ func testSweepCockpitToken(_ string) error {
 func testSweepCockpitGrafanaUser(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		cockpitAPI := cockpitv1.NewGlobalAPI(scwClient)
+		cockpitAPI := cockpit.NewGlobalAPI(scwClient)
 
 		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
@@ -90,7 +88,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 				continue
 			}
 
-			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpitv1.GlobalAPIListGrafanaUsersRequest{
+			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{
 				ProjectID: project.ID,
 			}, scw.WithAllPages())
 			if err != nil {
@@ -102,7 +100,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 			}
 
 			for _, grafanaUser := range listGrafanaUsers.GrafanaUsers {
-				err = cockpitAPI.DeleteGrafanaUser(&cockpitv1.GlobalAPIDeleteGrafanaUserRequest{
+				err = cockpitAPI.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{
 					ProjectID:     project.ID,
 					GrafanaUserID: grafanaUser.ID,
 				})
@@ -121,7 +119,6 @@ func testSweepCockpitGrafanaUser(_ string) error {
 func testSweepCockpit(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		cockpitAPI := cockpitv1beta1.NewAPI(scwClient)
 
 		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
@@ -133,19 +130,12 @@ func testSweepCockpit(_ string) error {
 				continue
 			}
 
-			_, err = cockpitAPI.WaitForCockpit(&cockpitv1beta1.WaitForCockpitRequest{
-				ProjectID: project.ID,
-				Timeout:   scw.TimeDurationPtr(cockpit.DefaultCockpitTimeout),
-			})
 			if err != nil {
 				if !httperrors.Is404(err) {
 					return fmt.Errorf("failed to deactivate cockpit: %w", err)
 				}
 			}
 
-			_, err = cockpitAPI.DeactivateCockpit(&cockpitv1beta1.DeactivateCockpitRequest{
-				ProjectID: project.ID,
-			})
 			if err != nil {
 				if !httperrors.Is404(err) {
 					return fmt.Errorf("failed to deactivate cockpit: %w", err)
@@ -160,7 +150,7 @@ func testSweepCockpit(_ string) error {
 func testSweepCockpitSource(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		cockpitAPI := cockpitv1.NewRegionalAPI(scwClient)
+		cockpitAPI := cockpit.NewRegionalAPI(scwClient)
 
 		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
@@ -172,7 +162,7 @@ func testSweepCockpitSource(_ string) error {
 				continue
 			}
 
-			listDatasources, err := cockpitAPI.ListDataSources(&cockpitv1.RegionalAPIListDataSourcesRequest{
+			listDatasources, err := cockpitAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
 				ProjectID: project.ID,
 				Region:    region,
 			}, scw.WithAllPages())
@@ -185,7 +175,7 @@ func testSweepCockpitSource(_ string) error {
 			}
 
 			for _, datsource := range listDatasources.DataSources {
-				err = cockpitAPI.DeleteDataSource(&cockpitv1.RegionalAPIDeleteDataSourceRequest{
+				err = cockpitAPI.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
 					DataSourceID: datsource.ID,
 					Region:       region,
 				})
