@@ -20,8 +20,10 @@ import (
 
 // Service information constants
 const (
-	ServiceName = "scw"       // Name of service.
-	EndpointsID = ServiceName // ID to look up a service endpoint with.
+	ServiceName      = "scw"       // Name of service.
+	EndpointsID      = ServiceName // ID to look up a service endpoint with.
+	fileContentStep2 = "This is a different content"
+	fileContentStep1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 )
 
 func TestAccObject_Basic(t *testing.T) {
@@ -556,9 +558,6 @@ func TestAccObject_ByContent(t *testing.T) {
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content")
 
-	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-	fileContentStep2 := "This is a different content"
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -614,8 +613,6 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content-base64")
 
-	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-	fileContentStep2 := "This is a different content"
 	fileEncodedStep1 := base64.StdEncoding.EncodeToString([]byte(fileContentStep1))
 	fileEncodedStep2 := base64.StdEncoding.EncodeToString([]byte(fileContentStep2))
 
@@ -679,6 +676,63 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 					}
 				`, bucketName, objectTestsMainRegion, fileContentStep2),
 				ExpectError: regexp.MustCompile("illegal base64 data at input byte 4"),
+			},
+		},
+	})
+}
+
+func TestAccObject_SSECustomer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-sse-customer")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region = "%s"
+					}
+					
+					resource scaleway_object "sse-c-encrypted" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "test-sse-c-encrypted"
+						content = "%s"
+						sse_customer_key = "mY5up3r4w3s0meK3y"
+					}
+				`, bucketName, objectTestsMainRegion, fileContentStep1),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckObjectExists(tt, "scaleway_object.sse-c-encrypted"),
+					resource.TestCheckResourceAttr("scaleway_object.sse-c-encrypted", "content", fileContentStep1),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region = "%s"
+					}
+					
+					resource scaleway_object "sse-c-encrypted" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "test-by-content"
+						content = "%s"
+						sse_customer_key = "mY5up3r4w3s0meK3y"
+					}
+				`, bucketName, objectTestsMainRegion, fileContentStep2),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckObjectExists(tt, "scaleway_object.sse-c-encrypted"),
+					resource.TestCheckResourceAttr("scaleway_object.sse-c-encrypted", "content", fileContentStep2),
+				),
 			},
 		},
 	})
