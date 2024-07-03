@@ -246,7 +246,7 @@ resource "scaleway_lb" "main" {
 
 - `dhcp_config` - (Optional) Set to `true` if you want to let DHCP assign IP addresses. See below.
 
-- `static_config` - (Deprecated) Please use `dhcp_config`. Define a local ip address of your choice for the load balancer instance.
+- `static_config` - (Deprecated) Please use `ipam_ids`. Define a local ip address of your choice for the load balancer instance.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Private Network was created.
 
