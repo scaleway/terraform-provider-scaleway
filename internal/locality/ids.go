@@ -8,3 +8,15 @@ func ExpandID(id interface{}) string {
 	}
 	return ID
 }
+
+func ExpandIDs(data interface{}) []string {
+	expandedIDs := make([]string, 0, len(data.([]interface{})))
+	for _, s := range data.([]interface{}) {
+		if s == nil {
+			s = ""
+		}
+		expandedID := ExpandID(s.(string))
+		expandedIDs = append(expandedIDs, expandedID)
+	}
+	return expandedIDs
+}
