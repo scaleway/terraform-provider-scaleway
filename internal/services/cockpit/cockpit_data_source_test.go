@@ -44,11 +44,6 @@ func TestAccDataSourceCockpit_Basic(t *testing.T) {
 						enable_managed_alerts = true
 					}
 
-					resource "scaleway_cockpit_grafana_user" "main" {
-					  project_id = scaleway_account_project.project.id
-					  login = "data_source_test"
-					  role = "editor"
-					}
 					
 					resource "scaleway_cockpit" "main" {
 						project_id = scaleway_account_project.project.id
@@ -58,7 +53,6 @@ func TestAccDataSourceCockpit_Basic(t *testing.T) {
 								scaleway_cockpit_source.logs,
 								scaleway_cockpit_source.traces,
 								scaleway_cockpit_alert_manager.alert_manager,
-								scaleway_cockpit_grafana_user.main
 							]
 					}
 
@@ -74,7 +68,6 @@ func TestAccDataSourceCockpit_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.metrics_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.logs_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.alertmanager_url"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.grafana_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.traces_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "push_url.0.push_logs_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "push_url.0.push_metrics_url"),
