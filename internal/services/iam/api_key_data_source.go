@@ -8,19 +8,19 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
-func DataSourceApiKey() *schema.Resource {
+func DataSourceAPIKey() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceAPIKey().Schema)
 
 	dsSchema["access_key"].Required = true
 	dsSchema["access_key"].Computed = false
 	delete(dsSchema, "secret_key")
 	return &schema.Resource{
-		ReadContext: DataSourceIamApiKeyRead,
+		ReadContext: DataSourceIamAPIKeyRead,
 		Schema:      dsSchema,
 	}
 }
 
-func DataSourceIamApiKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	accessKey := d.Get("access_key").(string)
 
 	d.SetId(accessKey)
