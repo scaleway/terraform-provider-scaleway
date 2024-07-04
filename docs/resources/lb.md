@@ -242,7 +242,7 @@ resource "scaleway_lb" "main" {
 
 - ~> **Important:** Updates to `private_network` will recreate the attachment.
 
-- `ipam_ids` - (Optional) IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network. In the future, it will be possible to specify multiple IPs in this field (IPv4 and IPv6), for now only one ID of an IPv4 address is expected.
+- `ipam_ids` - (Optional) IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network.
 
 - `dhcp_config` - (Optional) Set to `true` if you want to let DHCP assign IP addresses. See below.
 
