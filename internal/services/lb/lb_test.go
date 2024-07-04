@@ -460,6 +460,72 @@ func TestAccLB_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 	})
 }
 
+func TestAccLB_WithPrivateNetworksIPAMIDs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isLbDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_vpc" "vpc01" {
+				  name = "my vpc"
+				}
+				
+				resource "scaleway_vpc_private_network" "pn01" {
+				  vpc_id = scaleway_vpc.vpc01.id
+				  ipv4_subnet {
+					subnet = "172.16.32.0/22"
+				  }
+				}
+				
+				resource "scaleway_ipam_ip" "ip01" {
+				  address = "172.16.32.7"
+				  source {
+					private_network_id = scaleway_vpc_private_network.pn01.id
+				  }
+				}
+				
+				resource scaleway_lb lb01 {
+				  name = "test-lb-with-private-network-ipam"
+				  type = "LB-S"
+				
+				  private_network {
+				    private_network_id = scaleway_vpc_private_network.pn01.id
+				    ipam_ids = [scaleway_ipam_ip.ip01.id]
+				  }	
+				}
+
+				data "scaleway_ipam_ip" "by_name" {
+				  resource {
+					name = scaleway_lb.lb01.name
+					type = "lb_server"
+				  }
+				  type = "ipv4"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isLbPresent(tt, "scaleway_lb.lb01"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_lb.lb01", "private_network.0.private_network_id",
+						"scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_lb.lb01", "private_network.0.ipam_ids.0",
+						"scaleway_ipam_ip.ip01", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_ipam_ip.ip01", "address",
+						"data.scaleway_ipam_ip.by_name", "address_cidr"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccLB_WithoutPNConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
