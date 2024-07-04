@@ -51,6 +51,42 @@ resource scaleway_lb main {
 }
 ```
 
+### With IPAM IDs
+
+```terraform
+resource "scaleway_vpc" "vpc01" {
+  name = "my vpc"
+}
+
+resource "scaleway_vpc_private_network" "pn01" {
+  vpc_id = scaleway_vpc.vpc01.id
+  ipv4_subnet {
+    subnet = "172.16.32.0/22"
+  }
+}
+
+resource "scaleway_ipam_ip" "ip01" {
+  address = "172.16.32.7"
+  source {
+    private_network_id = scaleway_vpc_private_network.pn01.id
+  }
+}
+
+resource "scaleway_lb_ip" "v4" {
+}
+
+resource scaleway_lb main {
+  ip_ids = [scaleway_lb_ip.v4.id]
+  name   = "my-lb"
+  type   = "LB-S"
+
+  private_network {
+    private_network_id = scaleway_vpc_private_network.pn01.id
+    ipam_ids = [scaleway_ipam_ip.ip01.id]
+  }
+}
+```
+
 ### Multiple configurations
 
 ```terraform
@@ -206,11 +242,11 @@ resource "scaleway_lb" "main" {
 
 - ~> **Important:** Updates to `private_network` will recreate the attachment.
 
-- `static_config` - (Deprecated) Please use `dhcp_config`. Define a local ip address of your choice for the load balancer instance.
+- `ipam_ids` - (Optional) IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network.
 
 - `dhcp_config` - (Optional) Set to `true` if you want to let DHCP assign IP addresses. See below.
 
-~> **Important:**  Only dhcp_config may be set.
+- `static_config` - (Deprecated) Please use `ipam_ids`. Define a local ip address of your choice for the load balancer instance.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Private Network was created.
 
