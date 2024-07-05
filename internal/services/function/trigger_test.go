@@ -29,7 +29,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-sqs"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node20"
+						runtime = "node22"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -100,7 +100,7 @@ func TestAccFunctionTrigger_Nats(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-sqs"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node20"
+						runtime = "node22"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -160,7 +160,7 @@ func TestAccFunctionTrigger_Error(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-error"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
+						runtime = "node22"
 						privacy = "private"
 						handler = "handler.handle"
 					}
