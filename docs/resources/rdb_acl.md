@@ -58,5 +58,5 @@ No additional attributes are exported.
 Database Instance can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_rdb_acl.acl01 fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_rdb_acl.acl01 fr-par/11111111-1111-1111-1111-111111111111
 ```

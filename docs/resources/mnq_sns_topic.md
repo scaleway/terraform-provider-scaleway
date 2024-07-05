@@ -68,5 +68,5 @@ In addition to all arguments above, the following attributes are exported:
 SNS topics can be imported using `{region}/{project-id}/{topic-name}`, e.g.
 
 ```bash
-$ terraform import scaleway_mnq_sns_topic.main fr-par/11111111111111111111111111111111/my-topic
+terraform import scaleway_mnq_sns_topic.main fr-par/11111111111111111111111111111111/my-topic
 ```

@@ -82,5 +82,5 @@ In addition to all arguments above, the following attributes are exported:
 Cockpits can be imported using the `{project_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_cockpit.main 11111111-1111-1111-1111-111111111111
+terraform import scaleway_cockpit.main 11111111-1111-1111-1111-111111111111
 ```

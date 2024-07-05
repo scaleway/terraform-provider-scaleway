@@ -80,5 +80,5 @@ In addition to all arguments above, the following attributes are exported:
 User data can be imported using the `{zone}/{key}/{server_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_instance_user_data.main fr-par-1/cloud-init/11111111-1111-1111-1111-111111111111
+terraform import scaleway_instance_user_data.main fr-par-1/cloud-init/11111111-1111-1111-1111-111111111111
 ```

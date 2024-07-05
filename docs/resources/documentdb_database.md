@@ -53,5 +53,5 @@ In addition to all arguments above, the following attributes are exported:
 DocumentDB Database can be imported using the `{region}/{id}/{DBNAME}`, e.g.
 
 ```bash
-$ terraform import scaleway_documentdb_database.mydb fr-par/11111111-1111-1111-1111-111111111111/mydb
+terraform import scaleway_documentdb_database.mydb fr-par/11111111-1111-1111-1111-111111111111/mydb
 ```
