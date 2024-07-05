@@ -64,5 +64,5 @@ In addition to all arguments above, the following attributes are exported:
 Api keys can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_api_key.main 11111111111111111111
+terraform import scaleway_iam_api_key.main 11111111111111111111
 ```

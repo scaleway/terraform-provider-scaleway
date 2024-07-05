@@ -79,5 +79,5 @@ In addition to all arguments above, the following attributes are exported:
 Function Triggers can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_function_trigger.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_function_trigger.main fr-par/11111111-1111-1111-1111-111111111111
 ```

@@ -39,5 +39,5 @@ In addition to all arguments above, the following attributes are exported:
 Applications can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_application.main 11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_application.main 11111111-1111-1111-1111-111111111111
 ```
