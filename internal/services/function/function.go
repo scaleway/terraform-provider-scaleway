@@ -104,9 +104,9 @@ func ResourceFunction() *schema.Resource {
 			},
 			"memory_limit": {
 				Type:        schema.TypeInt,
-				Description: "Memory limit in MB for your function, defaults to 128MB",
+				Description: "Memory limit in MB for your function, defaults to 256MB",
 				Optional:    true,
-				Default:     128,
+				Default:     256,
 			},
 			"handler": {
 				Type:        schema.TypeString,
