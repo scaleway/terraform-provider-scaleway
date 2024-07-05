@@ -117,7 +117,7 @@ The following arguments are supported:
   **_TIP:_** You can use the Scaleway CLI to list the permissions details. e.g:
 
 ```shell
-  $ scw IAM permission-set list
+   scw IAM permission-set list
 ```
 
 ## Attributes Reference
@@ -134,5 +134,5 @@ In addition to all arguments above, the following attributes are exported:
 Policies can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_policy.main 11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_policy.main 11111111-1111-1111-1111-111111111111
 ```

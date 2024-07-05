@@ -84,5 +84,5 @@ In addition to all arguments above, the following attributes are exported:
 Private Networks can be imported using `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_vpc_private_network.vpc_demo fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_vpc_private_network.vpc_demo fr-par/11111111-1111-1111-1111-111111111111
 ```

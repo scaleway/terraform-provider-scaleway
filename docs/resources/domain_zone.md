@@ -52,5 +52,5 @@ In addition to all arguments above, the following attributes are exported:
 Zone can be imported using the `{subdomain}.{domain}`, e.g.
 
 ```bash
-$ terraform import scaleway_domain_zone.test test.scaleway-terraform.com
+terraform import scaleway_domain_zone.test test.scaleway-terraform.com
 ```

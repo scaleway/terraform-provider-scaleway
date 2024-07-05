@@ -65,5 +65,5 @@ In addition to all arguments above, the following attributes are exported:
 Database users can be imported using `{region}/{instance_id}/{user_name}`, e.g.
 
 ```bash
-$ terraform import scaleway_rdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin
+terraform import scaleway_rdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin
 ```
