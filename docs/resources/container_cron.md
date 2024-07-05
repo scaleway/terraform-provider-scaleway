@@ -5,20 +5,13 @@ page_title: "Scaleway: scaleway_container_cron"
 
 # Resource: scaleway_container_cron
 
-Creates and manages Scaleway Container Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
+The `scaleway_container_cron` resource allows you to create and manage CRON triggers for Scaleway [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
 
-For more information consult
-the [documentation](https://www.scaleway.com/en/docs/serverless/containers/)
-.
+Refer to the Containers CRON triggers [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/add-trigger-to-a-container/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-triggers-list-all-triggers) for more information.
 
-For more details about the limitation
-check [containers-limitations](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/)
-.
+## Add a CRON trigger to a container
 
-You can check also
-our [containers cron api documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#crons-942bf4).
-
-## Example Usage
+The following command allows you to add a CRON trigger to a Serverless Container.
 
 ```terraform
 resource scaleway_container_namespace main {
@@ -57,25 +50,27 @@ resource scaleway_container_cron main {
 
 The following arguments are supported:
 
-- `schedule` - (Required) Cron format string, e.g. @hourly, as schedule time of its jobs to be created and
-  executed.
-- `container_id` - (Required) The container ID to link with your cron.
-- `args`   - (Required) The key-value mapping to define arguments that will be passed to your container’s event object
-  during
-- `name`   - (Optional) The name of the container cron. If not provided, the name is generated.
-  during
+- `schedule` - (Required) CRON format string (refer to the [CRON schedule reference](https://www.scaleway.com/en/docs/serverless/containers/reference-content/cron-schedules/) for more information).
+
+- `container_id` - (Required) The unique identifier of the container to link to your CRON trigger.
+
+- `args` - (Required) The key-value mapping to define arguments that will be passed to your container’s event object
+
+- `name` - (Optional) The name of the container CRON trigger. If not provided, a random name is generated.
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_container_cron` resource exports certain attributes once the CRON trigger is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-- `id` - The container CRON's ID.
 
-~> **Important:** Container CRONs' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+- `id` - The unique identifier of the container's CRON trigger.
+
+~> **Important:** Container CRON trigger IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
-  in where the job was created.
-- `status` - The cron status.
+  in which the CRON trigger was created.
+
+- `status` - The CRON status.
 
 ## Import
 
