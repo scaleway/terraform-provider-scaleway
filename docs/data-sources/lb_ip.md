@@ -50,4 +50,6 @@ In addition to all above arguments, the following attributes are exported:
 
 - `lb_id` - The ID of the associated Load Balancer, if any
 
+- `tags` - The tags associated with this IP.
+
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the Organization the Load Balancer IP is associated with.
