@@ -73,6 +73,15 @@ func TestAccDataSourceIPs_WithType(t *testing.T) {
 					resource scaleway_lb_ip ip2 {
 					  is_ipv6 = true
 					}
+				`,
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip1 {
+					}
+					resource scaleway_lb_ip ip2 {
+					  is_ipv6 = true
+					}
 					resource scaleway_lb_ip ip3 {
 					}
 
