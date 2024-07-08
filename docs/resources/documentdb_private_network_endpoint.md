@@ -16,8 +16,17 @@ resource "scaleway_vpc_private_network" "pn" {
   name = "my_private_network"
 }
 
+resource "scaleway_documentdb_instance" "instance" {
+  name              = "test-document_db-basic"
+  node_type         = "docdb-play2-pico"
+  engine            = "FerretDB-1"
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 20
+}
+
 resource "scaleway_documentdb_private_network_endpoint" "main" {
-  instance_id    = "11111111-1111-1111-1111-111111111111"
+  instance_id    = scaleway_documentdb_instance.instance.id
   private_network {
     ip_net = "172.16.32.3/22"
     id     = scaleway_vpc_private_network.pn.id
@@ -32,15 +41,17 @@ The following arguments are supported:
 
 - `instance_id` - (Required) UUID of the documentdb instance.
 
-- `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a
-  CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
-  service if not set.
+- `private_network` - (Optional) The private network specs details. This is a list with maximum one element and supports the following attributes:
+    - `id` - (Required) The private network ID.
+    - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM) service if not set.
+    - `ip` - (Computed) The IP of your private network service.
+    - `port` - (Optional, Computed) The port of your private service.
+    - `name` - (Computed) The name of your private service.
+    - `hostname` - (Computed) The hostname of your endpoint.
+    - `zone` - (Computed) The zone of your endpoint.
 
-- `private_network_id` - (Required) The ID of the private network.
+- `region` - (Optional) The region of the endpoint.
 
-## Private Network
-
-~> **Important:** Updates to `private_network_id` will recreate the attachment Instance.
 
 ~> **NOTE:** Please calculate your host IP.
 using [cirhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, lets IPAM service
@@ -64,5 +75,5 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
 Database Instance Endpoint can be imported using the `{region}/{endpoint_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_documentdb_private_network_endpoint.end fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_documentdb_private_network_endpoint.end fr-par/11111111-1111-1111-1111-111111111111
 ```

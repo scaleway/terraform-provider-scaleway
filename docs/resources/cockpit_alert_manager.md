@@ -50,5 +50,5 @@ In addition to all arguments above, the following attributes are exported:
 Alert managers can be imported using the project ID, e.g.
 
 ```bash
-$ terraform import scaleway_cockpit_alert_manager.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_cockpit_alert_manager.main fr-par/11111111-1111-1111-1111-111111111111
 ```

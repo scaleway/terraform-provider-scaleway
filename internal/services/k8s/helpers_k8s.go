@@ -108,24 +108,3 @@ func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[strin
 
 	return convertNodes(nodes), nil
 }
-
-func migrateToPrivateNetworkCluster(ctx context.Context, d *schema.ResourceData, i interface{}) error {
-	k8sAPI, region, clusterID, err := NewAPIWithRegionAndID(i, d.Id())
-	if err != nil {
-		return err
-	}
-	pnID := regional.ExpandID(d.Get("private_network_id").(string)).ID
-	_, err = k8sAPI.MigrateToPrivateNetworkCluster(&k8s.MigrateToPrivateNetworkClusterRequest{
-		Region:           region,
-		ClusterID:        clusterID,
-		PrivateNetworkID: pnID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return err
-	}
-	_, err = waitCluster(ctx, k8sAPI, region, clusterID, defaultK8SClusterTimeout)
-	if err != nil {
-		return err
-	}
-	return nil
-}

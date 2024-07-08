@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceInstance() *schema.Resource {
@@ -73,14 +73,11 @@ func ResourceInstance() *schema.Resource {
 				Description: "Password for the first user of the database instance",
 			},
 			"volume_type": {
-				Type:     schema.TypeString,
-				Default:  documentdb.VolumeTypeBssd,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					documentdb.VolumeTypeLssd.String(),
-					documentdb.VolumeTypeBssd.String(),
-				}, false),
-				Description: "Type of volume where data are stored",
+				Type:             schema.TypeString,
+				Default:          documentdb.VolumeTypeBssd,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnum[documentdb.VolumeType](),
+				Description:      "Type of volume where data are stored",
 			},
 			"volume_size_in_gb": {
 				Type:        schema.TypeInt,

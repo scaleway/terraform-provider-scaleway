@@ -151,7 +151,7 @@ func TestAccApiKey_Expires(t *testing.T) {
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
 							description = "tf_tests_expires"
-							expires_at = "2025-07-06T09:00:00Z"
+							expires_at = "2025-07-06T11:00:00+02:00"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -160,6 +160,20 @@ func TestAccApiKey_Expires(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_expires"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "expires_at", "2025-07-06T09:00:00Z"),
 				),
+			},
+			{
+				Config: `
+						resource "scaleway_iam_application" "main" {
+							name = "tf_tests_app_expires_at"
+						}
+
+						resource "scaleway_iam_api_key" "main" {
+							application_id = scaleway_iam_application.main.id
+							description = "tf_tests_expires"
+							expires_at = "2025-07-06T09:00:00Z"
+						}
+					`,
+				PlanOnly: true,
 			},
 		},
 	})

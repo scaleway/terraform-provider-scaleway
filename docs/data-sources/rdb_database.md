@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_rdb_database"
 
 # scaleway_rdb_database
 
-Gets information about a RDB database.
+Gets information about a database.
 
 ## Example Usage
 

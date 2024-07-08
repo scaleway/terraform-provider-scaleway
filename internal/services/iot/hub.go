@@ -8,13 +8,13 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceHub() *schema.Resource {
@@ -43,15 +43,11 @@ func ResourceHub() *schema.Resource {
 				Description: "The name of the hub",
 			},
 			"product_plan": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The product plan of the hub",
-				ValidateFunc: validation.StringInSlice([]string{
-					iot.HubProductPlanPlanShared.String(),
-					iot.HubProductPlanPlanDedicated.String(),
-					iot.HubProductPlanPlanHa.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "The product plan of the hub",
+				ValidateDiagFunc: verify.ValidateEnum[iot.HubProductPlan](),
 			},
 			"disable_events": {
 				Type:        schema.TypeBool,

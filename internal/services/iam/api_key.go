@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -45,6 +46,7 @@ func ResourceAPIKey() *schema.Resource {
 				ForceNew:         true,
 				Description:      "The date and time of the expiration of the iam api key. Cannot be changed afterwards",
 				ValidateDiagFunc: verify.IsDate(),
+				DiffSuppressFunc: dsf.TimeRFC3339,
 			},
 			"access_key": {
 				Type:        schema.TypeString,

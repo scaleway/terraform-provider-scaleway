@@ -12,13 +12,22 @@ Creates and manages Scaleway Database DocumentDB Users.
 ### Basic
 
 ```terraform
+resource "scaleway_documentdb_instance" "instance" {
+  name              = "test-document_db-basic"
+  node_type         = "docdb-play2-pico"
+  engine            = "FerretDB-1"
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 20
+}
+
 resource "random_password" "db_password" {
   length  = 16
   special = true
 }
 
 resource "scaleway_documentdb_user" "db_admin" {
-  instance_id = "11111111-1111-1111-1111-111111111111"
+  instance_id = scaleway_documentdb_instance.instance.id
   name        = "devtools"
   password    = random_password.db_password.result
   is_admin    = true
@@ -54,5 +63,5 @@ In addition to all arguments above, the following attributes are exported:
 Database User can be imported using `{region}/{instance_id}/{user_name}`, e.g.
 
 ```bash
-$ terraform import scaleway_documentdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin
+terraform import scaleway_documentdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin
 ```

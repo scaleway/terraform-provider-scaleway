@@ -968,6 +968,28 @@ func TestAccInstance_SBSVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "20"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-play2-pico"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
+						volume_type = "sbs_15k"
+						volume_size_in_gb = 20
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_15k"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "20"),
+				),
+			},
 		},
 	})
 }

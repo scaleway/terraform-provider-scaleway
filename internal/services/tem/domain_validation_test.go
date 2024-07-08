@@ -55,6 +55,7 @@ func TestAccDomainValidation_Validation(t *testing.T) {
 						name       = "%s"
 						accept_tos = true
 					}
+
 					resource "scaleway_domain_record" "spf" {
   						dns_zone = "%s"
   						type     = "TXT"
@@ -71,12 +72,20 @@ func TestAccDomainValidation_Validation(t *testing.T) {
   						type     = "MX"
   						data     = "."
 					}
+
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+  						name     = scaleway_tem_domain.cr01.dmarc_name
+  						type     = "TXT"
+  						data     = scaleway_tem_domain.cr01.dmarc_config
+					}
+
 					resource scaleway_tem_domain_validation valid {
   						domain_id = scaleway_tem_domain.cr01.id
   						region = scaleway_tem_domain.cr01.region
 						timeout = 3600
 					}
-				`, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation),
+				`, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
 				),

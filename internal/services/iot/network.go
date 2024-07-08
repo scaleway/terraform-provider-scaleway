@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceNetwork() *schema.Resource {
@@ -45,14 +45,11 @@ func ResourceNetwork() *schema.Resource {
 				Description: "The name of the network",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The type of the network",
-				ValidateFunc: validation.StringInSlice([]string{
-					iot.NetworkNetworkTypeSigfox.String(),
-					iot.NetworkNetworkTypeRest.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "The type of the network",
+				ValidateDiagFunc: verify.ValidateEnum[iot.NetworkNetworkType](),
 			},
 			"topic_prefix": {
 				Type:        schema.TypeString,

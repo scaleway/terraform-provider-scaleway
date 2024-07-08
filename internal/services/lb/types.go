@@ -40,6 +40,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interfac
 			"status":             pn.Status.String(),
 			"zone":               pn.LB.Zone.String(),
 			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
+			"ipam_ids":           flattenLBIPAMIDs(pnRegion, pn.IpamIDs),
 		})
 	}
 	return pnI
@@ -323,6 +324,7 @@ func expandPrivateNetworks(data interface{}) ([]*lb.PrivateNetwork, error) {
 		} else {
 			privateNetwork.DHCPConfig = expandLbPrivateNetworkDHCPConfig(rawPn["dhcp_config"])
 		}
+		privateNetwork.IpamIDs = locality.ExpandIDs(rawPn["ipam_ids"])
 
 		pns = append(pns, privateNetwork)
 	}
@@ -363,6 +365,7 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 			PrivateNetworkID: pnConfigs[i].PrivateNetworkID,
 			StaticConfig:     pnConfigs[i].StaticConfig,
 			DHCPConfig:       pnConfigs[i].DHCPConfig,
+			IpamIDs:          pnConfigs[i].IpamIDs,
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
 			return nil, err
@@ -437,6 +440,17 @@ func flattenLBIPIDs(zone scw.Zone, ips []*lb.IP) []string {
 	flattenedIPs := make([]string, len(ips))
 	for i, ip := range ips {
 		flattenedIPs[i] = zonal.NewIDString(zone, ip.ID)
+	}
+	return flattenedIPs
+}
+
+func flattenLBIPAMIDs(region scw.Region, ips []string) []string {
+	if ips == nil {
+		return nil
+	}
+	flattenedIPs := make([]string, len(ips))
+	for i, ip := range ips {
+		flattenedIPs[i] = regional.NewIDString(region, ip)
 	}
 	return flattenedIPs
 }

@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_iam_application"
 
 # Resource: scaleway_iam_application
 
-Creates and manages Scaleway IAM Applications. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/iam/#applications-83ce5e).
+Creates and manages Scaleway IAM Applications. For more information refer to the [IAM API documentation](https://www.scaleway.com/en/developers/api/iam/#applications-83ce5e).
 
 ## Example Usage
 
@@ -39,5 +39,5 @@ In addition to all arguments above, the following attributes are exported:
 Applications can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_application.main 11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_application.main 11111111-1111-1111-1111-111111111111
 ```
