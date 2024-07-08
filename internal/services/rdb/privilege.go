@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -57,16 +56,10 @@ func ResourcePrivilege() *schema.Resource {
 				Required:    true,
 			},
 			"permission": {
-				Type:        schema.TypeString,
-				Description: "Privilege",
-				ValidateFunc: validation.StringInSlice([]string{
-					rdb.PermissionReadonly.String(),
-					rdb.PermissionReadwrite.String(),
-					rdb.PermissionAll.String(),
-					rdb.PermissionCustom.String(),
-					rdb.PermissionNone.String(),
-				}, false),
-				Required: true,
+				Type:             schema.TypeString,
+				Description:      "Privilege",
+				ValidateDiagFunc: verify.ValidateEnum[rdb.Permission](),
+				Required:         true,
 			},
 			// Common
 			"region": regional.Schema(),

@@ -68,7 +68,8 @@ func TestAccDataSourceFlexibleIPs_WithBaremetalIDs(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_baremetal_offer" "my_offer" {
-					  name = "EM-B112X-SSD"
+					  name = "EM-A115X-SSD"
+					  zone = "fr-par-1"
 					}
 
 					resource "scaleway_baremetal_server" "base" {
@@ -85,7 +86,8 @@ func TestAccDataSourceFlexibleIPs_WithBaremetalIDs(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_baremetal_offer" "my_offer" {
-					  name = "EM-B112X-SSD"
+					  name = "EM-A115X-SSD"
+					  zone = "fr-par-1"
 					}
 
 					resource "scaleway_baremetal_server" "base" {
@@ -106,7 +108,8 @@ func TestAccDataSourceFlexibleIPs_WithBaremetalIDs(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_baremetal_offer" "my_offer" {
-					  name = "EM-B112X-SSD"
+					  name = "EM-A115X-SSD"
+					  zone = "fr-par-1"
 					}
 
 					resource "scaleway_baremetal_server" "base" {

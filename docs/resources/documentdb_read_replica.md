@@ -23,8 +23,17 @@ resource scaleway_documentdb_read_replica "replica" {
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
+resource "scaleway_documentdb_instance" "instance" {
+  name              = "document_db-read-replica-basic"
+  node_type         = "docdb-play2-pico"
+  engine            = "FerretDB-1"
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 20
+}
+
 resource "scaleway_documentdb_read_replica" "replica" {
-  instance_id = scaleway_rdb_instance.instance.id
+  instance_id = scaleway_documentdb_instance.instance.id
   private_network {
     private_network_id = scaleway_vpc_private_network.pn.id
     service_ip         = "192.168.1.254/24" // omit this attribute if private IP is determined by the IP Address Management (IPAM)
@@ -79,5 +88,5 @@ they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-11111
 Database Read replica can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_documentdb_read_replica.rr fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_documentdb_read_replica.rr fr-par/11111111-1111-1111-1111-111111111111
 ```

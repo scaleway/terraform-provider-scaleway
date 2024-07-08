@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_lb_ips"
 
 # scaleway_lb_ips
 
-Gets information about multiple Load Balancer IPs.
+Gets information about multiple Load Balancer IP addresses.
+
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/how-to/create-manage-flex-ips/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-ip-addresses-list-ip-addresses).
 
 ## Example Usage
 
@@ -29,23 +31,23 @@ data "scaleway_lb_ips" "ips_by_tags_and_type" {
 
 ## Argument Reference
 
-- `ip_cidr_range` - (Optional) The IP CIDR range used as a filter. IPs within a CIDR block like it are listed.
+- `ip_cidr_range` - (Optional) The IP CIDR range to filter for. IPs within a matching CIDR block are listed.
 
 - `tags` - (Optional)  List of tags used as filter. IPs with these exact tags are listed.
 
 - `ip_type` - (Optional) The IP type used as a filter.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which IPs exist.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IPs exist.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `ips` - List of found IPs
-    - `id` - The associated IP ID.
-    - `lb_id` - The associated load-balancer ID if any
-    - `ip_address` - The IP Address
-    - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the load-balancer is.
+- `ips` - List of retrieved IPs
+    - `id` - The ID of the associated IP.
+    - `lb_id` - The ID of the associated Load BalancerD, if any
+    - `ip_address` - The IP address
+    - `zone` - The [zone](../guides/regions_and_zones.md#zones) of the Load Balancer.
     - `reverse` - The reverse domain associated with this IP.
-    - `organization_id` - The organization ID the load-balancer is associated with.
-    - `project_id` - The ID of the project the load-balancer is associated with.
+    - `organization_id` - The ID of the Organization the Load Balancer is associated with.
+    - `project_id` - The ID of the Project the Load Balancer is associated with.

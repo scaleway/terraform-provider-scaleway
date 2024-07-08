@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -38,6 +39,12 @@ func ResourceVPC() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"enable_routing": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Enable routing between Private Networks in the VPC",
+			},
 			"project_id": account.ProjectIDSchema(),
 			"region":     regional.Schema(),
 			// Computed elements
@@ -58,6 +65,14 @@ func ResourceVPC() *schema.Resource {
 				Description: "The date and time of the last update of the private network",
 			},
 		},
+		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+			before, after := diff.GetChange("enable_routing")
+			if before != nil && before.(bool) && after != nil && !after.(bool) {
+				return errors.New("routing cannot be disabled on this VPC")
+			}
+
+			return nil
+		},
 	}
 }
 
@@ -68,10 +83,11 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	res, err := vpcAPI.CreateVPC(&vpc.CreateVPCRequest{
-		Name:      types.ExpandOrGenerateString(d.Get("name"), "vpc"),
-		Tags:      types.ExpandStrings(d.Get("tags")),
-		ProjectID: d.Get("project_id").(string),
-		Region:    region,
+		Name:          types.ExpandOrGenerateString(d.Get("name"), "vpc"),
+		Tags:          types.ExpandStrings(d.Get("tags")),
+		EnableRouting: d.Get("enable_routing").(bool),
+		ProjectID:     d.Get("project_id").(string),
+		Region:        region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -106,6 +122,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{})
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_default", res.IsDefault)
+	_ = d.Set("enable_routing", res.RoutingEnabled)
 	_ = d.Set("region", region)
 
 	if len(res.Tags) > 0 {
@@ -121,14 +138,41 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcAPI.UpdateVPC(&vpc.UpdateVPCRequest{
-		VpcID:  ID,
+	hasChanged := false
+
+	updateRequest := &vpc.UpdateVPCRequest{
 		Region: region,
-		Name:   scw.StringPtr(d.Get("name").(string)),
-		Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+		VpcID:  ID,
+	}
+
+	if d.HasChange("name") {
+		updateRequest.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
+		hasChanged = true
+	}
+
+	if d.HasChange("tags") {
+		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if hasChanged {
+		_, err = vpcAPI.UpdateVPC(updateRequest, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("enable_routing") {
+		enableRouting := d.Get("enable_routing").(bool)
+		if enableRouting {
+			_, err = vpcAPI.EnableRouting(&vpc.EnableRoutingRequest{
+				Region: region,
+				VpcID:  ID,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	return ResourceVPCRead(ctx, d, m)

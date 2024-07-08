@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_lb_routes"
 
 # scaleway_lb_routes
 
-Gets information about multiple Load Balancer Routes.
+Gets information about multiple Load Balancer routes.
+
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/how-to/create-manage-routes/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-route).
 
 ## Example Usage
 
@@ -23,18 +25,18 @@ data "scaleway_lb_routes" "my_key" {
 
 ## Argument Reference
 
-- `frontend_id` - (Optional) The frontend ID origin of redirection used as a filter. routes with a frontend ID like it are listed.
+- `frontend_id` - (Optional) The frontend ID (the origin of the redirection), to filter for. Routes with a matching frontend ID are listed.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which routes exist.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the routes exist.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `routes` - List of found routes
+- `routes` - List of retrieved routes
     - `id` - The associated route ID.
-    - `backend_id` - The backend ID destination of redirection
-    - `created_at` - The date at which the route was created (RFC 3339 format).
-    - `update_at` - The date at which the route was last updated (RFC 3339 format).
+    - `backend_id` - The backend ID to redirect to
+    - `created_at` - The date on which the route was created (RFC 3339 format).
+    - `update_at` - The date on which the route was last updated (RFC 3339 format).
     - `match_sni` - Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer.
     - `match_host_header` - Specifies the host of the server to which the request is being sent.

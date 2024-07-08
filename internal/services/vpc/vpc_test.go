@@ -2,6 +2,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -22,8 +23,8 @@ func TestAccVPC_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-						name = "test-vpc"
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -32,6 +33,7 @@ func TestAccVPC_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "is_default", "false"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc.vpc01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc.vpc01", "updated_at"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_routing", "true"),
 				),
 			},
 		},
@@ -48,8 +50,8 @@ func TestAccVPC_WithRegion(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-						name = "test-vpc"
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -59,9 +61,9 @@ func TestAccVPC_WithRegion(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-						name = "test-vpc"
-						region = "nl-ams"
+					resource "scaleway_vpc" "vpc01" {
+					  name   = "test-vpc"
+					  region = "nl-ams"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -83,8 +85,8 @@ func TestAccVPC_WithTags(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-						name = "test-vpc"
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -94,9 +96,9 @@ func TestAccVPC_WithTags(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc vpc01 {
-						name = "test-vpc"
-						tags = [ "terraform-test", "vpc" ]
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc"
+					  tags = ["terraform-test", "vpc"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -105,6 +107,38 @@ func TestAccVPC_WithTags(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "tags.1", "vpc"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccVPC_DisableRouting(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckVPCDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "test-vpc-disable-routing"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCExists(tt, "scaleway_vpc.vpc01"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_routing", "true"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name           = "test-vpc-disable-routing"
+					  enable_routing = false
+					}
+				`,
+				ExpectError: regexp.MustCompile("routing cannot be disabled on this VPC"),
 			},
 		},
 	})

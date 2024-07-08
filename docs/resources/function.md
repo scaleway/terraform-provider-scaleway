@@ -52,6 +52,8 @@ resource scaleway_function main {
 
 The following arguments are supported:
 
+- `namespace_id` - (Required) The function namespace ID of the function.
+
 - `name` - (Required) The unique name of the function.
 
 ~> **Important** Updates to `name` will recreate the function.
@@ -105,5 +107,5 @@ In addition to all arguments above, the following attributes are exported:
 Functions can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_function.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_function.main fr-par/11111111-1111-1111-1111-111111111111
 ```

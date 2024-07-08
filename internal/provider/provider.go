@@ -36,6 +36,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/sdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
@@ -238,6 +239,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_block_volume":                        block.DataSourceVolume(),
 				"scaleway_cockpit":                             cockpit.DataSourceCockpit(),
 				"scaleway_cockpit_plan":                        cockpit.DataSourcePlan(),
+				"scaleway_config":                              scwconfig.DataSourceConfig(),
 				"scaleway_container":                           container.DataSourceContainer(),
 				"scaleway_container_namespace":                 container.DataSourceNamespace(),
 				"scaleway_documentdb_database":                 documentdb.DataSourceDatabase(),
@@ -253,6 +255,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_group":                           iam.DataSourceGroup(),
 				"scaleway_iam_ssh_key":                         iam.DataSourceSSHKey(),
 				"scaleway_iam_user":                            iam.DataSourceUser(),
+				"scaleway_iam_api_key":                         iam.DataSourceAPIKey(),
 				"scaleway_instance_image":                      instance.DataSourceImage(),
 				"scaleway_instance_ip":                         instance.DataSourceIP(),
 				"scaleway_instance_placement_group":            instance.DataSourcePlacementGroup(),
@@ -304,6 +307,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_dhcp_reservation": vpcgw.DataSourceDHCPReservation(),
 				"scaleway_vpc_public_gateway_ip":               vpcgw.DataSourceIP(),
 				"scaleway_vpc_public_gateway_pat_rule":         vpcgw.DataSourcePATRule(),
+				"scaleway_vpc_routes":                          vpc.DataSourceRoutes(),
 				"scaleway_vpcs":                                vpc.DataSourceVPCs(),
 				"scaleway_webhosting":                          webhosting.DataSourceWebhosting(),
 				"scaleway_webhosting_offer":                    webhosting.DataSourceOffer(),

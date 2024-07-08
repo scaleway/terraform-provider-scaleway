@@ -41,5 +41,5 @@ In addition to all arguments above, the following attributes are exported:
 Cockpits Grafana Users can be imported using the project ID and the grafana user ID formatted `{project_id}/{grafana_user_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_cockpit_grafana_user.main 11111111-1111-1111-1111-111111111111/2
+terraform import scaleway_cockpit_grafana_user.main 11111111-1111-1111-1111-111111111111/2
 ```

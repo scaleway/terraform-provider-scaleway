@@ -61,12 +61,12 @@ In addition to all arguments above, the following attribute is exported:
 Objects can be imported using the `{region}/{bucketName}/{objectKey}` identifier, e.g.
 
 ```bash
-$ terraform import scaleway_object.some_object fr-par/some-bucket/some-file
+terraform import scaleway_object.some_object fr-par/some-bucket/some-file
 ```
 
 ~> **Important:** The `project_id` attribute has a particular behavior with s3 products because the s3 API is scoped by project.
 If you are using a project different from the default one, you have to specify the project ID at the end of the import command.
 
 ```bash
-$ terraform import scaleway_object.some_object fr-par/some-bucket/some-file@xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
+terraform import scaleway_object.some_object fr-par/some-bucket/some-file@xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
 ```
