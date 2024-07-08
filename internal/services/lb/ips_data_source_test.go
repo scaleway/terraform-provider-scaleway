@@ -116,6 +116,16 @@ func TestAccDataSourceIPs_WithTags(t *testing.T) {
 					resource scaleway_lb_ip ip2 {
 					  tags = [ "ipv4", "ip" ]
 					}
+				`,
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip1 {
+					  tags = [ "ipv4", "ip" ]
+					}
+					resource scaleway_lb_ip ip2 {
+					  tags = [ "ipv4", "ip" ]
+					}
 					resource scaleway_lb_ip ip3 {
 					  tags = [ "other", "tags" ]
 					}
