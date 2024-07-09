@@ -167,7 +167,7 @@ func ResourceContainer() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
-				Description:      "Container sandbox configuration",
+				Description:      "Execution environment of the container.",
 				ValidateDiagFunc: verify.ValidateEnum[container.ContainerSandbox](),
 			},
 			// computed

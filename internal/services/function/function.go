@@ -147,7 +147,7 @@ func ResourceFunction() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
-				Description:      "Function sandbox configuration",
+				Description:      "Execution environment of the function.",
 				ValidateDiagFunc: verify.ValidateEnum[function.FunctionSandbox](),
 			},
 			"cpu_limit": {
