@@ -143,6 +143,13 @@ func ResourceFunction() *schema.Resource {
 				Default:          function.FunctionHTTPOptionEnabled.String(),
 				ValidateDiagFunc: verify.ValidateEnum[function.FunctionHTTPOption](),
 			},
+			"sandbox": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "Function sandbox configuration",
+				ValidateDiagFunc: verify.ValidateEnum[function.FunctionSandbox](),
+			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -186,6 +193,7 @@ func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m inter
 		Region:                     region,
 		Runtime:                    function.FunctionRuntime(d.Get("runtime").(string)),
 		HTTPOption:                 function.FunctionHTTPOption(d.Get("http_option").(string)),
+		Sandbox:                    function.FunctionSandbox(d.Get("sandbox").(string)),
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
@@ -296,6 +304,7 @@ func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interfa
 	_ = d.Set("domain_name", f.DomainName)
 	_ = d.Set("http_option", f.HTTPOption)
 	_ = d.Set("namespace_id", f.NamespaceID)
+	_ = d.Set("sandbox", f.Sandbox)
 
 	return diags
 }
@@ -368,6 +377,11 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if d.HasChange("privacy") {
 		req.Privacy = function.FunctionPrivacy(d.Get("privacy").(string))
+		updated = true
+	}
+
+	if d.HasChange("sandbox") {
+		req.Sandbox = function.FunctionSandbox(d.Get("sandbox").(string))
 		updated = true
 	}
 
