@@ -69,11 +69,11 @@ In addition to all arguments above, the following attributes are exported:
 
 - `max_scale` - The maximum number of instances the container can scale to. Defaults to 20.
 
-- `memory_limit` - The memory resources in MB to allocate to each container. Defaults to 128.
+- `memory_limit` - The memory resources in MB to allocate to each container. Defaults to 256.
 
-- `cpu_limit` - The amount of vCPU computing resources to allocate to each container. Defaults to 70.
+- `cpu_limit` - The amount of vCPU computing resources to allocate to each container. Defaults to 140.
 
-- `timeout` - The maximum length of time your container can spend processing a request before being stopped. Defaults to 300s.
+- `timeout` - The maximum amount of time your container can spend processing a request before being stopped. Defaults to 300s.
 
 - `privacy` - The privacy type define the way to authenticate to your container. Refer to the [dedicated documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) for more information.
 
@@ -99,4 +99,4 @@ In addition to all arguments above, the following attributes are exported:
 
 - `error_message` - The error message of the container.
 
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container exists.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
