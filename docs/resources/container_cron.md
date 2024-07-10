@@ -65,16 +65,16 @@ The `scaleway_container_cron` resource exports certain attributes once the CRON 
 
 - `id` - The unique identifier of the container's CRON trigger.
 
-~> **Important:** Container CRON trigger IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+~> **Important:** Container CRON trigger IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
-  in which the CRON trigger was created.
+  in which the CRON trigger is created.
 
 - `status` - The CRON status.
 
 ## Import
 
-Container Cron can be imported using the `{region}/{id}`, e.g.
+Container Cron can be imported using `{region}/{id}`, as shown below:
 
 ```bash
 terraform import scaleway_container_cron.main fr-par/11111111-1111-1111-1111-111111111111
