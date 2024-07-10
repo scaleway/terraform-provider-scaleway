@@ -57,5 +57,5 @@ In addition to all arguments above, the following attributes are exported:
 VPCs can be imported using `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_vpc.vpc_demo fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_vpc.vpc_demo fr-par/11111111-1111-1111-1111-111111111111
 ```

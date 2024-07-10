@@ -255,6 +255,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_group":                           iam.DataSourceGroup(),
 				"scaleway_iam_ssh_key":                         iam.DataSourceSSHKey(),
 				"scaleway_iam_user":                            iam.DataSourceUser(),
+				"scaleway_iam_api_key":                         iam.DataSourceAPIKey(),
 				"scaleway_instance_image":                      instance.DataSourceImage(),
 				"scaleway_instance_ip":                         instance.DataSourceIP(),
 				"scaleway_instance_placement_group":            instance.DataSourcePlacementGroup(),

@@ -55,5 +55,5 @@ In addition to all arguments above, the following attributes are exported:
 RDB Database can be imported using the `{region}/{id}/{DBNAME}`, e.g.
 
 ```bash
-$ terraform import scaleway_rdb_database.rdb01_mydb fr-par/11111111-1111-1111-1111-111111111111/mydb
+terraform import scaleway_rdb_database.rdb01_mydb fr-par/11111111-1111-1111-1111-111111111111/mydb
 ```
