@@ -320,6 +320,90 @@ func TestAccFunction_HTTPOption(t *testing.T) {
 	})
 }
 
+func TestAccFunction_Sandbox(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckFunctionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node22"
+						privacy = "private"
+						handler = "handler.handle"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttrSet("scaleway_function.main", "sandbox"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node22"
+						privacy = "private"
+						handler = "handler.handle"
+						sandbox = "v2"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "sandbox", functionSDK.FunctionSandboxV2.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node22"
+						privacy = "private"
+						handler = "handler.handle"
+						sandbox = "v1"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "sandbox", functionSDK.FunctionSandboxV1.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node22"
+						privacy = "private"
+						handler = "handler.handle"
+						sandbox = "v2"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "sandbox", functionSDK.FunctionSandboxV2.String()),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckFunctionExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
