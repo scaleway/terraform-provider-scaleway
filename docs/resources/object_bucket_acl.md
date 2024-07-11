@@ -5,18 +5,17 @@ page_title: "Scaleway: scaleway_object_bucket_acl"
 
 # Resource: scaleway_object_bucket_acl
 
-Creates and manages Scaleway object storage bucket ACL.
-For more information, see [the documentation](https://www.scaleway.com/en/docs/storage/object/concepts/#access-control-list-(acl)).
+Creates and manages Scaleway Object Storage bucket ACLs.
 
--> **Note:** `terraform destroy`  does not delete the Object Bucket ACL but does remove the resource from Terraform state.
+-> **Note:** `terraform destroy` does not delete the ACL but does remove the resource from the Terraform state.
 
--> **Note:** [Account identifiers](https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html) is not supported by scaleway.
+-> **Note:** [Account identifiers](https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html) is not supported by Scaleway.
 
 ## Example Usage
 
 ```terraform
 resource "scaleway_object_bucket" "some_bucket" {
-  name = "some-unique-name"
+  name = "unique-name"
 }
 
 resource "scaleway_object_bucket_acl" "main" {
@@ -24,6 +23,8 @@ resource "scaleway_object_bucket_acl" "main" {
   acl = "private"
 }
 ```
+
+For more information, refer to the [PutBucketAcl API call documentation](/storage/object/api-cli/bucket-operations/#putbucketacl).
 
 ## Example Usage with Grants
 
@@ -42,7 +43,7 @@ resource "scaleway_object_bucket_acl" "main" {
         }
         permission = "FULL_CONTROL"
       }
-    
+
       grant {
         grantee {
           id   = "<project-id>"
@@ -50,7 +51,7 @@ resource "scaleway_object_bucket_acl" "main" {
         }
         permission = "WRITE"
       }
-    
+
       owner {
         id = "<project-id>"
       }
@@ -63,8 +64,8 @@ resource "scaleway_object_bucket_acl" "main" {
 The following arguments are supported:
 
 * `bucket` - (Required) The name of the bucket, or its Terraform ID.
-* `acl` - (Optional) The canned ACL you want to apply to the bucket.
-* `access_control_policy` - (Optional, Conflicts with acl) A configuration block that sets the ACL permissions for an object per grantee documented below.
+* `acl` - (Optional) The canned ACL you want to apply to the bucket. Refer to the [AWS Canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl_overview.html#canned-acl) documentation page to find a list of all the supported canned ACLs.
+* `access_control_policy` - (Optional, Conflicts with ACL) A configuration block that sets the ACL permissions for an object per grantee documented below.
 * `expected_bucket_owner` - (Optional, Forces new resource) The project ID of the expected bucket owner.
 * `region` - (Optional) The [region](https://www.scaleway.com/en/developers/api/#regions-and-zones) in which the bucket should be created.
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
