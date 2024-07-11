@@ -84,6 +84,8 @@ The following arguments are supported:
 
 - `deploy` - Define if the function should be deployed, terraform will wait for function to be deployed. Function will get deployed if you change source zip
 
+- `sandbox` - (Optional) Execution environment of the function.
+
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.

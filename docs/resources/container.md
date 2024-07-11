@@ -86,6 +86,8 @@ The following arguments are optional:
 
 - `http_option` - (Optional) Allow both HTTP and HTTPS (enabled) or redirect HTTP to HTTPS (redirected). Defaults to enabled.
 
+- `sandbox` - (Optional) Execution environment of the container.
+
 - `port` - (Optional) The port to expose the container. Defaults to 8080.
 
 - `deploy` - (Optional) Boolean controlling whether the container is on a production environment.
