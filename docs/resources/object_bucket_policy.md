@@ -234,7 +234,7 @@ like bucket policies. Otherwise, Terraform will try to create the child resource
 
 ## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all the arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the policy, which is the ID of the bucket.
 
