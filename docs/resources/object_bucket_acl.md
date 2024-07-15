@@ -79,7 +79,7 @@ like bucket ACLs. Otherwise, Terraform will try to create the child resource wit
 
 Please check the [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl_overview.html#canned-acl)
 
-## The Access Control policy
+## The Access control policy
 
 The `access_control_policy` configuration block supports the following arguments:
 
@@ -115,7 +115,7 @@ The `grantee` configuration block supports the following arguments:
 * `id` - (Required) The canonical user ID of the grantee.
 * `type` - (Required) Type of grantee. Valid values: CanonicalUser.
 
-## Attributes Reference
+## Attributes reference
 
 In addition to all arguments above, the following attributes are exported:
 
