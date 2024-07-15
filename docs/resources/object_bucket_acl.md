@@ -123,7 +123,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Bucket ACLs can be imported using the `{region}/{bucketName}/{acl}` identifier, e.g.
+Bucket ACLs can be imported using the `{region}/{bucketName}/{acl}` identifier, as shown below:
 
 ```bash
 terraform import scaleway_object_bucket_acl.some_bucket fr-par/some-bucket/private

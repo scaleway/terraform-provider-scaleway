@@ -6,11 +6,11 @@ page_title: "Scaleway: scaleway_object_bucket_policy"
 # Resource: scaleway_object_bucket_policy
 
 Creates and manages Scaleway object storage bucket policy.
-For more information, see [the documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-policy/).
+Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-policy/) for more information on Object Storage bucket policies.
 
-## Example Usage
+## Example usage
 
-### Example Usage with an IAM user
+### Example usage with an IAM user
 
 ```terraform
 # Project ID
@@ -214,35 +214,37 @@ resource "scaleway_object_bucket_policy" "policy" {
 }
 ```
 
-**NB:** To configure the AWS provider with Scaleway credentials, please visit this [tutorial](https://www.scaleway.com/en/docs/storage/object/api-cli/object-storage-aws-cli/).
+**NB:** To configure the AWS provider with Scaleway credentials, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/object-storage-aws-cli/).
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `bucket` - (Required) The name of the bucket, or its Terraform ID.
-* `policy` - (Required) The policy document. This is a JSON formatted string. For more information about building AWS IAM policy documents with Terraform, see the [AWS IAM Policy Document Guide](https://learn.hashicorp.com/tutorials/terraform/aws-iam-policy?_ga=2.164714495.1557487853.1659960650-563504983.1635944492).
-* `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
+- `bucket` - (Required) The name of the bucket, or its Terraform ID.
+
+- `policy` - (Required) The policy document. This is a JSON formatted string. For more information about building AWS IAM policy documents with Terraform, refer to the [official documentation](https://learn.hashicorp.com/tutorials/terraform/aws-iam-policy?_ga=2.164714495.1557487853.1659960650-563504983.1635944492).
+
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 ~> **Important:** The `project_id` attribute has a particular behavior with s3 products because the s3 API is scoped by project.
 If you are using a project different from the default one, you have to specify the `project_id` for every child resource of the bucket,
 like bucket policies. Otherwise, Terraform will try to create the child resource with the default project ID and you will get a 403 error.
 
-~> **Important:** The [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) data source may be used, so long as it specifies a principal.
+~> **Important:** The [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) data source may be used, as long as it specifies a principal.
 
-## Attributes Reference
+## Attributes reference
 
-In addition to all arguments above, the following attribute is exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `id` - The ID of the policy, which is the ID of the bucket.
+* `id` - The unique identifier of the policy, which is the ID of the bucket.
 
-~> **Important:** Object buckets' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`
+~> **Important:** Object Storage bucket IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`
 
 * `region` - The Scaleway region this bucket resides in.
 
 ## Import
 
-Bucket policies can be imported using the `{region}/{bucketName}` identifier, e.g.
+Bucket policies can be imported using the `{region}/{bucketName}` identifier, as shown below:
 
 ```bash
 terraform import scaleway_object_bucket_policy.some_bucket fr-par/some-bucket
