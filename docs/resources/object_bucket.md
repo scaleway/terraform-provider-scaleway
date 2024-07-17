@@ -9,7 +9,7 @@ The `scaleway_object_bucket` resource allows you to create and manage buckets fo
 
 Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/how-to/create-a-bucket/) for more information on Object Storage buckets.
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "scaleway_object_bucket" "some_bucket" {
