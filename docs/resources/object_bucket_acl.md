@@ -5,11 +5,13 @@ page_title: "Scaleway: scaleway_object_bucket_acl"
 
 # Resource: scaleway_object_bucket_acl
 
-Creates and manages Scaleway Object Storage bucket ACLs.
+The `scaleway_object_bucket_acl` resource allows you to create and manage Access Control Lists (ACLs) for [Scaleway Object storage](https://www.scaleway.com/en/docs/storage/object/).
+
+Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-operations/#putbucketacl) for more information on ACLs.
 
 -> **Note:** `terraform destroy` does not delete the ACL but does remove the resource from the Terraform state.
 
--> **Note:** [Account identifiers](https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html) is not supported by Scaleway.
+-> **Note:** [Account identifiers](https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html) are not supported by Scaleway.
 
 ## Example Usage
 
@@ -70,23 +72,23 @@ The following arguments are supported:
 * `region` - (Optional) The [region](https://www.scaleway.com/en/developers/api/#regions-and-zones) in which the bucket should be created.
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
-~> **Important:** The `project_id` attribute has a particular behavior with s3 products because the s3 API is scoped by project.
+~> **Important:** The `project_id` attribute has a particular behavior with s3 products, because the s3 API is scoped by project.
 If you are using a project different from the default one, you have to specify the `project_id` for every child resource of the bucket,
 like bucket ACLs. Otherwise, Terraform will try to create the child resource with the default project ID and you will get a 403 error.
 
 
 ## The ACL
 
-Please check the [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl_overview.html#canned-acl)
+Refer to the [official canned ACL documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl_overview.html#canned-acl) for more information on the different roles.
 
-## The Access control policy
+## The access control policy
 
 The `access_control_policy` configuration block supports the following arguments:
 
 * `grant` - (Required) Set of grant configuration blocks documented below.
 * `owner` - (Required) Configuration block of the bucket owner's display name and ID documented below.
 
-## The Grant
+## The grant
 
 The `grant` configuration block supports the following arguments:
 
@@ -117,9 +119,9 @@ The `grantee` configuration block supports the following arguments:
 
 ## Attributes reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_object_bucket_acl` resource exports certain attributes once the bucket ACL configuration is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-* `id` - The `region`,`bucket` and `acl` separated by (`/`).
+* `id` - The `region`, `bucket` and `acl` separated by (`/`).
 
 ## Import
 

@@ -5,7 +5,8 @@ page_title: "Scaleway: scaleway_object_bucket_lock_configuration"
 
 # Resource: scaleway_object_bucket_lock_configuration
 
-Provides an Object bucket lock configuration resource.
+The `scaleway_object_bucket_lock_configuration` resource allows you to create and manage an object lock configuration for [Scaleway Object storage](https://www.scaleway.com/en/docs/storage/object/).
+
 Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/object-lock/) for more information on object lock.
 
 ## Example Usage
@@ -62,15 +63,15 @@ like object lock configurations. Otherwise, Terraform will try to create the chi
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_object_bucket_lock_configuration` resource exports certain attributes once the object lock configuration is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-- `id` - The unique identifer of the Object bucket lock configuration.
+- `id` - The unique identifier of the Object bucket lock configuration.
 
 ~> **Important:** Object Storage bucket lock configuration IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 ## Import
 
-Bucket lock configurations can be imported using the `{region}/{bucketName}` identifier, e.g.
+Bucket lock configurations can be imported using the `{region}/{bucketName}` identifier, as shown below:
 
 ```bash
 terraform import scaleway_object_bucket_lock_configuration.some_bucket fr-par/some-bucket

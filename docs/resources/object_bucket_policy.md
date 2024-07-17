@@ -5,7 +5,8 @@ page_title: "Scaleway: scaleway_object_bucket_policy"
 
 # Resource: scaleway_object_bucket_policy
 
-Creates and manages Scaleway object storage bucket policy.
+The `scaleway_object_bucket_policy` resource allows you to create and manage bucket policies for [Scaleway Object storage](https://www.scaleway.com/en/docs/storage/object/).
+
 Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-policy/) for more information on Object Storage bucket policies.
 
 ## Example usage
@@ -234,7 +235,7 @@ like bucket policies. Otherwise, Terraform will try to create the child resource
 
 ## Attributes reference
 
-In addition to all the arguments above, the following attributes are exported:
+The `scaleway_object_bucket_policy` resource exports certain attributes once the bucket policy is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
 * `id` - The unique identifier of the policy, which is the ID of the bucket.
 
