@@ -30,6 +30,10 @@ type UnknownVolume struct {
 	ServerID *string
 	Boot     *bool
 
+	// Iops is set for Block volume only, use IsBlockVolume
+	// Can be nil if not available in the Block API.
+	Iops *uint32
+
 	InstanceVolumeType instance.VolumeVolumeType
 }
 
@@ -112,6 +116,9 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 		Name:               blockVolume.Name,
 		Size:               &blockVolume.Size,
 		InstanceVolumeType: instance.VolumeVolumeTypeSbsVolume,
+	}
+	if blockVolume.Specs != nil {
+		vol.Iops = blockVolume.Specs.PerfIops
 	}
 	for _, ref := range blockVolume.References {
 		if ref.ProductResourceType == "instance_server" {
