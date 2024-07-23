@@ -360,271 +360,6 @@ func TestAccLB_Migrate(t *testing.T) {
 	})
 }
 
-func TestAccLB_WithIP(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isLbDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_lb_ip ip01 {
-					}
-
-					resource scaleway_vpc_private_network pnLB01 {
-						name = "pn-with-lb-static"
-					}
-
-					resource scaleway_lb lb01 {
-					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-pn-static-2"
-						type = "LB-S"
-						release_ip = false
-						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB01.id
-							static_config = ["172.16.0.100"]
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isLbPresent(tt, "scaleway_lb.lb01"),
-					isIPPresent(tt, "scaleway_lb_ip.ip01"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.0.static_config.0", "172.16.0.100"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip ip01 {
-					}
-
-					resource scaleway_vpc_private_network pnLB01 {
-						name = "pn-with-lb-to-add"
-					}
-
-					resource scaleway_vpc_private_network pnLB02 {
-						name = "pn-with-lb-to-add"
-					}
-
-					resource scaleway_lb lb01 {
-					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-static-to-update-with-two-pn-3"
-						type = "LB-S"
-						release_ip = false
-						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB01.id
-							static_config = ["172.16.0.100"]
-						}
-
-						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB02.id
-							static_config = ["172.16.0.105"]
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "2"),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
-						"static_config.0": "172.16.0.100",
-					}),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
-						"static_config.0": "172.16.0.105",
-					}),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip ip01 {
-					}
-
-					resource scaleway_vpc_private_network pnLB01 {
-						name = "pn-with-lb-to-add"
-					}
-
-					resource scaleway_vpc_private_network pnLB02 {
-						name = "pn-with-lb-to-add"
-					}
-
-					resource scaleway_lb lb01 {
-					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-static-to-update-with-two-pn-4"
-						type = "LB-S"
-						release_ip = false
-						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB01.id
-							static_config = ["172.16.0.100"]
-						}
-
-						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB02.id
-							static_config = ["172.16.0.107"]
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "2"),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
-						"static_config.0": "172.16.0.100",
-					}),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
-						"static_config.0": "172.16.0.107",
-					}),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip ip01 {
-					}
-
-					resource scaleway_vpc_private_network pnLB01 {
-						name = "pn-with-lb-detached"
-					}
-
-					resource scaleway_vpc_private_network pnLB02 {
-						name = "pn-with-lb-detached"
-					}
-
-					resource scaleway_lb lb01 {
-					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-only-one-pn-is-conserved-5"
-						type = "LB-S"
-						release_ip = false
-						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB01.id
-							static_config = ["172.16.0.100"]
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB02", "name"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.static_config.0", "172.16.0.100"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip ip01 {
-					}
-
-					resource scaleway_vpc_private_network pnLB01 {
-						name = "pn-with-lb-detached"
-					}
-
-					resource scaleway_vpc_private_network pnLB02 {
-						name = "pn-with-lb-detached"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB02", "name"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip ip01 {
-					}
-
-					resource scaleway_vpc_private_network pnLB01 {
-						name = "pn-with-lb-detached"
-					}
-
-					resource scaleway_vpc_private_network pnLB02 {
-						name = "pn-with-lb-detached"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isIPPresent(tt, "scaleway_lb_ip.ip01"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB02", "name"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip ip01 {
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isIPPresent(tt, "scaleway_lb_ip.ip01"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccLB_WithStaticIPCIDR(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isLbDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_lb_ip" "ip01" {}
-
-					resource "scaleway_vpc_private_network" "pn" {
-						name = "pn-with-lb-static"
-					}
-
-					resource "scaleway_lb" "lb01" {
-					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-pn-static-cidr"
-						type = "LB-S"
-						private_network {
-							private_network_id = scaleway_vpc_private_network.pn.id
-							static_config = ["192.168.1.1/25"]
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isLbPresent(tt, "scaleway_lb.lb01"),
-					isIPPresent(tt, "scaleway_lb_ip.ip01"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.0.static_config.0", "192.168.1.1/25"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccLB_InvalidStaticConfig(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isLbDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_lb_ip" "ip01" {}
-
-					resource "scaleway_vpc_private_network" "pn" {
-					  name = "pn-with-lb-to-static"
-					}
-
-					resource "scaleway_lb" "lb01" {
-					  ip_id      = scaleway_lb_ip.ip01.id
-					  name       = "test-lb-with-invalid_ip"
-					  type       = "LB-S"
-					  private_network {
-						private_network_id = scaleway_vpc_private_network.pn.id
-						static_config      = ["472.16.0.100/24"]
-					  }
-					}`,
-				ExpectError: regexp.MustCompile("\".+\" is not a valid IP address or CIDR notation: .+"),
-			},
-		},
-	})
-}
-
 func TestAccLB_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -719,6 +454,72 @@ func TestAccLB_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 						"private_network.0.dhcp_config", "true"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
 						"private_network.0.status", lbSDK.PrivateNetworkStatusReady.String()),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLB_WithPrivateNetworksIPAMIDs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isLbDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_vpc" "vpc01" {
+				  name = "my vpc"
+				}
+				
+				resource "scaleway_vpc_private_network" "pn01" {
+				  vpc_id = scaleway_vpc.vpc01.id
+				  ipv4_subnet {
+					subnet = "172.16.32.0/22"
+				  }
+				}
+				
+				resource "scaleway_ipam_ip" "ip01" {
+				  address = "172.16.32.7"
+				  source {
+					private_network_id = scaleway_vpc_private_network.pn01.id
+				  }
+				}
+				
+				resource scaleway_lb lb01 {
+				  name = "test-lb-with-private-network-ipam"
+				  type = "LB-S"
+				
+				  private_network {
+				    private_network_id = scaleway_vpc_private_network.pn01.id
+				    ipam_ids = [scaleway_ipam_ip.ip01.id]
+				  }	
+				}
+
+				data "scaleway_ipam_ip" "by_name" {
+				  resource {
+					name = scaleway_lb.lb01.name
+					type = "lb_server"
+				  }
+				  type = "ipv4"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isLbPresent(tt, "scaleway_lb.lb01"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_lb.lb01", "private_network.0.private_network_id",
+						"scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_lb.lb01", "private_network.0.ipam_ids.0",
+						"scaleway_ipam_ip.ip01", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_ipam_ip.ip01", "address",
+						"data.scaleway_ipam_ip.by_name", "address_cidr"),
 				),
 			},
 		},

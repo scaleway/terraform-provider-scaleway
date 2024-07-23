@@ -174,7 +174,7 @@ Use `replace_on_type_change` to trigger replacement instead of migration.
 
 ~> **Important:** If `type` change and migration occurs, the server will be stopped and changed backed to its original state. It will be started again if it was running.
 
-- `image` - (Optional) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
+- `image` - (Optional) The UUID or the label of the base image used by the server. You can use [this endpoint](https://www.scaleway.com/en/developers/api/marketplace/#path-marketplace-images-list-marketplace-images)
 to find either the right `label` or the right local image `ID` for a given `type`. Optional when creating an instance with an existing root volume.
 
 You can check the available labels with our [CLI](https://www.scaleway.com/en/docs/compute/instances/api-cli/creating-managing-instances-with-cliv2/). ```scw marketplace image list```
@@ -288,5 +288,5 @@ In addition to all arguments above, the following attributes are exported:
 Instance servers can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_instance_server.web fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_instance_server.web fr-par-1/11111111-1111-1111-1111-111111111111
 ```

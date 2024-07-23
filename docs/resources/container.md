@@ -86,6 +86,8 @@ The following arguments are optional:
 
 - `http_option` - (Optional) Allow both HTTP and HTTPS (enabled) or redirect HTTP to HTTPS (redirected). Defaults to enabled.
 
+- `sandbox` - (Optional) Execution environment of the container.
+
 - `port` - (Optional) The port to expose the container. Defaults to 8080.
 
 - `deploy` - (Optional) Boolean controlling whether the container is on a production environment.
@@ -111,7 +113,7 @@ In addition to all arguments above, the following attributes are exported:
 Container can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-111111111111
 ```
 
 ## Protocols

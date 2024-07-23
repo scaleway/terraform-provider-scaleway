@@ -198,5 +198,5 @@ the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 Redis™ cluster can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_redis_cluster.main fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_redis_cluster.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```

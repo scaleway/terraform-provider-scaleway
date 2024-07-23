@@ -163,6 +163,13 @@ func ResourceContainer() *schema.Resource {
 				Default:          container.ContainerHTTPOptionEnabled.String(),
 				ValidateDiagFunc: verify.ValidateEnum[container.ContainerHTTPOption](),
 			},
+			"sandbox": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "Execution environment of the container.",
+				ValidateDiagFunc: verify.ValidateEnum[container.ContainerSandbox](),
+			},
 			// computed
 			"status": {
 				Type:        schema.TypeString,
@@ -272,6 +279,7 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("port", int(co.Port))
 	_ = d.Set("deploy", scw.BoolPtr(*types.ExpandBoolPtr(d.Get("deploy"))))
 	_ = d.Set("http_option", co.HTTPOption)
+	_ = d.Set("sandbox", co.Sandbox)
 	_ = d.Set("region", co.Region.String())
 
 	return nil
@@ -361,6 +369,10 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 
 	if d.HasChanges("deploy") {
 		req.Redeploy = types.ExpandBoolPtr(d.Get("deploy"))
+	}
+
+	if d.HasChanges("sandbox") {
+		req.Sandbox = container.ContainerSandbox(d.Get("sandbox").(string))
 	}
 
 	imageHasChanged := d.HasChanges("registry_sha256")
