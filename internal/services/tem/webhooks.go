@@ -1,8 +1,11 @@
 package tem
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -76,26 +79,27 @@ func ResourceWebhook() *schema.Resource {
 	}
 }
 
-//func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-//	api, region, err := temAPIWithRegion(d, m)
-//	if err != nil {
-//		return diag.FromErr(err)
-//	}
-//
-//	domain, err := api.CreateDomain(&tem.CreateDomainRequest{
-//		Region:     region,
-//		ProjectID:  d.Get("project_id").(string),
-//		DomainName: d.Get("name").(string),
-//		AcceptTos:  d.Get("accept_tos").(bool),
-//	}, scw.WithContext(ctx))
-//	if err != nil {
-//		return diag.FromErr(err)
-//	}
-//
-//	d.SetId(regional.NewIDString(region, domain.ID))
-//
-//	return ResourceWebhookRead(ctx, d, m)
-//}
+func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := temAPIWithRegion(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	domain, err := api.CreateDomain(&tem.CreateDomainRequest{
+		Region:     region,
+		ProjectID:  d.Get("project_id").(string),
+		DomainName: d.Get("name").(string),
+		AcceptTos:  d.Get("accept_tos").(bool),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(regional.NewIDString(region, domain.ID))
+
+	return ResourceWebhookRead(ctx, d, m)
+}
+
 //
 //func ResourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 //	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
