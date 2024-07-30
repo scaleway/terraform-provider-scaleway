@@ -61,5 +61,5 @@ In addition to all arguments above, the following attributes are exported:
 IAM users can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_user.basic 11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_user.basic 11111111-1111-1111-1111-111111111111
 ```

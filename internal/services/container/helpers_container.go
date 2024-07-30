@@ -111,6 +111,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.MaxConcurrency = scw.Uint32Ptr(uint32(maxConcurrency.(int)))
 	}
 
+	if sandbox, ok := d.GetOk("sandbox"); ok {
+		req.Sandbox = container.ContainerSandbox(sandbox.(string))
+	}
+
 	return req, nil
 }
 

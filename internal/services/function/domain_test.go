@@ -32,7 +32,7 @@ func TestAccFunctionDomain_Basic(t *testing.T) {
 
 				resource scaleway_function main {
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "go118"
+						runtime = "go122"
 						privacy = "private"
 						handler = "Handle"
 						zip_file = "testfixture/gofunction.zip"
@@ -47,7 +47,7 @@ func TestAccFunctionDomain_Basic(t *testing.T) {
 
 					resource scaleway_function main {
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "go118"
+						runtime = "go122"
 						privacy = "private"
 						handler = "Handle"
 						zip_file = "testfixture/gofunction.zip"

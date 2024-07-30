@@ -86,6 +86,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `deploy` - Boolean indicating whether the container is on a production environment.
 
+- `sandbox` - (Optional) Execution environment of the container.
+
 - `status` - The container status.
 
 - `cron_status` - The cron status of the container.

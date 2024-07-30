@@ -46,5 +46,5 @@ This section lists the attributes that are exported when the `scaleway_secret` r
 This section explains how to import a secret using the `{region}/{id}` format.
 
 ```bash
-$ terraform import scaleway_secret.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_secret.main fr-par/11111111-1111-1111-1111-111111111111
 ```

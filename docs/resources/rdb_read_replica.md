@@ -129,5 +129,5 @@ they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-11111
 Read Replicas can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_rdb_read_replica.rr fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_rdb_read_replica.rr fr-par/11111111-1111-1111-1111-111111111111
 ```

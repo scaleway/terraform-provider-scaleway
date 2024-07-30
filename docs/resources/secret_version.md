@@ -65,5 +65,5 @@ This section explains how to import a secret version using the `{region}/{id}/{r
 ~> **Important:** Keep in mind that if you import with the `latest` revision, you will overwrite the previous version you might have been using.
 
 ```bash
-$ terraform import scaleway_secret_version.main fr-par/11111111-1111-1111-1111-111111111111/2
+terraform import scaleway_secret_version.main fr-par/11111111-1111-1111-1111-111111111111/2
 ```

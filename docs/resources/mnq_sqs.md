@@ -57,5 +57,5 @@ In addition to all arguments above, the following attributes are exported:
 SQS status can be imported using the `{region}/{project_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_mnq_sqs.main fr-par/11111111111111111111111111111111
+terraform import scaleway_mnq_sqs.main fr-par/11111111111111111111111111111111
 ```

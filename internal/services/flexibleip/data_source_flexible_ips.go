@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -133,7 +134,7 @@ func DataSourceFlexibleIPsRead(ctx context.Context, d *schema.ResourceData, m in
 
 	res, err := fipAPI.ListFlexibleIPs(&flexibleip.ListFlexibleIPsRequest{
 		Zone:      zone,
-		ServerIDs: expandServerIDs(d.Get("server_ids")),
+		ServerIDs: locality.ExpandIDs(d.Get("server_ids")),
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		Tags:      types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))

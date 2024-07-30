@@ -82,5 +82,5 @@ In addition to all arguments above, the following attributes are exported:
 Container Cron can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_container_cron.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_container_cron.main fr-par/11111111-1111-1111-1111-111111111111
 ```

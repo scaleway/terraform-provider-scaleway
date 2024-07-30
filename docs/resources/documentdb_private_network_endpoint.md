@@ -75,5 +75,5 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
 Database Instance Endpoint can be imported using the `{region}/{endpoint_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_documentdb_private_network_endpoint.end fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_documentdb_private_network_endpoint.end fr-par/11111111-1111-1111-1111-111111111111
 ```

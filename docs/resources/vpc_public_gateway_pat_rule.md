@@ -102,5 +102,5 @@ In addition to all arguments above, the following attributes are exported:
 Public Gateway PAT rule configurations can be imported using `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_vpc_public_gateway_pat_rule.main fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_vpc_public_gateway_pat_rule.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```

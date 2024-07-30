@@ -66,5 +66,5 @@ In addition to all arguments above, the following attributes are exported:
 The user privileges can be imported using the `{region}/{instance_id}/{database_name}/{user_name}`, e.g.
 
 ```bash
-$ terraform import scaleway_rdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
+terraform import scaleway_rdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
 ```

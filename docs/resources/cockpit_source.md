@@ -53,5 +53,5 @@ This section lists the attributes that are exported when the `scaleway_cockpit_s
 This section explains how to import a data source using the ID of the region it is located in, in the `{region}/{id}` format.
 
 ```bash
-$ terraform import scaleway_cockpit_source.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_cockpit_source.main fr-par/11111111-1111-1111-1111-111111111111
 ```

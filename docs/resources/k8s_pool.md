@@ -150,7 +150,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 Kubernetes pools can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_k8s_pool.mypool fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_k8s_pool.mypool fr-par/11111111-1111-1111-1111-111111111111
 ```
 
 ## Changing the node-type of a pool

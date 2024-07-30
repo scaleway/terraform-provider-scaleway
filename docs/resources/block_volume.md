@@ -71,5 +71,5 @@ This section lists the attributes that are exported when the `scaleway_block_vol
 This section explains how to import a Block Storage volume using the zoned ID (`{zone}/{id}`) format.
 
 ```bash
-$ terraform import scaleway_block_volume.block_volume fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_block_volume.block_volume fr-par-1/11111111-1111-1111-1111-111111111111
 ```

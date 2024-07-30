@@ -38,5 +38,5 @@ In addition to all arguments above, the following attributes are exported:
 SSH keys can be imported using the `id`, e.g.
 
 ```bash
-$ terraform import scaleway_account_ssh_key.main 11111111-1111-1111-1111-111111111111
+terraform import scaleway_account_ssh_key.main 11111111-1111-1111-1111-111111111111
 ```

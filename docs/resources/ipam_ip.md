@@ -117,5 +117,5 @@ In addition to all arguments above, the following attributes are exported:
 IPAM IPs can be imported using `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_ipam_ip.ip_demo fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_ipam_ip.ip_demo fr-par/11111111-1111-1111-1111-111111111111
 ```

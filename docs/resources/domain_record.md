@@ -266,5 +266,5 @@ Note however, that some records (e.g., CNAME, multiple dynamic records of differ
 This section explains how to import a record using the `{dns_zone}/{id}` format.
 
 ```bash
-$ terraform import scaleway_domain_record.www subdomain.domain.tld/11111111-1111-1111-1111-111111111111
+terraform import scaleway_domain_record.www subdomain.domain.tld/11111111-1111-1111-1111-111111111111
 ```

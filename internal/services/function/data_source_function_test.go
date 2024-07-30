@@ -25,7 +25,7 @@ func TestAccDataSourceFunction_Basic(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-ds-function"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
+						runtime = "node22"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -44,7 +44,7 @@ func TestAccDataSourceFunction_Basic(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-ds-function"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
+						runtime = "node22"
 						privacy = "private"
 						handler = "handler.handle"
 					}					

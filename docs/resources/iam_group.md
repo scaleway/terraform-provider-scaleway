@@ -82,5 +82,5 @@ No additional attributes are exported.
 IAM groups can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_group.basic 11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_group.basic 11111111-1111-1111-1111-111111111111
 ```

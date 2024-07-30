@@ -30,7 +30,7 @@ func TestAccFunctionCron_Basic(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-tests-cron-basic"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
+						runtime = "node20"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -70,7 +70,7 @@ func TestAccFunctionCron_NameUpdate(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-tests-function-cron-name-update"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
+						runtime = "node20"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -97,7 +97,7 @@ func TestAccFunctionCron_NameUpdate(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-tests-function-cron-name-update"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
+						runtime = "node20"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -136,7 +136,7 @@ func TestAccFunctionCron_WithArgs(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-tests-cron-with-args"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
+						runtime = "node20"
 						privacy = "private"
 						handler = "handler.handle"
 					}

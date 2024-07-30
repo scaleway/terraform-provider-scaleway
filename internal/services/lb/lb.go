@@ -143,6 +143,16 @@ func ResourceLb() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 						},
+						"ipam_ids": {
+							Type: schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network",
+						},
 						// Readonly attributes
 						"status": {
 							Type:        schema.TypeString,

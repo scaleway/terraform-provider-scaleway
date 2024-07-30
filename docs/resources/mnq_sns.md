@@ -58,5 +58,5 @@ In addition to all arguments above, the following attributes are exported:
 SNS status can be imported using `{region}/{project_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_mnq_sns.main fr-par/11111111111111111111111111111111
+terraform import scaleway_mnq_sns.main fr-par/11111111111111111111111111111111
 ```

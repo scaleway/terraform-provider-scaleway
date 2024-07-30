@@ -58,5 +58,5 @@ This section lists the attributes that are exported when the `scaleway_cockpit_a
 This section explains how to import alert managers using the ID of the Project associated with Cockpit.
 
 ```bash
-$ terraform import scaleway_cockpit_alert_manager.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_cockpit_alert_manager.main fr-par/11111111-1111-1111-1111-111111111111
 ```

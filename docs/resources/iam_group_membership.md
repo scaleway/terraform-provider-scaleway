@@ -77,5 +77,5 @@ IAM group memberships can be imported using two format:
 - For application: `{group_id}/app/{application_id}`
 
 ```bash
-$ terraform import scaleway_iam_group_membership.app 11111111-1111-1111-1111-111111111111/app/11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_group_membership.app 11111111-1111-1111-1111-111111111111/app/11111111-1111-1111-1111-111111111111
 ```

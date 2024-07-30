@@ -49,5 +49,5 @@ This section lists the attributes that are exported when the `scaleway_block_sna
 This section explains how to import the snapshot of a Block Storage volume using the zoned ID format (`{zone}/{id}`).
 
 ```bash
-$ terraform import scaleway_block_snapshot.main fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_block_snapshot.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```
