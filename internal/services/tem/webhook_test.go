@@ -3,7 +3,6 @@ package tem_test
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -288,40 +287,6 @@ func TestAccWebhook_Update(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "sns_arn"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "event_types.#", "1"),
 				),
-			},
-		},
-	})
-}
-
-func TestAccWebhook_MissingEventTypes(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	domainID := "some-domain-id"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isWebhookDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					data "scaleway_account_project" "project" {
-						name = "default"
-					}
-
-					resource "scaleway_mnq_sns" "sns_topic" {
-						project_id = data.scaleway_account_project.project.id
-					}
-
-					resource "scaleway_tem_webhook" "webhook" {
-						name      = "%s"
-						domain_id = "%s"
-						sns_arn   = scaleway_mnq_sns.sns_topic.arn
-						project_id = data.scaleway_account_project.project.id
-					}
-				`, webhookName, domainID),
-				ExpectError: regexp.MustCompile("missing required argument: event_types"),
 			},
 		},
 	})

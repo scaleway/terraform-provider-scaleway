@@ -20,7 +20,9 @@ sns_arn     = "arn:scw:sns:fr-par:project-xxxx:your-sns-topic"
 name        = "example-webhook"
 }
 ```
+
 ### Complete Example with Dependencies
+
 ```terraform
 variable "domain_name" {
 type = string
@@ -98,7 +100,6 @@ project_id  = data.scaleway_account_project.project.id
 depends_on  = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
 }
 ```
-
 
 ## Argument Reference
 
