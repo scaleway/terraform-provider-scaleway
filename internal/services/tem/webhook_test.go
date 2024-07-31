@@ -29,12 +29,9 @@ func TestAccWebhook_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					data "scaleway_account_project" "project" {
-						name = "default"
-					}
+					
 
 					resource "scaleway_mnq_sns" "sns" {
-						project_id = data.scaleway_account_project.project.id
 					}
  
 					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
@@ -52,27 +49,23 @@ func TestAccWebhook_Basic(t *testing.T) {
 					}
 
 					resource scaleway_tem_domain cr01 {
-						project_id = data.scaleway_account_project.project.id
 						name       = "%s"
 						accept_tos = true
 					}
 
 					resource "scaleway_domain_record" "spf" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						type     = "TXT"
 						data     = "v=spf1 ${scaleway_tem_domain.cr01.spf_config} -all"
 					}
 
 					resource "scaleway_domain_record" "dkim" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						name     = "${scaleway_tem_domain.cr01.project_id}._domainkey"
   						type     = "TXT"
   						data     = scaleway_tem_domain.cr01.dkim_config
 					}
 					resource "scaleway_domain_record" "mx" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						type     = "MX"
   						data     = "."
@@ -96,7 +89,6 @@ func TestAccWebhook_Basic(t *testing.T) {
 						domain_id   = scaleway_tem_domain.cr01.id
 						event_types = ["%s", "%s"]
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-						project_id  = data.scaleway_account_project.project.id
 						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
 					}
 				`, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, webhookName, eventTypes[0], eventTypes[1]),
@@ -128,12 +120,8 @@ func TestAccWebhook_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					data "scaleway_account_project" "project" {
-						name = "default"
-					}
 
 					resource "scaleway_mnq_sns" "sns" {
-						project_id = data.scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
@@ -151,27 +139,23 @@ func TestAccWebhook_Update(t *testing.T) {
 					}
 
 					resource scaleway_tem_domain cr01 {
-						project_id = data.scaleway_account_project.project.id
 						name       = "%s"
 						accept_tos = true
 					}
 
 					resource "scaleway_domain_record" "spf" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						type     = "TXT"
 						data     = "v=spf1 ${scaleway_tem_domain.cr01.spf_config} -all"
 					}
 
 					resource "scaleway_domain_record" "dkim" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						name     = "${scaleway_tem_domain.cr01.project_id}._domainkey"
   						type     = "TXT"
   						data     = scaleway_tem_domain.cr01.dkim_config
 					}
 					resource "scaleway_domain_record" "mx" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						type     = "MX"
   						data     = "."
@@ -195,7 +179,6 @@ func TestAccWebhook_Update(t *testing.T) {
 						domain_id   = scaleway_tem_domain.cr01.id
 						event_types = ["%s"]
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-						project_id  = data.scaleway_account_project.project.id
 						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
 					}
 				`, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, initialName, eventTypes[0]),
@@ -209,12 +192,8 @@ func TestAccWebhook_Update(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					data "scaleway_account_project" "project" {
-						name = "default"
-					}
 
 					resource "scaleway_mnq_sns" "sns" {
-						project_id = data.scaleway_account_project.project.id
 					}
 
 					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
@@ -232,27 +211,23 @@ func TestAccWebhook_Update(t *testing.T) {
 					}
 
 					resource scaleway_tem_domain cr01 {
-						project_id = data.scaleway_account_project.project.id
 						name       = "%s"
 						accept_tos = true
 					}
 
 					resource "scaleway_domain_record" "spf" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						type     = "TXT"
 						data     = "v=spf1 ${scaleway_tem_domain.cr01.spf_config} -all"
 					}
 
 					resource "scaleway_domain_record" "dkim" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						name     = "${scaleway_tem_domain.cr01.project_id}._domainkey"
   						type     = "TXT"
   						data     = scaleway_tem_domain.cr01.dkim_config
 					}
 					resource "scaleway_domain_record" "mx" {
-						project_id = data.scaleway_account_project.project.id
   						dns_zone = "%s"
   						type     = "MX"
   						data     = "."
@@ -276,7 +251,6 @@ func TestAccWebhook_Update(t *testing.T) {
 						domain_id   = scaleway_tem_domain.cr01.id
 						event_types = ["%s"]
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-						project_id  = data.scaleway_account_project.project.id
 						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
 					}
 				`, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, updatedName, updatedEventTypes[0]),
