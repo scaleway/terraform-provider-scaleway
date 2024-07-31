@@ -28,43 +28,34 @@ variable "domain_name" {
 type = string
 }
 
-data "scaleway_account_project" "project" {
-name = "default"
-}
 
 resource "scaleway_mnq_sns" "sns" {
-project_id = data.scaleway_account_project.project.id
 }
 
 resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
-project_id = scaleway_mnq_sns.sns.project_id
 permissions {
 can_manage = true
 }
 }
 
 resource "scaleway_mnq_sns_topic" "sns_topic" {
-project_id = scaleway_mnq_sns.sns.project_id
 name = "test-mnq-sns-topic-basic"
 access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
 secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
 }
 
 resource "scaleway_tem_domain" "cr01" {
-project_id = data.scaleway_account_project.project.id
 name       = var.domain_name
 accept_tos = true
 }
 
 resource "scaleway_domain_record" "spf" {
-project_id = data.scaleway_account_project.project.id
 dns_zone   = var.domain_name
 type       = "TXT"
 data       = "v=spf1 ${scaleway_tem_domain.cr01.spf_config} -all"
 }
 
 resource "scaleway_domain_record" "dkim" {
-project_id = data.scaleway_account_project.project.id
 dns_zone   = var.domain_name
 name       = "${scaleway_tem_domain.cr01.project_id}._domainkey"
 type       = "TXT"
@@ -72,7 +63,6 @@ data       = scaleway_tem_domain.cr01.dkim_config
 }
 
 resource "scaleway_domain_record" "mx" {
-project_id = data.scaleway_account_project.project.id
 dns_zone   = var.domain_name
 type       = "MX"
 data       = "."
@@ -96,7 +86,6 @@ name        = "example-webhook"
 domain_id   = scaleway_tem_domain.cr01.id
 event_types = ["email_delivered", "email_bounced"]
 sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-project_id  = data.scaleway_account_project.project.id
 depends_on  = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
 }
 ```
