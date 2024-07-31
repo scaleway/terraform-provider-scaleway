@@ -33,6 +33,7 @@ func expandPolicyRuleSpecs(d interface{}) []*iam.RuleSpecs {
 		mapRule := rawRule.(map[string]interface{})
 		rule := &iam.RuleSpecs{
 			PermissionSetNames: expandPermissionSetNames(mapRule["permission_set_names"]),
+			Condition:          mapRule["condition"].(string),
 		}
 		if orgID, orgIDExists := mapRule["organization_id"]; orgIDExists && orgID.(string) != "" {
 			rule.OrganizationID = scw.StringPtr(orgID.(string))
@@ -60,6 +61,10 @@ func flattenPolicyRules(rules []*iam.Rule) interface{} {
 		if rule.PermissionSetNames != nil {
 			rawRule["permission_set_names"] = flattenPermissionSetNames(*rule.PermissionSetNames)
 		}
+		if rule.Condition != "" {
+			rawRule["condition"] = rule.Condition
+		}
+
 		rawRules = append(rawRules, rawRule)
 	}
 	return rawRules
