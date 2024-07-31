@@ -15,11 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 )
 
+const webhookName = "terraform-webhook-test"
+
 func TestAccWebhook_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	webhookName := "terraform-webhook-test"
 	eventTypes := []string{"email_delivered", "email_dropped"}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -296,7 +297,6 @@ func TestAccWebhook_MissingEventTypes(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	webhookName := "terraform-webhook-test"
 	domainID := "some-domain-id"
 
 	resource.ParallelTest(t, resource.TestCase{

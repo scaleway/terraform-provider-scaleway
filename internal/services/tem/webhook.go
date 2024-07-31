@@ -30,7 +30,6 @@ func ResourceWebhook() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The domain id",
-				//ValidateFunc: validation.IsUUID,
 			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
@@ -100,7 +99,6 @@ func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m interf
 		SnsArn:     d.Get("sns_arn").(string),
 		EventTypes: eventTypes,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
