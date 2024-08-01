@@ -305,6 +305,7 @@ func ResourceInstance() *schema.Resource {
 			"encryption_at_rest": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Enable or disable encryption at rest for the database instance",
 			},
 			// Common
