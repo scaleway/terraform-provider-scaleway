@@ -334,7 +334,8 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 		Password:      d.Get("password").(string),
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 		Encryption: &rdb.EncryptionAtRest{
-			Enabled: d.Get("encryption_at_rest").(bool)},
+			Enabled: d.Get("encryption_at_rest").(bool),
+		},
 	}
 
 	if initSettings, ok := d.GetOk("init_settings"); ok {
@@ -470,7 +471,9 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("encryption_at_rest", res.Encryption.Enabled)
+	if res.Encryption != nil {
+		_ = d.Set("encryption_at_rest", res.Encryption.Enabled)
+	}
 
 	// set user and password
 	if user, ok := d.GetOk("user_name"); ok {
