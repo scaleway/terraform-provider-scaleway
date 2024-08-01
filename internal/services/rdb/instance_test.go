@@ -1216,6 +1216,94 @@ func TestAccInstance_Endpoints(t *testing.T) {
 	})
 }
 
+func TestAccInstance_EncryptionAtRest(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name               = "test-rdb-encryption"
+						node_type          = "db-dev-s"
+						engine             = %q
+						is_ha_cluster      = false
+						disable_backup     = true
+						user_name          = "my_initial_user"
+						password           = "thiZ_is_v&ry_s3cret"
+						encryption_at_rest = true
+						tags               = [ "terraform-test", "scaleway_rdb_instance", "encryption" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-encryption"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "encryption_at_rest", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "encryption"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EncryptionAtRestFalse(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name               = "test-rdb-no-encryption"
+						node_type          = "db-dev-s"
+						engine             = %q
+						is_ha_cluster      = false
+						disable_backup     = true
+						user_name          = "my_initial_user_no_enc"
+						password           = "thiZ_is_v&ry_s3cret"
+						encryption_at_rest = false
+						tags               = [ "terraform-test", "scaleway_rdb_instance", "no_encryption" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-no-encryption"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user_no_enc"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "encryption_at_rest", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "no_encryption"),
+				),
+			},
+		},
+	})
+}
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
