@@ -55,16 +55,7 @@ func ResourceWebhook() *schema.Resource {
 				Description:  "SNS ARN",
 				ValidateFunc: validation.StringLenBetween(3, 127),
 			},
-			"organization_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The organization id",
-			},
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The webhook id",
-			},
+			"organization_id": account.OrganizationIDSchema(),
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
