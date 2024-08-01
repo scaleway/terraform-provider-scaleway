@@ -1,25 +1,27 @@
 {{- /*gotype: tftemplate/models.ResourceTemplate*/ -}}
-package scaleway
+package {{.API}}
 
 import (
     "context"
 
     "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+    "github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+    "github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func DataSource{{.Resource}}() *schema.Resource {
     // Generate datasource schema from resource
-    dsSchema := datasourceSchemaFromResourceSchema(Resource{{.Resource}}().Schema)
+    dsSchema := datasource.SchemaFromResourceSchema(Resource{{.Resource}}().Schema)
     
-    addOptionalFieldsToSchema(dsSchema, "name", "{{.Locality}}")
+    datasource.AddOptionalFieldsToSchema(dsSchema, "name", "{{.Locality}}")
     
     dsSchema["{{.ResourceCleanLow}}_id"] = &schema.Schema{
         Type:          schema.TypeString,
         Optional:      true,
         Description:   "The ID of the {{.ResourceCleanLow}}",
         ConflictsWith: []string{"name"},
-        ValidateFunc:  validationUUIDorUUIDWithLocality(),
+        ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
     }
     dsSchema["project_id"].Optional = true
     
@@ -30,49 +32,42 @@ func DataSource{{.Resource}}() *schema.Resource {
 }
 
 func DataSource{{.Resource}}Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-    api, {{.Locality}}, err := {{.API}}APIWith{{.LocalityUpper}}(d, m)
+    api, {{.Locality}}, err := newAPIWith{{.LocalityUpper}}(d, m)
     if err != nil {
         return diag.FromErr(err)
     }
 
     {{.ResourceCleanLow}}ID, {{.ResourceCleanLow}}IDExists := d.GetOk("{{.ResourceCleanLow}}_id")
     if !{{.ResourceCleanLow}}IDExists {
+        {{.ResourceCleanLow}}Name := d.Get("name").(string)
         res, err := api.List{{.ResourceClean}}s(&{{.API}}.List{{.ResourceClean}}sRequest{
             {{.LocalityUpper}}:     {{.Locality}},
             Name:       types.ExpandStringPtr(d.Get("name")),
-            ProjectID:  types.ExpandStringPtr(d.Get("project_id")),
         })
         if err != nil {
             return diag.FromErr(err)
         }
-        for _, {{.ResourceCleanLow}} := range res.{{.ResourceClean}}s {
-            if {{.ResourceCleanLow}}.Name == d.Get("name").(string) {
-                if {{.ResourceCleanLow}}ID != "" {
-                    return diag.Errorf("more than 1 {{.ResourceCleanLow}} found with the same name %s", d.Get("name"))
-                }
-                {{.ResourceCleanLow}}ID = {{.ResourceCleanLow}}.ID
-            }
+        found{{.ResourceClean}} , err := datasource.FindExact(
+            res.{{.ResourceClean}}s,
+            func(s *{{.API}}.{{.ResourceClean}}) bool {return s.Name == {{.ResourceCleanLow}}Name },
+            {{.ResourceCleanLow}}Name,
+        )
+        if err != nil {
+            return diag.FromErr(err)
         }
-        if {{.ResourceCleanLow}}ID == "" {
-            return diag.Errorf("no {{.ResourceCleanLow}} found with the name %s", d.Get("name"))
-        }
+        {{.ResourceCleanLow}}ID = found{{.ResourceClean}}.ID
     }
 
-    {{.Locality}}ID := datasourceNew{{.LocalityAdjectiveUpper}}ID({{.ResourceCleanLow}}ID, {{.Locality}})
+	{{- if eq .Locality "zone" }}
+    {{.Locality}}ID := datasource.NewZonedID({{.ResourceCleanLow}}ID, {{.Locality}})
+    {{- else }}
+    {{.Locality}}ID := datasource.New{{.LocalityAdjectiveUpper}}ID({{.ResourceCleanLow}}ID, {{.Locality}})
+	{{- end}}
     d.SetId({{.Locality}}ID)
     err = d.Set("{{.ResourceCleanLow}}_id", {{.Locality}}ID)
     if err != nil {
         return diag.FromErr(err)
     }
 
-    diags := Resource{{.Resource}}Read(ctx, d, m)
-    if diags != nil {
-        return append(diags, diag.Errorf("failed to read {{.ResourceCleanLow}} state")...)
-    }
-
-    if d.Id() == "" {
-        return diag.Errorf("{{.ResourceCleanLow}} (%s) not found", {{.Locality}}ID)
-    }
-
-    return nil
+    return Resource{{.Resource}}Read(ctx, d, m)
 }
