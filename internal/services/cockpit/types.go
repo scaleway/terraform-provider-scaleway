@@ -34,8 +34,9 @@ func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL strin
 
 	endpoints := []map[string]interface{}{
 		{
-			"metrics_url":      endpointMap["metrics_url"],
-			"logs_url":         endpointMap["logs_url"],
+			"metrics_url": endpointMap["metrics_url"],
+			"logs_url":    endpointMap["logs_url"],
+			// The alert manager data source is returned with the type unknown_type. waiting a more logical type
 			"alertmanager_url": endpointMap["alertmanager_url"],
 			"grafana_url":      grafanaURL,
 			"traces_url":       endpointMap["traces_url"],
