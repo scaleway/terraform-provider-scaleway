@@ -43,12 +43,13 @@ jobs:
           - webhosting
     runs-on: ubuntu-latest
     steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Install Go
         uses: actions/setup-go@v5
         with:
           go-version: 1.22
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Run Acceptance Tests
         run: go test -v ./internal/services/${{ matrix.products }} -timeout=2h
         env:
@@ -66,12 +67,13 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Install Go
         uses: actions/setup-go@v5
         with:
           go-version: 1.22
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Run scwconfig tests
         run: go test -v ./internal/services/scwconfig -timeout=2m
         env:
