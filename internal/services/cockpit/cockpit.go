@@ -178,7 +178,19 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	endpoints := flattenCockpitEndpoints(dataSourcesRes.DataSources, grafana.GrafanaURL)
+
+	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+		ProjectID: d.Get("project_id").(string),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	alertManagerUrl := ""
+	if alertManager.AlertManagerURL != nil {
+		alertManagerUrl = *alertManager.AlertManagerURL
+	}
+
+	endpoints := flattenCockpitEndpoints(dataSourcesRes.DataSources, grafana.GrafanaURL, alertManagerUrl)
 
 	_ = d.Set("endpoints", endpoints)
 	_ = d.Set("push_url", createCockpitPushURL(endpoints))

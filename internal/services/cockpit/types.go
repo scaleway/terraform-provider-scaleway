@@ -16,7 +16,7 @@ var scopeMapping = map[string]cockpit.TokenScope{
 	"write_traces":        cockpit.TokenScopeWriteOnlyTraces,
 }
 
-func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string) []map[string]interface{} {
+func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerUrl string) []map[string]interface{} {
 	endpointMap := map[string]string{}
 
 	for _, dataSource := range dataSources {
@@ -25,8 +25,6 @@ func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL strin
 			endpointMap["metrics_url"] = dataSource.URL
 		case "logs":
 			endpointMap["logs_url"] = dataSource.URL
-		case "unknown_type":
-			endpointMap["alertmanager_url"] = dataSource.URL
 		case "traces":
 			endpointMap["traces_url"] = dataSource.URL
 		}
@@ -34,10 +32,9 @@ func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL strin
 
 	endpoints := []map[string]interface{}{
 		{
-			"metrics_url": endpointMap["metrics_url"],
-			"logs_url":    endpointMap["logs_url"],
-			// The alert manager data source is returned with the type unknown_type. waiting a more logical type
-			"alertmanager_url": endpointMap["alertmanager_url"],
+			"metrics_url":      endpointMap["metrics_url"],
+			"logs_url":         endpointMap["logs_url"],
+			"alertmanager_url": alertManagerUrl,
 			"grafana_url":      grafanaURL,
 			"traces_url":       endpointMap["traces_url"],
 		},
