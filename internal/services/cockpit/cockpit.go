@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -153,10 +152,6 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 		ProjectID: d.Get("project_id").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-			return nil
-		}
 		return diag.FromErr(err)
 	}
 	_ = d.Set("project_id", d.Get("project_id").(string))
