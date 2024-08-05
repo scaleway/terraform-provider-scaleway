@@ -41,12 +41,14 @@ func ResourceNetwork() *schema.Resource {
 			"gateway_id": {
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:  "The ID of the public gateway where connect to",
 			},
 			"private_network_id": {
 				Type:             schema.TypeString,
 				Required:         true,
+				ForceNew:         true,
 				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
 				Description:      "The ID of the private network where connect to",
