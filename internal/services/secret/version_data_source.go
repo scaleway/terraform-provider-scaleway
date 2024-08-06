@@ -73,19 +73,17 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 
-		secretByName := (*secret.Secret)(nil)
-		for _, s := range secrets.Secrets {
-			if s.Name == secretName {
-				if secretByName != nil {
-					return diag.Errorf("found multiple secret with the same name (%s)", secretName)
-				}
-				secretByName = s
-			}
+		foundSecret, err := datasource.FindExact(secrets.Secrets,
+			func(s *secret.Secret) bool { return s.Name == secretName },
+			secretName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
 		res, err := api.AccessSecretVersion(&secret.AccessSecretVersionRequest{
 			Region:   region,
-			SecretID: secretByName.ID,
+			SecretID: foundSecret.ID,
 			Revision: d.Get("revision").(string),
 		}, scw.WithContext(ctx))
 		if err != nil {
