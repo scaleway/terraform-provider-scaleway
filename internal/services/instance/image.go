@@ -113,10 +113,6 @@ func ResourceImage() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"export_uri": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"size": {
 							Type:     schema.TypeInt,
 							Computed: true,

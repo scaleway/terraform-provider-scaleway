@@ -109,7 +109,6 @@ In addition to all arguments above, the following attributes are exported:
     -> The `additional_volumes` block contains :
     - `id` - The ID of the volume.
     - `name` - The name of the volume.
-    - `export_uri` - The export URI of the volume.
     - `size` - The size of the volume.
     - `volume_type` - The type of volume, possible values are `l_ssd` and `b_ssd`.
     - `creation_date` - Date of the volume creation.
