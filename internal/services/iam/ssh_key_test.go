@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	SSHKey               = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
-	SSHKeyWithoutComment = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO"
+	SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
 )
 
 func TestAccSSHKey_basic(t *testing.T) {
@@ -34,7 +33,7 @@ func TestAccSSHKey_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 				),
 			},
 			{
@@ -47,7 +46,7 @@ func TestAccSSHKey_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name+"-updated"),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 				),
 			},
 		},
@@ -74,7 +73,7 @@ func TestAccSSHKey_WithNewLine(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 				),
 			},
 		},
@@ -101,7 +100,7 @@ func TestAccSSHKey_ChangeResourceName(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.first"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "public_key", SSHKeyWithoutComment),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "public_key", SSHKey),
 				),
 			},
 			{
@@ -114,7 +113,7 @@ func TestAccSSHKey_ChangeResourceName(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.second"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "public_key", SSHKeyWithoutComment),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "public_key", SSHKey),
 				),
 			},
 		},
@@ -141,7 +140,7 @@ func TestAccSSHKey_Disabled(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
 				),
 			},
@@ -156,7 +155,7 @@ func TestAccSSHKey_Disabled(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "true"),
 				),
 			},
@@ -171,7 +170,7 @@ func TestAccSSHKey_Disabled(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
 				),
 			},
