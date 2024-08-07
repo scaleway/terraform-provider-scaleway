@@ -264,6 +264,27 @@ func TestAccSecret_EphemeralPolicy(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
 				),
 			},
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+					name = "test-secret-policy-secret"
+					ephemeral_policy {
+						action = "delete"
+						expires_once_accessed = true
+					}
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-policy-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.ttl", ""),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.action", "delete"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.expires_once_accessed", "true"),
+					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
 		},
 	})
 }

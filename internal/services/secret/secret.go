@@ -88,7 +88,7 @@ func ResourceSecret() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ttl": {
-							Required:         true,
+							Optional:         true,
 							Type:             schema.TypeString,
 							DiffSuppressFunc: dsf.Duration,
 							ValidateFunc:     verify.IsDuration(),

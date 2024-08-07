@@ -141,9 +141,12 @@ func expandEphemeralPolicy(rawSchemaPolicy any) (*secret.EphemeralPolicy, error)
 	}
 
 	policy := &secret.EphemeralPolicy{
-		TimeToLive:          scw.NewDurationFromTimeDuration(*ttl),
 		ExpiresOnceAccessed: types.ExpandBoolPtr(rawPolicy["expires_once_accessed"]),
 		Action:              secret.EphemeralPolicyAction(rawPolicy["action"].(string)),
+	}
+
+	if ttl != nil {
+		policy.TimeToLive = scw.NewDurationFromTimeDuration(*ttl)
 	}
 
 	return policy, nil
