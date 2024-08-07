@@ -18,9 +18,7 @@ const (
 	defaultSecretTimeout = 5 * time.Minute
 )
 
-var (
-	ErrCannotDeleteProtectedSecret = errors.New("cannot delete a protected secret")
-)
+var ErrCannotDeleteProtectedSecret = errors.New("cannot delete a protected secret")
 
 // newAPIWithRegion returns a new Secret API and the region for a Create request
 func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, error) {
@@ -108,7 +106,7 @@ func updateSecretProtection(api *secret.API, region scw.Region, secretID string,
 		return nil
 	}
 
-	if protected == true {
+	if protected {
 		_, err = api.ProtectSecret(&secret.ProtectSecretRequest{
 			Region:   region,
 			SecretID: secretID,
