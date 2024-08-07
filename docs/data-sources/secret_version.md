@@ -57,7 +57,7 @@ The following arguments are supported:
 - `secret_name` - (Optional) The Name of Secret associated wit the secret version.
   Only one of `secret_id` and `secret_name` should be specified.
 
-- `revision` - The revision for this Secret Version.
+- `revision` - The revision for this Secret Version. Alternative values (ex: `latest`) can be found in [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/#path-secret-versions-access-a-secrets-version-using-the-secrets-id)
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the resource exists.
