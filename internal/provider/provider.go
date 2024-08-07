@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/documentdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -142,6 +143,11 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_documentdb_user":                     documentdb.ResourceUser(),
 				"scaleway_domain_record":                       domain.ResourceRecord(),
 				"scaleway_domain_zone":                         domain.ResourceZone(),
+				"scaleway_edge_services_backend_stage":         edgeservices.ResourceEdgeServicesBackendStage(),
+				"scaleway_edge_services_cache_stage":           edgeservices.ResourceEdgeServicesCacheStage(),
+				"scaleway_edge_services_dns_stage":             edgeservices.ResourceEdgeServicesDNSStage(),
+				"scaleway_edge_services_pipeline":              edgeservices.ResourceEdgeServicesPipeline(),
+				"scaleway_edge_services_tls_stage":             edgeservices.ResourceEdgeServicesTLSStage(),
 				"scaleway_flexible_ip":                         flexibleip.ResourceIP(),
 				"scaleway_flexible_ip_mac_address":             flexibleip.ResourceMACAddress(),
 				"scaleway_function":                            function.ResourceFunction(),
