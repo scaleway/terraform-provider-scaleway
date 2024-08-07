@@ -26,6 +26,7 @@ The following arguments are supported:
 
 - `name` - (Required) Name of the secret (e.g. `my-secret`).
 - `path` - (Optional) Path of the secret, defaults to `/`.
+- `protected` - (Optional) True if secret protection is enabled on the secret. A protected secret cannot be deleted, terraform will fail to destroy unless this is set to false.
 - `description` - (Optional) Description of the secret (e.g. `my-new-description`).
 - `tags` - (Optional) Tags of the secret (e.g. `["tag", "secret"]`).
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)

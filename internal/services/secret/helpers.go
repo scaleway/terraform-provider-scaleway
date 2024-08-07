@@ -2,6 +2,8 @@ package secret
 
 import (
 	"encoding/base64"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,6 +16,10 @@ import (
 
 const (
 	defaultSecretTimeout = 5 * time.Minute
+)
+
+var (
+	ErrCannotDeleteProtectedSecret = errors.New("cannot delete a protected secret")
 )
 
 // newAPIWithRegion returns a new Secret API and the region for a Create request
@@ -86,4 +92,39 @@ func Base64Encoded(data []byte) string {
 		return string(data)
 	}
 	return base64.StdEncoding.EncodeToString(data)
+}
+
+// updateSecretProtection sets the protected value of a secret to requested one.
+func updateSecretProtection(api *secret.API, region scw.Region, secretID string, protected bool) error {
+	s, err := api.GetSecret(&secret.GetSecretRequest{
+		Region:   region,
+		SecretID: secretID,
+	})
+	if err != nil {
+		return err
+	}
+
+	if s.Protected == protected {
+		return nil
+	}
+
+	if protected == true {
+		_, err = api.ProtectSecret(&secret.ProtectSecretRequest{
+			Region:   region,
+			SecretID: secretID,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to protect secret %s: %w", secretID, err)
+		}
+	} else {
+		_, err = api.UnprotectSecret(&secret.UnprotectSecretRequest{
+			Region:   region,
+			SecretID: secretID,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to unprotect secret %s: %w", secretID, err)
+		}
+	}
+
+	return nil
 }

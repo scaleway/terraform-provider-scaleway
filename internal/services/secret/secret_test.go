@@ -2,6 +2,7 @@ package secret_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -150,6 +151,59 @@ func TestAccSecret_Path(t *testing.T) {
 					testAccCheckSecretExists(tt, "scaleway_secret.main"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-path-secret"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSecret_Protected(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+					name = "test-secret-protected-secret"
+					protected = true
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-protected-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "protected", "true"),
+					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				Destroy: true,
+				Config: `
+				resource "scaleway_secret" "main" {
+					name = "test-secret-protected-secret"
+					protected = true
+				}
+				`,
+				ExpectError: regexp.MustCompile(secret.ErrCannotDeleteProtectedSecret.Error()),
+			},
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+					name = "test-secret-protected-secret"
+					protected = false
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-protected-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "protected", "false"),
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
 				),
 			},
