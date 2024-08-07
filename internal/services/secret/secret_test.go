@@ -42,6 +42,7 @@ func TestAccSecret_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_secret.main", "tags.1", "provider"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "tags.2", "terraform"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "tags.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.#", "0"),
 					resource.TestCheckResourceAttrSet("scaleway_secret.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_secret.main", "created_at"),
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
@@ -204,6 +205,62 @@ func TestAccSecret_Protected(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-protected-secret"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "protected", "false"),
+					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSecret_EphemeralPolicy(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+					name = "test-secret-policy-secret"
+					ephemeral_policy {
+						ttl = "30m"
+						action = "disable"
+					}
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-policy-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.ttl", "30m0s"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.action", "disable"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.expires_once_accessed", "false"),
+					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				Config: `
+				resource "scaleway_secret" "main" {
+					name = "test-secret-policy-secret"
+					ephemeral_policy {
+						ttl = "5h"
+						action = "delete"
+						expires_once_accessed = true
+					}
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "name", "test-secret-policy-secret"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "path", "/"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.ttl", "5h0m0s"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.action", "delete"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.expires_once_accessed", "true"),
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
 				),
 			},
