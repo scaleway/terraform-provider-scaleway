@@ -75,6 +75,11 @@ func ResourceSecret() *schema.Resource {
 					return filepath.Clean(oldValue) == filepath.Clean(newValue)
 				},
 			},
+			"protected": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "True if secret protection is enabled on a given secret. A protected secret cannot be deleted.",
+			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
@@ -91,6 +96,7 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		Name:      d.Get("name").(string),
+		Protected: d.Get("protected").(bool),
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
@@ -149,6 +155,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", secretResponse.ProjectID)
 	_ = d.Set("path", secretResponse.Path)
+	_ = d.Set("protected", secretResponse.Protected)
 
 	return nil
 }
@@ -191,7 +198,10 @@ func ResourceSecretUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
 
+	if d.HasChange("protected") {
+		err = updateSecretProtection(api, region, id, d.Get("protected").(bool))
 		if err != nil {
 			return diag.FromErr(err)
 		}
