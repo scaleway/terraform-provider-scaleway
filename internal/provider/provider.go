@@ -298,6 +298,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_redis_cluster":                       redis.DataSourceCluster(),
 				"scaleway_registry_image":                      registry.DataSourceImage(),
 				"scaleway_registry_namespace":                  registry.DataSourceNamespace(),
+				"scaleway_registry_tag":                        registry.DataSourceRegistryImageTag(),
 				"scaleway_secret":                              secret.DataSourceSecret(),
 				"scaleway_secret_version":                      secret.DataSourceVersion(),
 				"scaleway_tem_domain":                          tem.DataSourceDomain(),
