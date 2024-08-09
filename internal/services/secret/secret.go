@@ -125,11 +125,6 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		ProjectID: d.Get("project_id").(string),
 		Name:      d.Get("name").(string),
 		Protected: d.Get("protected").(bool),
-		EphemeralPolicy: &secret.EphemeralPolicy{
-			TimeToLive:          nil,
-			ExpiresOnceAccessed: nil,
-			Action:              "",
-		},
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
