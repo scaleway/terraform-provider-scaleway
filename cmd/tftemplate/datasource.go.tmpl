@@ -58,11 +58,11 @@ func DataSource{{.Resource}}Read(ctx context.Context, d *schema.ResourceData, m 
         {{.ResourceCleanLow}}ID = found{{.ResourceClean}}.ID
     }
 
-	{{- if eq .Locality "zone" }}
+    {{- if eq .Locality "zone" }}
     {{.Locality}}ID := datasource.NewZonedID({{.ResourceCleanLow}}ID, {{.Locality}})
     {{- else }}
     {{.Locality}}ID := datasource.New{{.LocalityAdjectiveUpper}}ID({{.ResourceCleanLow}}ID, {{.Locality}})
-	{{- end}}
+    {{- end}}
     d.SetId({{.Locality}}ID)
     err = d.Set("{{.ResourceCleanLow}}_id", {{.Locality}}ID)
     if err != nil {
