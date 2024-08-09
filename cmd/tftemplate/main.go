@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"text/template"
+
 	"tftemplate/models"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -54,14 +55,14 @@ var resourceQS = []*survey.Question{
 	{
 		Name: "helpers",
 		Prompt: &survey.Confirm{
-			Message: "Generate helpers ? Will override scaleway/helpers_{api}.go",
+			Message: "Generate helpers ? Will override ../../internal/services/{api}/helpers_{api}.go",
 			Default: false,
 		},
 	},
 	{
 		Name: "waiters",
 		Prompt: &survey.Confirm{
-			Message: "Generate waiters ? Will be added to scaleway/helpers_{api}.go",
+			Message: "Generate waiters ? Will be added to ../../internal/services/{api}/waiter.go",
 			Default: true,
 		},
 	},
@@ -95,32 +96,32 @@ func main() {
 
 	templates := []*TerraformTemplate{
 		{
-			FileName:     fmt.Sprintf("../../scaleway/resource_%s.go", resourceData.ResourceHCL),
+			FileName:     fmt.Sprintf("../../internal/services/%s/%s.go", resourceData.API, resourceData.ResourceHCL),
 			TemplateFile: resourceTemplateFile,
 			Skip:         !contains(resourceInput.Targets, "resource"),
 		},
 		{
-			FileName:     fmt.Sprintf("../../scaleway/resource_%s_test.go", resourceData.ResourceHCL),
+			FileName:     fmt.Sprintf("../../internal/services/%s/%s_test.go", resourceData.API, resourceData.ResourceHCL),
 			TemplateFile: resourceTestTemplateFile,
 			Skip:         !contains(resourceInput.Targets, "resource"),
 		},
 		{
-			FileName:     fmt.Sprintf("../../scaleway/data_source_%s.go", resourceData.ResourceHCL),
+			FileName:     fmt.Sprintf("../../internal/services/%s/%s_data_source.go", resourceData.API, resourceData.ResourceHCL),
 			TemplateFile: datasourceTemplateFile,
 			Skip:         !contains(resourceInput.Targets, "datasource"),
 		},
 		{
-			FileName:     fmt.Sprintf("../../scaleway/data_source_%s_test.go", resourceData.ResourceHCL),
+			FileName:     fmt.Sprintf("../../internal/services/%s/data_source_%s_test.go", resourceData.API, resourceData.ResourceHCL),
 			TemplateFile: datasourceTestTemplateFile,
 			Skip:         !contains(resourceInput.Targets, "datasource"),
 		},
 		{
-			FileName:     fmt.Sprintf("../../scaleway/helpers_%s.go", resourceData.API),
+			FileName:     fmt.Sprintf("../../internal/services/%s/helpers_%s.go", resourceData.API, resourceData.API),
 			TemplateFile: resourceHelpersTemplateFile,
 			Skip:         !resourceInput.Helpers,
 		},
 		{
-			FileName:     fmt.Sprintf("../../scaleway/helpers_%s.go", resourceData.API),
+			FileName:     fmt.Sprintf("../../internal/services/%s/waiter.go", resourceData.API),
 			TemplateFile: resourceWaitersTemplateFile,
 			Skip:         !resourceInput.Waiters,
 			Append:       true,

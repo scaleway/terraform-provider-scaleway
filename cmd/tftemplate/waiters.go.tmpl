@@ -1,7 +1,13 @@
 {{- /*gotype: tftemplate/models.ResourceTemplate*/ -}}
+package {{.API}}
+
+import (
+    "github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+    "github.com/scaleway/scaleway-sdk-go/scw"
+)
 
 func waitFor{{.Resource}}(ctx context.Context, {{.API}}API *{{.API}}.API, {{.Locality}} scw.{{.LocalityUpper}}, id string, timeout time.Duration) (*{{.API}}.{{.ResourceClean}}, error) {
-    retryInterval := defaultFunctionRetryInterval
+    retryInterval := default{{.ResourceClean}}RetryInterval
     if DefaultWaitRetryInterval != nil {
         retryInterval = *DefaultWaitRetryInterval
     }

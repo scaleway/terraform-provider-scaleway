@@ -1,20 +1,24 @@
 package models
 
 import (
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"strings"
 	"unicode"
 )
 
 type ResourceTemplate struct {
-	LocalityAdjectiveUpper string // Regional/Zoned
-	LocalityAdjective      string // regional/zoned
-	LocalityUpper          string // Region
-	Locality               string // region
-	Resource               string // FunctionNamespace
-	ResourceClean          string // Namespace
-	ResourceCleanLow       string // namespace
-	ResourceHCL            string // function_namespace
-	API                    string // function
+	LocalityAdjectiveUpper  string // Regional/Zoned
+	LocalityAdjective       string // regional/zoned
+	LocalityUpper           string // Region
+	Locality                string // region
+	Resource                string // FunctionNamespace
+	ResourceClean           string // Namespace
+	ResourceCleanLow        string // namespace
+	ResourceFistLetterUpper string
+	ResourceHCL             string // function_namespace
+	API                     string // function
+	APIFirstLetterUpper     string // Function
 
 	SupportWaiters bool // If resource have waiters
 }
@@ -22,6 +26,11 @@ type ResourceTemplate struct {
 func isUpper(letter uint8) bool {
 	r := rune(letter)
 	return unicode.IsUpper(r) || unicode.IsDigit(r)
+}
+
+func FirstLetterUpper(string string) string {
+	capitalized := cases.Title(language.English).String(string)
+	return capitalized
 }
 
 // splitByWord split a resource name to words
@@ -81,7 +90,7 @@ func resourceWordsLower(resource string) []string {
 func adjectiveLocality(locality string) string {
 	switch locality {
 	case "zone":
-		return "zoned"
+		return "zonal"
 	case "region":
 		return "regional"
 	}
@@ -103,5 +112,6 @@ func NewResourceTemplate(api string, resource string, locality string) ResourceT
 		ResourceCleanLow:       cleanResource(api, resource, false),
 		ResourceHCL:            strings.Join(resourceWordsLower(resource), "_"),
 		API:                    api,
+		APIFirstLetterUpper:    FirstLetterUpper(api),
 	}
 }
