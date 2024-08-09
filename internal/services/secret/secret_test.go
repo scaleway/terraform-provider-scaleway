@@ -43,6 +43,7 @@ func TestAccSecret_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_secret.main", "tags.2", "terraform"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "tags.#", "3"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "type", "opaque"),
 					resource.TestCheckResourceAttrSet("scaleway_secret.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_secret.main", "created_at"),
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
