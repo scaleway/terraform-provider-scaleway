@@ -90,6 +90,27 @@ resource "scaleway_iam_policy" "iam_tf_storage_policy" {
 }
 ```
 
+### Create a policy with a particular condition
+
+IAM policy rule can use a condition to be applied.
+This condition is written in a [CEL](https://github.com/google/cel-spec/blob/master/doc/langdef.md) format.
+The following variables are available:
+- `request.ip`
+- `request.user_agent`
+- `request.time`
+
+```terraform
+resource "scaleway_iam_policy" "main" {
+  name         = "tf_tests_policy_condition"
+  no_principal = true
+  rule {
+    organization_id      = "%s"
+    permission_set_names = ["AllProductsFullAccess"]
+    condition = "request.user_agent == 'My User Agent'"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:

@@ -409,6 +409,100 @@ func TestAccPolicy_ProjectID(t *testing.T) {
 	})
 }
 
+func TestAccPolicy_Condition(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	ctx := context.Background()
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	require.NoError(t, err)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(_ *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckIamPolicyDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_condition"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess"]
+						condition = "1 == 1"
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIamPolicyExists(tt, "scaleway_iam_policy.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_condition"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", project.OrganizationID),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.condition", "1 == 1"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_condition"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						project_ids          = ["%s"]
+						permission_set_names = ["AllProductsFullAccess"]
+						condition            = "request.user_agent == 'terraform-test'"
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIamPolicyExists(tt, "scaleway_iam_policy.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_condition"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", ""),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.condition", "request.user_agent == 'terraform-test'"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_condition"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						project_ids          = ["%s"]
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIamPolicyExists(tt, "scaleway_iam_policy.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_condition"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", ""),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.condition", ""),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccPolicy_ChangeRulePrincipal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
