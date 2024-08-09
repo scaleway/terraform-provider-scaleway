@@ -2,6 +2,7 @@ package secret_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -110,6 +111,61 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v2", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v2", "created_at"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccSecretVersion_Type(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	secretName := "secretVersionNameType"
+	secretVersionData := "{\"key\": \"value\"}"
+	secretVersionDataInvalid := "{\"key\": \"value\", \"invalid\": {}}"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckSecretVersionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%s"
+				  type        = "key_value"
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = %q
+				}
+				`, secretName, secretVersionData),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
+					resource.TestCheckResourceAttrPair("scaleway_secret_version.v1", "secret_id", "scaleway_secret.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "description", "version1"),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secret.Base64Encoded([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "status", secretSDK.SecretVersionStatusEnabled.String()),
+					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "updated_at"),
+					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "created_at"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%s"
+				  type        = "key_value"
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = %q
+				}
+				`, secretName, secretVersionDataInvalid),
+				ExpectError: regexp.MustCompile("data is wrongly formatted"),
 			},
 		},
 	})

@@ -77,6 +77,13 @@ func ResourceSecret() *schema.Resource {
 					return filepath.Clean(oldValue) == filepath.Clean(newValue)
 				},
 			},
+			"type": {
+				ForceNew:         true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          secret.SecretTypeOpaque,
+				ValidateDiagFunc: verify.ValidateEnum[secret.SecretType](),
+			},
 			"protected": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -125,6 +132,7 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		ProjectID: d.Get("project_id").(string),
 		Name:      d.Get("name").(string),
 		Protected: d.Get("protected").(bool),
+		Type:      secret.SecretType(d.Get("type").(string)),
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
@@ -193,6 +201,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("path", secretResponse.Path)
 	_ = d.Set("protected", secretResponse.Protected)
 	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secretResponse.EphemeralPolicy))
+	_ = d.Set("type", secretResponse.Type)
 
 	return nil
 }
