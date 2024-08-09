@@ -8,16 +8,17 @@ import (
 )
 
 type ResourceTemplate struct {
-	LocalityAdjectiveUpper string // Regional/Zoned
-	LocalityAdjective      string // regional/zoned
-	LocalityUpper          string // Region
-	Locality               string // region
-	Resource               string // FunctionNamespace
-	ResourceClean          string // Namespace
-	ResourceCleanLow       string // namespace
-	ResourceHCL            string // function_namespace
-	API                    string // function
-	APIFirstLetterUpper    string
+	LocalityAdjectiveUpper  string // Regional/Zoned
+	LocalityAdjective       string // regional/zoned
+	LocalityUpper           string // Region
+	Locality                string // region
+	Resource                string // FunctionNamespace
+	ResourceClean           string // Namespace
+	ResourceCleanLow        string // namespace
+	ResourceFistLetterUpper string
+	ResourceHCL             string // function_namespace
+	API                     string // function
+	APIFirstLetterUpper     string // Function
 
 	SupportWaiters bool // If resource have waiters
 }
@@ -27,8 +28,8 @@ func isUpper(letter uint8) bool {
 	return unicode.IsUpper(r) || unicode.IsDigit(r)
 }
 
-func APIfirstLetterUpper(api string) string {
-	capitalized := cases.Title(language.Und).String(api)
+func FirstLetterUpper(string string) string {
+	capitalized := cases.Title(language.English).String(string)
 	return capitalized
 }
 
@@ -111,6 +112,6 @@ func NewResourceTemplate(api string, resource string, locality string) ResourceT
 		ResourceCleanLow:       cleanResource(api, resource, false),
 		ResourceHCL:            strings.Join(resourceWordsLower(resource), "_"),
 		API:                    api,
-		APIFirstLetterUpper:    APIfirstLetterUpper(api),
+		APIFirstLetterUpper:    FirstLetterUpper(api),
 	}
 }
