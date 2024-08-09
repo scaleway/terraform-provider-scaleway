@@ -121,7 +121,6 @@ func TestAccSecretVersion_Type(t *testing.T) {
 	defer tt.Cleanup()
 
 	secretName := "secretVersionNameType"
-	secretDescription := "secret description"
 	secretVersionData := "{\"key\": \"value\"}"
 	secretVersionDataInvalid := "{\"key\": \"value\", \"invalid\": {}}"
 
@@ -134,7 +133,6 @@ func TestAccSecretVersion_Type(t *testing.T) {
 				Config: fmt.Sprintf(`
 				resource "scaleway_secret" "main" {
 				  name        = "%s"
-				  description = "%s"
 				  type        = "key_value"
 				}
 
@@ -143,7 +141,7 @@ func TestAccSecretVersion_Type(t *testing.T) {
 				  secret_id   = scaleway_secret.main.id
 				  data        = %q
 				}
-				`, secretName, secretDescription, secretVersionData),
+				`, secretName, secretVersionData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
 					resource.TestCheckResourceAttrPair("scaleway_secret_version.v1", "secret_id", "scaleway_secret.main", "id"),
@@ -158,7 +156,6 @@ func TestAccSecretVersion_Type(t *testing.T) {
 				Config: fmt.Sprintf(`
 				resource "scaleway_secret" "main" {
 				  name        = "%s"
-				  description = "%s"
 				  type        = "key_value"
 				}
 
@@ -167,7 +164,7 @@ func TestAccSecretVersion_Type(t *testing.T) {
 				  secret_id   = scaleway_secret.main.id
 				  data        = %q
 				}
-				`, secretName, secretDescription, secretVersionDataInvalid),
+				`, secretName, secretVersionDataInvalid),
 				ExpectError: regexp.MustCompile("data is wrongly formatted"),
 			},
 		},
