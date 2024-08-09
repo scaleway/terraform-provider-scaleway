@@ -84,9 +84,6 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	secretID := locality.ExpandID(d.Get("secret_id").(string))
 	payloadSecretRaw := []byte(d.Get("data").(string))
-	if err != nil {
-		return diag.FromErr(err)
-	}
 	secretCreateVersionRequest := &secret.CreateSecretVersionRequest{
 		Region:      region,
 		SecretID:    secretID,
