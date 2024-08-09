@@ -8,10 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceSecret() *schema.Resource {
@@ -80,6 +82,32 @@ func ResourceSecret() *schema.Resource {
 				Optional:    true,
 				Description: "True if secret protection is enabled on a given secret. A protected secret cannot be deleted.",
 			},
+			"ephemeral_policy": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ttl": {
+							Optional:         true,
+							Type:             schema.TypeString,
+							DiffSuppressFunc: dsf.Duration,
+							ValidateFunc:     verify.IsDuration(),
+							Description:      "Time frame, from one second and up to one year, during which the secret's versions are valid. Has to be specified in Go Duration format",
+						},
+						"expires_once_accessed": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "True if the secret version expires after a single user access.",
+						},
+						"action": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: verify.ValidateEnum[secret.EphemeralPolicyAction](),
+							Description:      "Action to perform when the version of a secret expires.",
+						},
+					},
+				},
+			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
@@ -112,6 +140,14 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	rawPath, pathExist := d.GetOk("path")
 	if pathExist {
 		secretCreateRequest.Path = types.ExpandStringPtr(rawPath)
+	}
+
+	rawEphemeralPolicy, policyExists := d.GetOk("ephemeral_policy")
+	if policyExists {
+		secretCreateRequest.EphemeralPolicy, err = expandEphemeralPolicy(rawEphemeralPolicy)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	secretResponse, err := api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
@@ -156,6 +192,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("project_id", secretResponse.ProjectID)
 	_ = d.Set("path", secretResponse.Path)
 	_ = d.Set("protected", secretResponse.Protected)
+	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secretResponse.EphemeralPolicy))
 
 	return nil
 }
@@ -190,6 +227,14 @@ func ResourceSecretUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if d.HasChange("path") {
 		updateRequest.Path = types.ExpandUpdatedStringPtr(d.Get("path"))
+		hasChanged = true
+	}
+
+	if d.HasChange("ephemeral_policy") {
+		updateRequest.EphemeralPolicy, err = expandEphemeralPolicy(d.Get("ephemeral_policy"))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		hasChanged = true
 	}
 

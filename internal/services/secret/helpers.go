@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -125,4 +126,44 @@ func updateSecretProtection(api *secret.API, region scw.Region, secretID string,
 	}
 
 	return nil
+}
+
+func expandEphemeralPolicy(rawSchemaPolicy any) (*secret.EphemeralPolicy, error) {
+	rawList := rawSchemaPolicy.([]interface{})
+	if len(rawList) != 1 {
+		return nil, fmt.Errorf("expected 1 policy, found %d", len(rawList))
+	}
+	rawPolicy := rawList[0].(map[string]interface{})
+
+	ttl, err := types.ExpandDuration(rawPolicy["ttl"])
+	if err != nil {
+		return nil, fmt.Errorf("error parsing ttl: %s", err)
+	}
+
+	policy := &secret.EphemeralPolicy{
+		ExpiresOnceAccessed: types.ExpandBoolPtr(rawPolicy["expires_once_accessed"]),
+		Action:              secret.EphemeralPolicyAction(rawPolicy["action"].(string)),
+	}
+
+	if ttl != nil {
+		policy.TimeToLive = scw.NewDurationFromTimeDuration(*ttl)
+	}
+
+	return policy, nil
+}
+
+func flattenEphemeralPolicy(policy *secret.EphemeralPolicy) []map[string]interface{} {
+	if policy == nil {
+		return nil
+	}
+	policyElem := map[string]interface{}{}
+	if policy.TimeToLive != nil {
+		policyElem["ttl"] = types.FlattenDuration(policy.TimeToLive.ToTimeDuration())
+	}
+	if policy.ExpiresOnceAccessed != nil {
+		policyElem["expires_once_accessed"] = types.FlattenBoolPtr(policy.ExpiresOnceAccessed)
+	}
+	policyElem["action"] = policy.Action
+
+	return []map[string]interface{}{policyElem}
 }
