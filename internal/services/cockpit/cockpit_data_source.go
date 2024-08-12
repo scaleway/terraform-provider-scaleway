@@ -83,12 +83,12 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	alertManagerUrl := ""
+	alertManagerURL := ""
 	if alertManager.AlertManagerURL != nil {
-		alertManagerUrl = *alertManager.AlertManagerURL
+		alertManagerURL = *alertManager.AlertManagerURL
 	}
 
-	endpoints := flattenCockpitEndpoints(dataSourcesRes.DataSources, grafana.GrafanaURL, alertManagerUrl)
+	endpoints := flattenCockpitEndpoints(dataSourcesRes.DataSources, grafana.GrafanaURL, alertManagerURL)
 
 	_ = d.Set("endpoints", endpoints)
 	_ = d.Set("push_url", createCockpitPushURL(endpoints))
