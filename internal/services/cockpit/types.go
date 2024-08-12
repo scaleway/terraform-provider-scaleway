@@ -16,7 +16,7 @@ var scopeMapping = map[string]cockpit.TokenScope{
 	"write_traces":        cockpit.TokenScopeWriteOnlyTraces,
 }
 
-func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerUrl string) []map[string]interface{} {
+func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerURL string) []map[string]interface{} {
 	endpointMap := map[string]string{}
 
 	for _, dataSource := range dataSources {
@@ -34,7 +34,7 @@ func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL strin
 		{
 			"metrics_url":      endpointMap["metrics_url"],
 			"logs_url":         endpointMap["logs_url"],
-			"alertmanager_url": alertManagerUrl,
+			"alertmanager_url": alertManagerURL,
 			"grafana_url":      grafanaURL,
 			"traces_url":       endpointMap["traces_url"],
 		},

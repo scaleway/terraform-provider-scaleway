@@ -16,12 +16,6 @@ func ResourceCockpit() *schema.Resource {
 		ReadContext:   ResourceCockpitRead,
 		UpdateContext: ResourceCockpitUpdate,
 		DeleteContext: ResourceCockpitDelete,
-		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
-			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
-			Delete:  schema.DefaultTimeout(DefaultCockpitTimeout),
-			Default: schema.DefaultTimeout(DefaultCockpitTimeout),
-		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
