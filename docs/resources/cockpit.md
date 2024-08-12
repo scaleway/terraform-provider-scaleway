@@ -25,7 +25,7 @@ resource "scaleway_cockpit" "main" {}
 
 ```terraform
 resource "scaleway_cockpit" "main" {
-project_id = "11111111-1111-1111-1111-111111111111"
+  project_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
@@ -33,8 +33,8 @@ project_id = "11111111-1111-1111-1111-111111111111"
 
 ```terraform
 resource "scaleway_cockpit" "main" {
-project_id = "11111111-1111-1111-1111-111111111111"
-plan       = "premium"
+  project_id = "11111111-1111-1111-1111-111111111111"
+  plan       = "premium"
 }
 ```
 
@@ -44,18 +44,18 @@ plan       = "premium"
 resource "scaleway_cockpit" "main" {}
 
 resource "scaleway_cockpit_grafana_user" "main" {
-project_id = scaleway_cockpit.main.project_id
-login      = "example"
-role       = "editor"
+  project_id = scaleway_cockpit.main.project_id
+  login      = "example"
+  role       = "editor"
 }
 
 provider "grafana" {
-url  = scaleway_cockpit.main.endpoints.0.grafana_url
-auth = "${scaleway_cockpit_grafana_user.main.login}:${scaleway_cockpit_grafana_user.main.password}"
+  url  = scaleway_cockpit.main.endpoints.0.grafana_url
+  auth = "${scaleway_cockpit_grafana_user.main.login}:${scaleway_cockpit_grafana_user.main.password}"
 }
 
 resource "grafana_folder" "test_folder" {
-title = "Test Folder"
+  title = "Test Folder"
 }
 ```
 
@@ -71,11 +71,11 @@ In addition to all arguments above, the following attributes are exported:
 
 - `plan_id` - (Deprecated) The ID of the current plan. Please use plan instead.
 - `endpoints` - (Deprecated) Endpoints. Please use scaleway_cockpit_source instead.
-- `metrics_url` - (Deprecated) The metrics URL.
-- `logs_url` - (Deprecated) The logs URL.
-- `alertmanager_url` - (Deprecated) The alertmanager URL.
-- `grafana_url` - (Deprecated) The grafana URL.
-- `traces_url` - (Deprecated) The traces URL.
+    - `metrics_url` - (Deprecated) The metrics URL.
+    - `logs_url` - (Deprecated) The logs URL.
+    - `alertmanager_url` - (Deprecated) The alertmanager URL.
+    - `grafana_url` - (Deprecated) The grafana URL.
+    - `traces_url` - (Deprecated) The traces URL.
 
 ## Import
 

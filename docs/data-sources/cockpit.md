@@ -25,7 +25,7 @@ data "scaleway_cockpit" "main" {}
 ```hcl
 // Get a specific project's cockpit
 data "scaleway_cockpit" "main" {
-project_id = "11111111-1111-1111-1111-111111111111"
+  project_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
@@ -40,7 +40,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `plan_id` - (Deprecated) The ID of the current plan
 - `endpoints` - (Deprecated) Endpoints
-- `metrics_url` - (Deprecated) The metrics URL
-- `logs_url` - (Deprecated) The logs URL
-- `alertmanager_url` - (Deprecated) The alertmanager URL
-- `grafana_url` - (Deprecated) The grafana URL
+    - `metrics_url` - (Deprecated) The metrics URL
+    - `logs_url` - (Deprecated) The logs URL
+    - `alertmanager_url` - (Deprecated) The alertmanager URL
+    - `grafana_url` - (Deprecated) The grafana URL
