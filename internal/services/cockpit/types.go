@@ -2,7 +2,6 @@ package cockpit
 
 import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
-	cockpitv1beta1 "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 )
 
 var scopeMapping = map[string]cockpit.TokenScope{
@@ -17,25 +16,53 @@ var scopeMapping = map[string]cockpit.TokenScope{
 	"write_traces":        cockpit.TokenScopeWriteOnlyTraces,
 }
 
-func flattenCockpitEndpoints(endpoints *cockpitv1beta1.CockpitEndpoints) []map[string]interface{} {
-	return []map[string]interface{}{
+func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerURL string) []map[string]interface{} {
+	endpointMap := map[string]string{}
+
+	for _, dataSource := range dataSources {
+		switch dataSource.Type {
+		case "metrics":
+			endpointMap["metrics_url"] = dataSource.URL
+		case "logs":
+			endpointMap["logs_url"] = dataSource.URL
+		case "traces":
+			endpointMap["traces_url"] = dataSource.URL
+		}
+	}
+
+	endpoints := []map[string]interface{}{
 		{
-			"metrics_url":      endpoints.MetricsURL,
-			"logs_url":         endpoints.LogsURL,
-			"alertmanager_url": endpoints.AlertmanagerURL,
-			"grafana_url":      endpoints.GrafanaURL,
-			"traces_url":       endpoints.TracesURL,
+			"metrics_url":      endpointMap["metrics_url"],
+			"logs_url":         endpointMap["logs_url"],
+			"alertmanager_url": alertManagerURL,
+			"grafana_url":      grafanaURL,
+			"traces_url":       endpointMap["traces_url"],
 		},
 	}
+
+	return endpoints
 }
 
-func createCockpitPushURL(endpoints *cockpitv1beta1.CockpitEndpoints) []map[string]interface{} {
-	return []map[string]interface{}{
-		{
-			"push_metrics_url": endpoints.MetricsURL + pathMetricsURL,
-			"push_logs_url":    endpoints.LogsURL + pathLogsURL,
-		},
+func createCockpitPushURL(endpoints []map[string]interface{}) []map[string]interface{} {
+	var result []map[string]interface{}
+
+	for _, endpoint := range endpoints {
+		newEndpoint := make(map[string]interface{})
+
+		if metricsURL, ok := endpoint["metrics_url"].(string); ok && metricsURL != "" {
+			newEndpoint["push_metrics_url"] = metricsURL + pathMetricsURL
+		}
+
+		if logsURL, ok := endpoint["logs_url"].(string); ok && logsURL != "" {
+			newEndpoint["push_logs_url"] = logsURL + pathLogsURL
+		}
+
+		if len(newEndpoint) > 0 {
+			result = append(result, newEndpoint)
+		}
 	}
+
+	return result
 }
 
 func expandCockpitTokenScopes(raw interface{}) []cockpit.TokenScope {
