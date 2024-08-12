@@ -5,9 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -17,12 +16,6 @@ func ResourceCockpit() *schema.Resource {
 		ReadContext:   ResourceCockpitRead,
 		UpdateContext: ResourceCockpitUpdate,
 		DeleteContext: ResourceCockpitDelete,
-		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
-			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
-			Delete:  schema.DefaultTimeout(DefaultCockpitTimeout),
-			Default: schema.DefaultTimeout(DefaultCockpitTimeout),
-		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -37,11 +30,13 @@ func ResourceCockpit() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The plan ID of the cockpit",
+				Deprecated:  "Please use Name only",
 			},
 			"endpoints": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Endpoints",
+				Deprecated:  "Please use `scaleway_cockpit_source` instead",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"metrics_url": {
@@ -76,6 +71,7 @@ func ResourceCockpit() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Push_url",
+				Deprecated:  "Please use `scaleway_cockpit_source` instead",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"push_metrics_url": {
@@ -96,87 +92,108 @@ func ResourceCockpit() *schema.Resource {
 }
 
 func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewAPI(m)
+	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	projectID := d.Get("project_id").(string)
-
-	res, err := api.ActivateCockpit(&cockpit.ActivateCockpitRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	if targetPlanI, ok := d.GetOk("plan"); ok {
 		targetPlan := targetPlanI.(string)
 
-		plans, err := api.ListPlans(&cockpit.ListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		var planID string
+		var planName string
 		for _, plan := range plans.Plans {
-			if plan.Name.String() == targetPlan || plan.ID == targetPlan {
-				planID = plan.ID
+			if plan.Name.String() == targetPlan {
+				planName = plan.Name.String()
 				break
 			}
 		}
 
-		if planID == "" {
+		if planName == "" {
 			return diag.Errorf("plan %s not found", targetPlan)
 		}
 
-		_, err = api.SelectPlan(&cockpit.SelectPlanRequest{
+		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{
 			ProjectID: projectID,
-			PlanID:    planID,
+			PlanName:  cockpit.PlanName(planName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	d.SetId(res.ProjectID)
+	d.SetId(projectID)
 	return ResourceCockpitRead(ctx, d, m)
 }
 
 func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewAPI(m)
+	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutRead))
+	regionalAPI, region, err := cockpitAPIWithRegion(d, m)
 	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-			return nil
-		}
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("plan_id", res.Plan.ID)
-	_ = d.Set("endpoints", flattenCockpitEndpoints(res.Endpoints))
-	_ = d.Set("push_url", createCockpitPushURL(res.Endpoints))
+	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{
+		ProjectID: d.Get("project_id").(string),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	_ = d.Set("project_id", d.Get("project_id").(string))
+	_ = d.Set("plan", res.Name.String())
+	_ = d.Set("plan_id", res.Name.String())
+
+	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
+		Region:    region,
+		ProjectID: d.Get("project_id").(string),
+		Origin:    "external",
+	}, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
+		ProjectID: d.Get("project_id").(string),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+		ProjectID: d.Get("project_id").(string),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	alertManagerURL := ""
+	if alertManager.AlertManagerURL != nil {
+		alertManagerURL = *alertManager.AlertManagerURL
+	}
+
+	endpoints := flattenCockpitEndpoints(dataSourcesRes.DataSources, grafana.GrafanaURL, alertManagerURL)
+
+	_ = d.Set("endpoints", endpoints)
+	_ = d.Set("push_url", createCockpitPushURL(endpoints))
 
 	return nil
 }
 
 func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewAPI(m)
+	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	projectID := d.Id()
-	_, err = waitForCockpit(ctx, api, projectID, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	if d.HasChange("plan") {
 		targetPlan := cockpit.PlanNameFree.String()
@@ -184,26 +201,26 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			targetPlan = targetPlanI.(string)
 		}
 
-		plans, err := api.ListPlans(&cockpit.ListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		var planID string
+		var planName string
 		for _, plan := range plans.Plans {
-			if plan.Name.String() == targetPlan || plan.ID == targetPlan {
-				planID = plan.ID
+			if plan.Name.String() == targetPlan {
+				planName = plan.Name.String()
 				break
 			}
 		}
 
-		if planID == "" {
+		if planName == "" {
 			return diag.Errorf("plan %s not found", targetPlan)
 		}
 
-		_, err = api.SelectPlan(&cockpit.SelectPlanRequest{
+		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{
 			ProjectID: projectID,
-			PlanID:    planID,
+			PlanName:  cockpit.PlanName(planName),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -213,32 +230,6 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceCockpitRead(ctx, d, m)
 }
 
-func ResourceCockpitDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewAPI(m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	_, err = api.DeactivateCockpit(&cockpit.DeactivateCockpitRequest{
-		ProjectID: d.Id(),
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
+func ResourceCockpitDelete(_ context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	return nil
 }

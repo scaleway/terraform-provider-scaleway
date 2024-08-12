@@ -15,17 +15,26 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 
 ## Example Usage
 
-### Activate Cockpit in the default project
+### Manage Cockpit in the default project
 
 ```terraform
 resource "scaleway_cockpit" "main" {}
 ```
 
-### Activate Cockpit in a specific project
+### Manage Cockpit in a specific project
 
 ```terraform
 resource "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+### Choose a specific plan for Cockpit
+
+```terraform
+resource "scaleway_cockpit" "main" {
+  project_id = "11111111-1111-1111-1111-111111111111"
+  plan       = "premium"
 }
 ```
 
@@ -53,20 +62,20 @@ resource "grafana_folder" "test_folder" {
 ## Argument Reference
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
-- `plan` - (Optional) Name or ID of the plan to use.
+- `plan` - (Optional) Name of the plan to use. Available plans are free, premium, and custom.
 
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `plan_id` - The ID of the current plan.
-- `endpoints` - Endpoints.
-    - `metrics_url` - The metrics URL.
-    - `logs_url` - The logs URL.
-    - `alertmanager_url` - The alertmanager URL.
-    - `grafana_url` - The grafana URL.
-    - `traces_url` - The traces URL.
+- `plan_id` - (Deprecated) The ID of the current plan. Please use plan instead.
+- `endpoints` - (Deprecated) Endpoints. Please use scaleway_cockpit_source instead.
+    - `metrics_url` - (Deprecated) The metrics URL.
+    - `logs_url` - (Deprecated) The logs URL.
+    - `alertmanager_url` - (Deprecated) The alertmanager URL.
+    - `grafana_url` - (Deprecated) The grafana URL.
+    - `traces_url` - (Deprecated) The traces URL.
 
 ## Import
 
