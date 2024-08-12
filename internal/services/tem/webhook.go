@@ -31,8 +31,6 @@ func ResourceWebhook() *schema.Resource {
 				ForceNew:    true,
 				Description: "The domain id",
 			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -66,6 +64,8 @@ func ResourceWebhook() *schema.Resource {
 				Computed:    true,
 				Description: "Last update timestamp",
 			},
+			"region":     regional.Schema(),
+			"project_id": account.ProjectIDSchema(),
 		},
 	}
 }
@@ -76,11 +76,7 @@ func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	eventTypesInterface := d.Get("event_types").([]interface{})
-	eventTypes := make([]tem.WebhookEventType, len(eventTypesInterface))
-	for i, v := range eventTypesInterface {
-		eventTypes[i] = tem.WebhookEventType(v.(string))
-	}
+	eventTypes := expandWebhookEventTypes(d.Get("event_types").([]interface{}))
 
 	webhook, err := api.CreateWebhook(&tem.CreateWebhookRequest{
 		Region:     region,

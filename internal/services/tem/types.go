@@ -19,3 +19,11 @@ func flattenDomainReputation(reputation *tem.DomainReputation) interface{} {
 		},
 	}
 }
+
+func expandWebhookEventTypes(eventTypesInterface []interface{}) []tem.WebhookEventType {
+	eventTypes := make([]tem.WebhookEventType, len(eventTypesInterface))
+	for i, v := range eventTypesInterface {
+		eventTypes[i] = tem.WebhookEventType(v.(string))
+	}
+	return eventTypes
+}
