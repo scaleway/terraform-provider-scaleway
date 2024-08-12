@@ -39,6 +39,7 @@ func TestAccCockpitSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "type", "metrics"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "region", "fr-par"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "push_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "origin"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "updated_at"),

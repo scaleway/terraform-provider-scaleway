@@ -68,6 +68,11 @@ func ResourceCockpitSource() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the cockpit datasource",
 			},
+			"push_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL endpoint used for pushing data to the cockpit data source.",
+			},
 			"project_id": account.ProjectIDSchema(),
 			"region":     regional.Schema(),
 		},
@@ -121,6 +126,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("project_id", res.ProjectID)
+	_ = d.Set("push_url", createCockpitPushURL(res.Type, res.URL))
 
 	return nil
 }

@@ -43,7 +43,7 @@ func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL strin
 	return endpoints
 }
 
-func createCockpitPushURL(endpoints []map[string]interface{}) []map[string]interface{} {
+func createCockpitPushURLList(endpoints []map[string]interface{}) []map[string]interface{} {
 	var result []map[string]interface{}
 
 	for _, endpoint := range endpoints {
@@ -63,6 +63,17 @@ func createCockpitPushURL(endpoints []map[string]interface{}) []map[string]inter
 	}
 
 	return result
+}
+
+func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) string {
+	switch sourceType {
+	case cockpit.DataSourceTypeMetrics:
+		return url + pathMetricsURL
+	case cockpit.DataSourceTypeLogs:
+		return url + pathLogsURL
+	default:
+		return ""
+	}
 }
 
 func expandCockpitTokenScopes(raw interface{}) []cockpit.TokenScope {
