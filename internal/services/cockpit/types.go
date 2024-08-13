@@ -1,6 +1,8 @@
 package cockpit
 
 import (
+	"fmt"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 )
 
@@ -65,14 +67,14 @@ func createCockpitPushURLList(endpoints []map[string]interface{}) []map[string]i
 	return result
 }
 
-func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) string {
+func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) (string, error) {
 	switch sourceType {
 	case cockpit.DataSourceTypeMetrics:
-		return url + pathMetricsURL
+		return url + pathMetricsURL, nil
 	case cockpit.DataSourceTypeLogs:
-		return url + pathLogsURL
+		return url + pathLogsURL, nil
 	default:
-		return ""
+		return "", fmt.Errorf("invalid data source type: %v", sourceType)
 	}
 }
 

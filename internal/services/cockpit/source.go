@@ -117,6 +117,11 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
+	pushURL, err := createCockpitPushURL(res.Type, res.URL)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", res.Name)
 	_ = d.Set("type", res.Type.String())
 	_ = d.Set("url", res.URL)
@@ -126,7 +131,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("push_url", createCockpitPushURL(res.Type, res.URL))
+	_ = d.Set("push_url", pushURL)
 
 	return nil
 }
