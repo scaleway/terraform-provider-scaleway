@@ -37,7 +37,7 @@ resource "scaleway_secret_version" "v1" {
 The following arguments are supported:
 
 - `secret_id` - (Required) The ID of the secret associated with the version.
-- `data` - (Required) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
+- `data` - (Required) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data-information).
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
 - `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
 
