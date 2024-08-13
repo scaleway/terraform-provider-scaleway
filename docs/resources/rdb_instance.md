@@ -21,6 +21,7 @@ resource "scaleway_rdb_instance" "main" {
   disable_backup = true
   user_name      = "my_initial_user"
   password       = "thiZ_is_v&ry_s3cret"
+  encryption_at_rest = true
 }
 ```
 
@@ -167,6 +168,8 @@ interruption.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the Database
   Instance is associated with.
+
+- `encryption_at_rest` - (Optional) Enable or disable encryption at rest for the Database Instance.
 
 ### Backups
 
