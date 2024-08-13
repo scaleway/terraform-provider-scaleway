@@ -95,7 +95,7 @@ func TestAccCockpit_WithSourceEndpoints(t *testing.T) {
 
 					resource "scaleway_cockpit_grafana_user" "main" {
 					  project_id = scaleway_account_project.project.id
-					  login = "cockpit_test"
+					  login = "cockpit_test_endpoint"
 					  role = "editor"
 					}
 					

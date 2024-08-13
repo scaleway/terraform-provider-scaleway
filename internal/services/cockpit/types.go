@@ -1,6 +1,8 @@
 package cockpit
 
 import (
+	"fmt"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 )
 
@@ -43,7 +45,7 @@ func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL strin
 	return endpoints
 }
 
-func createCockpitPushURL(endpoints []map[string]interface{}) []map[string]interface{} {
+func createCockpitPushURLList(endpoints []map[string]interface{}) []map[string]interface{} {
 	var result []map[string]interface{}
 
 	for _, endpoint := range endpoints {
@@ -61,8 +63,20 @@ func createCockpitPushURL(endpoints []map[string]interface{}) []map[string]inter
 			result = append(result, newEndpoint)
 		}
 	}
-
 	return result
+}
+
+func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) (string, error) {
+	switch sourceType {
+	case cockpit.DataSourceTypeMetrics:
+		return url + pathMetricsURL, nil
+	case cockpit.DataSourceTypeLogs:
+		return url + pathLogsURL, nil
+	case cockpit.DataSourceTypeTraces:
+		return url + pathTracesURL, nil
+	default:
+		return "", fmt.Errorf("invalid data source type: %v", sourceType)
+	}
 }
 
 func expandCockpitTokenScopes(raw interface{}) []cockpit.TokenScope {
