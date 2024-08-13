@@ -11,7 +11,7 @@ Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/
 
 ## Example Usage
 
-## Create a secret and a version
+### Create a secret and a version
 
 The following commands allow you to:
 
@@ -32,7 +32,7 @@ resource "scaleway_secret_version" "v1" {
 }
 ```
 
-## Arguments reference
+## Arguments Reference
 
 The following arguments are supported:
 
@@ -51,7 +51,7 @@ Keep in mind that this is a sensitive attribute. For more information, see [Sens
 
 ~> **Important:**  This property will not be displayed in the Terraform plan, for security reasons.
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported when the `scaleway_secret_version` resource is created:
 

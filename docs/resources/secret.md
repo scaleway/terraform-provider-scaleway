@@ -57,7 +57,7 @@ The following arguments are supported:
   in which the resource exists.
 - `project_id` - (Optional) The project ID containing is the secret.
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported when the `scaleway_secret` resource is created:
 

@@ -23,7 +23,7 @@ resource "scaleway_domain_zone" "test" {
 }
 ```
 
-## Arguments reference
+## Arguments Reference
 
 The following arguments are supported:
 
@@ -34,7 +34,7 @@ The following arguments are supported:
 - `project_id` - (Defaults to Project ID specified in the [provider configuration](../index.md#project_id) `project_id`) The ID of the Project associated with the domain.
 
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported when the `scaleway_domain_zone` resource is created:
 

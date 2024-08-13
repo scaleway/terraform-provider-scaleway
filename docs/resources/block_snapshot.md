@@ -29,7 +29,7 @@ resource "scaleway_block_snapshot" "block_snapshot" {
 }
 ```
 
-## Arguments reference
+## Arguments Reference
 
 This section lists the arguments that are supported:
 
@@ -39,7 +39,7 @@ This section lists the arguments that are supported:
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the Scaleway Project the snapshot is associated with.
 - `tags` - (Optional) A list of tags to apply to the snapshot.
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported when the `scaleway_block_snapshot` resource is created:
 

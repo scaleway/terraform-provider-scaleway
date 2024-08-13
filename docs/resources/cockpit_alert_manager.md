@@ -40,7 +40,7 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 ```
 
 
-## Arguments reference
+## Arguments Reference
 
 This section lists the arguments that are supported:
 
@@ -49,7 +49,7 @@ This section lists the arguments that are supported:
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 - `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)) The [region](../guides/regions_and_zones.md#regions) where the [alert manager](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#alert-manager) should be enabled.
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported when the `scaleway_cockpit_alert_manager` resource is created:
 

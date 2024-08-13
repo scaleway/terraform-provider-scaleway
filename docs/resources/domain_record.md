@@ -201,7 +201,7 @@ resource "scaleway_domain_record" "web_alias" {
 }
 ```
 
-## Arguments reference
+## Arguments Reference
 
 The following arguments are supported:
 

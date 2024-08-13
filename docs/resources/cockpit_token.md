@@ -51,7 +51,7 @@ resource "scaleway_cockpit_token" "main" {
 }
 ```
 
-## Arguments reference
+## Arguments Reference
 
 This section lists the arguments that are supported:
 
@@ -69,7 +69,7 @@ This section lists the arguments that are supported:
 - `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)) The [region](../guides/regions_and_zones.md#regions) where the Cockpit token is located.
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported when the `scaleway_cockpit_token` resource is created:
 

@@ -45,7 +45,7 @@ resource "scaleway_block_volume" "main" {
 }
 ```
 
-## Arguments reference
+## Arguments Reference
 
 This section lists the arguments that are supported:
 
@@ -57,7 +57,7 @@ This section lists the arguments that are supported:
 - `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
 - `project_id` - (Defaults to the Project ID specified in the [provider configurqtion](../index.md#project_id)). The ID of the Project the volume is associated with.
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported when the `scaleway_block_volume` resource is created:
 

@@ -28,7 +28,7 @@ resource "scaleway_cockpit_grafana_user" "main" {
 ```
 
 
-## Arguments reference
+## Arguments Reference
 
 This section lists the arguments that are supported:
 
@@ -36,7 +36,7 @@ This section lists the arguments that are supported:
 - `role` - (Required) The role assigned to the Grafana user. Must be `editor` or `viewer`.
 - `project_id` - (Defaults to Project ID speficied in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported when the `scaleway_cockpit_grafana_user` resource is created:
 
