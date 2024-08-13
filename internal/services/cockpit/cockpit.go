@@ -182,7 +182,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	endpoints := flattenCockpitEndpoints(dataSourcesRes.DataSources, grafana.GrafanaURL, alertManagerURL)
 
 	_ = d.Set("endpoints", endpoints)
-	_ = d.Set("push_url", createCockpitPushURL(endpoints))
+	_ = d.Set("push_url", createCockpitPushURLList(endpoints))
 
 	return nil
 }
