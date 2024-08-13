@@ -9,7 +9,9 @@ The `scaleway_secret` resource allows you to create and manage secrets in Scalew
 
 Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/identity-and-access-management/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
 
-## Create a secret
+## Example Usage
+
+### Create a secret
 
 The following command allows you to create a secret named `foo` with a description (`barr`), and tags (`foo` and `terraform`).
 

@@ -9,7 +9,10 @@ The `scaleway_cockpit_alert_manager` resource allows you to enable and manage th
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-## Enable the alert manager and configure managed alerts
+
+## Example Usage
+
+### Enable the alert manager and configure managed alerts
 
 The following commands allow you to:
 

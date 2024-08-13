@@ -9,7 +9,9 @@ The `scaleway_cockpit_grafana_user` resource allows you to create and manage [Gr
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-## Create a Grafana user
+## Example Usage
+
+### Create a Grafana user
 
 The following command allows you to create a Grafana user within a specific Scaleway Project.
 

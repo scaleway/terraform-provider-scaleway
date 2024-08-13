@@ -9,7 +9,7 @@ The `scaleway_domain_record` resource allows you to create and manage DNS record
 
 Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/) and [API documentation](https://www.scaleway.com/en/developers/api/domains-and-dns/) for more information.
 
-## Create DNS records
+## Example Usage
 
 ### Create basic DNS records
 
@@ -55,7 +55,7 @@ resource "scaleway_domain_record" "mx2" {
 }
 ```
 
-## Create dynamic records
+### Create dynamic records
 
 The folllowing commands allow you to:
 

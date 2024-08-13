@@ -9,7 +9,9 @@ The `scaleway_cockpit_token` resource allows you to create and manage your Cockp
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-## Use a Cockpit token
+## Example Usage
+
+### Use a Cockpit token
 
 The following commands allow you to:
 

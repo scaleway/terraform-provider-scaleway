@@ -13,18 +13,9 @@ The `scaleway_cockpit` resource allows you to create and manage Scaleway Cockpit
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-## Use Cockpit
+## Example Usage
 
-<<<<<<< HEAD
 ### Manage Cockpit in the Scaleway default Project
-=======
-The following commands allow you to:
-
-- activate Cockpit in the Scaleway default Project
-- activate Cockpit in a given Project specified by the Project ID
-- create a Grafana user in the default Project
-- create a Grafana folder
->>>>>>> 3679c45b (docs(add): review)
 
 ```terraform
 // Activate Cockpit in the default Project

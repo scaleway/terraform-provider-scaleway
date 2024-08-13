@@ -9,7 +9,10 @@ The `scaleway_block_snapshot` resource is used to create and manage snapshots of
 
 Refer to the Block Storage [product documentation](https://www.scaleway.com/en/docs/storage/block/) and [API documentation](https://www.scaleway.com/en/developers/api/block/) for more information.
 
-## Create a snapshot of a Block Storage volume
+
+## Example Usage
+
+### Create a snapshot of a Block Storage volume
 
 The following command allows you to create a snapshot (`some-snapshot-name`) from a Block Storage volume specified by its ID.
 

@@ -9,7 +9,9 @@ The `scaleway_domain_zone` data source is used to get information about a DNS zo
 
 Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/) and [API documentation](https://www.scaleway.com/en/developers/api/domains-and-dns/) for more information.
 
-## Query a domain zone
+## Example Usage
+
+### Query a domain zone
 
 The following command allows you to retrieve information about the DNS zone for the subdomain `test` within the domain `scaleway-terraform.com`.
 

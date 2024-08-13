@@ -9,7 +9,9 @@ The `scaleway_domain_zone` resource allows you to create and manage Scaleway DNS
 
 Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/) and [API documentation](https://www.scaleway.com/en/developers/api/domains-and-dns/) for more information.
 
-## Create a DNS zone
+## Example Usage
+
+### Create a DNS zone
 
 The following command allows you to create a DNS zone for the `test.scaleway-terraform.com` subdomain.
 

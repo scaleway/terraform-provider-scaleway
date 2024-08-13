@@ -9,7 +9,9 @@ The `scaleway_secret` data source is used to get information about a specific se
 
 Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/identity-and-access-management/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
 
-## Create a secret and get its information
+## Example Usage
+
+### Create a secret and get its information
 
 The following commands allow you to:
 

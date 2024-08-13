@@ -9,7 +9,9 @@ The `scaleway_cockpit_source` resource allows you to create and manage [data sou
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-## Create a data source
+## Example Usage
+
+### Create a data source
 
 The following command allows you to create a [metrics](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#metric) data source named `my-data-source` in a given Project.
 

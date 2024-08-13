@@ -9,11 +9,12 @@ The `scaleway_block_volume` resource is used to create and manage Scaleway Block
 
 Refer to the Block Storage [product documentation](https://www.scaleway.com/en/docs/storage/block/) and [API documentation](https://www.scaleway.com/en/developers/api/block/) for more information.
 
-## Create a Block Storage volume
+
+## Example Usage
+
+### Create a Block Storage volume
 
 The following command allows you to create a Block Storage volume of 20 GB with a 5000 [IOPS](https://www.scaleway.com/en/docs/storage/block/concepts/#iops).
-
-### Basic
 
 ```terraform
 resource "scaleway_block_volume" "block_volume" {
