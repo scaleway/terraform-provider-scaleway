@@ -59,7 +59,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_secret` resource is created:
+In addition to all arguments above, the following attributes are exported:
 
 - `version_count` - The amount of secret versions.
 - `status` - The status of the secret.

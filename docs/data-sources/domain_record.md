@@ -33,7 +33,7 @@ data "scaleway_domain_record" "by_id" {
 }
 ```
 
-## Arguments reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_domain_record` data source to filter and retrieve the desired record:
 
@@ -49,9 +49,9 @@ This section lists the arguments that you can provide to the `scaleway_domain_re
 
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the Project associated with the domain.
 
-## Attributes reference
+## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_domain_record` data source is created. These attributes can be referenced in other parts of your Terraform configuration:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The unique identifier of the record.
 

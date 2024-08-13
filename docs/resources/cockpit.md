@@ -62,14 +62,14 @@ resource "grafana_folder" "test_folder" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 - `project_id` - (Defaults to the Project specified in the [provider's configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 - `plan` - (Optional) Name of the plan to use. Available plans are: free, premium, and custom.
 
 ## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_cockpit` resource is created:
+In addition to all arguments above, the following attributes are exported:
 
 - `plan_id` - (Deprecated) The ID of the current pricing plan.
 - `endpoints` - (Deprecated) A list of [endpoints](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#endpoints) related to Cockpit, each with specific URLs:

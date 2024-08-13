@@ -37,7 +37,7 @@ data "scaleway_secret" "by_name" {
 }
 ```
 
-## Arguments reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_secret` data source to filter and retrieve the desired secret:
 
@@ -59,6 +59,6 @@ This section lists the arguments that you can provide to the `scaleway_secret` d
   Project the secret is associated with.
 
 
-## Attributes reference
+## Attributes Reference
 
 Exported attributes are the ones from the `scaleway_secret` [resource](../resources/secret.md).

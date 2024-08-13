@@ -23,7 +23,7 @@ resource "scaleway_domain_zone" "test" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_domain_zone` resource is created:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the zone, in the `{subdomain}.{domain}` format.
 

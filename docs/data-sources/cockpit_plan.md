@@ -24,7 +24,7 @@ resource "scaleway_cockpit" "main" {
 }
 ```
 
-## Arguments reference
+## Argument reference
 
 This section lists the arguments that you can provide to the `scaleway_cockpit_plan` data source to filter and retrieve the desired plan.
 

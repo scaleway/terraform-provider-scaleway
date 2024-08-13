@@ -29,7 +29,7 @@ resource "scaleway_block_snapshot" "block_snapshot" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 This section lists the arguments that are supported:
 
@@ -41,7 +41,7 @@ This section lists the arguments that are supported:
 
 ## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_block_snapshot` resource is created:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the snapshot.
 

@@ -201,7 +201,7 @@ resource "scaleway_domain_record" "web_alias" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -245,9 +245,9 @@ The following arguments are supported:
     - `ip` - (Required) The weighted IP.
     - `weight` - (Required) The weight of the IP as an integer UInt32.
 
-## Attributes reference
+## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_domain_record` resource is created:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the record.
 

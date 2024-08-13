@@ -35,7 +35,7 @@ data "scaleway_block_snapshot" "my_snapshot" {
 }
 ```
 
-## Arguments reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_block_snapshot` data source to filter and retrieve the desired snapshot. Each argument has a specific purpose:
 
@@ -45,6 +45,6 @@ This section lists the arguments that you can provide to the `scaleway_block_sna
 - `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot exists.
 - `project_id` - (Optional) The unique identifier of the Project to which the snapshot is associated.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_block_snapshot` data source exports certain attributes once the snapshot information is retrieved. These attributes can be referenced in other parts of your Terraform configuration. The exported attributes are those that come from the `scaleway_block_snapshot` [resource](../resources/block_snapshot.md)

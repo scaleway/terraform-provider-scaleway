@@ -23,7 +23,7 @@ data "scaleway_domain_zone" "main" {
 }
 ```
 
-## Arguments reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_domain_zone` data source to filter and retrieve the desired DNS zone:
 
@@ -34,9 +34,9 @@ This section lists the arguments that you can provide to the `scaleway_domain_zo
 
 - `project_id` - (Defaults to Project ID specified in [the provider configuration](../index.md#project_id)). The ID of the Scaleway Project associated with the domain. If not specified, it defaults to the `project_id` set in the provider configuration.
 
-## Attributes reference
+## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_domain_zone` data source is created. These attributes can be referenced in other parts of your Terraform configuration:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The unique identifier of the zone, in the `{subdomain}.{domain}` format.
 

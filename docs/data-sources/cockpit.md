@@ -34,7 +34,7 @@ data "scaleway_cockpit" "main" {
 }
 ```
 
-## Arguments reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_cockpit` data source to filter and retrieve the desired Cockpit.
 
@@ -43,7 +43,7 @@ This section lists the arguments that you can provide to the `scaleway_cockpit` 
 - `plan` - (Optional) Specifies the name or ID of the pricing plan to use.
 
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_cockpit` data source exports certain attributes once the Cockpit information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

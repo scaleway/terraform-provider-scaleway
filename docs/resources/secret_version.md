@@ -32,7 +32,7 @@ resource "scaleway_secret_version" "v1" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -53,7 +53,7 @@ Keep in mind that this is a sensitive attribute. For more information, see [Sens
 
 ## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_secret_version` resource is created:
+In addition to all arguments above, the following attributes are exported:
 
 - `revision` - The revision number of the secret version.
 - `status` - The status of the secret version.

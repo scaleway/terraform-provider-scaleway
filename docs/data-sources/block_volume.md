@@ -28,7 +28,7 @@ data "scaleway_block_volume" "my_volume" {
 }
 ```
 
-## Arguments reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_block_volume` data source to filter and retrieve the desired volume.
 
@@ -37,6 +37,6 @@ This section lists the arguments that you can provide to the `scaleway_block_vol
 - `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the volume exists.
 - `project_id` - (Optional) The unique identifier of the Project to which the volume is associated.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_block_volume` data source exports certain attributes once the volume information is retrieved. These attributes can be referenced in other parts of your Terraform configuration. The exported attributes are those that come from the `scaleway_block_volume` [resource](../resources/block_volume.md).

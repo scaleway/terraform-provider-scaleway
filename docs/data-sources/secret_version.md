@@ -63,7 +63,7 @@ output "scaleway_secret_access_payload_by_id" {
 }
 ```
 
-## Arguments reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_secret_version` data source to filter and retrieve the desired version:
 
@@ -85,7 +85,7 @@ see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language
 
 ~> **Important:**  This property is sensitive and will not be displayed in the Terraform plan, for security reasons.
 
-## Attributes reference
+## Attributes Reference
 
 This section lists the attributes that are exported by the `scaleway_secret_version` data source. These attributes can be referenced in other parts of your Terraform configuration:
 

@@ -45,7 +45,7 @@ resource "scaleway_block_volume" "main" {
 }
 ```
 
-## Arguments Reference
+## Argument Reference
 
 This section lists the arguments that are supported:
 
@@ -59,7 +59,7 @@ This section lists the arguments that are supported:
 
 ## Attributes Reference
 
-This section lists the attributes that are exported when the `scaleway_block_volume` resource is created:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the volume.
 
