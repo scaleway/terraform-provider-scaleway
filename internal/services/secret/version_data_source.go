@@ -12,6 +12,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -40,6 +42,7 @@ func DataSourceVersion() *schema.Resource {
 		Sensitive:   true,
 		Description: "The payload of the secret version",
 	}
+	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
@@ -55,7 +58,7 @@ func DataSourceVersion() *schema.Resource {
 
 func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	secretID, existSecretID := d.GetOk("secret_id")
-	api, region, err := newAPIWithRegionAndDefault(d, m, regional.ExpandID(secretID).Region)
+	api, region, projectID, err := newAPIWithRegionProjectIDAndDefault(d, m, regional.ExpandID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -66,8 +69,10 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	if !existSecretID {
 		secretName := d.Get("secret_name").(string)
 		secrets, err := api.ListSecrets(&secret.ListSecretsRequest{
-			Region: region,
-			Name:   &secretName,
+			Region:         region,
+			Name:           &secretName,
+			ProjectID:      types.ExpandStringPtr(projectID),
+			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
