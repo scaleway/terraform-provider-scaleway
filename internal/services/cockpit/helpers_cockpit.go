@@ -20,6 +20,7 @@ const (
 	DefaultCockpitTimeout = 5 * time.Minute
 	pathMetricsURL        = "/api/v1/push"
 	pathLogsURL           = "/loki/api/v1/push"
+	pathTracesURL         = "/otlp/v1/traces"
 )
 
 // NewGlobalAPI returns a new global cockpit API.

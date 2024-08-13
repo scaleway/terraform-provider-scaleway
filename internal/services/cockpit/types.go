@@ -63,7 +63,6 @@ func createCockpitPushURLList(endpoints []map[string]interface{}) []map[string]i
 			result = append(result, newEndpoint)
 		}
 	}
-
 	return result
 }
 
@@ -73,6 +72,8 @@ func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) (string
 		return url + pathMetricsURL, nil
 	case cockpit.DataSourceTypeLogs:
 		return url + pathLogsURL, nil
+	case cockpit.DataSourceTypeTraces:
+		return url + pathTracesURL, nil
 	default:
 		return "", fmt.Errorf("invalid data source type: %v", sourceType)
 	}
