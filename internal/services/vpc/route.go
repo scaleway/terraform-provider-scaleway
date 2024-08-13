@@ -54,7 +54,7 @@ func ResourceRoute() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "The ID of the nexthop resource",
-				DiffSuppressFunc: dsf.Locality,
+				DiffSuppressFunc: diffSuppressFuncRouteResourceID,
 			},
 			"nexthop_private_network_id": {
 				Type:             schema.TypeString,
@@ -89,11 +89,16 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
+	resourceID, err := vpcRouteExpandResourceID(d.Get("nexthop_resource_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &vpc.CreateRouteRequest{
 		Description:             d.Get("description").(string),
 		Tags:                    types.ExpandStrings(d.Get("tags")),
 		VpcID:                   locality.ExpandID(d.Get("vpc_id").(string)),
-		NexthopResourceID:       types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_resource_id"))),
+		NexthopResourceID:       types.ExpandStringPtr(resourceID),
 		NexthopPrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_private_network_id"))),
 		Destination:             destination,
 		Region:                  region,
@@ -128,9 +133,9 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	_ = d.Set("description", res.Description)
-	_ = d.Set("vpc_id", res.VpcID)
+	_ = d.Set("vpc_id", regional.NewIDString(region, res.VpcID))
 	_ = d.Set("nexthop_resource_id", types.FlattenStringPtr(res.NexthopResourceID))
-	_ = d.Set("nexthop_private_network_id", types.FlattenStringPtr(res.NexthopPrivateNetworkID))
+	_ = d.Set("nexthop_private_network_id", regional.NewIDString(region, types.FlattenStringPtr(res.NexthopPrivateNetworkID).(string)))
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("region", region)
@@ -207,6 +212,7 @@ func ResourceRouteDelete(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
+	// issue with route deletion for now, permissions_denied
 	err = vpcAPI.DeleteRoute(&vpc.DeleteRouteRequest{
 		Region:  region,
 		RouteID: ID,
