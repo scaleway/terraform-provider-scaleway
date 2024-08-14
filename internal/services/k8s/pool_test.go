@@ -643,7 +643,7 @@ func testAccCheckK8SPoolPublicIP(tt *acctest.TestTools, clusterTFName, poolTFNam
 			if disabled == true && server.Server.PublicIPs != nil && len(server.Server.PublicIPs) > 0 {
 				return errors.New("found node with public IP when none was expected")
 			}
-			if disabled == false && (server.Server.PublicIPs == nil || len(server.Server.PublicIPs) == 0) {
+			if disabled == false && len(server.Server.PublicIPs) == 0 {
 				return errors.New("found node with no public IP when one was expected")
 			}
 		}
