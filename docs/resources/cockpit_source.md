@@ -44,9 +44,9 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Data sources' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means that they include the region, in the `{region}/{id}` format. For example, if your data source is located in the `fr-par` region, its ID would look like the following: `fr-par/11111111-1111-1111-1111-111111111111`.
 
-- `url` - The URL of the cockpit data source.
-- `push_url` - The URL endpoint used for pushing data to the cockpit data source.
-- `origin` - The origin of the cockpit data source.
+- `url` - The URL of the Cockpit data source.
+- `push_url` - The URL endpoint used for pushing data to the Cockpit data source.
+- `origin` - The origin of the Cockpit data source.
 - `synchronized_with_grafana` - Indicates whether the data source is synchronized with Grafana.
 - `created_at` - The date and time the data source was created (in RFC 3339 format).
 - `updated_at` - The date and time the data source was last updated (in RFC 3339 format).
