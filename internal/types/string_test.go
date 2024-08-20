@@ -26,7 +26,7 @@ func TestStringHashcode_positiveIndex(t *testing.T) {
 func TestStringHashcode(t *testing.T) {
 	v := "hello, world"
 	expected := types.StringHashcode(v)
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		actual := types.StringHashcode(v)
 		if actual != expected {
 			t.Fatalf("bad: %#v\n\t%#v", actual, expected)
