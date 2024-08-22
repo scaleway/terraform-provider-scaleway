@@ -94,6 +94,7 @@ resource "scaleway_iam_policy" "iam_tf_storage_policy" {
 
 IAM policy rule can use a condition to be applied.
 The following variables are available:
+
 - `request.ip`
 - `request.user_agent`
 - `request.time`
