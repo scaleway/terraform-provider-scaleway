@@ -9,6 +9,7 @@ jobs:
   tfproviderlint:
     runs-on: ubuntu-latest
     steps:
+      # Checkout should always be before setup-go to ensure caching is working
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
@@ -20,6 +21,7 @@ jobs:
   tfproviderdocs:
     runs-on: ubuntu-latest
     steps:
+      # Checkout should always be before setup-go to ensure caching is working
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:

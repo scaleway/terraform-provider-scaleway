@@ -18,7 +18,7 @@ func NewWorkerPool(size int) *WorkerPool {
 		tasksToRun:      make(chan Task, size),
 	}
 
-	for i := 0; i < size; i++ {
+	for range size {
 		go p.worker()
 	}
 

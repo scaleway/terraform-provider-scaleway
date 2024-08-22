@@ -93,7 +93,7 @@ func TestAccContainer_Basic(t *testing.T) {
 						min_scale    	= 1
 						max_scale    	= 2
 						max_concurrency = 80
-						memory_limit 	= 256
+						memory_limit 	= 1120
 						cpu_limit		= 280
 						deploy       	= false
 					}
@@ -104,7 +104,7 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-tf"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "port", "5000"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "cpu_limit", "280"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "256"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "1120"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "min_scale", "1"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "max_scale", "2"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "timeout", "300"),
