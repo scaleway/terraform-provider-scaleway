@@ -93,7 +93,6 @@ resource "scaleway_iam_policy" "iam_tf_storage_policy" {
 ### Create a policy with a particular condition
 
 IAM policy rule can use a condition to be applied.
-This condition is written in a [CEL](https://github.com/google/cel-spec/blob/master/doc/langdef.md) format.
 The following variables are available:
 - `request.ip`
 - `request.user_agent`
