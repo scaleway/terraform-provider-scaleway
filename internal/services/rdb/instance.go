@@ -151,7 +151,7 @@ func ResourceInstance() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: dsf.Locality,
 							Description:      "The private network ID",
 						},

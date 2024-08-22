@@ -24,11 +24,11 @@ func DataSourceRecord() *schema.Resource {
 	dsSchema["type"].ConflictsWith = []string{"record_id"}
 	dsSchema["data"].ConflictsWith = []string{"record_id"}
 	dsSchema["record_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the record",
-		ValidateFunc:  verify.IsUUID(),
-		ConflictsWith: []string{"name", "type", "data"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the record",
+		ValidateDiagFunc: verify.IsUUID(),
+		ConflictsWith:    []string{"name", "type", "data"},
 	}
 
 	return &schema.Resource{

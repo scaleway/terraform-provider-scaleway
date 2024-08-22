@@ -157,7 +157,7 @@ func ResourceServer() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
-					ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 					DiffSuppressFunc: dsf.Locality,
 				},
 				Optional:    true,
@@ -245,11 +245,11 @@ func ResourceServer() *schema.Resource {
 				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.BootType](),
 			},
 			"bootscript_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "ID of the target bootscript (set boot_type to bootscript)",
-				ValidateFunc: verify.IsUUID(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "ID of the target bootscript (set boot_type to bootscript)",
+				ValidateDiagFunc: verify.IsUUID(),
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -280,7 +280,7 @@ func ResourceServer() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							Description:      "The Private Network ID",
 							DiffSuppressFunc: dsf.Locality,
 						},

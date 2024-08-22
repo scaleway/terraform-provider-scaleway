@@ -25,7 +25,7 @@ func DataSourceEndpointLoadBalancer() *schema.Resource {
 				Computed:         true,
 				Description:      "Instance on which the endpoint is attached",
 				ConflictsWith:    []string{"instance_name"},
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"instance_name": {

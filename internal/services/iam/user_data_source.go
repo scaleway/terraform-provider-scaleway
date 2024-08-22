@@ -17,11 +17,11 @@ func DataSourceUser() *schema.Resource {
 		ReadContext: DataSourceIamUserRead,
 		Schema: map[string]*schema.Schema{
 			"user_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The ID of the IAM user",
-				ValidateFunc:  verify.IsUUID(),
-				ConflictsWith: []string{"email"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The ID of the IAM user",
+				ValidateDiagFunc: verify.IsUUID(),
+				ConflictsWith:    []string{"email"},
 			},
 			"email": {
 				Type:          schema.TypeString,

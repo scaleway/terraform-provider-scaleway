@@ -14,10 +14,10 @@ func DataSourceDHCP() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCP().Schema)
 
 	dsSchema["dhcp_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  "The ID of the public gateway DHCP configuration",
-		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The ID of the public gateway DHCP configuration",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{

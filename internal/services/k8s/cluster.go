@@ -155,7 +155,7 @@ func ResourceCluster() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "The ID of the cluster's private network",
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"region":          regional.Schema(),
