@@ -117,6 +117,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the IAM policy.
 - `description` - (Optional) The description of the IAM policy.
+- `condition` - (Optional) The condition of the IAM policy.
 - `tags` - (Optional) The tags associated with the IAM policy.
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the policy is associated with.
 - `user_id` - ID of the user the policy will be linked to

@@ -110,7 +110,7 @@ func ResourcePolicy() *schema.Resource {
 						},
 						"condition": {
 							Type:        schema.TypeString,
-							Description: "Conditions of the policy written in CEL (https://github.com/google/cel-spec/blob/master/doc/langdef.md)",
+							Description: "Conditions of the policy",
 							Optional:    true,
 						},
 					},
