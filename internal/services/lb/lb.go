@@ -132,8 +132,8 @@ func ResourceLb() *schema.Resource {
 							Optional:    true,
 							Deprecated:  "static_config field is deprecated, please use dhcp_config instead",
 							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: verify.IsStandaloneIPorCIDR(),
+								Type:             schema.TypeString,
+								ValidateDiagFunc: verify.IsStandaloneIPorCIDR(),
 							},
 							MaxItems: 1,
 						},

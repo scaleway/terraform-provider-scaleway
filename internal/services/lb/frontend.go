@@ -69,7 +69,7 @@ func ResourceFrontend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Set the maximum inactivity time on the client side",
 			},
 			"certificate_id": {

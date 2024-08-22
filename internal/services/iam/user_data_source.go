@@ -24,11 +24,11 @@ func DataSourceUser() *schema.Resource {
 				ConflictsWith:    []string{"email"},
 			},
 			"email": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The email address of the IAM user",
-				ValidateFunc:  verify.IsEmail(),
-				ConflictsWith: []string{"user_id"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The email address of the IAM user",
+				ValidateDiagFunc: verify.IsEmail(),
+				ConflictsWith:    []string{"user_id"},
 			},
 			"organization_id": {
 				Type:          schema.TypeString,
