@@ -165,8 +165,8 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 	for _, server := range res.Servers {
 		rawServer := make(map[string]interface{})
 		rawServer["id"] = zonal.NewID(server.Zone, server.ID).String()
-		if server.PublicIP != nil {
-			rawServer["public_ip"] = server.PublicIP.Address.String()
+		if server.PublicIP != nil { //nolint:staticcheck
+			rawServer["public_ip"] = server.PublicIP.Address.String() //nolint:staticcheck
 		}
 		if server.PublicIPs != nil {
 			rawServer["public_ips"] = flattenServerPublicIPs(server.Zone, server.PublicIPs)
@@ -191,7 +191,9 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 			rawServer["tags"] = server.Tags
 		}
 		rawServer["security_group_id"] = zonal.NewID(zone, server.SecurityGroup.ID).String()
-		rawServer["enable_ipv6"] = server.EnableIPv6
+		if server.EnableIPv6 != nil { //nolint:staticcheck
+			rawServer["enable_ipv6"] = server.EnableIPv6 //nolint:staticcheck
+		}
 		rawServer["enable_dynamic_ip"] = server.DynamicIPRequired
 		rawServer["routed_ip_enabled"] = server.RoutedIPEnabled
 		rawServer["organization_id"] = server.Organization
@@ -203,10 +205,10 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 			rawServer["placement_group_id"] = zonal.NewID(zone, server.PlacementGroup.ID).String()
 			rawServer["placement_group_policy_respected"] = server.PlacementGroup.PolicyRespected
 		}
-		if server.IPv6 != nil {
-			rawServer["ipv6_address"] = server.IPv6.Address.String()
-			rawServer["ipv6_gateway"] = server.IPv6.Gateway.String()
-			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)
+		if server.IPv6 != nil { //nolint:staticcheck
+			rawServer["ipv6_address"] = server.IPv6.Address.String() //nolint:staticcheck
+			rawServer["ipv6_gateway"] = server.IPv6.Gateway.String() //nolint:staticcheck
+			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)   //nolint:staticcheck
 			if err != nil {
 				diags = append(diags, diag.FromErr(fmt.Errorf("failed to read ipv6 netmask: %w", err))...)
 				continue

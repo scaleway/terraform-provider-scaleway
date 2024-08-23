@@ -420,7 +420,7 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// deprecated attribute
-	createReq.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2"))
+	createReq.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2")) //nolint:staticcheck
 
 	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {
@@ -472,7 +472,7 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("timeout_connect", types.FlattenDuration(backend.TimeoutConnect))
 	_ = d.Set("timeout_tunnel", types.FlattenDuration(backend.TimeoutTunnel))
 	_ = d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(backend.OnMarkedDownAction))
-	_ = d.Set("send_proxy_v2", types.FlattenBoolPtr(backend.SendProxyV2))
+	_ = d.Set("send_proxy_v2", types.FlattenBoolPtr(backend.SendProxyV2)) //nolint:staticcheck
 	_ = d.Set("failover_host", backend.FailoverHost)
 	_ = d.Set("ssl_bridging", types.FlattenBoolPtr(backend.SslBridging))
 	_ = d.Set("ignore_ssl_server_verify", types.FlattenBoolPtr(backend.IgnoreSslServerVerify))
@@ -569,7 +569,7 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// deprecated
-	req.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2"))
+	req.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2")) //nolint:staticcheck
 
 	_, err = lbAPI.UpdateBackend(req, scw.WithContext(ctx))
 	if err != nil {

@@ -457,9 +457,9 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("tags", types.FlattenSliceString(res.Tags))
-	if res.Endpoint != nil {
-		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP))
-		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
+	if res.Endpoint != nil { //nolint:staticcheck
+		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP)) //nolint:staticcheck
+		_ = d.Set("endpoint_port", int(res.Endpoint.Port))            //nolint:staticcheck
 	} else {
 		_ = d.Set("endpoint_ip", "")
 		_ = d.Set("endpoint_port", 0)

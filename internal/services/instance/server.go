@@ -391,7 +391,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
 	if ok {
-		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool))
+		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool)) //nolint:staticcheck
 	}
 
 	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
@@ -404,7 +404,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.PublicIP = types.ExpandStringPtr(zonal.ExpandID(ipID).ID)
+		req.PublicIP = types.ExpandStringPtr(zonal.ExpandID(ipID).ID) //nolint:staticcheck
 	}
 
 	if ipIDs, ok := d.GetOk("ip_ids"); ok {
@@ -583,7 +583,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("tags", server.Tags)
 		}
 		_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
-		_ = d.Set("enable_ipv6", server.EnableIPv6)
+		_ = d.Set("enable_ipv6", server.EnableIPv6) //nolint:staticcheck
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)
 		_ = d.Set("project_id", server.Project)
@@ -604,9 +604,9 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("private_ip", types.FlattenStringPtr(server.PrivateIP))
 		}
 
-		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID {
-			if !server.PublicIP.Dynamic {
-				_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String())
+		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID { //nolint:staticcheck
+			if !server.PublicIP.Dynamic { //nolint:staticcheck
+				_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String()) //nolint:staticcheck
 			} else {
 				_ = d.Set("ip_id", "")
 			}
@@ -614,11 +614,11 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("ip_id", "")
 		}
 
-		if server.PublicIP != nil {
-			_ = d.Set("public_ip", server.PublicIP.Address.String())
+		if server.PublicIP != nil { //nolint:staticcheck
+			_ = d.Set("public_ip", server.PublicIP.Address.String()) //nolint:staticcheck
 			d.SetConnInfo(map[string]string{
 				"type": "ssh",
-				"host": server.PublicIP.Address.String(),
+				"host": server.PublicIP.Address.String(), //nolint:staticcheck
 			})
 		} else {
 			_ = d.Set("public_ip", "")
@@ -637,10 +637,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("ip_ids", []interface{}{})
 		}
 
-		if server.IPv6 != nil {
-			_ = d.Set("ipv6_address", server.IPv6.Address.String())
-			_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String())
-			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)
+		if server.IPv6 != nil { //nolint:staticcheck
+			_ = d.Set("ipv6_address", server.IPv6.Address.String()) //nolint:staticcheck
+			_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String()) //nolint:staticcheck
+			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)  //nolint:staticcheck
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -831,10 +831,10 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 		ipID := zonal.ExpandID(d.Get("ip_id")).ID
 		// If an IP is already attached, and it's not a dynamic IP we detach it.
-		if server.PublicIP != nil && !server.PublicIP.Dynamic {
+		if server.PublicIP != nil && !server.PublicIP.Dynamic { //nolint:staticcheck
 			_, err = api.UpdateIP(&instanceSDK.UpdateIPRequest{
 				Zone:   zone,
-				IP:     server.PublicIP.ID,
+				IP:     server.PublicIP.ID, //nolint:staticcheck
 				Server: &instanceSDK.NullableStringValue{Null: true},
 			})
 			if err != nil {

@@ -316,8 +316,8 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("timeout_client", types.FlattenDuration(frontend.TimeoutClient))
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 
-	if frontend.Certificate != nil {
-		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID))
+	if frontend.Certificate != nil { //nolint:staticcheck
+		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
 	} else {
 		_ = d.Set("certificate_id", "")
 	}
