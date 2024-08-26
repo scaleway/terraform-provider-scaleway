@@ -9,6 +9,7 @@ linters:
     - bodyclose # checks whether HTTP response body is closed successfully [fast: false, auto-fix: false]
     - containedctx # containedctx is a linter that detects struct contained context.Context field [fast: true, auto-fix: false]
     - contextcheck # check the function whether use a non-inherited context [fast: false, auto-fix: false]
+    - copyloopvar # copyloopvar is a linter detects places where loop variables are copied [fast: true, auto-fix: false]
     - decorder # check declaration order and count of types, constants, variables and functions [fast: true, auto-fix: false]
     - dogsled # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f()) [fast: true, auto-fix: false]
     - dupword # checks for duplicate words in the source code [fast: true, auto-fix: true]
@@ -16,7 +17,6 @@ linters:
     - errcheck # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases [fast: false, auto-fix: false]
     - errchkjson # Checks types passed to the json encoding functions. Reports unsupported types and optionally reports occasions, where the check for the returned error can be omitted. [fast: false, auto-fix: false]
     - errname # Checks that sentinel errors are prefixed with the `Err` and error types are suffixed with the `Error`. [fast: false, auto-fix: false]
-    - exportloopref # checks for pointers to enclosing loop variables [fast: false, auto-fix: false]
     - forbidigo # Forbids identifiers [fast: true, auto-fix: false]
     - gci # Gci controls golang package import order and makes it always deterministic. [fast: true, auto-fix: false]
     - gocheckcompilerdirectives # Checks that go compiler directive comments (//go:) are valid. [fast: true, auto-fix: false]
@@ -37,6 +37,7 @@ linters:
     - grouper # An analyzer to analyze expression groups. [fast: true, auto-fix: false]
     - importas # Enforces consistent import aliases [fast: false, auto-fix: false]
     - ineffassign # Detects when assignments to existing variables are not used [fast: true, auto-fix: false]
+    - intrange # intrange is a linter to find places where for loops could make use of an integer range. [fast: true, auto-fix: false]
     - ireturn # Accept Interfaces, Return Concrete Types [fast: false, auto-fix: false]
     - loggercheck # (logrlint): Checks key value pairs for common logger libraries (kitlog,klog,logr,zap). [fast: false, auto-fix: false]
     - makezero # Finds slice declarations with non-zero initial length [fast: false, auto-fix: false]
@@ -66,6 +67,8 @@ linters:
     - tparallel # tparallel detects inappropriate usage of t.Parallel() method in your Go test codes [fast: false, auto-fix: false]
     - typecheck # Like the front-end of a Go compiler, parses and type-checks Go code [fast: false, auto-fix: false]
     - unconvert # Remove unnecessary type conversions [fast: false, auto-fix: false]
+    - unused #(megacheck): Checks Go code for unused constants, variables, functions and types [fast: false, auto-fix: false]
+    - usestdlibvars # A linter that detect the possibility to use variables/constants from the Go standard library. [fast: true, auto-fix: false]
     - wastedassign # wastedassign finds wasted assignment statements. [fast: false, auto-fix: false]
     - whitespace # Tool for detection of leading and trailing whitespace [fast: true, auto-fix: true]
     - zerologlint # Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg` [fast: false, auto-fix: false]
@@ -92,13 +95,15 @@ linters:
     - nilnil # Checks that there is no simultaneous return of `nil` error and an invalid value. [fast: false, auto-fix: false]
     - nlreturn # nlreturn checks for a new line before return and branch statements to increase code clarity [fast: true, auto-fix: false]
     - staticcheck #(megacheck): Staticcheck is a go vet on steroids, applying a ton of static analysis checks [fast: false, auto-fix: false]
-    - unused #(megacheck): Checks Go code for unused constants, variables, functions and types [fast: false, auto-fix: false]
     - varnamelen # checks that the length of a variable's name matches its scope [fast: false, auto-fix: false]
     - wsl # Whitespace Linter - Forces you to use empty lines! [fast: true, auto-fix: false]
 
 linters-settings:
   goconst:
     min-len: 5
+  gosec:
+    excludes:
+      - G115
 
 issues:
   exclude-rules:

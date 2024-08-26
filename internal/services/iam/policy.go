@@ -108,6 +108,11 @@ func ResourcePolicy() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"condition": {
+							Type:        schema.TypeString,
+							Description: "Conditions of the policy",
+							Optional:    true,
+						},
 					},
 				},
 			},

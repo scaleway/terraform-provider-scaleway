@@ -1,16 +1,16 @@
 {{- /*gotype: tftemplate/models.ResourceTemplate*/ -}}
-package scaleway
+package {{.API}}
 
 import (
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
     "github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-// {{.API}}APIWith{{.LocalityUpper}} returns a new {{.API}} API and the {{.Locality}} for a Create request
+// newAPIWith{{.LocalityUpper}} returns a new {{.API}} API and the {{.Locality}} for a Create request
 func {{.API}}APIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*{{.API}}.API, scw.{{.LocalityUpper}}, error) {
     {{.API}}API := {{.API}}.NewAPI(meta.ExtractScwClient(m))
 
-    {{.Locality}}, err := extract{{.LocalityUpper}}(d, m)
+    {{.Locality}}, err := meta.Extract{{.LocalityUpper}}(d, m)
     if err != nil {
         return nil, "", err
     }
@@ -22,7 +22,7 @@ func {{.API}}APIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*
 func {{.API}}APIWith{{.LocalityUpper}}AndID(m interface{}, {{.LocalityAdjective}}ID string) (*{{.API}}.API, scw.{{.LocalityUpper}}, string, error) {
     {{.API}}API := {{.API}}.NewAPI(meta.ExtractScwClient(m))
 
-    {{.Locality}}, ID, err := parse{{.LocalityAdjectiveUpper}}ID({{.LocalityAdjective}}ID)
+    {{.Locality}}, ID, err := {{.LocalityAdjective}}.ParseID({{.LocalityAdjective}}ID)
     if err != nil {
         return nil, "", "", err
     }
