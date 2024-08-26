@@ -79,6 +79,7 @@ func ResourceDomain() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Error message if the last check failed",
+				Deprecated:  "last_error is deprecated",
 			},
 			"spf_config": {
 				Type:        schema.TypeString,
