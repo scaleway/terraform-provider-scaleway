@@ -130,7 +130,7 @@ func ResourceLb() *schema.Resource {
 							Description: "Define an IP address in the subnet of your private network that will be assigned to your load balancer instance",
 							Type:        schema.TypeList,
 							Optional:    true,
-							Deprecated:  "static_config field is deprecated, please use dhcp_config instead",
+							Deprecated:  "static_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
 							Elem: &schema.Schema{
 								Type:             schema.TypeString,
 								ValidateDiagFunc: verify.IsStandaloneIPorCIDR(),
@@ -142,6 +142,7 @@ func ResourceLb() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
+							Deprecated:  "dhcp_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
 						},
 						"ipam_ids": {
 							Type: schema.TypeList,
