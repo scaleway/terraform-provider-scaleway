@@ -21,11 +21,11 @@ func DataSourceApplication() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"application_id"}
 	dsSchema["application_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IAM application",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IAM application",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,

@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -78,7 +77,7 @@ type RetryableTransport struct {
 func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	var body io.ReadSeeker
 	if r.Body != nil {
-		bs, err := ioutil.ReadAll(r.Body)
+		bs, err := io.ReadAll(r.Body)
 		if err != nil {
 			return nil, err
 		}

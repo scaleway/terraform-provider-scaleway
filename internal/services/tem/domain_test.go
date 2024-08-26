@@ -38,7 +38,7 @@ func TestAccDomain_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainName),
 					resource.TestCheckResourceAttrSet("scaleway_tem_domain.cr01", "dmarc_config"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc"),
-
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
 			},

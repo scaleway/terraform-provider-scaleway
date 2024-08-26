@@ -29,11 +29,11 @@ func DataSourceNetwork() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, searchFields...)
 
 	dsSchema["gateway_network_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the gateway network",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: searchFields,
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the gateway network",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    searchFields,
 	}
 
 	return &schema.Resource{

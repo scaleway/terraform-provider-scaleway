@@ -36,10 +36,10 @@ func ResourcePATRule() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The ID of the gateway this PAT rule is applied to",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The ID of the gateway this PAT rule is applied to",
 			},
 			"private_ip": {
 				Type:         schema.TypeString,

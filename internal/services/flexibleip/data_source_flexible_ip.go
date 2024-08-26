@@ -23,19 +23,19 @@ func DataSourceFlexibleIP() *schema.Resource {
 		ConflictsWith: []string{"flexible_ip_id"},
 	}
 	dsSchema["flexible_ip_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IPv4 address",
-		ConflictsWith: []string{"ip_address"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IPv4 address",
+		ConflictsWith:    []string{"ip_address"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The project_id you want to attach the resource to",
-		Optional:     true,
-		ForceNew:     true,
-		Computed:     true,
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Description:      "The project_id you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		Computed:         true,
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

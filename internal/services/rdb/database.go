@@ -34,11 +34,11 @@ func ResourceDatabase() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDWithLocality(),
-				Description:  "Instance on which the database is created",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDWithLocality(),
+				Description:      "Instance on which the database is created",
 			},
 			"name": {
 				Type:        schema.TypeString,

@@ -141,6 +141,7 @@ func TestAccFrontend_Certificate(t *testing.T) {
 					isFrontendPresent(tt, "scaleway_lb_frontend.frt01"),
 					isFrontendCertificatePresent(tt, "scaleway_lb_frontend.frt01", "scaleway_lb_certificate.cert01"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "certificate_ids.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_frontend.frt01", "certificate_id"),
 				),
 			},
 		},

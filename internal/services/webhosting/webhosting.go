@@ -32,16 +32,16 @@ func ResourceWebhosting() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"offer_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The ID of the selected offer for the hosting",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The ID of the selected offer for the hosting",
 			},
 			"email": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsEmail(),
-				Description:  "Contact email of the client for the hosting",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsEmail(),
+				Description:      "Contact email of the client for the hosting",
 			},
 			"domain": {
 				Type:        schema.TypeString,

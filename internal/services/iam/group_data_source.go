@@ -21,11 +21,11 @@ func DataSourceGroup() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"group_id"}
 	dsSchema["group_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IAM group",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IAM group",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,

@@ -26,11 +26,11 @@ func DataSourcePrivateNIC() *schema.Resource {
 	dsSchema["private_network_id"].ConflictsWith = []string{"private_nic_id"}
 
 	dsSchema["private_nic_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the Private NIC",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"private_network_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the Private NIC",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"private_network_id"},
 	}
 
 	return &schema.Resource{

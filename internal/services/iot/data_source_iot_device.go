@@ -20,11 +20,11 @@ func DataSourceDevice() *schema.Resource {
 	dsSchema["name"].ConflictsWith = []string{"device_id"}
 	dsSchema["hub_id"].Optional = true
 	dsSchema["device_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IOT Device",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IOT Device",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{

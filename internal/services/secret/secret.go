@@ -98,7 +98,7 @@ func ResourceSecret() *schema.Resource {
 							Optional:         true,
 							Type:             schema.TypeString,
 							DiffSuppressFunc: dsf.Duration,
-							ValidateFunc:     verify.IsDuration(),
+							ValidateDiagFunc: verify.IsDuration(),
 							Description:      "Time frame, from one second and up to one year, during which the secret's versions are valid. Has to be specified in Go Duration format",
 						},
 						"expires_once_accessed": {
