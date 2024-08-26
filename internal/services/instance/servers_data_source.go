@@ -183,8 +183,8 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		rawServer["zone"] = string(zone)
 		rawServer["name"] = server.Name
 		rawServer["boot_type"] = server.BootType
-		if server.Bootscript != nil {
-			rawServer["bootscript_id"] = server.Bootscript.ID
+		if server.Bootscript != nil { //nolint:staticcheck
+			rawServer["bootscript_id"] = server.Bootscript.ID //nolint:staticcheck
 		}
 		rawServer["type"] = server.CommercialType
 		if len(server.Tags) > 0 {

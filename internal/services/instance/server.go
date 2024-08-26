@@ -395,7 +395,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
-		req.Bootscript = types.ExpandStringPtr(bootScriptID)
+		req.Bootscript = types.ExpandStringPtr(bootScriptID) //nolint:staticcheck
 	}
 
 	if bootType, ok := d.GetOk("boot_type"); ok {
@@ -575,8 +575,8 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("zone", string(zone))
 		_ = d.Set("name", server.Name)
 		_ = d.Set("boot_type", server.BootType)
-		if server.Bootscript != nil {
-			_ = d.Set("bootscript_id", server.Bootscript.ID)
+		if server.Bootscript != nil { //nolint:staticcheck
+			_ = d.Set("bootscript_id", server.Bootscript.ID) //nolint:staticcheck
 		}
 		_ = d.Set("type", server.CommercialType)
 		if len(server.Tags) > 0 {
