@@ -218,8 +218,8 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important** Database Instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they
 are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-- `endpoint_ip` - (Deprecated) The IP of the Database Instance.
-- `endpoint_port` - (Deprecated) The port of the Database Instance.
+- `endpoint_ip` - (Deprecated) The IP of the Database Instance. Please use the private_network or the load_balancer attribute.
+- `endpoint_port` - (Deprecated) The port of the Database Instance. Please use the private_network or the load_balancer attribute.
 - `read_replicas` - List of read replicas of the Database Instance.
     - `ip` - IP of the replica.
     - `port` - Port of the replica.
