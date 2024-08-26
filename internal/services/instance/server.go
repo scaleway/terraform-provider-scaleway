@@ -168,6 +168,7 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Determines if IPv6 is enabled for the server",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
 					// routed_ip enabled servers already support enable_ipv6. Let's ignore this argument if it is.
 					routedIPEnabled := types.GetBool(d, "routed_ip_enabled")
@@ -187,6 +188,7 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The public IPv4 address of the server",
+				Deprecated:  "Use public_ips instead",
 			},
 			"ip_id": {
 				Type:             schema.TypeString,
@@ -209,11 +211,13 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The default public IPv6 address routed to the server.",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 			},
 			"ipv6_gateway": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The IPv6 gateway address",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 			},
 			"ipv6_prefix_length": {
 				Type:        schema.TypeInt,
@@ -250,6 +254,7 @@ func ResourceServer() *schema.Resource {
 				Computed:         true,
 				Description:      "ID of the target bootscript (set boot_type to bootscript)",
 				ValidateDiagFunc: verify.IsUUID(),
+				Deprecated:       "bootscript is not supported anymore.",
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -575,14 +580,18 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("zone", string(zone))
 		_ = d.Set("name", server.Name)
 		_ = d.Set("boot_type", server.BootType)
+
+		// Bootscript is deprecated
 		if server.Bootscript != nil { //nolint:staticcheck
 			_ = d.Set("bootscript_id", server.Bootscript.ID) //nolint:staticcheck
 		}
+
 		_ = d.Set("type", server.CommercialType)
 		if len(server.Tags) > 0 {
 			_ = d.Set("tags", server.Tags)
 		}
 		_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
+		// EnableIPv6 is deprecated
 		_ = d.Set("enable_ipv6", server.EnableIPv6) //nolint:staticcheck
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)

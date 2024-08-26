@@ -722,6 +722,8 @@ func TestAccServer_Ipv6(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.server01"),
+					// enable_ipv6, ipv6_address and ipv6_gateway are marked as deprecated
+					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "enable_ipv6", "true"),
 					acctest.CheckResourceAttrIPv6("scaleway_instance_server.server01", "ipv6_address"),
 					acctest.CheckResourceAttrIPv6("scaleway_instance_server.server01", "ipv6_gateway"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", "64"),
@@ -797,7 +799,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ip"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ip"), // public_ip is deprecated
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "id", "scaleway_instance_server.base", "ip_id"),
 				),
 			},
@@ -943,6 +945,7 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 	}
 }
 
+// bootscript are marked as deprecated
 func TestAccServer_Bootscript(t *testing.T) {
 	t.Skip("Creation of bootscript server is no longer supported")
 	tt := acctest.NewTestTools(t)

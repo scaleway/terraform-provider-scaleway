@@ -41,8 +41,9 @@ func DataSourceServers() *schema.Resource {
 							Type:     schema.TypeString,
 						},
 						"public_ip": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:   true,
+							Type:       schema.TypeString,
+							Deprecated: "Use public_ips instead",
 						},
 						"public_ips": {
 							Type:     schema.TypeList,
@@ -77,8 +78,9 @@ func DataSourceServers() *schema.Resource {
 							Type:     schema.TypeString,
 						},
 						"bootscript_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:   true,
+							Type:       schema.TypeString,
+							Deprecated: "bootscript are not supported",
 						},
 						"type": {
 							Computed: true,

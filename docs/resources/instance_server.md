@@ -211,6 +211,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 ~> **Important:** If this field contains local volumes, you have to first detach them, in one apply, and then delete the volume in another apply.
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server. Useful only with `routed_ip_enabled` as false, otherwise ipv6 is always supported.
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 
 - `ip_id` - (Optional) The ID of the reserved IP that is attached to the server.
 
@@ -278,8 +279,11 @@ In addition to all arguments above, the following attributes are exported:
     - `id` - The ID of the IP
     - `address` - The address of the IP
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 - `organization_id` - The organization ID the server is associated with.
 
