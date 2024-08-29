@@ -24,11 +24,11 @@ func DataSourceIP() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Input
 			"ipam_ip_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The ID of the IPAM IP",
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"private_network_id", "resource", "mac_address", "type", "tags", "attached"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The ID of the IPAM IP",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				ConflictsWith:    []string{"private_network_id", "resource", "mac_address", "type", "tags", "attached"},
 			},
 			"private_network_id": {
 				Type:          schema.TypeString,

@@ -151,7 +151,7 @@ func ResourceInstance() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: dsf.Locality,
 							Description:      "The private network ID",
 						},
@@ -211,6 +211,7 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Endpoint port of the database instance",
+				Deprecated:  "Please use the private_network or the load_balancer attribute",
 			},
 			"read_replicas": {
 				Type:        schema.TypeList,
@@ -457,13 +458,16 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("tags", types.FlattenSliceString(res.Tags))
-	if res.Endpoint != nil {
-		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP))
-		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
+
+	// Deprecated attribute, might be deleted later
+	if res.Endpoint != nil { //nolint:staticcheck
+		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP)) //nolint:staticcheck
+		_ = d.Set("endpoint_port", int(res.Endpoint.Port))            //nolint:staticcheck
 	} else {
 		_ = d.Set("endpoint_ip", "")
 		_ = d.Set("endpoint_port", 0)
 	}
+
 	if res.Volume != nil {
 		_ = d.Set("volume_type", res.Volume.Type)
 		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))

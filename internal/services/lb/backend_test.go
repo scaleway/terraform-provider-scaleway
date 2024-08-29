@@ -62,6 +62,7 @@ func TestAccBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "max_retries", "3"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_transient_delay", "500ms"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_send_proxy", "false"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_backend.bkd01", "send_proxy_v2"), // Deprecated attribute
 				),
 			},
 			{

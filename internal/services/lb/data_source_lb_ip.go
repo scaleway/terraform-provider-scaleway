@@ -24,11 +24,11 @@ func DataSourceIP() *schema.Resource {
 		ConflictsWith: []string{"ip_id"},
 	}
 	dsSchema["ip_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IP address",
-		ConflictsWith: []string{"ip_address"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IP address",
+		ConflictsWith:    []string{"ip_address"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"].Optional = true
 

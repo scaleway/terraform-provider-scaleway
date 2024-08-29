@@ -36,10 +36,10 @@ func ResourceTrigger() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"function_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The ID of the function to create a trigger for",
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The ID of the function to create a trigger for",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"name": {
 				Type:        schema.TypeString,

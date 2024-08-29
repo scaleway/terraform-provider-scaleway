@@ -10,16 +10,6 @@ import (
 )
 
 func TestUnknownVolume_VolumeTemplate(t *testing.T) {
-	type fields struct {
-		Zone               scw.Zone
-		ID                 string
-		Name               string
-		Size               *scw.Size
-		ServerID           *string
-		Boot               *bool
-		IsBlockVolume      bool
-		InstanceVolumeType instanceSDK.VolumeVolumeType
-	}
 	tests := []struct {
 		name   string
 		volume *instance.UnknownVolume
