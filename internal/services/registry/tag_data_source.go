@@ -21,16 +21,14 @@ func DataSourceRegistryImageTag() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"tag_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The ID of the registry image tag",
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Description:      "The ID of the registry image tag",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"image_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The ID of the registry image",
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Description:      "The ID of the registry image",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"name": {
 				Type:        schema.TypeString,
