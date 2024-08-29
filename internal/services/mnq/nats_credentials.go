@@ -35,6 +35,7 @@ func ResourceNatsCredentials() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The nats credentials name",
 			},
 			"file": {
@@ -86,9 +87,8 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 		}
 		return diag.FromErr(err)
 	}
-	natsAccountId := regional.NewIDString(region, credentials.NatsAccountID)
 
-	_ = d.Set("account_id", natsAccountId)
+	_ = d.Set("account_id", credentials.NatsAccountID)
 	_ = d.Set("name", credentials.Name)
 	_ = d.Set("region", region)
 
