@@ -48,4 +48,4 @@ This section lists the arguments that you can provide to the `scaleway_function`
 
 ## Attributes Reference
 
-The `scaleway_container` data source exports certain attributes once the function information is retrieved. These attributes can be referenced in other parts of your Terraform configuration. The exported attributes come from the `scaleway_function` [resource](../resources/function.md).
+The `scaleway_function` data source exports certain attributes once the function information is retrieved. These attributes can be referenced in other parts of your Terraform configuration. The exported attributes come from the `scaleway_function` [resource](../resources/function.md).
