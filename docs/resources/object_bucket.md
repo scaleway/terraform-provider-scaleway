@@ -163,9 +163,9 @@ If you make any change to your bucket's tags using the console, it will overwrit
 
 At least one of `abort_incomplete_multipart_upload_days`, `expiration`, `transition` must be specified. The `transition` object supports the following:
 
-  * `days` (Optional) Specifies the number of days after object creation when the specific rule action takes effect.
+* `days` (Optional) Specifies the number of days after object creation when the specific rule action takes effect.
 
-  * `storage_class` (Required) Specifies the Scaleway [storage class](https://www.scaleway.com/en/docs/storage/object/concepts/#storage-class) `STANDARD`, `GLACIER`, `ONEZONE_IA`  to which you want the object to transition.
+* `storage_class` (Required) Specifies the Scaleway [storage class](https://www.scaleway.com/en/docs/storage/object/concepts/#storage-class) `STANDARD`, `GLACIER`, `ONEZONE_IA`  to which you want the object to transition.
 
 ~> **Important:**  If versioning is enabled, this rule only deletes the current version of an object.
 

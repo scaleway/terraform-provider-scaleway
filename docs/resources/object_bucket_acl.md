@@ -26,7 +26,7 @@ resource "scaleway_object_bucket_acl" "main" {
 }
 ```
 
-For more information, refer to the [PutBucketAcl API call documentation](/storage/object/api-cli/bucket-operations/#putbucketacl).
+For more information, refer to the [PutBucketAcl API call documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-operations/#putbucketacl).
 
 ## Example Usage with Grants
 
