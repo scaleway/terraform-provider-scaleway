@@ -5,10 +5,15 @@ page_title: "Scaleway: scaleway_domain_zone"
 
 # Resource: scaleway_domain_zone
 
-Creates and manages Scaleway Domain zone.  
-For more information, see [the documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/configure-dns-zones/).
+The `scaleway_domain_zone` resource allows you to create and manage Scaleway DNS zones.
+
+Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/) and [API documentation](https://www.scaleway.com/en/developers/api/domains-and-dns/) for more information.
 
 ## Example Usage
+
+### Create a DNS zone
+
+The following command allows you to create a DNS zone for the `test.scaleway-terraform.com` subdomain.
 
 
 ```terraform
@@ -22,34 +27,34 @@ resource "scaleway_domain_zone" "test" {
 
 The following arguments are supported:
 
-- `domain` - (Required) The domain where the DNS zone will be created.
+- `domain` - (Required) The main domain where the DNS zone will be created.
 
-- `subdomain` - (Required) The subdomain(zone name) to create in the domain.
+- `subdomain` - (Required) The name of the subdomain (zone name) to create within the domain.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the domain is associated with.
+- `project_id` - (Defaults to Project ID specified in the [provider configuration](../index.md#project_id) `project_id`) The ID of the Project associated with the domain.
 
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the zone, which is of the form `{subdomain}.{domain}`
+- `id` - The ID of the zone, in the `{subdomain}.{domain}` format.
 
-- `ns` - NameServer list for zone.
+- `ns` - The list of same servers for the zone.
 
-- `ns_default` - NameServer default list for zone.
+- `ns_default` -  The default list of same servers for the zone.
 
-- `ns_master` - NameServer master list for zone.
+- `ns_master` - The master list of same servers for the zone.
 
-- `status` - The domain zone status.
+- `status` - The status of the domain zone.
 
-- `message` - Message
+- `message` - Message.
 
-- `updated_at` - The date and time of the last update of the DNS zone.
+- `updated_at` - The date and time at which the DNS zone was last updated.
 
 ## Import
 
-Zone can be imported using the `{subdomain}.{domain}`, e.g.
+This section explains how to import a zone using the `{subdomain}.{domain}` format.
 
 ```bash
 terraform import scaleway_domain_zone.test test.scaleway-terraform.com
