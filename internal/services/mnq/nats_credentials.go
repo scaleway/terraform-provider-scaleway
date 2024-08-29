@@ -18,7 +18,6 @@ func ResourceNatsCredentials() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceMNQNatsCredentialsCreate,
 		ReadContext:   ResourceMNQNatsCredentialsRead,
-		UpdateContext: ResourceMNQNatsCredentialsUpdate,
 		DeleteContext: ResourceMNQNatsCredentialsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -28,6 +27,7 @@ func ResourceNatsCredentials() *schema.Resource {
 			"account_id": {
 				Type:             schema.TypeString,
 				Required:         true,
+				ForceNew:         true,
 				Description:      "ID of the nats account",
 				DiffSuppressFunc: dsf.Locality,
 			},
@@ -86,34 +86,13 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 		}
 		return diag.FromErr(err)
 	}
+	natsAccountId := regional.NewIDString(region, credentials.NatsAccountID)
 
-	_ = d.Set("account_id", credentials.NatsAccountID)
+	_ = d.Set("account_id", natsAccountId)
 	_ = d.Set("name", credentials.Name)
 	_ = d.Set("region", region)
 
 	return nil
-}
-
-func ResourceMNQNatsCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := NewNatsAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	req := &mnq.NatsAPIUpdateNatsAccountRequest{
-		Region:        region,
-		NatsAccountID: id,
-	}
-
-	if d.HasChange("name") {
-		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
-	}
-
-	if _, err := api.UpdateNatsAccount(req, scw.WithContext(ctx)); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
 
 func ResourceMNQNatsCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
