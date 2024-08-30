@@ -14,7 +14,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 )
 
-const webhookName = "terraform-webhook-test"
+const (
+	webhookName    = "terraform-webhook-test"
+	organizationID = "105bdce1-64c0-48ab-899d-868455867ecf"
+)
 
 func TestAccWebhook_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -29,20 +32,24 @@ func TestAccWebhook_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					
-
-					resource "scaleway_mnq_sns" "sns" {
+					data scaleway_account_project "project" {
+						name = "default"
+						organization_id      = "%s"
 					}
- 
+
+					data scaleway_mnq_sns sns {
+						project_id= data.scaleway_account_project.project.project_id
+					}
+
 					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
-						project_id = scaleway_mnq_sns.sns.project_id
+						project_id = data.scaleway_mnq_sns.sns.project_id
 						permissions {
 							can_manage = true
 						}
 					}
 
 					resource "scaleway_mnq_sns_topic" "sns_topic" {
-						project_id = scaleway_mnq_sns.sns.project_id
+						project_id = data.scaleway_mnq_sns.sns.project_id
 						name = "test-mnq-sns-topic-basic"
 						access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
 						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
@@ -91,7 +98,7 @@ func TestAccWebhook_Basic(t *testing.T) {
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
 						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
 					}
-				`, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, webhookName, eventTypes[0], eventTypes[1]),
+				`, organizationID, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, webhookName, eventTypes[0], eventTypes[1]),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", webhookName),
@@ -120,19 +127,25 @@ func TestAccWebhook_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					
+					data scaleway_account_project "project" {
+						name = "default"
+						organization_id      = "%s"
+					}
 
-					resource "scaleway_mnq_sns" "sns" {
+					data scaleway_mnq_sns sns {
+						project_id= data.scaleway_account_project.project.project_id
 					}
 
 					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
-						project_id = scaleway_mnq_sns.sns.project_id
+						project_id = data.scaleway_mnq_sns.sns.project_id
 						permissions {
 							can_manage = true
 						}
 					}
 
 					resource "scaleway_mnq_sns_topic" "sns_topic" {
-						project_id = scaleway_mnq_sns.sns.project_id
+						project_id = data.scaleway_mnq_sns.sns.project_id
 						name = "test-mnq-sns-topic-update"
 						access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
 						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
@@ -181,7 +194,7 @@ func TestAccWebhook_Update(t *testing.T) {
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
 						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
 					}
-				`, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, initialName, eventTypes[0]),
+				`, organizationID, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, initialName, eventTypes[0]),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", initialName),
@@ -193,18 +206,24 @@ func TestAccWebhook_Update(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 
-					resource "scaleway_mnq_sns" "sns" {
+					data scaleway_account_project "project" {
+						name = "default"
+						organization_id      = "%s"
+					}
+
+					data scaleway_mnq_sns sns {
+						project_id= data.scaleway_account_project.project.project_id
 					}
 
 					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
-						project_id = scaleway_mnq_sns.sns.project_id
+						project_id = data.scaleway_mnq_sns.sns.project_id
 						permissions {
 							can_manage = true
 						}
 					}
 
 					resource "scaleway_mnq_sns_topic" "sns_topic" {
-						project_id = scaleway_mnq_sns.sns.project_id
+						project_id = data.scaleway_mnq_sns.sns.project_id
 						name = "test-mnq-sns-topic-update"
 						access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
 						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
@@ -253,7 +272,7 @@ func TestAccWebhook_Update(t *testing.T) {
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
 						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
 					}
-				`, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, updatedName, updatedEventTypes[0]),
+				`, organizationID, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, updatedName, updatedEventTypes[0]),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", updatedName),
