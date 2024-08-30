@@ -40,6 +40,50 @@ func TestAccNatsCredentials_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNatsCredentials_UpdateName(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isNatsCredentialsDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_mnq_nats_account main {
+						name = "test-mnq-nats-credentials-basic"
+					}
+
+					resource scaleway_mnq_nats_credentials main {
+						account_id = scaleway_mnq_nats_account.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNatsCredentialsPresent(tt, "scaleway_mnq_nats_credentials.main"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_mnq_nats_account main {
+						name = "test-mnq-nats-credentials-basic"
+					}
+
+					resource scaleway_mnq_nats_credentials main {
+						account_id = scaleway_mnq_nats_account.main.id
+						name="toto"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNatsCredentialsPresent(tt, "scaleway_mnq_nats_credentials.main"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
+				),
+			},
+		},
+	})
+}
+
 func isNatsCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
