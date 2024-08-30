@@ -15,19 +15,21 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func DataSourceRegistryImageTag() *schema.Resource {
+func DataSourceImageTag() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceRegistryImageTagRead,
+		ReadContext: DataSourceImageTagRead,
 
 		Schema: map[string]*schema.Schema{
 			"tag_id": {
 				Type:             schema.TypeString,
 				Description:      "The ID of the registry image tag",
+				Required:         true,
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"image_id": {
 				Type:             schema.TypeString,
 				Description:      "The ID of the registry image",
+				Required:         true,
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"name": {
@@ -62,7 +64,7 @@ func DataSourceRegistryImageTag() *schema.Resource {
 	}
 }
 
-func DataSourceRegistryImageTagRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceImageTagRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, err := NewAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
