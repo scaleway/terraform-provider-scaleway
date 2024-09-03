@@ -24,6 +24,8 @@ var (
 	datasourceTemplateFile string
 	//go:embed datasource_test.go.tmpl
 	datasourceTestTemplateFile string
+	//go:embed sweeper.go.tmpl
+	resourceSweeperTemplateFile string
 )
 
 var resourceQS = []*survey.Question{
@@ -66,6 +68,13 @@ var resourceQS = []*survey.Question{
 			Default: true,
 		},
 	},
+	{
+		Name: "sweeper",
+		Prompt: &survey.Confirm{
+			Message: "Generate sweeper ? Will be added to ../../internal/services/{api}/sweeper.go",
+			Default: true,
+		},
+	},
 }
 
 func contains[T comparable](slice []T, expected T) bool {
@@ -86,6 +95,7 @@ func main() {
 		Locality string
 		Helpers  bool
 		Waiters  bool
+		Sweeper  bool
 	}{}
 	err := survey.Ask(resourceQS, &resourceInput)
 	if err != nil {
@@ -124,6 +134,12 @@ func main() {
 			FileName:     fmt.Sprintf("../../internal/services/%s/waiter.go", resourceData.API),
 			TemplateFile: resourceWaitersTemplateFile,
 			Skip:         !resourceInput.Waiters,
+			Append:       true,
+		},
+		{
+			FileName:     fmt.Sprintf("../../internal/services/%s/testfuncs/sweeper.go", resourceData.API),
+			TemplateFile: resourceSweeperTemplateFile,
+			Skip:         !contains(resourceInput.Targets, "resource"),
 			Append:       true,
 		},
 	}

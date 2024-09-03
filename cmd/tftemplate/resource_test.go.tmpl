@@ -1,5 +1,5 @@
 {{- /*gotype: tftemplate/models.ResourceTemplate*/ -}}
-package scaleway
+package {{.API}}
 
 import (
 	"fmt"
@@ -10,47 +10,14 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_{{ .ResourceHCL }}", &resource.Sweeper{
-		Name: "scaleway_{{ .ResourceHCL }}",
-		F:    testSweep{{ .Resource }},
-	})
-}
 
-func testSweep{{ .Resource }}(_ string) error {
-	return acctest.Sweep{{.LocalityUpper}}s((&{{ .API }}.API{}).{{ .LocalityUpper }}s(), func(scwClient *scw.Client, {{ .Locality }} scw.{{.LocalityUpper}}) error {
-		{{ .API }}API := {{ .API }}.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the {{ .API }} {{ .ResourceCleanLow }}s in (%s)", {{.Locality}})
-		list{{.ResourceClean}}s, err := {{.API}}API.List{{.ResourceClean}}s(
-			&{{.API}}.List{{.ResourceClean}}sRequest{
-				{{.LocalityUpper}}: {{.Locality}},
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing {{.ResourceCleanLow}} in (%s) in sweeper: %s", {{.Locality}}, err)
-		}
-
-		for _, {{.ResourceCleanLow}} := range list{{.ResourceClean}}s.{{.ResourceClean}}s {
-			_, err := {{.API}}API.Delete{{.ResourceClean}}(&{{.API}}.Delete{{.ResourceClean}}Request{
-				{{.ResourceClean}}ID: {{.ResourceCleanLow}}.ID,
-				{{.LocalityUpper}}:      {{.Locality}},
-			})
-			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting {{.ResourceCleanLow}} in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAcc{{.Resource}}_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { cctest.PreCheck(t) },
+		PreCheck:          func() { Acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheck{{.Resource}}Destroy(tt),
 		Steps: []resource.TestStep{
