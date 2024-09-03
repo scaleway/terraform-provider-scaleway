@@ -50,7 +50,7 @@ func TestAcc{{.Resource}}_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { cctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheck{{.Resource}}Destroy(tt),
 		Steps: []resource.TestStep{
