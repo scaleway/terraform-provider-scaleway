@@ -20,7 +20,7 @@ func init() {
 func testSweep{{ .Resource }}(_ string) error {
 	return acctest.Sweep{{.LocalityUpper}}s((&{{ .API }}.API{}).{{ .LocalityUpper }}s(), func(scwClient *scw.Client, {{ .Locality }} scw.{{.LocalityUpper}}) error {
 		{{ .API }}API := {{ .API }}.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the {{ .API }} {{ .ResourceCleanLow }}s in (%s)", {{.Locality}})
+		logging.L.Debugf("sweeper: destroying the {{ .API }} {{ .ResourceCleanLow }}s in (%s)", {{.Locality}})
 		list{{.ResourceClean}}s, err := {{.API}}API.List{{.ResourceClean}}s(
 			&{{.API}}.List{{.ResourceClean}}sRequest{
 				{{.LocalityUpper}}: {{.Locality}},
@@ -35,7 +35,7 @@ func testSweep{{ .Resource }}(_ string) error {
 				{{.LocalityUpper}}:      {{.Locality}},
 			})
 			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting {{.ResourceCleanLow}} in sweeper: %s", err)
 			}
