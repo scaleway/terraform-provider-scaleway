@@ -26,6 +26,7 @@ func executeTemplate(tmpl *TerraformTemplate, data models.ResourceTemplate) erro
 	var outputFile *os.File
 	var err error
 	lastInd := strings.LastIndex(tmpl.FileName, "/")
+	println("value of filename: ", tmpl.FileName[:lastInd])
 	_ = os.Mkdir(tmpl.FileName[:lastInd], os.ModePerm)
 	if tmpl.Append {
 		outputFile, err = os.OpenFile(tmpl.FileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
