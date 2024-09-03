@@ -7,7 +7,7 @@ import (
 )
 
 // newAPIWith{{.LocalityUpper}} returns a new {{.API}} API and the {{.Locality}} for a Create request
-func {{.API}}APIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*{{.API}}.API, scw.{{.LocalityUpper}}, error) {
+func newAPIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*{{.API}}.API, scw.{{.LocalityUpper}}, error) {
     {{.API}}API := {{.API}}.NewAPI(meta.ExtractScwClient(m))
 
     {{.Locality}}, err := meta.Extract{{.LocalityUpper}}(d, m)
@@ -19,7 +19,7 @@ func {{.API}}APIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*
 }
 
 // {{.API}}APIWith{{.LocalityAdjectiveUpper}}AndID returns a new {{.API }} API with {{.Locality}} and ID extracted from the state
-func {{.API}}APIWith{{.LocalityUpper}}AndID(m interface{}, {{.LocalityAdjective}}ID string) (*{{.API}}.API, scw.{{.LocalityUpper}}, string, error) {
+func NewAPIWith{{.LocalityUpper}}AndID(m interface{}, {{.LocalityAdjective}}ID string) (*{{.API}}.API, scw.{{.LocalityUpper}}, string, error) {
     {{.API}}API := {{.API}}.NewAPI(meta.ExtractScwClient(m))
 
     {{.Locality}}, ID, err := {{.LocalityAdjective}}.ParseID({{.LocalityAdjective}}ID)

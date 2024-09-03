@@ -49,7 +49,7 @@ func Resource{{ .Resource }}Create(ctx context.Context, d *schema.ResourceData, 
 
 	req := &{{ .API }}.Create{{ .ResourceClean }}Request{
 			{{.LocalityUpper}}: {{.Locality}},
-			ProjectID: types.ExpandStringPtr(d.Get("project_id").(string)),
+			ProjectID: d.Get("project_id").(string),
 			Name: types.ExpandOrGenerateString(d.Get("name").(string), "{{ .ResourceCleanLow }}"),
 	}
 
