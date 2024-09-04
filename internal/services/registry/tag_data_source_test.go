@@ -9,15 +9,15 @@ import (
 	registrySDK "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
+	registrytestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry/testfuncs"
 )
 
 func TestAccDataSourceImageTag_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	tagID := "086381ac-24da-476f-9d76-a21ac193b88d"
-	imageID := "8f572987-ceb3-4cde-9732-d4febbb821c3"
-	expectedTagName := "latest"
+	expectedTagName := "test"
+	namespaceName := "test-namespace-2"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -25,17 +25,51 @@ func TestAccDataSourceImageTag_Basic(t *testing.T) {
 		CheckDestroy:      isTagDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					data "scaleway_registry_image_tag" "tag" {
-						tag_id  = "` + tagID + `"
-						image_id = "` + imageID + `"
+				Config: fmt.Sprintf(`
+					# Create a Scaleway registry namespace
+					resource "scaleway_registry_namespace" "test" {
+						name        = "%s"
+						description = "Test namespace for Docker image"
+						is_public   = false
 					}
-				`,
+				`, namespaceName),
+				Check: resource.ComposeTestCheckFunc(
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_registry_namespace.test"]
+						if !ok {
+							return fmt.Errorf("not found: scaleway_registry_namespace.test")
+						}
+
+						endpoint := rs.Primary.Attributes["endpoint"]
+						if endpoint == "" {
+							return fmt.Errorf("no endpoint found for scaleway_registry_namespace.test")
+						}
+
+						return registrytestfuncs.PushImageToRegistry(tt, endpoint, expectedTagName)(s)
+					},
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					# Validate the image tag in the Scaleway registry
+
+					data "scaleway_registry_namespace" "test" {
+						name = "%s"
+					}
+
+					data "scaleway_registry_image" "image" {
+  						name = "alpine"
+					}
+
+					data "scaleway_registry_image_tag" "tag" {
+						name  = "%s"
+						image_id = "${data.scaleway_registry_image.image.id}"
+					}
+				`, namespaceName, expectedTagName),
 				Check: resource.ComposeTestCheckFunc(
 					isTagPresent(tt, "data.scaleway_registry_image_tag.tag"),
 					resource.TestCheckResourceAttr("data.scaleway_registry_image_tag.tag", "name", expectedTagName),
-					resource.TestCheckResourceAttr("data.scaleway_registry_image_tag.tag", "tag_id", tagID),
-					resource.TestCheckResourceAttr("data.scaleway_registry_image_tag.tag", "image_id", imageID),
+					//resource.TestCheckResourceAttr("scaleway_registry_namespace.test", "name", namespaceName),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_image_tag.tag", "digest"),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_image_tag.tag", "created_at"),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_image_tag.tag", "updated_at"),

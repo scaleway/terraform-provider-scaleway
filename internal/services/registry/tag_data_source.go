@@ -23,7 +23,8 @@ func DataSourceImageTag() *schema.Resource {
 			"tag_id": {
 				Type:             schema.TypeString,
 				Description:      "The ID of the registry image tag",
-				Required:         true,
+				Optional:         true,
+				ConflictsWith:    []string{"name"},
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"image_id": {
@@ -33,9 +34,10 @@ func DataSourceImageTag() *schema.Resource {
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the registry image tag",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The name of the registry image tag",
+				ConflictsWith: []string{"tag_id"},
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -70,17 +72,42 @@ func DataSourceImageTagRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	tagID := d.Get("tag_id").(string)
+	var tag *registry.Tag
+	tagID, tagIDExists := d.GetOk("tag_id")
+	imageID := d.Get("image_id").(string)
 
-	res, err := api.GetTag(&registry.GetTagRequest{
-		Region: region,
-		TagID:  locality.ExpandID(tagID),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if tagIDExists {
+		res, err := api.GetTag(&registry.GetTagRequest{
+			Region: region,
+			TagID:  locality.ExpandID(tagID),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		tag = res
+	} else {
+		tagName, nameExists := d.GetOk("name")
+		if !nameExists {
+			return diag.Errorf("either 'tag_id' or 'name' must be provided")
+		}
+
+		res, err := api.ListTags(&registry.ListTagsRequest{
+			Region:  region,
+			ImageID: locality.ExpandID(imageID),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		foundTag, err := datasource.FindExact(res.Tags, func(s *registry.Tag) bool {
+			return s.Name == tagName.(string)
+		}, tagName.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		tag = foundTag
 	}
-
-	tag := res
 
 	d.SetId(datasource.NewRegionalID(tag.ID, region))
 	_ = d.Set("tag_id", tag.ID)
