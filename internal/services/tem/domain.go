@@ -50,6 +50,12 @@ func ResourceDomain() *schema.Resource {
 					return warnings, errs
 				},
 			},
+			"autoconfig": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Enable automatic configuration options for the domain",
+			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
