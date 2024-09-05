@@ -20,10 +20,8 @@ import (
 
 var testDockerIMG = "docker.io/library/alpine:latest"
 
-// PushImageToRegistry is a helper function that pulls an image, tags it for the Scaleway registry, and pushes it to the registry.
 func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		// Do not execute Docker requests when running with cassettes
 		if !*acctest.UpdateCassettes {
 			return nil
 		}
@@ -31,24 +29,20 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		meta := tt.Meta
 		var errorMessage registry.ErrorRegistryMessage
 
-		// Retrieve access and secret keys for authentication
 		accessKey, _ := meta.ScwClient().GetAccessKey()
 		secretKey, _ := meta.ScwClient().GetSecretKey()
 
-		// Auth configuration for the registry
 		authConfig := dockerRegistrySDK.AuthConfig{
 			ServerAddress: registryEndpoint,
 			Username:      accessKey,
 			Password:      secretKey,
 		}
 
-		// Initialize Docker client
 		cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 		if err != nil {
 			return fmt.Errorf("could not connect to Docker: %v", err)
 		}
 
-		// Encode auth config into base64
 		encodedJSON, err := json.Marshal(authConfig)
 		if err != nil {
 			return fmt.Errorf("could not marshal auth config: %v", err)
@@ -57,7 +51,6 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		ctx := context.Background()
 		authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 
-		// Pull the Docker image
 		out, err := cli.ImagePull(ctx, testDockerIMG, image.PullOptions{})
 		if err != nil {
 			return fmt.Errorf("could not pull image: %v", err)
@@ -80,14 +73,12 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 			}
 		}
 
-		// Tag the image for Scaleway registry
 		scwTag := registryEndpoint + "/alpine:" + tagName
 		err = cli.ImageTag(ctx, testDockerIMG, scwTag)
 		if err != nil {
 			return fmt.Errorf("could not tag image: %v", err)
 		}
 
-		// Push the image to Scaleway registry
 		pusher, err := cli.ImagePush(ctx, scwTag, image.PushOptions{RegistryAuth: authStr})
 		if err != nil {
 			return fmt.Errorf("could not push image: %v", err)
