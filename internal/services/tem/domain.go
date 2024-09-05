@@ -19,6 +19,7 @@ func ResourceDomain() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceDomainCreate,
 		ReadContext:   ResourceDomainRead,
+		UpdateContext: ResourceDomainUpdate,
 		DeleteContext: ResourceDomainDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -198,6 +199,7 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		ProjectID:  d.Get("project_id").(string),
 		DomainName: d.Get("name").(string),
 		AcceptTos:  d.Get("accept_tos").(bool),
+		Autoconfig: d.Get("autoconfig").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -228,6 +230,7 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	_ = d.Set("name", domain.Name)
 	_ = d.Set("accept_tos", true)
+	_ = d.Set("autoconfig", domain.Autoconfig)
 	_ = d.Set("status", domain.Status)
 	_ = d.Set("created_at", types.FlattenTime(domain.CreatedAt))
 	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
@@ -250,6 +253,28 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("project_id", domain.ProjectID)
 	_ = d.Set("smtps_auth_user", domain.ProjectID)
 	return nil
+}
+
+func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+
+	api, region, _, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChange("autoconfig") {
+		autoconfig := d.Get("autoconfig").(bool)
+
+		_, err = api.UpdateDomain(&tem.UpdateDomainRequest{
+			Region:     region,
+			Autoconfig: &autoconfig,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return ResourceDomainRead(ctx, d, m)
 }
 
 func ResourceDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
