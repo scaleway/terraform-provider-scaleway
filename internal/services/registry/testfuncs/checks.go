@@ -21,7 +21,7 @@ import (
 var testDockerIMG = "docker.io/library/alpine:latest"
 
 func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
+	return func(_ *terraform.State) error {
 		if !*acctest.UpdateCassettes {
 			return nil
 		}

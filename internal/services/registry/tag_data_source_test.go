@@ -1,6 +1,7 @@
 package registry_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -37,12 +38,12 @@ func TestAccDataSourceImageTag_Basic(t *testing.T) {
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["scaleway_registry_namespace.test"]
 						if !ok {
-							return fmt.Errorf("not found: scaleway_registry_namespace.test")
+							return errors.New("not found: scaleway_registry_namespace.test")
 						}
 
 						endpoint := rs.Primary.Attributes["endpoint"]
 						if endpoint == "" {
-							return fmt.Errorf("no endpoint found for scaleway_registry_namespace.test")
+							return errors.New("no endpoint found for scaleway_registry_namespace.test")
 						}
 
 						return registrytestfuncs.PushImageToRegistry(tt, endpoint, expectedTagName)(s)
@@ -138,14 +139,14 @@ func deleteImage(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 		_, err = api.DeleteImage(&registrySDK.DeleteImageRequest{
-			region,
-			locality.ExpandID(rs.Primary.ID),
+			Region:  region,
+			ImageID: locality.ExpandID(rs.Primary.ID),
 		})
+
 		if err != nil {
 			return err
 		}
 
 		return nil
-
 	}
 }
