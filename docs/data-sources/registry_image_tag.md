@@ -10,19 +10,26 @@ Gets information about a specific tag of a Container Registry image.
 ## Example Usage
 
 ```hcl
-# Get info by tag ID and image ID
+# Get info by tag ID
 data "scaleway_registry_image_tag" "my_image_tag" {
     tag_id  = "11111111-1111-1111-1111-111111111111"
-    image_id = "22222222-2222-2222-2222-222222222222"
+}
+
+# Get info by name and image_id
+data "scaleway_registry_image_tag" "my_image_tag" {
+name = "my-tag-name"
+image_id = "22222222-2222-2222-2222-222222222222"
 }
 
 ```
 
 ## Argument Reference
 
-- `tag_id` - (Required) The ID of the registry image tag.
+- `tag_id` -  The ID of the registry image tag.
 
-- `image_id` - (Required) The ID of the registry image.
+- `image_id` - The ID of the registry image.
+
+- `name` - The name of the registry image tag.
 
 - `region` - (Defaults to provider region) The region in which the registry image tag exists.
 
@@ -37,8 +44,6 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the registry image.
 
 ~> **Important:** Registry images' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
-
-- `name` - The name of the registry image tag.
 
 - `status` - The status of the registry image tag.
 
