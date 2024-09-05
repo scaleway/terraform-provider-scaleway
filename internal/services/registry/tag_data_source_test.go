@@ -142,7 +142,6 @@ func deleteImage(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			Region:  region,
 			ImageID: locality.ExpandID(rs.Primary.ID),
 		})
-
 		if err != nil {
 			return err
 		}
