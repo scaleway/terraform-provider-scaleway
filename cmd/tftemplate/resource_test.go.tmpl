@@ -23,13 +23,13 @@ func TestAcc{{.Resource}}_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_{{.ResourceHCL}} main {
+					resource "scaleway_{{.API}}_{{.ResourceHCL}}" "main" {
 						name = "test-{{.API}}-{{ .ResourceCleanLow}}-basic"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheck{{.Resource}}Exists(tt, "scaleway_{{.ResourceHCL}}.main"),
-					resource.TestCheckResourceAttr("scaleway_{{.ResourceHCL}}.main", "name", "test-{{.API}}-{{ .ResourceCleanLow}}-basic"),
+					testAccCheck{{.Resource}}Exists(tt, "scaleway_{{.API}}_{{.ResourceHCL}}.main"),
+					resource.TestCheckResourceAttr("scaleway_{{.API}}_{{.ResourceHCL}}.main", "name", "test-{{.API}}-{{ .ResourceCleanLow}}-basic"),
 				),
 			},
 		},
@@ -64,7 +64,7 @@ func testAccCheck{{.Resource}}Exists(tt *acctest.TestTools, n string) resource.T
 func testAccCheck{{.Resource}}Destroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_{{.ResourceHCL}}" {
+			if rs.Type != "scaleway_{{.API}}_{{.ResourceHCL}}" {
 				continue
 			}
 
