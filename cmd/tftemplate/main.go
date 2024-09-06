@@ -24,9 +24,9 @@ var (
 	datasourceTemplateFile string
 	//go:embed datasource_test.go.tmpl
 	datasourceTestTemplateFile string
-	//go:embed sweep.go.tmpl
-	resourceSweepTemplateFile string
 	//go:embed sweep_test.go.tmpl
+	resourceSweepTemplateFile string
+	//go:embed sweep.go.tmpl
 	resourceSweepTestTemplateFile string
 )
 
@@ -71,9 +71,9 @@ var resourceQS = []*survey.Question{
 		},
 	},
 	{
-		Name: "sweeper",
+		Name: "sweep",
 		Prompt: &survey.Confirm{
-			Message: "Generate sweeper ? Will be added to ../../internal/services/{api}/sweeper.go",
+			Message: "Generate sweeper ? Will be added to ../../internal/services/{api}/sweep.go",
 			Default: true,
 		},
 	},
@@ -97,7 +97,7 @@ func main() {
 		Locality string
 		Helpers  bool
 		Waiters  bool
-		Sweeper  bool
+		Sweep    bool
 	}{}
 	err := survey.Ask(resourceQS, &resourceInput)
 	if err != nil {
