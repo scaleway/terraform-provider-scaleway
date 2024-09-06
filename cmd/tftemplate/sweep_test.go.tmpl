@@ -10,13 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_{{ .ResourceHCL }}", &resource.Sweeper{
-		Name: "scaleway_{{ .ResourceHCL }}",
-		F:    testSweep{{ .Resource }},
-	})
-}
-
 func testSweep{{ .Resource }}(_ string) error {
 	return acctest.Sweep{{.LocalityUpper}}s((&{{ .API }}.API{}).{{ .LocalityUpper }}s(), func(scwClient *scw.Client, {{ .Locality }} scw.{{.LocalityUpper}}) error {
 		{{ .API }}API := {{ .API }}.NewAPI(scwClient)

@@ -24,8 +24,10 @@ var (
 	datasourceTemplateFile string
 	//go:embed datasource_test.go.tmpl
 	datasourceTestTemplateFile string
-	//go:embed sweeper.go.tmpl
-	resourceSweeperTemplateFile string
+	//go:embed sweep.go.tmpl
+	resourceSweepTemplateFile string
+	//go:embed sweep_test.go.tmpl
+	resourceSweepTestTemplateFile string
 )
 
 var resourceQS = []*survey.Question{
@@ -137,8 +139,14 @@ func main() {
 			Append:       true,
 		},
 		{
-			FileName:     fmt.Sprintf("../../internal/services/%s/testfuncs/sweeper.go", resourceData.API),
-			TemplateFile: resourceSweeperTemplateFile,
+			FileName:     fmt.Sprintf("../../internal/services/%s/testfuncs/sweep.go", resourceData.API),
+			TemplateFile: resourceSweepTemplateFile,
+			Skip:         !contains(resourceInput.Targets, "resource"),
+			Append:       true,
+		},
+		{
+			FileName:     fmt.Sprintf("../../internal/services/%s/sweep_test.go", resourceData.API),
+			TemplateFile: resourceSweepTestTemplateFile,
 			Skip:         !contains(resourceInput.Targets, "resource"),
 			Append:       true,
 		},
