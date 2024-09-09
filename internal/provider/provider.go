@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -157,6 +158,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_policy":                          iam.ResourcePolicy(),
 				"scaleway_iam_ssh_key":                         iam.ResourceSSKKey(),
 				"scaleway_iam_user":                            iam.ResourceUser(),
+				"scaleway_inference_deployment":                inference.ResourceDeployment(),
 				"scaleway_instance_image":                      instance.ResourceImage(),
 				"scaleway_instance_ip":                         instance.ResourceIP(),
 				"scaleway_instance_ip_reverse_dns":             instance.ResourceIPReverseDNS(),
