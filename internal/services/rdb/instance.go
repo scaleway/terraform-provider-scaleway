@@ -469,11 +469,12 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if loadBalancerEndpoint != nil {
-		if loadBalancerEndpoint.IP != nil {
+		switch {
+		case loadBalancerEndpoint.IP != nil:
 			_ = d.Set("endpoint_ip", types.FlattenIPPtr(loadBalancerEndpoint.IP))
-		} else if loadBalancerEndpoint.Hostname != nil {
-			_ = d.Set("endpoint_ip", *loadBalancerEndpoint.Hostname)
-		} else {
+		case loadBalancerEndpoint.Hostname != nil:
+			_ = d.Set("endpoint_ip", loadBalancerEndpoint.Hostname)
+		default:
 			_ = d.Set("endpoint_ip", "")
 		}
 		_ = d.Set("endpoint_port", int(loadBalancerEndpoint.Port))
