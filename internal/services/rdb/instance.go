@@ -53,10 +53,11 @@ func ResourceInstance() *schema.Resource {
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"engine": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Database's engine version id",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "Database's engine version id",
+				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"is_ha_cluster": {
 				Type:        schema.TypeBool,
@@ -543,7 +544,6 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
-
 	return nil
 }
 
