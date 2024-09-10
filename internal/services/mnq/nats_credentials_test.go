@@ -23,8 +23,14 @@ func TestAccNatsCredentials_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_nats_credential_basic"
+					}
+
 					resource scaleway_mnq_nats_account main {
-						name = "test-mnq-nats-credentials-basic"
+						project_id = scaleway_account_project.main.id
+						name = "test-mnq-nats-credentials-basic-test"
 					}
 
 					resource scaleway_mnq_nats_credentials main {
@@ -51,8 +57,13 @@ func TestAccNatsCredentials_UpdateName(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_nats_credential_update"
+					}
+
 					resource scaleway_mnq_nats_account main {
-						name = "test-mnq-nats-credentials-basic"
+						project_id = scaleway_account_project.main.id
+						name = "test-mnq-nats-credentials-update"
 					}
 
 					resource scaleway_mnq_nats_credentials main {
@@ -66,8 +77,13 @@ func TestAccNatsCredentials_UpdateName(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_nats_credential_update"
+					}
+
 					resource scaleway_mnq_nats_account main {
-						name = "test-mnq-nats-credentials-basic"
+						project_id = scaleway_account_project.main.id
+						name = "test-mnq-nats-credentials-update"
 					}
 
 					resource scaleway_mnq_nats_credentials main {
