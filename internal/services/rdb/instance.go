@@ -53,10 +53,11 @@ func ResourceInstance() *schema.Resource {
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"engine": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Database's engine version id",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "Database's engine version id",
+				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"is_ha_cluster": {
 				Type:        schema.TypeBool,
@@ -459,10 +460,25 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("tags", types.FlattenSliceString(res.Tags))
 
-	// Deprecated attribute, might be deleted later
-	if res.Endpoint != nil { //nolint:staticcheck
-		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP)) //nolint:staticcheck
-		_ = d.Set("endpoint_port", int(res.Endpoint.Port))            //nolint:staticcheck
+	var loadBalancerEndpoint *rdb.Endpoint
+
+	for _, endpoint := range res.Endpoints {
+		if endpoint.LoadBalancer != nil {
+			loadBalancerEndpoint = endpoint
+			break
+		}
+	}
+
+	if loadBalancerEndpoint != nil {
+		switch {
+		case loadBalancerEndpoint.IP != nil:
+			_ = d.Set("endpoint_ip", types.FlattenIPPtr(loadBalancerEndpoint.IP))
+		case loadBalancerEndpoint.Hostname != nil:
+			_ = d.Set("endpoint_ip", loadBalancerEndpoint.Hostname)
+		default:
+			_ = d.Set("endpoint_ip", "")
+		}
+		_ = d.Set("endpoint_port", int(loadBalancerEndpoint.Port))
 	} else {
 		_ = d.Set("endpoint_ip", "")
 		_ = d.Set("endpoint_port", 0)
@@ -528,7 +544,6 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
-
 	return nil
 }
 
