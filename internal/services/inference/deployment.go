@@ -41,6 +41,35 @@ func ResourceDeployment() *schema.Resource {
 			"region":          regional.Schema(),
 			"project_id":      account.ProjectIDSchema(),
 			"organization_id": account.OrganizationIDSchema(),
+			"node_type": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The node type to use for the deployment",
+			},
+			"model_name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The model name to use for the deployment",
+			},
+			"endpoints": {
+				Type:        schema.TypeList,
+				Required:    true,
+				Description: "List of endpoints",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"public_endpoint": {
+							Type:        schema.TypeBool,
+							Description: "Set the endpoint as public",
+							Optional:    true,
+						},
+						"private_endpoint": {
+							Type:        schema.TypeString,
+							Description: "The id of the private network",
+							Optional:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -51,10 +80,29 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
+	if _, isEndpoint := d.GetOk("endpoints"); isEndpoint {
+
+	}
+	//endpoints := inference.EndpointSpec{
+	//	Public:         nil,
+	//	PrivateNetwork: nil,
+	//	DisableAuth:    false,
+	//}
+
+	//if publicEndpoints {
+	//	endpoints.Public = &inference.EndpointSpecPublic{}
+	//}
+	//
+	//if privateEndpoints != nil {
+	//	endpoints.PrivateNetwork = &inference.EndpointSpecPrivateNetwork{PrivateNetworkID: privateEndpoints.(string)}
+	//}
+
 	req := &inference.CreateDeploymentRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "deployment"),
+		NodeType:  d.Get("node_type").(string),
+		ModelName: d.Get("model_name").(string),
 	}
 
 	deployment, err := api.CreateDeployment(req, scw.WithContext(ctx))
