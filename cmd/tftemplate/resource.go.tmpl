@@ -19,7 +19,7 @@ func Resource{{ .Resource }}() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Timeouts: &schema.ResourceTimeout{ // TODO: remove unused timeouts
+		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(default{{.APIFirstLetterUpper}}{{.Resource}}Timeout),
 			Read:   schema.DefaultTimeout(default{{.APIFirstLetterUpper}}{{.Resource}}Timeout),
 			Update: schema.DefaultTimeout(default{{.APIFirstLetterUpper}}{{.Resource}}Timeout),
