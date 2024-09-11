@@ -153,7 +153,7 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		if privateEndpoint := d.Get("endpoints.0.private_endpoint"); privateEndpoint != "" {
 			endpoint.PrivateNetwork = &inference.EndpointSpecPrivateNetwork{
-				PrivateNetworkID: privateEndpoint.(string),
+				PrivateNetworkID: regional.ExpandID(privateEndpoint.(string)).ID,
 			}
 		}
 	}
