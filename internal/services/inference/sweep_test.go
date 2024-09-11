@@ -1,37 +1,15 @@
 package inference_test
 
 import (
-	"fmt"
-	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	inferencetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference/testfuncs"
+	"testing"
 )
 
-func testSweepDeployment(_ string) error {
-	return acctest.SweepRegions((&inference.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		inferenceAPI := inference.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the inference deployments in (%s)", region)
-		listDeployments, err := inferenceAPI.ListDeployments(
-			&inference.ListDeploymentsRequest{
-				Region: region,
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing deployment in (%s) in sweeper: %s", region, err)
-		}
+func init() {
+	inferencetestfuncs.AddTestSweepers()
+}
 
-		for _, deployment := range listDeployments.Deployments {
-			_, err := inferenceAPI.DeleteDeployment(&inference.DeleteDeploymentRequest{
-				DeploymentID: deployment.ID,
-				Region:       region,
-			})
-			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting deployment in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
+func TestMain(m *testing.M) {
+	resource.TestMain(m)
 }
