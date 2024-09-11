@@ -54,7 +54,54 @@ func ResourceDeployment() *schema.Resource {
 			"accept_eula": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     false,
 				Description: "Whether or not the deployment is accepting eula",
+			},
+			"tags": {
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "The tags associated with the deployment",
+			},
+			"min_size": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The minimum size of the pool",
+			},
+			"max_size": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The maximum size of the pool",
+			},
+			"size": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The size of the pool",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the deployment",
+			},
+			"endpoint_public_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The endpoint public URL",
+			},
+			"endpoint_private_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The endpoint private URL",
+			},
+			"endpoint_public_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The endpoint public ID",
+			},
+			"endpoint_private_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The endpoint private ID",
 			},
 			"endpoints": {
 				Type:        schema.TypeList,
@@ -97,6 +144,7 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		Name:      d.Get("name").(string),
 		NodeType:  d.Get("node_type").(string),
 		ModelName: d.Get("model_name").(string),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}
 
 	if _, isEndpoint := d.GetOk("endpoints"); isEndpoint {
@@ -108,6 +156,14 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 				PrivateNetworkID: privateEndpoint.(string),
 			}
 		}
+	}
+
+	if maxSize, ok := d.GetOk("max_size"); ok {
+		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+	}
+
+	if minSize, ok := d.GetOk("min_size"); ok {
+		req.MaxSize = scw.Uint32Ptr(uint32(minSize.(int)))
 	}
 
 	req.Endpoints = []*inference.EndpointSpec{&endpoint}
@@ -149,6 +205,12 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("region", deployment.Region)
 	_ = d.Set("project_id", deployment.ProjectID)
+	_ = d.Set("node_type", deployment.NodeType)
+	_ = d.Set("model_name", deployment.ModelName)
+	_ = d.Set("min_size", deployment.MinSize)
+	_ = d.Set("max_size", deployment.MaxSize)
+	_ = d.Set("size", deployment.Size)
+	_ = d.Set("status", deployment.Status)
 
 	return nil
 }
