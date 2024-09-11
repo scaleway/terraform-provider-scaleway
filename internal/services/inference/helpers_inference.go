@@ -1,12 +1,13 @@
 package inference
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"time"
 )
 
 const (

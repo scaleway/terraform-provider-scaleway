@@ -2,8 +2,9 @@ package provider
 
 import (
 	"context"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 	"os"
+
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

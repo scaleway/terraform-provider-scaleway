@@ -2,11 +2,12 @@ package inference_test
 
 import (
 	"fmt"
+	"testing"
+
 	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -89,7 +90,6 @@ func testAccCheckDeploymentExists(tt *acctest.TestTools, n string) resource.Test
 			DeploymentID: id,
 			Region:       region,
 		})
-
 		if err != nil {
 			return err
 		}

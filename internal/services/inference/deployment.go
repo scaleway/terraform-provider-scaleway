@@ -2,6 +2,7 @@ package inference
 
 import (
 	"context"
+
 	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
