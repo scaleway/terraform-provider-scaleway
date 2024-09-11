@@ -212,6 +212,18 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("size", deployment.Size)
 	_ = d.Set("status", deployment.Status)
 
+	if deployment.Endpoints[0].PrivateNetwork.PrivateNetworkID != "" {
+		_ = d.Set("endpoint_private_url", deployment.Endpoints[0].URL)
+	} else {
+		_ = d.Set("endpoint_public_url", deployment.Endpoints[0].URL)
+	}
+	if len(deployment.Endpoints) == 2 {
+		if deployment.Endpoints[1].PrivateNetwork.PrivateNetworkID != "" {
+			_ = d.Set("endpoint_private_url", deployment.Endpoints[1].URL)
+		} else {
+			_ = d.Set("endpoint_public_url", deployment.Endpoints[1].URL)
+		}
+	}
 	return nil
 }
 
