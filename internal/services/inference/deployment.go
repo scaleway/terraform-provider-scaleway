@@ -51,6 +51,11 @@ func ResourceDeployment() *schema.Resource {
 				Required:    true,
 				Description: "The model name to use for the deployment",
 			},
+			"model_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The model id used for the deployment",
+			},
 			"accept_eula": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -93,6 +98,11 @@ func ResourceDeployment() *schema.Resource {
 				Computed:    true,
 				Description: "The endpoint private URL",
 			},
+			"disable_auth_private": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether or not the authentication on the private endpoint is disabled.",
+			},
 			"endpoint_public_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -102,6 +112,21 @@ func ResourceDeployment() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The endpoint private ID",
+			},
+			"disable_auth_public": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether or not the authentication on the public endpoint is disabled.",
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the creation of the deployment",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the last update of the deployment",
 			},
 			"endpoints": {
 				Type:        schema.TypeList,
@@ -118,6 +143,12 @@ func ResourceDeployment() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "The id of the private network",
 							Optional:    true,
+						},
+						"disable_auth": {
+							Type:        schema.TypeBool,
+							Description: "Disable the authentication on the endpoint.",
+							Optional:    true,
+							Default:     false,
 						},
 					},
 				},
@@ -211,17 +242,28 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("max_size", deployment.MaxSize)
 	_ = d.Set("size", deployment.Size)
 	_ = d.Set("status", deployment.Status)
+	_ = d.Set("model_id", deployment.ModelID)
+	_ = d.Set("created_at", types.FlattenTime(deployment.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(deployment.UpdatedAt))
 
 	if deployment.Endpoints[0].PrivateNetwork.PrivateNetworkID != "" {
 		_ = d.Set("endpoint_private_url", deployment.Endpoints[0].URL)
+		_ = d.Set("endpoint_private_id", deployment.Endpoints[0].ID)
+		_ = d.Set("disable_auth_private", deployment.Endpoints[0].DisableAuth)
 	} else {
 		_ = d.Set("endpoint_public_url", deployment.Endpoints[0].URL)
+		_ = d.Set("endpoint_public_id", deployment.Endpoints[0].ID)
+		_ = d.Set("disable_auth_public", deployment.Endpoints[0].DisableAuth)
 	}
 	if len(deployment.Endpoints) == 2 {
 		if deployment.Endpoints[1].PrivateNetwork.PrivateNetworkID != "" {
 			_ = d.Set("endpoint_private_url", deployment.Endpoints[1].URL)
+			_ = d.Set("endpoint_private_id", deployment.Endpoints[1].ID)
+			_ = d.Set("disable_auth_private", deployment.Endpoints[1].DisableAuth)
 		} else {
 			_ = d.Set("endpoint_public_url", deployment.Endpoints[1].URL)
+			_ = d.Set("endpoint_public_id", deployment.Endpoints[1].ID)
+			_ = d.Set("disable_auth_public", deployment.Endpoints[1].DisableAuth)
 		}
 	}
 	return nil
