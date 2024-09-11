@@ -49,7 +49,7 @@ func Resource{{ .Resource }}Create(ctx context.Context, d *schema.ResourceData, 
 
 	req := &{{ .API }}.Create{{ .ResourceClean }}Request{
 			{{.LocalityUpper}}: {{.Locality}},
-			ProjectID: types.ExpandStringPtr(d.Get("project_id").(string)),
+			ProjectID: d.Get("project_id").(string),
 			Name: types.ExpandOrGenerateString(d.Get("name").(string), "{{ .ResourceCleanLow }}"),
 	}
 
@@ -71,7 +71,7 @@ func Resource{{ .Resource }}Create(ctx context.Context, d *schema.ResourceData, 
 }
 
 func Resource{{ .Resource }}Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, id, zone, err := NewAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
+	api,{{.Locality}}, id, err := newAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,7 +101,7 @@ func Resource{{ .Resource }}Read(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func Resource{{ .Resource }}Update(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, {{ .Locality }}, id, err := NewAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
+	api, {{ .Locality }}, id, err := newAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,7 +132,7 @@ func Resource{{ .Resource }}Update(ctx context.Context, d *schema.ResourceData, 
 }
 
 func Resource{{ .Resource }}Delete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, {{ .Locality }}, id, err := NewAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
+	api, {{ .Locality }}, id, err := newAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

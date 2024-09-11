@@ -8,8 +8,8 @@ import (
 
 func waitFor{{.Resource}}(ctx context.Context, {{.API}}API *{{.API}}.API, {{.Locality}} scw.{{.LocalityUpper}}, id string, timeout time.Duration) (*{{.API}}.{{.ResourceClean}}, error) {
     retryInterval := default{{.ResourceClean}}RetryInterval
-    if DefaultWaitRetryInterval != nil {
-        retryInterval = *DefaultWaitRetryInterval
+    if transport.DefaultWaitRetryInterval != nil {
+        retryInterval = *transport.DefaultWaitRetryInterval
     }
 
     {{.ResourceCleanLow}}, err := {{.API}}API.WaitFor{{.ResourceClean}}(&{{.API}}.WaitFor{{.ResourceClean}}Request{
