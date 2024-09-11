@@ -132,12 +132,6 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	endpoint := inference.EndpointSpec{
-		Public:         nil,
-		PrivateNetwork: nil,
-		DisableAuth:    false,
-	}
-
 	req := &inference.CreateDeploymentRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
@@ -145,6 +139,12 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		NodeType:  d.Get("node_type").(string),
 		ModelName: d.Get("model_name").(string),
 		Tags:      types.ExpandStrings(d.Get("tags")),
+	}
+
+	endpoint := inference.EndpointSpec{
+		Public:         nil,
+		PrivateNetwork: nil,
+		DisableAuth:    false,
 	}
 
 	if _, isEndpoint := d.GetOk("endpoints"); isEndpoint {
@@ -158,6 +158,8 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 	}
 
+	req.Endpoints = []*inference.EndpointSpec{&endpoint}
+
 	if maxSize, ok := d.GetOk("max_size"); ok {
 		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
 	}
@@ -165,8 +167,6 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	if minSize, ok := d.GetOk("min_size"); ok {
 		req.MaxSize = scw.Uint32Ptr(uint32(minSize.(int)))
 	}
-
-	req.Endpoints = []*inference.EndpointSpec{&endpoint}
 
 	if isAcceptingEula, ok := d.GetOk("accept_eula"); ok {
 		req.AcceptEula = scw.BoolPtr(isAcceptingEula.(bool))
