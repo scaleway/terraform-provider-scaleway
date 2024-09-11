@@ -26,10 +26,11 @@ func TestAccDeployment_Basic(t *testing.T) {
 					resource "scaleway_inference_deployment" "main" {
 						name = "test-inferenceSDK-deployment-basic"
 						node_type = "L4"
-						model_name = "meta/llama-3.1-8b-instruct"
+						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
 							public_endpoint = true
 						}
+						accept_eula = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

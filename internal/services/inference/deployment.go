@@ -51,6 +51,11 @@ func ResourceDeployment() *schema.Resource {
 				Required:    true,
 				Description: "The model name to use for the deployment",
 			},
+			"accept_eula": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether or not the deployment is accepting eula",
+			},
 			"endpoints": {
 				Type:        schema.TypeList,
 				Required:    true,
@@ -80,29 +85,35 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	if _, isEndpoint := d.GetOk("endpoints"); isEndpoint {
-
+	endpoint := inference.EndpointSpec{
+		Public:         nil,
+		PrivateNetwork: nil,
+		DisableAuth:    false,
 	}
-	//endpoints := inference.EndpointSpec{
-	//	Public:         nil,
-	//	PrivateNetwork: nil,
-	//	DisableAuth:    false,
-	//}
-
-	//if publicEndpoints {
-	//	endpoints.Public = &inference.EndpointSpecPublic{}
-	//}
-	//
-	//if privateEndpoints != nil {
-	//	endpoints.PrivateNetwork = &inference.EndpointSpecPrivateNetwork{PrivateNetworkID: privateEndpoints.(string)}
-	//}
 
 	req := &inference.CreateDeploymentRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
-		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "deployment"),
+		Name:      d.Get("name").(string),
 		NodeType:  d.Get("node_type").(string),
 		ModelName: d.Get("model_name").(string),
+	}
+
+	if _, isEndpoint := d.GetOk("endpoints"); isEndpoint {
+		if publicEndpoint := d.Get("endpoints.0.public_endpoint"); publicEndpoint != nil && publicEndpoint.(bool) {
+			endpoint.Public = &inference.EndpointSpecPublic{}
+		}
+		if privateEndpoint := d.Get("endpoints.0.private_endpoint"); privateEndpoint != "" {
+			endpoint.PrivateNetwork = &inference.EndpointSpecPrivateNetwork{
+				PrivateNetworkID: privateEndpoint.(string),
+			}
+		}
+	}
+
+	req.Endpoints = []*inference.EndpointSpec{&endpoint}
+
+	if isAcceptingEula, ok := d.GetOk("accept_eula"); ok {
+		req.AcceptEula = scw.BoolPtr(isAcceptingEula.(bool))
 	}
 
 	deployment, err := api.CreateDeployment(req, scw.WithContext(ctx))
