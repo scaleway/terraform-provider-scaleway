@@ -60,15 +60,15 @@ The following arguments are supported:
 
 - `secret_environment_variables` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/compute/containers/concepts/#secrets) of the container.
 
-- `min_scale` - (Optional) The minimum number of container instances running continuously. Defaults to 0.
+- `min_scale` - (Optional) The minimum number of container instances running continuously.
 
-- `max_scale` - (Optional) The maximum number of instances this container can scale to. Default to 20.
+- `max_scale` - (Optional) The maximum number of instances this container can scale to.
 
-- `memory_limit` - (Optional) The memory resources in MB to allocate to each container. Defaults to 256 MB.
+- `memory_limit` - (Optional) The memory resources in MB to allocate to each container.
 
-- `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container. Defaults to 140.
+- `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container.
 
-- `timeout` - (Optional) The maximum amount of time your container can spend processing a request before being stopped. Defaults to 300s.
+- `timeout` - (Optional) The maximum amount of time your container can spend processing a request before being stopped.
 
 - `privacy` - (Optional) The privacy type defines the way to authenticate to your container. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8).
 
@@ -76,7 +76,7 @@ The following arguments are supported:
 
 - `registry_sha256` - (Optional) The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string.
 
-- `max_concurrency` - (Optional) The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
+- `max_concurrency` - (Optional) The maximum number of simultaneous requests your container can handle at the same time.
 
 - `protocol` - (Optional) The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) `http1` or `h2c`. Defaults to `http1`.
 
@@ -84,7 +84,7 @@ The following arguments are supported:
 
 - `sandbox` - (Optional) Execution environment of the container.
 
-- `port` - (Optional) The port to expose the container. Defaults to 8080.
+- `port` - (Optional) The port to expose the container.
 
 - `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
 

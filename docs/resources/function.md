@@ -75,7 +75,7 @@ The following arguments are supported:
 
 - `max_scale` - (Optional) The maximum number of instances this function can scale to. Default to 20. Your function will scale automatically based on the incoming workload, but will never exceed the configured `max_scale` value.
 
-- `memory_limit` - (Optional) The memory resources in MB to allocate to each function. Defaults to 128 MB.
+- `memory_limit` - (Optional) The memory resources in MB to allocate to each function. Defaults to 256 MB.
 
 - `handler` - Handler of the function, depends on the runtime. Refer to the [dedicated documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-functions-create-a-new-function) for the list of supported runtimes.
 

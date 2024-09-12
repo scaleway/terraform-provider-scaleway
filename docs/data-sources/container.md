@@ -65,15 +65,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - `environment_variables` - The [environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) variables of the container.
 
-- `min_scale` - The minimum number of container instances running continuously. Defaults to 0.
+- `min_scale` - The minimum number of container instances running continuously.
 
-- `max_scale` - The maximum number of instances the container can scale to. Defaults to 20.
+- `max_scale` - The maximum number of instances the container can scale to.
 
-- `memory_limit` - The memory resources in MB to allocate to each container. Defaults to 256.
+- `memory_limit` - The memory resources in MB to allocate to each container.
 
-- `cpu_limit` - The amount of vCPU computing resources to allocate to each container. Defaults to 140.
+- `cpu_limit` - The amount of vCPU computing resources to allocate to each container.
 
-- `timeout` - The maximum amount of time your container can spend processing a request before being stopped. Defaults to 300s.
+- `timeout` - The maximum amount of time your container can spend processing a request before being stopped.
 
 - `privacy` - The privacy type define the way to authenticate to your container. Refer to the [dedicated documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) for more information.
 
@@ -81,13 +81,13 @@ In addition to all arguments above, the following attributes are exported:
 
 - `registry_sha256` - The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string.
 
-- `max_concurrency` - The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
+- `max_concurrency` - The maximum number of simultaneous requests your container can handle at the same time.
 
 - `domain_name` - The container domain name.
 
 - `protocol` - The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) `http1` or `h2c`. Defaults to `http1`.
 
-- `port` - The port to expose the container. Defaults to 8080.
+- `port` - The port to expose the container.
 
 - `deploy` - Boolean indicating whether the container is on a production environment.
 
