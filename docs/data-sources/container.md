@@ -51,7 +51,7 @@ This section lists the arguments that you can provide to the `scaleway_container
 
 ~> **Important** Updating the `name` argument will recreate the container.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_container` data source exports certain attributes once the container information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

@@ -10,7 +10,7 @@ for Scaleway [Serverless Containers](https://www.scaleway.com/en/docs/serverless
 
 Refer to the Containers namespace [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/create-a-containers-namespace/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-namespaces-list-all-your-namespaces) for more information.
 
-## Create a Containers namespace
+## Example Usage
 
 ```terraform
 resource "scaleway_container_namespace" "main" {

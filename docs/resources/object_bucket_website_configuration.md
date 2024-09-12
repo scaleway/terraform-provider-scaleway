@@ -63,7 +63,7 @@ resource "scaleway_object_bucket_website_configuration" "main" {
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -87,7 +87,7 @@ The `index_document` configuration block supports the following arguments:
 
 ~> **Important:** The suffix must not be empty and must not include a slash character. The routing is not supported.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_object_bucket_website_configuration` resource exports certain attributes once the bucket website configuration is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

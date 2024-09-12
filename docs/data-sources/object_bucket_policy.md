@@ -19,7 +19,7 @@ data "scaleway_object_bucket_policy" "main" {
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_object_bucket_policy` data source to filter and retrieve the desired bucket policy. Each argument has a specific purpose:
 
@@ -34,7 +34,7 @@ like bucket policies. Otherwise, Terraform will try to create the child resource
 For more information on Object Storage and Scaleway Projects, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/identity-and-access-management/iam/api-cli/using-api-key-object-storage/).
 
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_object_bucket_policy` data source exports certain attributes once the bucket policy information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

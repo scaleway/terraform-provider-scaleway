@@ -9,7 +9,7 @@ The `scaleway_object_bucket` resource allows you to create and manage buckets fo
 
 Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/how-to/create-a-bucket/) for more information on Object Storage buckets.
 
-## Example usage
+## Example Usage
 
 ```terraform
 resource "scaleway_object_bucket" "some_bucket" {
@@ -171,7 +171,7 @@ At least one of `abort_incomplete_multipart_upload_days`, `expiration`, `transit
 
 ~> **Important:**  `ONEZONE_IA` is only available in `fr-par` region. The storage class `GLACIER` is not available in `pl-waw` region.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_object_bucket` resource exports certain attributes once the bucket is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

@@ -29,7 +29,7 @@ data "scaleway_account_ssh_key" "my_key" {
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_account_ssh_key` data source to filter and retrieve the desired SSH key. Each argument has a specific purpose:
 
@@ -40,7 +40,7 @@ This section lists the arguments that you can provide to the `scaleway_account_s
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the SSH key is associated.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_account_ssh_key` data source exports certain attributes once the SSH key information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

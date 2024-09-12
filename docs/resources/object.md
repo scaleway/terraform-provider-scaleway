@@ -57,7 +57,7 @@ The following arguments are supported:
 If you are using a project different from the default one, you have to specify the `project_id` for every child resource of the bucket,
 like objects. Otherwise, Terraform will try to create the child resource with the default project ID and you will get a 403 error.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_object` resource exports certain attributes once the object is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

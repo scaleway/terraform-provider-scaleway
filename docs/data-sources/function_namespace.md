@@ -40,7 +40,7 @@ This section lists the arguments that you can provide to the `scaleway_function_
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the namespace is associated.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_function_namespace` data source exports certain attributes once the namespace information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

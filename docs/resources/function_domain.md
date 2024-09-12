@@ -9,7 +9,9 @@ The `scaleway_function_domain` resource allows you to create and manage domain n
 
 Refer to the Functions domain [documentation](https://www.scaleway.com/en/docs/serverless/functions/how-to/add-a-custom-domain-name-to-a-function/) and the [API documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-domains-list-all-domain-name-bindings) for more information.
 
-## Bind a custom domain name to a function
+## Example Usage
+
+This command allows to bind a custom domain name to a function.
 
 ```terraform
 resource "scaleway_function_domain" "main" {

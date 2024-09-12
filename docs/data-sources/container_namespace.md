@@ -28,7 +28,7 @@ data "scaleway_container_namespace" "by_id" {
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_container_namespace` data source to filter and retrieve the desired namespace. Each argument has a specific purpose:
 
@@ -40,7 +40,7 @@ This section lists the arguments that you can provide to the `scaleway_container
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the namespace is associated.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_container_namespace` data source exports certain attributes once the namespace information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

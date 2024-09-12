@@ -9,7 +9,7 @@ The `scaleway_container_token` resource allows you to create and manage authenti
 
 Refer to the Containers tokens [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/create-auth-token-from-console/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-tokens-list-all-tokens) for more information.
 
-## Add an authentication token to a container
+## Example Usage
 
 ```terraform
 resource scaleway_container_namespace main {

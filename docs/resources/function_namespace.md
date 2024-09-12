@@ -10,7 +10,7 @@ for Scaleway [Serverless Functions](https://www.scaleway.com/en/docs/serverless/
 
 Refer to the Functions namespace [documentation](https://www.scaleway.com/en/docs/serverless/functions/how-to/create-a-functions-namespace/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-namespaces-list-all-your-namespaces) for more information.
 
-## Create a Functions namespace
+## Example Usage
 
 ```terraform
 resource "scaleway_function_namespace" "main" {

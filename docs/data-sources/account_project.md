@@ -34,7 +34,7 @@ data scaleway_account_project "by_id" {
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 This section lists the arguments that you can provide to the `scaleway_account_project` data source to filter and retrieve the desired project. Each argument has a specific purpose:
 

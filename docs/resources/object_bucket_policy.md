@@ -9,9 +9,9 @@ The `scaleway_object_bucket_policy` resource allows you to create and manage buc
 
 Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-policy/) for more information on Object Storage bucket policies.
 
-## Example usage
+## Example Usage
 
-### Example usage with an IAM user
+### Example Usage with an IAM user
 
 ```terraform
 # Project ID
@@ -217,7 +217,7 @@ resource "scaleway_object_bucket_policy" "policy" {
 
 **NB:** To configure the AWS provider with Scaleway credentials, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/object-storage-aws-cli/).
 
-## Argument reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -233,7 +233,7 @@ like bucket policies. Otherwise, Terraform will try to create the child resource
 
 ~> **Important:** The [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) data source may be used, as long as it specifies a principal.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_object_bucket_policy` resource exports certain attributes once the bucket policy is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

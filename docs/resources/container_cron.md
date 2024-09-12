@@ -9,7 +9,7 @@ The `scaleway_container_cron` resource allows you to create and manage CRON trig
 
 Refer to the Containers CRON triggers [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/add-trigger-to-a-container/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-triggers-list-all-triggers) for more information.
 
-## Add a CRON trigger to a container
+## Example Usage
 
 The following command allows you to add a CRON trigger to a Serverless Container.
 

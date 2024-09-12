@@ -9,7 +9,9 @@ The `scaleway_account_project` resource allows you to create and manage the Proj
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/identity-and-access-management/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
-## Create a Scaleway Project
+## Example Usage
+
+### Create a Scaleway Project
 
 The following command allows you to create a project named `project`.
 
@@ -19,7 +21,7 @@ resource "scaleway_account_project" "project" {
 }
 ```
 
-## Use a project in provider configuration
+### Use a project in provider configuration
 
 If you want to use as default a project created in terraform you can use a temporary provider alias.
 This project can then be used to configure your default provider.

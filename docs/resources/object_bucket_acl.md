@@ -117,7 +117,7 @@ The `grantee` configuration block supports the following arguments:
 * `id` - (Required) The canonical user ID of the grantee.
 * `type` - (Required) Type of grantee. Valid values: CanonicalUser.
 
-## Attributes reference
+## Attributes Reference
 
 The `scaleway_object_bucket_acl` resource exports certain attributes once the bucket ACL configuration is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 

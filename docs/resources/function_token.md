@@ -9,7 +9,7 @@ The `scaleway_function_token` resource allows you to create and manage authentic
 
 Refer to the Functions tokens [documentation](https://www.scaleway.com/en/docs/serverless/functions/how-to/create-auth-token-from-console/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-tokens-list-all-tokens) for more information.
 
-## Add an authentication token to a function
+## Example Usage
 
 ```terraform
 resource scaleway_function_namespace main {
