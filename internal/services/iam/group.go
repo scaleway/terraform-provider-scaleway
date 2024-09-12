@@ -50,8 +50,8 @@ func ResourceGroup() *schema.Resource {
 				Description: "List of IDs of the users attached to the group",
 				Optional:    true,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 			},
 			"application_ids": {
@@ -59,8 +59,8 @@ func ResourceGroup() *schema.Resource {
 				Description: "List of IDs of the applications attached to the group",
 				Optional:    true,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 			},
 			"external_membership": {

@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_iam_group"
 # Resource: scaleway_iam_group
 
 Creates and manages Scaleway IAM Groups.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/iam/#groups-f592eb).
+For more information refer to the [IAM API documentation](https://www.scaleway.com/en/developers/api/iam/#groups-f592eb).
 
 ## Example Usage
 
@@ -82,5 +82,5 @@ No additional attributes are exported.
 IAM groups can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_group.basic 11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_group.basic 11111111-1111-1111-1111-111111111111
 ```

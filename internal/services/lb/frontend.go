@@ -40,18 +40,18 @@ func ResourceFrontend() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer ID",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The load-balancer ID",
 			},
 			"backend_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer backend ID",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The load-balancer backend ID",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -69,7 +69,7 @@ func ResourceFrontend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Set the maximum inactivity time on the client side",
 			},
 			"certificate_id": {
@@ -82,8 +82,8 @@ func ResourceFrontend() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description:      "Collection of Certificate IDs related to the load balancer and domain",
 				DiffSuppressFunc: dsf.OrderDiff,
@@ -114,14 +114,10 @@ func ResourceFrontend() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": {
-										Type:     schema.TypeString,
-										Required: true,
-										ValidateFunc: validation.StringInSlice([]string{
-											lbSDK.ACLActionTypeAllow.String(),
-											lbSDK.ACLActionTypeDeny.String(),
-											lbSDK.ACLActionTypeRedirect.String(),
-										}, false),
-										Description: "The action type",
+										Type:             schema.TypeString,
+										Required:         true,
+										ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionType](),
+										Description:      "The action type",
 									},
 									"redirect": {
 										Type:        schema.TypeList,
@@ -130,13 +126,10 @@ func ResourceFrontend() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"type": {
-													Type:     schema.TypeString,
-													Optional: true,
-													ValidateFunc: validation.StringInSlice([]string{
-														lbSDK.ACLActionRedirectRedirectTypeLocation.String(),
-														lbSDK.ACLActionRedirectRedirectTypeScheme.String(),
-													}, false),
-													Description: "The redirect type",
+													Type:             schema.TypeString,
+													Optional:         true,
+													ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionRedirectRedirectType](),
+													Description:      "The redirect type",
 												},
 												"target": {
 													Type:        schema.TypeString,
@@ -172,17 +165,11 @@ func ResourceFrontend() *schema.Resource {
 										DiffSuppressFunc: diffSuppressFunc32SubnetMask,
 									},
 									"http_filter": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Default:  lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
-										ValidateFunc: validation.StringInSlice([]string{
-											lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
-											lbSDK.ACLHTTPFilterPathBegin.String(),
-											lbSDK.ACLHTTPFilterPathEnd.String(),
-											lbSDK.ACLHTTPFilterRegex.String(),
-											lbSDK.ACLHTTPFilterHTTPHeaderMatch.String(),
-										}, false),
-										Description: "The HTTP filter to match",
+										Type:             schema.TypeString,
+										Optional:         true,
+										Default:          lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
+										ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLHTTPFilter](),
+										Description:      "The HTTP filter to match",
 									},
 									"http_filter_value": {
 										Type:        schema.TypeList,
@@ -329,8 +316,8 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("timeout_client", types.FlattenDuration(frontend.TimeoutClient))
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 
-	if frontend.Certificate != nil {
-		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID))
+	if frontend.Certificate != nil { //nolint:staticcheck
+		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
 	} else {
 		_ = d.Set("certificate_id", "")
 	}

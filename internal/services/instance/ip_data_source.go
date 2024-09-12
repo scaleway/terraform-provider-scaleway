@@ -20,11 +20,11 @@ func DataSourceIP() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceIP().Schema)
 
 	dsSchema["id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IP address",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"address"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IP address",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"address"},
 	}
 	dsSchema["address"] = &schema.Schema{
 		Type:          schema.TypeString,

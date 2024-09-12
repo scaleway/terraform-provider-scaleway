@@ -64,18 +64,11 @@ func ResourceCluster() *schema.Resource {
 				Description: "The version of the cluster",
 			},
 			"cni": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The CNI plugin of the cluster",
-				ValidateFunc: validation.StringInSlice([]string{
-					k8s.CNICilium.String(),
-					k8s.CNICalico.String(),
-					k8s.CNIFlannel.String(),
-					k8s.CNIWeave.String(),
-					k8s.CNIKilo.String(),
-					k8s.CNINone.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "The CNI plugin of the cluster",
+				ValidateDiagFunc: verify.ValidateEnum[k8s.CNI](),
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -113,19 +106,10 @@ func ResourceCluster() *schema.Resource {
 							ValidateFunc: validation.IntBetween(0, 23),
 						},
 						"maintenance_window_day": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Day of the maintenance window",
-							ValidateFunc: validation.StringInSlice([]string{
-								k8s.MaintenanceWindowDayOfTheWeekAny.String(),
-								k8s.MaintenanceWindowDayOfTheWeekMonday.String(),
-								k8s.MaintenanceWindowDayOfTheWeekTuesday.String(),
-								k8s.MaintenanceWindowDayOfTheWeekWednesday.String(),
-								k8s.MaintenanceWindowDayOfTheWeekThursday.String(),
-								k8s.MaintenanceWindowDayOfTheWeekFriday.String(),
-								k8s.MaintenanceWindowDayOfTheWeekSaturday.String(),
-								k8s.MaintenanceWindowDayOfTheWeekSunday.String(),
-							}, false),
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "Day of the maintenance window",
+							ValidateDiagFunc: verify.ValidateEnum[k8s.MaintenanceWindowDayOfTheWeek](),
 						},
 					},
 				},
@@ -171,7 +155,7 @@ func ResourceCluster() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "The ID of the cluster's private network",
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"region":          regional.Schema(),
@@ -452,8 +436,8 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	// Auto-upgrade configuration
 
-	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")
-	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour")
+	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")                              //nolint:staticcheck
+	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour") //nolint:staticcheck
 	autoUpgradeDay, okAutoUpgradeDay := d.GetOk("auto_upgrade.0.maintenance_window_day")
 
 	if okAutoUpgradeEnable {
@@ -833,12 +817,6 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m int
 			// It's not possible to remove the private network anymore
 			return append(diag.FromErr(errors.New("it is only possible to change the private network attached to the cluster, but not to remove it")), diags...)
 		}
-		if actual == "" {
-			err = migrateToPrivateNetworkCluster(ctx, d, m)
-			if err != nil {
-				return append(diag.FromErr(err), diags...)
-			}
-		}
 	}
 
 	////
@@ -940,26 +918,18 @@ func autoscalerConfigSchema() *schema.Resource {
 				Description: "How long a node should be unneeded before it is eligible for scale down",
 			},
 			"estimator": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     k8s.AutoscalerEstimatorBinpacking.String(),
-				Description: "Type of resource estimator to be used in scale up",
-				ValidateFunc: validation.StringInSlice([]string{
-					k8s.AutoscalerEstimatorBinpacking.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          k8s.AutoscalerEstimatorBinpacking.String(),
+				Description:      "Type of resource estimator to be used in scale up",
+				ValidateDiagFunc: verify.ValidateEnum[k8s.AutoscalerEstimator](),
 			},
 			"expander": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     k8s.AutoscalerExpanderRandom.String(),
-				Description: "Type of node group expander to be used in scale up",
-				ValidateFunc: validation.StringInSlice([]string{
-					k8s.AutoscalerExpanderRandom.String(),
-					k8s.AutoscalerExpanderLeastWaste.String(),
-					k8s.AutoscalerExpanderMostPods.String(),
-					k8s.AutoscalerExpanderPriority.String(),
-					k8s.AutoscalerExpanderPrice.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          k8s.AutoscalerExpanderRandom.String(),
+				Description:      "Type of node group expander to be used in scale up",
+				ValidateDiagFunc: verify.ValidateEnum[k8s.AutoscalerExpander](),
 			},
 			"ignore_daemonsets_utilization": {
 				Type:        schema.TypeBool,

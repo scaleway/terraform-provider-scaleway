@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourcePool() *schema.Resource {
@@ -91,16 +91,12 @@ func ResourcePool() *schema.Resource {
 				Description: "The tags associated with the pool",
 			},
 			"container_runtime": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     k8s.RuntimeContainerd.String(),
-				ForceNew:    true,
-				Description: "Container runtime for the pool",
-				ValidateFunc: validation.StringInSlice([]string{
-					k8s.RuntimeDocker.String(),
-					k8s.RuntimeContainerd.String(),
-					k8s.RuntimeCrio.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          k8s.RuntimeContainerd.String(),
+				ForceNew:         true,
+				Description:      "Container runtime for the pool",
+				ValidateDiagFunc: verify.ValidateEnum[k8s.Runtime](),
 			},
 			"wait_for_pool_ready": {
 				Type:        schema.TypeBool,
@@ -147,15 +143,12 @@ func ResourcePool() *schema.Resource {
 				},
 			},
 			"root_volume_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "System volume type of the nodes composing the pool",
-				ValidateFunc: validation.StringInSlice([]string{
-					k8s.PoolVolumeTypeBSSD.String(),
-					k8s.PoolVolumeTypeLSSD.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				Description:      "System volume type of the nodes composing the pool",
+				ValidateDiagFunc: verify.ValidateEnum[k8s.PoolVolumeType](),
 			},
 			"root_volume_size_in_gb": {
 				Type:        schema.TypeInt,
@@ -213,11 +206,13 @@ func ResourcePool() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The public IPv4 address of the node",
+							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
 						},
 						"public_ip_v6": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The public IPv6 address of the node",
+							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
 						},
 					},
 				},

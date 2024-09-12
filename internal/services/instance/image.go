@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -43,28 +42,25 @@ func ResourceImage() *schema.Resource {
 				Description: "The name of the image",
 			},
 			"root_volume_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "UUID of the snapshot from which the image is to be created",
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "UUID of the snapshot from which the image is to be created",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"architecture": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     instanceSDK.ArchX86_64.String(),
-				Description: "Architecture of the image (default = x86_64)",
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.ArchArm.String(),
-					instanceSDK.ArchX86_64.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          instanceSDK.ArchX86_64.String(),
+				Description:      "Architecture of the image (default = x86_64)",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.Arch](),
 			},
 			"additional_volume_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description: "The IDs of the additional volumes attached to the image",
 			},

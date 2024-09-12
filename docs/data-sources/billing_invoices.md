@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_billing_invoices"
 
 # scaleway_billing_invoices
 
-Gets information about your Invoices.
+Gets information about your Scaleway invoices.
 
 ## Example Usage
 

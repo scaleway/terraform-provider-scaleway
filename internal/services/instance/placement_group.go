@@ -5,13 +5,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourcePlacementGroup() *schema.Resource {
@@ -35,24 +35,18 @@ func ResourcePlacementGroup() *schema.Resource {
 				Description: "The name of the placement group",
 			},
 			"policy_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     instanceSDK.PlacementGroupPolicyTypeMaxAvailability.String(),
-				Description: "The operating mode is selected by a policy_type",
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.PlacementGroupPolicyTypeLowLatency.String(),
-					instanceSDK.PlacementGroupPolicyTypeMaxAvailability.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          instanceSDK.PlacementGroupPolicyTypeMaxAvailability.String(),
+				Description:      "The operating mode is selected by a policy_type",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.PlacementGroupPolicyType](),
 			},
 			"policy_mode": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     instanceSDK.PlacementGroupPolicyModeOptional,
-				Description: "One of the two policy_mode may be selected: enforced or optional.",
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.PlacementGroupPolicyModeOptional.String(),
-					instanceSDK.PlacementGroupPolicyModeEnforced.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          instanceSDK.PlacementGroupPolicyModeOptional,
+				Description:      "One of the two policy_mode may be selected: enforced or optional.",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.PlacementGroupPolicyMode](),
 			},
 			"policy_respected": {
 				Type:        schema.TypeBool,

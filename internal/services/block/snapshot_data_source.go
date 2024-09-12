@@ -18,11 +18,11 @@ func DataSourceSnapshot() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "volume_id", "project_id")
 
 	dsSchema["snapshot_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the snapshot",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the snapshot",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{

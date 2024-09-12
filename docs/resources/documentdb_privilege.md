@@ -10,8 +10,17 @@ Create and manage Scaleway DocumentDB database privilege.
 ## Example Usage
 
 ```terraform
+resource "scaleway_documentdb_instance" "instance" {
+  name              = "test-document_db-basic"
+  node_type         = "docdb-play2-pico"
+  engine            = "FerretDB-1"
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 20
+}
+
 resource "scaleway_documentdb_privilege" "main" {
-  instance_id   = "11111111-1111-1111-1111-111111111111"
+  instance_id   = scaleway_documentdb_instance.instance.id
   user_name     = "my-db-user"
   database_name = "my-db-name"
   permission    = "all"
@@ -44,5 +53,5 @@ In addition to all arguments above, the following attributes are exported:
 The user privileges can be imported using the `{region}/{instance_id}/{database_name}/{user_name}`, e.g.
 
 ```bash
-$ terraform import scaleway_documentdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
+terraform import scaleway_documentdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
 ```

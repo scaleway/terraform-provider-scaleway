@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	documentdb "github.com/scaleway/scaleway-sdk-go/api/documentdb/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -37,11 +36,11 @@ func ResourcePrivilege() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "Instance on which the database is created",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "Instance on which the database is created",
 			},
 			"user_name": {
 				Type:        schema.TypeString,
@@ -54,16 +53,10 @@ func ResourcePrivilege() *schema.Resource {
 				Required:    true,
 			},
 			"permission": {
-				Type:        schema.TypeString,
-				Description: "Privilege",
-				ValidateFunc: validation.StringInSlice([]string{
-					documentdb.PermissionReadonly.String(),
-					documentdb.PermissionReadwrite.String(),
-					documentdb.PermissionAll.String(),
-					documentdb.PermissionCustom.String(),
-					documentdb.PermissionNone.String(),
-				}, false),
-				Required: true,
+				Type:             schema.TypeString,
+				Description:      "Privilege",
+				ValidateDiagFunc: verify.ValidateEnum[documentdb.Permission](),
+				Required:         true,
 			},
 			// Common
 			"region": regional.Schema(),

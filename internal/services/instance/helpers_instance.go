@@ -242,61 +242,16 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 	}
 
 	if localVolumeTotalSize < volumeConstraint.MinSize || localVolumeTotalSize > volumeConstraint.MaxSize {
-		min := humanize.Bytes(uint64(volumeConstraint.MinSize))
+		minSize := humanize.Bytes(uint64(volumeConstraint.MinSize))
 		if volumeConstraint.MinSize == volumeConstraint.MaxSize {
-			return fmt.Errorf("%s total local volume size must be equal to %s", commercialType, min)
+			return fmt.Errorf("%s total local volume size must be equal to %s", commercialType, minSize)
 		}
 
-		max := humanize.Bytes(uint64(volumeConstraint.MaxSize))
-		return fmt.Errorf("%s total local volume size must be between %s and %s", commercialType, min, max)
+		maxSize := humanize.Bytes(uint64(volumeConstraint.MaxSize))
+		return fmt.Errorf("%s total local volume size must be between %s and %s", commercialType, minSize, maxSize)
 	}
 
 	return nil
-}
-
-// sanitizeVolumeMap removes extra data for API validation.
-//
-// On the api side, there are two possibles validation schemas for volumes and the validator will be chosen dynamically depending on the passed JSON request
-// - With an image (in that case the root volume can be skipped because it is taken from the image)
-// - Without an image (in that case, the root volume must be defined)
-func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[string]*instance.VolumeServerTemplate {
-	m := make(map[string]*instance.VolumeServerTemplate)
-
-	for index, v := range volumes {
-		// Remove extra data for API validation.
-		switch {
-		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
-		// TODO: Fix once instance accept volume type in the schema validation
-		case v.ID != nil:
-			if strings.HasPrefix(string(v.VolumeType), "sbs") {
-				// If volume is from SBS api, the type must be passed
-				// This rules come from instance API and may not be documented
-				v = &instance.VolumeServerTemplate{
-					ID:         v.ID,
-					Boot:       v.Boot,
-					VolumeType: v.VolumeType,
-				}
-			} else {
-				v = &instance.VolumeServerTemplate{
-					ID:   v.ID,
-					Name: v.Name,
-					Boot: v.Boot,
-				}
-			}
-		// For the root volume (index 0) if the size is 0, it is considered as a volume created from an image.
-		// The size is not passed to the API, so it's computed by the API
-		case index == "0" && v.Size == nil:
-			v = &instance.VolumeServerTemplate{
-				VolumeType: v.VolumeType,
-				Boot:       v.Boot,
-			}
-		// If none of the above conditions are met, the volume is passed as it to the API
-		default:
-		}
-		m[index] = v
-	}
-
-	return m
 }
 
 func preparePrivateNIC(
@@ -535,34 +490,53 @@ func instanceIPHasMigrated(d *schema.ResourceData) bool {
 }
 
 func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Zone, volumeID string) (*instance.VolumeServerTemplate, error) {
-	vol, err := api.GetVolume(&instance.GetVolumeRequest{
-		Zone:     zone,
+	vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
 		VolumeID: locality.ExpandID(volumeID),
+		Zone:     zone,
 	})
-	if err == nil {
-		return &instance.VolumeServerTemplate{
-			ID:         &vol.Volume.ID,
-			Name:       &vol.Volume.Name,
-			VolumeType: vol.Volume.VolumeType,
-			Size:       &vol.Volume.Size,
-		}, nil
-	}
-	if !httperrors.Is404(err) {
+	if err != nil {
 		return nil, err
 	}
+	return vol.VolumeTemplate(), nil
+}
 
-	blockVol, err := api.blockAPI.GetVolume(&blockSDK.GetVolumeRequest{
-		Zone:     zone,
-		VolumeID: locality.ExpandID(volumeID),
-	})
-	if err == nil {
-		return &instance.VolumeServerTemplate{
-			ID:         &blockVol.ID,
-			Name:       &blockVol.Name,
-			VolumeType: "sbs_volume",
-			Size:       &blockVol.Size,
-		}, nil
+func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerType, image string) *UnknownVolume {
+	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
+
+	rootVolumeIsBootVolume := types.ExpandBoolPtr(types.GetMapValue[bool](rootVolumeI, "boot"))
+	rootVolumeType := types.GetMapValue[string](rootVolumeI, "volume_type")
+	sizeInput := types.GetMapValue[int](rootVolumeI, "size_in_gb")
+	rootVolumeID := zonal.ExpandID(types.GetMapValue[string](rootVolumeI, "volume_id")).ID
+
+	// If the rootVolumeType is not defined, define it depending on the offer
+	if rootVolumeType == "" {
+		if serverTypeCanBootOnBlock {
+			rootVolumeType = instance.VolumeVolumeTypeBSSD.String()
+		} else {
+			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
+		}
 	}
 
-	return nil, err
+	rootVolumeName := ""
+	if image == "" { // When creating an instance from an image, volume should not have a name
+		rootVolumeName = types.NewRandomName("vol")
+	}
+
+	var rootVolumeSize *scw.Size
+	if sizeInput == 0 && rootVolumeType == instance.VolumeVolumeTypeLSSD.String() {
+		// Compute the rootVolumeSize so it will be valid against the local volume constraints
+		// It wouldn't be valid if another local volume is added, but in this case
+		// the user would be informed that it does not fulfill the local volume constraints
+		rootVolumeSize = scw.SizePtr(serverType.VolumesConstraint.MaxSize)
+	} else if sizeInput > 0 {
+		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
+	}
+
+	return &UnknownVolume{
+		Name:               rootVolumeName,
+		ID:                 rootVolumeID,
+		InstanceVolumeType: instance.VolumeVolumeType(rootVolumeType),
+		Size:               rootVolumeSize,
+		Boot:               rootVolumeIsBootVolume,
+	}
 }

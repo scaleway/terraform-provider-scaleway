@@ -99,8 +99,8 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the pool.
 - `nodes` - (List of) The nodes in the default pool.
     - `name` - The name of the node.
-    - `public_ip` - The public IPv4.
-    - `public_ip_v6` - The public IPv6.
+    - `public_ip` - The public IPv4. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
+    - `public_ip_v6` - The public IPv6. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `status` - The status of the node.
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
@@ -150,7 +150,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 Kubernetes pools can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_k8s_pool.mypool fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_k8s_pool.mypool fr-par/11111111-1111-1111-1111-111111111111
 ```
 
 ## Changing the node-type of a pool

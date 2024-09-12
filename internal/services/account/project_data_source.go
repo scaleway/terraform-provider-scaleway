@@ -19,11 +19,11 @@ func DataSourceProject() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"project_id"}
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Computed:     true,
-		Optional:     true,
-		Description:  "The ID of the SSH key",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Computed:         true,
+		Optional:         true,
+		Description:      "The ID of the SSH key",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

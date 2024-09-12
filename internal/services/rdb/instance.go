@@ -53,10 +53,11 @@ func ResourceInstance() *schema.Resource {
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"engine": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Database's engine version id",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "Database's engine version id",
+				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"is_ha_cluster": {
 				Type:        schema.TypeBool,
@@ -128,16 +129,11 @@ func ResourceInstance() *schema.Resource {
 				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
 			},
 			"volume_type": {
-				Type:     schema.TypeString,
-				Default:  rdb.VolumeTypeLssd,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					rdb.VolumeTypeLssd.String(),
-					rdb.VolumeTypeBssd.String(),
-					rdb.VolumeTypeSbs5k.String(),
-					rdb.VolumeTypeSbs15k.String(),
-				}, false),
-				Description: "Type of volume where data are stored",
+				Type:             schema.TypeString,
+				Default:          rdb.VolumeTypeLssd,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnum[rdb.VolumeType](),
+				Description:      "Type of volume where data are stored",
 			},
 			"volume_size_in_gb": {
 				Type:         schema.TypeInt,
@@ -156,7 +152,7 @@ func ResourceInstance() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: dsf.Locality,
 							Description:      "The private network ID",
 						},
@@ -216,6 +212,7 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Endpoint port of the database instance",
+				Deprecated:  "Please use the private_network or the load_balancer attribute",
 			},
 			"read_replicas": {
 				Type:        schema.TypeList,
@@ -307,6 +304,12 @@ func ResourceInstance() *schema.Resource {
 					},
 				},
 			},
+			"encryption_at_rest": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Enable or disable encryption at rest for the database instance",
+			},
 			// Common
 			"region":          regional.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
@@ -333,6 +336,9 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 		UserName:      d.Get("user_name").(string),
 		Password:      d.Get("password").(string),
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
+		Encryption: &rdb.EncryptionAtRest{
+			Enabled: d.Get("encryption_at_rest").(bool),
+		},
 	}
 
 	if initSettings, ok := d.GetOk("init_settings"); ok {
@@ -453,13 +459,31 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("tags", types.FlattenSliceString(res.Tags))
-	if res.Endpoint != nil {
-		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP))
-		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
+
+	var loadBalancerEndpoint *rdb.Endpoint
+
+	for _, endpoint := range res.Endpoints {
+		if endpoint.LoadBalancer != nil {
+			loadBalancerEndpoint = endpoint
+			break
+		}
+	}
+
+	if loadBalancerEndpoint != nil {
+		switch {
+		case loadBalancerEndpoint.IP != nil:
+			_ = d.Set("endpoint_ip", types.FlattenIPPtr(loadBalancerEndpoint.IP))
+		case loadBalancerEndpoint.Hostname != nil:
+			_ = d.Set("endpoint_ip", loadBalancerEndpoint.Hostname)
+		default:
+			_ = d.Set("endpoint_ip", "")
+		}
+		_ = d.Set("endpoint_port", int(loadBalancerEndpoint.Port))
 	} else {
 		_ = d.Set("endpoint_ip", "")
 		_ = d.Set("endpoint_port", 0)
 	}
+
 	if res.Volume != nil {
 		_ = d.Set("volume_type", res.Volume.Type)
 		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))
@@ -468,6 +492,9 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
+	if res.Encryption != nil {
+		_ = d.Set("encryption_at_rest", res.Encryption.Enabled)
+	}
 
 	// set user and password
 	if user, ok := d.GetOk("user_name"); ok {
@@ -517,7 +544,6 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
-
 	return nil
 }
 

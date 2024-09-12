@@ -5,8 +5,8 @@ page_title: "Scaleway: scaleway_rdb_privilege"
 
 # Resource: scaleway_rdb_privilege
 
-Create and manage Scaleway RDB database privilege.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/#user-and-permissions).
+Create and manage Scaleway database privileges.
+For more information refer to [the API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/#user-and-permissions).
 
 ## Example Usage
 
@@ -45,7 +45,7 @@ resource "scaleway_rdb_privilege" "main" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) UUID of the rdb instance.
+- `instance_id` - (Required) UUID of the Database Instance.
 
 - `user_name` - (Required) Name of the user (e.g. `my-db-user`).
 
@@ -66,5 +66,5 @@ In addition to all arguments above, the following attributes are exported:
 The user privileges can be imported using the `{region}/{instance_id}/{database_name}/{user_name}`, e.g.
 
 ```bash
-$ terraform import scaleway_rdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
+terraform import scaleway_rdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
 ```

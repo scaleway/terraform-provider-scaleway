@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -45,6 +46,7 @@ func ResourceAPIKey() *schema.Resource {
 				ForceNew:         true,
 				Description:      "The date and time of the expiration of the iam api key. Cannot be changed afterwards",
 				ValidateDiagFunc: verify.IsDate(),
+				DiffSuppressFunc: dsf.TimeRFC3339,
 			},
 			"access_key": {
 				Type:        schema.TypeString,
@@ -58,19 +60,19 @@ func ResourceAPIKey() *schema.Resource {
 				Sensitive:   true,
 			},
 			"application_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "ID of the application attached to the api key",
-				ConflictsWith: []string{"user_id"},
-				ValidateFunc:  verify.IsUUID(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "ID of the application attached to the api key",
+				ConflictsWith:    []string{"user_id"},
+				ValidateDiagFunc: verify.IsUUID(),
 			},
 			"user_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "ID of the user attached to the api key",
-				ConflictsWith: []string{"application_id"},
-				ValidateFunc:  verify.IsUUID(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "ID of the user attached to the api key",
+				ConflictsWith:    []string{"application_id"},
+				ValidateDiagFunc: verify.IsUUID(),
 			},
 			"editable": {
 				Type:        schema.TypeBool,

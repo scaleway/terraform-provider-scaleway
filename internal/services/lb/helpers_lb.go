@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	defaultLbLbTimeout = 10 * time.Minute
+	defaultLbLbTimeout = 15 * time.Minute
 	RetryLbIPInterval  = 5 * time.Second
 )
 
@@ -56,10 +56,10 @@ func IsPrivateNetworkEqual(a, b *lbSDK.PrivateNetwork) bool {
 	if a.PrivateNetworkID != b.PrivateNetworkID {
 		return false
 	}
-	if !reflect.DeepEqual(a.DHCPConfig, b.DHCPConfig) {
+	if !reflect.DeepEqual(a.DHCPConfig, b.DHCPConfig) { //nolint:staticcheck
 		return false
 	}
-	if !reflect.DeepEqual(a.StaticConfig, b.StaticConfig) {
+	if !reflect.DeepEqual(a.StaticConfig, b.StaticConfig) { //nolint:staticcheck
 		return false
 	}
 

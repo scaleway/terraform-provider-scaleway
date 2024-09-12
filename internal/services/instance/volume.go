@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -43,15 +42,11 @@ func ResourceVolume() *schema.Resource {
 				Description: "The name of the volume",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The volume type",
-				ValidateFunc: validation.StringInSlice([]string{
-					instanceSDK.VolumeVolumeTypeBSSD.String(),
-					instanceSDK.VolumeVolumeTypeLSSD.String(),
-					instanceSDK.VolumeVolumeTypeScratch.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "The volume type",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.VolumeVolumeType](),
 			},
 			"size_in_gb": {
 				Type:          schema.TypeInt,
@@ -60,12 +55,12 @@ func ResourceVolume() *schema.Resource {
 				ConflictsWith: []string{"from_snapshot_id"},
 			},
 			"from_snapshot_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Create a volume based on a image",
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"size_in_gb"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "Create a volume based on a image",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				ConflictsWith:    []string{"size_in_gb"},
 			},
 			"server_id": {
 				Type:        schema.TypeString,

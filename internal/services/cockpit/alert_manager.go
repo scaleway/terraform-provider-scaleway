@@ -39,10 +39,10 @@ func ResourceCockpitAlertManager() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"email": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: verify.IsEmail(),
-							Description:  "Email addresses for the alert receivers",
+							Type:             schema.TypeString,
+							Optional:         true,
+							ValidateDiagFunc: verify.IsEmail(),
+							Description:      "Email addresses for the alert receivers",
 						},
 					},
 				},

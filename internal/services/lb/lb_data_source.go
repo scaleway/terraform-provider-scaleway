@@ -21,11 +21,11 @@ func DataSourceLb() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"lb_id"}
 	dsSchema["lb_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the load-balancer",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the load-balancer",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 	dsSchema["release_ip"] = &schema.Schema{
 		Type:        schema.TypeBool,

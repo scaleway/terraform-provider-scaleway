@@ -83,11 +83,11 @@ func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
 		n := make(map[string]interface{})
 		n["name"] = node.Name
 		n["status"] = node.Status.String()
-		if node.PublicIPV4 != nil && node.PublicIPV4.String() != types.NetIPNil {
-			n["public_ip"] = node.PublicIPV4.String()
+		if node.PublicIPV4 != nil && node.PublicIPV4.String() != types.NetIPNil { //nolint:staticcheck
+			n["public_ip"] = node.PublicIPV4.String() //nolint:staticcheck
 		}
-		if node.PublicIPV6 != nil && node.PublicIPV6.String() != types.NetIPNil {
-			n["public_ip_v6"] = node.PublicIPV6.String()
+		if node.PublicIPV6 != nil && node.PublicIPV6.String() != types.NetIPNil { //nolint:staticcheck
+			n["public_ip_v6"] = node.PublicIPV6.String() //nolint:staticcheck
 		}
 		result = append(result, n)
 	}
@@ -107,25 +107,4 @@ func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[strin
 	}
 
 	return convertNodes(nodes), nil
-}
-
-func migrateToPrivateNetworkCluster(ctx context.Context, d *schema.ResourceData, i interface{}) error {
-	k8sAPI, region, clusterID, err := NewAPIWithRegionAndID(i, d.Id())
-	if err != nil {
-		return err
-	}
-	pnID := regional.ExpandID(d.Get("private_network_id").(string)).ID
-	_, err = k8sAPI.MigrateToPrivateNetworkCluster(&k8s.MigrateToPrivateNetworkClusterRequest{
-		Region:           region,
-		ClusterID:        clusterID,
-		PrivateNetworkID: pnID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return err
-	}
-	_, err = waitCluster(ctx, k8sAPI, region, clusterID, defaultK8SClusterTimeout)
-	if err != nil {
-		return err
-	}
-	return nil
 }

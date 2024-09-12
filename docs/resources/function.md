@@ -52,6 +52,8 @@ resource scaleway_function main {
 
 The following arguments are supported:
 
+- `namespace_id` - (Required) The function namespace ID of the function.
+
 - `name` - (Required) The unique name of the function.
 
 ~> **Important** Updates to `name` will recreate the function.
@@ -82,6 +84,8 @@ The following arguments are supported:
 
 - `deploy` - Define if the function should be deployed, terraform will wait for function to be deployed. Function will get deployed if you change source zip
 
+- `sandbox` - (Optional) Execution environment of the function.
+
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.
@@ -105,5 +109,5 @@ In addition to all arguments above, the following attributes are exported:
 Functions can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_function.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_function.main fr-par/11111111-1111-1111-1111-111111111111
 ```

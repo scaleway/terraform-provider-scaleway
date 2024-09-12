@@ -53,13 +53,10 @@ func ResourceBackend() *schema.Resource {
 				Description: "The name of the backend",
 			},
 			"forward_protocol": {
-				Type: schema.TypeString,
-				ValidateFunc: validation.StringInSlice([]string{
-					lbSDK.ProtocolTCP.String(),
-					lbSDK.ProtocolHTTP.String(),
-				}, false),
-				Required:    true,
-				Description: "Backend protocol",
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.ValidateEnum[lbSDK.Protocol](),
+				Required:         true,
+				Description:      "Backend protocol",
 			},
 			"forward_port": {
 				Type:        schema.TypeInt,
@@ -67,26 +64,18 @@ func ResourceBackend() *schema.Resource {
 				Description: "User sessions will be forwarded to this port of backend servers",
 			},
 			"forward_port_algorithm": {
-				Type: schema.TypeString,
-				ValidateFunc: validation.StringInSlice([]string{
-					lbSDK.ForwardPortAlgorithmRoundrobin.String(),
-					lbSDK.ForwardPortAlgorithmLeastconn.String(),
-					lbSDK.ForwardPortAlgorithmFirst.String(),
-				}, false),
-				Default:     lbSDK.ForwardPortAlgorithmRoundrobin.String(),
-				Optional:    true,
-				Description: "Load balancing algorithm",
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.ValidateEnum[lbSDK.ForwardPortAlgorithm](),
+				Default:          lbSDK.ForwardPortAlgorithmRoundrobin.String(),
+				Optional:         true,
+				Description:      "Load balancing algorithm",
 			},
 			"sticky_sessions": {
-				Type: schema.TypeString,
-				ValidateFunc: validation.StringInSlice([]string{
-					lbSDK.StickySessionsTypeNone.String(),
-					lbSDK.StickySessionsTypeCookie.String(),
-					lbSDK.StickySessionsTypeTable.String(),
-				}, false),
-				Default:     lbSDK.StickySessionsTypeNone.String(),
-				Optional:    true,
-				Description: "The type of sticky sessions",
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.ValidateEnum[lbSDK.StickySessionsType](),
+				Default:          lbSDK.StickySessionsTypeNone.String(),
+				Optional:         true,
+				Description:      "The type of sticky sessions",
 			},
 			"sticky_sessions_cookie_name": {
 				Type:        schema.TypeString,
@@ -128,7 +117,7 @@ func ResourceBackend() *schema.Resource {
 				Optional:         true,
 				Default:          "5m",
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Maximum server connection inactivity time",
 			},
 			"timeout_connect": {
@@ -136,7 +125,7 @@ func ResourceBackend() *schema.Resource {
 				Optional:         true,
 				Default:          "5s",
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Maximum initial server connection establishment time",
 			},
 			"timeout_tunnel": {
@@ -144,7 +133,7 @@ func ResourceBackend() *schema.Resource {
 				Optional:         true,
 				Default:          "15m",
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Maximum tunnel inactivity time",
 			},
 
@@ -153,7 +142,7 @@ func ResourceBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Default:          "30s",
 				Description:      "Timeout before we consider a HC request failed",
 			},
@@ -161,7 +150,7 @@ func ResourceBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Default:          "60s",
 				Description:      "Interval between two HC requests",
 			},
@@ -260,7 +249,7 @@ func ResourceBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "0.5s",
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				DiffSuppressFunc: dsf.Duration,
 				Description:      "Time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN)",
 			},
@@ -310,7 +299,7 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "0s",
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				DiffSuppressFunc: dsf.Duration,
 				Description:      "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
 			},
@@ -431,7 +420,7 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// deprecated attribute
-	createReq.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2"))
+	createReq.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2")) //nolint:staticcheck
 
 	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {
@@ -483,7 +472,7 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("timeout_connect", types.FlattenDuration(backend.TimeoutConnect))
 	_ = d.Set("timeout_tunnel", types.FlattenDuration(backend.TimeoutTunnel))
 	_ = d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(backend.OnMarkedDownAction))
-	_ = d.Set("send_proxy_v2", types.FlattenBoolPtr(backend.SendProxyV2))
+	_ = d.Set("send_proxy_v2", types.FlattenBoolPtr(backend.SendProxyV2)) //nolint:staticcheck
 	_ = d.Set("failover_host", backend.FailoverHost)
 	_ = d.Set("ssl_bridging", types.FlattenBoolPtr(backend.SslBridging))
 	_ = d.Set("ignore_ssl_server_verify", types.FlattenBoolPtr(backend.IgnoreSslServerVerify))
@@ -580,7 +569,7 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// deprecated
-	req.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2"))
+	req.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2")) //nolint:staticcheck
 
 	_, err = lbAPI.UpdateBackend(req, scw.WithContext(ctx))
 	if err != nil {

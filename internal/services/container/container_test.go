@@ -93,7 +93,7 @@ func TestAccContainer_Basic(t *testing.T) {
 						min_scale    	= 1
 						max_scale    	= 2
 						max_concurrency = 80
-						memory_limit 	= 256
+						memory_limit 	= 1120
 						cpu_limit		= 280
 						deploy       	= false
 					}
@@ -104,7 +104,7 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-tf"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "port", "5000"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "cpu_limit", "280"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "256"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "1120"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "min_scale", "1"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "max_scale", "2"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "timeout", "300"),
@@ -324,6 +324,76 @@ func TestAccContainer_HTTPOption(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "http_option", containerSDK.ContainerHTTPOptionEnabled.String()),
+				),
+			},
+		},
+	})
+}
+
+func TestAccContainer_Sandbox(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isContainerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						deploy = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "sandbox"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						deploy = false
+						sandbox = "v2"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "sandbox", containerSDK.ContainerSandboxV2.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						deploy = false
+						sandbox = "v1"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "sandbox", containerSDK.ContainerSandboxV1.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						sandbox = "v2"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "sandbox", containerSDK.ContainerSandboxV2.String()),
 				),
 			},
 		},

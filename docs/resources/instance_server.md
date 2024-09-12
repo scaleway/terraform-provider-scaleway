@@ -174,7 +174,7 @@ Use `replace_on_type_change` to trigger replacement instead of migration.
 
 ~> **Important:** If `type` change and migration occurs, the server will be stopped and changed backed to its original state. It will be started again if it was running.
 
-- `image` - (Optional) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
+- `image` - (Optional) The UUID or the label of the base image used by the server. You can use [this endpoint](https://www.scaleway.com/en/developers/api/marketplace/#path-marketplace-images-list-marketplace-images)
 to find either the right `label` or the right local image `ID` for a given `type`. Optional when creating an instance with an existing root volume.
 
 You can check the available labels with our [CLI](https://www.scaleway.com/en/docs/compute/instances/api-cli/creating-managing-instances-with-cliv2/). ```scw marketplace image list```
@@ -211,6 +211,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 ~> **Important:** If this field contains local volumes, you have to first detach them, in one apply, and then delete the volume in another apply.
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server. Useful only with `routed_ip_enabled` as false, otherwise ipv6 is always supported.
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 
 - `ip_id` - (Optional) The ID of the reserved IP that is attached to the server.
 
@@ -273,13 +274,16 @@ In addition to all arguments above, the following attributes are exported:
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.
 - `private_ip` - The Scaleway internal IP address of the server.
-- `public_ip` - The public IP address of the server.
+- `public_ip` - The public IP address of the server (Deprecated use `public_ips` instead).
 - `public_ips` - The list of public IPs of the server.
     - `id` - The ID of the IP
     - `address` - The address of the IP
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 - `organization_id` - The organization ID the server is associated with.
 
@@ -288,5 +292,5 @@ In addition to all arguments above, the following attributes are exported:
 Instance servers can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_instance_server.web fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_instance_server.web fr-par-1/11111111-1111-1111-1111-111111111111
 ```

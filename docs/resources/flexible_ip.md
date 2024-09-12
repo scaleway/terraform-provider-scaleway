@@ -97,5 +97,5 @@ In addition to all arguments above, the following attributes are exported:
 Flexible IPs can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_flexible_ip.main fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_flexible_ip.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```

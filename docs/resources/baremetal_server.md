@@ -92,8 +92,8 @@ data "scaleway_baremetal_option" "private_network" {
 }
 
 resource "scaleway_vpc_private_network" "pn" {
-  zone = "fr-par-2"
-  name = "baremetal_private_network"
+  region = "fr-par"
+  name   = "baremetal_private_network"
 }
 
 resource "scaleway_baremetal_server" "base" {
@@ -200,5 +200,5 @@ In addition to all arguments above, the following attributes are exported:
 Baremetal servers can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_baremetal_server.web fr-par-2/11111111-1111-1111-1111-111111111111
+terraform import scaleway_baremetal_server.web fr-par-2/11111111-1111-1111-1111-111111111111
 ```

@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceRoute() *schema.Resource {
@@ -114,17 +114,11 @@ func ResourceRoute() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"verb": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The HTTP Verb used to call REST URI",
-							ValidateFunc: validation.StringInSlice([]string{
-								iot.RouteRestConfigHTTPVerbGet.String(),
-								iot.RouteRestConfigHTTPVerbPost.String(),
-								iot.RouteRestConfigHTTPVerbPut.String(),
-								iot.RouteRestConfigHTTPVerbPatch.String(),
-								iot.RouteRestConfigHTTPVerbDelete.String(),
-							}, false),
+							Type:             schema.TypeString,
+							Required:         true,
+							ForceNew:         true,
+							Description:      "The HTTP Verb used to call REST URI",
+							ValidateDiagFunc: verify.ValidateEnum[iot.RouteRestConfigHTTPVerb](),
 						},
 						"uri": {
 							Type:        schema.TypeString,
@@ -173,14 +167,11 @@ func ResourceRoute() *schema.Resource {
 							Description: "The string to prefix object names with",
 						},
 						"strategy": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "How the S3 route's objects will be created: one per topic or one per message",
-							ValidateFunc: validation.StringInSlice([]string{
-								iot.RouteS3ConfigS3StrategyPerTopic.String(),
-								iot.RouteS3ConfigS3StrategyPerMessage.String(),
-							}, false),
+							Type:             schema.TypeString,
+							Required:         true,
+							ForceNew:         true,
+							Description:      "How the S3 route's objects will be created: one per topic or one per message",
+							ValidateDiagFunc: verify.ValidateEnum[iot.RouteS3ConfigS3Strategy](),
 						},
 					},
 				},

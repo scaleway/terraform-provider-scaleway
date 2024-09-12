@@ -81,7 +81,7 @@ func ResourceServer() *schema.Resource {
 				Optional:         true,
 				Description:      "The base image of the server",
 				DiffSuppressFunc: dsf.Locality,
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"os_name": {
 				Type:        schema.TypeString,
@@ -91,8 +91,8 @@ func ResourceServer() *schema.Resource {
 			"ssh_key_ids": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 				Optional: true,
 				Description: `Array of SSH key IDs allowed to SSH to the server
@@ -212,10 +212,10 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:         schema.TypeString,
-							Description:  "The private network ID",
-							Required:     true,
-							ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+							Type:             schema.TypeString,
+							Description:      "The private network ID",
+							Required:         true,
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							StateFunc: func(i interface{}) string {
 								return locality.ExpandID(i.(string))
 							},

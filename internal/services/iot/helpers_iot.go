@@ -75,7 +75,7 @@ func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m interface{}) (
 		return "", nil
 	}
 	var mqttCa *http.Response
-	req, _ := http.NewRequestWithContext(ctx, "GET", mqttCaURL, nil)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, mqttCaURL, nil)
 	mqttCa, err := meta.ExtractHTTPClient(m).Do(req)
 	if err != nil {
 		return "", err

@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -86,7 +85,7 @@ func ResourceLb() *schema.Resource {
 				Computed:         true,
 				Description:      "The load-balance public IP ID",
 				DiffSuppressFunc: dsf.Locality,
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				Deprecated:       "Please use ip_ids",
 			},
 			"ip_address": {
@@ -122,18 +121,19 @@ func ResourceLb() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"private_network_id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:  "The Private Network ID",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+							Description:      "The Private Network ID",
 						},
 						"static_config": {
 							Description: "Define an IP address in the subnet of your private network that will be assigned to your load balancer instance",
 							Type:        schema.TypeList,
 							Optional:    true,
+							Deprecated:  "static_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
 							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: verify.IsStandaloneIPorCIDR(),
+								Type:             schema.TypeString,
+								ValidateDiagFunc: verify.IsStandaloneIPorCIDR(),
 							},
 							MaxItems: 1,
 						},
@@ -142,6 +142,17 @@ func ResourceLb() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
+							Deprecated:  "dhcp_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
+						},
+						"ipam_ids": {
+							Type: schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network",
 						},
 						// Readonly attributes
 						"status": {
@@ -157,16 +168,11 @@ func ResourceLb() *schema.Resource {
 				},
 			},
 			"ssl_compatibility_level": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Enforces minimal SSL version (in SSL/TLS offloading context)",
-				Default:     lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
-				ValidateFunc: validation.StringInSlice([]string{
-					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelUnknown.String(),
-					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
-					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelModern.String(),
-					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelOld.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Enforces minimal SSL version (in SSL/TLS offloading context)",
+				Default:          lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
+				ValidateDiagFunc: verify.ValidateEnum[lbSDK.SSLCompatibilityLevel](),
 			},
 			"assign_flexible_ip": {
 				Type:          schema.TypeBool,
@@ -186,8 +192,8 @@ func ResourceLb() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description:      "List of IP IDs to attach to the Load Balancer",
 				DiffSuppressFunc: dsf.OrderDiff,

@@ -26,6 +26,8 @@ func exceptionsCassettesCases() map[string]struct{} {
 		"../services/rdb/testdata/data-source-privilege-basic.cassette.yaml":    {},
 		"../services/rdb/testdata/privilege-basic.cassette.yaml":                {},
 		"../services/object/testdata/object-bucket-destroy-force.cassette.yaml": {},
+		"../services/secret/testdata/secret-protected.cassette.yaml":            {},
+		"../services/secret/testdata/secret-version-type.cassette.yaml":         {},
 	}
 }
 

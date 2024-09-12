@@ -5,13 +5,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceCockpitSource() *schema.Resource {
@@ -36,15 +36,11 @@ func ResourceCockpitSource() *schema.Resource {
 				Description: "Name of the datasource",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The type of the datasource",
-				ValidateFunc: validation.StringInSlice([]string{
-					cockpit.DataSourceTypeMetrics.String(),
-					cockpit.DataSourceTypeLogs.String(),
-					cockpit.DataSourceTypeTraces.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "The type of the datasource",
+				ValidateDiagFunc: verify.ValidateEnum[cockpit.DataSourceType](),
 			},
 			// computed
 			"url": {
@@ -71,6 +67,11 @@ func ResourceCockpitSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time of the last update of the cockpit datasource",
+			},
+			"push_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL endpoint used for pushing data to the cockpit data source.",
 			},
 			"project_id": account.ProjectIDSchema(),
 			"region":     regional.Schema(),
@@ -116,6 +117,11 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
+	pushURL, err := createCockpitPushURL(res.Type, res.URL)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", res.Name)
 	_ = d.Set("type", res.Type.String())
 	_ = d.Set("url", res.URL)
@@ -125,6 +131,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("project_id", res.ProjectID)
+	_ = d.Set("push_url", pushURL)
 
 	return nil
 }

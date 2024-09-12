@@ -36,10 +36,10 @@ func ResourcePATRule() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The ID of the gateway this PAT rule is applied to",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The ID of the gateway this PAT rule is applied to",
 			},
 			"private_ip": {
 				Type:         schema.TypeString,
@@ -63,15 +63,11 @@ func ResourcePATRule() *schema.Resource {
 				Description: "The private port used in the PAT rule",
 			},
 			"protocol": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					vpcgw.PATRuleProtocolTCP.String(),
-					vpcgw.PATRuleProtocolUDP.String(),
-					vpcgw.PATRuleProtocolBoth.String(),
-				}, true),
-				Default:     "both",
-				Description: "The protocol used in the PAT rule",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnumIgnoreCase[vpcgw.PATRuleProtocol](),
+				Default:          "both",
+				Description:      "The protocol used in the PAT rule",
 			},
 			"zone": zonal.Schema(),
 			// Computed elements

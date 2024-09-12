@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceCockpitGrafanaUser() *schema.Resource {
@@ -43,14 +44,11 @@ func ResourceCockpitGrafanaUser() *schema.Resource {
 				Sensitive:   true,
 			},
 			"role": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The role of the Grafana user",
-				ValidateFunc: validation.StringInSlice([]string{
-					cockpit.GrafanaUserRoleEditor.String(),
-					cockpit.GrafanaUserRoleViewer.String(),
-				}, false),
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "The role of the Grafana user",
+				ValidateDiagFunc: verify.ValidateEnum[cockpit.GrafanaUserRole](),
 			},
 			"project_id": account.ProjectIDSchema(),
 		},
