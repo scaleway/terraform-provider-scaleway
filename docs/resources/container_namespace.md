@@ -46,14 +46,20 @@ The `scaleway_container_namespace` resource exports certain attributes once the 
 ~> **Important:** Containers namespace IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
 
 - `organization_id` - The Organization ID with which the namespace is associated.
-- `registry_endpoint` - The registry endpoint of the namespace.
-- `registry_namespace_id` - The registry namespace ID of the namespace.
 
+- `registry_endpoint` - The registry endpoint of the namespace.
+
+- `registry_namespace_id` - The registry namespace ID of the namespace.
 
 ## Import
 
 Containers namespaces can be imported using `{region}/{id}`, as shown below:
 
 ```bash
+<<<<<<< HEAD
 terraform import scaleway_container_namespace.main fr-par/11111111-1111-1111-1111-111111111111
 ```
+=======
+$ terraform import scaleway_container_namespace.main fr-par/11111111-1111-1111-1111-111111111111
+```
+>>>>>>> adba6efa (docs(review): update)

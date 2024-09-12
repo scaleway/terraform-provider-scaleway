@@ -64,7 +64,7 @@ The following arguments are supported:
 
 - `max_scale` - (Optional) The maximum number of instances this container can scale to. Default to 20.
 
-- `memory_limit` - (Optional) The memory resources in MB to allocate to each container. Defaults to 256.
+- `memory_limit` - (Optional) The memory resources in MB to allocate to each container. Defaults to 256 MB.
 
 - `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container. Defaults to 140.
 
