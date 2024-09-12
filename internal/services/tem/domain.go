@@ -256,7 +256,6 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
