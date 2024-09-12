@@ -2,13 +2,13 @@ package inference_test
 
 import (
 	"fmt"
+	inferencetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference/testfuncs"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 )
 
@@ -19,7 +19,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDeploymentDestroy(tt),
+		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -49,7 +49,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDeploymentDestroy(tt),
+		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -57,7 +57,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						name = "private-network-test-inference"
 					}
 					resource "scaleway_inference_deployment" "main" {
-						name = "test-inferenceSDK-deployment-basic"
+						name = "test-inferenceSDK-deployment-endpoint-private"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
@@ -77,7 +77,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						name = "private-network-test-inference"
 					}
 					resource "scaleway_inference_deployment" "main" {
-						name = "test-inferenceSDK-deployment-basic"
+						name = "test-inferenceSDK-deployment-basic-endpoints-private-public"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
@@ -103,7 +103,7 @@ func TestAccDeployment_MinSize(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDeploymentDestroy(tt),
+		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -145,36 +145,6 @@ func testAccCheckDeploymentExists(tt *acctest.TestTools, n string) resource.Test
 		})
 		if err != nil {
 			return err
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckDeploymentDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_inference_deployment" {
-				continue
-			}
-
-			api, region, id, err := inference.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.DeleteDeployment(&inferenceSDK.DeleteDeploymentRequest{
-				DeploymentID: id,
-				Region:       region,
-			})
-
-			if err == nil {
-				return fmt.Errorf("inferenceSDK deployment (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
 		}
 
 		return nil
