@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccDeployment_Basic(t *testing.T) {
@@ -108,7 +107,7 @@ func TestAccDeployment_MinSize(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_inference_deployment" "main-size" {
+					resource "scaleway_inference_deployment" "main_size" {
 						name = "test-inferenceSDK-deployment-min-size"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
@@ -120,8 +119,8 @@ func TestAccDeployment_MinSize(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main-size"),
-					resource.TestCheckResourceAttr("scaleway_inference_deployment.main-size", "min_size", "2"),
+					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main_size"),
+					resource.TestCheckResourceAttr("scaleway_inference_deployment.main_size", "min_size", "2"),
 				),
 			},
 		},

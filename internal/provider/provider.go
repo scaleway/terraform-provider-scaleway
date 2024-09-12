@@ -4,8 +4,6 @@ import (
 	"context"
 	"os"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
@@ -26,6 +24,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iot"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
