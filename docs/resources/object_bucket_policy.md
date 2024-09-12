@@ -257,3 +257,4 @@ If you are using a project different from the default one, you have to specify t
 ```bash
 terraform import scaleway_object_bucket_policy.some_bucket fr-par/some-bucket@xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
 ```
+

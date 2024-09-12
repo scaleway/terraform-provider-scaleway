@@ -119,7 +119,7 @@ The `grantee` configuration block supports the following arguments:
 
 ## Attributes Reference
 
-The `scaleway_object_bucket_acl` resource exports certain attributes once the bucket ACL configuration is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The `region`, `bucket` and `acl` separated by (`/`).
 
@@ -137,3 +137,4 @@ If you are using a project different from the default one, you have to specify t
 ```bash
 terraform import scaleway_object_bucket_acl.some_bucket fr-par/some-bucket/private@xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
 ```
+

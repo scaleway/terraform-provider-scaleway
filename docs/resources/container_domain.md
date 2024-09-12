@@ -9,7 +9,9 @@ The `scaleway_container_domain` resource allows you to create and manage domain 
 
 Refer to the Containers domain [documentation](https://www.scaleway.com/en/docs/compute/containers/how-to/add-a-custom-domain-to-a-container/) and the [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-domains-list-all-domain-name-bindings) for more information.
 
-## Bind a custom domain name to a container
+## Example Usage
+
+The commands below shows how to bind a custom domain name to a container.
 
 ### Simple
 
