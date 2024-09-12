@@ -33,7 +33,7 @@ The following arguments are supported:
 
 * `key` - (Required) The path to the object.
 
-* `file` - (Optional) The name of the file to upload, defaults to an empty file. 
+* `file` - (Optional) The name of the file to upload, defaults to an empty file.
 
 * `content` - (Optional) The content of the file to upload. Only one of `file`, `content` or `content_base64` can be defined.
 

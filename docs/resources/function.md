@@ -87,13 +87,9 @@ The following arguments are supported:
 
 - `deploy` - Define whether the function should be deployed. Terraform will wait for the function to be deployed. Your function will be redeployed if you update the source zip file.
 
-<<<<<<< HEAD
 - `sandbox` - (Optional) Execution environment of the function.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
-=======
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the function was created.
->>>>>>> adba6efa (docs(review): update)
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the functions namespace is associated with.
 
@@ -119,10 +115,5 @@ In addition to all arguments above, the following attributes are exported:
 Functions can be imported using, `{region}/{id}`, as shown below:
 
 ```bash
-<<<<<<< HEAD
 terraform import scaleway_function.main fr-par/11111111-1111-1111-1111-111111111111
 ```
-=======
-$ terraform import scaleway_function.main fr-par/11111111-1111-1111-1111-111111111111
-```
->>>>>>> adba6efa (docs(review): update)

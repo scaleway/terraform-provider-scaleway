@@ -156,7 +156,7 @@ If you make any change to your bucket's tags using the console, it will overwrit
 
     ~> **Important:** Avoid using `prefix` for `AbortIncompleteMultipartUpload`, as any incomplete multipart upload will be billed
 
-* `expiration` - (Optional) Specifies a period of expiration for the object. The `expiration` object supports the following: 
+* `expiration` - (Optional) Specifies a period of expiration for the object. The `expiration` object supports the following:
 
     * `days` (Optional) Specifies the number of days after object creation when the specific rule action takes effect.
     * `transition` - (Optional) Specifies a period in the object's transitions.

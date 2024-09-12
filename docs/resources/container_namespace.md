@@ -56,10 +56,5 @@ The `scaleway_container_namespace` resource exports certain attributes once the 
 Containers namespaces can be imported using `{region}/{id}`, as shown below:
 
 ```bash
-<<<<<<< HEAD
 terraform import scaleway_container_namespace.main fr-par/11111111-1111-1111-1111-111111111111
 ```
-=======
-$ terraform import scaleway_container_namespace.main fr-par/11111111-1111-1111-1111-111111111111
-```
->>>>>>> adba6efa (docs(review): update)

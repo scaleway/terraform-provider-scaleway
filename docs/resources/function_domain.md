@@ -64,10 +64,5 @@ The `scaleway_function_domain` resource exports certain attributes once the func
 Function domain binding can be imported using `{region}/{id}`, as shown below:
 
 ```bash
-<<<<<<< HEAD
 terraform import scaleway_function_domain.main fr-par/11111111-1111-1111-1111-111111111111
 ```
-=======
-$ terraform import scaleway_function_domain.main fr-par/11111111-1111-1111-1111-111111111111
-```
->>>>>>> adba6efa (docs(review): update)

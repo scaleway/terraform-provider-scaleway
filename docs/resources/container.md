@@ -139,7 +139,7 @@ The vCPU represents a portion of the underlying, physical CPU that is assigned t
 
 You can determine the computing resources to allocate to each container.
 
-The `memory_limit` (in MB) must correspond with the right amount of vCPU. Refer to the table below to determine the right memory/vCPU combination.   
+The `memory_limit` (in MB) must correspond with the right amount of vCPU. Refer to the table below to determine the right memory/vCPU combination.
 
 | Memory (in MB) | vCPU |
 |----------------|------|

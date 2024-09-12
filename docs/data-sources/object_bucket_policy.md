@@ -25,7 +25,7 @@ This section lists the arguments that you can provide to the `scaleway_object_bu
 
 - `bucket` - (Required) The name of the bucket.
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#zones) in which the Object Storage exists.
-- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project with which the bucket is associated. 
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project with which the bucket is associated.
 
 ~> **Important:** The `project_id` attribute has a particular behavior with s3 products, because the s3 API is scoped by project.
 If you are using a project different from the default one, you have to specify the `project_id` for every child resource of the bucket,
