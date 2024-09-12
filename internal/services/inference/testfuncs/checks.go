@@ -2,6 +2,7 @@ package inferencetestfuncs
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
