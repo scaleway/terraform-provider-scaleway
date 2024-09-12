@@ -153,4 +153,3 @@ The `memory_limit` (in MB) must correspond with the right amount of vCPU. Refer 
 
 ~>**Important:** Make sure to select the right resources, as you will be billed based on compute usage over time and the number of Containers executions.
 Refer to the [Serverless Containers pricing](https://www.scaleway.com/en/docs/faq/serverless-containers/#prices) for more information.
-

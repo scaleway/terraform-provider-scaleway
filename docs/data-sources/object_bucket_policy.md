@@ -41,3 +41,4 @@ The `scaleway_object_bucket_policy` data source exports certain attributes once 
 In addition to all above arguments, the following attribute is exported:
 
 * `policy` - The content of the bucket policy in JSON format.
+

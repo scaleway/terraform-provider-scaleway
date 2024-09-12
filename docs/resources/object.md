@@ -81,4 +81,3 @@ If you are using a project different from the default one, you have to specify t
 ```bash
 terraform import scaleway_object.some_object fr-par/some-bucket/some-file@xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
 ```
-
