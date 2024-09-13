@@ -35,10 +35,10 @@ func ResourceUserData() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"server_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The ID of the server",
-				ValidateFunc: verify.IsUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The ID of the server",
+				ValidateDiagFunc: verify.IsUUIDWithLocality(),
 			},
 			"key": {
 				Type:        schema.TypeString,

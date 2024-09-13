@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -377,7 +377,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		if val, ok := r["id"].(string); ok && val != "" {
 			rule.ID = aws.String(val)
 		} else {
-			rule.ID = aws.String(resource.PrefixedUniqueId("tf-scw-bucket-lifecycle-"))
+			rule.ID = aws.String(id.PrefixedUniqueId("tf-scw-bucket-lifecycle-"))
 		}
 
 		// Enabled
@@ -598,8 +598,8 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 					}
 				}
 			} else {
-				if lifecycleRule.Prefix != nil {
-					rule["prefix"] = aws.StringValue(lifecycleRule.Prefix)
+				if lifecycleRule.Prefix != nil { //nolint:staticcheck
+					rule["prefix"] = aws.StringValue(lifecycleRule.Prefix) //nolint:staticcheck
 				}
 			}
 

@@ -157,7 +157,7 @@ func ResourceServer() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
-					ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 					DiffSuppressFunc: dsf.Locality,
 				},
 				Optional:    true,
@@ -168,6 +168,7 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Determines if IPv6 is enabled for the server",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
 					// routed_ip enabled servers already support enable_ipv6. Let's ignore this argument if it is.
 					routedIPEnabled := types.GetBool(d, "routed_ip_enabled")
@@ -187,6 +188,7 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The public IPv4 address of the server",
+				Deprecated:  "Use public_ips instead",
 			},
 			"ip_id": {
 				Type:             schema.TypeString,
@@ -209,11 +211,13 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The default public IPv6 address routed to the server.",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 			},
 			"ipv6_gateway": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The IPv6 gateway address",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 			},
 			"ipv6_prefix_length": {
 				Type:        schema.TypeInt,
@@ -245,11 +249,12 @@ func ResourceServer() *schema.Resource {
 				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.BootType](),
 			},
 			"bootscript_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "ID of the target bootscript (set boot_type to bootscript)",
-				ValidateFunc: verify.IsUUID(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "ID of the target bootscript (set boot_type to bootscript)",
+				ValidateDiagFunc: verify.IsUUID(),
+				Deprecated:       "bootscript is not supported anymore.",
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -280,7 +285,7 @@ func ResourceServer() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							Description:      "The Private Network ID",
 							DiffSuppressFunc: dsf.Locality,
 						},
@@ -391,11 +396,11 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
 	if ok {
-		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool))
+		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool)) //nolint:staticcheck
 	}
 
 	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
-		req.Bootscript = types.ExpandStringPtr(bootScriptID)
+		req.Bootscript = types.ExpandStringPtr(bootScriptID) //nolint:staticcheck
 	}
 
 	if bootType, ok := d.GetOk("boot_type"); ok {
@@ -404,7 +409,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.PublicIP = types.ExpandStringPtr(zonal.ExpandID(ipID).ID)
+		req.PublicIP = types.ExpandStringPtr(zonal.ExpandID(ipID).ID) //nolint:staticcheck
 	}
 
 	if ipIDs, ok := d.GetOk("ip_ids"); ok {
@@ -575,15 +580,19 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("zone", string(zone))
 		_ = d.Set("name", server.Name)
 		_ = d.Set("boot_type", server.BootType)
-		if server.Bootscript != nil {
-			_ = d.Set("bootscript_id", server.Bootscript.ID)
+
+		// Bootscript is deprecated
+		if server.Bootscript != nil { //nolint:staticcheck
+			_ = d.Set("bootscript_id", server.Bootscript.ID) //nolint:staticcheck
 		}
+
 		_ = d.Set("type", server.CommercialType)
 		if len(server.Tags) > 0 {
 			_ = d.Set("tags", server.Tags)
 		}
 		_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
-		_ = d.Set("enable_ipv6", server.EnableIPv6)
+		// EnableIPv6 is deprecated
+		_ = d.Set("enable_ipv6", server.EnableIPv6) //nolint:staticcheck
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)
 		_ = d.Set("project_id", server.Project)
@@ -604,9 +613,9 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("private_ip", types.FlattenStringPtr(server.PrivateIP))
 		}
 
-		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID {
-			if !server.PublicIP.Dynamic {
-				_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String())
+		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID { //nolint:staticcheck
+			if !server.PublicIP.Dynamic { //nolint:staticcheck
+				_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String()) //nolint:staticcheck
 			} else {
 				_ = d.Set("ip_id", "")
 			}
@@ -614,11 +623,11 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("ip_id", "")
 		}
 
-		if server.PublicIP != nil {
-			_ = d.Set("public_ip", server.PublicIP.Address.String())
+		if server.PublicIP != nil { //nolint:staticcheck
+			_ = d.Set("public_ip", server.PublicIP.Address.String()) //nolint:staticcheck
 			d.SetConnInfo(map[string]string{
 				"type": "ssh",
-				"host": server.PublicIP.Address.String(),
+				"host": server.PublicIP.Address.String(), //nolint:staticcheck
 			})
 		} else {
 			_ = d.Set("public_ip", "")
@@ -637,10 +646,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("ip_ids", []interface{}{})
 		}
 
-		if server.IPv6 != nil {
-			_ = d.Set("ipv6_address", server.IPv6.Address.String())
-			_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String())
-			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)
+		if server.IPv6 != nil { //nolint:staticcheck
+			_ = d.Set("ipv6_address", server.IPv6.Address.String()) //nolint:staticcheck
+			_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String()) //nolint:staticcheck
+			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)  //nolint:staticcheck
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -831,10 +840,10 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 		ipID := zonal.ExpandID(d.Get("ip_id")).ID
 		// If an IP is already attached, and it's not a dynamic IP we detach it.
-		if server.PublicIP != nil && !server.PublicIP.Dynamic {
+		if server.PublicIP != nil && !server.PublicIP.Dynamic { //nolint:staticcheck
 			_, err = api.UpdateIP(&instanceSDK.UpdateIPRequest{
 				Zone:   zone,
-				IP:     server.PublicIP.ID,
+				IP:     server.PublicIP.ID, //nolint:staticcheck
 				Server: &instanceSDK.NullableStringValue{Null: true},
 			})
 			if err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lb2 "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -48,16 +49,16 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				}
 			}
 
-			err = resource.RetryContext(context.Background(), lb.RetryLbIPInterval, func() *resource.RetryError {
+			err = retry.RetryContext(context.Background(), lb.RetryLbIPInterval, func() *retry.RetryError {
 				_, errGet := lbAPI.GetIP(&lb2.ZonedAPIGetIPRequest{
 					Zone: zone,
 					IPID: ID,
 				})
 				if httperrors.Is403(errGet) {
-					return resource.RetryableError(errGet)
+					return retry.RetryableError(errGet)
 				}
 
-				return resource.NonRetryableError(errGet)
+				return retry.NonRetryableError(errGet)
 			})
 
 			// If no error resource still exist

@@ -43,7 +43,7 @@ func ResourceDomain() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				Description:      "Container the domain will be bound to",
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"url": {

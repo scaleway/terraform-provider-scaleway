@@ -81,6 +81,7 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				  name        = "%[1]s"
 				  description = "%[2]s"
 				  tags        = ["devtools", "provider", "terraform"]
+				  project_id  = scaleway_account_project.project.id
 				}
 
 				resource "scaleway_secret_version" "v1" {

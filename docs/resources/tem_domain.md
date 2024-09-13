@@ -119,7 +119,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `revoked_at` - The date and time of the revocation of the domain (RFC 3339 format).
 
-- `last_error` - The error message if the last check failed.
+- `last_error` - (Deprecated) The error message if the last check failed.
 
 - `spf_config` - The snippet of the SPF record that should be registered in the DNS zone.
 

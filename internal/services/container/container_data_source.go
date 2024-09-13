@@ -21,23 +21,23 @@ func DataSourceContainer() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"container_id"}
 	dsSchema["container_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the Container",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the Container",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 	dsSchema["namespace_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  "The ID of the Container namespace",
-		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The ID of the Container namespace",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the project to filter the Container",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the project to filter the Container",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

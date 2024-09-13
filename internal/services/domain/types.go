@@ -23,14 +23,15 @@ func flattenDomainData(data string, recordType domain.RecordType) interface{} {
 }
 
 func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) interface{} {
-	flattened := []map[string]interface{}{}
+	flattenedResult := []map[string]interface{}{}
 
 	if config == nil {
-		return flattened
+		return flattenedResult
 	}
 
-	flattened = []map[string]interface{}{{}}
-	if config.Matches != nil && len(config.Matches) > 0 {
+	flattenedResult = []map[string]interface{}{{}}
+
+	if len(config.Matches) > 0 {
 		matches := []map[string]interface{}{}
 		for _, match := range config.Matches {
 			rawMatch := map[string]interface{}{
@@ -42,13 +43,12 @@ func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) interface{} {
 			if len(match.Countries) > 0 {
 				rawMatch["countries"] = match.Countries
 			}
-
 			matches = append(matches, rawMatch)
 		}
-		flattened[0]["matches"] = matches
+		flattenedResult[0]["matches"] = matches
 	}
 
-	return flattened
+	return flattenedResult
 }
 
 func expandDomainGeoIPConfig(defaultData string, i interface{}, ok bool) *domain.RecordGeoIPConfig {
@@ -105,7 +105,7 @@ func flattenDomainHTTPService(config *domain.RecordHTTPServiceConfig) interface{
 	}
 
 	ips := []interface{}{}
-	if config.IPs != nil && len(config.IPs) > 0 {
+	if len(config.IPs) > 0 {
 		for _, ip := range config.IPs {
 			ips = append(ips, ip.String())
 		}
@@ -152,7 +152,7 @@ func flattenDomainWeighted(config *domain.RecordWeightedConfig) interface{} {
 		return flattened
 	}
 
-	if config.WeightedIPs != nil && len(config.WeightedIPs) > 0 {
+	if len(config.WeightedIPs) > 0 {
 		for _, weightedIPs := range config.WeightedIPs {
 			flattened = append(flattened, map[string]interface{}{
 				"ip":     weightedIPs.IP.String(),
@@ -191,7 +191,7 @@ func flattenDomainView(config *domain.RecordViewConfig) interface{} {
 		return flattened
 	}
 
-	if config.Views != nil && len(config.Views) > 0 {
+	if len(config.Views) > 0 {
 		for _, view := range config.Views {
 			flattened = append(flattened, map[string]interface{}{
 				"subnet": view.Subnet,

@@ -17,10 +17,10 @@ func DataSourceCockpit() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpit().Schema)
 
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The project_id you want to attach the resource to",
-		Optional:     true,
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Description:      "The project_id you want to attach the resource to",
+		Optional:         true,
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 	dsSchema["plan"] = &schema.Schema{
 		Type:        schema.TypeString,

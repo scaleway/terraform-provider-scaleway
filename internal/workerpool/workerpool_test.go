@@ -59,7 +59,7 @@ func TestWorkerPoolWaitTimeMultiple(t *testing.T) {
 	pool := workerpool.NewWorkerPool(5)
 	iterations := 20
 
-	for i := 0; i < iterations; i++ {
+	for i := range iterations {
 		copyOfI := i
 
 		pool.AddTask(func() error {
@@ -77,7 +77,7 @@ func TestWorkerPoolWaitTimeMultiple(t *testing.T) {
 
 	assert.Len(t, errs, iterations/2)
 
-	for i := 0; i < iterations; i++ {
+	for i := range iterations {
 		if i%2 == 0 {
 			found := false
 			for _, err := range errs {

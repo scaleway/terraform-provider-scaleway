@@ -91,7 +91,7 @@ func ResourceReadReplica() *schema.Resource {
 						"private_network_id": {
 							Type:             schema.TypeString,
 							Description:      "UUID of the private network to be connected to the read replica (UUID format)",
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: dsf.Locality,
 							Required:         true,
 						},

@@ -55,12 +55,12 @@ func ResourceVolume() *schema.Resource {
 				ConflictsWith: []string{"from_snapshot_id"},
 			},
 			"from_snapshot_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Create a volume based on a image",
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"size_in_gb"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "Create a volume based on a image",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				ConflictsWith:    []string{"size_in_gb"},
 			},
 			"server_id": {
 				Type:        schema.TypeString,

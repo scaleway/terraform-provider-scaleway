@@ -56,6 +56,7 @@ func TestAccCockpit_Basic(t *testing.T) {
 }
 
 func TestAccCockpit_WithSourceEndpoints(t *testing.T) {
+	t.Skip("TestAccCockpit_WithSourceEndpoints skipped: encountered repeated HTTP 500 errors from the Scaleway Cockpit API.")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

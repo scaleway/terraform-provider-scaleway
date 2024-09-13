@@ -85,10 +85,10 @@ func Provider(config *Config) plugin.ProviderFunc {
 					Description: "The Scaleway access key.",
 				},
 				"secret_key": {
-					Type:         schema.TypeString,
-					Optional:     true, // To allow user to use deprecated `token`.
-					Description:  "The Scaleway secret Key.",
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					Optional:         true, // To allow user to use deprecated `token`.
+					Description:      "The Scaleway secret Key.",
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 				"profile": {
 					Type:        schema.TypeString,
@@ -96,16 +96,16 @@ func Provider(config *Config) plugin.ProviderFunc {
 					Description: "The Scaleway profile to use.",
 				},
 				"project_id": {
-					Type:         schema.TypeString,
-					Optional:     true, // To allow user to use organization instead of project
-					Description:  "The Scaleway project ID.",
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					Optional:         true, // To allow user to use organization instead of project
+					Description:      "The Scaleway project ID.",
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 				"organization_id": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "The Scaleway organization ID.",
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					Optional:         true,
+					Description:      "The Scaleway organization ID.",
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 				"region": regional.Schema(),
 				"zone":   zonal.Schema(),
@@ -213,6 +213,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_secret_version":                      secret.ResourceVersion(),
 				"scaleway_tem_domain":                          tem.ResourceDomain(),
 				"scaleway_tem_domain_validation":               tem.ResourceDomainValidation(),
+				"scaleway_tem_webhook":                         tem.ResourceWebhook(),
 				"scaleway_vpc":                                 vpc.ResourceVPC(),
 				"scaleway_vpc_gateway_network":                 vpcgw.ResourceNetwork(),
 				"scaleway_vpc_private_network":                 vpc.ResourcePrivateNetwork(),
@@ -287,6 +288,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_lbs":                                 lb.DataSourceLbs(),
 				"scaleway_marketplace_image":                   marketplace.DataSourceImage(),
 				"scaleway_mnq_sqs":                             mnq.DataSourceSQS(),
+				"scaleway_mnq_sns":                             mnq.DataSourceSNS(),
 				"scaleway_object_bucket":                       object.DataSourceBucket(),
 				"scaleway_object_bucket_policy":                object.DataSourceBucketPolicy(),
 				"scaleway_rdb_acl":                             rdb.DataSourceACL(),

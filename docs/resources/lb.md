@@ -244,7 +244,7 @@ resource "scaleway_lb" "main" {
 
 - `ipam_ids` - (Optional) IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network.
 
-- `dhcp_config` - (Optional) Set to `true` if you want to let DHCP assign IP addresses. See below.
+- `dhcp_config` - (Deprecated) Please use `ipam_ids`. Set to `true` if you want to let DHCP assign IP addresses. See below.
 
 - `static_config` - (Deprecated) Please use `ipam_ids`. Define a local ip address of your choice for the load balancer instance.
 

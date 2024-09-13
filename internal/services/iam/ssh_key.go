@@ -192,11 +192,3 @@ func resourceIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData, m inte
 
 	return nil
 }
-
-func removePublicSSHKeyComment(publicKey string) string {
-	parts := strings.Split(publicKey, " ")
-	if len(parts) == 3 {
-		return strings.Join(parts[:2], " ")
-	}
-	return publicKey
-}

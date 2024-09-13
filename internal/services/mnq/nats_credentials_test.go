@@ -23,12 +23,71 @@ func TestAccNatsCredentials_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_nats_credential_basic"
+					}
+
 					resource scaleway_mnq_nats_account main {
-						name = "test-mnq-nats-credentials-basic"
+						project_id = scaleway_account_project.main.id
+						name = "test-mnq-nats-credentials-basic-test"
 					}
 
 					resource scaleway_mnq_nats_credentials main {
 						account_id = scaleway_mnq_nats_account.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNatsCredentialsPresent(tt, "scaleway_mnq_nats_credentials.main"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNatsCredentials_UpdateName(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isNatsCredentialsDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_nats_credential_update"
+					}
+
+					resource scaleway_mnq_nats_account main {
+						project_id = scaleway_account_project.main.id
+						name = "test-mnq-nats-credentials-update"
+					}
+
+					resource scaleway_mnq_nats_credentials main {
+						account_id = scaleway_mnq_nats_account.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNatsCredentialsPresent(tt, "scaleway_mnq_nats_credentials.main"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_nats_credential_update"
+					}
+
+					resource scaleway_mnq_nats_account main {
+						project_id = scaleway_account_project.main.id
+						name = "test-mnq-nats-credentials-update"
+					}
+
+					resource scaleway_mnq_nats_credentials main {
+						account_id = scaleway_mnq_nats_account.main.id
+						name="toto"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
