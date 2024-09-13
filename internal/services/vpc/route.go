@@ -182,7 +182,12 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	if d.HasChange("nexthop_resource_id") {
-		updateRequest.NexthopResourceID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("nexthop_resource_id")))
+		resourceID, err := vpcRouteExpandResourceID(d.Get("nexthop_resource_id").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		updateRequest.NexthopResourceID = types.ExpandUpdatedStringPtr(resourceID)
 		hasChanged = true
 	}
 
