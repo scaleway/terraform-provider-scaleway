@@ -156,7 +156,6 @@ func ResourceServer() *schema.Resource {
 							Computed:    true,
 							Optional:    true,
 							Description: "SBS Volume IOPS, only with volume_type as sbs_volume",
-							//RequiredWith: []string{"root_volume.0.volume_type"},
 						},
 					},
 				},
