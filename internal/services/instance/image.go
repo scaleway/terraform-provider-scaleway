@@ -42,10 +42,10 @@ func ResourceImage() *schema.Resource {
 				Description: "The name of the image",
 			},
 			"root_volume_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "UUID of the snapshot from which the image is to be created",
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "UUID of the snapshot from which the image is to be created",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"architecture": {
 				Type:             schema.TypeString,
@@ -59,8 +59,8 @@ func ResourceImage() *schema.Resource {
 				Optional: true,
 				MaxItems: 1,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description: "The IDs of the additional volumes attached to the image",
 			},

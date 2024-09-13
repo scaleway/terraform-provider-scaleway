@@ -1,7 +1,6 @@
 package tem
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,7 +8,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -38,20 +36,4 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, stri
 		return nil, "", "", err
 	}
 	return api, region, id, nil
-}
-
-func waitForTemDomain(ctx context.Context, api *tem.API, region scw.Region, id string, timeout time.Duration) (*tem.Domain, error) {
-	retryInterval := defaultDomainRetryInterval
-	if transport.DefaultWaitRetryInterval != nil {
-		retryInterval = *transport.DefaultWaitRetryInterval
-	}
-
-	domain, err := api.WaitForDomain(&tem.WaitForDomainRequest{
-		Region:        region,
-		DomainID:      id,
-		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
-	}, scw.WithContext(ctx))
-
-	return domain, err
 }

@@ -1,7 +1,6 @@
 package verify
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -12,29 +11,48 @@ import (
 // IsDate will validate that field is a valid ISO 8601
 // It is the same as RFC3339
 func IsDate() schema.SchemaValidateDiagFunc {
-	return func(i interface{}, _ cty.Path) diag.Diagnostics {
-		date, isStr := i.(string)
+	return func(value interface{}, path cty.Path) diag.Diagnostics {
+		date, isStr := value.(string)
 		if !isStr {
-			return diag.Errorf("%v is not a string", date)
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				AttributePath: path,
+				Summary:       "invalid input, expected a string",
+			}}
 		}
 		_, err := time.Parse(time.RFC3339, date)
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				AttributePath: path,
+				Summary:       "invalid input, expected a valid RFC3339 date",
+			}}
 		}
+
 		return nil
 	}
 }
 
-func IsDuration() schema.SchemaValidateFunc {
-	return func(i interface{}, _ string) (strings []string, errors []error) {
-		str, isStr := i.(string)
+func IsDuration() schema.SchemaValidateDiagFunc {
+	return func(value interface{}, path cty.Path) diag.Diagnostics {
+		str, isStr := value.(string)
 		if !isStr {
-			return nil, []error{fmt.Errorf("%v is not a string", i)}
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				AttributePath: path,
+				Summary:       "invalid input, expected a string",
+			}}
 		}
+
 		_, err := time.ParseDuration(str)
 		if err != nil {
-			return nil, []error{fmt.Errorf("cannot parse duration for value %s", str)}
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				AttributePath: path,
+				Summary:       "invalid input, expected a valid duration",
+			}}
 		}
-		return nil, nil
+
+		return nil
 	}
 }

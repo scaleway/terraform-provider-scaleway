@@ -24,11 +24,11 @@ func DataSourceVersion() *schema.Resource {
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "revision")
 	dsSchema["secret_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the secret",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"secret_name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the secret",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"secret_name"},
 	}
 	dsSchema["secret_name"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -44,10 +44,10 @@ func DataSourceVersion() *schema.Resource {
 	}
 	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the project to filter the secret version",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the project to filter the secret version",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

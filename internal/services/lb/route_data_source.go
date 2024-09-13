@@ -14,10 +14,10 @@ func DataSourceRoute() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceRoute().Schema)
 
 	dsSchema["route_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  "The ID of the route",
-		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The ID of the route",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{

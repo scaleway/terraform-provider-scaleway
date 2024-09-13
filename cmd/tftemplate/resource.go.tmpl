@@ -1,5 +1,5 @@
 {{- /*gotype: tftemplate/models.ResourceTemplate*/ -}}
-package scaleway
+package {{.API}}
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	_ "time"
 )
 
 func Resource{{ .Resource }}() *schema.Resource {
@@ -18,7 +19,13 @@ func Resource{{ .Resource }}() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		//TODO: timeouts
+		Timeouts: &schema.ResourceTimeout{ // TODO: remove unused timeouts
+			Create: schema.DefaultTimeout(default{{.APIFirstLetterUpper}}{{.Resource}}Timeout),
+			Read:   schema.DefaultTimeout(default{{.APIFirstLetterUpper}}{{.Resource}}Timeout),
+			Update: schema.DefaultTimeout(default{{.APIFirstLetterUpper}}{{.Resource}}Timeout),
+			Delete: schema.DefaultTimeout(default{{.APIFirstLetterUpper}}{{.Resource}}Timeout),
+			Default: schema.DefaultTimeout(default{{.APIFirstLetterUpper}}{{.Resource}}Timeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -27,28 +34,31 @@ func Resource{{ .Resource }}() *schema.Resource {
 				Optional:    true,
 				Description: "The {{ .ResourceCleanLow }} name",
 			},
-			"{{ .Locality }}":          {{ .Locality }}Schema(),
+			"{{ .Locality }}":          {{.LocalityAdjective}}.Schema(),
 			"project_id":      account.ProjectIDSchema(),
+			"organization_id": account.OrganizationIDSchema(),
 		},
 	}
 }
 
 func Resource{{ .Resource }}Create(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, {{ .Locality }}, err := {{ .API }}APIWith{{ .LocalityUpper }}(d, m)
+	api, {{ .Locality }}, err := newAPIWith{{ .LocalityUpper }}(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	{{ .ResourceCleanLow }}, err := api.Create{{ .ResourceClean }}(&{{ .API }}.Create{{ .ResourceClean }}Request{
-		{{.LocalityUpper}}: {{.Locality}},
-		ProjectID: d.Get("project_id").(string),
-		Name: types.ExpandOrGenerateString(d.Get("name").(string), "{{ .ResourceCleanLow }}"),
-	}, scw.WithContext(ctx))
+	req := &{{ .API }}.Create{{ .ResourceClean }}Request{
+			{{.LocalityUpper}}: {{.Locality}},
+			ProjectID: d.Get("project_id").(string),
+			Name: types.ExpandOrGenerateString(d.Get("name").(string), "{{ .ResourceCleanLow }}"),
+	}
+
+	{{ .ResourceCleanLow }}, err := api.Create{{.ResourceClean}}(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(new{{ .LocalityAdjectiveUpper }}IDString({{ .Locality }}, {{ .ResourceCleanLow }}.ID))
+	d.SetId({{.LocalityAdjective}}.NewIDString({{ .Locality }}, {{ .ResourceCleanLow }}.ID))
 
 {{if .SupportWaiters}}
 	_, err = waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, {{ .ResourceCleanLow }}.ID, d.Timeout(schema.TimeoutCreate))
@@ -61,25 +71,27 @@ func Resource{{ .Resource }}Create(ctx context.Context, d *schema.ResourceData, 
 }
 
 func Resource{{ .Resource }}Read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, {{ .Locality }}, id, err := {{ .API }}APIWith{{ .LocalityUpper }}AndID(m, d.Id())
+	api,{{.Locality}}, id, err := newAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 {{if .SupportWaiters}}
 	{{ .ResourceCleanLow }}, err := waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, id, d.Timeout(schema.TimeoutRead))
+{{- else}}
+	{{.ResourceCleanLow}}, err = api.Get{{.ResourceClean}}(&{{ .API }}.Get{{.ResourceClean}}Request
+	{
+		{{.ResourceClean}}ID: id,
+		{{.LocalityUpper}}: {{.Locality}},
+	}, scw.WithContext(ctx))
+{{- end }}
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
-{{- else}}
-	{{.ResourceCleanLow}}, err := api.Get{{.ResourceClean}}(&{{.API}}.Get{{.ResourceClean}}Request{
-		{{.ResourceClean}}ID: id,
-		{{.LocalityUpper}}: {{.Locality}},
-	}, scw.WithContext(ctx))
-{{- end }}
 
 	_ = d.Set("name", {{ .ResourceCleanLow }}.Name)
 	_ = d.Set("{{.Locality}}", {{.ResourceCleanLow}}.{{.LocalityUpper}})
@@ -89,14 +101,14 @@ func Resource{{ .Resource }}Read(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func Resource{{ .Resource }}Update(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, {{ .Locality }}, id, err := {{ .API }}APIWith{{ .LocalityUpper }}AndID(m, d.Id())
+	api, {{ .Locality }}, id, err := newAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 {{if .SupportWaiters }}
 	{{ .ResourceCleanLow }}, err := waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		if is404Error(err) {
+		if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
@@ -120,7 +132,7 @@ func Resource{{ .Resource }}Update(ctx context.Context, d *schema.ResourceData, 
 }
 
 func Resource{{ .Resource }}Delete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, {{ .Locality }}, id, err := {{ .API }}APIWith{{ .LocalityUpper }}AndID(m, d.Id())
+	api, {{ .Locality }}, id, err := newAPIWith{{ .LocalityUpper }}AndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,7 +152,7 @@ func Resource{{ .Resource }}Delete(ctx context.Context, d *schema.ResourceData, 
 
 {{- if .SupportWaiters}}
 	_, err = waitFor{{ .Resource }}(ctx, api, {{ .Locality }}, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 {{- end}}

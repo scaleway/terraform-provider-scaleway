@@ -46,7 +46,7 @@ func ResourcePrivateNetworkEndpoint() *schema.Resource {
 						"id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: dsf.Locality,
 							Description:      "The private network ID",
 						},

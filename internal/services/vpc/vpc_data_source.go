@@ -21,18 +21,18 @@ func DataSourceVPC() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"vpc_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the VPC",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the VPC",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The project ID the resource is associated to",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The project ID the resource is associated to",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

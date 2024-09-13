@@ -22,18 +22,18 @@ func DataSourcePrivateNetwork() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"private_network_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the vpc to which the private network belongs to",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"private_network_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the vpc to which the private network belongs to",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"private_network_id"},
 	}
 	dsSchema["private_network_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the private network",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name", "vpc_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the private network",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name", "vpc_id"},
 	}
 
 	return &schema.Resource{

@@ -308,8 +308,8 @@ func isIPAttachedToServer(tt *acctest.TestTools, ipResource, serverResource stri
 			return err
 		}
 
-		if server.Server.PublicIP.Address.String() != ip.IP.Address.String() {
-			return fmt.Errorf("IPs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.Server.PublicIP.Address, ip.IP.Address)
+		if server.Server.PublicIP != nil && server.Server.PublicIP.Address.String() != ip.IP.Address.String() { //nolint:staticcheck
+			return fmt.Errorf("IPs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.Server.PublicIP.Address, ip.IP.Address) //nolint:staticcheck
 		}
 
 		return nil
@@ -336,7 +336,7 @@ func serverHasNoIPAssigned(tt *acctest.TestTools, serverResource string) resourc
 			return err
 		}
 
-		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
+		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic { //nolint:staticcheck
 			return fmt.Errorf("no flexible IP should be assigned to %s", serverResource)
 		}
 

@@ -20,18 +20,18 @@ func DataSourceWebhosting() *schema.Resource {
 
 	dsSchema["domain"].ConflictsWith = []string{"webhosting_id"}
 	dsSchema["webhosting_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the Webhosting",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"domain"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the Webhosting",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"domain"},
 	}
 	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The project ID the resource is associated to",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The project ID the resource is associated to",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
