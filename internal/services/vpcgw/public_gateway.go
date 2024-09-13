@@ -42,7 +42,6 @@ func ResourcePublicGateway() *schema.Resource {
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         true,
 				Description:      "gateway type",
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
@@ -229,6 +228,16 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 		updateRequest.UpstreamDNSServers = types.ExpandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
 	}
 
+	_, err = api.UpdateGateway(updateRequest, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if d.HasChange("refresh_ssh_keys") {
 		_, err := api.RefreshSSHKeys(&vpcgw.RefreshSSHKeysRequest{
 			Zone:      gateway.Zone,
@@ -244,9 +253,15 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, err = api.UpdateGateway(updateRequest, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if d.HasChange("type") {
+		_, err := api.UpgradeGateway(&vpcgw.UpgradeGatewayRequest{
+			Zone:      gateway.Zone,
+			GatewayID: gateway.ID,
+			Type:      types.ExpandUpdatedStringPtr(d.Get("type")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	_, err = waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
