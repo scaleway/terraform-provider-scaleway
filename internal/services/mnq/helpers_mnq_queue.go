@@ -68,7 +68,10 @@ func NewSQSClient(httpClient *http.Client, region string, endpoint string, acces
 	return sqs.New(s), nil
 }
 
-func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStreamContext, scw.Region, error) {
+func NATSClientWithRegion( //nolint:ireturn
+	d *schema.ResourceData,
+	m interface{},
+) (nats.JetStreamContext, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -84,7 +87,11 @@ func NATSClientWithRegion(d *schema.ResourceData, m interface{}) (nats.JetStream
 	return js, region, err
 }
 
-func newNATSJetStreamClient(region string, endpoint string, credentials string) (nats.JetStreamContext, error) {
+func newNATSJetStreamClient( //nolint:ireturn
+	region string,
+	endpoint string,
+	credentials string,
+) (nats.JetStreamContext, error) {
 	jwt, seed, err := splitNATSJWTAndSeed(credentials)
 	if err != nil {
 		return nil, err
