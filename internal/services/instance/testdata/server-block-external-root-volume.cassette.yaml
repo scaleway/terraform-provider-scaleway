@@ -1,0 +1,1942 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_jammy&order_by=type_asc&type=instance_sbs&zone=fr-par-1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1296
+        uncompressed: false
+        body: '{"local_images":[{"arch":"x86_64","compatible_commercial_types":["DEV1-L","DEV1-M","DEV1-S","DEV1-XL","GP1-L","GP1-M","GP1-S","GP1-XL","GP1-XS","START1-L","START1-M","START1-S","START1-XS","VC1L","VC1M","VC1S","X64-120GB","X64-15GB","X64-30GB","X64-60GB","ENT1-XXS","ENT1-XS","ENT1-S","ENT1-M","ENT1-L","ENT1-XL","ENT1-2XL","PRO2-XXS","PRO2-XS","PRO2-S","PRO2-M","PRO2-L","STARDUST1-S","PLAY2-MICRO","PLAY2-NANO","PLAY2-PICO","POP2-2C-8G","POP2-4C-16G","POP2-8C-32G","POP2-16C-64G","POP2-32C-128G","POP2-64C-256G","POP2-HM-2C-16G","POP2-HM-4C-32G","POP2-HM-8C-64G","POP2-HM-16C-128G","POP2-HM-32C-256G","POP2-HM-64C-512G","POP2-HC-2C-4G","POP2-HC-4C-8G","POP2-HC-8C-16G","POP2-HC-16C-32G","POP2-HC-32C-64G","POP2-HC-64C-128G","POP2-HN-3","POP2-HN-5","POP2-HN-10"],"id":"96edc90e-fe55-4eeb-909f-d50b259c172a","label":"ubuntu_jammy","type":"instance_sbs","zone":"fr-par-1"},{"arch":"arm64","compatible_commercial_types":["AMP2-C1","AMP2-C2","AMP2-C4","AMP2-C8","AMP2-C12","AMP2-C24","AMP2-C48","AMP2-C60","COPARM1-2C-8G","COPARM1-4C-16G","COPARM1-8C-32G","COPARM1-16C-64G","COPARM1-32C-128G"],"id":"c9a1f6cd-a0cf-457c-8efb-ad015ca40654","label":"ubuntu_jammy","type":"instance_sbs","zone":"fr-par-1"}],"total_count":2}'
+        headers:
+            Content-Length:
+                - "1296"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:45 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 19474346-c256-401d-becb-4d03723e02a5
+        status: 200 OK
+        code: 200
+        duration: 119.842542ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers?page=1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 39553
+        uncompressed: false
+        body: '{"servers":{"COPARM1-16C-64G":{"alt_names":[],"arch":"arm64","baremetal":false,"block_bandwidth":671088640,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.3454,"mig_profile":null,"monthly_price":252.14,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"COPARM1-2C-8G":{"alt_names":[],"arch":"arm64","baremetal":false,"block_bandwidth":83886080,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0426,"mig_profile":null,"monthly_price":31.1,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"COPARM1-32C-128G":{"alt_names":[],"arch":"arm64","baremetal":false,"block_bandwidth":1342177280,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.6935,"mig_profile":null,"monthly_price":506.26,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"COPARM1-4C-16G":{"alt_names":[],"arch":"arm64","baremetal":false,"block_bandwidth":167772160,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0857,"mig_profile":null,"monthly_price":62.56,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"COPARM1-8C-32G":{"alt_names":[],"arch":"arm64","baremetal":false,"block_bandwidth":335544320,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1724,"mig_profile":null,"monthly_price":125.85,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"DEV1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":209715200,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.04952,"mig_profile":null,"monthly_price":36.1496,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":80000000000,"min_size":0}},"DEV1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":157286400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.02556,"mig_profile":null,"monthly_price":18.6588,"ncpus":3,"network":{"interfaces":[{"internal_bandwidth":300000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":300000000}],"ipv6_support":true,"sum_internal_bandwidth":300000000,"sum_internet_bandwidth":300000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":4294967296,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":40000000000,"min_size":0}},"DEV1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":104857600,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.01368,"mig_profile":null,"monthly_price":9.9864,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":2147483648,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":20000000000,"min_size":0}},"DEV1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":262144000,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.07308,"mig_profile":null,"monthly_price":53.3484,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":12884901888,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":120000000000,"min_size":0}},"ENT1-2XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":21474836480,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":3.53,"mig_profile":null,"monthly_price":2576.9,"ncpus":96,"network":{"interfaces":[{"internal_bandwidth":20000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":20000000000}],"ipv6_support":true,"sum_internal_bandwidth":20000000000,"sum_internet_bandwidth":20000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":412316860416,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":6710886400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.18,"mig_profile":null,"monthly_price":861.4,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":3355443200,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.59,"mig_profile":null,"monthly_price":430.7,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":1677721600,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.29,"mig_profile":null,"monthly_price":211.7,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":13421772800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.35,"mig_profile":null,"monthly_price":1715.5,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":838860800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.147,"mig_profile":null,"monthly_price":107.31,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"ENT1-XXS":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":419430400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0735,"mig_profile":null,"monthly_price":53.655,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"GP1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":1073741824,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.7894,"mig_profile":null,"monthly_price":576.262,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":5000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":5000000000}],"ipv6_support":true,"sum_internal_bandwidth":5000000000,"sum_internet_bandwidth":5000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":137438953472,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":838860800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.4064,"mig_profile":null,"monthly_price":296.672,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":1500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1500000000}],"ipv6_support":true,"sum_internal_bandwidth":1500000000,"sum_internet_bandwidth":1500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":68719476736,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":524288000,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.2042,"mig_profile":null,"monthly_price":149.066,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":300000000000,"min_size":0}},"GP1-VIZ":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":314572800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1,"mig_profile":null,"monthly_price":72,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":300000000000,"min_size":0}},"GP1-XL":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":2147483648,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.6714,"mig_profile":null,"monthly_price":1220.122,"ncpus":48,"network":{"interfaces":[{"internal_bandwidth":10000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":10000000000}],"ipv6_support":true,"sum_internal_bandwidth":10000000000,"sum_internet_bandwidth":10000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":274877906944,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":600000000000,"min_size":0}},"GP1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":314572800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1016,"mig_profile":null,"monthly_price":74.168,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":17179869184,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":150000000000,"min_size":0}},"PLAY2-MICRO":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":167772160,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.054,"mig_profile":null,"monthly_price":39.42,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-NANO":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":83886080,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.027,"mig_profile":null,"monthly_price":19.71,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4294967296,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"PLAY2-PICO":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.014,"mig_profile":null,"monthly_price":10.22,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":2147483648,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-16C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":3355443200,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.59,"mig_profile":null,"monthly_price":430.7,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-16C-64G-WIN":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":3355443200,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.4567,"mig_profile":null,"monthly_price":1063.391,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-2C-8G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":419430400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0735,"mig_profile":null,"monthly_price":53.66,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-2C-8G-WIN":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":419430400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1823,"mig_profile":null,"monthly_price":133.079,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-32C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":6710886400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.18,"mig_profile":null,"monthly_price":861.4,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-32C-128G-WIN":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":6710886400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.9133,"mig_profile":null,"monthly_price":2126.709,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-4C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":838860800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.147,"mig_profile":null,"monthly_price":107.31,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-4C-16G-WIN":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":838860800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.3637,"mig_profile":null,"monthly_price":265.501,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-64C-256G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":13421772800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":2.35,"mig_profile":null,"monthly_price":1715.5,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-8C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":1677721600,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.29,"mig_profile":null,"monthly_price":211.7,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-8C-32G-WIN":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":1677721600,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.7233,"mig_profile":null,"monthly_price":528.009,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-16C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":3355443200,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.4256,"mig_profile":null,"monthly_price":310.69,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-2C-4G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":419430400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0532,"mig_profile":null,"monthly_price":38.84,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":4294967296,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-32C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":6710886400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.8512,"mig_profile":null,"monthly_price":621.38,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-4C-8G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":838860800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.1064,"mig_profile":null,"monthly_price":77.67,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-64C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":13421772800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.7024,"mig_profile":null,"monthly_price":1242.75,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HC-8C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":1677721600,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.2128,"mig_profile":null,"monthly_price":155.34,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-16C-128G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":3355443200,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.824,"mig_profile":null,"monthly_price":601.52,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3200000000}],"ipv6_support":true,"sum_internal_bandwidth":3200000000,"sum_internet_bandwidth":3200000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-2C-16G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":419430400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.103,"mig_profile":null,"monthly_price":75.19,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-32C-256G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":6710886400,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":1.648,"mig_profile":null,"monthly_price":1203.04,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6400000000}],"ipv6_support":true,"sum_internal_bandwidth":6400000000,"sum_internet_bandwidth":6400000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":274877906944,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-4C-32G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":838860800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.206,"mig_profile":null,"monthly_price":150.38,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":800000000}],"ipv6_support":true,"sum_internal_bandwidth":800000000,"sum_internet_bandwidth":800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-64C-512G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":13421772800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":3.296,"mig_profile":null,"monthly_price":2406.08,"ncpus":64,"network":{"interfaces":[{"internal_bandwidth":12800000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":12800000000}],"ipv6_support":true,"sum_internal_bandwidth":12800000000,"sum_internet_bandwidth":12800000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":549755813888,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"POP2-HM-8C-64G":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":1677721600,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.412,"mig_profile":null,"monthly_price":300.76,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1600000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1600000000}],"ipv6_support":true,"sum_internal_bandwidth":1600000000,"sum_internet_bandwidth":1600000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":2097152000,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.877,"mig_profile":null,"monthly_price":640.21,"ncpus":32,"network":{"interfaces":[{"internal_bandwidth":6000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":6000000000}],"ipv6_support":true,"sum_internal_bandwidth":6000000000,"sum_internet_bandwidth":6000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":137438953472,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":1048576000,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.438,"mig_profile":null,"monthly_price":319.74,"ncpus":16,"network":{"interfaces":[{"internal_bandwidth":3000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":3000000000}],"ipv6_support":true,"sum_internal_bandwidth":3000000000,"sum_internet_bandwidth":3000000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":68719476736,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}}}}'
+        headers:
+            Content-Length:
+                - "39553"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:45 GMT
+            Link:
+                - </products/servers?page=2&per_page=50&>; rel="next",</products/servers?page=2&per_page=50&>; rel="last"
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 618649c4-930f-4ce1-a12b-4ff4426b06a1
+            X-Total-Count:
+                - "66"
+        status: 200 OK
+        code: 200
+        duration: 60.593ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers?page=2
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 13003
+        uncompressed: false
+        body: '{"servers":{"PRO2-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":524288000,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.219,"mig_profile":null,"monthly_price":159.87,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":1500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1500000000}],"ipv6_support":true,"sum_internal_bandwidth":1500000000,"sum_internet_bandwidth":1500000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":34359738368,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":262144000,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.11,"mig_profile":null,"monthly_price":80.3,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":700000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":700000000}],"ipv6_support":true,"sum_internal_bandwidth":700000000,"sum_internet_bandwidth":700000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":17179869184,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"PRO2-XXS":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":131072000,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":false,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.055,"mig_profile":null,"monthly_price":40.15,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":350000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":350000000}],"ipv6_support":true,"sum_internal_bandwidth":350000000,"sum_internet_bandwidth":350000000},"per_volume_constraint":{"l_ssd":{"max_size":0,"min_size":0}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":0,"min_size":0}},"RENDER-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":2147483648,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":1,"hourly_price":1.2426,"mig_profile":null,"monthly_price":907.098,"ncpus":10,"network":{"interfaces":[{"internal_bandwidth":1000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1000000000}],"ipv6_support":true,"sum_internal_bandwidth":1000000000,"sum_internet_bandwidth":1000000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":45097156608,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":400000000000,"min_size":0}},"STARDUST1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":52428800,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.00459,"mig_profile":null,"monthly_price":3.3507,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":800000000000,"min_size":1000000000}},"ram":1073741824,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":10000000000,"min_size":0}},"START1-L":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0368,"mig_profile":null,"monthly_price":26.864,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":400000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":400000000}],"ipv6_support":true,"sum_internal_bandwidth":400000000,"sum_internet_bandwidth":400000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":200000000000,"min_size":200000000000}},"START1-M":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0194,"mig_profile":null,"monthly_price":14.162,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":300000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":300000000}],"ipv6_support":true,"sum_internal_bandwidth":300000000,"sum_internet_bandwidth":300000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":4294967296,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":100000000000,"min_size":100000000000}},"START1-S":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0106,"mig_profile":null,"monthly_price":7.738,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":2147483648,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":50000000000,"min_size":50000000000}},"START1-XS":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.0062,"mig_profile":null,"monthly_price":4.526,"ncpus":1,"network":{"interfaces":[{"internal_bandwidth":100000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":100000000}],"ipv6_support":true,"sum_internal_bandwidth":100000000,"sum_internet_bandwidth":100000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":1073741824,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":25000000000,"min_size":25000000000}},"VC1L":{"alt_names":["X64-8GB"],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.02468,"mig_profile":null,"monthly_price":18.0164,"ncpus":6,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":8589934592,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":200000000000,"min_size":200000000000}},"VC1M":{"alt_names":["X64-4GB"],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.01555,"mig_profile":null,"monthly_price":11.3515,"ncpus":4,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":4294967296,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":100000000000,"min_size":100000000000}},"VC1S":{"alt_names":["X64-2GB"],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.00862,"mig_profile":null,"monthly_price":6.2926,"ncpus":2,"network":{"interfaces":[{"internal_bandwidth":200000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":200000000}],"ipv6_support":true,"sum_internal_bandwidth":200000000,"sum_internet_bandwidth":200000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":2147483648,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":50000000000,"min_size":50000000000}},"X64-120GB":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.42574,"mig_profile":null,"monthly_price":310.7902,"ncpus":12,"network":{"interfaces":[{"internal_bandwidth":1000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1000000000}],"ipv6_support":true,"sum_internal_bandwidth":1000000000,"sum_internet_bandwidth":1000000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":128849018880,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":1000000000000,"min_size":500000000000}},"X64-15GB":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.06032,"mig_profile":null,"monthly_price":44.0336,"ncpus":6,"network":{"interfaces":[{"internal_bandwidth":250000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":250000000}],"ipv6_support":true,"sum_internal_bandwidth":250000000,"sum_internet_bandwidth":250000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":16106127360,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":200000000000,"min_size":200000000000}},"X64-30GB":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.11906,"mig_profile":null,"monthly_price":86.9138,"ncpus":8,"network":{"interfaces":[{"internal_bandwidth":500000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":500000000}],"ipv6_support":true,"sum_internal_bandwidth":500000000,"sum_internet_bandwidth":500000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":32212254720,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":400000000000,"min_size":300000000000}},"X64-60GB":{"alt_names":[],"arch":"x86_64","baremetal":false,"block_bandwidth":41943040,"capabilities":{"block_storage":true,"boot_types":["local","rescue"],"hot_snapshots_local_volume":true,"placement_groups":true,"private_network":8},"gpu":0,"hourly_price":0.213,"mig_profile":null,"monthly_price":155.49,"ncpus":10,"network":{"interfaces":[{"internal_bandwidth":1000000000,"internet_bandwidth":null},{"internal_bandwidth":null,"internet_bandwidth":1000000000}],"ipv6_support":true,"sum_internal_bandwidth":1000000000,"sum_internet_bandwidth":1000000000},"per_volume_constraint":{"l_ssd":{"max_size":200000000000,"min_size":1000000000}},"ram":64424509440,"scratch_storage_max_size":null,"volumes_constraint":{"max_size":700000000000,"min_size":400000000000}}}}'
+        headers:
+            Content-Length:
+                - "13003"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:45 GMT
+            Link:
+                - </products/servers?page=1&per_page=50&>; rel="first",</products/servers?page=1&per_page=50&>; rel="previous",</products/servers?page=2&per_page=50&>; rel="last"
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 2959555f-263d-4153-83fc-988c4982ce9d
+            X-Total-Count:
+                - "66"
+        status: 200 OK
+        code: 200
+        duration: 64.6265ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 285
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"name":"tf-srv-festive-murdock","dynamic_ip_required":false,"commercial_type":"PLAY2-PICO","image":"96edc90e-fe55-4eeb-909f-d50b259c172a","volumes":{"0":{"boot":false,"size":50000000000,"volume_type":"sbs_volume"}},"boot_type":"local","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b"}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1662
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:46.313493+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1662"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:46 GMT
+            Location:
+                - https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 293dc01c-dafc-4a75-901a-028f8cfea598
+        status: 201 Created
+        code: 201
+        duration: 847.438375ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1662
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:46.313493+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1662"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:46 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 9e955a74-ddf5-47d8-a994-3b54e6a5a39c
+        status: 200 OK
+        code: 200
+        duration: 130.710375ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1662
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:46.313493+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1662"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:46 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - e24fcaad-d3c5-40c3-a58d-12d9f817b40d
+        status: 200 OK
+        code: 200
+        duration: 154.170959ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 19
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"perf_iops":15000}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1alpha1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: PATCH
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 707
+        uncompressed: false
+        body: '{"created_at":"2024-09-13T09:19:46.467281Z","id":"488c3b14-60ea-4e76-8937-97234cd3ba76","last_detached_at":null,"name":"Ubuntu 22.04 Jammy Jellyfish_sbs_volume_0","parent_snapshot_id":"a2a982a0-214c-43c1-a810-480ccb64426d","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","references":[{"created_at":"2024-09-13T09:19:46.467281Z","id":"12d88339-00c7-4938-939c-55235cfc6739","product_resource_id":"e970e01c-9ace-476a-942d-f002a6d2036c","product_resource_type":"instance_server","status":"attached","type":"exclusive"}],"size":50000000000,"specs":{"class":"sbs","perf_iops":5000},"status":"updating","tags":[],"type":"sbs_5k","updated_at":"2024-09-13T09:19:46.467281Z","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "707"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:47 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 343b05e2-97a4-4cb7-938d-d1995ec6969e
+        status: 200 OK
+        code: 200
+        duration: 102.374875ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1662
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:46.313493+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1662"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:47 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 1e6df932-4f13-4e6b-80cf-5c23c42cad72
+        status: 200 OK
+        code: 200
+        duration: 123.048792ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1alpha1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 707
+        uncompressed: false
+        body: '{"created_at":"2024-09-13T09:19:46.467281Z","id":"488c3b14-60ea-4e76-8937-97234cd3ba76","last_detached_at":null,"name":"Ubuntu 22.04 Jammy Jellyfish_sbs_volume_0","parent_snapshot_id":"a2a982a0-214c-43c1-a810-480ccb64426d","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","references":[{"created_at":"2024-09-13T09:19:46.467281Z","id":"12d88339-00c7-4938-939c-55235cfc6739","product_resource_id":"e970e01c-9ace-476a-942d-f002a6d2036c","product_resource_type":"instance_server","status":"attached","type":"exclusive"}],"size":50000000000,"specs":{"class":"sbs","perf_iops":5000},"status":"updating","tags":[],"type":"sbs_5k","updated_at":"2024-09-13T09:19:46.467281Z","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "707"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:47 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - dfca0719-96f4-4033-8e9b-25bcc973274a
+        status: 200 OK
+        code: 200
+        duration: 46.939833ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1alpha1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 707
+        uncompressed: false
+        body: '{"created_at":"2024-09-13T09:19:46.467281Z","id":"488c3b14-60ea-4e76-8937-97234cd3ba76","last_detached_at":null,"name":"Ubuntu 22.04 Jammy Jellyfish_sbs_volume_0","parent_snapshot_id":"a2a982a0-214c-43c1-a810-480ccb64426d","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","references":[{"created_at":"2024-09-13T09:19:46.467281Z","id":"12d88339-00c7-4938-939c-55235cfc6739","product_resource_id":"e970e01c-9ace-476a-942d-f002a6d2036c","product_resource_type":"instance_server","status":"attached","type":"exclusive"}],"size":50000000000,"specs":{"class":"sbs","perf_iops":15000},"status":"in_use","tags":[],"type":"sbs_15k","updated_at":"2024-09-13T09:19:47.152165Z","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "707"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:52 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 30305ab1-b764-4e8a-9a85-974ba7c9c30a
+        status: 200 OK
+        code: 200
+        duration: 47.172167ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 20
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"action":"poweron"}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c/action
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 353
+        uncompressed: false
+        body: '{"task":{"description":"server_batch_poweron","href_from":"/servers/e970e01c-9ace-476a-942d-f002a6d2036c/action","href_result":"/servers/e970e01c-9ace-476a-942d-f002a6d2036c","id":"c5eb877b-00e7-46d7-8a7c-da5d120f1a86","progress":0,"started_at":"2024-09-13T09:19:52.581947+00:00","status":"pending","terminated_at":null,"zone":"par1"}}'
+        headers:
+            Content-Length:
+                - "353"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:52 GMT
+            Location:
+                - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/c5eb877b-00e7-46d7-8a7c-da5d120f1a86
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - e1dca57a-f34f-4818-952f-83ee1a3a97b8
+        status: 202 Accepted
+        code: 202
+        duration: 284.093708ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1684
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:52.407660+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"starting","state_detail":"allocating node","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1684"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:52 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 8d990570-c0ee-4983-a8ab-43d50ee184f0
+        status: 200 OK
+        code: 200
+        duration: 137.291875ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1814
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:55.993221+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1814"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 201a1481-d732-42e0-b886-448d323c4308
+        status: 200 OK
+        code: 200
+        duration: 149.406416ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1814
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:55.993221+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1814"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - fb4282af-c637-47c2-89b7-ff8d17f83d42
+        status: 200 OK
+        code: 200
+        duration: 171.58575ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 143
+        uncompressed: false
+        body: '{"message":"resource is not found","resource":"instance_volume","resource_id":"488c3b14-60ea-4e76-8937-97234cd3ba76","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "143"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - bfec2f75-e945-4f7d-9363-43f2a83159a8
+        status: 404 Not Found
+        code: 404
+        duration: 41.087292ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1alpha1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 707
+        uncompressed: false
+        body: '{"created_at":"2024-09-13T09:19:46.467281Z","id":"488c3b14-60ea-4e76-8937-97234cd3ba76","last_detached_at":null,"name":"Ubuntu 22.04 Jammy Jellyfish_sbs_volume_0","parent_snapshot_id":"a2a982a0-214c-43c1-a810-480ccb64426d","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","references":[{"created_at":"2024-09-13T09:19:46.467281Z","id":"12d88339-00c7-4938-939c-55235cfc6739","product_resource_id":"e970e01c-9ace-476a-942d-f002a6d2036c","product_resource_type":"instance_server","status":"attached","type":"exclusive"}],"size":50000000000,"specs":{"class":"sbs","perf_iops":15000},"status":"in_use","tags":[],"type":"sbs_15k","updated_at":"2024-09-13T09:19:47.152165Z","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "707"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:58 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 23e3f00e-ddd2-4811-a5d4-4347e8c1bc45
+        status: 200 OK
+        code: 200
+        duration: 44.380875ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c/user_data
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 17
+        uncompressed: false
+        body: '{"user_data":[]}'
+        headers:
+            Content-Length:
+                - "17"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - cbdc13eb-4241-47d3-abe3-0d585c70384c
+        status: 200 OK
+        code: 200
+        duration: 53.12525ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c/private_nics
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 20
+        uncompressed: false
+        body: '{"private_nics":[]}'
+        headers:
+            Content-Length:
+                - "20"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:58 GMT
+            Link:
+                - </servers/e970e01c-9ace-476a-942d-f002a6d2036c/private_nics?page=0&per_page=50&>; rel="last"
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 0277f756-11fd-4760-864d-2caffabc0c10
+            X-Total-Count:
+                - "0"
+        status: 200 OK
+        code: 200
+        duration: 69.37825ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1814
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:55.993221+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1814"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:58 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - fc904d1e-5453-445c-8fed-69281be85dbc
+        status: 200 OK
+        code: 200
+        duration: 140.384708ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 143
+        uncompressed: false
+        body: '{"message":"resource is not found","resource":"instance_volume","resource_id":"488c3b14-60ea-4e76-8937-97234cd3ba76","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "143"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:58 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6835b230-e6a6-4c68-8f40-05fe7fa1c364
+        status: 404 Not Found
+        code: 404
+        duration: 28.797917ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1alpha1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 707
+        uncompressed: false
+        body: '{"created_at":"2024-09-13T09:19:46.467281Z","id":"488c3b14-60ea-4e76-8937-97234cd3ba76","last_detached_at":null,"name":"Ubuntu 22.04 Jammy Jellyfish_sbs_volume_0","parent_snapshot_id":"a2a982a0-214c-43c1-a810-480ccb64426d","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","references":[{"created_at":"2024-09-13T09:19:46.467281Z","id":"12d88339-00c7-4938-939c-55235cfc6739","product_resource_id":"e970e01c-9ace-476a-942d-f002a6d2036c","product_resource_type":"instance_server","status":"attached","type":"exclusive"}],"size":50000000000,"specs":{"class":"sbs","perf_iops":15000},"status":"in_use","tags":[],"type":"sbs_15k","updated_at":"2024-09-13T09:19:47.152165Z","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "707"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:58 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 30b00fbe-fd95-40a7-ab05-4c5aba85268d
+        status: 200 OK
+        code: 200
+        duration: 45.010459ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c/user_data
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 17
+        uncompressed: false
+        body: '{"user_data":[]}'
+        headers:
+            Content-Length:
+                - "17"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:58 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - b25e92d6-10e2-47a1-baa8-d8258f7654d8
+        status: 200 OK
+        code: 200
+        duration: 54.261375ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c/private_nics
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 20
+        uncompressed: false
+        body: '{"private_nics":[]}'
+        headers:
+            Content-Length:
+                - "20"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:58 GMT
+            Link:
+                - </servers/e970e01c-9ace-476a-942d-f002a6d2036c/private_nics?page=0&per_page=50&>; rel="last"
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 28b025da-1621-4f53-b6fb-14ce93b07829
+            X-Total-Count:
+                - "0"
+        status: 200 OK
+        code: 200
+        duration: 60.727667ms
+    - id: 23
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1814
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweroff","terminate","reboot","stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:55.993221+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"running","state_detail":"booting kernel","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1814"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:59 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - ea9ccf3e-d724-445d-932a-d82e85024f2d
+        status: 200 OK
+        code: 200
+        duration: 142.722208ms
+    - id: 24
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1alpha1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 707
+        uncompressed: false
+        body: '{"created_at":"2024-09-13T09:19:46.467281Z","id":"488c3b14-60ea-4e76-8937-97234cd3ba76","last_detached_at":null,"name":"Ubuntu 22.04 Jammy Jellyfish_sbs_volume_0","parent_snapshot_id":"a2a982a0-214c-43c1-a810-480ccb64426d","project_id":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","references":[{"created_at":"2024-09-13T09:19:46.467281Z","id":"12d88339-00c7-4938-939c-55235cfc6739","product_resource_id":"e970e01c-9ace-476a-942d-f002a6d2036c","product_resource_type":"instance_server","status":"attached","type":"exclusive"}],"size":50000000000,"specs":{"class":"sbs","perf_iops":15000},"status":"in_use","tags":[],"type":"sbs_15k","updated_at":"2024-09-13T09:19:47.152165Z","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "707"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:59 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 3116753a-fd20-410f-9c57-2f8b8843900f
+        status: 200 OK
+        code: 200
+        duration: 56.766917ms
+    - id: 25
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 21
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"action":"poweroff"}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c/action
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 348
+        uncompressed: false
+        body: '{"task":{"description":"server_poweroff","href_from":"/servers/e970e01c-9ace-476a-942d-f002a6d2036c/action","href_result":"/servers/e970e01c-9ace-476a-942d-f002a6d2036c","id":"b97ac93f-bb43-4463-ac81-bc38c5812f20","progress":0,"started_at":"2024-09-13T09:19:59.550642+00:00","status":"pending","terminated_at":null,"zone":"par1"}}'
+        headers:
+            Content-Length:
+                - "348"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:59 GMT
+            Location:
+                - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/b97ac93f-bb43-4463-ac81-bc38c5812f20
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6b0e593c-6134-430b-bcbe-2b249f700e8d
+        status: 202 Accepted
+        code: 202
+        duration: 191.667166ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1774
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:59.406354+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1774"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:19:59 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 211c87e5-6f0d-40d3-9e95-5802f31c8252
+        status: 200 OK
+        code: 200
+        duration: 300.637ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1774
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:59.406354+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1774"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:04 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - b187ef33-6aa0-48c3-a82b-c56b9b21608e
+        status: 200 OK
+        code: 200
+        duration: 161.65225ms
+    - id: 28
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1774
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:59.406354+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1774"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - dfe28edf-b5ab-416a-8291-7c07be1b8f65
+        status: 200 OK
+        code: 200
+        duration: 335.372917ms
+    - id: 29
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1774
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:59.406354+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1774"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:15 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 7786317f-5ada-4e38-b65a-972d61ace764
+        status: 200 OK
+        code: 200
+        duration: 149.735875ms
+    - id: 30
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1774
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:59.406354+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1774"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - c25bb3a7-195e-4ea2-a38f-85b0912a3db4
+        status: 200 OK
+        code: 200
+        duration: 172.541833ms
+    - id: 31
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1774
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:59.406354+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1774"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:25 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - c44fb167-dfad-467a-b55f-bcbf387f59db
+        status: 200 OK
+        code: 200
+        duration: 124.867459ms
+    - id: 32
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1774
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["stop_in_place","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":{"cluster_id":"60","hypervisor_id":"101","node_id":"62","platform_id":"14","zone_id":"par1"},"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:19:59.406354+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopping","state_detail":"stopping","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1774"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 3ccd5d9b-0e3d-4906-9e73-c2fc47bff61c
+        status: 200 OK
+        code: 200
+        duration: 155.316083ms
+    - id: 33
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1662
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:20:30.906066+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1662"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:35 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 9a7e6c16-03f1-4d8b-bba5-c463cd0f2119
+        status: 200 OK
+        code: 200
+        duration: 133.205417ms
+    - id: 34
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1662
+        uncompressed: false
+        body: '{"server":{"allowed_actions":["poweron","backup"],"arch":"x86_64","boot_type":"local","bootscript":null,"commercial_type":"PLAY2-PICO","creation_date":"2024-09-13T09:19:46.313493+00:00","dynamic_ip_required":false,"enable_ipv6":false,"extra_networks":[],"hostname":"tf-srv-festive-murdock","id":"e970e01c-9ace-476a-942d-f002a6d2036c","image":{"arch":"x86_64","creation_date":"2024-09-03T07:55:55.358120+00:00","default_bootscript":null,"extra_volumes":{},"from_server":"","id":"96edc90e-fe55-4eeb-909f-d50b259c172a","modification_date":"2024-09-03T07:55:55.358120+00:00","name":"Ubuntu 22.04 Jammy Jellyfish","organization":"51b656e3-4865-41e8-adbc-0c45bdd780db","project":"51b656e3-4865-41e8-adbc-0c45bdd780db","public":true,"root_volume":{"id":"a2a982a0-214c-43c1-a810-480ccb64426d","name":"","size":0,"volume_type":"sbs_snapshot"},"state":"available","tags":[],"zone":"fr-par-1"},"ipv6":null,"location":null,"mac_address":"de:00:00:6f:cc:57","maintenances":[],"modification_date":"2024-09-13T09:20:30.906066+00:00","name":"tf-srv-festive-murdock","organization":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","placement_group":null,"private_ip":null,"private_nics":[],"project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","protected":false,"public_ip":null,"public_ips":[],"routed_ip_enabled":true,"security_group":{"id":"0fe819c3-274d-472a-b3f5-ddb258d2d8bb","name":"Default security group"},"state":"stopped","state_detail":"","tags":[],"volumes":{"0":{"boot":false,"id":"488c3b14-60ea-4e76-8937-97234cd3ba76","volume_type":"sbs_volume"}},"zone":"fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "1662"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:35 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - b0d59874-c904-40ea-bba6-67f46e07b679
+        status: 200 OK
+        code: 200
+        duration: 129.953292ms
+    - id: 35
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:36 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 4f4f8ed3-c5b7-49ce-a066-b5711b2e46b8
+        status: 204 No Content
+        code: 204
+        duration: 619.787083ms
+    - id: 36
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 143
+        uncompressed: false
+        body: '{"message":"resource is not found","resource":"instance_server","resource_id":"e970e01c-9ace-476a-942d-f002a6d2036c","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "143"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:36 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - f961ef9d-b1b1-4efd-b274-5220ac5aafa5
+        status: 404 Not Found
+        code: 404
+        duration: 87.247542ms
+    - id: 37
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/488c3b14-60ea-4e76-8937-97234cd3ba76
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 143
+        uncompressed: false
+        body: '{"message":"resource is not found","resource":"instance_volume","resource_id":"488c3b14-60ea-4e76-8937-97234cd3ba76","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "143"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:36 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - ca7f8f5a-cca8-49ba-810c-ba056cca5262
+        status: 404 Not Found
+        code: 404
+        duration: 29.89525ms
+    - id: 38
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/e970e01c-9ace-476a-942d-f002a6d2036c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 143
+        uncompressed: false
+        body: '{"message":"resource is not found","resource":"instance_server","resource_id":"e970e01c-9ace-476a-942d-f002a6d2036c","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "143"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 13 Sep 2024 09:20:36 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 95e9f794-3b4f-4f90-9127-b661a284e010
+        status: 404 Not Found
+        code: 404
+        duration: 97.437709ms
