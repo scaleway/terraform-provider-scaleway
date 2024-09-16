@@ -1402,7 +1402,12 @@ func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *BlockA
 			PerfIops: iops,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.Diagnostics{{
+				Severity:      diag.Warning,
+				Summary:       "Failed to update root_volume iops",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+			}}
 		}
 	} else {
 		return diag.Diagnostics{{
