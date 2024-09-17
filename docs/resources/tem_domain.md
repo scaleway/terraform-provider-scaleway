@@ -62,13 +62,13 @@ resource "scaleway_domain_record" "dmarc" {
 
 ```terraform
 variable "domain_name" {
-type    = string
+  type    = string
 }
 
 resource "scaleway_tem_domain" "main" {
-name       = var.domain_name
-accept_tos = true
-autoconfig = true
+  name       = var.domain_name
+  accept_tos = true
+  autoconfig = true
 }
 
 ```
