@@ -24,7 +24,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_inference_deployment" "main" {
-						name = "test-inferenceSDK-deployment-basic"
+						name = "test-inference-deployment-basic"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
@@ -35,7 +35,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
-					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inferenceSDK-deployment-basic"),
+					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic"),
 				),
 			},
 		},
@@ -57,7 +57,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						name = "private-network-test-inference"
 					}
 					resource "scaleway_inference_deployment" "main" {
-						name = "test-inferenceSDK-deployment-endpoint-private"
+						name = "test-inference-deployment-endpoint-private"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
@@ -68,7 +68,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
-					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inferenceSDK-deployment-basic"),
+					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-endpoint-private"),
 				),
 			},
 			{
@@ -77,7 +77,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						name = "private-network-test-inference"
 					}
 					resource "scaleway_inference_deployment" "main" {
-						name = "test-inferenceSDK-deployment-basic-endpoints-private-public"
+						name = "test-inference-deployment-basic-endpoints-private-public"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
@@ -89,7 +89,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
-					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inferenceSDK-deployment-basic"),
+					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic-endpoints-private-public"),
 				),
 			},
 		},
@@ -108,7 +108,7 @@ func TestAccDeployment_MinSize(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_inference_deployment" "main_size" {
-						name = "test-inferenceSDK-deployment-min-size"
+						name = "test-inference-deployment-min-size"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
