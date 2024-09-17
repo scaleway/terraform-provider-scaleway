@@ -58,6 +58,21 @@ resource "scaleway_domain_record" "dmarc" {
 }
 ```
 
+### Automatically Configure DNS Settings for Your Domain
+
+```terraform
+variable "domain_name" {
+  type    = string
+}
+
+resource "scaleway_tem_domain" "main" {
+  name       = var.domain_name
+  accept_tos = true
+  autoconfig = true
+}
+
+```
+
 ### Configuring GitLab Project Variables
 
 ```terraform
@@ -100,6 +115,8 @@ The following arguments are supported:
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the domain should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the domain is associated with.
+
+- `autoconfig` - (Defaults to `false`) Automatically configures DNS settings for the domain, simplifying the setup process by applying predefined configurations.
 
 ## Attributes Reference
 

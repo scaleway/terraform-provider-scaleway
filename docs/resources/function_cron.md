@@ -5,15 +5,13 @@ page_title: "Scaleway: scaleway_function_cron"
 
 # Resource: scaleway_function_cron
 
-Creates and manages Scaleway Function Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
+The `scaleway_function_cron` resource allows you to create and manage CRON triggers for Scaleway [Serverless Functions](https://www.scaleway.com/en/docs/serverless/functions/).
 
-For more details about the limitation
-check [functions-limitations](https://www.scaleway.com/en/docs/compute/functions/reference-content/functions-limitations/).
-
-You can check also
-our [functions cron api documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#crons-942bf4).
+Refer to the Functions CRON triggers [documentation](https://www.scaleway.com/en/docs/serverless/functions/how-to/add-trigger-to-a-function/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-triggers-list-all-triggers) for more information.
 
 ## Example Usage
+
+The following command allows you to add a CRON trigger to a Serverless Function.
 
 ```terraform
 resource scaleway_function_namespace main {
@@ -44,30 +42,35 @@ resource scaleway_function_cron func {
 
 ## Argument Reference
 
-The following arguments are required:
+The following arguments are supported:
 
-- `schedule` - (Required) Cron format string, e.g. @hourly, as schedule time of its jobs to be created and
-  executed.
-- `function_id` - (Required) The function ID to link with your cron.
-- `args`   - (Required) The key-value mapping to define arguments that will be passed to your function’s event object
-  during
-- `name` - (Optional) The name of the cron. If not provided, the name is generated.
+- `schedule` - (Required) CRON format string (refer to the [CRON schedule reference](https://www.scaleway.com/en/docs/serverless/functions/reference-content/cron-schedules/) for more information).
+
+- `function_id` - (Required) The unique identifier of the function to link to your CRON trigger.
+
+- `args` - (Required) The key-value mapping to define arguments that will be passed to your function’s event object
+
+- `name` - (Optional) The name of the function CRON trigger. If not provided, a random name is generated.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
-  in where the job was created.
+  in which the function was created.
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_function_cron` resource exports certain attributes once the CRON trigger is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-- `id` - The function CRON's ID.
 
-~> **Important:** Function CRONs' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+- `id` - The unique identifier of the function's CRON trigger.
 
-- `status` - The cron status.
+~> **Important:** Function CRON trigger IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
+
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
+  in which the CRON trigger is created.
+
+- `status` - The CRON status.
 
 ## Import
 
-Container Cron can be imported using the `{region}/{id}`, e.g.
+Function Cron can be imported using `{region}/{id}`, as shown below:
 
 ```bash
 terraform import scaleway_function_cron.main fr-par/11111111-1111-1111-1111-111111111111
