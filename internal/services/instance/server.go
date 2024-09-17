@@ -816,36 +816,11 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
 	}
 
-	volumes := map[string]*instanceSDK.VolumeServerTemplate{}
-
-	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChanges("additional_volume_ids", "root_volume") {
-		volumes["0"] = &instanceSDK.VolumeServerTemplate{
-			ID:   scw.StringPtr(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
-			Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
-			Boot: types.ExpandBoolPtr(d.Get("root_volume.0.boot")),
+	if d.HasChanges("additional_volume_ids", "root_volume") {
+		volumes, err := instanceServerVolumesTemplatesUpdate(ctx, d, api, zone, isStopped)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-
-		if !hasAdditionalVolumes {
-			raw = []interface{}{} // Set an empty list if not volumes exist
-		}
-
-		for i, volumeID := range raw.([]interface{}) {
-			volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
-			volume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
-				VolumeID: zonal.ExpandID(volumeID).ID,
-				Zone:     zone,
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to get updated volume: %w", err))
-			}
-
-			// local volumes can only be added when the server is stopped
-			if volumeHasChange && !isStopped && volume.IsLocal() && volume.IsAttached() {
-				return diag.FromErr(errors.New("instanceSDK must be stopped to change local volumes"))
-			}
-			volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
-		}
-
 		serverShouldUpdate = true
 		updateRequest.Volumes = &volumes
 	}
@@ -1419,4 +1394,40 @@ func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *BlockA
 	}
 
 	return nil
+}
+
+// instanceServerVolumesTemplatesUpdate returns the list of volumes templates that should be updated for the server.
+// It uses root_volume and additional_volume_ids to build the volumes templates.
+func instanceServerVolumesTemplatesUpdate(ctx context.Context, d *schema.ResourceData, api *BlockAndInstanceAPI, zone scw.Zone, serverIsStopped bool) (map[string]*instanceSDK.VolumeServerTemplate, error) {
+	volumes := map[string]*instanceSDK.VolumeServerTemplate{}
+	raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids")
+
+	volumes["0"] = &instanceSDK.VolumeServerTemplate{
+		ID:   scw.StringPtr(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
+		Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
+		Boot: types.ExpandBoolPtr(d.Get("root_volume.0.boot")),
+	}
+
+	if !hasAdditionalVolumes {
+		raw = []interface{}{} // Set an empty list if not volumes exist
+	}
+
+	for i, volumeID := range raw.([]interface{}) {
+		volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
+		volume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+			VolumeID: zonal.ExpandID(volumeID).ID,
+			Zone:     zone,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, fmt.Errorf("failed to get updated volume: %w", err)
+		}
+
+		// local volumes can only be added when the server is stopped
+		if volumeHasChange && !serverIsStopped && volume.IsLocal() && volume.IsAttached() {
+			return nil, errors.New("instanceSDK must be stopped to change local volumes")
+		}
+		volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
+	}
+
+	return volumes, nil
 }
