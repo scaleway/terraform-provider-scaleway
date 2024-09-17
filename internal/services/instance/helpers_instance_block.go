@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -28,6 +29,10 @@ type UnknownVolume struct {
 	Size     *scw.Size
 	ServerID *string
 	Boot     *bool
+
+	// Iops is set for Block volume only, use IsBlockVolume
+	// Can be nil if not available in the Block API.
+	Iops *uint32
 
 	InstanceVolumeType instance.VolumeVolumeType
 }
@@ -112,6 +117,9 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 		Size:               &blockVolume.Size,
 		InstanceVolumeType: instance.VolumeVolumeTypeSbsVolume,
 	}
+	if blockVolume.Specs != nil {
+		vol.Iops = blockVolume.Specs.PerfIops
+	}
 	for _, ref := range blockVolume.References {
 		if ref.ProductResourceType == "instance_server" {
 			vol.ServerID = &ref.ProductResourceID
@@ -151,4 +159,11 @@ func instanceAndBlockAPIWithZoneAndID(m interface{}, zonedID string) (*BlockAndI
 		API:      instanceAPI,
 		blockAPI: blockAPI,
 	}, zone, ID, nil
+}
+
+func volumeTypeToMarketplaceFilter(volumeType any) marketplace.LocalImageType {
+	if volumeType != nil && instance.VolumeVolumeType(volumeType.(string)) == instance.VolumeVolumeTypeSbsVolume {
+		return marketplace.LocalImageTypeInstanceSbs
+	}
+	return marketplace.LocalImageTypeInstanceLocal
 }

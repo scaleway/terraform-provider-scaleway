@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -149,6 +150,12 @@ func ResourceServer() *schema.Resource {
 							Optional:     true,
 							Description:  "Volume ID of the root volume",
 							ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
+						},
+						"sbs_iops": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Optional:    true,
+							Description: "SBS Volume IOPS, only with volume_type as sbs_volume",
 						},
 					},
 				},
@@ -374,7 +381,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 			CommercialType: commercialType,
 			Zone:           zone,
 			ImageLabel:     imageLabel,
-			Type:           marketplace.LocalImageTypeInstanceLocal,
+			Type:           volumeTypeToMarketplaceFilter(d.Get("root_volume.0.volume_type")),
 		})
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
@@ -467,6 +474,18 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	////
+	// Configure Block Volume
+	////
+	var diags diag.Diagnostics
+
+	if iops, ok := d.GetOk("root_volume.0.sbs_iops"); ok {
+		updateDiags := ResourceInstanceServerUpdateRootVolumeIOPS(ctx, api, zone, res.Server.ID, types.ExpandUint32Ptr(iops))
+		if len(updateDiags) > 0 {
+			diags = append(diags, updateDiags...)
+		}
+	}
+
+	////
 	// Set user data
 	////
 	userDataRequests := &instanceSDK.SetAllServerUserDataRequest{
@@ -544,7 +563,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return ResourceInstanceServerRead(ctx, d, m)
+	return append(diags, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
 func errorCheck(err error, message string) bool {
@@ -553,12 +572,12 @@ func errorCheck(err error, message string) bool {
 
 //gocyclo:ignore
 func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	server, err := waitForServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutRead))
+	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if errorCheck(err, "is not found") {
 			log.Printf("[WARN] instance %s not found droping from state", d.Id())
@@ -670,8 +689,23 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 					rootVolume = vs[0]
 				}
 
-				rootVolume["volume_id"] = zonal.NewID(zone, volume.ID).String()
-				rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
+				vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+					VolumeID: volume.ID,
+					Zone:     volume.Zone,
+				})
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", volume.ID, err))
+				}
+
+				rootVolume["volume_id"] = zonal.NewID(zone, vol.ID).String()
+				if vol.Size != nil {
+					rootVolume["size_in_gb"] = int(uint64(*vol.Size) / gb)
+				} else {
+					rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
+				}
+				if vol.IsBlockVolume() {
+					rootVolume["sbs_iops"] = types.FlattenUint32Ptr(vol.Iops)
+				}
 				_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 				rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
 				rootVolume["volume_type"] = volume.VolumeType
@@ -691,7 +725,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		////
 		// Read server user data
 		////
-		allUserData, _ := instanceAPI.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
+		allUserData, _ := api.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
 			Zone:     zone,
 			ServerID: id,
 		}, scw.WithContext(ctx))
@@ -713,7 +747,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		////
 		// Read server private networks
 		////
-		ph, err := newPrivateNICHandler(instanceAPI, id, zone)
+		ph, err := newPrivateNICHandler(api.API, id, zone)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1034,6 +1068,10 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
+	if d.HasChanges("root_volume.0.sbs_iops") {
+		warnings = append(warnings, ResourceInstanceServerUpdateRootVolumeIOPS(ctx, api, zone, id, types.ExpandUint32Ptr(d.Get("root_volume.0.sbs_iops")))...)
+	}
+
 	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
@@ -1342,6 +1380,42 @@ func ResourceInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return fmt.Errorf("failed to attach IP: %w", err)
 		}
+	}
+
+	return nil
+}
+
+func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, serverID string, iops *uint32) diag.Diagnostics {
+	res, err := api.GetServer(&instanceSDK.GetServerRequest{
+		Zone:     zone,
+		ServerID: serverID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	rootVolume, exists := res.Server.Volumes["0"]
+	if exists {
+		_, err := api.blockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+			Zone:     zone,
+			VolumeID: rootVolume.ID,
+			PerfIops: iops,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.Diagnostics{{
+				Severity:      diag.Warning,
+				Summary:       "Failed to update root_volume iops",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+			}}
+		}
+	} else {
+		return diag.Diagnostics{{
+			Severity:      diag.Warning,
+			Summary:       "Failed to find root_volume",
+			Detail:        "Failed to update root_volume IOPS",
+			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+		}}
 	}
 
 	return nil
