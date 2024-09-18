@@ -17,10 +17,10 @@ func DataSourceCockpit() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpit().Schema)
 
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The project_id you want to attach the resource to",
-		Optional:     true,
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Description:      "The project_id you want to attach the resource to",
+		Optional:         true,
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 	dsSchema["plan"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -75,6 +75,9 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if grafana.GrafanaURL == "" {
+		grafana.GrafanaURL = createGrafanaURL(d.Get("project_id").(string), region)
 	}
 
 	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{

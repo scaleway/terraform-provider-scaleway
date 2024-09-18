@@ -19,10 +19,10 @@ func DataSourceSSHKey() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"ssh_key_id"}
 	dsSchema["ssh_key_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the SSH key",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the SSH key",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

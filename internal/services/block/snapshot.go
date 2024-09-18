@@ -42,7 +42,7 @@ func ResourceSnapshot() *schema.Resource {
 			"volume_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:      "ID of the volume from which creates a snapshot",
 				DiffSuppressFunc: dsf.Locality,
 			},

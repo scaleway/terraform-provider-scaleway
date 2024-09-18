@@ -167,6 +167,9 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if grafana.GrafanaURL == "" {
+		grafana.GrafanaURL = createGrafanaURL(d.Get("project_id").(string), region)
+	}
 
 	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 		ProjectID: d.Get("project_id").(string),

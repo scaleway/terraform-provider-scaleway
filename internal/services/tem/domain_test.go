@@ -37,8 +37,8 @@ func TestAccDomain_Basic(t *testing.T) {
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainName),
 					resource.TestCheckResourceAttrSet("scaleway_tem_domain.cr01", "dmarc_config"),
-					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc"),
-
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc.terraform-rs"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
 			},
@@ -65,6 +65,97 @@ func TestAccDomain_Tos(t *testing.T) {
 					}
 				`, domainName),
 				ExpectError: regexp.MustCompile("you must accept"),
+			},
+		},
+	})
+}
+
+func TestAccDomain_Autoconfig(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isDomainDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_tem_domain cr01 {
+						name       = "%s"
+						accept_tos = true
+						autoconfig = true
+					}
+
+					resource scaleway_tem_domain_validation valid {
+  						domain_id = scaleway_tem_domain.cr01.id
+  						region = scaleway_tem_domain.cr01.region
+						timeout = 3600
+					}
+
+				`, domainNameValidation),
+				Check: resource.ComposeTestCheckFunc(
+					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainNameValidation),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "autoconfig", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_tem_domain.cr01", "dmarc_config"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
+					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDomain_AutoconfigUpdate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isDomainDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_tem_domain cr01 {
+						name       = "%s"
+						accept_tos = true
+						autoconfig = false
+					}
+
+				`, domainNameValidation),
+				Check: resource.ComposeTestCheckFunc(
+					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainNameValidation),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "autoconfig", "false"),
+					resource.TestCheckResourceAttrSet("scaleway_tem_domain.cr01", "dmarc_config"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
+					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_tem_domain cr01 {
+						name       = "%s"
+						accept_tos = true
+						autoconfig = true
+					}
+
+					resource scaleway_tem_domain_validation valid {
+						domain_id = scaleway_tem_domain.cr01.id
+						region    = scaleway_tem_domain.cr01.region
+						timeout   = 3600
+					}
+				`, domainNameValidation),
+				Check: resource.ComposeTestCheckFunc(
+					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "autoconfig", "true"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
+				),
 			},
 		},
 	})

@@ -36,7 +36,7 @@ func ResourceDomain() *schema.Resource {
 				Description:      "The ID of the function",
 				Required:         true,
 				ForceNew:         true,
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"hostname": {

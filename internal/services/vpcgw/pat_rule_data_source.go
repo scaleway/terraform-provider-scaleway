@@ -17,10 +17,10 @@ func DataSourcePATRule() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourcePATRule().Schema)
 
 	dsSchema["pat_rule_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  "The ID of the public gateway PAT rule",
-		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The ID of the public gateway PAT rule",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	// Set 'Optional' schema elements

@@ -31,17 +31,17 @@ func ResourceRoute() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"frontend_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The frontend ID origin of redirection",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The frontend ID origin of redirection",
 			},
 			"backend_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The backend ID destination of redirection",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The backend ID destination of redirection",
 			},
 			"match_sni": {
 				Type:          schema.TypeString,

@@ -20,11 +20,11 @@ func DataSourceInstance() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"instance_id"}
 	dsSchema["instance_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the RDB instance",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the RDB instance",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{

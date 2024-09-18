@@ -24,11 +24,11 @@ func DataSourceVersion() *schema.Resource {
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "revision")
 	dsSchema["secret_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the secret",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"secret_name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the secret",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"secret_name"},
 	}
 	dsSchema["secret_name"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -44,10 +44,10 @@ func DataSourceVersion() *schema.Resource {
 	}
 	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the project to filter the secret version",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the project to filter the secret version",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -58,7 +58,7 @@ func DataSourceVersion() *schema.Resource {
 
 func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	secretID, existSecretID := d.GetOk("secret_id")
-	api, region, projectID, err := newAPIWithRegionProjectIDAndDefault(d, m, regional.ExpandID(secretID).Region)
+	api, region, projectID, err := newAPIWithRegionOptionalProjectIDAndDefault(d, m, regional.ExpandID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -71,7 +71,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 		secrets, err := api.ListSecrets(&secret.ListSecretsRequest{
 			Region:         region,
 			Name:           &secretName,
-			ProjectID:      types.ExpandStringPtr(projectID),
+			ProjectID:      projectID,
 			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 		})
 		if err != nil {

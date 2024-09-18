@@ -24,11 +24,11 @@ func DataSourceDHCPReservation() *schema.Resource {
 	dsSchema["mac_address"].ConflictsWith = []string{"reservation_id"}
 	dsSchema["gateway_network_id"].ConflictsWith = []string{"reservation_id"}
 	dsSchema["reservation_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of dhcp entry reservation",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"mac_address", "gateway_network_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of dhcp entry reservation",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"mac_address", "gateway_network_id"},
 	}
 	dsSchema["wait_for_dhcp"] = &schema.Schema{
 		Type:        schema.TypeBool,
