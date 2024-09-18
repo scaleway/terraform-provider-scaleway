@@ -9,6 +9,31 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
+func TestAccCockpit_Simple(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isCockpitDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource scaleway_cockpit main {
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan_id"),
+					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "free"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.grafana_url"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccCockpit_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
