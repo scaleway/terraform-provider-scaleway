@@ -722,6 +722,8 @@ func TestAccServer_Ipv6(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.server01"),
+					// enable_ipv6, ipv6_address and ipv6_gateway are marked as deprecated
+					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "enable_ipv6", "true"),
 					acctest.CheckResourceAttrIPv6("scaleway_instance_server.server01", "ipv6_address"),
 					acctest.CheckResourceAttrIPv6("scaleway_instance_server.server01", "ipv6_gateway"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", "64"),
@@ -797,7 +799,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ip"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ip"), // public_ip is deprecated
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "id", "scaleway_instance_server.base", "ip_id"),
 				),
 			},
@@ -943,6 +945,7 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 	}
 }
 
+// bootscript are marked as deprecated
 func TestAccServer_Bootscript(t *testing.T) {
 	t.Skip("Creation of bootscript server is no longer supported")
 	tt := acctest.NewTestTools(t)
@@ -1971,6 +1974,90 @@ func TestAccServer_BlockExternal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_BlockExternalRootVolume(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-block-external-root-volume"
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						root_volume {
+							volume_type = "sbs_volume"
+							size_in_gb = 50
+							sbs_iops = 15000
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "15000"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-block-external-root-volume-iops-update"
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						root_volume {
+							volume_type = "sbs_volume"
+							size_in_gb = 50
+							sbs_iops = 5000
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "5000"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-block-external-root-volume-iops-update"
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						root_volume {
+							volume_type = "sbs_volume"
+							size_in_gb = 50
+							sbs_iops = 15000
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "15000"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
 				),
 			},
 		},

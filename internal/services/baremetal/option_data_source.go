@@ -24,11 +24,11 @@ func DataSourceOption() *schema.Resource {
 				ConflictsWith: []string{"option_id"},
 			},
 			"option_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The ID of the option",
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"name"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The ID of the option",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				ConflictsWith:    []string{"name"},
 			},
 			"manageable": {
 				Type:        schema.TypeBool,

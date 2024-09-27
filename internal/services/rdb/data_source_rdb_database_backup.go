@@ -20,17 +20,17 @@ func DataSourceDatabaseBackup() *schema.Resource {
 
 	dsSchema["instance_id"].RequiredWith = []string{"name"}
 	dsSchema["backup_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the Backup",
-		ConflictsWith: []string{"name", "instance_id"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the Backup",
+		ConflictsWith:    []string{"name", "instance_id"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the project to filter the Backup",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the project to filter the Backup",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{

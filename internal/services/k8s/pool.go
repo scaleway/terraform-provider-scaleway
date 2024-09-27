@@ -206,11 +206,13 @@ func ResourcePool() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The public IPv4 address of the node",
+							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
 						},
 						"public_ip_v6": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The public IPv6 address of the node",
+							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
 						},
 					},
 				},

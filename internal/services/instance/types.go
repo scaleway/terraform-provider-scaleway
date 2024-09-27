@@ -66,7 +66,7 @@ func flattenImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone
 		volumeFlat := map[string]interface{}{
 			"id":                zonal.NewIDString(zone, volume.ID),
 			"name":              volume.Name,
-			"export_uri":        volume.ExportURI,
+			"export_uri":        volume.ExportURI, //nolint:staticcheck
 			"size":              volume.Size,
 			"volume_type":       volume.VolumeType,
 			"creation_date":     volume.CreationDate,

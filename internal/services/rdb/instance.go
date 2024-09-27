@@ -53,10 +53,11 @@ func ResourceInstance() *schema.Resource {
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"engine": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Database's engine version id",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "Database's engine version id",
+				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"is_ha_cluster": {
 				Type:        schema.TypeBool,
@@ -151,7 +152,7 @@ func ResourceInstance() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: dsf.Locality,
 							Description:      "The private network ID",
 						},
@@ -211,6 +212,7 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Endpoint port of the database instance",
+				Deprecated:  "Please use the private_network or the load_balancer attribute",
 			},
 			"read_replicas": {
 				Type:        schema.TypeList,
@@ -457,13 +459,31 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("tags", types.FlattenSliceString(res.Tags))
-	if res.Endpoint != nil {
-		_ = d.Set("endpoint_ip", types.FlattenIPPtr(res.Endpoint.IP))
-		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
+
+	var loadBalancerEndpoint *rdb.Endpoint
+
+	for _, endpoint := range res.Endpoints {
+		if endpoint.LoadBalancer != nil {
+			loadBalancerEndpoint = endpoint
+			break
+		}
+	}
+
+	if loadBalancerEndpoint != nil {
+		switch {
+		case loadBalancerEndpoint.IP != nil:
+			_ = d.Set("endpoint_ip", types.FlattenIPPtr(loadBalancerEndpoint.IP))
+		case loadBalancerEndpoint.Hostname != nil:
+			_ = d.Set("endpoint_ip", loadBalancerEndpoint.Hostname)
+		default:
+			_ = d.Set("endpoint_ip", "")
+		}
+		_ = d.Set("endpoint_port", int(loadBalancerEndpoint.Port))
 	} else {
 		_ = d.Set("endpoint_ip", "")
 		_ = d.Set("endpoint_port", 0)
 	}
+
 	if res.Volume != nil {
 		_ = d.Set("volume_type", res.Volume.Type)
 		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))
@@ -524,7 +544,6 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
-
 	return nil
 }
 

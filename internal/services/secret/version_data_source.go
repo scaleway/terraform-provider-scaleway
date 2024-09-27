@@ -12,6 +12,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -22,11 +24,11 @@ func DataSourceVersion() *schema.Resource {
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "revision")
 	dsSchema["secret_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the secret",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"secret_name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the secret",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"secret_name"},
 	}
 	dsSchema["secret_name"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -40,11 +42,12 @@ func DataSourceVersion() *schema.Resource {
 		Sensitive:   true,
 		Description: "The payload of the secret version",
 	}
+	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the project to filter the secret version",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the project to filter the secret version",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -55,7 +58,7 @@ func DataSourceVersion() *schema.Resource {
 
 func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	secretID, existSecretID := d.GetOk("secret_id")
-	api, region, err := newAPIWithRegionAndDefault(d, m, regional.ExpandID(secretID).Region)
+	api, region, projectID, err := newAPIWithRegionOptionalProjectIDAndDefault(d, m, regional.ExpandID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -66,26 +69,26 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	if !existSecretID {
 		secretName := d.Get("secret_name").(string)
 		secrets, err := api.ListSecrets(&secret.ListSecretsRequest{
-			Region: region,
-			Name:   &secretName,
+			Region:         region,
+			Name:           &secretName,
+			ProjectID:      projectID,
+			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		secretByName := (*secret.Secret)(nil)
-		for _, s := range secrets.Secrets {
-			if s.Name == secretName {
-				if secretByName != nil {
-					return diag.Errorf("found multiple secret with the same name (%s)", secretName)
-				}
-				secretByName = s
-			}
+		foundSecret, err := datasource.FindExact(secrets.Secrets,
+			func(s *secret.Secret) bool { return s.Name == secretName },
+			secretName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
 		res, err := api.AccessSecretVersion(&secret.AccessSecretVersionRequest{
 			Region:   region,
-			SecretID: secretByName.ID,
+			SecretID: foundSecret.ID,
 			Revision: d.Get("revision").(string),
 		}, scw.WithContext(ctx))
 		if err != nil {

@@ -1,45 +1,63 @@
 package verify
 
 import (
-	"fmt"
-
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
-func IsEmail() schema.SchemaValidateFunc {
-	return func(v interface{}, key string) (warnings []string, errors []error) {
-		email, isString := v.(string)
+func IsEmail() schema.SchemaValidateDiagFunc {
+	return func(value interface{}, path cty.Path) diag.Diagnostics {
+		email, isString := value.(string)
 		if !isString {
-			return nil, []error{fmt.Errorf("invalid email for key '%s': not a string", key)}
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				AttributePath: path,
+				Summary:       "invalid input, expected a string",
+				Detail:        "got " + email,
+			}}
 		}
 
 		if !validation.IsEmail(email) {
-			return nil, []error{fmt.Errorf("invalid email for key '%s': '%s': should contain valid '@' character", key, email)}
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				AttributePath: path,
+				Summary:       "invalid input, expected a valid email",
+				Detail:        "got " + email,
+			}}
 		}
 
-		return
+		return nil
 	}
 }
 
-func IsEmailList() schema.SchemaValidateFunc {
-	return func(i interface{}, k string) (warnings []string, errors []error) {
-		list, ok := i.([]interface{})
+func IsEmailList() schema.SchemaValidateDiagFunc {
+	return func(value interface{}, path cty.Path) diag.Diagnostics {
+		list, ok := value.([]interface{})
 		if !ok {
-			errors = append(errors, fmt.Errorf("invalid type for key '%s': expected a list of strings", k))
-			return warnings, errors
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				AttributePath: path,
+				Summary:       "invalid type, expecting a list of strings",
+			}}
 		}
 
 		for _, li := range list {
 			email, isString := li.(string)
 			if !isString {
-				errors = append(errors, fmt.Errorf("invalid type for key '%s': each item must be a string", k))
-				continue
+				return diag.Diagnostics{diag.Diagnostic{
+					Severity:      diag.Error,
+					AttributePath: path,
+					Summary:       "invalid type, each item must be a string",
+				}}
 			}
-			if _, err := IsEmail()(email, k); len(err) > 0 {
-				errors = append(errors, err...)
+
+			if emailDiags := IsEmail()(email, path); len(emailDiags) > 0 {
+				return emailDiags
 			}
 		}
-		return warnings, errors
+
+		return nil
 	}
 }

@@ -34,10 +34,10 @@ func ResourceMACAddress() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"flexible_ip_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The ID of the flexible IP for which to generate a virtual MAC",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The ID of the flexible IP for which to generate a virtual MAC",
 			},
 			"type": {
 				Type:             schema.TypeString,

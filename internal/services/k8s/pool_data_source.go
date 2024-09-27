@@ -24,11 +24,11 @@ func DataSourcePool() *schema.Resource {
 	dsSchema["cluster_id"].ConflictsWith = []string{"pool_id"}
 	dsSchema["cluster_id"].RequiredWith = []string{"name"}
 	dsSchema["pool_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the pool",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name", "cluster_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the pool",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name", "cluster_id"},
 	}
 
 	return &schema.Resource{

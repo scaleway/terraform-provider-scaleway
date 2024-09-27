@@ -18,11 +18,11 @@ func DataSourcePlacementGroup() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["placement_group_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the placementgroup",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the placementgroup",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"].Optional = true
 

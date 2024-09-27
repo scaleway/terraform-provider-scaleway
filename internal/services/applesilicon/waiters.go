@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultAppleSiliconServerTimeout       = 2 * time.Minute
+	defaultAppleSiliconServerTimeout       = 20 * time.Minute
 	defaultAppleSiliconServerRetryInterval = 5 * time.Second
 )
 
