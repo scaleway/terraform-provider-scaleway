@@ -29,6 +29,8 @@ require (
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 )
 
+replace github.com/scaleway/scaleway-sdk-go v1.0.0-beta.30 => /Users/jonathanremy/Desktop/protoc-gen/_generated/scaleway-sdk-go
+
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
@@ -110,7 +112,7 @@ require (
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.23.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/appengine v1.6.8 // indirect
