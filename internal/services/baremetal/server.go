@@ -492,7 +492,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 	_ = d.Set("private_network", flattenPrivateNetworks(pnRegion, listPrivateNetworks.ServerPrivateNetworks))
 
-	var privateNetworkIDs []string
+	privateNetworkIDs := make([]string, 0, len(listPrivateNetworks.ServerPrivateNetworks))
 	for _, pn := range listPrivateNetworks.ServerPrivateNetworks {
 		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
 	}

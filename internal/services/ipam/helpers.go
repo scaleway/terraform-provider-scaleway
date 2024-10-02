@@ -106,7 +106,7 @@ func GetResourcePrivateIPs(ctx context.Context, m interface{}, region scw.Region
 		return nil, nil
 	}
 
-	var ipList []map[string]interface{}
+	ipList := make([]map[string]interface{}, 0, len(resp.IPs))
 	for _, ip := range resp.IPs {
 		ipNet := ip.Address
 		if ipNet.IP == nil {

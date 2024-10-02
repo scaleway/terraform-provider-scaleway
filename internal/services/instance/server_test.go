@@ -14,6 +14,7 @@ import (
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
@@ -2103,7 +2104,7 @@ func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 	})
 }
 
-/*func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
+func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -2265,4 +2266,3 @@ func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 		},
 	})
 }
-*/

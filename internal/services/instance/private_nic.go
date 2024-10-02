@@ -88,6 +88,7 @@ func ResourcePrivateNIC() *schema.Resource {
 						},
 					},
 				},
+			},
 			"ipam_ip_ids": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{

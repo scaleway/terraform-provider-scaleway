@@ -347,7 +347,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	}
 	_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
 
-	var privateNetworkIDs []string
+	privateNetworkIDs := make([]string, 0, len(privateNetworks))
 	for _, pn := range privateNetworks {
 		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
 	}

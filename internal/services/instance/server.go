@@ -804,6 +804,8 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			}
 		}
 		_ = d.Set("private_ips", allPrivateIPs)
+
+		return nil
 	}
 	return nil
 }
