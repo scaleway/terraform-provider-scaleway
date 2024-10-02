@@ -123,6 +123,9 @@ they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-11111
     - `name` - Name of the endpoint.
     - `hostname` - Hostname of the endpoint. Only one of IP and hostname may be set.
     - `enable_ipam` - Indicates whether the IP is managed by IPAM.
+- `private_ip` - The list of private IP addresses associated with the resource.
+    - `id` - The ID of the IP address resource.
+    - `address` - The private IP address.
 
 ## Import
 
