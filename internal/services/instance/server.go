@@ -862,7 +862,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChanges("additional_volume_ids", "root_volume") {
-		volumes, err := instanceServerVolumesTemplatesUpdate(ctx, d, api, zone, isStopped)
+		volumes, err := instanceServerVolumesUpdate(ctx, d, api, zone, isStopped)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1441,11 +1441,22 @@ func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *BlockA
 	return nil
 }
 
-// instanceServerVolumesTemplatesUpdate returns the list of volumes templates that should be updated for the server.
+// instanceServerVolumesUpdate updates root_volume size and returns the list of volumes templates that should be updated for the server.
 // It uses root_volume and additional_volume_ids to build the volumes templates.
-func instanceServerVolumesTemplatesUpdate(ctx context.Context, d *schema.ResourceData, api *BlockAndInstanceAPI, zone scw.Zone, serverIsStopped bool) (map[string]*instanceSDK.VolumeServerTemplate, error) {
+func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, api *BlockAndInstanceAPI, zone scw.Zone, serverIsStopped bool) (map[string]*instanceSDK.VolumeServerTemplate, error) {
 	volumes := map[string]*instanceSDK.VolumeServerTemplate{}
 	raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids")
+
+	if d.HasChange("root_volume.0.size_in_gb") {
+		err := api.ResizeUnknownVolume(&ResizeUnknownVolumeRequest{
+			VolumeID: zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID,
+			Zone:     zone,
+			Size:     scw.SizePtr(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	volumes["0"] = &instanceSDK.VolumeServerTemplate{
 		ID:   scw.StringPtr(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),

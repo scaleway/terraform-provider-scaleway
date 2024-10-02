@@ -88,6 +88,14 @@ func ResourcePrivateNIC() *schema.Resource {
 						},
 					},
 				},
+			"ipam_ip_ids": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				ForceNew:    true,
+				Description: "IPAM IDs of a pre-reserved IP addresses to assign to the Instance in the requested private network",
 			},
 			"zone": zonal.Schema(),
 		},
@@ -112,6 +120,7 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
 		Tags:             types.ExpandStrings(d.Get("tags")),
 		IPIDs:            types.ExpandStringsPtr(d.Get("ip_ids")),
+		IpamIPIDs:        locality.ExpandIDs(d.Get("ipam_ip_ids")),
 	}
 
 	privateNIC, err := instanceAPI.CreatePrivateNIC(

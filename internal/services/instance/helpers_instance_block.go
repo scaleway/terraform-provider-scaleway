@@ -22,6 +22,12 @@ type GetUnknownVolumeRequest struct {
 	Zone     scw.Zone
 }
 
+type ResizeUnknownVolumeRequest struct {
+	VolumeID string
+	Zone     scw.Zone
+	Size     *scw.Size
+}
+
 type UnknownVolume struct {
 	Zone     scw.Zone
 	ID       string
@@ -127,6 +133,32 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 	}
 
 	return vol, nil
+}
+
+func (api *BlockAndInstanceAPI) ResizeUnknownVolume(req *ResizeUnknownVolumeRequest, opts ...scw.RequestOption) error {
+	unknownVolume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+		VolumeID: req.VolumeID,
+		Zone:     req.Zone,
+	}, opts...)
+	if err != nil {
+		return err
+	}
+
+	if unknownVolume.IsBlockVolume() {
+		_, err = api.blockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+			Size:     req.Size,
+		}, opts...)
+	} else {
+		_, err = api.API.UpdateVolume(&instance.UpdateVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+			Size:     req.Size,
+		}, opts...)
+	}
+
+	return err
 }
 
 // newAPIWithZone returns a new instance API and the zone for a Create request

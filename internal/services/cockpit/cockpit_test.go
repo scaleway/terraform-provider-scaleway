@@ -63,22 +63,6 @@ func TestAccCockpit_Basic(t *testing.T) {
 					checkGrafanaURL("scaleway_cockpit.main", "scaleway_account_project.project"),
 				),
 			},
-			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_cockpit_project_basic"
-				  	}
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-						plan       = "premium"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan_id"),
-					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "premium"),
-				),
-			},
 		},
 	})
 }

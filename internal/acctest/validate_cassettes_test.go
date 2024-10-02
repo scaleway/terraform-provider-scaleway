@@ -17,7 +17,6 @@ import (
 
 func exceptionsCassettesCases() map[string]struct{} {
 	return map[string]struct{}{
-		"../services/documentdb/testdata/privilege-basic.cassette.yaml":         {},
 		"../services/mnq/testdata/sns-topic-basic.cassette.yaml":                {},
 		"../services/mnq/testdata/sns-topic-subscription-basic.cassette.yaml":   {},
 		"../services/mnq/testdata/sqs-already-activated.cassette.yaml":          {},
