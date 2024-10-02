@@ -16,7 +16,7 @@ func TestAccDataSourceObjectBucketPolicy_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-data-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-data-basic")
 
 	expectedPolicyText := `{
 	"Version":"2012-10-17",
