@@ -356,6 +356,7 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	// set endpoints
+	var allPrivateIPs []map[string]interface{}
 	pnI, pnExists := flattenPrivateNetwork(cluster.Endpoints)
 	if pnExists {
 		_ = d.Set("private_network", pnI)
@@ -367,7 +368,6 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 			}
 		}
 
-		var allPrivateIPs []map[string]interface{}
 		resourceType := ipamAPI.ResourceTypeRedisCluster
 		region, err := zone.Region()
 		if err != nil {
@@ -387,8 +387,8 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 				allPrivateIPs = append(allPrivateIPs, privateIPs...)
 			}
 		}
-		_ = d.Set("private_ip", allPrivateIPs)
 	}
+	_ = d.Set("private_ip", allPrivateIPs)
 	_ = d.Set("public_network", flattenPublicNetwork(cluster.Endpoints))
 
 	if cluster.TLSEnabled {

@@ -559,6 +559,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("logs_policy", flattenInstanceLogsPolicy(res.LogsPolicy))
 
 	// set endpoints
+	var privateIP []map[string]interface{}
 	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
 		_ = d.Set("private_network", pnI)
 
@@ -568,13 +569,13 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 			ResourceType:     &resourceType,
 			PrivateNetworkID: &res.Endpoints[0].PrivateNetwork.PrivateNetworkID,
 		}
-		privateIP, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+		privateIP, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		_ = d.Set("private_ip", privateIP)
 	}
+	_ = d.Set("private_ip", privateIP)
+
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
