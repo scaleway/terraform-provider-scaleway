@@ -287,6 +287,7 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("zone", zone.String())
 	_ = d.Set("status", gatewayNetwork.Status.String())
 
+	var privateIP []map[string]interface{}
 	if gatewayNetwork.PrivateNetworkID != "" {
 		resourceID := gatewayNetwork.ID
 		region, err := zone.Region()
@@ -300,13 +301,12 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 			ResourceType:     &resourceType,
 			PrivateNetworkID: &gatewayNetwork.PrivateNetworkID,
 		}
-		privateIP, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+		privateIP, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		_ = d.Set("private_ip", privateIP)
 	}
+	_ = d.Set("private_ip", privateIP)
 
 	return nil
 }
