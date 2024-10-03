@@ -31,6 +31,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
@@ -186,6 +187,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_mnq_sqs":                             mnq.ResourceSQS(),
 				"scaleway_mnq_sqs_credentials":                 mnq.ResourceSQSCredentials(),
 				"scaleway_mnq_sqs_queue":                       mnq.ResourceSQSQueue(),
+				"scaleway_mongodb_instance":                    mongodb.ResourceInstance(),
 				"scaleway_object":                              object.ResourceObject(),
 				"scaleway_object_bucket":                       object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                   object.ResourceBucketACL(),

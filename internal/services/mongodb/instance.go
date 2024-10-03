@@ -1,10 +1,8 @@
-package redis
+package mongodb
 
 import (
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"strings"
 	"time"
 
@@ -13,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -32,10 +29,10 @@ func ResourceInstance() *schema.Resource {
 		UpdateContext: ResourceInstanceUpdate,
 		DeleteContext: ResourceInstanceDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultRedisClusterTimeout),
-			Update:  schema.DefaultTimeout(defaultRedisClusterTimeout),
-			Delete:  schema.DefaultTimeout(defaultRedisClusterTimeout),
-			Default: schema.DefaultTimeout(defaultRedisClusterTimeout),
+			Create:  schema.DefaultTimeout(defaultMongodbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultMongodbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultMongodbInstanceTimeout),
+			Default: schema.DefaultTimeout(defaultMongodbInstanceTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -82,11 +79,12 @@ func ResourceInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Volume size of instance.",
 			},
-			"volume_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Volume size of instance.",
+			"volume_size_in_gb": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				Description:  "Volume size (in GB)",
+				ValidateFunc: validation.IntDivisibleBy(5),
 			},
 			//endpoint
 			"private_network": {
@@ -110,7 +108,7 @@ func ResourceInstance() *schema.Resource {
 							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							Description:      "UUID of the private network to be connected to the cluster",
 						},
-						"service_ips": {
+						"ips": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Computed: true,
@@ -119,6 +117,16 @@ func ResourceInstance() *schema.Resource {
 								ValidateFunc: validation.IsCIDR,
 							},
 							Description: "List of IPv4 addresses of the private network with a CIDR notation",
+						},
+						"port": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The port of your load balancer service",
+						},
+						"dns_record": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The dns_record of your endpoint",
 						},
 						// computed
 						"endpoint_id": {
@@ -154,6 +162,11 @@ func ResourceInstance() *schema.Resource {
 								Type: schema.TypeString,
 							},
 							Computed: true,
+						},
+						"dns_record": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The dns_record of your endpoint",
 						},
 					},
 				},
@@ -229,7 +242,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	if tagsExist {
 		createReq.Tags = types.ExpandStrings(tags)
 	}
-	volumeSize, volumeSizeExist := d.GetOk("volume_size")
+	volumeSize, volumeSizeExist := d.GetOk("volume_size_in_gb")
 	if volumeSizeExist {
 		createReq.Volume.VolumeSize = scw.Size(uint64(volumeSize.(int)))
 	}
@@ -250,7 +263,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	d.SetId(zonal.NewIDString(zone, res.ID))
 
-	_, err = waitForCluster(ctx, , zone, res.ID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -259,16 +272,17 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getReq := &redis.GetClusterRequest{
-		Zone:      zone,
-		ClusterID: ID,
+	getReq := &mongodb.GetInstanceRequest{
+		Region:     region,
+		InstanceID: ID,
 	}
-	cluster, err := redisAPI.GetCluster(getReq, scw.WithContext(ctx))
+
+	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -277,144 +291,113 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", cluster.Name)
-	_ = d.Set("node_type", cluster.NodeType)
-	_ = d.Set("user_name", d.Get("user_name").(string))
-	_ = d.Set("password", d.Get("password").(string))
-	_ = d.Set("zone", cluster.Zone.String())
-	_ = d.Set("project_id", cluster.ProjectID)
-	_ = d.Set("version", cluster.Version)
-	_ = d.Set("cluster_size", int(cluster.ClusterSize))
-	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("acl", flattenACLs(cluster.ACLRules))
-	_ = d.Set("settings", flattenSettings(cluster.ClusterSettings))
+	_ = d.Set("name", instance.Name)
+	_ = d.Set("version", instance.Version)
+	_ = d.Set("node_number", instance.NodeNumber)
+	_ = d.Set("node_type", instance.NodeType)
+	_ = d.Set("project_id", instance.ProjectID)
+	_ = d.Set("tags", instance.Tags)
+	_ = d.Set("created_at", instance.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("region", instance.Region.String())
 
-	if len(cluster.Tags) > 0 {
-		_ = d.Set("tags", cluster.Tags)
+	if instance.Volume != nil {
+		_ = d.Set("volume_type", instance.Volume.Type)
+		_ = d.Set("volume_size_in_gb", instance.Volume.Size)
 	}
 
-	// set endpoints
-	pnI, pnExists := flattenPrivateNetwork(cluster.Endpoints)
-	if pnExists {
-		_ = d.Set("private_network", pnI)
+	privateNetworkEndpoints, privateNetworkExists := flattenPrivateNetwork(m, instance.Endpoints, region)
+	if privateNetworkExists {
+		_ = d.Set("private_network", privateNetworkEndpoints)
 	}
-	_ = d.Set("public_network", flattenPublicNetwork(cluster.Endpoints))
+	_ = d.Set("public_network", flattenPublicNetwork(instance.Endpoints))
 
-	if cluster.TLSEnabled {
-		certificate, err := redisAPI.GetClusterCertificate(&redis.GetClusterCertificateRequest{
-			Zone:      zone,
-			ClusterID: cluster.ID,
-		})
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("failed to fetch cluster certificate: %w", err))
+	if len(instance.Settings) > 0 {
+		settingsMap := make(map[string]string)
+		for _, setting := range instance.Settings {
+			settingsMap[setting.Name] = setting.Value
 		}
-
-		certificateContent, err := io.ReadAll(certificate.Content)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("failed to read cluster certificate: %w", err))
-		}
-
-		_ = d.Set("certificate", string(certificateContent))
-	} else {
-		_ = d.Set("certificate", "")
+		_ = d.Set("settings", settingsMap)
 	}
 
 	return nil
 }
 
 func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	req := &redis.UpdateClusterRequest{
-		Zone:      zone,
-		ClusterID: ID,
+	////////////////////
+	// Upgrade instance
+	////////////////////
+
+	if d.HasChange("volume_size_in_gb") {
+		oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
+		oldSize := uint64(oldSizeInterface.(int))
+		newSize := uint64(newSizeInterface.(int))
+		if newSize < oldSize {
+			return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
+		}
+
+		if newSize%5 != 0 {
+			return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
+		}
+		size := scw.Size(newSize)
+
+		upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
+			InstanceID: ID,
+			Region:     region,
+			VolumeSize: &size,
+		}
+
+		_, err = mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	req := &mongodb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: ID,
 	}
 
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
-	if d.HasChange("user_name") {
-		req.UserName = types.ExpandStringPtr(d.Get("user_name"))
-	}
-	if d.HasChange("password") {
-		req.Password = types.ExpandStringPtr(d.Get("password"))
-	}
+
 	if d.HasChange("tags") {
-		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-	}
-	if d.HasChange("acl") {
-		diagnostics := updateACL(ctx, d, redisAPI, zone, ID)
-		if diagnostics != nil {
-			return diagnostics
-		}
-	}
-	if d.HasChange("settings") {
-		diagnostics := updateSettings(ctx, d, redisAPI, zone, ID)
-		if diagnostics != nil {
-			return diagnostics
+		if tags := types.ExpandUpdatedStringsPtr(d.Get("tags")); tags != nil {
+			req.Tags = *tags
 		}
 	}
 
-	_, err = waitForCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = redisAPI.UpdateCluster(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	////////////////////
+	// Update user
+	////////////////////
+
+	updateUserRequest := mongodb.UpdateUserRequest{
+		Region:     region,
+		InstanceID: ID,
+	}
+	if d.HasChange("user_name") {
+		updateUserRequest.Name = d.Get("user_name").(string)
 	}
 
-	migrateClusterRequests := []redis.MigrateClusterRequest(nil)
-	if d.HasChange("cluster_size") {
-		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
-			Zone:        zone,
-			ClusterID:   ID,
-			ClusterSize: scw.Uint32Ptr(uint32(d.Get("cluster_size").(int))),
-		})
-	}
-	if d.HasChange("version") {
-		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
-			Zone:      zone,
-			ClusterID: ID,
-			Version:   types.ExpandStringPtr(d.Get("version")),
-		})
-	}
-	if d.HasChange("node_type") {
-		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
-			Zone:      zone,
-			ClusterID: ID,
-			NodeType:  types.ExpandStringPtr(d.Get("node_type")),
-		})
-	}
-	for i := range migrateClusterRequests {
-		_, err = waitForCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
-		}
-		_, err = redisAPI.MigrateCluster(&migrateClusterRequests[i], scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
-		}
+	if d.HasChange("password") {
+		password := d.Get("password").(string)
+		updateUserRequest.Password = &password
 	}
 
-	if d.HasChanges("private_network") {
-		diagnostics := ResourceClusterUpdateEndpoints(ctx, d, redisAPI, zone, ID)
-		if diagnostics != nil {
-			return diagnostics
-		}
-	}
+	_, err = mongodbAPI.UpdateUser(&updateUserRequest, scw.WithContext(ctx))
+	// set endpoint ?
 
-	_, err = waitForCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -422,98 +405,58 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceInstanceRead(ctx, d, m)
 }
 
-func updateACL(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
-	rules, err := expandACLSpecs(d.Get("acl"))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = redisAPI.SetACLRules(&redis.SetACLRulesRequest{
-		Zone:      zone,
-		ClusterID: clusterID,
-		ACLRules:  rules,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
-
-func updateSettings(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
-	settings := expandSettings(d.Get("settings"))
-
-	_, err := redisAPI.SetClusterSettings(&redis.SetClusterSettingsRequest{
-		Zone:      zone,
-		ClusterID: clusterID,
-		Settings:  settings,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
-
-func ResourceClusterUpdateEndpoints(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
-	// retrieve state
-	cluster, err := waitForCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// get new desired state of endpoints
-	rawNewEndpoints := d.Get("private_network")
-	newEndpoints, err := expandPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(newEndpoints) == 0 {
-		newEndpoints = append(newEndpoints, &redis.EndpointSpec{
-			PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
-		})
-	}
-	// send request
-	_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
-		Zone:      cluster.Zone,
-		ClusterID: cluster.ID,
-		Endpoints: newEndpoints,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
+//func ResourceInstanceUpdateEndpoints(ctx context.Context, d *schema.ResourceData, mongodbAPI *mongodb.API, region scw.Region, instanceID string) diag.Diagnostics {
+//	// retrieve state
+//
+//	instance, err := waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
+//	if err != nil {
+//		return diag.FromErr(err)
+//	}
+//
+//	// get new desired state of endpoints
+//	rawNewEndpoints := d.Get("private_network")
+//	newEndpoints, err := expandPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
+//	if err != nil {
+//		return diag.FromErr(err)
+//	}
+//	if len(newEndpoints) == 0 {
+//		newEndpoints = append(newEndpoints, &mongodb.EndpointSpec{
+//			Public: &mongodb.EndpointSpecPublicDetails{},
+//		})
+//	}
+//
+//	_, err = waitForInstance(ctx, reAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
+//	if err != nil {
+//		return diag.FromErr(err)
+//	}
+//
+//	return nil
+//}
 
 func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = redisAPI.DeleteCluster(&redis.DeleteClusterRequest{
-		Zone:      zone,
-		ClusterID: ID,
+	_, err = mongodbAPI.DeleteInstance(&mongodb.DeleteInstanceRequest{
+		Region:     region,
+		InstanceID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
+	d.SetId("")
 	return nil
 }
