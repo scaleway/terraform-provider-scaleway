@@ -563,15 +563,17 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
 		_ = d.Set("private_network", pnI)
 
-		resourceType := ipamAPI.ResourceTypeRdbInstance
-		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceID:       &res.ID,
-			ResourceType:     &resourceType,
-			PrivateNetworkID: &res.Endpoints[0].PrivateNetwork.PrivateNetworkID,
-		}
-		privateIP, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-		if err != nil {
-			return diag.FromErr(err)
+		if res.Endpoints[0].PrivateNetwork.ProvisioningMode == rdb.EndpointPrivateNetworkDetailsProvisioningModeIpam {
+			resourceType := ipamAPI.ResourceTypeRdbInstance
+			opts := &ipam.GetResourcePrivateIPsOptions{
+				ResourceID:       &res.ID,
+				ResourceType:     &resourceType,
+				PrivateNetworkID: &res.Endpoints[0].PrivateNetwork.PrivateNetworkID,
+			}
+			privateIP, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 	_ = d.Set("private_ip", privateIP)
