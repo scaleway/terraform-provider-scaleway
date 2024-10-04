@@ -346,12 +346,12 @@ func ResourceServer() *schema.Resource {
 					if i == nil {
 						return nil
 					}
-					if i.(bool) == false {
+					if !i.(bool) {
 						return diag.Diagnostics{{
 							Severity:      diag.Error,
 							Summary:       "NAT IPs are not supported anymore",
 							Detail:        "Remove explicit disabling, enable it or downgrade terraform.\nLearn more about migration: https://www.scaleway.com/en/docs/compute/instances/how-to/migrate-routed-ips/",
-							AttributePath: cty.GetAttrPath("routed_ip_enabled"),
+							AttributePath: path,
 						}}
 					}
 

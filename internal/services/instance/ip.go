@@ -49,7 +49,7 @@ func ResourceIP() *schema.Resource {
 							Severity:      diag.Error,
 							Summary:       "NAT IPs are not supported anymore",
 							Detail:        "Remove explicit nat configuration, migrate to routed ips or downgrade terraform.\nLearn more about migration: https://www.scaleway.com/en/docs/compute/instances/how-to/migrate-routed-ips/",
-							AttributePath: cty.GetAttrPath("type"),
+							AttributePath: path,
 						}}
 					}
 
