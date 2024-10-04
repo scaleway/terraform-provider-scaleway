@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -42,6 +43,18 @@ func ResourceIP() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 				Description: "The type of instance IP",
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					if i.(string) == "nat" {
+						return diag.Diagnostics{{
+							Severity:      diag.Error,
+							Summary:       "NAT IPs are not supported anymore",
+							Detail:        "Remove explicit nat configuration, migration to routed_ip or downgrade terraform.",
+							AttributePath: cty.GetAttrPath("type"),
+						}}
+					}
+
+					return nil
+				},
 			},
 			"reverse": {
 				Type:        schema.TypeString,
