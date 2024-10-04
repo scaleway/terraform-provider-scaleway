@@ -48,7 +48,7 @@ func ResourceIP() *schema.Resource {
 						return diag.Diagnostics{{
 							Severity:      diag.Error,
 							Summary:       "NAT IPs are not supported anymore",
-							Detail:        "Remove explicit nat configuration, migration to routed_ip or downgrade terraform.",
+							Detail:        "Remove explicit nat configuration, migrate to routed ips or downgrade terraform.",
 							AttributePath: cty.GetAttrPath("type"),
 						}}
 					}
