@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	mongodbSDK "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
-	mongodbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb/testfuncs"
 )
 
 func TestAccMongoDBInstance_Basic(t *testing.T) {
@@ -24,20 +24,20 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_mongodb_instance main {
-						name = "test-mongodb-basic"
-						version = "4.4"
-						node_type = "db-dev-s"
-						node_number = "3"
+						name = "test-mongodb-basic1"
+						version = "7.0.11"
+						node_type = "MGDB-PRO2-XXS"
+						node_number = 1
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-basic"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "db-dev-s"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "4.4"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_number", "3"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-basic1"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "mgdb-pro2-xxs"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0.11"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_number", "1"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
 				),
@@ -100,7 +100,7 @@ func TestAccMongoDBInstance_PrivateNetwork(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      mongodbchecks.IsInstanceDestroyed(tt),
+		CheckDestroy:      IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -150,6 +150,36 @@ func isMongoDBInstancePresent(tt *acctest.TestTools, n string) resource.TestChec
 			return err
 		}
 
+		return nil
+	}
+}
+
+func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_mongodb_instance" {
+				continue
+			}
+
+			mongodbAPI, zone, ID, err := mongodb.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			extractRegion, err := zone.Region()
+			instance, err := mongodbAPI.GetInstance(&mongodbSDK.GetInstanceRequest{
+				InstanceID: ID,
+				Region:     extractRegion,
+			})
+			_ = instance
+
+			if err == nil {
+				return fmt.Errorf("instance (%s) still exists", rs.Primary.ID)
+			}
+			if !httperrors.Is404(err) {
+				return err
+			}
+		}
 		return nil
 	}
 }
