@@ -37,9 +37,8 @@ func ResourceDeployment() *schema.Resource {
 				Optional:    true,
 				Description: "The deployment name",
 			},
-			"region":          regional.Schema(),
-			"project_id":      account.ProjectIDSchema(),
-			"organization_id": account.OrganizationIDSchema(),
+			"region":     regional.Schema(),
+			"project_id": account.ProjectIDSchema(),
 			"node_type": {
 				Type:        schema.TypeString,
 				Required:    true,
