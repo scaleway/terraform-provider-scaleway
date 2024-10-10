@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 var scopeMapping = map[string]cockpit.TokenScope{
@@ -16,6 +17,10 @@ var scopeMapping = map[string]cockpit.TokenScope{
 	"setup_alerts":        cockpit.TokenScopeFullAccessAlertManager,
 	"query_traces":        cockpit.TokenScopeReadOnlyTraces,
 	"write_traces":        cockpit.TokenScopeWriteOnlyTraces,
+}
+
+func createGrafanaURL(projectID string, region scw.Region) string {
+	return fmt.Sprintf("https://%s.dashboards.obs.%s.scw.cloud", projectID, region)
 }
 
 func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerURL string) []map[string]interface{} {

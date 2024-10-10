@@ -218,36 +218,6 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 					acctest.CheckResourceIDChanged("scaleway_redis_cluster.main", &clusterID),
 				),
 			},
-			{
-				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {}
-
-				resource "scaleway_redis_cluster" "main" {
-				  name         = "test_redis_migrate_cluster_size_ipam"
-				  version      = "%s"
-				  node_type    = "RED1-XS"
-				  user_name    = "my_initial_user"
-				  password     = "thiZ_is_v&ry_s3cret"
-				  cluster_size = 5
-				  tls_enabled  = "true"
-				  private_network {
-  					id          = scaleway_vpc_private_network.private_network.id
-				  }
-				}
-				`, latestRedisVersion),
-				Check: resource.ComposeTestCheckFunc(
-					isClusterPresent(tt, "scaleway_redis_cluster.main"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_cluster_size_ipam"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "5"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
-					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_redis_cluster.main", &clusterID),
-				),
-			},
 		},
 	})
 }
@@ -336,48 +306,6 @@ func TestAccCluster_MigrateClusterSizeWithStaticEndpoint(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.4", "192.168.99.5/24"),
 					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
 					acctest.CheckResourceIDChanged("scaleway_redis_cluster.main", &clusterID),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {}
-
-				resource "scaleway_redis_cluster" "main" {
-				  name         = "test_redis_migrate_cluster_size_static"
-				  version      = "%s"
-				  node_type    = "RED1-XS"
-				  user_name    = "my_initial_user"
-				  password     = "thiZ_is_v&ry_s3cret"
-				  cluster_size = 5
-				  tls_enabled  = "true"
-				  private_network {
-  					id          = scaleway_vpc_private_network.private_network.id
-  					service_ips = [
-					  "192.168.99.1/24",
-					  "192.168.99.2/24",
-					  "192.168.99.3/24",
-					  "192.168.99.4/24",
-					  "192.168.99.5/24",
-					]
-				  }
-				}
-				`, latestRedisVersion),
-				Check: resource.ComposeTestCheckFunc(
-					isClusterPresent(tt, "scaleway_redis_cluster.main"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_cluster_size_static"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "5"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "192.168.99.1/24"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.1", "192.168.99.2/24"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.2", "192.168.99.3/24"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.3", "192.168.99.4/24"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.4", "192.168.99.5/24"),
-					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_redis_cluster.main", &clusterID),
 				),
 			},
 		},

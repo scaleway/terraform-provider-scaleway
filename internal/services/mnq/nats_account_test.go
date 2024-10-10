@@ -23,7 +23,12 @@ func TestAccNatsAccount_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_nats_account_basic"
+					}
+
 					resource scaleway_mnq_nats_account main {
+						project_id = scaleway_account_project.main.id
 						name = "test-mnq-nats-account-basic"
 					}
 				`,

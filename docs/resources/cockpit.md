@@ -6,8 +6,10 @@ page_title: "Scaleway: scaleway_cockpit"
 # Resource: scaleway_cockpit
 
 -> **Note:**
-As of April 2024, Cockpit has introduced [regionalization](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#region) to offer more flexibility and resilience.
+As of September 2024, Cockpit has introduced [regionalization](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#region) to offer more flexibility and resilience.
 If you have created customized dashboards with data for your Scaleway resources before April 2024, you will need to update your queries in Grafana, with the new regionalized [data sources](../resources/cockpit_source.md).
+
+Please note that even if you provide the grafana_url, it will only be active if a [Grafana user](../resources/cockpit_grafana_user.md) is created first. Make sure to create a Grafana user in your Cockpit instance to enable full access to Grafana.
 
 The `scaleway_cockpit` resource allows you to create and manage Scaleway Cockpit instances.
 
@@ -44,13 +46,14 @@ resource "scaleway_cockpit" "main" {
 
 ```terraform
 // Use the Grafana Terraform provider to create a Grafana user and a Grafana folder in the default Project's Cockpit
-resource "scaleway_cockpit" "main" {}
 
 resource "scaleway_cockpit_grafana_user" "main" {
-  project_id = scaleway_cockpit.main.project_id
-  login      = "example"
-  role       = "editor"
+    project_id = scaleway_cockpit.main.project_id
+    login      = "example"
+    role       = "editor"
 }
+
+resource "scaleway_cockpit" "main" {}
 
 provider "grafana" {
   url  = scaleway_cockpit.main.endpoints.0.grafana_url

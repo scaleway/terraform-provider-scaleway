@@ -19,7 +19,7 @@ import (
 )
 
 func TestAccObjectBucketPolicy_Basic(t *testing.T) {
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-basic")
 
 	tfConfig := fmt.Sprintf(`
 		resource "scaleway_object_bucket" "bucket" {
@@ -107,7 +107,7 @@ func TestAccObjectBucketPolicy_Basic(t *testing.T) {
 }
 
 func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-with-bucket-id")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-with-bucket-id")
 
 	tfConfig := fmt.Sprintf(`
 		resource "scaleway_object_bucket" "bucket" {
@@ -193,7 +193,7 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 }
 
 func TestAccObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-with-bucket-name")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-with-bucket-name")
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

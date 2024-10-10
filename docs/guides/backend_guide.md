@@ -6,7 +6,7 @@ page_title: "Using Backend Guide"
 
 This page describes how to configure a backend by adding the backend block to your configuration with the Terraform Scaleway Provider.
 
-Terraform provides the option to set up a [“backend”](https://www.terraform.io/language/settings/backends/configuration) of the `state` data files.
+Terraform provides the option to set up a [“backend”](https://developer.hashicorp.com/terraform/language/backend) of the `state` data files.
 
 This option allows you to handle the state and the way certain operations are executed.
 
@@ -70,7 +70,7 @@ export PG_CONN_STR=postgres://<user>:<pass>@localhost:<port>/terraform_backend?s
 
 ## Secrets
 
-Hashicorp offers several methods to keep your secrets. Please check the Terraform [partial configuration](https://www.terraform.io/language/settings/backends/configuration#partial-configuration) for this topic.
+Hashicorp offers several methods to keep your secrets. Please check the Terraform [partial configuration](https://developer.hashicorp.com/terraform/language/backend#partial-configuration) for this topic.
 
 ## Create your infrastructure with the Scaleway provider
 
@@ -161,7 +161,7 @@ $ terraform init -backend-config="conn_str=${PG_CONN_STR}" -migrate-state
 
 ## What about locking?
 
-Most of the remote [backends](https://www.terraform.io/language/settings/backends/configuration#available-backends) natively support locking. To run terraform apply, Terraform will automatically acquire a lock;
+Most of the remote [backends](https://developer.hashicorp.com/terraform/language/backend#backend-types) natively support locking. To run terraform apply, Terraform will automatically acquire a lock;
 if someone else is already running apply, they will already have the lock, and you will have to wait.
 You can run apply with the `-lock-timeout=<TIME>` parameter to tell Terraform to wait up to TIME for a lock to be released (e.g., `-lock-timeout=10m` will wait for 10 minutes).
 

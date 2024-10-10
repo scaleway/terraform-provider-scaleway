@@ -2,7 +2,6 @@ package objecttestfuncs
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -33,7 +32,7 @@ func testSweepStorageObjectBucket(_ string) error {
 
 		for _, bucket := range listBucketResponse.Buckets {
 			logging.L.Debugf("Deleting %q bucket", *bucket.Name)
-			if strings.HasPrefix(*bucket.Name, "terraform-test") {
+			if acctest.IsTestResource(*bucket.Name) {
 				_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
 					Bucket: bucket.Name,
 				})

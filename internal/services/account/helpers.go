@@ -1,8 +1,11 @@
 package account
 
 import (
+	"errors"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -24,4 +27,17 @@ func GetOrganizationID(m interface{}, d *schema.ResourceData) *string {
 	}
 
 	return nil
+}
+
+func isProjectNotUsableError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	responseError := &scw.PreconditionFailedError{}
+	if errors.As(err, &responseError) && responseError.Precondition == "resource_not_usable" {
+		return true
+	}
+
+	return false
 }

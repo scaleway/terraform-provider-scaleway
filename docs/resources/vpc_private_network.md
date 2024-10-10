@@ -59,6 +59,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Private Network.
+- `created_at` - The date and time of the creation of the Private Network (RFC 3339 format).
+- `updated_at` - The date and time of the creation of the Private Network (RFC 3339 format).
 - `ipv4_subnet` - The IPv4 subnet associated with the Private Network.
     - `subnet` - The subnet CIDR.
     - `id` - The subnet ID.
@@ -84,5 +86,5 @@ In addition to all arguments above, the following attributes are exported:
 Private Networks can be imported using `{region}/{id}`, e.g.
 
 ```bash
-terraform import scaleway_vpc_private_network.vpc_demo fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_vpc_private_network.main fr-par/11111111-1111-1111-1111-111111111111
 ```

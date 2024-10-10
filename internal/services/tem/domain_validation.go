@@ -77,7 +77,7 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 			Region:   region,
 			DomainID: domain.ID,
 		})
-		if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" {
+		if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
 			return retry.RetryableError(errors.New("retry"))
 		}
 		return nil

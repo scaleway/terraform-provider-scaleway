@@ -27,15 +27,10 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_account_project project {
-					name = "tf-tests-secret-version-ds-by-name"
-				}
-
 				resource "scaleway_secret" "main" {
 				  name        = "%[1]s"
 				  description = "%[2]s"
 				  tags        = ["devtools", "provider", "terraform"]
-				  project_id  = scaleway_account_project.project.id
 				}
 
 				resource "scaleway_secret_version" "v1" {
@@ -55,7 +50,6 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				  name        = "%[1]s"
 				  description = "%[2]s"
 				  tags        = ["devtools", "provider", "terraform"]
-				  project_id  = scaleway_account_project.project.id
 				}
 
 				resource "scaleway_secret_version" "v1" {
@@ -73,15 +67,10 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_account_project project {
-					name = "tf-tests-secret-version-ds-by-name"
-				}
-
 				resource "scaleway_secret" "main" {
 				  name        = "%[1]s"
 				  description = "%[2]s"
 				  tags        = ["devtools", "provider", "terraform"]
-				  project_id  = scaleway_account_project.project.id
 				}
 
 				resource "scaleway_secret_version" "v1" {
@@ -99,19 +88,16 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				data "scaleway_secret_version" "data_v1" {
 				  secret_id = scaleway_secret.main.id
 				  revision  = "1"
-				  project_id  = scaleway_account_project.project.id
 				}
 
 				data "scaleway_secret_version" "data_v2" {
 				  secret_id = scaleway_secret.main.id
 				  revision  = "2"
-				  project_id  = scaleway_account_project.project.id
 				}
 
 				data "scaleway_secret_version" "data_latest" {
 				  secret_id = scaleway_secret.main.id
 				  revision  = "latest"
-				  project_id  = scaleway_account_project.project.id
 				}
 				`, secretName, secretDataDescription, secretVersionData, secretVersionDataV2),
 				Check: resource.ComposeTestCheckFunc(

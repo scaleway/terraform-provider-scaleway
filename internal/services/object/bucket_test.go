@@ -27,9 +27,9 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	testBucketACL := "private"
 	testBucketUpdatedACL := "public-read"
-	bucketBasic := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-basic")
-	bucketMainRegion := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-main-region")
-	bucketSecondary := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-secondary")
+	bucketBasic := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-basic")
+	bucketMainRegion := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-main-region")
+	bucketSecondary := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-secondary")
 	objectBucketTestMainRegion := scw.RegionFrPar
 	objectBucketTestSecondaryRegion := scw.RegionNlAms
 	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
@@ -121,7 +121,7 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 func TestAccObjectBucket_Lifecycle(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	bucketLifecycle := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-lifecycle")
+	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lifecycle")
 	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -407,7 +407,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 func TestAccObjectBucket_ObjectLock(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	bucketObjectLock := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-lock")
+	bucketObjectLock := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lock")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -473,7 +473,7 @@ func TestAccObjectBucket_Cors_Update(t *testing.T) {
 	defer tt.Cleanup()
 
 	resourceName := "scaleway_object_bucket.bucket-cors-update"
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-update")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-cors-update")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -576,7 +576,7 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 	ctx := context.Background()
 
 	resourceName := "scaleway_object_bucket.bucket"
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-delete")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-cors-delete")
 	deleteBucketCors := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
 			rs, ok := s.RootModule().Resources[n]
@@ -631,7 +631,7 @@ func TestAccObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-cors-empty-origin")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-cors-empty-origin")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -701,7 +701,7 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 	defer tt.Cleanup()
 
 	resourceName := "scaleway_object_bucket.bucket"
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-force")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-force")
 
 	addObjectToBucket := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {

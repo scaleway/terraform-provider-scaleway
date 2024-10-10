@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -131,10 +132,20 @@ func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m
 func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
-	err := accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
-		ProjectID: d.Id(),
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
+	err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+		err := accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
+			ProjectID: d.Id(),
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			if isProjectNotUsableError(err) {
+				return retry.RetryableError(err)
+			}
+
+			return retry.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
