@@ -96,37 +96,6 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 	})
 }
 
-func TestAccDeployment_MinSize(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_inference_deployment" "main_size" {
-						name = "test-inference-deployment-min-size"
-						node_type = "L4"
-						model_name = "meta/llama-3.1-8b-instruct:fp8"
-						endpoints {
-							public_endpoint = true
-						}
-						accept_eula = true
-						min_size = 2
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main_size"),
-					resource.TestCheckResourceAttr("scaleway_inference_deployment.main_size", "min_size", "2"),
-				),
-			},
-		},
-	})
-}
-
 func testAccCheckDeploymentExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

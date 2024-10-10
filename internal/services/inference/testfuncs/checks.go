@@ -2,6 +2,7 @@ package inferencetestfuncs
 
 import (
 	"fmt"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -29,6 +30,10 @@ func IsDeploymentDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			if err == nil {
 				return fmt.Errorf("deployment %s (%s) still exists", deployment.Name, deployment.ID)
+			}
+
+			if !httperrors.Is404(err) {
+				return err
 			}
 		}
 		return nil

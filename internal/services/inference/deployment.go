@@ -70,11 +70,13 @@ func ResourceDeployment() *schema.Resource {
 			"min_size": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The minimum size of the pool",
 			},
 			"max_size": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The maximum size of the pool",
 			},
 			"size": {
@@ -190,14 +192,6 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	req.Endpoints = []*inference.EndpointSpec{&endpoint}
 
-	if maxSize, ok := d.GetOk("max_size"); ok {
-		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
-	}
-
-	if minSize, ok := d.GetOk("min_size"); ok {
-		req.MaxSize = scw.Uint32Ptr(uint32(minSize.(int)))
-	}
-
 	if isAcceptingEula, ok := d.GetOk("accept_eula"); ok {
 		req.AcceptEula = scw.BoolPtr(isAcceptingEula.(bool))
 	}
@@ -245,7 +239,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("created_at", types.FlattenTime(deployment.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(deployment.UpdatedAt))
 
-	if deployment.Endpoints[0].PrivateNetwork.PrivateNetworkID != "" {
+	if deployment.Endpoints[0].PrivateNetwork != nil {
 		_ = d.Set("endpoint_private_url", deployment.Endpoints[0].URL)
 		_ = d.Set("endpoint_private_id", deployment.Endpoints[0].ID)
 		_ = d.Set("disable_auth_private", deployment.Endpoints[0].DisableAuth)
@@ -255,7 +249,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		_ = d.Set("disable_auth_public", deployment.Endpoints[0].DisableAuth)
 	}
 	if len(deployment.Endpoints) == 2 {
-		if deployment.Endpoints[1].PrivateNetwork.PrivateNetworkID != "" {
+		if deployment.Endpoints[1].PrivateNetwork != nil {
 			_ = d.Set("endpoint_private_url", deployment.Endpoints[1].URL)
 			_ = d.Set("endpoint_private_id", deployment.Endpoints[1].ID)
 			_ = d.Set("disable_auth_private", deployment.Endpoints[1].DisableAuth)
