@@ -141,10 +141,10 @@ func ResourceCluster() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:  "UUID of the private network to be connected to the cluster",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+							Description:      "UUID of the private network to be connected to the cluster",
 						},
 						"service_ips": {
 							Type:     schema.TypeList,

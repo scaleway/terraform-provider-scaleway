@@ -35,6 +35,19 @@ resource "scaleway_iam_api_key" "main" {
 }
 ```
 
+### With expiration
+
+```terraform
+resource "time_rotating" "rotate_after_a_year" {
+  rotation_years = 1
+}
+
+resource "scaleway_iam_api_key" "main" {
+  application_id = scaleway_iam_application.main.id
+  expires_at     = time_rotating.rotate_after_a_year.rotation_rfc3339
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -64,5 +77,5 @@ In addition to all arguments above, the following attributes are exported:
 Api keys can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_api_key.main 11111111111111111111
+terraform import scaleway_iam_api_key.main 11111111111111111111
 ```

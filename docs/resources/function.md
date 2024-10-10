@@ -5,8 +5,11 @@ page_title: "Scaleway: scaleway_function"
 
 # Resource: scaleway_function
 
-Creates and manages Scaleway Functions.
-For more information see [the documentation](https://www.scaleway.com/en/developers/api/serverless-functions).
+The `scaleway_function` resource allows you to create and manage [Serverless Functions](https://www.scaleway.com/en/docs/serverless/functions/).
+
+Refer to the Serverless Functions [product documentation](https://www.scaleway.com/en/docs/serverless/functions/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-functions/) for more information.
+
+For more information on the limitations of Serverless Functions, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/compute/functions/reference-content/functions-limitations/).
 
 ## Example Usage
 
@@ -28,7 +31,7 @@ resource scaleway_function main {
 
 ### With sources and deploy
 
-You create a zip of your function (ex: `zip function.zip -r go.mod go.sum handler.go`)
+You can easily create a zip file containing your function (ex: `zip function.zip -r go.mod go.sum handler.go`) to deploy it with Terraform seamlessly. Refer to our [dedicated documentation](https://www.scaleway.com/en/docs/serverless/functions/how-to/package-function-dependencies-in-zip/) for more information on how to package a function into a zip file.
 
 ```terraform
 resource "scaleway_function_namespace" "main" {
@@ -52,60 +55,65 @@ resource scaleway_function main {
 
 The following arguments are supported:
 
-- `namespace_id` - (Required) The function namespace ID of the function.
+- `name` - (Required) The unique name of the function name.
 
-- `name` - (Required) The unique name of the function.
+- `namespace_id` - (Required) The Functions namespace ID of the function.
 
-~> **Important** Updates to `name` will recreate the function.
+~> **Important** Updating the `name` argument will recreate the function.
 
 - `description` (Optional) The description of the function.
 
-- `environment_variables` - The environment variables of the function.
+- `environment_variables` - (Optional) The [environment variables](https://www.scaleway.com/en/docs/compute/functions/concepts/#environment-variables) of the function.
 
-- `secret_environment_variables` - (Optional) The [secret environment](https://www.scaleway.com/en/docs/compute/functions/concepts/#secrets) variables of the function.
+- `secret_environment_variables` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/compute/functions/concepts/#secrets) of the function.
 
-- `privacy` - Privacy of the function. Can be either `private` or `public`. Read more on [authentication](https://www.scaleway.com/en/developers/api/serverless-functions/#authentication)
+- `privacy` - (Optional) The privacy type defines the way to authenticate to your function. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-functions/#protocol-9dd4c8).
 
-- `runtime` - Runtime of the function. Runtimes can be fetched using [specific route](https://www.scaleway.com/en/developers/api/serverless-functions/#get-f7de6a
+- `runtime` - Runtime of the function. Runtimes can be fetched using [specific route](https://www.scaleway.com/en/developers/api/serverless-functions/#path-functions-get-a-function)
 
-- `min_scale` - Minimum replicas for your function, defaults to 0, Note that a function is billed when it gets executed, and using a min_scale greater than 0 will cause your function container to run constantly.
+- `min_scale` - (Optional) The minimum number of function instances running continuously. Defaults to 0. Functions are billed when executed, and using a `min_scale` greater than 0 will cause your function to run constantly.
 
-- `max_scale` - Maximum replicas for your function (defaults to 20), our system will scale your functions automatically based on incoming workload, but will never scale the number of replicas above the configured max_scale.
+- `max_scale` - (Optional) The maximum number of instances this function can scale to. Default to 20. Your function will scale automatically based on the incoming workload, but will never exceed the configured `max_scale` value.
 
-- `memory_limit` - Memory limit in MB for your function, defaults to 128MB
+- `memory_limit` - (Optional) The memory resources in MB to allocate to each function. Defaults to 256 MB.
 
-- `handler` - Handler of the function. Depends on the runtime ([function guide](https://www.scaleway.com/en/developers/api/serverless-functions/#create-a-function))
+- `handler` - Handler of the function, depends on the runtime. Refer to the [dedicated documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-functions-create-a-new-function) for the list of supported runtimes.
 
-- `timeout` - Holds the max duration (in seconds) the function is allowed for responding to a request
+- `timeout` - (Optional) The maximum amount of time your function can spend processing a request before being stopped. Defaults to 300s.
 
-- `zip_file` - Location of the zip file to upload containing your function sources
+- `zip_file` - Path to the zip file containing your function sources to upload.
 
-- `zip_hash` - The hash of your source zip file, changing it will re-apply function. Can be any string, changing it will just trigger state change. You can use any terraform hash function to trigger a change on your zip change (see examples)
+- `zip_hash` - The hash of your source zip file, changing it will redeploy the function. Can be any string, changing it will simply trigger a state change. You can use any Terraform hash function to trigger a change on your zip change (see examples).
 
-- `deploy` - Define if the function should be deployed, terraform will wait for function to be deployed. Function will get deployed if you change source zip
+- `deploy` - Define whether the function should be deployed. Terraform will wait for the function to be deployed. Your function will be redeployed if you update the source zip file.
+
+- `sandbox` - (Optional) Execution environment of the function.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the functions namespace is associated with.
 
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the function
+- `id` - The unique identifier of the function.
 
-~> **Important:** Functions' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+~> **Important:** Function IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
 
 - `namespace_id` - The namespace ID the function is associated with.
-- `domain_name` - The native domain name of the function
+
+- `domain_name` - The native domain name of the function.
+
 - `organization_id` - The organization ID the function is associated with.
-- `cpu_limit` - The CPU limit in mCPU for your function. More infos on resources [here](https://www.scaleway.com/en/developers/api/serverless-functions/#functions)
+
+- `cpu_limit` - The CPU limit in mVCPU for your function.
 
 ## Import
 
-Functions can be imported using the `{region}/{id}`, e.g.
+Functions can be imported using, `{region}/{id}`, as shown below:
 
 ```bash
-$ terraform import scaleway_function.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_function.main fr-par/11111111-1111-1111-1111-111111111111
 ```

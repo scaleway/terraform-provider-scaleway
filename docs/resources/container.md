@@ -5,13 +5,11 @@ page_title: "Scaleway: scaleway_container"
 
 # Resource: scaleway_container
 
-Creates and manages Scaleway Container.
+The `scaleway_container` resource allows you to create and manage [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
 
-For more information consult the [documentation](https://www.scaleway.com/en/docs/faq/serverless-containers/).
+Refer to the Serverless Containers [product documentation](https://www.scaleway.com/en/docs/serverless/containers/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/) for more information.
 
-For more details about the limitation check [containers-limitations](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/).
-
-You can check also our [containers guide](https://www.scaleway.com/en/docs/compute/containers/concepts/).
+For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/).
 
 ## Example Usage
 
@@ -48,98 +46,100 @@ resource scaleway_container main {
 
 ## Argument Reference
 
-The following arguments are required:
+The following arguments are supported:
 
 - `name` - (Required) The unique name of the container name.
 
-- `namespace_id` - (Required) The container namespace ID of the container.
+- `namespace_id` - (Required) The Containers namespace ID of the container.
 
-~> **Important** Updates to `name` will recreate the container.
-
-The following arguments are optional:
+~> **Important** Updating the `name` argument will recreate the container.
 
 - `description` (Optional) The description of the container.
 
-- `environment_variables` - (Optional) The [environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) variables of the container.
+- `environment_variables` - (Optional) The [environment variables](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) of the container.
 
-- `secret_environment_variables` - (Optional) The [secret environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#secrets) variables of the container.
+- `secret_environment_variables` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/compute/containers/concepts/#secrets) of the container.
 
-- `min_scale` - (Optional) The minimum of running container instances continuously. Defaults to 0.
+- `min_scale` - (Optional) The minimum number of container instances running continuously.
 
-- `max_scale` - (Optional) The maximum of number of instances this container can scale to. Default to 20.
+- `max_scale` - (Optional) The maximum number of instances this container can scale to.
 
-- `memory_limit` - (Optional) The memory computing resources in MB to allocate to each container. Defaults to 256.
+- `memory_limit` - (Optional) The memory resources in MB to allocate to each container.
 
-- `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container. Defaults to 140.
+- `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container.
 
-- `timeout` - (Optional) The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to 300s.
+- `timeout` - (Optional) The maximum amount of time your container can spend processing a request before being stopped.
 
-- `privacy` - (Optional) The privacy type define the way to authenticate to your container. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8).
+- `privacy` - (Optional) The privacy type defines the way to authenticate to your container. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8).
 
-- `registry_image` - (Optional) The registry image address. e.g: **"rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE"**.
+- `registry_image` - (Optional) The registry image address (e.g., `rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE`)
 
 - `registry_sha256` - (Optional) The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string.
 
-- `max_concurrency` - (Optional) The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
+- `max_concurrency` - (Optional) The maximum number of simultaneous requests your container can handle at the same time.
 
-- `protocol` - (Optional) The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8) http1 or h2c. Defaults to http1.
+- `protocol` - (Optional) The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) `http1` or `h2c`. Defaults to `http1`.
 
-- `http_option` - (Optional) Allow both HTTP and HTTPS (enabled) or redirect HTTP to HTTPS (redirected). Defaults to enabled.
+- `http_option` - (Optional) Allows both HTTP and HTTPS (`enabled`) or redirect HTTP to HTTPS (`redirected`). Defaults to `enabled`.
 
-- `port` - (Optional) The port to expose the container. Defaults to 8080.
+- `sandbox` - (Optional) Execution environment of the container.
 
-- `deploy` - (Optional) Boolean controlling whether the container is on a production environment.
+- `port` - (Optional) The port to expose the container.
+
+- `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
 
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_container` resource exports certain attributes once the Container is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-- `id` - The container's ID.
+- `id` - The unique identifier of the container.
 
-~> **Important:** Containers' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+~> **Important:** Container IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
+
 - `status` - The container status.
+
 - `cron_status` - The cron status of the container.
+
 - `error_message` - The error message of the container.
+
 - `domain_name` - The native domain name of the container
 
 ## Import
 
-Container can be imported using the `{region}/{id}`, e.g.
+Containers can be imported using, `{region}/{id}`, as shown below:
 
 ```bash
-$ terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-111111111111
 ```
 
 ## Protocols
 
-The supported protocols are:
+The following protocols are supported:
 
 * `h2c`: HTTP/2 over TCP.
 * `http1`: Hypertext Transfer Protocol.
 
-**Important:** For details about the protocols check [this](https://httpd.apache.org/docs/2.4/howto/http2.html)
+~> **Important:** Refer to the official [Apache documentation](https://httpd.apache.org/docs/2.4/howto/http2.html) for more information.
 
 ## Privacy
 
-By default, creating a container will make it `public`, meaning that anybody knowing the endpoint could execute it.
+By default, creating a container will make it `public`, meaning that anybody knowing the endpoint can execute it.
+
 A container can be made `private` with the privacy parameter.
 
-Please check our [authentication](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8) section
+Refer to the [technical information](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8) for more information on container authentication.
 
 ## Memory and vCPUs configuration
 
-The vCPU represents a portion or share of the underlying, physical CPU that is assigned to a particular virtual machine (VM).
+The vCPU represents a portion of the underlying, physical CPU that is assigned to a particular virtual machine (VM).
 
-You may decide how much computing resources to allocate to each container.
-The `memory_limit` (in MB) must correspond with the right amount of vCPU.
+You can determine the computing resources to allocate to each container.
 
-**Important:** The right choice for your container's resources is very important, as you will be billed based on compute usage over time and the number of Containers executions.
-
-Please check our [price](https://www.scaleway.com/en/docs/faq/serverless-containers/#prices) section for more details.
+The `memory_limit` (in MB) must correspond with the right amount of vCPU. Refer to the table below to determine the right memory/vCPU combination.
 
 | Memory (in MB) | vCPU |
 |----------------|------|
@@ -147,5 +147,9 @@ Please check our [price](https://www.scaleway.com/en/docs/faq/serverless-contain
 | 256            | 140m |
 | 512            | 280m |
 | 1024           | 560m |
+| 2048           | 1120 |
+| 3072           | 1680 |
+| 4096           | 2240 |
 
-**Note:** 560mCPU accounts roughly for half of one CPU power of a Scaleway General Purpose instance
+~>**Important:** Make sure to select the right resources, as you will be billed based on compute usage over time and the number of Containers executions.
+Refer to the [Serverless Containers pricing](https://www.scaleway.com/en/docs/faq/serverless-containers/#prices) for more information.

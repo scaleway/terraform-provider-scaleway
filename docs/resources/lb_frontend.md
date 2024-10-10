@@ -215,7 +215,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Load Balancer frontend IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `certificate_id` - (Deprecated) First certificate ID used by the frontend.
+- `certificate_id` - (Deprecated, use `certificate_ids` instead) First certificate ID used by the frontend.
 
 
 ## Import
@@ -223,5 +223,5 @@ In addition to all arguments above, the following attributes are exported:
 Load Balancer frontends can be imported using `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_lb_frontend.frontend01 fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_lb_frontend.frontend01 fr-par-1/11111111-1111-1111-1111-111111111111
 ```

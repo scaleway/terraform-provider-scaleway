@@ -174,6 +174,43 @@ func TestAccVPCPublicGateway_AttachToIP(t *testing.T) {
 	})
 }
 
+func TestAccVPCPublicGateway_Upgrade(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	publicGatewayName := "public-gateway-upgrade-test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      vpcgwchecks.IsGatewayDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway main {
+						name = "%s"
+						type = "VPC-GW-S"
+					}
+				`, publicGatewayName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-S"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway main {
+						name = "%s"
+						type = "VPC-GW-M"
+					}
+				`, publicGatewayName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-M"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckVPCPublicGatewayExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

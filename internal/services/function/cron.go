@@ -39,10 +39,10 @@ func ResourceCron() *schema.Resource {
 				Required:    true,
 			},
 			"schedule": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.ValidateCronExpression(),
-				Description:  "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.ValidateCronExpression(),
+				Description:      "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
 			},
 			"args": {
 				Type:        schema.TypeString,

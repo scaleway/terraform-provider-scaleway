@@ -80,19 +80,19 @@ func ResourceContainer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The minimum of running container instances continuously. Defaults to 0.",
+				Description: "The minimum of running container instances continuously.",
 			},
 			"max_scale": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The maximum of number of instances this container can scale to. Default to 20.",
+				Description: "The maximum of number of instances this container can scale to.",
 			},
 			"memory_limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The memory computing resources in MB to allocate to each container. Defaults to 128.",
+				Description: "The memory computing resources in MB to allocate to each container.",
 			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
@@ -129,7 +129,7 @@ func ResourceContainer() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
-				Description:  "The maximum the number of simultaneous requests your container can handle at the same time. Defaults to 50.",
+				Description:  "The maximum the number of simultaneous requests your container can handle at the same time.",
 				ValidateFunc: validation.IntAtMost(containerMaxConcurrencyLimit),
 			},
 			"domain_name": {
@@ -148,7 +148,7 @@ func ResourceContainer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The port to expose the container. Defaults to 8080",
+				Description: "The port to expose the container.",
 			},
 			"deploy": {
 				Type:        schema.TypeBool,
@@ -162,6 +162,13 @@ func ResourceContainer() *schema.Resource {
 				Description:      "HTTP traffic configuration",
 				Default:          container.ContainerHTTPOptionEnabled.String(),
 				ValidateDiagFunc: verify.ValidateEnum[container.ContainerHTTPOption](),
+			},
+			"sandbox": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "Execution environment of the container.",
+				ValidateDiagFunc: verify.ValidateEnum[container.ContainerSandbox](),
 			},
 			// computed
 			"status": {
@@ -272,6 +279,7 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("port", int(co.Port))
 	_ = d.Set("deploy", scw.BoolPtr(*types.ExpandBoolPtr(d.Get("deploy"))))
 	_ = d.Set("http_option", co.HTTPOption)
+	_ = d.Set("sandbox", co.Sandbox)
 	_ = d.Set("region", co.Region.String())
 
 	return nil
@@ -361,6 +369,10 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 
 	if d.HasChanges("deploy") {
 		req.Redeploy = types.ExpandBoolPtr(d.Get("deploy"))
+	}
+
+	if d.HasChanges("sandbox") {
+		req.Sandbox = container.ContainerSandbox(d.Get("sandbox").(string))
 	}
 
 	imageHasChanged := d.HasChanges("registry_sha256")

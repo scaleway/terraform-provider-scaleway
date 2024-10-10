@@ -1,23 +1,36 @@
 package verify
 
 import (
-	"fmt"
-
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/robfig/cron/v3"
 )
 
-func ValidateCronExpression() schema.SchemaValidateFunc {
-	return func(i interface{}, k string) (s []string, es []error) {
+func ValidateCronExpression() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
 		v, ok := i.(string)
 		if !ok {
-			es = append(es, fmt.Errorf("expected type of '%s' to be string", k))
-			return
+			diags := diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "expected type string",
+				AttributePath: path,
+			}}
+
+			return diags
 		}
+
 		_, err := cron.ParseStandard(v)
 		if err != nil {
-			es = append(es, fmt.Errorf("'%s' should be an valid Cron expression", k))
+			diags := diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "should be an valid Cron expression",
+				AttributePath: path,
+			}}
+
+			return diags
 		}
-		return
+
+		return nil
 	}
 }

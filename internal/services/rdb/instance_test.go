@@ -54,8 +54,8 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "minimal"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),   // Deprecated attribute, might be deleted later
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"), // Deprecated attribute, might be deleted later
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "certificate"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.endpoint_id"),
@@ -87,8 +87,8 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-change-tag"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),   // Deprecated attribute, might be deleted later
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"), // Deprecated attribute, might be deleted later
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "certificate"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.endpoint_id"),
@@ -1150,8 +1150,8 @@ func TestAccInstance_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_endpoints", "private_network.0.pn_id", "scaleway_vpc_private_network.test_endpoints", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.0.enable_ipam", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "load_balancer.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "endpoint_ip", ""),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "endpoint_port", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "endpoint_ip", ""),    // Deprecated attribute, might be deleted later
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "endpoint_port", "0"), // Deprecated attribute, might be deleted later
 				),
 			},
 			{
@@ -1183,8 +1183,8 @@ func TestAccInstance_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_endpoints", "private_network.0.pn_id", "scaleway_vpc_private_network.test_endpoints", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.0.enable_ipam", "true"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),   // Deprecated attribute, might be deleted later
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"), // Deprecated attribute, might be deleted later
 				),
 			},
 			{
@@ -1208,8 +1208,96 @@ func TestAccInstance_Endpoints(t *testing.T) {
 					isInstancePresent(tt, "scaleway_rdb_instance.test_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "load_balancer.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "0"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),   // Deprecated attribute, might be deleted later
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"), // Deprecated attribute, might be deleted later
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EncryptionAtRest(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name               = "test-rdb-encryption"
+						node_type          = "db-dev-s"
+						engine             = %q
+						is_ha_cluster      = false
+						disable_backup     = true
+						user_name          = "my_initial_user"
+						password           = "thiZ_is_v&ry_s3cret"
+						encryption_at_rest = true
+						tags               = [ "terraform-test", "scaleway_rdb_instance", "encryption" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-encryption"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "encryption_at_rest", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "encryption"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EncryptionAtRestFalse(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name               = "test-rdb-no-encryption"
+						node_type          = "db-dev-s"
+						engine             = %q
+						is_ha_cluster      = false
+						disable_backup     = true
+						user_name          = "my_initial_user_no_enc"
+						password           = "thiZ_is_v&ry_s3cret"
+						encryption_at_rest = false
+						tags               = [ "terraform-test", "scaleway_rdb_instance", "no_encryption" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-no-encryption"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user_no_enc"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "encryption_at_rest", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "no_encryption"),
 				),
 			},
 		},

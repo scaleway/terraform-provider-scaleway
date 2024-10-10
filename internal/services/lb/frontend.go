@@ -40,18 +40,18 @@ func ResourceFrontend() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer ID",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The load-balancer ID",
 			},
 			"backend_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer backend ID",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The load-balancer backend ID",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -69,7 +69,7 @@ func ResourceFrontend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Set the maximum inactivity time on the client side",
 			},
 			"certificate_id": {
@@ -82,8 +82,8 @@ func ResourceFrontend() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description:      "Collection of Certificate IDs related to the load balancer and domain",
 				DiffSuppressFunc: dsf.OrderDiff,
@@ -316,8 +316,8 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("timeout_client", types.FlattenDuration(frontend.TimeoutClient))
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 
-	if frontend.Certificate != nil {
-		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID))
+	if frontend.Certificate != nil { //nolint:staticcheck
+		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
 	} else {
 		_ = d.Set("certificate_id", "")
 	}

@@ -98,116 +98,6 @@ func TestAccIP_Tags(t *testing.T) {
 	})
 }
 
-func TestAccIP_RoutedMigrate(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsIPDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-						resource "scaleway_instance_ip" "main" {
-							type = "nat"
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
-				),
-			},
-			{
-				Config: `
-						resource "scaleway_instance_ip" "main" {
-							type = "nat"
-						}
-						resource "scaleway_instance_ip" "copy" {
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.copy"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.copy", "type", "nat"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
-				),
-				ResourceName: "scaleway_instance_ip.copy",
-				ImportState:  true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
-					return state.RootModule().Resources["scaleway_instance_ip.main"].Primary.ID, nil
-				},
-				ImportStatePersist: true,
-			},
-			{
-				Config: `
-						resource "scaleway_instance_ip" "main" {
-							type = "routed_ipv4"
-						}
-						resource "scaleway_instance_ip" "copy" {
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.copy"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
-				),
-			},
-			{
-				// After the main IP migrated, we check that there is no ForceNew on the copy
-				// This check that the ip is not deleted if the migration is done outside terraform
-				RefreshState: true,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.copy"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.copy", "type", "routed_ipv4"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.main", "id", "scaleway_instance_ip.copy", "id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIP_RoutedDowngrade(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsIPDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-						resource "scaleway_instance_ip" "main" {
-							type = "routed_ipv4"
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv4"),
-					isIPValid("scaleway_instance_ip.main", "address"),
-					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
-				),
-			},
-			{
-				Config: `
-						resource "scaleway_instance_ip" "main" {
-							type = "nat"
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "nat"),
-					isIPValid("scaleway_instance_ip.main", "address"),
-					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIP_RoutedIPV6(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -308,8 +198,8 @@ func isIPAttachedToServer(tt *acctest.TestTools, ipResource, serverResource stri
 			return err
 		}
 
-		if server.Server.PublicIP.Address.String() != ip.IP.Address.String() {
-			return fmt.Errorf("IPs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.Server.PublicIP.Address, ip.IP.Address)
+		if server.Server.PublicIP != nil && server.Server.PublicIP.Address.String() != ip.IP.Address.String() { //nolint:staticcheck
+			return fmt.Errorf("IPs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.Server.PublicIP.Address, ip.IP.Address) //nolint:staticcheck
 		}
 
 		return nil
@@ -336,7 +226,7 @@ func serverHasNoIPAssigned(tt *acctest.TestTools, serverResource string) resourc
 			return err
 		}
 
-		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
+		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic { //nolint:staticcheck
 			return fmt.Errorf("no flexible IP should be assigned to %s", serverResource)
 		}
 

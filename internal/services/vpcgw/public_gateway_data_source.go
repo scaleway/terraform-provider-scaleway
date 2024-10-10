@@ -21,11 +21,11 @@ func DataSourceVPCPublicGateway() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"public_gateway_id"}
 	dsSchema["public_gateway_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the public gateway",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the public gateway",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 
 	return &schema.Resource{

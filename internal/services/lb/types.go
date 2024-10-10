@@ -26,7 +26,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interfac
 	pnI := []map[string]interface{}(nil)
 	var dhcpConfigExist bool
 	for _, pn := range privateNetworks {
-		if pn.DHCPConfig != nil {
+		if pn.DHCPConfig != nil { //nolint:staticcheck
 			dhcpConfigExist = true
 		}
 		pnRegion, err := pn.LB.Zone.Region()
@@ -39,7 +39,8 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interfac
 			"dhcp_config":        dhcpConfigExist,
 			"status":             pn.Status.String(),
 			"zone":               pn.LB.Zone.String(),
-			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
+			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig), //nolint:staticcheck
+			"ipam_ids":           flattenLBIPAMIDs(pnRegion, pn.IpamIDs),
 		})
 	}
 	return pnI
@@ -319,10 +320,11 @@ func expandPrivateNetworks(data interface{}) ([]*lb.PrivateNetwork, error) {
 		privateNetwork := &lb.PrivateNetwork{}
 		privateNetwork.PrivateNetworkID = locality.ExpandID(rawPn["private_network_id"].(string))
 		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig && len(staticConfig.([]interface{})) > 0 {
-			privateNetwork.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
+			privateNetwork.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig) //nolint:staticcheck
 		} else {
-			privateNetwork.DHCPConfig = expandLbPrivateNetworkDHCPConfig(rawPn["dhcp_config"])
+			privateNetwork.DHCPConfig = expandLbPrivateNetworkDHCPConfig(rawPn["dhcp_config"]) //nolint:staticcheck
 		}
+		privateNetwork.IpamIDs = locality.ExpandIDs(rawPn["ipam_ids"])
 
 		pns = append(pns, privateNetwork)
 	}
@@ -343,7 +345,7 @@ func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) []s
 		return nil
 	}
 
-	return *cfg.IPAddress
+	return *cfg.IPAddress //nolint:staticcheck
 }
 
 func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lb.PrivateNetworkDHCPConfig {
@@ -361,8 +363,9 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 			Zone:             zone,
 			LBID:             lbID,
 			PrivateNetworkID: pnConfigs[i].PrivateNetworkID,
-			StaticConfig:     pnConfigs[i].StaticConfig,
-			DHCPConfig:       pnConfigs[i].DHCPConfig,
+			StaticConfig:     pnConfigs[i].StaticConfig, //nolint:staticcheck
+			DHCPConfig:       pnConfigs[i].DHCPConfig,   //nolint:staticcheck
+			IpamIDs:          pnConfigs[i].IpamIDs,
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
 			return nil, err
@@ -383,8 +386,8 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 				if err != nil && !httperrors.Is404(err) {
 					return nil, err
 				}
-				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))
-				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig))
+				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))     //nolint:staticcheck
+				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig)) //nolint:staticcheck
 				return nil, fmt.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
 			}
 		}
@@ -437,6 +440,17 @@ func flattenLBIPIDs(zone scw.Zone, ips []*lb.IP) []string {
 	flattenedIPs := make([]string, len(ips))
 	for i, ip := range ips {
 		flattenedIPs[i] = zonal.NewIDString(zone, ip.ID)
+	}
+	return flattenedIPs
+}
+
+func flattenLBIPAMIDs(region scw.Region, ips []string) []string {
+	if ips == nil {
+		return nil
+	}
+	flattenedIPs := make([]string, len(ips))
+	for i, ip := range ips {
+		flattenedIPs[i] = regional.NewIDString(region, ip)
 	}
 	return flattenedIPs
 }

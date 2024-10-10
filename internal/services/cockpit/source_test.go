@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 )
 
-func TestAccCockpitSource_Basic(t *testing.T) {
+func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -39,6 +39,46 @@ func TestAccCockpitSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "type", "metrics"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "region", "fr-par"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "push_url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "origin"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "updated_at"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "synchronized_with_grafana"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_source.main", "project_id", "scaleway_account_project.project", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCockpitSource_Basic_logs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isSourceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_datasource_basic"
+				  	}
+
+					resource "scaleway_cockpit_source" "main" {
+					  project_id = scaleway_account_project.project.id
+					  name       = "my-source"
+					  type       = "logs"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isSourcePresent(tt, "scaleway_cockpit_source.main"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "name", "my-source"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "type", "logs"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "region", "fr-par"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "push_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "origin"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "updated_at"),

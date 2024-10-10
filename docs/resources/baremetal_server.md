@@ -200,5 +200,5 @@ In addition to all arguments above, the following attributes are exported:
 Baremetal servers can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_baremetal_server.web fr-par-2/11111111-1111-1111-1111-111111111111
+terraform import scaleway_baremetal_server.web fr-par-2/11111111-1111-1111-1111-111111111111
 ```

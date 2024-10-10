@@ -5,12 +5,11 @@ page_title: "Scaleway: scaleway_container_token"
 
 # Resource: scaleway_container_token
 
-Creates and manages Scaleway Container Token.
-For more information see [the documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#tokens-26b085).
+The `scaleway_container_token` resource allows you to create and manage authentication tokens for Scaleway [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
+
+Refer to the Containers tokens [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/create-auth-token-from-console/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-tokens-list-all-tokens) for more information.
 
 ## Example Usage
-
-### Basic
 
 ```terraform
 resource scaleway_container_namespace main {
@@ -37,9 +36,9 @@ resource scaleway_container_token container {
 
 The following arguments are supported:
 
-- `namespace_id` - (Required) The ID of the container namespace.
+- `namespace_id` - (Required) The unique identifier of the Containers namespace.
 
-- `container_id` - (Required) The ID of the container.
+- `container_id` - (Required) The unique identifier of the container.
 
 ~> Only one of `namespace_id` or `container_id` must be set.
 
@@ -47,25 +46,24 @@ The following arguments are supported:
 
 - `expires_at` (Optional) The expiration date of the token.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
-~> **Important** Updates to any fields will recreate the token.
-
+~> **Important** Updating any of the arguments above will recreate the token.
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_container_token` resource exports certain attributes once the authentication token is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-- `id` - The ID of the token.
+- `id` - The unique identifier of the token.
 
-~> **Important:** Container tokens' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+~> **Important:** Container token IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `token` - The token.
 
 ## Import
 
-Tokens can be imported using the `{region}/{id}`, e.g.
+Tokens can be imported using `{region}/{id}`, as shown below:
 
 ```bash
-$ terraform import scaleway_container_token.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_container_token.main fr-par/11111111-1111-1111-1111-111111111111
 ```

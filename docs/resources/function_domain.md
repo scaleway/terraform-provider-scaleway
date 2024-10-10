@@ -5,12 +5,13 @@ page_title: "Scaleway: scaleway_function_domain"
 
 # Resource: scaleway_function_domain
 
-Creates and manages Scaleway Function Domain bindings.
-For more information see [the documentation](https://www.scaleway.com/en/developers/api/serverless-functions).
+The `scaleway_function_domain` resource allows you to create and manage domain name bindings for Scaleway [Serverless Functions](https://www.scaleway.com/en/docs/serverless/functions/).
+
+Refer to the Functions domain [documentation](https://www.scaleway.com/en/docs/serverless/functions/how-to/add-a-custom-domain-name-to-a-function/) and the [API documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-domains-list-all-domain-name-bindings) for more information.
 
 ## Example Usage
 
-### Basic
+This command allows to bind a custom domain name to a function.
 
 ```terraform
 resource "scaleway_function_domain" "main" {
@@ -38,27 +39,30 @@ resource scaleway_function main {
 
 The following arguments are supported:
 
-- `function_id` - (Required) The ID of the function you want to create a domain with.
-- `hostname` - (Required) The hostname that should resolve to your function id native domain.
-  You should use a CNAME domain record that point to your native function `domain_name` for it.
+- `function_id` - (Required) The unique identifier of the function.
 
-~> **Important** Updates to `function_id` or `hostname` will recreate the domain.
+- `hostname` - (Required) The hostname with a CNAME record.
+
+  We recommend you use a CNAME domain record that point to your native function `domain_name` for it.
+
+~> **Important** Updating the `function_id` or `hostname` arguments will recreate the domain.
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_function_domain` resource exports certain attributes once the function domain name has been retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-- `id` - The function domain's ID.
+- `id` - The unique identifier of the function domain.
 
-~> **Important:** Function domains' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+~> **Important:** Function domain IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in where the domain was created.
-- `url` - The URL that triggers the function
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the domain was created.
+
+- `url` - The URL used to query the function.
 
 ## Import
 
-Domain can be imported using the `{region}/{id}`, e.g.
+Function domain binding can be imported using `{region}/{id}`, as shown below:
 
 ```bash
-$ terraform import scaleway_function_domain.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_function_domain.main fr-par/11111111-1111-1111-1111-111111111111
 ```

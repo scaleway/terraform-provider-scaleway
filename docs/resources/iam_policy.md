@@ -90,12 +90,34 @@ resource "scaleway_iam_policy" "iam_tf_storage_policy" {
 }
 ```
 
+### Create a policy with a particular condition
+
+IAM policy rule can use a condition to be applied.
+The following variables are available:
+
+- `request.ip`
+- `request.user_agent`
+- `request.time`
+
+```terraform
+resource "scaleway_iam_policy" "main" {
+  name         = "tf_tests_policy_condition"
+  no_principal = true
+  rule {
+    organization_id      = "%s"
+    permission_set_names = ["AllProductsFullAccess"]
+    condition = "request.user_agent == 'My User Agent'"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 - `name` - (Optional) The name of the IAM policy.
 - `description` - (Optional) The description of the IAM policy.
+- `condition` - (Optional) The condition of the IAM policy.
 - `tags` - (Optional) The tags associated with the IAM policy.
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the policy is associated with.
 - `user_id` - ID of the user the policy will be linked to
@@ -117,7 +139,7 @@ The following arguments are supported:
   **_TIP:_** You can use the Scaleway CLI to list the permissions details. e.g:
 
 ```shell
-  $ scw IAM permission-set list
+   scw IAM permission-set list
 ```
 
 ## Attributes Reference
@@ -134,5 +156,5 @@ In addition to all arguments above, the following attributes are exported:
 Policies can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_policy.main 11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_policy.main 11111111-1111-1111-1111-111111111111
 ```

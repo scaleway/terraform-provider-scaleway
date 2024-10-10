@@ -21,6 +21,7 @@ resource "scaleway_rdb_instance" "main" {
   disable_backup = true
   user_name      = "my_initial_user"
   password       = "thiZ_is_v&ry_s3cret"
+  encryption_at_rest = true
 }
 ```
 
@@ -168,6 +169,8 @@ interruption.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the Database
   Instance is associated with.
 
+- `encryption_at_rest` - (Optional) Enable or disable encryption at rest for the Database Instance.
+
 ### Backups
 
 - `disable_backup` - (Optional) Disable automated backup for the Database Instance.
@@ -215,8 +218,8 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important** Database Instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they
 are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-- `endpoint_ip` - (Deprecated) The IP of the Database Instance.
-- `endpoint_port` - (Deprecated) The port of the Database Instance.
+- `endpoint_ip` - (Deprecated) The IP of the Database Instance. Please use the private_network or the load_balancer attribute.
+- `endpoint_port` - (Deprecated) The port of the Database Instance. Please use the private_network or the load_balancer attribute.
 - `read_replicas` - List of read replicas of the Database Instance.
     - `ip` - IP of the replica.
     - `port` - Port of the replica.
@@ -247,5 +250,5 @@ section [How to connect a PostgreSQL and MySQL Database Instance to a Private Ne
 Database Instance can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_rdb_instance.rdb01 fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_rdb_instance.rdb01 fr-par/11111111-1111-1111-1111-111111111111
 ```

@@ -19,7 +19,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/documentdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
@@ -86,10 +85,10 @@ func Provider(config *Config) plugin.ProviderFunc {
 					Description: "The Scaleway access key.",
 				},
 				"secret_key": {
-					Type:         schema.TypeString,
-					Optional:     true, // To allow user to use deprecated `token`.
-					Description:  "The Scaleway secret Key.",
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					Optional:         true, // To allow user to use deprecated `token`.
+					Description:      "The Scaleway secret Key.",
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 				"profile": {
 					Type:        schema.TypeString,
@@ -97,16 +96,16 @@ func Provider(config *Config) plugin.ProviderFunc {
 					Description: "The Scaleway profile to use.",
 				},
 				"project_id": {
-					Type:         schema.TypeString,
-					Optional:     true, // To allow user to use organization instead of project
-					Description:  "The Scaleway project ID.",
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					Optional:         true, // To allow user to use organization instead of project
+					Description:      "The Scaleway project ID.",
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 				"organization_id": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "The Scaleway organization ID.",
-					ValidateFunc: verify.IsUUID(),
+					Type:             schema.TypeString,
+					Optional:         true,
+					Description:      "The Scaleway organization ID.",
+					ValidateDiagFunc: verify.IsUUID(),
 				},
 				"region": regional.Schema(),
 				"zone":   zonal.Schema(),
@@ -135,12 +134,6 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_container_namespace":                 container.ResourceNamespace(),
 				"scaleway_container_token":                     container.ResourceToken(),
 				"scaleway_container_trigger":                   container.ResourceTrigger(),
-				"scaleway_documentdb_database":                 documentdb.ResourceDatabase(),
-				"scaleway_documentdb_instance":                 documentdb.ResourceInstance(),
-				"scaleway_documentdb_private_network_endpoint": documentdb.ResourcePrivateNetworkEndpoint(),
-				"scaleway_documentdb_privilege":                documentdb.ResourcePrivilege(),
-				"scaleway_documentdb_read_replica":             documentdb.ResourceReadReplica(),
-				"scaleway_documentdb_user":                     documentdb.ResourceUser(),
 				"scaleway_domain_record":                       domain.ResourceRecord(),
 				"scaleway_domain_zone":                         domain.ResourceZone(),
 				"scaleway_edge_services_backend_stage":         edgeservices.ResourceEdgeServicesBackendStage(),
@@ -219,6 +212,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_secret_version":                      secret.ResourceVersion(),
 				"scaleway_tem_domain":                          tem.ResourceDomain(),
 				"scaleway_tem_domain_validation":               tem.ResourceDomainValidation(),
+				"scaleway_tem_webhook":                         tem.ResourceWebhook(),
 				"scaleway_vpc":                                 vpc.ResourceVPC(),
 				"scaleway_vpc_gateway_network":                 vpcgw.ResourceNetwork(),
 				"scaleway_vpc_private_network":                 vpc.ResourcePrivateNetwork(),
@@ -228,6 +222,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip":               vpcgw.ResourceIP(),
 				"scaleway_vpc_public_gateway_ip_reverse_dns":   vpcgw.ResourceIPReverseDNS(),
 				"scaleway_vpc_public_gateway_pat_rule":         vpcgw.ResourcePATRule(),
+				"scaleway_vpc_route":                           vpc.ResourceRoute(),
 				"scaleway_webhosting":                          webhosting.ResourceWebhosting(),
 			},
 
@@ -248,9 +243,6 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_config":                              scwconfig.DataSourceConfig(),
 				"scaleway_container":                           container.DataSourceContainer(),
 				"scaleway_container_namespace":                 container.DataSourceNamespace(),
-				"scaleway_documentdb_database":                 documentdb.DataSourceDatabase(),
-				"scaleway_documentdb_instance":                 documentdb.DataSourceInstance(),
-				"scaleway_documentdb_load_balancer_endpoint":   documentdb.DataSourceEndpointLoadBalancer(),
 				"scaleway_domain_record":                       domain.DataSourceRecord(),
 				"scaleway_domain_zone":                         domain.DataSourceZone(),
 				"scaleway_flexible_ip":                         flexibleip.DataSourceFlexibleIP(),
@@ -261,6 +253,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_group":                           iam.DataSourceGroup(),
 				"scaleway_iam_ssh_key":                         iam.DataSourceSSHKey(),
 				"scaleway_iam_user":                            iam.DataSourceUser(),
+				"scaleway_iam_api_key":                         iam.DataSourceAPIKey(),
 				"scaleway_instance_image":                      instance.DataSourceImage(),
 				"scaleway_instance_ip":                         instance.DataSourceIP(),
 				"scaleway_instance_placement_group":            instance.DataSourcePlacementGroup(),
@@ -291,6 +284,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_lbs":                                 lb.DataSourceLbs(),
 				"scaleway_marketplace_image":                   marketplace.DataSourceImage(),
 				"scaleway_mnq_sqs":                             mnq.DataSourceSQS(),
+				"scaleway_mnq_sns":                             mnq.DataSourceSNS(),
 				"scaleway_object_bucket":                       object.DataSourceBucket(),
 				"scaleway_object_bucket_policy":                object.DataSourceBucketPolicy(),
 				"scaleway_rdb_acl":                             rdb.DataSourceACL(),
@@ -301,6 +295,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_redis_cluster":                       redis.DataSourceCluster(),
 				"scaleway_registry_image":                      registry.DataSourceImage(),
 				"scaleway_registry_namespace":                  registry.DataSourceNamespace(),
+				"scaleway_registry_image_tag":                  registry.DataSourceImageTag(),
 				"scaleway_secret":                              secret.DataSourceSecret(),
 				"scaleway_secret_version":                      secret.DataSourceVersion(),
 				"scaleway_tem_domain":                          tem.DataSourceDomain(),
