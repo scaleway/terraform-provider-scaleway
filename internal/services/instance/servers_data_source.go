@@ -197,7 +197,7 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 			rawServer["enable_ipv6"] = server.EnableIPv6 //nolint:staticcheck
 		}
 		rawServer["enable_dynamic_ip"] = server.DynamicIPRequired
-		rawServer["routed_ip_enabled"] = server.RoutedIPEnabled
+		rawServer["routed_ip_enabled"] = server.RoutedIPEnabled //nolint:staticcheck
 		rawServer["organization_id"] = server.Organization
 		rawServer["project_id"] = server.Project
 		if server.Image != nil {
