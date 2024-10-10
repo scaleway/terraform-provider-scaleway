@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	baremetalSDK "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	baremetalV3SDK "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	baremetalchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal/testfuncs"
@@ -763,6 +764,96 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 	})
 }
 
+func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_WithIPAMPrivateNetwork"
+	name := "TestAccScalewayBaremetalServer_WithIPAMPrivateNetwork"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			baremetalchecks.CheckServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "vpc01" {
+					  name = "TestAccScalewayBaremetalIPAM"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  name = "TestAccScalewayBaremetalIPAM"
+					  ipv4_subnet {
+						subnet = "172.16.64.0/22"
+					  }
+					  vpc_id = scaleway_vpc.vpc01.id
+					}
+					
+					resource "scaleway_ipam_ip" "ip01" {
+					  address = "172.16.64.7"
+					  source {
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "fr-par-1"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "fr-par-1"
+						name = "EM-A115X-SSD"
+					}
+
+					data "scaleway_baremetal_option" "private_network" {
+						zone = "fr-par-1"
+						name = "Private Network"
+					}
+
+					resource "scaleway_iam_ssh_key" "base" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "fr-par-1"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
+						options {
+						  id = data.scaleway_baremetal_option.private_network.option_id
+						}
+						private_network {
+						  id = scaleway_vpc_private_network.pn01.id
+						  ipam_ip_ids = [scaleway_ipam_ip.ip01.id]
+						}
+					}
+
+					data "scaleway_ipam_ip" "by_name" {
+					  resource {
+						name = scaleway_baremetal_server.base.name
+						type = "baremetal_private_nic"
+					  }
+					  type = "ipv4"
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address", "data.scaleway_ipam_ip.by_name", "address_cidr"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckBaremetalServerExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -832,7 +923,7 @@ func testAccCheckBaremetalServerHasPrivateNetwork(tt *acctest.TestTools, n strin
 			return err
 		}
 
-		listPrivateNetworks, err := baremetalPrivateNetworkAPI.ListServerPrivateNetworks(&baremetalSDK.PrivateNetworkAPIListServerPrivateNetworksRequest{
+		listPrivateNetworks, err := baremetalPrivateNetworkAPI.ListServerPrivateNetworks(&baremetalV3SDK.PrivateNetworkAPIListServerPrivateNetworksRequest{
 			Zone:     zonedID.Zone,
 			ServerID: &zonedID.ID,
 		})

@@ -12,7 +12,7 @@ Creates and manages Scaleway Compute Baremetal servers. For more information, se
 ### Basic
 
 ```terraform
-data "scaleway_account_ssh_key" "main" {
+data "scaleway_iam_ssh_key" "main" {
   name = "main"
 }
 
@@ -27,7 +27,7 @@ resource "scaleway_baremetal_server" "base" {
 ### With option
 
 ```terraform
-data "scaleway_account_ssh_key" "main" {
+data "scaleway_iam_ssh_key" "main" {
   name = "main"
 }
 
@@ -71,7 +71,7 @@ resource "scaleway_baremetal_server" "base" {
 ### With private network
 
 ```terraform
-data "scaleway_account_ssh_key" "main" {
+data "scaleway_iam_ssh_key" "main" {
   name = "main"
 }
 
@@ -107,6 +107,64 @@ resource "scaleway_baremetal_server" "base" {
   }
   private_network {
     id = scaleway_vpc_private_network.pn.id
+  }
+}
+```
+
+### With IPAM IP IDs
+
+```terraform
+resource "scaleway_vpc" "vpc01" {
+  name   = "vpc_baremetal"
+}
+
+resource "scaleway_vpc_private_network" "pn01" {
+  name   = "private_network_baremetal"
+  ipv4_subnet {
+    subnet = "172.16.64.0/22"
+  }
+  vpc_id = scaleway_vpc.vpc01.id
+}
+
+resource "scaleway_ipam_ip" "ip01" {
+  address = "172.16.64.7"
+  source {
+    private_network_id = scaleway_vpc_private_network.pn01.id
+  }
+}
+
+data "scaleway_iam_ssh_key" "my_key" {
+  name = "main"
+}
+
+data "scaleway_baremetal_os" "my_os" {
+  zone = "fr-par-1"
+  name = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-1"
+  name = "EM-A115X-SSD"
+}
+
+data "scaleway_baremetal_option" "private_network" {
+  zone = "fr-par-1"
+  name = "Private Network"
+}
+
+resource "scaleway_baremetal_server" "base" {
+  zone        = "fr-par-2"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+  os          = data.scaleway_baremetal_os.my_os.os_id
+  ssh_key_ids = [data.scaleway_account_ssh_key.my_key.id]
+
+  options {
+    id = data.scaleway_baremetal_option.private_network.option_id
+  }
+  private_network {
+    id = scaleway_vpc_private_network.pn01.id
+    ipam_ip_ids = [scaleway_ipam_ip.ip01.id]
   }
 }
 ```
@@ -156,6 +214,7 @@ The following arguments are supported:
     - `expires_at` - (Optional) The auto expiration date for compatible options
 - `private_network` - (Required) The private networks to attach to the server. For more information, see [the documentation](https://www.scaleway.com/en/docs/compute/elastic-metal/how-to/use-private-networks/)
     - `id` - (Required) The id of the private network to attach.
+    - `ipam_ip_ids` - (Optional) List of IPAM IP IDs to assign to the server in the requested private network.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 

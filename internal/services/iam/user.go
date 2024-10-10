@@ -77,7 +77,7 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interf
 	api := NewAPI(m)
 	user, err := api.CreateUser(&iam.CreateUserRequest{
 		OrganizationID: d.Get("organization_id").(string),
-		Email:          d.Get("email").(string),
+		Email:          types.ExpandStringPtr(d.Get("email").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
