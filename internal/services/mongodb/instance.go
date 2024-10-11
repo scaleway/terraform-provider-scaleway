@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -48,12 +49,12 @@ func ResourceInstance() *schema.Resource {
 			},
 			"version": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Mongodb version of the instance",
 			},
 			"node_number": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
 				Description: "number of node in the instance",
 			},
 			"node_type": {
@@ -64,13 +65,13 @@ func ResourceInstance() *schema.Resource {
 			},
 			"user_name": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Name of the user created when the cluster is created",
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Sensitive:   true,
-				Required:    true,
+				Optional:    true,
 				Description: "Password of the user",
 			},
 			// volume
@@ -86,6 +87,12 @@ func ResourceInstance() *schema.Resource {
 				Computed:     true,
 				Description:  "Volume size (in GB)",
 				ValidateFunc: validation.IntDivisibleBy(5),
+			},
+			"snapshot_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Snapshot id",
 			},
 			//endpoint
 			"private_network": {
@@ -189,7 +196,7 @@ func ResourceInstance() *schema.Resource {
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the last update of the Redis cluster",
+				Description: "The date and time of the last update of the Mongodb instance",
 			},
 			// Common
 			"region":     regional.Schema(),
@@ -197,6 +204,25 @@ func ResourceInstance() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("private_network.#.id"),
+			func(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				snapshotID := diff.Get("snapshot_id")
+
+				if snapshotID == nil || snapshotID == "" {
+					if diff.Get("user_name") == nil || diff.Get("user_name") == "" {
+						return fmt.Errorf("`user_name` must be provided when `snapshot_id` is not set")
+					}
+					if diff.Get("password") == nil || diff.Get("password") == "" {
+						return fmt.Errorf("`password` must be provided when `snapshot_id` is not set")
+					}
+					if diff.Get("version") == nil || diff.Get("version") == "" {
+						return fmt.Errorf("`version` must be provided when `snapshot_id` is not set")
+					}
+					if diff.Get("node_number") == nil || diff.Get("node_number") == "" {
+						return fmt.Errorf("`node_number` must be provided when `snapshot_id` is not set")
+					}
+				}
+				return nil
+			},
 		),
 	}
 }
@@ -209,52 +235,70 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	nodeNumber := scw.Uint32Ptr(uint32(d.Get("node_number").(int)))
-	createReq := &mongodb.CreateInstanceRequest{
-		ProjectID:  d.Get("project_id").(string),
-		Name:       types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
-		Version:    d.Get("version").(string),
-		NodeType:   d.Get("node_type").(string),
-		NodeNumber: *nodeNumber,
-		UserName:   d.Get("user_name").(string),
-		Password:   d.Get("password").(string),
-	}
 
-	volumeRequestDetails := &mongodb.CreateInstanceRequestVolumeDetails{
-		VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
-	}
-	volumeSize, volumeSizeExist := d.GetOk("volume_size_in_gb")
-	if volumeSizeExist {
-		volumeRequestDetails.VolumeSize = scw.Size(uint64(volumeSize.(int)) * uint64(scw.GB))
-	} else {
-		volumeRequestDetails.VolumeSize = scw.Size(defaultVolumeSize * uint64(scw.GB))
-	}
-	createReq.Volume = volumeRequestDetails
-
-	tags, tagsExist := d.GetOk("tags")
-	if tagsExist {
-		createReq.Tags = types.ExpandStrings(tags)
-	}
-
-	pn, pnExists := d.GetOk("private_network")
-	if pnExists {
-		pnSpecs, err := expandPrivateNetwork(pn.(*schema.Set).List())
+	snapshotID, exist := d.GetOk("snapshot_id")
+	res := &mongodb.Instance{}
+	if exist {
+		volume := &mongodb.RestoreSnapshotRequestVolumeDetails{
+			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
+		}
+		restoreSnapshotRequest := &mongodb.RestoreSnapshotRequest{
+			SnapshotID:   snapshotID.(string),
+			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
+			NodeType:     d.Get("node_type").(string),
+			Volume:       volume,
+		}
+		res, err = mongodbAPI.RestoreSnapshot(restoreSnapshotRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createReq.Endpoints = pnSpecs
 	} else {
-		epSpecs := make([]*mongodb.EndpointSpec, 0, 1)
-		spec := &mongodb.EndpointSpecPublicDetails{}
-		createReq.Endpoints = append(epSpecs, &mongodb.EndpointSpec{Public: spec})
-	}
 
-	res, err := mongodbAPI.CreateInstance(createReq, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
+		createReq := &mongodb.CreateInstanceRequest{
+			ProjectID:  d.Get("project_id").(string),
+			Name:       types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
+			Version:    d.Get("version").(string),
+			NodeType:   d.Get("node_type").(string),
+			NodeNumber: *nodeNumber,
+			UserName:   d.Get("user_name").(string),
+			Password:   d.Get("password").(string),
+		}
 
+		volumeRequestDetails := &mongodb.CreateInstanceRequestVolumeDetails{
+			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
+		}
+		volumeSize, volumeSizeExist := d.GetOk("volume_size_in_gb")
+		if volumeSizeExist {
+			volumeRequestDetails.VolumeSize = scw.Size(uint64(volumeSize.(int)) * uint64(scw.GB))
+		} else {
+			volumeRequestDetails.VolumeSize = scw.Size(defaultVolumeSize * uint64(scw.GB))
+		}
+		createReq.Volume = volumeRequestDetails
+
+		tags, tagsExist := d.GetOk("tags")
+		if tagsExist {
+			createReq.Tags = types.ExpandStrings(tags)
+		}
+
+		pn, pnExists := d.GetOk("private_network")
+		if pnExists {
+			pnSpecs, err := expandPrivateNetwork(pn.(*schema.Set).List())
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			createReq.Endpoints = pnSpecs
+		} else {
+			epSpecs := make([]*mongodb.EndpointSpec, 0, 1)
+			spec := &mongodb.EndpointSpecPublicDetails{}
+			createReq.Endpoints = append(epSpecs, &mongodb.EndpointSpec{Public: spec})
+		}
+
+		res, err = mongodbAPI.CreateInstance(createReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	d.SetId(zonal.NewIDString(zone, res.ID))
-
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -294,7 +338,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if instance.Volume != nil {
 		_ = d.Set("volume_type", instance.Volume.Type)
-		_ = d.Set("volume_size_in_gb", instance.Volume.Size)
+		_ = d.Set("volume_size_in_gb", int(instance.Volume.Size/scw.GB))
 	}
 
 	privateNetworkEndpoints, privateNetworkExists := flattenPrivateNetwork(instance.Endpoints)
@@ -338,7 +382,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if newSize%5 != 0 {
 			return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
 		}
-		size := scw.Size(newSize)
+		size := scw.Size(newSize * uint64(scw.GB))
 
 		upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
 			InstanceID: ID,
@@ -350,6 +394,8 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+
 	}
 
 	req := &mongodb.UpdateInstanceRequest{

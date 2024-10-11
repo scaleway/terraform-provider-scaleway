@@ -1,40 +1,41 @@
-package redistestfuncs
+package mongodbtestfuncs
 
 import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	redisSDK "github.com/scaleway/scaleway-sdk-go/api/redis/v1"
+	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func AddTestSweepers() {
-	resource.AddTestSweepers("scaleway_redis_cluster", &resource.Sweeper{
-		Name: "scaleway_redis_cluster",
-		F:    testSweepRedisCluster,
+	resource.AddTestSweepers("scaleway_mongodb_instance", &resource.Sweeper{
+		Name: "scaleway_mongodb_instance",
+		F:    testSweepMongodbInstance,
 	})
 }
 
-func testSweepRedisCluster(_ string) error {
+func testSweepMongodbInstance(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		redisAPI := redisSDK.NewAPI(scwClient)
-		logging.L.Debugf("sweeper: destroying the redis cluster in (%s)", zone)
-		listClusters, err := redisAPI.ListClusters(&redisSDK.ListClustersRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
+		mongodbAPI := mongodb.NewAPI(scwClient)
+		logging.L.Debugf("sweeper: destroying the mongodb instance in (%s)", zone)
+		extractRegion, err := zone.Region()
+		listInstance, err := mongodbAPI.ListInstances(&mongodb.ListInstancesRequest{
+			Region: extractRegion,
+		})
 		if err != nil {
-			return fmt.Errorf("error listing redis clusters in (%s) in sweeper: %w", zone, err)
+			return fmt.Errorf("error listing mongodb instance in (%s) in sweeper: %w", zone, err)
 		}
 
-		for _, cluster := range listClusters.Clusters {
-			_, err := redisAPI.DeleteCluster(&redisSDK.DeleteClusterRequest{
-				Zone:      zone,
-				ClusterID: cluster.ID,
+		for _, instance := range listInstance.Instances {
+			_, err := mongodbAPI.DeleteInstance(&mongodb.DeleteInstanceRequest{
+				Region:     extractRegion,
+				InstanceID: instance.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting redis cluster in sweeper: %w", err)
+				return fmt.Errorf("error deleting mongodb instance in sweeper: %w", err)
 			}
 		}
 
