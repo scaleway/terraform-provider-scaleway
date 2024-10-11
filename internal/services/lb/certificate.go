@@ -84,6 +84,7 @@ func ResourceCertificate() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
+							Sensitive:   true,
 							Description: "The full PEM-formatted certificate chain",
 						},
 					},
