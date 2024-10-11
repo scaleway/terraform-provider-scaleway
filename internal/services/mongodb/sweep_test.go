@@ -1,14 +1,14 @@
-package redis_test
+package mongodb_test
 
 import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	redistestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis/testfuncs"
+	mongodbtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb/testfuncs"
 )
 
 func init() {
-	redistestfuncs.AddTestSweepers()
+	mongodbtestfuncs.AddTestSweepers()
 }
 
 func TestMain(m *testing.M) {

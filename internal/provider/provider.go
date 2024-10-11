@@ -188,6 +188,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_mnq_sqs_credentials":                 mnq.ResourceSQSCredentials(),
 				"scaleway_mnq_sqs_queue":                       mnq.ResourceSQSQueue(),
 				"scaleway_mongodb_instance":                    mongodb.ResourceInstance(),
+				"scaleway_mongodb_snapshot":                    mongodb.ResourceSnapshot(),
 				"scaleway_object":                              object.ResourceObject(),
 				"scaleway_object_bucket":                       object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                   object.ResourceBucketACL(),

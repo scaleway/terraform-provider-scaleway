@@ -1,4 +1,4 @@
-package redis
+package mongodb
 
 import (
 	"bytes"
@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -19,8 +18,13 @@ import (
 )
 
 const (
-	defaultRedisClusterTimeout           = 15 * time.Minute
-	defaultWaitRedisClusterRetryInterval = 5 * time.Second
+	defaultMongodbInstanceTimeout           = 15 * time.Minute
+	defaultMongodbSnapshotTimeout           = 15 * time.Minute
+	defaultWaitMongodbInstanceRetryInterval = 5 * time.Second
+)
+
+const (
+	defaultVolumeSize = 5
 )
 
 func newAPI(m interface{}) *mongodb.API {
@@ -36,8 +40,28 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.Zo
 	return newAPI(m), zone, nil
 }
 
+func newAPIWithZoneAndRegion(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.Zone, scw.Region, error) {
+	zone, err := meta.ExtractZone(d, m)
+	if err != nil {
+		return nil, "", "", err
+	}
+	region, err := meta.ExtractRegion(d, m)
+	if err != nil {
+		return nil, "", "", err
+	}
+	return newAPI(m), zone, region, nil
+}
+
+func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.Region, error) {
+	region, err := meta.ExtractRegion(d, m)
+	if err != nil {
+		return nil, "", err
+	}
+	return newAPI(m), region, nil
+}
+
 // NewAPIWithZoneAndID returns a Redis API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m interface{}, id string) (*mongodb.API, scw.Zone, string, error) {
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
@@ -45,25 +69,54 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string
 	return newAPI(m), zone, ID, nil
 }
 
-func waitForInstance(ctx context.Context, api *mongodb.API, zone scw.Zone, id string, timeout time.Duration) (*redis.Cluster, error) {
-	retryInterval := defaultWaitRedisClusterRetryInterval
-	if transport.DefaultWaitRetryInterval != nil {
-		retryInterval = *transport.DefaultWaitRetryInterval
+func NewAPIWithRegionAndID(m interface{}, id string) (*mongodb.API, scw.Region, string, error) {
+	zone, ID, err := zonal.ParseID(id)
+	if err != nil {
+		return nil, "", "", err
 	}
-
-	return api.WaitForInstance()
+	region, err := zone.Region()
+	if err != nil {
+		return nil, "", "", err
+	}
+	return newAPI(m), region, ID, nil
 }
 
-func waitForCluster(ctx context.Context, api *redis.API, zone scw.Zone, id string, timeout time.Duration) (*redis.Cluster, error) {
-	retryInterval := defaultWaitRedisClusterRetryInterval
+func NewAPIWithID(m interface{}, id string) (*mongodb.API, scw.Region, string, error) {
+	zone, ID, err := zonal.ParseID(id)
+	if err != nil {
+		return nil, "", "", err
+	}
+	region, err := zone.Region()
+	if err != nil {
+		return nil, "", "", err
+	}
+	return newAPI(m), region, ID, nil
+}
+
+func waitForInstance(ctx context.Context, api *mongodb.API, region scw.Region, id string, timeout time.Duration) (*mongodb.Instance, error) {
+	retryInterval := defaultWaitMongodbInstanceRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+	return api.WaitForInstance(&mongodb.WaitForInstanceRequest{
+		Timeout:       scw.TimeDurationPtr(timeout),
+		InstanceID:    id,
+		Region:        region,
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+func waitForSnapshot(ctx context.Context, api *mongodb.API, region scw.Region, instanceID string, snapshotID string, timeout time.Duration) (*mongodb.Snapshot, error) {
+	retryInterval := defaultWaitMongodbInstanceRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForCluster(&redis.WaitForClusterRequest{
-		Zone:          zone,
+	return api.WaitForSnapshot(&mongodb.WaitForSnapshotRequest{
 		Timeout:       scw.TimeDurationPtr(timeout),
-		ClusterID:     id,
+		InstanceID:    instanceID,
+		SnapshotID:    snapshotID,
+		Region:        region,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }

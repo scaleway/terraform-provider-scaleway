@@ -25,8 +25,8 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 				Config: `
 					resource scaleway_mongodb_instance main {
 						name = "test-mongodb-basic1"
-						version = "7.0.11"
-						node_type = "MGDB-PRO2-XXS"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
 						node_number = 1
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
@@ -35,8 +35,8 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-basic1"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "mgdb-pro2-xxs"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0.11"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "mgdb-play2-nano"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0.12"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_number", "1"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
@@ -58,42 +58,42 @@ func TestAccMongoDBInstance_VolumeUpdate(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_mongodb_instance main {
-						name = "test-mongodb-volume-update"
-						version = "4.4"
-						node_type = "db-dev-s"
-						node_number = "3"
+						name = "test-mongodb-volume-update1"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = "1"
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						volume_size_in_gb = 50
+						volume_size_in_gb = 5
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "volume_size_in_gb", "50"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "volume_size_in_gb", "5"),
 				),
 			},
 			{
 				Config: `
 					resource scaleway_mongodb_instance main {
-						name = "test-mongodb-volume-update"
-						version = "4.4"
-						node_type = "db-dev-s"
-						node_number = "3"
+						name = "test-mongodb-volume-update1"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = "1"
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						volume_size_in_gb = 100
+						volume_size_in_gb = 10
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "volume_size_in_gb", "100"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "volume_size_in_gb", "10"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccMongoDBInstance_PrivateNetwork(t *testing.T) {
+func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -102,28 +102,38 @@ func TestAccMongoDBInstance_PrivateNetwork(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
+			// Step 1: Create a MongoDB instance and a snapshot
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn01 {
-						name = "test-mongodb-private-network"
+					resource "scaleway_mongodb_instance" "main" {
+						name        = "test-mongodb-from-snapshot"
+						version     = "7.0.12"
+						node_type   = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name   = "my_initial_user"
+						password    = "thiZ_is_v&ry_s3cret"
 					}
 
-					resource scaleway_mongodb_instance main {
-						name = "test-mongodb-private-network"
-						version = "4.4"
-						node_type = "db-dev-s"
-						node_number = "3"
-						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
-						private_network {
-							id = scaleway_vpc_private_network.pn01.id
-						}
+					resource "scaleway_mongodb_snapshot" "main_snapshot" {
+						instance_id = scaleway_mongodb_instance.main.id
+						name        = "test-snapshot"
+ 						depends_on = [
+    						scaleway_mongodb_instance.main
+  						]
+					}
+					
+					resource "scaleway_mongodb_instance" "restored_instance" {
+						snapshot_id = scaleway_mongodb_snapshot.main_snapshot.id
+						name        = "restored-mongodb-from-snapshot"
+						node_type   = "MGDB-PLAY2-NANO"
+						node_number = 1
+						depends_on = [
+    						scaleway_mongodb_snapshot.main_snapshot
+  						]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "private_network.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_mongodb_instance.main", "private_network.0.id", "scaleway_vpc_private_network.pn01", "id"),
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.restored_instance"),
 				),
 			},
 		},
