@@ -117,7 +117,7 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
 	_ = d.Set("organization_id", user.OrganizationID)
 	_ = d.Set("deletable", user.Deletable)
-	_ = d.Set("tags", types.FlattenSliceString(group.Tags))
+	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
 	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
 	_ = d.Set("type", user.Type)
 	_ = d.Set("status", user.Status)
@@ -139,7 +139,7 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	if d.HasChanges("tags") {
 		_, err = api.UpdateUser(&iam.UpdateUserRequest{
 			UserID: user.ID,
-			Tags: types.ExpandUpdatedStringsPtr(d.Get("tags")),
+			Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
