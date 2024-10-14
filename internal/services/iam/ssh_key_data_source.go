@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -64,14 +65,27 @@ func DataSourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 
-	diags := resourceIamSSHKeyRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read iam ssh key state")...)
+	api := NewAPI(m)
+
+	res, err := api.GetSSHKey(&iam.GetSSHKeyRequest{
+		SSHKeyID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+			return diag.Errorf("iam ssh key (%s) not found", sshKeyID)
+		}
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("iam ssh key (%s) not found", sshKeyID)
-	}
+	_ = d.Set("name", res.Name)
+	_ = d.Set("fingerprint", res.Fingerprint)
+	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
+	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("project_id", res.ProjectID)
+	_ = d.Set("disabled", res.Disabled)
+	_ = d.Set("public_key", res.PublicKey)
 
 	return nil
 }

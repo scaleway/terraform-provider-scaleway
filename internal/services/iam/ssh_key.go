@@ -55,6 +55,14 @@ func ResourceSSKKey() *schema.Resource {
 					areEqual := bytes.Equal(marshalledOldValue, marshalledNewValue)
 					return areEqual
 				},
+				StateFunc: func(v interface{}) string {
+					switch v := v.(type) {
+					case string:
+						return strings.TrimSpace(v)
+					default:
+						return ""
+					}
+				},
 			},
 			"fingerprint": {
 				Type:        schema.TypeString,
@@ -125,7 +133,6 @@ func resourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	_ = d.Set("name", res.Name)
-	_ = d.Set("public_key", res.PublicKey)
 	_ = d.Set("fingerprint", res.Fingerprint)
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
