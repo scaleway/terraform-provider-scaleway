@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 )
 
-func IsDeploymentDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+func IsDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_inference_deployment" {
