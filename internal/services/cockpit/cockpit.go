@@ -24,6 +24,7 @@ func ResourceCockpit() *schema.Resource {
 			"plan": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "free",
 				Description: "Name or ID of the plan",
 			},
 			"plan_id": {
@@ -98,6 +99,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	projectID := d.Get("project_id").(string)
+
 	if targetPlanI, ok := d.GetOk("plan"); ok {
 		targetPlan := targetPlanI.(string)
 
@@ -127,7 +129,6 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 		}
 	}
 
-	d.SetId(projectID)
 	return ResourceCockpitRead(ctx, d, m)
 }
 
@@ -142,34 +143,46 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
+	projectID := d.Get("project_id").(string)
+	if projectID == "" {
+		projectID, err = getDefaultProjectID(ctx, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("project_id", d.Get("project_id").(string))
 	_ = d.Set("plan", res.Name.String())
 	_ = d.Set("plan_id", res.Name.String())
 
 	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 		Origin:    "external",
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	_ = d.Set("project_id", projectID)
+	d.SetId(projectID)
 
 	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if grafana.GrafanaURL == "" {
+		grafana.GrafanaURL = createGrafanaURL(projectID, region)
+	}
 
 	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 	})
 	if err != nil {
 		return diag.FromErr(err)

@@ -25,9 +25,6 @@ const (
 )
 
 func TestAccObject_Basic(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
@@ -104,9 +101,6 @@ func TestAccObject_Basic(t *testing.T) {
 }
 
 func TestAccObject_Hash(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-hash")
@@ -165,9 +159,6 @@ func TestAccObject_Hash(t *testing.T) {
 }
 
 func TestAccObject_Move(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-move")
@@ -222,9 +213,6 @@ func TestAccObject_Move(t *testing.T) {
 }
 
 func TestAccObject_StorageClass(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-storage-class")
@@ -287,9 +275,6 @@ func TestAccObject_StorageClass(t *testing.T) {
 }
 
 func TestAccObject_Metadata(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-metadata")
@@ -358,9 +343,6 @@ func TestAccObject_Metadata(t *testing.T) {
 }
 
 func TestAccObject_Tags(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-tags")
@@ -423,9 +405,6 @@ func TestAccObject_Tags(t *testing.T) {
 }
 
 func TestAccObject_Visibility(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
@@ -482,9 +461,6 @@ func TestAccObject_Visibility(t *testing.T) {
 }
 
 func TestAccObject_State(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
@@ -685,9 +661,6 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 }
 
 func TestAccObject_WithBucketName(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")

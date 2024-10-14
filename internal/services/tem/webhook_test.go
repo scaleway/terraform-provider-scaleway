@@ -15,15 +15,19 @@ import (
 )
 
 const (
-	webhookName    = "terraform-webhook-test"
-	organizationID = "105bdce1-64c0-48ab-899d-868455867ecf"
+	webhookName        = "terraform-webhook-test"
+	updatedWebhookName = "terraform-webhook-updated"
+	organizationID     = "105bdce1-64c0-48ab-899d-868455867ecf"
+	webhookDomainName  = "scaleway-terraform.com"
+	DomainZone         = "webhook-test"
 )
 
-func TestAccWebhook_Basic(t *testing.T) {
+func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	eventTypes := []string{"email_delivered", "email_dropped"}
+	initialEventTypes := []string{"email_delivered", "email_dropped"}
+	updatedEventTypes := []string{"email_queued"}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -34,11 +38,70 @@ func TestAccWebhook_Basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					data scaleway_account_project "project" {
 						name = "default"
-						organization_id      = "%s"
+						organization_id = "%s"
 					}
 
 					data scaleway_mnq_sns sns {
-						project_id= data.scaleway_account_project.project.project_id
+						project_id = data.scaleway_account_project.project.project_id
+					}
+
+					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
+						project_id = data.scaleway_mnq_sns.sns.project_id
+						permissions {
+							can_manage = true
+						}
+					}
+
+					resource "scaleway_mnq_sns_topic" "sns_topic" {
+						project_id = data.scaleway_mnq_sns.sns.project_id
+						name = "test-mnq-sns-topic-basic"
+						access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
+						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
+						depends_on = [scaleway_mnq_sns_credentials.sns_credentials]
+					}
+
+					resource "scaleway_domain_zone" "test" {
+  						domain    = "%s"
+  						subdomain = "%s"
+					}
+
+					resource "scaleway_tem_domain" "main" {
+  						name       = scaleway_domain_zone.test.id
+  						accept_tos = true
+  						autoconfig = true
+					}
+
+					resource "scaleway_tem_domain_validation" "example" {
+  						domain_id = scaleway_tem_domain.main.id
+  						region    = "fr-par"
+						timeout   = 300
+					}
+
+					resource "scaleway_tem_webhook" "webhook" {
+						name        = "%s"
+						domain_id   = scaleway_tem_domain.main.id
+						event_types = ["%s", "%s"]
+						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
+						depends_on = [scaleway_mnq_sns_topic.sns_topic]
+					}
+				`, organizationID, webhookDomainName, DomainZone, webhookName, initialEventTypes[0], initialEventTypes[1]),
+				Check: resource.ComposeTestCheckFunc(
+					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
+					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", webhookName),
+					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "domain_id"),
+					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "sns_arn"),
+					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "event_types.#", "2"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data scaleway_account_project "project" {
+						name = "default"
+						organization_id = "%s"
+					}
+
+					data scaleway_mnq_sns sns {
+						project_id = data.scaleway_account_project.project.project_id
 					}
 
 					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
@@ -55,227 +118,34 @@ func TestAccWebhook_Basic(t *testing.T) {
 						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
 					}
 
-					resource scaleway_tem_domain cr01 {
-						name       = "%s"
-						accept_tos = true
+					resource "scaleway_domain_zone" "test" {
+  						domain    = "%s"
+  						subdomain = "%s"
 					}
 
-					resource "scaleway_domain_record" "spf" {
-  						dns_zone = "%s"
-  						type     = "TXT"
-						data     = "v=spf1 ${scaleway_tem_domain.cr01.spf_config} -all"
+					resource "scaleway_tem_domain" "main" {
+  						name       = scaleway_domain_zone.test.id
+  						accept_tos = true
+  						autoconfig = true
 					}
 
-					resource "scaleway_domain_record" "dkim" {
-  						dns_zone = "%s"
-  						name     = "${scaleway_tem_domain.cr01.project_id}._domainkey"
-  						type     = "TXT"
-  						data     = scaleway_tem_domain.cr01.dkim_config
-					}
-					resource "scaleway_domain_record" "mx" {
-  						dns_zone = "%s"
-  						type     = "MX"
-  						data     = "."
-					}
-
-					resource "scaleway_domain_record" "dmarc" {
-						dns_zone = "%s"
-  						name     = scaleway_tem_domain.cr01.dmarc_name
-  						type     = "TXT"
-  						data     = scaleway_tem_domain.cr01.dmarc_config
-					}
-
-					resource scaleway_tem_domain_validation valid {
-  						domain_id = scaleway_tem_domain.cr01.id
-  						region = scaleway_tem_domain.cr01.region
-						timeout = 3600
+					resource "scaleway_tem_domain_validation" "example" {
+  						domain_id = scaleway_tem_domain.main.id
+  						region    = "fr-par"
+						timeout   = 300
 					}
 
 					resource "scaleway_tem_webhook" "webhook" {
 						name        = "%s"
-						domain_id   = scaleway_tem_domain.cr01.id
-						event_types = ["%s", "%s"]
-						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
-					}
-				`, organizationID, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, webhookName, eventTypes[0], eventTypes[1]),
-				Check: resource.ComposeTestCheckFunc(
-					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
-					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", webhookName),
-					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "domain_id"),
-					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "sns_arn"),
-					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "event_types.#", "2"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccWebhook_Update(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	initialName := "terraform-webhook-test"
-	updatedName := "terraform-webhook-updated"
-	eventTypes := []string{"email_delivered"}
-	updatedEventTypes := []string{"email_queued"}
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isWebhookDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					
-					data scaleway_account_project "project" {
-						name = "default"
-						organization_id      = "%s"
-					}
-
-					data scaleway_mnq_sns sns {
-						project_id= data.scaleway_account_project.project.project_id
-					}
-
-					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
-						project_id = data.scaleway_mnq_sns.sns.project_id
-						permissions {
-							can_manage = true
-						}
-					}
-
-					resource "scaleway_mnq_sns_topic" "sns_topic" {
-						project_id = data.scaleway_mnq_sns.sns.project_id
-						name = "test-mnq-sns-topic-update"
-						access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
-						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
-					}
-
-					resource scaleway_tem_domain cr01 {
-						name       = "%s"
-						accept_tos = true
-					}
-
-					resource "scaleway_domain_record" "spf" {
-  						dns_zone = "%s"
-  						type     = "TXT"
-						data     = "v=spf1 ${scaleway_tem_domain.cr01.spf_config} -all"
-					}
-
-					resource "scaleway_domain_record" "dkim" {
-  						dns_zone = "%s"
-  						name     = "${scaleway_tem_domain.cr01.project_id}._domainkey"
-  						type     = "TXT"
-  						data     = scaleway_tem_domain.cr01.dkim_config
-					}
-					resource "scaleway_domain_record" "mx" {
-  						dns_zone = "%s"
-  						type     = "MX"
-  						data     = "."
-					}
-
-					resource "scaleway_domain_record" "dmarc" {
-						dns_zone = "%s"
-  						name     = scaleway_tem_domain.cr01.dmarc_name
-  						type     = "TXT"
-  						data     = scaleway_tem_domain.cr01.dmarc_config
-					}
-
-					resource scaleway_tem_domain_validation valid {
-  						domain_id = scaleway_tem_domain.cr01.id
-  						region = scaleway_tem_domain.cr01.region
-						timeout = 3600
-					}
-
-					resource "scaleway_tem_webhook" "webhook" {
-						name        = "%s"
-						domain_id   = scaleway_tem_domain.cr01.id
+						domain_id   = scaleway_tem_domain.main.id
 						event_types = ["%s"]
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
+						depends_on = [scaleway_mnq_sns_topic.sns_topic]
 					}
-				`, organizationID, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, initialName, eventTypes[0]),
+				`, organizationID, webhookDomainName, DomainZone, updatedWebhookName, updatedEventTypes[0]),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
-					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", initialName),
-					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "domain_id"),
-					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "sns_arn"),
-					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "event_types.#", "1"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-
-					data scaleway_account_project "project" {
-						name = "default"
-						organization_id      = "%s"
-					}
-
-					data scaleway_mnq_sns sns {
-						project_id= data.scaleway_account_project.project.project_id
-					}
-
-					resource "scaleway_mnq_sns_credentials" "sns_credentials"  {
-						project_id = data.scaleway_mnq_sns.sns.project_id
-						permissions {
-							can_manage = true
-						}
-					}
-
-					resource "scaleway_mnq_sns_topic" "sns_topic" {
-						project_id = data.scaleway_mnq_sns.sns.project_id
-						name = "test-mnq-sns-topic-update"
-						access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
-						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
-					}
-
-					resource scaleway_tem_domain cr01 {
-						name       = "%s"
-						accept_tos = true
-					}
-
-					resource "scaleway_domain_record" "spf" {
-  						dns_zone = "%s"
-  						type     = "TXT"
-						data     = "v=spf1 ${scaleway_tem_domain.cr01.spf_config} -all"
-					}
-
-					resource "scaleway_domain_record" "dkim" {
-  						dns_zone = "%s"
-  						name     = "${scaleway_tem_domain.cr01.project_id}._domainkey"
-  						type     = "TXT"
-  						data     = scaleway_tem_domain.cr01.dkim_config
-					}
-					resource "scaleway_domain_record" "mx" {
-  						dns_zone = "%s"
-  						type     = "MX"
-  						data     = "."
-					}
-
-					resource "scaleway_domain_record" "dmarc" {
-						dns_zone = "%s"
-  						name     = scaleway_tem_domain.cr01.dmarc_name
-  						type     = "TXT"
-  						data     = scaleway_tem_domain.cr01.dmarc_config
-					}
-
-					resource scaleway_tem_domain_validation valid {
-  						domain_id = scaleway_tem_domain.cr01.id
-  						region = scaleway_tem_domain.cr01.region
-						timeout = 3600
-					}
-
-					resource "scaleway_tem_webhook" "webhook" {
-						name        = "%s"
-						domain_id   = scaleway_tem_domain.cr01.id
-						event_types = ["%s"]
-						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-						depends_on = [scaleway_tem_domain_validation.valid, scaleway_mnq_sns_topic.sns_topic]
-					}
-				`, organizationID, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, domainNameValidation, updatedName, updatedEventTypes[0]),
-				Check: resource.ComposeTestCheckFunc(
-					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
-					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", updatedName),
+					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", updatedWebhookName),
 					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "domain_id"),
 					resource.TestCheckResourceAttrSet("scaleway_tem_webhook.webhook", "sns_arn"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "event_types.#", "1"),

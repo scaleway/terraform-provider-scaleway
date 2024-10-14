@@ -22,6 +22,11 @@ func AddTestSweepers() {
 		F:            testSweepVPCPrivateNetwork,
 		Dependencies: []string{"scaleway_ipam_ip"},
 	})
+
+	resource.AddTestSweepers("scaleway_vpc_route", &resource.Sweeper{
+		Name: "scaleway_vpc_route",
+		F:    testSweepVPCRoute,
+	})
 }
 
 func testSweepVPC(_ string) error {
@@ -74,6 +79,43 @@ func testSweepVPCPrivateNetwork(_ string) error {
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting private network in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func testSweepVPCRoute(_ string) error {
+	err := acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
+		vpcAPI := vpcSDK.NewAPI(scwClient)
+		vpcRouteAPI := vpcSDK.NewRoutesWithNexthopAPI(scwClient)
+
+		logging.L.Debugf("sweeper: destroying the route in (%s)", region)
+
+		listRoutesResponse, err := vpcRouteAPI.ListRoutesWithNexthop(&vpcSDK.RoutesWithNexthopAPIListRoutesWithNexthopRequest{
+			Region: region,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing route in sweeper: %s", err)
+		}
+
+		for _, routeWithNexthop := range listRoutesResponse.Routes {
+			if routeWithNexthop.Route != nil {
+				err := vpcAPI.DeleteRoute(&vpcSDK.DeleteRouteRequest{
+					Region:  region,
+					RouteID: routeWithNexthop.Route.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("error deleting route in sweeper: %s", err)
+				}
+			} else {
+				return fmt.Errorf("route is nil in RouteWithNexthop: %v", routeWithNexthop)
 			}
 		}
 
