@@ -282,6 +282,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_marketplace_image":                   marketplace.DataSourceImage(),
 				"scaleway_mnq_sqs":                             mnq.DataSourceSQS(),
 				"scaleway_mnq_sns":                             mnq.DataSourceSNS(),
+				"scaleway_mongodb_instance":                    mongodb.DataSourceInstance(),
 				"scaleway_object_bucket":                       object.DataSourceBucket(),
 				"scaleway_object_bucket_policy":                object.DataSourceBucketPolicy(),
 				"scaleway_rdb_acl":                             rdb.DataSourceACL(),
