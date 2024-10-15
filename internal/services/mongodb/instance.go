@@ -3,7 +3,6 @@ package mongodb
 import (
 	"context"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,12 +12,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceInstance() *schema.Resource {
@@ -104,58 +101,6 @@ func ResourceInstance() *schema.Resource {
 					"user_name",
 					"password",
 					"version",
-				},
-			},
-			//endpoint
-			"private_network": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "Private network specs details",
-				Set:         privateNetworkSetHash,
-				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
-					// Check if the key is for the 'id' attribute
-					if strings.HasSuffix(k, "id") {
-						return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
-					}
-					// For all other attributes, don't suppress the diff
-					return false
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:      "UUID of the private network to be connected to the cluster",
-						},
-						"ips": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: validation.IsCIDR,
-							},
-							Description: "List of IPv4 addresses of the private network with a CIDR notation",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The port of your load balancer service",
-						},
-						"dns_records": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The DNS record of your endpoint",
-						},
-						// computed
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "UUID of the endpoint to be connected to the cluster",
-						},
-						"zone": zonal.ComputedSchema(),
-					},
 				},
 			},
 			// Computed
@@ -272,19 +217,6 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			createReq.Tags = types.ExpandStrings(tags)
 		}
 
-		pn, pnExists := d.GetOk("private_network")
-		if pnExists {
-			pnSpecs, err := expandPrivateNetwork(pn.(*schema.Set).List())
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			createReq.Endpoints = pnSpecs
-		} else {
-			epSpecs := make([]*mongodb.EndpointSpec, 0, 1)
-			spec := &mongodb.EndpointSpecPublicDetails{}
-			createReq.Endpoints = append(epSpecs, &mongodb.EndpointSpec{Public: spec})
-		}
-
 		res, err = mongodbAPI.CreateInstance(createReq, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -333,10 +265,6 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		_ = d.Set("volume_size_in_gb", int(instance.Volume.Size/scw.GB))
 	}
 
-	privateNetworkEndpoints, privateNetworkExists := flattenPrivateNetwork(instance.Endpoints)
-	if privateNetworkExists {
-		_ = d.Set("private_network", privateNetworkEndpoints)
-	}
 	publicNetworkEndpoint, publicNetworkExists := flattenPublicNetwork(instance.Endpoints)
 	if publicNetworkExists {
 		_ = d.Set("public_network", publicNetworkEndpoint)
