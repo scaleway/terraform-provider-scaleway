@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	mongodbSDK "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
 
@@ -34,6 +36,7 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "test-snapshot"
+						expires_at  = "2024-12-31T23:59:59Z"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -57,8 +60,8 @@ func TestAccMongoDBSnapshot_Update(t *testing.T) {
 				Config: `
 					resource "scaleway_mongodb_instance" "main" {
 						name       = "test-mongodb-instance"
-						version    = "7.0.11"
-						node_type  = "MGDB-PRO2-XXS"
+						version    = "7.0.12"
+						node_type  = "MGDB-PLAY2-NANO"
 						node_number = 1
 						user_name  = "my_initial_user"
 						password   = "thiZ_is_v&ry_s3cret"
@@ -78,8 +81,8 @@ func TestAccMongoDBSnapshot_Update(t *testing.T) {
 				Config: `
 					resource "scaleway_mongodb_instance" "main" {
 						name       = "test-mongodb-instance"
-						version    = "7.0.11"
-						node_type  = "MGDB-PRO2-XXS"
+						version    = "7.0.12"
+						node_type  = "MGDB-PLAY2-NANO"
 						node_number = 1
 						user_name  = "my_initial_user"
 						password   = "thiZ_is_v&ry_s3cret"
@@ -88,12 +91,12 @@ func TestAccMongoDBSnapshot_Update(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "updated-snapshot"
-						expires_at  = "2025-12-31T23:59:59Z"
+						expires_at  = "2025-09-20T23:59:59Z"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "name", "updated-snapshot"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", "2025-12-31T23:59:59Z"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", "2025-09-20T23:59:59Z"),
 				),
 			},
 		},
@@ -111,9 +114,10 @@ func isSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
-			instanceID := rs.Primary.Attributes["instance_id"]
+			instanceID := zonal.ExpandID(regional.ExpandID(rs.Primary.Attributes["instance_id"]).String())
+
 			listSnapshots, err := mongodbAPI.ListSnapshots(&mongodbSDK.ListSnapshotsRequest{
-				InstanceID: &instanceID,
+				InstanceID: &instanceID.ID,
 				Region:     region,
 			})
 			if err != nil {

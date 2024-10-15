@@ -3,17 +3,14 @@ package mongodb
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -45,17 +42,21 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Name of the mongoDB cluster",
+				Description: "Name of the MongoDB cluster",
 			},
 			"version": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Mongodb version of the instance",
+				Computed:    true,
+				Description: "MongoDB version of the instance",
+				ConflictsWith: []string{
+					"snapshot_id",
+				},
 			},
 			"node_number": {
 				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "number of node in the instance",
+				Required:    true,
+				Description: "Number of nodes in the instance",
 			},
 			"node_type": {
 				Type:             schema.TypeString,
@@ -67,19 +68,25 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Name of the user created when the cluster is created",
+				ConflictsWith: []string{
+					"snapshot_id",
+				},
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Sensitive:   true,
 				Optional:    true,
 				Description: "Password of the user",
+				ConflictsWith: []string{
+					"snapshot_id",
+				},
 			},
 			// volume
 			"volume_type": {
 				Type:        schema.TypeString,
 				Default:     mongodb.VolumeTypeSbs5k,
 				Optional:    true,
-				Description: "Volume size of instance.",
+				Description: "Volume type of the instance",
 			},
 			"volume_size_in_gb": {
 				Type:         schema.TypeInt,
@@ -92,7 +99,12 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Snapshot id",
+				Description: "Snapshot ID to restore the MongoDB instance from",
+				ConflictsWith: []string{
+					"user_name",
+					"password",
+					"version",
+				},
 			},
 			//endpoint
 			"private_network": {
@@ -134,7 +146,7 @@ func ResourceInstance() *schema.Resource {
 						"dns_records": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The dns_record of your endpoint",
+							Description: "The DNS record of your endpoint",
 						},
 						// computed
 						"endpoint_id": {
@@ -167,7 +179,7 @@ func ResourceInstance() *schema.Resource {
 						"dns_record": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The dns_record of your endpoint",
+							Description: "The DNS record of your endpoint",
 						},
 					},
 				},
@@ -178,7 +190,7 @@ func ResourceInstance() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a Mongodb instance",
+				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a MongoDB instance",
 			},
 			"settings": {
 				Type:        schema.TypeMap,
@@ -191,39 +203,17 @@ func ResourceInstance() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the creation of the Mongodb instance",
+				Description: "The date and time of the creation of the MongoDB instance",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the last update of the Mongodb instance",
+				Description: "The date and time of the last update of the MongoDB instance",
 			},
 			// Common
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
-		CustomizeDiff: customdiff.All(
-			cdf.LocalityCheck("private_network.#.id"),
-			func(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				snapshotID := diff.Get("snapshot_id")
-
-				if snapshotID == nil || snapshotID == "" {
-					if diff.Get("user_name") == nil || diff.Get("user_name") == "" {
-						return fmt.Errorf("`user_name` must be provided when `snapshot_id` is not set")
-					}
-					if diff.Get("password") == nil || diff.Get("password") == "" {
-						return fmt.Errorf("`password` must be provided when `snapshot_id` is not set")
-					}
-					if diff.Get("version") == nil || diff.Get("version") == "" {
-						return fmt.Errorf("`version` must be provided when `snapshot_id` is not set")
-					}
-					if diff.Get("node_number") == nil || diff.Get("node_number") == "" {
-						return fmt.Errorf("`node_number` must be provided when `snapshot_id` is not set")
-					}
-				}
-				return nil
-			},
-		),
 	}
 }
 
@@ -242,9 +232,11 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		volume := &mongodb.RestoreSnapshotRequestVolumeDetails{
 			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
 		}
+		id := regional.ExpandID(snapshotID.(string))
 		restoreSnapshotRequest := &mongodb.RestoreSnapshotRequest{
-			SnapshotID:   snapshotID.(string),
+			SnapshotID:   id.ID,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
+			NodeNumber:   *nodeNumber,
 			NodeType:     d.Get("node_type").(string),
 			Volume:       volume,
 		}
