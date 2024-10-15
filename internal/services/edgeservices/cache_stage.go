@@ -93,7 +93,7 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m int
 	cacheStage, err := api.CreateCacheStage(&edge_services.CreateCacheStageRequest{
 		ProjectID:      d.Get("project_id").(string),
 		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
-		FallbackTTL:    &scw.Duration{Seconds: 3600},
+		FallbackTTL:    &scw.Duration{Seconds: int64(d.Get("fallback_ttl").(int))},
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
