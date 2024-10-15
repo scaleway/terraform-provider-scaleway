@@ -217,6 +217,10 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			createReq.Tags = types.ExpandStrings(tags)
 		}
 
+		epSpecs := make([]*mongodb.EndpointSpec, 0, 1)
+		spec := &mongodb.EndpointSpecPublicDetails{}
+		createReq.Endpoints = append(epSpecs, &mongodb.EndpointSpec{Public: spec})
+
 		res, err = mongodbAPI.CreateInstance(createReq, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
