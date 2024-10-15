@@ -82,8 +82,7 @@ func ResourceSnapshot() *schema.Resource {
 			"expires_at": {
 				Type:             schema.TypeString,
 				Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
-				Optional:         true,
-				Computed:         true,
+				Required:         true,
 				ValidateDiagFunc: verify.IsDate(),
 			},
 			"region": regional.Schema(),

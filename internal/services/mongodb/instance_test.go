@@ -102,7 +102,6 @@ func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
-			// Step 1: Create a MongoDB instance and a snapshot
 			{
 				Config: `
 					resource "scaleway_mongodb_instance" "main" {
@@ -117,6 +116,7 @@ func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main_snapshot" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "test-snapshot"
+						expires_at  = "2024-12-31T23:59:59Z"
  						depends_on = [
     						scaleway_mongodb_instance.main
   						]
@@ -128,6 +128,7 @@ func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 						node_type   = "MGDB-PLAY2-NANO"
 						node_number = 1
 						depends_on = [
+    						scaleway_mongodb_instance.main,
     						scaleway_mongodb_snapshot.main_snapshot
   						]
 					}
