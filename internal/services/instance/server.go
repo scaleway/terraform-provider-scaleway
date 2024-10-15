@@ -229,6 +229,7 @@ func ResourceServer() *schema.Resource {
 			"ipv6_prefix_length": {
 				Type:        schema.TypeInt,
 				Computed:    true,
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 				Description: "The IPv6 prefix length routed to the server.",
 			},
 			"enable_dynamic_ip": {
@@ -338,9 +339,25 @@ func ResourceServer() *schema.Resource {
 			},
 			"routed_ip_enabled": {
 				Type:        schema.TypeBool,
-				Description: "If server supports routed IPs, default to true if public_ips is used",
+				Description: "If server supports routed IPs, default to true",
 				Optional:    true,
 				Computed:    true,
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					if i == nil {
+						return nil
+					}
+					if !i.(bool) {
+						return diag.Diagnostics{{
+							Severity:      diag.Error,
+							Summary:       "NAT IPs are not supported anymore",
+							Detail:        "Remove explicit disabling, enable it or downgrade terraform.\nLearn more about migration: https://www.scaleway.com/en/docs/compute/instances/how-to/migrate-routed-ips/",
+							AttributePath: path,
+						}}
+					}
+
+					return nil
+				},
+				Deprecated: "Routed IP is the default configuration, it should always be true",
 			},
 			"zone":            zonal.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
