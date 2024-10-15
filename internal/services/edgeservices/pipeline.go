@@ -13,12 +13,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func ResourceEdgeServicesPipeline() *schema.Resource {
+func ResourcePipeline() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceEdgeServicesPipelineCreate,
-		ReadContext:   ResourceEdgeServicesPipelineRead,
-		UpdateContext: ResourceEdgeServicesPipelineUpdate,
-		DeleteContext: ResourceEdgeServicesPipelineDelete,
+		CreateContext: ResourcePipelineCreate,
+		ReadContext:   ResourcePipelineRead,
+		UpdateContext: ResourcePipelineUpdate,
+		DeleteContext: ResourcePipelineDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -67,7 +67,7 @@ func ResourceEdgeServicesPipeline() *schema.Resource {
 	}
 }
 
-func ResourceEdgeServicesPipelineCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	pipeline, err := api.CreatePipeline(&edgeservices.CreatePipelineRequest{
@@ -82,10 +82,10 @@ func ResourceEdgeServicesPipelineCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(pipeline.ID)
 
-	return ResourceEdgeServicesPipelineRead(ctx, d, m)
+	return ResourcePipelineRead(ctx, d, m)
 }
 
-func ResourceEdgeServicesPipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	pipeline, err := api.GetPipeline(&edgeservices.GetPipelineRequest{
@@ -110,7 +110,7 @@ func ResourceEdgeServicesPipelineRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func ResourceEdgeServicesPipelineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	hasChanged := false
@@ -141,10 +141,10 @@ func ResourceEdgeServicesPipelineUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	return ResourceEdgeServicesPipelineRead(ctx, d, m)
+	return ResourcePipelineRead(ctx, d, m)
 }
 
-func ResourceEdgeServicesPipelineDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePipelineDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeletePipeline(&edgeservices.DeletePipelineRequest{

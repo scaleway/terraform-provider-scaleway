@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -13,12 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func ResourceEdgeServicesTLSStage() *schema.Resource {
+func ResourceTLSStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceEdgeServicesTLSStageCreate,
-		ReadContext:   ResourceEdgeServicesTLSStageRead,
-		UpdateContext: ResourceEdgeServicesTLSStageUpdate,
-		DeleteContext: ResourceEdgeServicesTLSStageDelete,
+		CreateContext: ResourceTLSStageCreate,
+		ReadContext:   ResourceTLSStageRead,
+		UpdateContext: ResourceTLSStageUpdate,
+		DeleteContext: ResourceTLSStageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -82,7 +83,7 @@ func ResourceEdgeServicesTLSStage() *schema.Resource {
 	}
 }
 
-func ResourceEdgeServicesTLSStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, err := NewEdgeServicesAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -101,10 +102,10 @@ func ResourceEdgeServicesTLSStageCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(tlsStage.ID)
 
-	return ResourceEdgeServicesTLSStageRead(ctx, d, m)
+	return ResourceTLSStageRead(ctx, d, m)
 }
 
-func ResourceEdgeServicesTLSStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	tlsStage, err := api.GetTLSStage(&edgeservices.GetTLSStageRequest{
@@ -131,7 +132,7 @@ func ResourceEdgeServicesTLSStageRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func ResourceEdgeServicesTLSStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceTLSStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, err := NewEdgeServicesAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -169,16 +170,25 @@ func ResourceEdgeServicesTLSStageUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	return ResourceEdgeServicesTLSStageRead(ctx, d, m)
+	return ResourceTLSStageRead(ctx, d, m)
 }
 
-func ResourceEdgeServicesTLSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceTLSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := api.DeleteTLSStage(&edgeservices.DeleteTLSStageRequest{
-		TLSStageID: d.Id(),
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is403(err) {
+	err := retry.RetryContext(ctx, defaultEdgeServicesTimeout, func() *retry.RetryError {
+		err := api.DeleteTLSStage(&edgeservices.DeleteTLSStageRequest{
+			TLSStageID: d.Id(),
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is403(err) {
+			if isStageUsedInPipelineError(err) {
+				return retry.RetryableError(err)
+			}
+			return retry.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

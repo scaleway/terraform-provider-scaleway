@@ -78,6 +78,45 @@ func flattenTLSSecrets(secrets []*edge_services.TLSSecret) interface{} {
 	return secretsI
 }
 
+func expandLBBackendConfig(raw interface{}) *edge_services.ScalewayLBBackendConfig {
+	lbConfigs := []*edge_services.ScalewayLB(nil)
+	rawLbConfigs := raw.([]interface{})
+	for _, rawLbConfig := range rawLbConfigs {
+		mapLbConfig := rawLbConfig.(map[string]interface{})
+		lbConfig := &edge_services.ScalewayLB{
+			ID:         locality.ExpandID(mapLbConfig["id"]),
+			Zone:       scw.Zone(mapLbConfig["zone"].(string)),
+			FrontendID: locality.ExpandID(mapLbConfig["frontend_id"]),
+			IsSsl:      types.ExpandBoolPtr(mapLbConfig["is_ssl"]),
+			DomainName: types.ExpandStringPtr(mapLbConfig["domain_name"]),
+		}
+		lbConfigs = append(lbConfigs, lbConfig)
+	}
+
+	return &edge_services.ScalewayLBBackendConfig{
+		LBs: lbConfigs,
+	}
+}
+
+func flattenLBBackendConfig(lbConfigs *edge_services.ScalewayLBBackendConfig) interface{} {
+	if lbConfigs == nil {
+		return nil
+	}
+
+	lbConfigsI := []map[string]interface{}(nil)
+	for _, lbConfig := range lbConfigs.LBs {
+		secretMap := map[string]interface{}{
+			"id":          lbConfig.ID,
+			"frontend_id": lbConfig.FrontendID,
+			"is_ssl":      types.FlattenBoolPtr(lbConfig.IsSsl),
+			"domain_name": types.FlattenStringPtr(lbConfig.DomainName),
+			"zone":        lbConfig.Zone.String(),
+		}
+		lbConfigsI = append(lbConfigsI, secretMap)
+	}
+	return lbConfigsI
+}
+
 func wrapSecretsInConfig(secrets []*edge_services.TLSSecret) *edge_services.TLSSecretsConfig {
 	return &edge_services.TLSSecretsConfig{
 		TLSSecrets: secrets,

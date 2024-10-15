@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -12,12 +13,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func ResourceEdgeServicesDNSStage() *schema.Resource {
+func ResourceDNSStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceEdgeServicesDNSStageCreate,
-		ReadContext:   ResourceEdgeServicesDNSStageRead,
-		UpdateContext: ResourceEdgeServicesDNSStageUpdate,
-		DeleteContext: ResourceEdgeServicesDNSStageDelete,
+		CreateContext: ResourceDNSStageCreate,
+		ReadContext:   ResourceDNSStageRead,
+		UpdateContext: ResourceDNSStageUpdate,
+		DeleteContext: ResourceDNSStageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -75,7 +76,7 @@ func ResourceEdgeServicesDNSStage() *schema.Resource {
 	}
 }
 
-func ResourceEdgeServicesDNSStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	dnsStage, err := api.CreateDNSStage(&edgeservices.CreateDNSStageRequest{
@@ -91,10 +92,10 @@ func ResourceEdgeServicesDNSStageCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(dnsStage.ID)
 
-	return ResourceEdgeServicesDNSStageRead(ctx, d, m)
+	return ResourceDNSStageRead(ctx, d, m)
 }
 
-func ResourceEdgeServicesDNSStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	dnsStage, err := api.GetDNSStage(&edgeservices.GetDNSStageRequest{
@@ -151,7 +152,7 @@ func ResourceEdgeServicesDNSStageRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func ResourceEdgeServicesDNSStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDNSStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	hasChanged := false
@@ -187,16 +188,25 @@ func ResourceEdgeServicesDNSStageUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	return ResourceEdgeServicesDNSStageRead(ctx, d, m)
+	return ResourceDNSStageRead(ctx, d, m)
 }
 
-func ResourceEdgeServicesDNSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDNSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := api.DeleteDNSStage(&edgeservices.DeleteDNSStageRequest{
-		DNSStageID: d.Id(),
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is403(err) {
+	err := retry.RetryContext(ctx, defaultEdgeServicesTimeout, func() *retry.RetryError {
+		err := api.DeleteDNSStage(&edgeservices.DeleteDNSStageRequest{
+			DNSStageID: d.Id(),
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is403(err) {
+			if isStageUsedInPipelineError(err) {
+				return retry.RetryableError(err)
+			}
+			return retry.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
