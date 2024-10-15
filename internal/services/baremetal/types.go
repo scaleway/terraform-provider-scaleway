@@ -39,17 +39,18 @@ func expandPrivateNetworks(pn interface{}) map[string]*[]string {
 		rawPN := op.(map[string]interface{})
 		id := locality.ExpandID(rawPN["id"].(string))
 
-		var ipamIPIDs []string
+		ipamIPIDs := &[]string{}
 		if ipamIPs, ok := rawPN["ipam_ip_ids"]; ok && ipamIPs != nil {
 			ipamIPsList := ipamIPs.([]interface{})
 			if len(ipamIPsList) > 0 {
-				ipamIPIDs = make([]string, len(ipamIPsList))
+				ips := make([]string, len(ipamIPsList))
 				for i, ip := range ipamIPsList {
-					ipamIPIDs[i] = locality.ExpandID(ip.(string))
+					ips[i] = locality.ExpandID(ip.(string))
 				}
+				ipamIPIDs = &ips
 			}
 		}
-		privateNetworks[id] = &ipamIPIDs
+		privateNetworks[id] = ipamIPIDs
 	}
 	return privateNetworks
 }
