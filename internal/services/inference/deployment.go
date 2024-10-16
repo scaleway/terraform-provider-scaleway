@@ -22,7 +22,7 @@ func ResourceDeployment() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Timeouts: &schema.ResourceTimeout{ // TODO: remove unused timeouts
+		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInferenceDeploymentTimeout),
 			Read:    schema.DefaultTimeout(defaultInferenceDeploymentTimeout),
 			Update:  schema.DefaultTimeout(defaultInferenceDeploymentTimeout),
@@ -238,24 +238,15 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("created_at", types.FlattenTime(deployment.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(deployment.UpdatedAt))
 
-	if deployment.Endpoints[0].PrivateNetwork != nil {
-		_ = d.Set("endpoint_private_url", deployment.Endpoints[0].URL)
-		_ = d.Set("endpoint_private_id", deployment.Endpoints[0].ID)
-		_ = d.Set("disable_auth_private", deployment.Endpoints[0].DisableAuth)
-	} else {
-		_ = d.Set("endpoint_public_url", deployment.Endpoints[0].URL)
-		_ = d.Set("endpoint_public_id", deployment.Endpoints[0].ID)
-		_ = d.Set("disable_auth_public", deployment.Endpoints[0].DisableAuth)
-	}
-	if len(deployment.Endpoints) == 2 {
-		if deployment.Endpoints[1].PrivateNetwork != nil {
-			_ = d.Set("endpoint_private_url", deployment.Endpoints[1].URL)
-			_ = d.Set("endpoint_private_id", deployment.Endpoints[1].ID)
-			_ = d.Set("disable_auth_private", deployment.Endpoints[1].DisableAuth)
+	for _, endpoint := range deployment.Endpoints {
+		if endpoint.PrivateNetwork != nil {
+			_ = d.Set("endpoint_private_url", endpoint.URL)
+			_ = d.Set("endpoint_private_id", endpoint.ID)
+			_ = d.Set("disable_auth_private", endpoint.DisableAuth)
 		} else {
-			_ = d.Set("endpoint_public_url", deployment.Endpoints[1].URL)
-			_ = d.Set("endpoint_public_id", deployment.Endpoints[1].ID)
-			_ = d.Set("disable_auth_public", deployment.Endpoints[1].DisableAuth)
+			_ = d.Set("endpoint_public_url", endpoint.URL)
+			_ = d.Set("endpoint_public_id", endpoint.ID)
+			_ = d.Set("disable_auth_public", endpoint.DisableAuth)
 		}
 	}
 	return nil

@@ -19,7 +19,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroy(tt),
+		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -49,7 +49,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroy(tt),
+		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -69,6 +69,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-endpoint-private"),
+					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "node_type", "L4"),
 				),
 			},
 			{
@@ -90,6 +91,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic-endpoints-private-public"),
+					resource.TestCheckResourceAttrSet("scaleway_inference_deployment.main", "endpoints.0.public_endpoint"),
 				),
 			},
 		},
