@@ -139,7 +139,7 @@ func ResourceDeployment() *schema.Resource {
 							Description: "Set the endpoint as public",
 							Optional:    true,
 						},
-						"private_endpoint": {
+						"private_endpoint_id": {
 							Type:        schema.TypeString,
 							Description: "The id of the private network",
 							Optional:    true,
@@ -182,7 +182,7 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		if publicEndpoint := d.Get("endpoints.0.public_endpoint"); publicEndpoint != nil && publicEndpoint.(bool) {
 			endpoint.Public = &inference.EndpointSpecPublic{}
 		}
-		if privateEndpoint := d.Get("endpoints.0.private_endpoint"); privateEndpoint != "" {
+		if privateEndpoint := d.Get("endpoints.0.private_endpoint_id"); privateEndpoint != "" {
 			endpoint.PrivateNetwork = &inference.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: regional.ExpandID(privateEndpoint.(string)).ID,
 			}

@@ -61,7 +61,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
-							private_endpoint = "${scaleway_vpc_private_network.pn01.id}"
+							private_endpoint_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
 						accept_eula = true
 					}
@@ -82,7 +82,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						endpoints {
-							private_endpoint = "${scaleway_vpc_private_network.pn01.id}"
+							private_endpoint_id = "${scaleway_vpc_private_network.pn01.id}"
 							public_endpoint = true
 						}
 						accept_eula = true
