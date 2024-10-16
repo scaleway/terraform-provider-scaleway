@@ -2,6 +2,7 @@ package instance
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
@@ -194,8 +195,14 @@ func instanceAndBlockAPIWithZoneAndID(m interface{}, zonedID string) (*BlockAndI
 }
 
 func volumeTypeToMarketplaceFilter(volumeType any) marketplace.LocalImageType {
-	if volumeType != nil && instance.VolumeVolumeType(volumeType.(string)) == instance.VolumeVolumeTypeSbsVolume {
-		return marketplace.LocalImageTypeInstanceSbs
+	if volumeType != nil {
+		volumeTypeString := volumeType.(string)
+		if strings.HasPrefix(volumeTypeString, "sbs") {
+			return marketplace.LocalImageTypeInstanceSbs
+		} else {
+			return marketplace.LocalImageTypeInstanceLocal
+		}
 	}
-	return marketplace.LocalImageTypeInstanceLocal
+
+	return marketplace.LocalImageTypeUnknownType
 }
