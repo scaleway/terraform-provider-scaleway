@@ -434,10 +434,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 
 	if ipIDs, ok := d.GetOk("ip_ids"); ok {
 		req.PublicIPs = types.ExpandSliceIDsPtr(ipIDs)
-		// If server has multiple IPs, routed ip must be enabled per default
-		if types.GetBool(d, "routed_ip_enabled") == nil {
-			req.RoutedIPEnabled = scw.BoolPtr(true)
-		}
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -623,7 +619,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)
 		_ = d.Set("project_id", server.Project)
-		_ = d.Set("routed_ip_enabled", server.RoutedIPEnabled)
+		_ = d.Set("routed_ip_enabled", server.RoutedIPEnabled) //nolint:staticcheck
 
 		// Image could be empty in an import context.
 		image := regional.ExpandID(d.Get("image").(string))
