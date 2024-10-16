@@ -956,38 +956,6 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 	}
 }
 
-// bootscript are marked as deprecated
-func TestAccServer_Bootscript(t *testing.T) {
-	t.Skip("Creation of bootscript server is no longer supported")
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	// Quick tip to get all the different bootscript:
-	// curl -sH "X-Auth-Token: $(scw config get secret-key)" https://api.scaleway.com/instance/v1/zones/fr-par-1/bootscripts | jq -r '.bootscripts[] | [.id, .architecture, .title] | @tsv'
-	bootscript := "7decf961-d3e9-4711-93c7-b16c254e99b9"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						type  = "DEV1-S"
-						image = "ubuntu_focal"
-						boot_type = "bootscript"
-						bootscript_id = "%s"
-						routed_ip_enabled = false
-					}
-				`, bootscript),
-				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "bootscript_id", bootscript),
-				),
-			},
-		},
-	})
-}
-
 func TestAccServer_AlterTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
