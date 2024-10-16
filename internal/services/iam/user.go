@@ -75,9 +75,10 @@ func ResourceUser() *schema.Resource {
 
 func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+	email := d.Get("email").(string)
 	user, err := api.CreateUser(&iam.CreateUserRequest{
 		OrganizationID: d.Get("organization_id").(string),
-		Email:          d.Get("email").(string),
+		Email:          &email,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
