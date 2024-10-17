@@ -27,7 +27,7 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 					resource "scaleway_mongodb_instance" "main" {
 						name       = "test-mongodb-instance"
 						version    = "7.0.12"
-						node_type  = "MGDB-PRO2-XXS"
+						node_type  = "MGDB-PLAY2-NANO"
 						node_number = 1
 						user_name  = "my_initial_user"
 						password   = "thiZ_is_v&ry_s3cret"
