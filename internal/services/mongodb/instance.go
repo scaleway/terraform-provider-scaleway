@@ -333,7 +333,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if d.HasChange("tags") {
 		if tags := types.ExpandUpdatedStringsPtr(d.Get("tags")); tags != nil {
-			req.Tags = *tags
+			req.Tags = tags
 		}
 	}
 
