@@ -164,7 +164,6 @@ func ResourceInstance() *schema.Resource {
 
 func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	mongodbAPI, zone, err := newAPIWithZone(d, m)
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
