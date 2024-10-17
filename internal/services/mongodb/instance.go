@@ -257,7 +257,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	_ = d.Set("name", instance.Name)
 	_ = d.Set("version", instance.Version)
-	_ = d.Set("node_number", instance.NodeNumber)
+	_ = d.Set("node_number", int(instance.NodeNumber))
 	_ = d.Set("node_type", instance.NodeType)
 	_ = d.Set("project_id", instance.ProjectID)
 	_ = d.Set("tags", instance.Tags)

@@ -135,7 +135,7 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 	_ = d.Set("instance_id", zonal.NewIDString(zone, snapshot.InstanceID))
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("instance_name", snapshot.InstanceName)
-	_ = d.Set("size", snapshot.Size)
+	_ = d.Set("size", int64(snapshot.Size))
 	_ = d.Set("node_type", snapshot.NodeType)
 	_ = d.Set("volume_type", snapshot.VolumeType.Type)
 	_ = d.Set("expires_at", types.FlattenTime(snapshot.ExpiresAt))
