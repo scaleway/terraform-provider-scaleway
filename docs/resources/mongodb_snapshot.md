@@ -1,4 +1,3 @@
-
 ---
 subcategory: "MongoDB"
 page_title: "Scaleway: scaleway_mongodb_snapshot"
