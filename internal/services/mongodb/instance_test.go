@@ -176,8 +176,10 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
-
 			extractRegion, err := zone.Region()
+			if err != nil {
+				return err
+			}
 			instance, err := mongodbAPI.GetInstance(&mongodbSDK.GetInstanceRequest{
 				InstanceID: ID,
 				Region:     extractRegion,
