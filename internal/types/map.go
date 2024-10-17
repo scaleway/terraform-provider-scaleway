@@ -61,7 +61,7 @@ func ExpandMapStringString(data any) map[string]string {
 
 // GetMapValue returns the value for a key from a map.
 // returns zero value if key does not exist in map.
-func GetMapValue[T any](m map[string]any, key string) T { //nolint: ireturn
+func GetMapValue[T any](m map[string]any, key string) T {
 	var val T
 	valI, exists := m[key]
 	if exists {
