@@ -172,7 +172,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	nodeNumber := scw.Uint32Ptr(uint32(d.Get("node_number").(int)))
 
 	snapshotID, exist := d.GetOk("snapshot_id")
-	res := &mongodb.Instance{}
+	var res *mongodb.Instance
 	if exist {
 		volume := &mongodb.RestoreSnapshotRequestVolumeDetails{
 			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
@@ -190,7 +190,6 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			return diag.FromErr(err)
 		}
 	} else {
-
 		createReq := &mongodb.CreateInstanceRequest{
 			ProjectID:  d.Get("project_id").(string),
 			Name:       types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
@@ -219,7 +218,8 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 		epSpecs := make([]*mongodb.EndpointSpec, 0, 1)
 		spec := &mongodb.EndpointSpecPublicDetails{}
-		createReq.Endpoints = append(epSpecs, &mongodb.EndpointSpec{Public: spec})
+		epSpecs = append(epSpecs, &mongodb.EndpointSpec{Public: spec})
+		createReq.Endpoints = epSpecs
 
 		res, err = mongodbAPI.CreateInstance(createReq, scw.WithContext(ctx))
 		if err != nil {
@@ -319,7 +319,9 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			return diag.FromErr(err)
 		}
 		_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	req := &mongodb.UpdateInstanceRequest{
@@ -360,7 +362,9 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	_, err = mongodbAPI.UpdateUser(&updateUserRequest, scw.WithContext(ctx))
-
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
