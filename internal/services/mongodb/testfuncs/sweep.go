@@ -22,6 +22,9 @@ func testSweepMongodbInstance(_ string) error {
 		mongodbAPI := mongodb.NewAPI(scwClient)
 		logging.L.Debugf("sweeper: destroying the mongodb instance in (%s)", zone)
 		extractRegion, err := zone.Region()
+		if err != nil {
+			return fmt.Errorf("error extract region in (%s) in sweeper: %w", zone, err)
+		}
 		listInstance, err := mongodbAPI.ListInstances(&mongodb.ListInstancesRequest{
 			Region: extractRegion,
 		})

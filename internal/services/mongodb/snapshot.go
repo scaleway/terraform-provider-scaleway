@@ -125,6 +125,9 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 	zone, snapshotID, err := zonal.ParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 	snapshot, err := waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshotID, d.Timeout(schema.TimeoutCreate))
@@ -152,6 +155,9 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 	_, snapshotID, err := zonal.ParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	updateReq := &mongodb.UpdateSnapshotRequest{
 		SnapshotID: snapshotID,
@@ -181,12 +187,15 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceSnapshotRead(ctx, d, m)
 }
 
-func ResourceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	_, snapshotID, err := zonal.ParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	deleteReq := &mongodb.DeleteSnapshotRequest{
 		SnapshotID: snapshotID,
