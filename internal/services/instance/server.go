@@ -423,10 +423,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool)) //nolint:staticcheck
 	}
 
-	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
-		req.Bootscript = types.ExpandStringPtr(bootScriptID) //nolint:staticcheck
-	}
-
 	if bootType, ok := d.GetOk("boot_type"); ok {
 		bootType := instanceSDK.BootType(bootType.(string))
 		req.BootType = &bootType
@@ -438,10 +434,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 
 	if ipIDs, ok := d.GetOk("ip_ids"); ok {
 		req.PublicIPs = types.ExpandSliceIDsPtr(ipIDs)
-		// If server has multiple IPs, routed ip must be enabled per default
-		if types.GetBool(d, "routed_ip_enabled") == nil {
-			req.RoutedIPEnabled = scw.BoolPtr(true) //nolint:staticcheck
-		}
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -616,11 +608,6 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("zone", string(zone))
 		_ = d.Set("name", server.Name)
 		_ = d.Set("boot_type", server.BootType)
-
-		// Bootscript is deprecated
-		if server.Bootscript != nil { //nolint:staticcheck
-			_ = d.Set("bootscript_id", server.Bootscript.ID) //nolint:staticcheck
-		}
 
 		_ = d.Set("type", server.CommercialType)
 		if len(server.Tags) > 0 {
@@ -919,17 +906,6 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			warnings = append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  "instanceSDK may need to be rebooted to use the new boot type",
-			})
-		}
-	}
-
-	if d.HasChanges("bootscript_id") {
-		serverShouldUpdate = true
-		updateRequest.Bootscript = types.ExpandStringPtr(d.Get("bootscript_id").(string))
-		if !isStopped {
-			warnings = append(warnings, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "instanceSDK may need to be rebooted to use the new bootscript",
 			})
 		}
 	}

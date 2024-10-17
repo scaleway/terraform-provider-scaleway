@@ -956,38 +956,6 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 	}
 }
 
-// bootscript are marked as deprecated
-func TestAccServer_Bootscript(t *testing.T) {
-	t.Skip("Creation of bootscript server is no longer supported")
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	// Quick tip to get all the different bootscript:
-	// curl -sH "X-Auth-Token: $(scw config get secret-key)" https://api.scaleway.com/instance/v1/zones/fr-par-1/bootscripts | jq -r '.bootscripts[] | [.id, .architecture, .title] | @tsv'
-	bootscript := "7decf961-d3e9-4711-93c7-b16c254e99b9"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						type  = "DEV1-S"
-						image = "ubuntu_focal"
-						boot_type = "bootscript"
-						bootscript_id = "%s"
-						routed_ip_enabled = false
-					}
-				`, bootscript),
-				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "bootscript_id", bootscript),
-				),
-			},
-		},
-	})
-}
-
 func TestAccServer_AlterTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1725,6 +1693,30 @@ func TestAccServer_BlockExternal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "volume" {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource "scaleway_instance_volume" "volume" {
+						type = "b_ssd"
+						size_in_gb = 10
+					}
+
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						additional_volume_ids = [scaleway_block_volume.volume.id, scaleway_instance_volume.volume.id]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "2"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.1", "scaleway_instance_volume.volume", "id"),
 				),
 			},
 		},

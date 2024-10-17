@@ -54,7 +54,6 @@ In addition to all above arguments, the following attributes are exported:
     - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the server is.
     - `name` - The name of the server.
     - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
-    - `bootscript_id` - The ID of the bootscript.
     - `type` - The commercial type of the server.
     - `security_group_id` - The [security group](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89) the server is attached to.
     - `enable_ipv6` - Determines if IPv6 is enabled for the server.
