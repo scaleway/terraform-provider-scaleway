@@ -93,6 +93,61 @@ func TestAccMongoDBInstance_VolumeUpdate(t *testing.T) {
 	})
 }
 
+func TestAccMongoDBInstance_UpdateNameTagsUser(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_mongodb_instance main {
+						name = "test-mongodb-update-initial"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name = "user"
+						password = "initial_password"
+						tags = ["initial_tag1", "initial_tag2"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-update-initial"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "user_name", "user"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "tags.0", "initial_tag1"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "tags.1", "initial_tag2"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_mongodb_instance main {
+						name = "test-mongodb-update-final"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name = "user"
+						password = "updated_password"
+						tags = ["updated_tag1", "updated_tag2", "updated_tag3"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-update-final"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "tags.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "tags.0", "updated_tag1"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "tags.1", "updated_tag2"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "tags.2", "updated_tag3"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
