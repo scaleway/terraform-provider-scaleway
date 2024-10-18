@@ -64,6 +64,7 @@ func ResourceInstance() *schema.Resource {
 			"user_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Name of the user created when the cluster is created",
 				ConflictsWith: []string{
 					"snapshot_id",
@@ -338,9 +339,11 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
-	_, err = mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if req.Name != nil || req.Tags != nil {
+		_, err = mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	////////////////////
@@ -348,11 +351,9 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	////////////////////
 
 	updateUserRequest := mongodb.UpdateUserRequest{
+		Name:       d.Get("user_name").(string),
 		Region:     region,
 		InstanceID: ID,
-	}
-	if d.HasChange("user_name") {
-		updateUserRequest.Name = d.Get("user_name").(string)
 	}
 
 	if d.HasChange("password") {
@@ -360,10 +361,13 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		updateUserRequest.Password = &password
 	}
 
-	_, err = mongodbAPI.UpdateUser(&updateUserRequest, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if updateUserRequest.Password != nil {
+		_, err = mongodbAPI.UpdateUser(&updateUserRequest, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
+
 	_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
