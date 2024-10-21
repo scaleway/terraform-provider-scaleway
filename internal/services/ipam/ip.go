@@ -68,6 +68,27 @@ func ResourceIP() *schema.Resource {
 					},
 				},
 			},
+			"custom_resource": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The custom resource in which to book the IP",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"mac_address": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "MAC address of the custom resource",
+							ValidateFunc: validation.IsMACAddress,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "When the resource is in a Private Network, a DNS record is available to resolve the resource name",
+						},
+					},
+				},
+			},
 			"is_ipv6": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -177,6 +198,10 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if source, ok := d.GetOk("source"); ok {
 		req.Source = expandIPSource(source)
+	}
+
+	if customResource, ok := d.GetOk("custom_resource"); ok {
+		req.Resource = expandCustomResource(customResource)
 	}
 
 	res, err := ipamAPI.BookIP(req, scw.WithContext(ctx))
