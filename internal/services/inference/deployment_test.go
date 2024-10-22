@@ -27,9 +27,9 @@ func TestAccDeployment_Basic(t *testing.T) {
 						name = "test-inference-deployment-basic"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
-						endpoints {
-							public_endpoint = true
-						}
+  						public_endpoint {
+    						is_enabled = true
+ 		 				}
 						accept_eula = true
 					}
 				`,
@@ -60,7 +60,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						name = "test-inference-deployment-endpoint-private"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
-						endpoints {
+						private_endpoint {
 							private_endpoint_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
 						accept_eula = true
@@ -70,20 +70,23 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-endpoint-private"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "node_type", "L4"),
+					resource.TestCheckResourceAttrPair("scaleway_inference_deployment.main", "private_endpoint.0.private_endpoint_id", "scaleway_vpc_private_network.pn01", "id"),
 				),
 			},
 			{
 				Config: `
 					resource "scaleway_vpc_private_network" "pn01" {
-						name = "private-network-test-inference"
+						name = "private-network-test-inference-public"
 					}
 					resource "scaleway_inference_deployment" "main" {
 						name = "test-inference-deployment-basic-endpoints-private-public"
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
-						endpoints {
+						private_endpoint {
 							private_endpoint_id = "${scaleway_vpc_private_network.pn01.id}"
-							public_endpoint = true
+						}
+						public_endpoint {
+							is_enabled = true
 						}
 						accept_eula = true
 					}
@@ -91,7 +94,8 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic-endpoints-private-public"),
-					resource.TestCheckResourceAttrSet("scaleway_inference_deployment.main", "endpoints.0.public_endpoint"),
+					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "public_endpoint.0.is_enabled", "true"),
+					resource.TestCheckResourceAttrPair("scaleway_inference_deployment.main", "private_endpoint.0.private_endpoint_id", "scaleway_vpc_private_network.pn01", "id"),
 				),
 			},
 		},

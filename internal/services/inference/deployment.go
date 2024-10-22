@@ -2,7 +2,6 @@ package inference
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
@@ -88,36 +87,6 @@ func ResourceDeployment() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the deployment",
 			},
-			"endpoint_public_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint public URL",
-			},
-			"endpoint_private_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint private URL",
-			},
-			"disable_auth_private": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the authentication on the private endpoint is disabled.",
-			},
-			"endpoint_public_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint public ID",
-			},
-			"endpoint_private_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint private ID",
-			},
-			"disable_auth_public": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the authentication on the public endpoint is disabled.",
-			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -128,16 +97,19 @@ func ResourceDeployment() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the deployment",
 			},
-			"endpoints": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Description: "List of endpoints",
+
+			"private_endpoint": {
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     1,
+				AtLeastOneOf: []string{"public_endpoint"},
+				Description:  "List of endpoints",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"public_endpoint": {
-							Type:        schema.TypeBool,
-							Description: "Set the endpoint as public",
-							Optional:    true,
+						"id": {
+							Type:        schema.TypeString,
+							Description: "The id of the private endpoint",
+							Computed:    true,
 						},
 						"private_endpoint_id": {
 							Type:        schema.TypeString,
@@ -149,6 +121,44 @@ func ResourceDeployment() *schema.Resource {
 							Description: "Disable the authentication on the endpoint.",
 							Optional:    true,
 							Default:     false,
+						},
+						"url": {
+							Type:        schema.TypeString,
+							Description: "The URL of the endpoint.",
+							Computed:    true,
+						},
+					},
+				},
+			},
+
+			"public_endpoint": {
+				Type:         schema.TypeList,
+				Optional:     true,
+				AtLeastOneOf: []string{"private_endpoint"},
+				Description:  "Public endpoints",
+				MaxItems:     1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "The id of the public endpoint",
+							Computed:    true,
+						},
+						"is_enabled": {
+							Type:        schema.TypeBool,
+							Description: "Set the endpoint as public",
+							Optional:    true,
+						},
+						"disable_auth": {
+							Type:        schema.TypeBool,
+							Description: "Disable the authentication on the endpoint.",
+							Optional:    true,
+							Default:     false,
+						},
+						"url": {
+							Type:        schema.TypeString,
+							Description: "The URL of the endpoint.",
+							Computed:    true,
 						},
 					},
 				},
@@ -170,26 +180,8 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		NodeType:  d.Get("node_type").(string),
 		ModelName: d.Get("model_name").(string),
 		Tags:      types.ExpandStrings(d.Get("tags")),
+		Endpoints: buildEndpoints(d),
 	}
-
-	endpoint := inference.EndpointSpec{
-		Public:         nil,
-		PrivateNetwork: nil,
-		DisableAuth:    false,
-	}
-
-	if _, isEndpoint := d.GetOk("endpoints"); isEndpoint {
-		if publicEndpoint := d.Get("endpoints.0.public_endpoint"); publicEndpoint != nil && publicEndpoint.(bool) {
-			endpoint.Public = &inference.EndpointSpecPublic{}
-		}
-		if privateEndpoint := d.Get("endpoints.0.private_endpoint_id"); privateEndpoint != "" {
-			endpoint.PrivateNetwork = &inference.EndpointSpecPrivateNetwork{
-				PrivateNetworkID: regional.ExpandID(privateEndpoint.(string)).ID,
-			}
-		}
-	}
-
-	req.Endpoints = []*inference.EndpointSpec{&endpoint}
 
 	if isAcceptingEula, ok := d.GetOk("accept_eula"); ok {
 		req.AcceptEula = scw.BoolPtr(isAcceptingEula.(bool))
@@ -208,6 +200,36 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	return ResourceDeploymentRead(ctx, d, m)
+}
+
+func buildEndpoints(d *schema.ResourceData) []*inference.EndpointSpec {
+	var endpoints []*inference.EndpointSpec
+
+	if publicEndpoint, ok := d.GetOk("public_endpoint"); ok {
+		publicEndpointMap := publicEndpoint.([]interface{})[0].(map[string]interface{})
+		if publicEndpointMap["is_enabled"].(bool) {
+			publicEp := inference.EndpointSpec{
+				Public:      &inference.EndpointSpecPublic{},
+				DisableAuth: publicEndpointMap["disable_auth"].(bool),
+			}
+			endpoints = append(endpoints, &publicEp)
+		}
+	}
+
+	if privateEndpoint, ok := d.GetOk("private_endpoint"); ok {
+		privateEndpointMap := privateEndpoint.([]interface{})[0].(map[string]interface{})
+		if privateID, exists := privateEndpointMap["private_endpoint_id"]; exists {
+			privateEp := inference.EndpointSpec{
+				PrivateNetwork: &inference.EndpointSpecPrivateNetwork{
+					PrivateNetworkID: regional.ExpandID(privateID.(string)).ID,
+				},
+				DisableAuth: privateEndpointMap["disable_auth"].(bool),
+			}
+			endpoints = append(endpoints, &privateEp)
+		}
+	}
+
+	return endpoints
 }
 
 func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -237,17 +259,35 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("model_id", deployment.ModelID)
 	_ = d.Set("created_at", types.FlattenTime(deployment.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(deployment.UpdatedAt))
+	var privateEndpoints []map[string]interface{}
+	var publicEndpoints []map[string]interface{}
 
 	for _, endpoint := range deployment.Endpoints {
 		if endpoint.PrivateNetwork != nil {
-			_ = d.Set("endpoint_private_url", endpoint.URL)
-			_ = d.Set("endpoint_private_id", endpoint.ID)
-			_ = d.Set("disable_auth_private", endpoint.DisableAuth)
-		} else {
-			_ = d.Set("endpoint_public_url", endpoint.URL)
-			_ = d.Set("endpoint_public_id", endpoint.ID)
-			_ = d.Set("disable_auth_public", endpoint.DisableAuth)
+			privateEndpointSpec := map[string]interface{}{
+				"id":                  endpoint.ID,
+				"private_endpoint_id": regional.NewID(deployment.Region, endpoint.PrivateNetwork.PrivateNetworkID).String(),
+				"disable_auth":        endpoint.DisableAuth,
+				"url":                 endpoint.URL,
+			}
+			privateEndpoints = append(privateEndpoints, privateEndpointSpec)
 		}
+		if endpoint.PublicAccess != nil {
+			publicEndpointSpec := map[string]interface{}{
+				"id":           endpoint.ID,
+				"is_enabled":   true,
+				"disable_auth": endpoint.DisableAuth,
+				"url":          endpoint.URL,
+			}
+			publicEndpoints = append(publicEndpoints, publicEndpointSpec)
+		}
+	}
+
+	if len(privateEndpoints) > 0 {
+		_ = d.Set("private_endpoint", privateEndpoints)
+	}
+	if len(publicEndpoints) > 0 {
+		_ = d.Set("public_endpoint", publicEndpoints)
 	}
 	return nil
 }
