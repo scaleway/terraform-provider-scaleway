@@ -8,8 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	mongodbSDK "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
 
@@ -114,20 +113,16 @@ func isSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
-			instanceID := zonal.ExpandID(regional.ExpandID(rs.Primary.Attributes["instance_id"]).String())
 
-			listSnapshots, err := mongodbAPI.ListSnapshots(&mongodbSDK.ListSnapshotsRequest{
-				InstanceID: &instanceID.ID,
+			_, err = mongodbAPI.GetSnapshot(&mongodbSDK.GetSnapshotRequest{
+				SnapshotID: ID,
 				Region:     region,
 			})
-			if err != nil {
-				return err
+			if err == nil {
+				return fmt.Errorf("instance (%s) still exists", rs.Primary.ID)
 			}
-
-			for _, snapshot := range listSnapshots.Snapshots {
-				if snapshot.ID == ID {
-					return fmt.Errorf("snapshot (%s) still exists", rs.Primary.ID)
-				}
+			if !httperrors.Is404(err) {
+				return err
 			}
 		}
 		return nil

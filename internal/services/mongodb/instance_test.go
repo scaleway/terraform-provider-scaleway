@@ -235,11 +235,10 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
-			instance, err := mongodbAPI.GetInstance(&mongodbSDK.GetInstanceRequest{
+			_, err = mongodbAPI.GetInstance(&mongodbSDK.GetInstanceRequest{
 				InstanceID: ID,
 				Region:     extractRegion,
 			})
-			_ = instance
 
 			if err == nil {
 				return fmt.Errorf("instance (%s) still exists", rs.Primary.ID)
