@@ -32,28 +32,22 @@ func ResourceSnapshot() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Unique identifier of the snapshot",
-			},
-			"instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the instance from which the snapshot was created",
-			},
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				Description: "Name of the snapshot",
 			},
+			"instance_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the instance from which the snapshot was created",
+			},
 			"instance_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Name of the instance from which the snapshot was created",
 			},
-
 			"size": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -134,7 +128,6 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("id", snapshot.ID)
 	_ = d.Set("instance_id", zonal.NewIDString(zone, snapshot.InstanceID))
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("instance_name", snapshot.InstanceName)
@@ -164,19 +157,26 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		Region:     region,
 	}
 
+	hasChanged := false
+
 	if d.HasChange("name") {
 		newName := types.ExpandOrGenerateString(d.Get("name"), "snapshot")
 		updateReq.Name = &newName
+		hasChanged = true
 	}
 
 	if d.HasChange("expires_at") {
 		updateReq.ExpiresAt = types.ExpandTimePtr(d.Get("expires_at"))
+		hasChanged = true
 	}
 
-	_, err = mongodbAPI.UpdateSnapshot(updateReq)
-	if err != nil {
-		return diag.FromErr(err)
+	if hasChanged {
+		_, err = mongodbAPI.UpdateSnapshot(updateReq)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
+
 	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 
 	_, err = waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshotID, d.Timeout(schema.TimeoutUpdate))

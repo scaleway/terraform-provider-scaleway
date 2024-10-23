@@ -51,9 +51,10 @@ func ResourceInstance() *schema.Resource {
 				},
 			},
 			"node_number": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Number of nodes in the instance",
+				Type:         schema.TypeInt,
+				Required:     true,
+				ValidateFunc: validation.IntAtLeast(1),
+				Description:  "Number of nodes in the instance",
 			},
 			"node_type": {
 				Type:             schema.TypeString,
@@ -324,6 +325,11 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
+	////////////////////
+	// Update instance
+	////////////////////
+
+	shouldUpdateInstance := false
 	req := &mongodb.UpdateInstanceRequest{
 		Region:     region,
 		InstanceID: ID,
@@ -331,15 +337,17 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name"))
+		shouldUpdateInstance = true
 	}
 
 	if d.HasChange("tags") {
 		if tags := types.ExpandUpdatedStringsPtr(d.Get("tags")); tags != nil {
 			req.Tags = tags
+			shouldUpdateInstance = true
 		}
 	}
 
-	if req.Name != nil || req.Tags != nil {
+	if shouldUpdateInstance {
 		_, err = mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -350,6 +358,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	// Update user
 	////////////////////
 
+	shouldUpdateUser := false
 	updateUserRequest := mongodb.UpdateUserRequest{
 		Name:       d.Get("user_name").(string),
 		Region:     region,
@@ -359,9 +368,10 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if d.HasChange("password") {
 		password := d.Get("password").(string)
 		updateUserRequest.Password = &password
+		shouldUpdateUser = true
 	}
 
-	if updateUserRequest.Password != nil {
+	if shouldUpdateUser {
 		_, err = mongodbAPI.UpdateUser(&updateUserRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
