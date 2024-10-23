@@ -5,10 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -47,8 +49,8 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, er
 }
 
 // returns a new private network API and the zone for a Create request
-func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.PrivateNetworkAPI, scw.Zone, error) {
-	privateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
+func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetalV3.PrivateNetworkAPI, scw.Zone, error) {
+	privateNetworkAPI := baremetalV3.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
@@ -58,8 +60,8 @@ func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*barem
 }
 
 // NewPrivateNetworkAPIWithZoneAndID returns a private network API with zone and ID extracted from the state
-func NewPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, zonal.ID, error) {
-	privateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
+func NewPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetalV3.PrivateNetworkAPI, zonal.ID, error) {
+	privateNetworkAPI := baremetalV3.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
@@ -73,7 +75,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return err
 	}
-	listPrivateNetwork, err := privateNetworkAPI.ListServerPrivateNetworks(&baremetal.PrivateNetworkAPIListServerPrivateNetworksRequest{
+	listPrivateNetwork, err := privateNetworkAPI.ListServerPrivateNetworks(&baremetalV3.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     zone,
 		ServerID: &serverID,
 	}, scw.WithContext(ctx))
@@ -82,7 +84,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 	}
 
 	for _, pn := range listPrivateNetwork.ServerPrivateNetworks {
-		err := privateNetworkAPI.DeleteServerPrivateNetwork(&baremetal.PrivateNetworkAPIDeleteServerPrivateNetworkRequest{
+		err := privateNetworkAPI.DeleteServerPrivateNetwork(&baremetalV3.PrivateNetworkAPIDeleteServerPrivateNetworkRequest{
 			Zone:             zone,
 			ServerID:         serverID,
 			PrivateNetworkID: pn.PrivateNetworkID,
@@ -187,12 +189,26 @@ func customDiffPrivateNetworkOption() func(ctx context.Context, diff *schema.Res
 }
 
 func privateNetworkSetHash(v interface{}) int {
-	var buf bytes.Buffer
-
 	m := v.(map[string]interface{})
-	if pnID, ok := m["id"]; ok {
-		buf.WriteString(locality.ExpandID(pnID))
+	id := locality.ExpandID(m["id"].(string))
+
+	var buf bytes.Buffer
+	buf.WriteString(id)
+
+	if ipamIPs, ok := m["ipam_ip_ids"]; ok && ipamIPs != nil {
+		ipamIPsList := ipamIPs.([]interface{})
+		var ipamIPIDs []string
+		for _, ip := range ipamIPsList {
+			if ipStr, ok := ip.(string); ok && ipStr != "" {
+				ipamIPIDs = append(ipamIPIDs, ipStr)
+			}
+		}
+		sort.Strings(ipamIPIDs)
+		for _, ipID := range ipamIPIDs {
+			buf.WriteString("-")
+			buf.WriteString(ipID)
+		}
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }

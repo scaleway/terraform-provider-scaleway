@@ -74,6 +74,7 @@ func ResourceNetwork() *schema.Resource {
 				Description: "The endpoint key to keep secret",
 				Sensitive:   true,
 			},
+			"region": regional.Schema(),
 		},
 	}
 }
@@ -132,6 +133,7 @@ func ResourceIotNetworkRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("hub_id", regional.NewID(region, network.HubID).String())
 	_ = d.Set("created_at", network.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("topic_prefix", network.TopicPrefix)
+	_ = d.Set("region", string(region))
 
 	return nil
 }
