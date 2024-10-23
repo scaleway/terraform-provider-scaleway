@@ -147,7 +147,7 @@ func ResourceDeployment() *schema.Resource {
 						},
 						"is_enabled": {
 							Type:        schema.TypeBool,
-							Description: "Set the endpoint as public",
+							Description: "Enable or disable public endpoint",
 							Optional:    true,
 						},
 						"disable_auth": {
