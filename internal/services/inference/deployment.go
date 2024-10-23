@@ -2,6 +2,7 @@ package inference
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
