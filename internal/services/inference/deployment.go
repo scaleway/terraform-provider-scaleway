@@ -69,13 +69,13 @@ func ResourceDeployment() *schema.Resource {
 			"min_size": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Computed:    true,
+				Default:     1,
 				Description: "The minimum size of the pool",
 			},
 			"max_size": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Computed:    true,
+				Default:     1,
 				Description: "The maximum size of the pool",
 			},
 			"size": {
@@ -112,7 +112,7 @@ func ResourceDeployment() *schema.Resource {
 							Description: "The id of the private endpoint",
 							Computed:    true,
 						},
-						"private_endpoint_id": {
+						"private_network_id": {
 							Type:        schema.TypeString,
 							Description: "The id of the private network",
 							Optional:    true,
@@ -188,6 +188,14 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		req.AcceptEula = scw.BoolPtr(isAcceptingEula.(bool))
 	}
 
+	if minSize, ok := d.GetOk("min_size"); ok {
+		req.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+	}
+
+	if maxSize, ok := d.GetOk("max_size"); ok {
+		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+	}
+
 	deployment, err := api.CreateDeployment(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -219,7 +227,7 @@ func buildEndpoints(d *schema.ResourceData) []*inference.EndpointSpec {
 
 	if privateEndpoint, ok := d.GetOk("private_endpoint"); ok {
 		privateEndpointMap := privateEndpoint.([]interface{})[0].(map[string]interface{})
-		if privateID, exists := privateEndpointMap["private_endpoint_id"]; exists {
+		if privateID, exists := privateEndpointMap["private_network_id"]; exists {
 			privateEp := inference.EndpointSpec{
 				PrivateNetwork: &inference.EndpointSpecPrivateNetwork{
 					PrivateNetworkID: regional.ExpandID(privateID.(string)).ID,
@@ -258,6 +266,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("size", int(deployment.Size))
 	_ = d.Set("status", deployment.Status)
 	_ = d.Set("model_id", deployment.ModelID)
+	_ = d.Set("tags", types.ExpandUpdatedStringsPtr(deployment.Tags))
 	_ = d.Set("created_at", types.FlattenTime(deployment.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(deployment.UpdatedAt))
 	var privateEndpoints []map[string]interface{}
@@ -266,10 +275,10 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	for _, endpoint := range deployment.Endpoints {
 		if endpoint.PrivateNetwork != nil {
 			privateEndpointSpec := map[string]interface{}{
-				"id":                  endpoint.ID,
-				"private_endpoint_id": regional.NewID(deployment.Region, endpoint.PrivateNetwork.PrivateNetworkID).String(),
-				"disable_auth":        endpoint.DisableAuth,
-				"url":                 endpoint.URL,
+				"id":                 endpoint.ID,
+				"private_network_id": regional.NewID(deployment.Region, endpoint.PrivateNetwork.PrivateNetworkID).String(),
+				"disable_auth":       endpoint.DisableAuth,
+				"url":                endpoint.URL,
 			}
 			privateEndpoints = append(privateEndpoints, privateEndpointSpec)
 		}
@@ -284,10 +293,10 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
-	if len(privateEndpoints) > 0 {
+	if privateEndpoints != nil {
 		_ = d.Set("private_endpoint", privateEndpoints)
 	}
-	if len(publicEndpoints) > 0 {
+	if publicEndpoints != nil {
 		_ = d.Set("public_endpoint", publicEndpoints)
 	}
 	return nil
@@ -307,6 +316,7 @@ func ResourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diag.FromErr(err)
 	}
+
 	req := &inference.UpdateDeploymentRequest{
 		Region:       region,
 		DeploymentID: deployment.ID,
@@ -314,6 +324,18 @@ func ResourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	if d.HasChange("name") {
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	if d.HasChange("min_size") {
+		req.MinSize = types.ExpandUint32Ptr(d.Get("min_size"))
+	}
+
+	if d.HasChange("max_size") {
+		req.MaxSize = types.ExpandUint32Ptr(d.Get("max_size"))
 	}
 
 	if _, err := api.UpdateDeployment(req, scw.WithContext(ctx)); err != nil {

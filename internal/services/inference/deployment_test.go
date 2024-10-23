@@ -61,7 +61,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						private_endpoint {
-							private_endpoint_id = "${scaleway_vpc_private_network.pn01.id}"
+							private_network_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
 						accept_eula = true
 					}
@@ -70,7 +70,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-endpoint-private"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "node_type", "L4"),
-					resource.TestCheckResourceAttrPair("scaleway_inference_deployment.main", "private_endpoint.0.private_endpoint_id", "scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_inference_deployment.main", "private_endpoint.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
 				),
 			},
 			{
@@ -83,7 +83,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						node_type = "L4"
 						model_name = "meta/llama-3.1-8b-instruct:fp8"
 						private_endpoint {
-							private_endpoint_id = "${scaleway_vpc_private_network.pn01.id}"
+							private_network_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
 						public_endpoint {
 							is_enabled = true
@@ -95,7 +95,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic-endpoints-private-public"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "public_endpoint.0.is_enabled", "true"),
-					resource.TestCheckResourceAttrPair("scaleway_inference_deployment.main", "private_endpoint.0.private_endpoint_id", "scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_inference_deployment.main", "private_endpoint.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
 				),
 			},
 		},
