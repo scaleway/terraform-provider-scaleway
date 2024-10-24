@@ -71,7 +71,6 @@ func ResourceIP() *schema.Resource {
 			"custom_resource": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The custom resource in which to book the IP",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -292,13 +291,32 @@ func ResourceIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	_, err = ipamAPI.UpdateIP(&ipam.UpdateIPRequest{
-		IPID:   ID,
-		Region: region,
-		Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if d.HasChange("custom_resource") {
+		oldCustomResourceRaw, newCustomResourceRaw := d.GetChange("custom_resource")
+		oldCustomResource := expandCustomResource(oldCustomResourceRaw)
+		newCustomResource := expandCustomResource(newCustomResourceRaw)
+
+		_, err = ipamAPI.MoveIP(&ipam.MoveIPRequest{
+			Region:       region,
+			IPID:         ID,
+			FromResource: oldCustomResource,
+			ToResource:   newCustomResource,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+
+		}
+	}
+
+	if d.HasChange("tags") {
+		_, err = ipamAPI.UpdateIP(&ipam.UpdateIPRequest{
+			IPID:   ID,
+			Region: region,
+			Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceIPAMIPRead(ctx, d, m)
@@ -308,6 +326,17 @@ func ResourceIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	ipamAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if customResource, ok := d.GetOk("custom_resource"); ok {
+		_, err = ipamAPI.DetachIP(&ipam.DetachIPRequest{
+			Region:   region,
+			IPID:     ID,
+			Resource: expandCustomResource(customResource),
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	err = ipamAPI.ReleaseIP(&ipam.ReleaseIPRequest{
