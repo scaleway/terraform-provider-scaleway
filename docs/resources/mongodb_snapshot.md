@@ -39,6 +39,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+- `id` - The ID of the snapshot.
+
 - `instance_name` - The name of the MongoDB® instance from which the snapshot was created.
 
 - `size` - The size of the MongoDB® snapshot in bytes.
