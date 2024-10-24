@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -67,16 +68,18 @@ func ResourceDeployment() *schema.Resource {
 				Description: "The tags associated with the deployment",
 			},
 			"min_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     1,
-				Description: "The minimum size of the pool",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The minimum size of the pool",
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"max_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     1,
-				Description: "The maximum size of the pool",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The maximum size of the pool",
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"size": {
 				Type:        schema.TypeInt,
