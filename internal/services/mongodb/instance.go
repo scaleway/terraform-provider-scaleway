@@ -65,7 +65,6 @@ func ResourceInstance() *schema.Resource {
 			"user_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Name of the user created when the cluster is created",
 				ConflictsWith: []string{
 					"snapshot_id",
@@ -365,6 +364,18 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		InstanceID: ID,
 	}
 
+	var diags diag.Diagnostics
+
+	if d.HasChange("user_name") {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Change in 'user_name' detected",
+			Detail: "[WARN] The 'user_name' field was changed, but this functionality is not supported yet. " +
+				"As a result, no changes were applied to the instance. " +
+				"Please be aware that changing the 'user_name' will not modify the instance at this time.",
+		})
+	}
+
 	if d.HasChange("password") {
 		password := d.Get("password").(string)
 		updateUserRequest.Password = &password
@@ -382,8 +393,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	return ResourceInstanceRead(ctx, d, m)
+	return append(diags, ResourceInstanceRead(ctx, d, m)...)
 }
 
 func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
