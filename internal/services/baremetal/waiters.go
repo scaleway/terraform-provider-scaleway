@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -57,12 +58,12 @@ func waitForServerOptions(ctx context.Context, api *baremetal.API, zone scw.Zone
 	return server, err
 }
 
-func waitForServerPrivateNetwork(ctx context.Context, api *baremetal.PrivateNetworkAPI, zone scw.Zone, serverID string, timeout time.Duration) ([]*baremetal.ServerPrivateNetwork, error) {
+func waitForServerPrivateNetwork(ctx context.Context, api *baremetalV3.PrivateNetworkAPI, zone scw.Zone, serverID string, timeout time.Duration) ([]*baremetalV3.ServerPrivateNetwork, error) {
 	retryInterval := retryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
-	serverPrivateNetwork, err := api.WaitForServerPrivateNetworks(&baremetal.WaitForServerPrivateNetworksRequest{
+	serverPrivateNetwork, err := api.WaitForServerPrivateNetworks(&baremetalV3.WaitForServerPrivateNetworksRequest{
 		Zone:          zone,
 		ServerID:      serverID,
 		Timeout:       scw.TimeDurationPtr(timeout),
