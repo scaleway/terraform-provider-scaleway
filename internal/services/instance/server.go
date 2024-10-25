@@ -410,12 +410,15 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		Zone:              zone,
 		Name:              types.ExpandOrGenerateString(d.Get("name"), "srv"),
 		Project:           types.ExpandStringPtr(d.Get("project_id")),
-		Image:             imageUUID,
 		CommercialType:    commercialType,
 		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              types.ExpandStrings(d.Get("tags")),
 		RoutedIPEnabled:   types.ExpandBoolPtr(types.GetBool(d, "routed_ip_enabled")),
+	}
+
+	if imageUUID != "" {
+		req.Image = scw.StringPtr(imageUUID)
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
@@ -453,7 +456,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	req.Volumes = make(map[string]*instanceSDK.VolumeServerTemplate)
 	rootVolume := d.Get("root_volume.0").(map[string]any)
 
-	req.Volumes["0"] = prepareRootVolume(rootVolume, serverType, req.Image).VolumeTemplate()
+	req.Volumes["0"] = prepareRootVolume(rootVolume, serverType, imageUUID).VolumeTemplate()
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
 			// We have to get the volume to know whether it is a local or a block volume
@@ -695,7 +698,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 
 				vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
 					VolumeID: volume.ID,
-					Zone:     volume.Zone,
+					Zone:     server.Zone,
 				})
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", volume.ID, err))

@@ -65,3 +65,14 @@ func ParseID(regionalID string) (region scw.Region, id string, err error) {
 	region, err = scw.ParseRegion(loc)
 	return
 }
+
+func NewRegionalIDs(region scw.Region, ids []string) []string {
+	if ids == nil {
+		return nil
+	}
+	flattenedIDs := make([]string, len(ids))
+	for i, id := range ids {
+		flattenedIDs[i] = NewIDString(region, id)
+	}
+	return flattenedIDs
+}
