@@ -304,7 +304,6 @@ func ResourceIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
-
 		}
 	}
 
