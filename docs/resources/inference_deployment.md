@@ -27,16 +27,16 @@ resource "scaleway_inference_deployment" "deployment" {
 ## Argument Reference
 
 - `model_name` - (Required) The model name to use for the deployment. Model names can be found in Console or using Scaleway's CLI (`scw inference model list`)
-- `node_type` - (Required) The node type to use for the deployment.
-- `name` - (Optional) TThe deployment name.
-- `accept_eula` - (Optional) Whether the deployment is accepting eula.
+- `node_type` - (Required) The node type to use for the deployment. Node types can be found using Scaleway's CLI (`scw inference node-type list`)
+- `name` - (Optional) The deployment name.
+- `accept_eula` - (Optional) Some models (e.g Meta Llama) require end-user license agreements. Set `true` to accept.
 - `tags` - (Optional) The tags associated with the deployment.
 - `min_size` - (Optional) The minimum size of the pool.
 - `max_size` - (Optional) The maximum size of the pool.
 - `private_endpoint` - (Optional) Configuration of the deployment's private endpoint.
     - `private_network_id` - (Optional) The ID of the private network to use.
     - `disable_auth` - (Optional) Disable the authentication on the endpoint.
-- `public_endpoint` - (Optional) Configuration of the deployment's private endpoint.
+- `public_endpoint` - (Optional) Configuration of the deployment's public endpoint.
     - `is_enabled` - (Optional) Enable or disable public endpoint.
     - `disable_auth` - (Optional) Disable the authentication on the endpoint.
 
