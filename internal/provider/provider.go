@@ -23,6 +23,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iot"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
@@ -151,6 +152,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_policy":                          iam.ResourcePolicy(),
 				"scaleway_iam_ssh_key":                         iam.ResourceSSKKey(),
 				"scaleway_iam_user":                            iam.ResourceUser(),
+				"scaleway_inference_deployment":                inference.ResourceDeployment(),
 				"scaleway_instance_image":                      instance.ResourceImage(),
 				"scaleway_instance_ip":                         instance.ResourceIP(),
 				"scaleway_instance_ip_reverse_dns":             instance.ResourceIPReverseDNS(),
