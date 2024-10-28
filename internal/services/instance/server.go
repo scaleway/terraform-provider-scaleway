@@ -698,7 +698,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 
 				vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
 					VolumeID: volume.ID,
-					Zone:     volume.Zone,
+					Zone:     server.Zone,
 				})
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", volume.ID, err))
