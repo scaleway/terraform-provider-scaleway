@@ -15,11 +15,16 @@ import (
 
 const (
 	offerName = "EM-B220E-NVME"
+	region    = "fr-par-1"
+	offerId   = "206ea234-9097-4ae1-af68-6d2be09f47ed"
 )
 
 func TestAccDataSourceOffer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(offerId, region, tt) {
+		t.Skip("Offer is out of stock")
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -47,9 +52,9 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "beryllium"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "stock", "available"), // skipping this as stocks vary too much
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.name", "AMD EPYC 7232P"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.core_count", "4"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.core_count", "8"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.frequency", "3100"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.thread_count", "4"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.thread_count", "16"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.0.type", "NVMe"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.0.capacity", "1024209543168"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.1.type", "NVMe"),
@@ -67,6 +72,9 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(offerId, region, tt) {
+		t.Skip("Offer is out of stock")
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -118,6 +126,9 @@ func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(offerId, region, tt) {
+		t.Skip("Offer is out of stock")
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
