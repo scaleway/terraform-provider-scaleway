@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	ServerTimeout          = 60 * time.Minute
+	ServerTimeout          = 80 * time.Minute
 	serverRetryFuncTimeout = ServerTimeout + time.Minute // some RetryFunc are calling a WaitFor
 	defaultServerTimeout   = serverRetryFuncTimeout + time.Minute
 	retryInterval          = 5 * time.Second

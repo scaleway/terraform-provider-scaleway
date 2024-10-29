@@ -14,15 +14,15 @@ import (
 )
 
 const (
-	offerName = "EM-B220E-NVME"
-	region    = "fr-par-1"
-	offerId   = "206ea234-9097-4ae1-af68-6d2be09f47ed"
+	OfferName = "EM-B220E-NVME"
+	Region    = "fr-par-1"
+	OfferId   = "206ea234-9097-4ae1-af68-6d2be09f47ed"
 )
 
 func TestAccDataSourceOffer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(offerId, region, tt) {
+	if !IsOfferAvailable(OfferId, Region, tt) {
 		t.Skip("Offer is out of stock")
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -39,13 +39,13 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 					data "scaleway_baremetal_offer" "test2" {
 						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
-				`, offerName),
+				`, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test1"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", offerName),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", OfferName),
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test2"),
 					resource.TestCheckResourceAttrPair("data.scaleway_baremetal_offer.test2", "offer_id", "data.scaleway_baremetal_offer.test1", "offer_id"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", offerName),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", OfferName),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "beryllium"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "include_disabled", "false"), //what the hell
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "bandwidth", "1000000000"),
@@ -72,7 +72,7 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(offerId, region, tt) {
+	if !IsOfferAvailable(OfferId, Region, tt) {
 		t.Skip("Offer is out of stock")
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -91,14 +91,14 @@ func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 					data "scaleway_baremetal_offer" "test2" {
 						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
-				`, offerName),
+				`, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test1"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", offerName),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", OfferName),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "subscription_period", "hourly"),
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test2"),
 					resource.TestCheckResourceAttrPair("data.scaleway_baremetal_offer.test2", "offer_id", "data.scaleway_baremetal_offer.test1", "offer_id"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", offerName),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", OfferName),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "subscription_period", "hourly"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "beryllium"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "include_disabled", "false"),
@@ -126,7 +126,7 @@ func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(offerId, region, tt) {
+	if !IsOfferAvailable(OfferId, Region, tt) {
 		t.Skip("Offer is out of stock")
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -145,14 +145,14 @@ func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 					data "scaleway_baremetal_offer" "test2" {
 						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
-				`, offerName),
+				`, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test1"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", offerName),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", OfferName),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "subscription_period", "monthly"),
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test2"),
 					resource.TestCheckResourceAttrPair("data.scaleway_baremetal_offer.test2", "offer_id", "data.scaleway_baremetal_offer.test1", "offer_id"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", offerName),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", OfferName),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "subscription_period", "monthly"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "beryllium"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "include_disabled", "false"),
