@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	defaultMongodbInstanceTimeout           = 15 * time.Minute
-	defaultMongodbSnapshotTimeout           = 15 * time.Minute
-	defaultWaitMongodbInstanceRetryInterval = 5 * time.Second
+	defaultMongodbInstanceTimeout           = 30 * time.Minute
+	defaultMongodbSnapshotTimeout           = 30 * time.Minute
+	defaultWaitMongodbInstanceRetryInterval = 10 * time.Second
 )
 
 const (
