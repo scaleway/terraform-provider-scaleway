@@ -23,6 +23,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iot"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
@@ -31,6 +32,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
@@ -150,6 +152,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_policy":                          iam.ResourcePolicy(),
 				"scaleway_iam_ssh_key":                         iam.ResourceSSKKey(),
 				"scaleway_iam_user":                            iam.ResourceUser(),
+				"scaleway_inference_deployment":                inference.ResourceDeployment(),
 				"scaleway_instance_image":                      instance.ResourceImage(),
 				"scaleway_instance_ip":                         instance.ResourceIP(),
 				"scaleway_instance_ip_reverse_dns":             instance.ResourceIPReverseDNS(),
@@ -186,6 +189,8 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_mnq_sqs":                             mnq.ResourceSQS(),
 				"scaleway_mnq_sqs_credentials":                 mnq.ResourceSQSCredentials(),
 				"scaleway_mnq_sqs_queue":                       mnq.ResourceSQSQueue(),
+				"scaleway_mongodb_instance":                    mongodb.ResourceInstance(),
+				"scaleway_mongodb_snapshot":                    mongodb.ResourceSnapshot(),
 				"scaleway_object":                              object.ResourceObject(),
 				"scaleway_object_bucket":                       object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                   object.ResourceBucketACL(),
@@ -279,6 +284,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_marketplace_image":                   marketplace.DataSourceImage(),
 				"scaleway_mnq_sqs":                             mnq.DataSourceSQS(),
 				"scaleway_mnq_sns":                             mnq.DataSourceSNS(),
+				"scaleway_mongodb_instance":                    mongodb.DataSourceInstance(),
 				"scaleway_object_bucket":                       object.DataSourceBucket(),
 				"scaleway_object_bucket_policy":                object.DataSourceBucketPolicy(),
 				"scaleway_rdb_acl":                             rdb.DataSourceACL(),

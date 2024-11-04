@@ -157,6 +157,96 @@ func TestAccIPAMIP_WithTags(t *testing.T) {
 	})
 }
 
+func TestAccIPAMIP_WithCustomResource(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      ipamchecks.CheckIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "my vpc"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  vpc_id = scaleway_vpc.vpc01.id
+					  ipv4_subnet {
+						subnet = "172.16.32.0/22"
+					  }
+					}
+					
+					resource "scaleway_ipam_ip" "ip01" {
+					  source {
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					  }
+					  custom_resource {
+						mac_address = "bc:24:11:74:d0:5a"
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIPAMIPExists(tt, "scaleway_ipam_ip.ip01"),
+					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "custom_resource.0.mac_address", "bc:24:11:74:d0:5a"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "my vpc"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  vpc_id = scaleway_vpc.vpc01.id
+					  ipv4_subnet {
+						subnet = "172.16.32.0/22"
+					  }
+					}
+					
+					resource "scaleway_ipam_ip" "ip01" {
+					  source {
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					  }
+					  custom_resource {
+						mac_address = "bc:24:11:74:d0:5b"
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIPAMIPExists(tt, "scaleway_ipam_ip.ip01"),
+					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "custom_resource.0.mac_address", "bc:24:11:74:d0:5b"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "my vpc"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  vpc_id = scaleway_vpc.vpc01.id
+					  ipv4_subnet {
+						subnet = "172.16.32.0/22"
+					  }
+					}
+					
+					resource "scaleway_ipam_ip" "ip01" {
+					  source {
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIPAMIPExists(tt, "scaleway_ipam_ip.ip01"),
+					resource.TestCheckNoResourceAttr("scaleway_ipam_ip.ip01", "custom_resource.0.mac_address"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIPAMIPExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

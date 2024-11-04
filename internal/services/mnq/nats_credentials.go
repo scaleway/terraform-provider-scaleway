@@ -42,6 +42,7 @@ func ResourceNatsCredentials() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The credentials file",
+				Sensitive:   true,
 			},
 			"region": regional.Schema(),
 		},

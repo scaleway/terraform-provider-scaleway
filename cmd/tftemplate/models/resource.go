@@ -1,10 +1,11 @@
 package models
 
 import (
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"strings"
 	"unicode"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type ResourceTemplate struct {
