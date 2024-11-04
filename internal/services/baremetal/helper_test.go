@@ -6,11 +6,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func IsOfferAvailable(offerId string, zone scw.Zone, tt *acctest.TestTools) bool {
+func IsOfferAvailable(offerID string, zone scw.Zone, tt *acctest.TestTools) bool {
 	api := baremetal.NewAPI(tt.Meta.ScwClient())
 	offer, _ := api.GetOffer(&baremetal.GetOfferRequest{
 		Zone:    zone,
-		OfferID: offerId,
+		OfferID: offerID,
 	})
 	if offer.Stock == baremetal.OfferStockAvailable {
 		return true
