@@ -15,14 +15,14 @@ import (
 
 const (
 	OfferName = "EM-B220E-NVME"
-	Region    = "fr-par-1"
+	Zone      = "fr-par-1"
 	OfferID   = "206ea234-9097-4ae1-af68-6d2be09f47ed"
 )
 
 func TestAccDataSourceOffer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -72,7 +72,7 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -126,7 +126,7 @@ func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 	resource.ParallelTest(t, resource.TestCase{

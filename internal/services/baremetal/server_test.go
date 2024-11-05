@@ -20,7 +20,7 @@ func TestAccServer_Basic(t *testing.T) {
 	// t.Skip("Skipping Baremetal Server test as no stock is available currently")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -114,7 +114,7 @@ func TestAccServer_Basic(t *testing.T) {
 func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -175,7 +175,7 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 func TestAccServer_CreateServerWithOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -240,7 +240,7 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 func TestAccServer_AddOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -331,7 +331,7 @@ func TestAccServer_AddOption(t *testing.T) {
 func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -485,7 +485,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -554,7 +554,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 func TestAccServer_AddPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -666,7 +666,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -791,7 +791,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	if !IsOfferAvailable(OfferID, Region, tt) {
+	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
 
