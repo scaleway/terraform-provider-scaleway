@@ -8,7 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	awsTypes "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -100,8 +101,8 @@ func ResourceObject() *schema.Resource {
 				Computed:    true,
 				Description: "Visibility of the object, public-read or private",
 				ValidateFunc: validation.StringInSlice([]string{
-					s3.ObjectCannedACLPrivate,
-					s3.ObjectCannedACLPublicRead,
+					string(awsTypes.ObjectCannedACLPrivate),
+					string(awsTypes.ObjectCannedACLPublicRead),
 				}, false),
 			},
 			"region":     regional.Schema(),
@@ -111,7 +112,7 @@ func ResourceObject() *schema.Resource {
 }
 
 func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -124,7 +125,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -132,13 +133,17 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	key := d.Get("key").(string)
+	visibilityStr := types.ExpandStringPtr(d.Get("visibility").(string))
+	visibilityACL := awsTypes.ObjectCannedACL(*visibilityStr)
+	storageClassStr := d.Get("storage_class").(string)
+	storageClass := awsTypes.StorageClass(storageClassStr)
 
 	req := &s3.PutObjectInput{
-		ACL:          types.ExpandStringPtr(d.Get("visibility").(string)),
+		ACL:          visibilityACL,
 		Bucket:       types.ExpandStringPtr(bucket),
 		Key:          types.ExpandStringPtr(key),
-		StorageClass: types.ExpandStringPtr(d.Get("storage_class")),
-		Metadata:     types.ExpandMapStringStringPtr(d.Get("metadata")),
+		StorageClass: storageClass,
+		Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 	}
 
 	if filePath, hasFile := d.GetOk("file"); hasFile {
@@ -162,7 +167,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		req.Body = bytes.NewReader([]byte{})
 	}
 
-	_, err = s3Client.PutObjectWithContext(ctx, req)
+	_, err = s3Client.PutObject(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -186,7 +191,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -259,7 +264,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -315,7 +320,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceObjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
+	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

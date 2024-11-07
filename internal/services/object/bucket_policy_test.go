@@ -253,7 +253,7 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}

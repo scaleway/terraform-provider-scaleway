@@ -51,7 +51,7 @@ func ResourceBucketPolicy() *schema.Resource {
 }
 
 func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -62,7 +62,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -106,7 +106,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 
 //gocyclo:ignore
 func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, _, err := s3ClientWithRegionAndName(d, m, d.Id())
+	s3Client, region, _, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,7 +166,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -726,7 +726,7 @@ func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestChec
 		bucketRegion := regionalID.Region.String()
 		bucketName := regionalID.ID
 
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}

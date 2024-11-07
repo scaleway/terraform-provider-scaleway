@@ -584,7 +584,7 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 				return fmt.Errorf("not found: %s", n)
 			}
 			bucketRegion := rs.Primary.Attributes["region"]
-			conn, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 			if err != nil {
 				return err
 			}
@@ -663,7 +663,7 @@ func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []*
 		rs := s.RootModule().Resources[n]
 		bucketName := rs.Primary.Attributes["name"]
 		bucketRegion := rs.Primary.Attributes["region"]
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -710,7 +710,7 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 				return fmt.Errorf("not found: %s", n)
 			}
 			bucketRegion := rs.Primary.Attributes["region"]
-			conn, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 			if err != nil {
 				return err
 			}
@@ -768,7 +768,7 @@ func testAccCheckObjectBucketLifecycleConfigurationExists(tt *acctest.TestTools,
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}

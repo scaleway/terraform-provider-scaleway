@@ -1,6 +1,7 @@
 package objecttestfuncs
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -25,7 +26,7 @@ func CheckBucketExists(tt *acctest.TestTools, n string, shouldBeAllowed bool) re
 		bucketName := rs.Primary.Attributes["name"]
 		bucketRegion := rs.Primary.Attributes["region"]
 
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -65,7 +66,7 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			bucketRegion := regionalID.Region.String()
 			bucketName := regionalID.ID
 
-			s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+			s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 			if err != nil {
 				return err
 			}
@@ -98,8 +99,9 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			bucketRegion := regionalID.Region.String()
 			bucketName := regionalID.ID
 			key := rs.Primary.Attributes["key"]
+			ctx := context.Background()
 
-			s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+			s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 			if err != nil {
 				return err
 			}
@@ -128,12 +130,12 @@ func IsWebsiteConfigurationDestroyed(tt *acctest.TestTools) resource.TestCheckFu
 			if rs.Type != "scaleway_object_bucket_website_configuration" {
 				continue
 			}
-
+			ctx := context.Background()
 			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucket := regionalID.ID
 			bucketRegion := regionalID.Region
 
-			conn, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion.String())
+			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
 			if err != nil {
 				return err
 			}
@@ -180,8 +182,9 @@ func IsWebsiteConfigurationPresent(tt *acctest.TestTools, resourceName string) r
 		regionalID := regional.ExpandID(rs.Primary.ID)
 		bucket := regionalID.ID
 		bucketRegion := regionalID.Region
+		ctx := context.Background()
 
-		conn, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion.String())
+		conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
 		if err != nil {
 			return err
 		}

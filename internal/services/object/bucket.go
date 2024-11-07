@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -50,10 +51,10 @@ func ResourceBucket() *schema.Resource {
 				Default:     "private",
 				Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
 				ValidateFunc: validation.StringInSlice([]string{
-					s3.ObjectCannedACLPrivate,
-					s3.ObjectCannedACLPublicRead,
-					s3.ObjectCannedACLPublicReadWrite,
-					s3.ObjectCannedACLAuthenticatedRead,
+					string(s3Types.BucketCannedACLPrivate),
+					string(s3Types.BucketCannedACLPublicRead),
+					string(s3Types.BucketCannedACLPublicReadWrite),
+					string(s3Types.BucketCannedACLAuthenticatedRead),
 				}, false),
 				Deprecated: "ACL attribute is deprecated. Please use the resource scaleway_object_bucket_acl instead.",
 			},
@@ -227,7 +228,7 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m i
 	objectLockEnabled := d.Get("object_lock_enabled").(bool)
 	acl := d.Get("acl").(string)
 
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -235,11 +236,11 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m i
 	req := &s3.CreateBucketInput{
 		Bucket:                     scw.StringPtr(bucketName),
 		ObjectLockEnabledForBucket: scw.BoolPtr(objectLockEnabled),
-		ACL:                        scw.StringPtr(acl),
+		ACL:                        s3Types.BucketCannedACL(acl),
 	}
-	_, err = s3Client.CreateBucketWithContext(ctx, req)
+	_, err = s3Client.CreateBucket(ctx, req)
 	if TimedOut(err) {
-		_, err = s3Client.CreateBucketWithContext(ctx, req)
+		_, err = s3Client.CreateBucket(ctx, req)
 	}
 	if err != nil {
 		return diag.FromErr(err)
@@ -248,9 +249,9 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m i
 	tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
 	if len(tagsSet) > 0 {
-		_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
+		_, err = s3Client.PutBucketTagging(ctx, &s3.PutBucketTaggingInput{
 			Bucket: scw.StringPtr(bucketName),
-			Tagging: &s3.Tagging{
+			Tagging: &s3Types.Tagging{
 				TagSet: tagsSet,
 			},
 		})
@@ -265,7 +266,7 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -273,9 +274,9 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 	if d.HasChange("acl") {
 		acl := d.Get("acl").(string)
 
-		_, err := s3Client.PutBucketAclWithContext(ctx, &s3.PutBucketAclInput{
+		_, err := s3Client.PutBucketAcl(ctx, &s3.PutBucketAclInput{
 			Bucket: scw.StringPtr(bucketName),
-			ACL:    scw.StringPtr(acl),
+			ACL:    s3Types.BucketCannedACL(acl),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Couldn't update bucket ACL: %s", err))
@@ -295,14 +296,14 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 		tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
 		if len(tagsSet) > 0 {
-			_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
+			_, err = s3Client.PutBucketTagging(ctx, &s3.PutBucketTaggingInput{
 				Bucket: scw.StringPtr(bucketName),
-				Tagging: &s3.Tagging{
+				Tagging: &s3Types.Tagging{
 					TagSet: tagsSet,
 				},
 			})
 		} else {
-			_, err = s3Client.DeleteBucketTaggingWithContext(ctx, &s3.DeleteBucketTaggingInput{
+			_, err = s3Client.DeleteBucketTagging(ctx, &s3.DeleteBucketTaggingInput{
 				Bucket: scw.StringPtr(bucketName),
 			})
 		}
@@ -327,7 +328,7 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 }
 
 //gocyclo:ignore
-func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.ResourceData) error {
+func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *schema.ResourceData) error {
 	bucket := d.Get("name").(string)
 
 	lifecycleRules := d.Get("lifecycle_rule").([]interface{})
@@ -337,41 +338,44 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 			Bucket: aws.String(bucket),
 		}
 
-		_, err := conn.DeleteBucketLifecycle(i)
+		_, err := conn.DeleteBucketLifecycle(ctx, i)
 		if err != nil {
-			return fmt.Errorf("error removing S3 lifecycle: %s", err)
+			return fmt.Errorf("error removing S3 lifecycle for bucket %s: %w", bucket, err)
 		}
 		return nil
 	}
 
-	rules := make([]*s3.LifecycleRule, 0, len(lifecycleRules))
+	var rules []s3Types.LifecycleRule
 
 	for i, lifecycleRule := range lifecycleRules {
 		r := lifecycleRule.(map[string]interface{})
 
-		rule := &s3.LifecycleRule{}
+		rule := s3Types.LifecycleRule{}
 
 		// Filter
 		tags := ExpandObjectBucketTags(r["tags"])
 		ruleHasPrefix := len(r["prefix"].(string)) > 0
-		filter := &s3.LifecycleRuleFilter{}
+		filter := &s3Types.LifecycleRuleFilter{}
 
 		if len(tags) > 1 || (ruleHasPrefix && len(tags) == 1) {
-			lifecycleRuleAndOp := &s3.LifecycleRuleAndOperator{}
-			lifecycleRuleAndOp.SetTags(tags)
-			if ruleHasPrefix {
-				lifecycleRuleAndOp.SetPrefix(r["prefix"].(string))
+			lifecycleRuleAndOp := &s3Types.LifecycleRuleAndOperator{
+				Tags: tags,
 			}
-			filter.SetAnd(lifecycleRuleAndOp)
+			if ruleHasPrefix {
+				prefix := r["prefix"].(string)
+				lifecycleRuleAndOp.Prefix = &prefix
+			}
+			filter.And = lifecycleRuleAndOp
 		}
 
 		if !ruleHasPrefix && len(tags) == 1 {
-			filter.SetTag(tags[0])
+			filter.Tag = &tags[0]
 		} else if ruleHasPrefix && len(tags) == 0 {
-			filter.SetPrefix(r["prefix"].(string))
+			prefix := r["prefix"].(string)
+			filter.Prefix = &prefix
 		}
 
-		rule.SetFilter(filter)
+		rule.Filter = filter
 
 		// ID
 		if val, ok := r["id"].(string); ok && val != "" {
@@ -382,15 +386,15 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 
 		// Enabled
 		if val, ok := r["enabled"].(bool); ok && val {
-			rule.Status = aws.String(s3.ExpirationStatusEnabled)
+			rule.Status = s3Types.ExpirationStatusEnabled
 		} else {
-			rule.Status = aws.String(s3.ExpirationStatusDisabled)
+			rule.Status = s3Types.ExpirationStatusDisabled
 		}
 
 		// AbortIncompleteMultipartUpload
-		if val, ok := r["abort_incomplete_multipart_upload_days"].(int); ok && val > 0 {
-			rule.AbortIncompleteMultipartUpload = &s3.AbortIncompleteMultipartUpload{
-				DaysAfterInitiation: aws.Int64(int64(val)),
+		if val, ok := r["abort_incomplete_multipart_upload_days"].(int32); ok && val > 0 {
+			rule.AbortIncompleteMultipartUpload = &s3Types.AbortIncompleteMultipartUpload{
+				DaysAfterInitiation: aws.Int32(val),
 			}
 		}
 
@@ -398,9 +402,9 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		expiration := d.Get(fmt.Sprintf("lifecycle_rule.%d.expiration", i)).([]interface{})
 		if len(expiration) > 0 && expiration[0] != nil {
 			e := expiration[0].(map[string]interface{})
-			i := &s3.LifecycleExpiration{}
-			if val, ok := e["days"].(int); ok && val > 0 {
-				i.Days = aws.Int64(int64(val))
+			i := &s3Types.LifecycleExpiration{}
+			if val, ok := e["days"].(int32); ok && val > 0 {
+				i.Days = aws.Int32(val)
 			}
 			rule.Expiration = i
 		}
@@ -408,15 +412,15 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		// Transitions
 		transitions := d.Get(fmt.Sprintf("lifecycle_rule.%d.transition", i)).(*schema.Set).List()
 		if len(transitions) > 0 {
-			rule.Transitions = make([]*s3.Transition, 0, len(transitions))
+			rule.Transitions = []s3Types.Transition{}
 			for _, transition := range transitions {
 				transition := transition.(map[string]interface{})
-				i := &s3.Transition{}
-				if val, ok := transition["days"].(int); ok && val >= 0 {
-					i.Days = aws.Int64(int64(val))
+				i := s3Types.Transition{}
+				if val, ok := transition["days"].(int32); ok && val >= 0 {
+					i.Days = aws.Int32(val)
 				}
 				if val, ok := transition["storage_class"].(string); ok && val != "" {
-					i.StorageClass = aws.String(val)
+					i.StorageClass = s3Types.TransitionStorageClass(val)
 				}
 
 				rule.Transitions = append(rule.Transitions, i)
@@ -429,7 +433,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		if rule.Expiration == nil && rule.NoncurrentVersionExpiration == nil &&
 			rule.Transitions == nil && rule.NoncurrentVersionTransitions == nil &&
 			rule.AbortIncompleteMultipartUpload == nil {
-			rule.Expiration = &s3.LifecycleExpiration{ExpiredObjectDeleteMarker: aws.Bool(false)}
+			rule.Expiration = &s3Types.LifecycleExpiration{ExpiredObjectDeleteMarker: aws.Bool(false)}
 		}
 
 		rules = append(rules, rule)
@@ -437,14 +441,13 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 
 	i := &s3.PutBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucket),
-		LifecycleConfiguration: &s3.BucketLifecycleConfiguration{
+		LifecycleConfiguration: &s3Types.BucketLifecycleConfiguration{
 			Rules: rules,
 		},
 	}
 
-	_, err := conn.PutBucketLifecycleConfigurationWithContext(ctx, i)
-	if err != nil {
-		return fmt.Errorf("error putting Object Storage lifecycle: %s", err)
+	if _, err := conn.PutBucketLifecycleConfiguration(ctx, i); err != nil {
+		return fmt.Errorf("error applying lifecycle configuration to bucket %s: %w", bucket, err)
 	}
 
 	return nil
@@ -452,7 +455,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 
 //gocyclo:ignore
 func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -462,7 +465,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
 
-	acl, err := s3Client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
@@ -474,7 +477,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	// Get object_lock_enabled
-	objectLockConfiguration, err := s3Client.GetObjectLockConfigurationWithContext(ctx, &s3.GetObjectLockConfigurationInput{
+	objectLockConfiguration, err := s3Client.GetObjectLockConfiguration(ctx, &s3.GetObjectLockConfigurationInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
@@ -499,7 +502,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	// we do not read it, and it has a "private" default value.
 	// AWS has the same issue: https://github.com/terraform-providers/terraform-provider-aws/issues/6193
 
-	_, err = s3Client.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
+	_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
@@ -509,9 +512,9 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 		}
 	}
 
-	var tagsSet []*s3.Tag
+	var tagsSet []s3Types.Tag
 
-	tagsResponse, err := s3Client.GetBucketTaggingWithContext(ctx, &s3.GetBucketTaggingInput{
+	tagsResponse, err := s3Client.GetBucketTagging(ctx, &s3.GetBucketTaggingInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
@@ -529,7 +532,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("api_endpoint", objectBucketAPIEndpointURL(region))
 
 	// Read the CORS
-	corsResponse, err := s3Client.GetBucketCorsWithContext(ctx, &s3.GetBucketCorsInput{
+	corsResponse, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
@@ -542,7 +545,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
 
 	// Read the versioning configuration
-	versioningResponse, err := s3Client.GetBucketVersioningWithContext(ctx, &s3.GetBucketVersioningInput{
+	versioningResponse, err := s3Client.GetBucketVersioning(ctx, &s3.GetBucketVersioningInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
@@ -554,7 +557,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
 
 	// Read the lifecycle configuration
-	lifecycle, err := s3Client.GetBucketLifecycleConfigurationWithContext(ctx, &s3.GetBucketLifecycleConfigurationInput{
+	lifecycle, err := s3Client.GetBucketLifecycleConfiguration(ctx, &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
@@ -573,15 +576,15 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 			rule := make(map[string]interface{})
 
 			// ID
-			if lifecycleRule.ID != nil && aws.StringValue(lifecycleRule.ID) != "" {
-				rule["id"] = aws.StringValue(lifecycleRule.ID)
+			if lifecycleRule.ID != nil && aws.ToString(lifecycleRule.ID) != "" {
+				rule["id"] = aws.ToString(lifecycleRule.ID)
 			}
 			filter := lifecycleRule.Filter
 			if filter != nil {
 				if filter.And != nil {
 					// Prefix
-					if filter.And.Prefix != nil && aws.StringValue(filter.And.Prefix) != "" {
-						rule["prefix"] = aws.StringValue(filter.And.Prefix)
+					if filter.And.Prefix != nil && aws.ToString(filter.And.Prefix) != "" {
+						rule["prefix"] = aws.ToString(filter.And.Prefix)
 					}
 					// Tag
 					if len(filter.And.Tags) > 0 {
@@ -589,33 +592,31 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 					}
 				} else {
 					// Prefix
-					if filter.Prefix != nil && aws.StringValue(filter.Prefix) != "" {
-						rule["prefix"] = aws.StringValue(filter.Prefix)
+					if filter.Prefix != nil && aws.ToString(filter.Prefix) != "" {
+						rule["prefix"] = aws.ToString(filter.Prefix)
 					}
 					// Tag
 					if filter.Tag != nil {
-						rule["tags"] = flattenObjectBucketTags([]*s3.Tag{filter.Tag})
+						rule["tags"] = flattenObjectBucketTags([]s3Types.Tag{*filter.Tag})
 					}
 				}
 			} else {
-				if lifecycleRule.Prefix != nil { //nolint:staticcheck
-					rule["prefix"] = aws.StringValue(lifecycleRule.Prefix) //nolint:staticcheck
+				if lifecycleRule.Filter != nil && lifecycleRule.Filter.Prefix != nil { //nolint:staticcheck
+					rule["prefix"] = aws.ToString(lifecycleRule.Filter.Prefix) //nolint:staticcheck
 				}
 			}
 
 			// Enabled
-			if lifecycleRule.Status != nil {
-				if aws.StringValue(lifecycleRule.Status) == s3.ExpirationStatusEnabled {
-					rule["enabled"] = true
-				} else {
-					rule["enabled"] = false
-				}
+			if lifecycleRule.Status == s3Types.ExpirationStatusEnabled {
+				rule["enabled"] = true
+			} else {
+				rule["enabled"] = false
 			}
 
 			// AbortIncompleteMultipartUploadDays
 			if lifecycleRule.AbortIncompleteMultipartUpload != nil {
 				if lifecycleRule.AbortIncompleteMultipartUpload.DaysAfterInitiation != nil {
-					rule["abort_incomplete_multipart_upload_days"] = int(aws.Int64Value(lifecycleRule.AbortIncompleteMultipartUpload.DaysAfterInitiation))
+					rule["abort_incomplete_multipart_upload_days"] = int(aws.ToInt32(lifecycleRule.AbortIncompleteMultipartUpload.DaysAfterInitiation))
 				}
 			}
 
@@ -623,7 +624,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 			if lifecycleRule.Expiration != nil {
 				e := make(map[string]interface{})
 				if lifecycleRule.Expiration.Days != nil {
-					e["days"] = int(aws.Int64Value(lifecycleRule.Expiration.Days))
+					e["days"] = int(aws.ToInt32(lifecycleRule.Expiration.Days))
 				}
 				rule["expiration"] = []interface{}{e}
 			}
@@ -633,10 +634,10 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 				for _, v := range lifecycleRule.Transitions {
 					t := make(map[string]interface{})
 					if v.Days != nil {
-						t["days"] = int(aws.Int64Value(v.Days))
+						t["days"] = int(aws.ToInt32(v.Days))
 					}
-					if v.StorageClass != nil {
-						t["storage_class"] = aws.StringValue(v.StorageClass)
+					if v.StorageClass != "" {
+						t["storage_class"] = string(v.StorageClass)
 					}
 					transitions = append(transitions, t)
 				}
@@ -657,29 +658,33 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = s3Client.DeleteBucketWithContext(ctx, &s3.DeleteBucketInput{
+	_, err = s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
 
-	if IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
-		return nil
-	}
+	if err != nil {
+		var noSuchBucket *s3Types.NoSuchBucket
+		if errors.As(err, &noSuchBucket) {
+			return nil // Bucket does not exist, so consider it deleted
+		}
 
-	if IsS3Err(err, ErrCodeBucketNotEmpty, "") {
-		if d.Get("force_destroy").(bool) {
-			err = deleteS3ObjectVersions(ctx, s3Client, bucketName, true)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
+		if IsS3Err(err, ErrCodeBucketNotEmpty, "") {
+			if d.Get("force_destroy").(bool) {
+				err = deleteS3ObjectVersions(ctx, s3Client, bucketName, true)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
+				}
+				// Try to delete bucket again after deleting objects
+				return resourceObjectBucketDelete(ctx, d, m)
 			}
-			// Try to delete bucket again after deleting objects
-			return resourceObjectBucketDelete(ctx, d, m)
 		}
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
