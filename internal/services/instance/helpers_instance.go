@@ -511,7 +511,7 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 	// If the rootVolumeType is not defined, define it depending on the offer
 	if rootVolumeType == "" {
 		if serverTypeCanBootOnBlock {
-			rootVolumeType = instance.VolumeVolumeTypeBSSD.String()
+			rootVolumeType = instance.VolumeVolumeTypeSbsVolume.String()
 		} else {
 			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
 		}
