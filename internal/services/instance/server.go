@@ -401,10 +401,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		RoutedIPEnabled:   types.ExpandBoolPtr(types.GetBool(d, "routed_ip_enabled")),
 	}
 
-	if imageUUID != "" {
-		req.Image = scw.StringPtr(imageUUID)
-	}
-
 	enableIPv6, ok := d.GetOk("enable_ipv6")
 	if ok {
 		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool)) //nolint:staticcheck
@@ -472,6 +468,10 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
 		}
 		imageUUID = image.ID
+	}
+
+	if imageUUID != "" {
+		req.Image = scw.StringPtr(imageUUID)
 	}
 
 	res, err := api.CreateServer(req, scw.WithContext(ctx))
