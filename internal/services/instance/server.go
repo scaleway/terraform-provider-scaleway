@@ -1431,7 +1431,7 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 
 		// local volumes can only be added when the server is stopped
 		if volumeHasChange && !serverIsStopped && volume.IsLocal() && volume.IsAttached() {
-			return nil, errors.New("instanceSDK must be stopped to change local volumes")
+			return nil, errors.New("instance must be stopped to change local volumes")
 		}
 		volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
 	}
