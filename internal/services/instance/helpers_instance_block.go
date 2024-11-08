@@ -205,5 +205,5 @@ func volumeTypeToMarketplaceFilter(volumeType any) marketplace.LocalImageType {
 		}
 	}
 
-	return marketplace.LocalImageTypeUnknownType
+	return marketplace.LocalImageTypeInstanceSbs
 }
