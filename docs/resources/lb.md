@@ -161,7 +161,7 @@ The following arguments are supported:
 
 - `ip_ids` - (Optional) The List of IP IDs to attach to the Load Balancer.
 
-~> **Important:** Make sure to use a [`scaleway_lb_ip`](../lb_ip.md) resource to create the IPs.
+~> **Important:** Make sure to use a [`scaleway_lb_ip`](./lb_ip.md) resource to create the IPs.
 
 - `ip_id` - (Deprecated) The ID of the associated Load Balancer IP. See below.
 
