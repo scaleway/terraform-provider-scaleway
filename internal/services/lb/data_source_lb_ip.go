@@ -30,6 +30,7 @@ func DataSourceIP() *schema.Resource {
 		ConflictsWith:    []string{"ip_address"},
 		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
+	dsSchema["zone"].Optional = true
 	dsSchema["project_id"].Optional = true
 
 	return &schema.Resource{
