@@ -692,7 +692,7 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.S3, d *schema.ResourceData) error {
+func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
 	v := d.Get("versioning").([]interface{})
 	bucketName := d.Get("name").(string)
 	vc := expandObjectBucketVersioning(v)
@@ -703,7 +703,7 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.S3, d 
 	}
 	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
 
-	_, err := s3conn.PutBucketVersioningWithContext(ctx, i)
+	_, err := s3conn.PutBucketVersioning(ctx, i)
 	if err != nil {
 		return fmt.Errorf("error putting S3 versioning: %s", err)
 	}
@@ -711,7 +711,7 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.S3, d 
 	return nil
 }
 
-func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *schema.ResourceData) error {
+func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
 	bucketName := d.Get("name").(string)
 	rawCors := d.Get("cors_rule").([]interface{})
 
@@ -719,7 +719,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *schema.Re
 		// Delete CORS
 		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, delete CORS", bucketName))
 
-		_, err := s3conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
+		_, err := s3conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {

@@ -245,77 +245,77 @@ func IsS3Err(err error, code string, message string) bool {
 
 func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]interface{} {
 	vcl := []map[string]interface{}{{}}
-	vcl[0]["enabled"] = versioningResponse.Status != nil && *versioningResponse.Status == s3.BucketVersioningStatusEnabled
+	vcl[0]["enabled"] = versioningResponse.Status == s3Types.BucketVersioningStatusEnabled
 	return vcl
 }
 
-func expandObjectBucketVersioning(v []interface{}) *s3.VersioningConfiguration {
-	vc := &s3.VersioningConfiguration{}
-	vc.Status = scw.StringPtr(s3.BucketVersioningStatusSuspended)
+func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfiguration {
+	vc := &s3Types.VersioningConfiguration{}
+	vc.Status = s3Types.BucketVersioningStatusSuspended
 	if len(v) > 0 {
 		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
-			vc.Status = scw.StringPtr(s3.BucketVersioningStatusEnabled)
+			vc.Status = s3Types.BucketVersioningStatusEnabled
 		}
 	}
 	return vc
 }
 
-func flattenBucketCORS(corsResponse interface{}) []map[string]interface{} {
-	corsRules := make([]map[string]interface{}, 0)
+func flattenBucketCORS(corsResponse interface{}) []interface{} {
 	if cors, ok := corsResponse.(*s3.GetBucketCorsOutput); ok && len(cors.CORSRules) > 0 {
-		corsRules = make([]map[string]interface{}, 0, len(cors.CORSRules))
+		var corsRules []interface{}
 		for _, ruleObject := range cors.CORSRules {
-			rule := make(map[string]interface{})
-			rule["allowed_headers"] = types.FlattenSliceStringPtr(ruleObject.AllowedHeaders)
-			rule["allowed_methods"] = types.FlattenSliceStringPtr(ruleObject.AllowedMethods)
-			rule["allowed_origins"] = types.FlattenSliceStringPtr(ruleObject.AllowedOrigins)
-			// Both the "ExposeHeaders" and "MaxAgeSeconds" might not be set.
-			if ruleObject.AllowedOrigins != nil {
-				rule["expose_headers"] = types.FlattenSliceStringPtr(ruleObject.ExposeHeaders)
+			rule := map[string]interface{}{}
+			if len(ruleObject.AllowedHeaders) > 0 {
+				rule["allowed_headers"] = ruleObject.AllowedHeaders
+			}
+			if len(ruleObject.AllowedMethods) > 0 {
+				rule["allowed_methods"] = ruleObject.AllowedMethods
+			}
+			if len(ruleObject.AllowedOrigins) > 0 {
+				rule["allowed_origins"] = ruleObject.AllowedOrigins
+			}
+			if len(ruleObject.ExposeHeaders) > 0 {
+				rule["expose_headers"] = ruleObject.ExposeHeaders
 			}
 			if ruleObject.MaxAgeSeconds != nil {
-				rule["max_age_seconds"] = int(*ruleObject.MaxAgeSeconds)
+				rule["max_age_seconds"] = ruleObject.MaxAgeSeconds
 			}
 			corsRules = append(corsRules, rule)
 		}
+		return corsRules
 	}
-	return corsRules
+	return nil
 }
 
-func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []*s3Types.CORSRule {
-	rules := make([]*s3Types.CORSRule, 0, len(rawCors))
+func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []s3Types.CORSRule {
+	if rawCors == nil {
+		return nil
+	}
+	var rules []s3Types.CORSRule
 	for _, cors := range rawCors {
 		corsMap := cors.(map[string]interface{})
-		r := &s3Types.CORSRule{}
+		rule := s3Types.CORSRule{}
 		for k, v := range corsMap {
 			tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, put CORS: %#v, %#v", bucket, k, v))
-			if k == "max_age_seconds" {
-				r.MaxAgeSeconds = scw.Int64Ptr(int64(v.(int)))
-			} else {
-				vMap := make([]*string, len(v.([]interface{})))
-				for i, vv := range v.([]interface{}) {
-					if str, ok := vv.(string); ok {
-						vMap[i] = scw.StringPtr(str)
-					}
-				}
-				switch k {
-				case "allowed_headers":
-					r.AllowedHeaders = vMap
-				case "allowed_methods":
-					r.AllowedMethods = vMap
-				case "allowed_origins":
-					r.AllowedOrigins = vMap
-				case "expose_headers":
-					r.ExposeHeaders = vMap
-				}
+			switch k {
+			case "allowed_headers":
+				rule.AllowedHeaders = v.([]string)
+			case "allowed_methods":
+				rule.AllowedMethods = v.([]string)
+			case "allowed_origins":
+				rule.AllowedOrigins = v.([]string)
+			case "expose_headers":
+				rule.ExposeHeaders = v.([]string)
+			case "max_age_seconds":
+				rule.MaxAgeSeconds = scw.Int32Ptr(int32(v.(int)))
 			}
+			rules = append(rules, rule)
 		}
-		rules = append(rules, r)
 	}
 	return rules
 }
 
-func deleteS3ObjectVersion(conn *s3.Client, bucketName string, key string, versionID string, force bool) error {
+func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName string, key string, versionID string, force bool) error {
 	input := &s3.DeleteObjectInput{
 		Bucket: scw.StringPtr(bucketName),
 		Key:    scw.StringPtr(key),
@@ -327,14 +327,14 @@ func deleteS3ObjectVersion(conn *s3.Client, bucketName string, key string, versi
 		input.BypassGovernanceRetention = scw.BoolPtr(force)
 	}
 
-	_, err := conn.DeleteObject(input)
+	_, err := conn.DeleteObject(ctx, input)
 	return err
 }
 
 // removeS3ObjectVersionLegalHold remove legal hold from an ObjectVersion if it is on
 // returns true if legal hold was removed
-func removeS3ObjectVersionLegalHold(conn *s3.Client, bucketName string, objectVersion *s3.ObjectVersion) (bool, error) {
-	objectHead, err := conn.HeadObject(&s3.HeadObjectInput{
+func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucketName string, objectVersion *s3Types.ObjectVersion) (bool, error) {
+	objectHead, err := conn.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket:    scw.StringPtr(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
@@ -343,15 +343,15 @@ func removeS3ObjectVersionLegalHold(conn *s3.Client, bucketName string, objectVe
 		err = fmt.Errorf("failed to get S3 object meta data: %s", err)
 		return false, err
 	}
-	if aws.StringValue(objectHead.ObjectLockLegalHoldStatus) != s3.ObjectLockLegalHoldStatusOn {
+	if objectHead.ObjectLockLegalHoldStatus != s3Types.ObjectLockLegalHoldStatusOn {
 		return false, nil
 	}
-	_, err = conn.PutObjectLegalHold(&s3.PutObjectLegalHoldInput{
+	_, err = conn.PutObjectLegalHold(ctx, &s3.PutObjectLegalHoldInput{
 		Bucket:    scw.StringPtr(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
-		LegalHold: &s3.ObjectLockLegalHold{
-			Status: scw.StringPtr(s3.ObjectLockLegalHoldStatusOff),
+		LegalHold: &s3Types.ObjectLockLegalHold{
+			Status: s3Types.ObjectLockLegalHoldStatusOff,
 		},
 	})
 	if err != nil {
@@ -377,18 +377,18 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.Client, bucketName str
 
 		for _, objectVersion := range page.Versions {
 			pool.AddTask(func() error {
-				objectKey := aws.StringValue(objectVersion.Key)
-				objectVersionID := aws.StringValue(objectVersion.VersionId)
-				err := deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+				objectKey := aws.ToString(objectVersion.Key)
+				objectVersionID := aws.ToString(objectVersion.VersionId)
+				err := deleteS3ObjectVersion(ctx, conn, bucketName, objectKey, objectVersionID, force)
 
 				if IsS3Err(err, ErrCodeAccessDenied, "") && force {
-					legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
+					legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(ctx, conn, bucketName, objectVersion)
 					if errLegal != nil {
 						return fmt.Errorf("failed to remove legal hold: %s", errLegal)
 					}
 
 					if legalHoldRemoved {
-						err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+						err = deleteS3ObjectVersion(ctx, conn, bucketName, objectKey, objectVersionID, force)
 					}
 				}
 
@@ -420,9 +420,9 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.Client, bucketName str
 
 		for _, deleteMarkerEntry := range page.DeleteMarkers {
 			pool.AddTask(func() error {
-				deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
-				deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
-				err := deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
+				deleteMarkerKey := aws.ToString(deleteMarkerEntry.Key)
+				deleteMarkerVersionsID := aws.ToString(deleteMarkerEntry.VersionId)
+				err := deleteS3ObjectVersion(ctx, conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
 				if err != nil {
 					return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
 				}
@@ -572,7 +572,7 @@ func NormalizeOwnerID(id *string) *string {
 
 func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, awsResourceNotFoundCode string) (bucketFound bool, resourceFound bool) {
 	switch {
-	case IsS3Err(err, s3.ErrCodeNoSuchBucket, ""):
+	case IsS3Err(err, s3Types.errCodeNoSuchBucket, ""):
 		*diags = append(*diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Bucket not found",
