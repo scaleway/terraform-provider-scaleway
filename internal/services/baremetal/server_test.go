@@ -20,6 +20,9 @@ func TestAccServer_Basic(t *testing.T) {
 	// t.Skip("Skipping Baremetal Server test as no stock is available currently")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	SSHKeyName := "TestAccServer_Basic"
 	name := "TestAccServer_Basic"
@@ -46,17 +49,17 @@ func TestAccServer_Basic(t *testing.T) {
 						name        = "%s"
 						zone        = "fr-par-1"
 						description = "test a description"
-						offer       = "EM-A115X-SSD"
+						offer       = "%s"
 						os    = data.scaleway_baremetal_os.my_os.os_id
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, SSHKeyName, SSHKeyBaremetal, name, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/f7241870-c383-4fa2-bbca-5189600df5c4"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
@@ -83,17 +86,17 @@ func TestAccServer_Basic(t *testing.T) {
 						name        = "%s"
 						zone        = "fr-par-1"
 						description = "test a description"
-						offer       = "EM-A115X-SSD"
+						offer       = "%s"
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, SSHKeyName, SSHKeyBaremetal, name, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/f7241870-c383-4fa2-bbca-5189600df5c4"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
@@ -111,6 +114,9 @@ func TestAccServer_Basic(t *testing.T) {
 func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -118,15 +124,15 @@ func TestAccServer_RequiredInstallConfig(t *testing.T) {
 		CheckDestroy:      baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_baremetal_server" "base" {
 						name        = "TestAccServer_RequiredInstallConfig"
 						zone        = "fr-par-1"
-						offer       = "EM-A115X-SSD"
+						offer       = "%s"
 						os          = "7e865c16-1a63-4dc7-8181-dabc020fc21b" // Proxmox
 
 						ssh_key_ids = []
-					}`,
+					}`, OfferName),
 				ExpectError: regexp.MustCompile("attribute is required"),
 			},
 		},
@@ -143,10 +149,10 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 		CheckDestroy:      baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_offer" "my_offer" {
 					  zone = "fr-par-1"
-					  name = "EM-A115X-SSD"
+					  name = "%s"
 					}
 
 					resource "scaleway_baremetal_server" "base" {
@@ -154,11 +160,11 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
                       zone     			         = "fr-par-1"
 					  offer     				 = data.scaleway_baremetal_offer.my_offer.offer_id
 					  install_config_afterward   = true
-					}`,
+					}`, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", "TestAccScalewayBaremetalServer_WithoutInstallConfig"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/f7241870-c383-4fa2-bbca-5189600df5c4"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
 					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "os"),
 				),
 			},
@@ -169,6 +175,9 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 func TestAccServer_CreateServerWithOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_CreateServerWithOption"
 	name := "TestAccScalewayBaremetalServer_CreateServerWithOption"
@@ -188,7 +197,7 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 				
 				data "scaleway_baremetal_offer" "my_offer" {
 				  zone = "fr-par-1"
-				  name = "EM-A115X-SSD"
+				  name = "%s"
 				}
 				
 				data "scaleway_baremetal_option" "private_network" {
@@ -212,7 +221,7 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 					id = data.scaleway_baremetal_option.private_network.option_id
 				  }
 				}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
@@ -231,6 +240,9 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 func TestAccServer_AddOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddOption"
 	name := "TestAccScalewayBaremetalServer_AddOption"
@@ -250,7 +262,7 @@ func TestAccServer_AddOption(t *testing.T) {
 					
 					data "scaleway_baremetal_offer" "my_offer" {
 					  zone = "fr-par-1"
-					  name = "EM-A115X-SSD"
+					  name = "%s"
 					}
 					
 					resource "scaleway_iam_ssh_key" "base" {
@@ -266,7 +278,7 @@ func TestAccServer_AddOption(t *testing.T) {
 					
 					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
@@ -281,7 +293,7 @@ func TestAccServer_AddOption(t *testing.T) {
 				
 				data "scaleway_baremetal_offer" "my_offer" {
 				  zone = "fr-par-1"
-				  name = "EM-A115X-SSD"
+				  name = "%s"
 				}
 				
 				data "scaleway_baremetal_option" "private_network" {
@@ -305,7 +317,7 @@ func TestAccServer_AddOption(t *testing.T) {
 					id = data.scaleway_baremetal_option.private_network.option_id
 				  }
 				}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
@@ -319,6 +331,9 @@ func TestAccServer_AddOption(t *testing.T) {
 func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
 	name := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
@@ -338,7 +353,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					data "scaleway_baremetal_offer" "my_offer" {
 					  zone = "fr-par-1"
-					  name = "EM-A115X-SSD"
+					  name = "%s"
 					}
 					
 					resource "scaleway_iam_ssh_key" "base" {
@@ -354,7 +369,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
@@ -369,7 +384,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					data "scaleway_baremetal_offer" "my_offer" {
 					  zone = "fr-par-1"
-					  name = "EM-A115X-SSD"
+					  name = "%s"
 					}
 					
 					data "scaleway_baremetal_option" "remote_access" {
@@ -402,7 +417,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						expires_at = "2025-07-06T09:00:00Z"
 					  }
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
@@ -427,7 +442,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					data "scaleway_baremetal_offer" "my_offer" {
 					  zone = "fr-par-1"
-					  name = "EM-A115X-SSD"
+					  name = "%s"
 					}
 					
 					data "scaleway_baremetal_option" "remote_access" {
@@ -452,7 +467,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						expires_at = "2025-07-06T09:00:00Z"
 					  }
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
@@ -470,6 +485,9 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
 	name := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
@@ -491,7 +509,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
@@ -522,7 +540,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 						  id = scaleway_vpc_private_network.pn.id
 						}
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -536,6 +554,9 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 func TestAccServer_AddPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
 	name := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
@@ -557,7 +578,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
@@ -585,7 +606,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 						  id = data.scaleway_baremetal_option.private_network.option_id
 						}
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
@@ -600,7 +621,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
@@ -631,7 +652,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 						  id = scaleway_vpc_private_network.pn.id
 						}
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -645,6 +666,9 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
 	name := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
@@ -666,7 +690,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
@@ -697,7 +721,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 						  id = scaleway_vpc_private_network.pn.id
 						}
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -714,7 +738,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
@@ -752,7 +776,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 						  id = scaleway_vpc_private_network.pn2.id
 						}
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -767,6 +791,9 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_WithIPAMPrivateNetwork"
 	name := "TestAccScalewayBaremetalServer_WithIPAMPrivateNetwork"
@@ -814,7 +841,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
@@ -850,7 +877,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 					  }
 					  type = "ipv4"
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -893,7 +920,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
@@ -929,12 +956,12 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 					  }
 					  type = "ipv4"
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address", "data.scaleway_ipam_ips.base", "ips.0.address"),
-					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip02", "address", "data.scaleway_ipam_ips.base", "ips.1.address"),
+					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address", "data.scaleway_ipam_ips.base", "ips.1.address"),
+					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip02", "address", "data.scaleway_ipam_ips.base", "ips.0.address"),
 				),
 			},
 		},
