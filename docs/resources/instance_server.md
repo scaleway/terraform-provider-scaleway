@@ -201,6 +201,8 @@ To retrieve more information by label please use: ```scw marketplace image get l
 
 - `security_group_id` - (Optional) The [security group](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-update-a-security-group9) the server is attached to.
 
+~> **Important:** If you don't specify a security group, a default one will be created, which won't be tracked by Terraform unless you import it.
+
 - `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-update-a-security-group the server is attached to.
 
 
