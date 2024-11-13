@@ -193,9 +193,15 @@ func instanceAndBlockAPIWithZoneAndID(m interface{}, zonedID string) (*BlockAndI
 	}, zone, ID, nil
 }
 
-func volumeTypeToMarketplaceFilter(volumeType any) marketplace.LocalImageType {
-	if volumeType != nil && instance.VolumeVolumeType(volumeType.(string)) == instance.VolumeVolumeTypeSbsVolume {
+func volumeTypeToMarketplaceFilter(volumeType instance.VolumeVolumeType) marketplace.LocalImageType {
+	switch volumeType {
+	case instance.VolumeVolumeTypeSbsVolume:
 		return marketplace.LocalImageTypeInstanceSbs
+	case instance.VolumeVolumeTypeBSSD:
+		return marketplace.LocalImageTypeInstanceLocal
+	case instance.VolumeVolumeTypeLSSD:
+		return marketplace.LocalImageTypeInstanceLocal
 	}
-	return marketplace.LocalImageTypeInstanceLocal
+
+	return marketplace.LocalImageTypeInstanceSbs
 }

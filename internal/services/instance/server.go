@@ -389,22 +389,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	commercialType := d.Get("type").(string)
 
 	imageUUID := locality.ExpandID(d.Get("image"))
-	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
-		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
-		imageLabel := formatImageLabel(imageUUID)
-
-		marketPlaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
-		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
-			CommercialType: commercialType,
-			Zone:           zone,
-			ImageLabel:     imageLabel,
-			Type:           volumeTypeToMarketplaceFilter(d.Get("root_volume.0.volume_type")),
-		})
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
-		}
-		imageUUID = image.ID
-	}
 
 	req := &instanceSDK.CreateServerRequest{
 		Zone:              zone,
@@ -415,10 +399,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              types.ExpandStrings(d.Get("tags")),
 		RoutedIPEnabled:   types.ExpandBoolPtr(types.GetBool(d, "routed_ip_enabled")),
-	}
-
-	if imageUUID != "" {
-		req.Image = scw.StringPtr(imageUUID)
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
@@ -471,6 +451,27 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	// Validate total local volume sizes.
 	if err = validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
+		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
+		imageLabel := formatImageLabel(imageUUID)
+
+		marketPlaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
+		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
+			CommercialType: commercialType,
+			Zone:           zone,
+			ImageLabel:     imageLabel,
+			Type:           volumeTypeToMarketplaceFilter(req.Volumes["0"].VolumeType),
+		})
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
+		}
+		imageUUID = image.ID
+	}
+
+	if imageUUID != "" {
+		req.Image = scw.StringPtr(imageUUID)
 	}
 
 	res, err := api.CreateServer(req, scw.WithContext(ctx))
@@ -1431,7 +1432,7 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 
 		// local volumes can only be added when the server is stopped
 		if volumeHasChange && !serverIsStopped && volume.IsLocal() && volume.IsAttached() {
-			return nil, errors.New("instanceSDK must be stopped to change local volumes")
+			return nil, errors.New("instance must be stopped to change local volumes")
 		}
 		volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
 	}
