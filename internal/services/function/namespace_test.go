@@ -68,6 +68,22 @@ func TestAccFunctionNamespace_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
 				),
 			},
+			{
+				Config: `
+                                        resource scaleway_function_namespace main {
+                                                name = "tf-tags-test"
+                                                tags = ["tag1", "tag2"]
+                                        }
+                               `,
+				Check: resource.ComposeTestCheckFunc(
+					isNamespacePresent(tt, "scaleway_function_namespace.main"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "tf-tags-test"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.0", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.1", "tag2"),
+
+					acctest.CheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
+				),
+			},
 		},
 	})
 }
