@@ -71,13 +71,22 @@ func TestAccFunctionNamespace_Basic(t *testing.T) {
 			{
 				Config: `
                                         resource scaleway_function_namespace main {
-                                                name = "tf-tags-test"
+                                                name = "test-cr-ns-01"
+                                                environment_variables = {
+                                                        "test" = "test"
+                                                }
+                                                secret_environment_variables = {
+                                                        "test_secret" = "test_secret"
+                                                }
                                                 tags = ["tag1", "tag2"]
                                         }
                                `,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "tf-tags-test"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "description", ""),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "test-cr-ns-01"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.test", "test"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.1", "tag2"),
 
