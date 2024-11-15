@@ -76,7 +76,7 @@ func TestAccFunctionNamespace_Basic(t *testing.T) {
                                         }
                                `,
 				Check: resource.ComposeTestCheckFunc(
-					isNamespacePresent(tt, "scaleway_function_namespace.main"),
+					testAccCheckFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "tf-tags-test"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.1", "tag2"),
