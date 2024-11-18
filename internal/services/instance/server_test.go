@@ -1827,6 +1827,81 @@ func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 	})
 }
 
+func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-root-volume-from-external-snapshot"
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						root_volume {
+							volume_type = "sbs_volume"
+							size_in_gb = 50
+							sbs_iops = 5000
+						}
+					}
+
+					resource "scaleway_block_snapshot" "snapshot" {
+						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "5000"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						name = "tf-tests-instance-root-volume-from-external-snapshot"
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						root_volume {
+							volume_type = "sbs_volume"
+							size_in_gb = 50
+							sbs_iops = 5000
+						}
+					}
+
+					resource "scaleway_block_snapshot" "snapshot" {
+						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+					}
+
+					resource "scaleway_block_volume" "volume" {
+						snapshot_id = scaleway_block_snapshot.snapshot.id
+						iops = 5000
+					}
+
+					resource "scaleway_instance_server" "from_snapshot" {
+						name = "tf-tests-instance-root-volume-from-external-snapshot-2"
+						type  = "PLAY2-PICO"
+						root_volume {
+							volume_type = "sbs_volume"
+							volume_id = scaleway_block_volume.volume.id
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "5000"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.from_snapshot", "root_volume.0.volume_id", "scaleway_block_volume.volume", "id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
