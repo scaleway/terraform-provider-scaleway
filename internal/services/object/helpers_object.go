@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/smithy-go"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"net/http"
 	"runtime"
@@ -212,7 +212,7 @@ func flattenObjectBucketTags(tagsSet []s3Types.Tag) map[string]interface{} {
 }
 
 func ExpandObjectBucketTags(tags interface{}) []s3Types.Tag {
-	tagsSet := []s3Types.Tag(nil)
+	tagsSet := make([]s3Types.Tag, 0, len(tags.(map[string]interface{})))
 	for key, value := range tags.(map[string]interface{}) {
 		tagsSet = append(tagsSet, s3Types.Tag{
 			Key:   scw.StringPtr(key),
@@ -236,9 +236,9 @@ func objectBucketAPIEndpointURL(region scw.Region) string {
 //   - Error.Code() matches code
 //   - Error.Message() contains message
 func IsS3Err(err error, code string, message string) bool {
-	var awsErr awserr.Error
+	var awsErr smithy.APIError
 	if errors.As(err, &awsErr) {
-		return awsErr.Code() == code && strings.Contains(awsErr.Message(), message)
+		return awsErr.ErrorCode() == code && strings.Contains(awsErr.ErrorMessage(), message)
 	}
 	return false
 }
@@ -261,7 +261,7 @@ func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfigurat
 }
 
 func flattenBucketCORS(corsResponse interface{}) []interface{} {
-	if cors, ok := corsResponse.(*s3.GetBucketCorsOutput); ok && len(cors.CORSRules) > 0 {
+	if cors, ok := corsResponse.(s3.GetBucketCorsOutput); ok && len(cors.CORSRules) > 0 {
 		var corsRules []interface{}
 		for _, ruleObject := range cors.CORSRules {
 			rule := map[string]interface{}{}
@@ -361,92 +361,110 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 	return true, nil
 }
 
-func deleteS3ObjectVersions(ctx context.Context, conn *s3.Client, bucketName string, force bool) error {
+func emptyBucket(ctx context.Context, conn *s3.Client, bucketName string, force bool) (int64, error) {
+	var nObject int64
+	var nObjectMarker int64
 	var globalErr error
-	listInput := &s3.ListObjectVersionsInput{
-		Bucket: scw.StringPtr(bucketName),
+
+	//Delete All Object Version
+	nObject, err := processAllPagesObject(ctx, bucketName, conn, force, deleteVersionBucket)
+	if err != nil {
+		globalErr = multierror.Append(globalErr, err)
 	}
 
+	//Delete All Object Marker
+	nObjectMarker, err = processAllPagesObject(ctx, bucketName, conn, force, deleteMarkerBucket)
+	if err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	}
+
+	nObject += nObjectMarker
+
+	return nObject, globalErr
+}
+
+func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Client, force bool, fn func(ctx context.Context, conn *s3.Client, bucket string, force bool, page *s3.ListObjectVersionsOutput, pool *workerpool.WorkerPool) (int64, error)) (int64, error) {
+	var globalErr error
+	deletionWorkers := findDeletionWorkerCapacity()
+	nObject := int64(0)
+	input := &s3.ListObjectVersionsInput{
+		Bucket: scw.StringPtr(bucketName),
+	}
+	pages := s3.NewListObjectVersionsPaginator(conn, input)
+	pool := workerpool.NewWorkerPool(deletionWorkers)
+
+	for pages.HasMorePages() {
+		page, err := pages.NextPage(ctx)
+		if err != nil {
+			return nObject, fmt.Errorf("error listing S3 objects: %w", err)
+		}
+		n, taskErr := fn(ctx, conn, bucketName, force, page, pool)
+		if taskErr != nil {
+			return nObject, taskErr
+		}
+		nObject += n
+	}
+
+	if errs := pool.CloseAndWait(); errs != nil {
+		globalErr = multierror.Append(nil, errs...)
+		return nObject, globalErr
+	}
+
+	return nObject, nil
+}
+
+func deleteMarkerBucket(ctx context.Context, conn *s3.Client, bucketName string, force bool, page *s3.ListObjectVersionsOutput, pool *workerpool.WorkerPool) (int64, error) {
+	var nObject int64
+	for _, deleteMarkerEntry := range page.DeleteMarkers {
+		pool.AddTask(func() error {
+			deleteMarkerKey := aws.ToString(deleteMarkerEntry.Key)
+			deleteMarkerVersionsID := aws.ToString(deleteMarkerEntry.VersionId)
+			err := deleteS3ObjectVersion(ctx, conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
+			if err != nil {
+				return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
+			}
+			nObject += 1
+			return nil
+		})
+	}
+	return nObject, nil
+}
+
+func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string, force bool, page *s3.ListObjectVersionsOutput, pool *workerpool.WorkerPool) (int64, error) {
+	var nObject int64
+	for _, objectVersion := range page.Versions {
+		pool.AddTask(func() error {
+			objectKey := aws.ToString(objectVersion.Key)
+			objectVersionID := aws.ToString(objectVersion.VersionId)
+			err := deleteS3ObjectVersion(ctx, conn, bucketName, objectKey, objectVersionID, force)
+
+			if IsS3Err(err, ErrCodeAccessDenied, "") && force {
+				legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(ctx, conn, bucketName, &objectVersion)
+				if errLegal != nil {
+					return fmt.Errorf("failed to remove legal hold: %s", errLegal)
+				}
+
+				if legalHoldRemoved {
+					err = deleteS3ObjectVersion(ctx, conn, bucketName, objectKey, objectVersionID, force)
+				}
+			}
+			nObject += 1
+			if err != nil {
+				return fmt.Errorf("failed to delete S3 object: %s", err)
+			}
+
+			return nil
+		})
+	}
+	return nObject, nil
+}
+
+func findDeletionWorkerCapacity() int {
 	deletionWorkers := runtime.NumCPU()
 	if deletionWorkers > maxObjectVersionDeletionWorkers {
 		deletionWorkers = maxObjectVersionDeletionWorkers
 	}
-
-	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, _ bool) bool {
-		pool := workerpool.NewWorkerPool(deletionWorkers)
-
-		for _, objectVersion := range page.Versions {
-			pool.AddTask(func() error {
-				objectKey := aws.ToString(objectVersion.Key)
-				objectVersionID := aws.ToString(objectVersion.VersionId)
-				err := deleteS3ObjectVersion(ctx, conn, bucketName, objectKey, objectVersionID, force)
-
-				if IsS3Err(err, ErrCodeAccessDenied, "") && force {
-					legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(ctx, conn, bucketName, objectVersion)
-					if errLegal != nil {
-						return fmt.Errorf("failed to remove legal hold: %s", errLegal)
-					}
-
-					if legalHoldRemoved {
-						err = deleteS3ObjectVersion(ctx, conn, bucketName, objectKey, objectVersionID, force)
-					}
-				}
-
-				if err != nil {
-					return fmt.Errorf("failed to delete S3 object: %s", err)
-				}
-
-				return nil
-			})
-		}
-
-		errs := pool.CloseAndWait()
-		if len(errs) > 0 {
-			globalErr = multierror.Append(nil, errs...)
-			return false
-		}
-
-		return true
-	})
-	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects: %s", globalErr)
-	}
-	if globalErr != nil {
-		return globalErr
-	}
-
-	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, _ bool) bool {
-		pool := workerpool.NewWorkerPool(deletionWorkers)
-
-		for _, deleteMarkerEntry := range page.DeleteMarkers {
-			pool.AddTask(func() error {
-				deleteMarkerKey := aws.ToString(deleteMarkerEntry.Key)
-				deleteMarkerVersionsID := aws.ToString(deleteMarkerEntry.VersionId)
-				err := deleteS3ObjectVersion(ctx, conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
-				if err != nil {
-					return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
-				}
-
-				return nil
-			})
-		}
-
-		errs := pool.CloseAndWait()
-		if len(errs) > 0 {
-			globalErr = multierror.Append(nil, errs...)
-			return false
-		}
-
-		return true
-	})
-	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects for delete markers: %s", globalErr)
-	}
-	if globalErr != nil {
-		return globalErr
-	}
-
-	return nil
+	return deletionWorkers
 }
 
 func transitionHash(v interface{}) int {
@@ -572,7 +590,7 @@ func NormalizeOwnerID(id *string) *string {
 
 func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, awsResourceNotFoundCode string) (bucketFound bool, resourceFound bool) {
 	switch {
-	case IsS3Err(err, s3Types.errCodeNoSuchBucket, ""):
+	case errors.As(err, new(*s3Types.NoSuchBucket)):
 		*diags = append(*diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Bucket not found",
