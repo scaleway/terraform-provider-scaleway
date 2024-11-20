@@ -213,11 +213,11 @@ func ResourceBucket() *schema.Resource {
 		},
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 			if diff.Get("object_lock_enabled").(bool) {
-				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
-					return errors.New("versioning must be enabled when object lock is enabled")
+				versioning := diff.Get("versioning").([]interface{})
+				if len(versioning) == 0 || !versioning[0].(map[string]interface{})["enabled"].(bool) {
+					return fmt.Errorf("versioning must be enabled when object lock is enabled")
 				}
 			}
-
 			return nil
 		},
 	}
@@ -225,9 +225,6 @@ func ResourceBucket() *schema.Resource {
 
 func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
-	//objectLockEnabled := d.Get("object_lock_enabled").(bool)
-	//acl := d.Get("acl").(string)
-
 	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -235,8 +232,6 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m i
 
 	req := &s3.CreateBucketInput{
 		Bucket: scw.StringPtr(bucketName),
-		//ObjectLockEnabledForBucket: scw.BoolPtr(objectLockEnabled),
-		//ACL:                        s3Types.BucketCannedACL(acl),
 	}
 
 	_, err = s3Client.CreateBucket(ctx, req)
@@ -296,9 +291,25 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 
 	// Object Lock enables versioning so we don't want to update versioning it is enabled
 	objectLockEnabled := d.Get("object_lock_enabled").(bool)
-	if !objectLockEnabled && d.HasChange("versioning") {
-		if err := resourceObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
-			return diag.FromErr(err)
+	//if !objectLockEnabled && d.HasChange("versioning") {
+	//	if err := resourceObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//}
+
+	if objectLockEnabled && d.HasChange("versioning") {
+		v := d.Get("versioning").([]interface{})
+		var versioning *s3Types.VersioningConfiguration
+		versioning = expandObjectBucketVersioningUpdate(v)
+		if versioning != nil {
+			input := &s3.PutBucketVersioningInput{
+				Bucket:                  scw.StringPtr(bucketName),
+				VersioningConfiguration: versioning,
+			}
+			_, err := s3Client.PutBucketVersioning(ctx, input)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("putting Bucket (%s) versioning: %s", bucketName, err))
+			}
 		}
 	}
 
@@ -363,8 +374,9 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		rule := s3Types.LifecycleRule{}
 
 		// Filter
+		prefix := r["prefix"].(string)
 		tags := ExpandObjectBucketTags(r["tags"])
-		ruleHasPrefix := len(r["prefix"].(string)) > 0
+		ruleHasPrefix := &prefix != nil
 		filter := &s3Types.LifecycleRuleFilter{}
 
 		if len(tags) > 1 || (ruleHasPrefix && len(tags) == 1) {
@@ -443,12 +455,12 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		// As a lifecycle rule requires 1 or more transition/expiration actions,
 		// we explicitly pass a default ExpiredObjectDeleteMarker value to be able to create
 		// the rule while keeping the policy unaffected if the conditions are not met.
-		if rule.Expiration == nil && rule.NoncurrentVersionExpiration == nil &&
-			rule.Transitions == nil && rule.NoncurrentVersionTransitions == nil &&
-			rule.AbortIncompleteMultipartUpload == nil {
-			//rule.Expiration = &s3Types.LifecycleExpiration{}
-			rule.Transitions = []s3Types.Transition{}
-		}
+		//if rule.Expiration == nil && rule.NoncurrentVersionExpiration == nil &&
+		//	rule.Transitions == nil && rule.NoncurrentVersionTransitions == nil &&
+		//	rule.AbortIncompleteMultipartUpload == nil {
+		//	//rule.Expiration = &s3Types.LifecycleExpiration{}
+		//	rule.Transitions = []s3Types.Transition{}
+		//}
 
 		rules = append(rules, rule)
 	}
@@ -707,24 +719,45 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
-	v := d.Get("versioning").([]interface{})
-	bucketName := d.Get("name").(string)
-	vc := expandObjectBucketVersioning(v)
-
-	i := &s3.PutBucketVersioningInput{
-		Bucket:                  scw.StringPtr(bucketName),
-		VersioningConfiguration: vc,
-	}
-	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
-
-	_, err := s3conn.PutBucketVersioning(ctx, i)
-	if err != nil {
-		return fmt.Errorf("error putting S3 versioning: %s", err)
-	}
-
-	return nil
-}
+//func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
+//	v := d.Get("versioning").([]interface{})
+//	bucketName := d.Get("name").(string)
+//	vc := expandObjectBucketVersioning(v)
+//
+//	i := &s3.PutBucketVersioningInput{
+//		Bucket:                  scw.StringPtr(bucketName),
+//		VersioningConfiguration: vc,
+//	}
+//	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
+//
+//	_, err := s3conn.PutBucketVersioning(ctx, i)
+//	if err != nil {
+//		return fmt.Errorf("error putting S3 versioning: %s", err)
+//	}
+//
+//	return nil
+//}
+//
+//func resourceObjectBucketVersioningCreate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
+//	v := d.Get("versioning").([]interface{})
+//	bucketName := d.Get("name").(string)
+//	vc := expandObjectBucketVersioning(v)
+//	if vc.Status == "" {
+//		return nil
+//	}
+//	i := &s3.PutBucketVersioningInput{
+//		Bucket:                  scw.StringPtr(bucketName),
+//		VersioningConfiguration: vc,
+//	}
+//	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
+//
+//	_, err := s3conn.PutBucketVersioning(ctx, i)
+//	if err != nil {
+//		return fmt.Errorf("error putting S3 versioning: %s", err)
+//	}
+//
+//	return nil
+//}
 
 func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
 	bucketName := d.Get("name").(string)

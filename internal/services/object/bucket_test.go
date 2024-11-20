@@ -126,273 +126,278 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
+			//{
+			//	Config: fmt.Sprintf(`
+			//		resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+			//			name = "%s"
+			//			region = "%s"
+			//			acl = "private"
+			//
+			//			lifecycle_rule {
+			//				id      = "id1"
+			//				prefix  = "path1/"
+			//				enabled = true
+			//				expiration {
+			//			  		days = 365
+			//				}
+			//				transition {
+			//					days          = 30
+			//					storage_class = "GLACIER"
+			//				}
+			//			}
+			//		}
+			//	`, bucketLifecycle, objectTestsMainRegion),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+			//		resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+			//			"days":          "30",
+			//			"storage_class": "GLACIER",
+			//		}),
+			//	),
+			//},
+			//{
+			//	Config: fmt.Sprintf(`
+			//			resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+			//				name = "%s"
+			//				region = "%s"
+			//				acl = "private"
+			//
+			//				lifecycle_rule {
+			//					id      = "id1"
+			//					prefix  = "path1/"
+			//					enabled = true
+			//					expiration {
+			//					 	days = 365
+			//					}
+			//					transition {
+			//					  	days          = 90
+			//					  	storage_class = "ONEZONE_IA"
+			//					}
+			//				}
+			//			}
+			//		`, bucketLifecycle, objectTestsMainRegion),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+			//		resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+			//			"days":          "90",
+			//			"storage_class": "ONEZONE_IA",
+			//		}),
+			//	),
+			//},
+			//{
+			//	Config: fmt.Sprintf(`
+			//			resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+			//				name = "%s"
+			//				region = "%s"
+			//				acl = "private"
+			//
+			//				lifecycle_rule {
+			//					id      = "id1"
+			//					prefix  = "path1/"
+			//					enabled = true
+			//					expiration {
+			//					  	days = 365
+			//					}
+			//					transition {
+			//					  	days          = 120
+			//					  	storage_class = "GLACIER"
+			//					}
+			//				}
+			//
+			//				lifecycle_rule {
+			//					id      = "id2"
+			//					prefix  = "path2/"
+			//					enabled = true
+			//					expiration {
+			//						days = "50"
+			//					}
+			//				}
+			//
+			//				lifecycle_rule {
+			//					id      = "id3"
+			//					prefix  = "path3/"
+			//					enabled = true
+			//					tags = {
+			//					  	"tagKey"    = "tagValue"
+			//					  	"terraform" = "hashicorp"
+			//					}
+			//					expiration {
+			//					  	days = "1"
+			//					}
+			//				}
+			//
+			//				lifecycle_rule {
+			//					id      = "id4"
+			//					enabled = true
+			//					tags = {
+			//					  	"tagKey"    = "tagValue"
+			//					  	"terraform" = "hashicorp"
+			//					}
+			//					transition {
+			//					  	days          = 1
+			//					  	storage_class = "GLACIER"
+			//					}
+			//				}
+			//
+			//				lifecycle_rule {
+			//					id      = "id5"
+			//					enabled = true
+			//					tags = {
+			//					  	"tagKey" = "tagValue"
+			//					}
+			//					transition {
+			//					  	days          = 1
+			//					  	storage_class = "GLACIER"
+			//					}
+			//				}
+			//			}
+			//		`, bucketLifecycle, objectTestsMainRegion),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+			//		resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+			//			"days":          "120",
+			//			"storage_class": "GLACIER",
+			//		}),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "id2"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.prefix", "path2/"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "50"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.tagKey", "tagValue"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.terraform", "hashicorp"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
+			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.3.transition.*", map[string]string{
+			//			"days":          "1",
+			//			"storage_class": "GLACIER",
+			//		}),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
+			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
+			//			"days":          "1",
+			//			"storage_class": "GLACIER",
+			//		}),
+			//	),
+			//},
+			//{
+			//	Config: fmt.Sprintf(`
+			//			resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+			//				name = "%s"
+			//				region = "%s"
+			//				acl = "private"
+			//
+			//				lifecycle_rule {
+			//					id      = "id1"
+			//					prefix  = "path1/"
+			//					enabled = true
+			//					abort_incomplete_multipart_upload_days = 30
+			//				}
+			//			}
+			//		`, bucketLifecycle, objectTestsMainRegion),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+			//		resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
+			//	),
+			//},
+			//{
+			//	Config: fmt.Sprintf(`
+			//			resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+			//				name = "%s"
+			//				region = "%s"
+			//				acl = "private"
+			//
+			//				lifecycle_rule {
+			//					prefix  = "path1/"
+			//					enabled = true
+			//					abort_incomplete_multipart_upload_days = 30
+			//				}
+			//			}
+			//		`, bucketLifecycle, objectTestsMainRegion),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+			//		resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
+			//	),
+			//},
+			//{
+			//	Config: fmt.Sprintf(`
+			//				resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+			//					name = "%s"
+			//					region = "%s"
+			//					acl = "private"
+			//
+			//					lifecycle_rule {
+			//						prefix  = "path1/"
+			//						enabled = true
+			//						tags    = {
+			//							"deleted" = "true"
+			//						}
+			//						expiration {
+			//							days = 1
+			//						}
+			//					}
+			//				}
+			//			`, bucketLifecycle, objectTestsMainRegion),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+			//		resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.tags.deleted", "true"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "1"),
+			//	),
+			//},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-						name = "%s"
-						region = "%s"
-						acl = "private"
-			
-						lifecycle_rule {
-							id      = "id1"
-							prefix  = "path1/"
-							enabled = true
-							expiration {
-						  		days = 365
-							}
-							transition {
-								days          = 30
-								storage_class = "GLACIER"
-							}
-						}
-					}
-				`, bucketLifecycle, objectTestsMainRegion),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-						"days":          "30",
-						"storage_class": "GLACIER",
-					}),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-							name = "%s"
+						resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+							name                = "%s"
 							region = "%s"
-							acl = "private"
-			
-							lifecycle_rule {
-								id      = "id1"
-								prefix  = "path1/"
+							object_lock_enabled = true
+							
+							versioning {
 								enabled = true
+							}
+
+							lifecycle_rule {
+								enabled = true
+								prefix  = ""
 								expiration {
-								 	days = 365
-								}
-								transition {
-								  	days          = 90
-								  	storage_class = "ONEZONE_IA"
-								}
-							}
-						}
-					`, bucketLifecycle, objectTestsMainRegion),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-						"days":          "90",
-						"storage_class": "ONEZONE_IA",
-					}),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-							name = "%s"
-							region = "%s"
-							acl = "private"
-			
-							lifecycle_rule {
-								id      = "id1"
-								prefix  = "path1/"
-								enabled = true
-								expiration {
-								  	days = 365
-								}
-								transition {
-								  	days          = 120
-								  	storage_class = "GLACIER"
+									days = 2
 								}
 							}
 			
 							lifecycle_rule {
-								id      = "id2"
-								prefix  = "path2/"
-								enabled = true
-								expiration {
-									days = "50"
-								}
-							}
-			
-							lifecycle_rule {
-								id      = "id3"
-								prefix  = "path3/"
-								enabled = true
-								tags = {
-								  	"tagKey"    = "tagValue"
-								  	"terraform" = "hashicorp"
-								}
-								expiration {
-								  	days = "1"
-								}
-							}
-			
-							lifecycle_rule {
-								id      = "id4"
-								enabled = true
-								tags = {
-								  	"tagKey"    = "tagValue"
-								  	"terraform" = "hashicorp"
-								}
-								transition {
-								  	days          = 1
-								  	storage_class = "GLACIER"
-								}
-							}
-			
-							lifecycle_rule {
-								id      = "id5"
-								enabled = true
-								tags = {
-								  	"tagKey" = "tagValue"
-								}
-								transition {
-								  	days          = 1
-								  	storage_class = "GLACIER"
-								}
-							}
-						}
-					`, bucketLifecycle, objectTestsMainRegion),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-						"days":          "120",
-						"storage_class": "GLACIER",
-					}),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "id2"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.prefix", "path2/"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "50"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.tagKey", "tagValue"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.terraform", "hashicorp"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.3.transition.*", map[string]string{
-						"days":          "1",
-						"storage_class": "GLACIER",
-					}),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
-						"days":          "1",
-						"storage_class": "GLACIER",
-					}),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-							name = "%s"
-							region = "%s"
-							acl = "private"
-			
-							lifecycle_rule {
-								id      = "id1"
-								prefix  = "path1/"
 								enabled = true
 								abort_incomplete_multipart_upload_days = 30
 							}
-						}
-					`, bucketLifecycle, objectTestsMainRegion),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-							name = "%s"
-							region = "%s"
-							acl = "private"
-			
-							lifecycle_rule {
-								prefix  = "path1/"
-								enabled = true
-								abort_incomplete_multipart_upload_days = 30
-							}
-						}
-					`, bucketLifecycle, objectTestsMainRegion),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-							name = "%s"
-							region = "%s"
-							acl = "private"
-			
-							lifecycle_rule {
-								prefix  = "path1/"
-								enabled = true
-								tags    = {
-									"deleted" = "true"
-								}
-								expiration {
-									days = 1
-								}
-							}
-						}
-					`, bucketLifecycle, objectTestsMainRegion),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.tags.deleted", "true"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "1"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "main-bucket-lifecycle" {
-						name                = "%s"
-						region = "%s"
-						object_lock_enabled = true
-			
-						lifecycle_rule {
-							enabled = true
-							prefix  = ""
-							expiration {
-								days = 2
-							}
-						}
-			
-						lifecycle_rule {
-							enabled = true
-							abort_incomplete_multipart_upload_days = 30
-						}
-					}`, bucketLifecycle, objectTestsMainRegion),
+						}`, bucketLifecycle, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
 					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
 					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.1.id"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "versioning.0.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", ""),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "2"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.abort_incomplete_multipart_upload_days", "30"),

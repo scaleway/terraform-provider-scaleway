@@ -249,12 +249,26 @@ func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOut
 	return vcl
 }
 
-func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfiguration {
+func expandObjectBucketVersioningCreate(v []interface{}) *s3Types.VersioningConfiguration {
 	vc := &s3Types.VersioningConfiguration{}
-	vc.Status = s3Types.BucketVersioningStatusSuspended
 	if len(v) > 0 {
 		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
 			vc.Status = s3Types.BucketVersioningStatusEnabled
+		} else {
+			vc.Status = s3Types.BucketVersioningStatusSuspended
+		}
+		return vc
+	}
+	return nil
+}
+
+func expandObjectBucketVersioningUpdate(v []interface{}) *s3Types.VersioningConfiguration {
+	vc := &s3Types.VersioningConfiguration{}
+	if len(v) > 0 {
+		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
+			vc.Status = s3Types.BucketVersioningStatusEnabled
+		} else {
+			vc.Status = s3Types.BucketVersioningStatusSuspended
 		}
 	}
 	return vc
