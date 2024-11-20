@@ -279,6 +279,9 @@ func ResourceServer() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				DiffSuppressFunc: func(k, _, _ string, _ *schema.ResourceData) bool {
+					return k == "user_data.ssh-host-fingerprints"
+				},
 			},
 			"private_network": {
 				Type:        schema.TypeList,
