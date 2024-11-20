@@ -5,12 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -126,258 +130,254 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
-			//{
-			//	Config: fmt.Sprintf(`
-			//		resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-			//			name = "%s"
-			//			region = "%s"
-			//			acl = "private"
-			//
-			//			lifecycle_rule {
-			//				id      = "id1"
-			//				prefix  = "path1/"
-			//				enabled = true
-			//				expiration {
-			//			  		days = 365
-			//				}
-			//				transition {
-			//					days          = 30
-			//					storage_class = "GLACIER"
-			//				}
-			//			}
-			//		}
-			//	`, bucketLifecycle, objectTestsMainRegion),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-			//		resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
-			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-			//			"days":          "30",
-			//			"storage_class": "GLACIER",
-			//		}),
-			//	),
-			//},
-			//{
-			//	Config: fmt.Sprintf(`
-			//			resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-			//				name = "%s"
-			//				region = "%s"
-			//				acl = "private"
-			//
-			//				lifecycle_rule {
-			//					id      = "id1"
-			//					prefix  = "path1/"
-			//					enabled = true
-			//					expiration {
-			//					 	days = 365
-			//					}
-			//					transition {
-			//					  	days          = 90
-			//					  	storage_class = "ONEZONE_IA"
-			//					}
-			//				}
-			//			}
-			//		`, bucketLifecycle, objectTestsMainRegion),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-			//		resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
-			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-			//			"days":          "90",
-			//			"storage_class": "ONEZONE_IA",
-			//		}),
-			//	),
-			//},
-			//{
-			//	Config: fmt.Sprintf(`
-			//			resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-			//				name = "%s"
-			//				region = "%s"
-			//				acl = "private"
-			//
-			//				lifecycle_rule {
-			//					id      = "id1"
-			//					prefix  = "path1/"
-			//					enabled = true
-			//					expiration {
-			//					  	days = 365
-			//					}
-			//					transition {
-			//					  	days          = 120
-			//					  	storage_class = "GLACIER"
-			//					}
-			//				}
-			//
-			//				lifecycle_rule {
-			//					id      = "id2"
-			//					prefix  = "path2/"
-			//					enabled = true
-			//					expiration {
-			//						days = "50"
-			//					}
-			//				}
-			//
-			//				lifecycle_rule {
-			//					id      = "id3"
-			//					prefix  = "path3/"
-			//					enabled = true
-			//					tags = {
-			//					  	"tagKey"    = "tagValue"
-			//					  	"terraform" = "hashicorp"
-			//					}
-			//					expiration {
-			//					  	days = "1"
-			//					}
-			//				}
-			//
-			//				lifecycle_rule {
-			//					id      = "id4"
-			//					enabled = true
-			//					tags = {
-			//					  	"tagKey"    = "tagValue"
-			//					  	"terraform" = "hashicorp"
-			//					}
-			//					transition {
-			//					  	days          = 1
-			//					  	storage_class = "GLACIER"
-			//					}
-			//				}
-			//
-			//				lifecycle_rule {
-			//					id      = "id5"
-			//					enabled = true
-			//					tags = {
-			//					  	"tagKey" = "tagValue"
-			//					}
-			//					transition {
-			//					  	days          = 1
-			//					  	storage_class = "GLACIER"
-			//					}
-			//				}
-			//			}
-			//		`, bucketLifecycle, objectTestsMainRegion),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-			//		resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
-			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-			//			"days":          "120",
-			//			"storage_class": "GLACIER",
-			//		}),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "id2"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.prefix", "path2/"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "50"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.tagKey", "tagValue"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.terraform", "hashicorp"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
-			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.3.transition.*", map[string]string{
-			//			"days":          "1",
-			//			"storage_class": "GLACIER",
-			//		}),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
-			//		resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
-			//			"days":          "1",
-			//			"storage_class": "GLACIER",
-			//		}),
-			//	),
-			//},
-			//{
-			//	Config: fmt.Sprintf(`
-			//			resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-			//				name = "%s"
-			//				region = "%s"
-			//				acl = "private"
-			//
-			//				lifecycle_rule {
-			//					id      = "id1"
-			//					prefix  = "path1/"
-			//					enabled = true
-			//					abort_incomplete_multipart_upload_days = 30
-			//				}
-			//			}
-			//		`, bucketLifecycle, objectTestsMainRegion),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-			//		resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
-			//	),
-			//},
-			//{
-			//	Config: fmt.Sprintf(`
-			//			resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-			//				name = "%s"
-			//				region = "%s"
-			//				acl = "private"
-			//
-			//				lifecycle_rule {
-			//					prefix  = "path1/"
-			//					enabled = true
-			//					abort_incomplete_multipart_upload_days = 30
-			//				}
-			//			}
-			//		`, bucketLifecycle, objectTestsMainRegion),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-			//		resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
-			//	),
-			//},
-			//{
-			//	Config: fmt.Sprintf(`
-			//				resource "scaleway_object_bucket" "main-bucket-lifecycle"{
-			//					name = "%s"
-			//					region = "%s"
-			//					acl = "private"
-			//
-			//					lifecycle_rule {
-			//						prefix  = "path1/"
-			//						enabled = true
-			//						tags    = {
-			//							"deleted" = "true"
-			//						}
-			//						expiration {
-			//							days = 1
-			//						}
-			//					}
-			//				}
-			//			`, bucketLifecycle, objectTestsMainRegion),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
-			//		testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
-			//		resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.tags.deleted", "true"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
-			//		resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "1"),
-			//	),
-			//},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+						name = "%s"
+						region = "%s"
+						acl = "private"
+			
+						lifecycle_rule {
+							id      = "id1"
+							prefix  = "path1/"
+							enabled = true
+							expiration {
+						  		days = 365
+							}
+							transition {
+								days          = 30
+								storage_class = "GLACIER"
+							}
+						}
+					}
+				`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"days":          "30",
+						"storage_class": "GLACIER",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+							name = "%s"
+							region = "%s"
+							acl = "private"
+			
+							lifecycle_rule {
+								id      = "id1"
+								prefix  = "path1/"
+								enabled = true
+								expiration {
+								 	days = 365
+								}
+								transition {
+								  	days          = 90
+								  	storage_class = "ONEZONE_IA"
+								}
+							}
+						}
+					`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"days":          "90",
+						"storage_class": "ONEZONE_IA",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+							name = "%s"
+							region = "%s"
+							acl = "private"
+			
+							lifecycle_rule {
+								id      = "id1"
+								prefix  = "path1/"
+								enabled = true
+								expiration {
+								  	days = 365
+								}
+								transition {
+								  	days          = 120
+								  	storage_class = "GLACIER"
+								}
+							}
+			
+							lifecycle_rule {
+								id      = "id2"
+								prefix  = "path2/"
+								enabled = true
+								expiration {
+									days = "50"
+								}
+							}
+			
+							lifecycle_rule {
+								id      = "id3"
+								prefix  = "path3/"
+								enabled = true
+								tags = {
+								  	"tagKey"    = "tagValue"
+								  	"terraform" = "hashicorp"
+								}
+								expiration {
+								  	days = "1"
+								}
+							}
+			
+							lifecycle_rule {
+								id      = "id4"
+								enabled = true
+								tags = {
+								  	"tagKey"    = "tagValue"
+								  	"terraform" = "hashicorp"
+								}
+								transition {
+								  	days          = 1
+								  	storage_class = "GLACIER"
+								}
+							}
+			
+							lifecycle_rule {
+								id      = "id5"
+								enabled = true
+								tags = {
+								  	"tagKey" = "tagValue"
+								}
+								transition {
+								  	days          = 1
+								  	storage_class = "GLACIER"
+								}
+							}
+						}
+					`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"days":          "120",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "id2"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.prefix", "path2/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "50"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.terraform", "hashicorp"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.3.transition.*", map[string]string{
+						"days":          "1",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
+						"days":          "1",
+						"storage_class": "GLACIER",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+							name = "%s"
+							region = "%s"
+							acl = "private"
+			
+							lifecycle_rule {
+								id      = "id1"
+								prefix  = "path1/"
+								enabled = true
+								abort_incomplete_multipart_upload_days = 30
+							}
+						}
+					`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+							name = "%s"
+							region = "%s"
+							acl = "private"
+			
+							lifecycle_rule {
+								prefix  = "path1/"
+								enabled = true
+								abort_incomplete_multipart_upload_days = 30
+							}
+						}
+					`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+							resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+								name = "%s"
+								region = "%s"
+								acl = "private"
+			
+								lifecycle_rule {
+									prefix  = "path1/"
+									enabled = true
+									tags    = {
+										"deleted" = "true"
+									}
+									expiration {
+										days = 1
+									}
+								}
+							}
+						`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.tags.deleted", "true"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "1"),
+				),
+			},
 			{
 				Config: fmt.Sprintf(`
 						resource "scaleway_object_bucket" "main-bucket-lifecycle" {
 							name                = "%s"
 							region = "%s"
 							object_lock_enabled = true
-							
-							versioning {
-								enabled = true
-							}
 
 							lifecycle_rule {
 								enabled = true
@@ -397,7 +397,6 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
 					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.1.id"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "versioning.0.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", ""),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "2"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.abort_incomplete_multipart_upload_days", "30"),
@@ -471,293 +470,300 @@ func TestAccObjectBucket_ObjectLock(t *testing.T) {
 	})
 }
 
-//func TestAccObjectBucket_Cors_Update(t *testing.T) {
-//	tt := acctest.NewTestTools(t)
-//	defer tt.Cleanup()
-//
-//	resourceName := "scaleway_object_bucket.bucket-cors-update"
-//	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-cors-update")
-//	resource.ParallelTest(t, resource.TestCase{
-//		PreCheck:          func() { acctest.PreCheck(t) },
-//		ProviderFactories: tt.ProviderFactories,
-//		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
-//		Steps: []resource.TestStep{
-//			{
-//				Config: fmt.Sprintf(`
-//					resource "scaleway_object_bucket" "bucket-cors-update" {
-//						name = %[1]q
-//						region = %[2]q
-//						cors_rule {
-//							allowed_headers = ["*"]
-//							allowed_methods = ["PUT", "POST"]
-//							allowed_origins = ["https://www.example.com"]
-//							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
-//							max_age_seconds = 3000
-//						}
-//					}`, bucketName, objectTestsMainRegion),
-//				Check: resource.ComposeTestCheckFunc(
-//					objectchecks.CheckBucketExists(tt, resourceName, true),
-//					testAccCheckObjectBucketCors(tt,
-//						resourceName,
-//						[]*s3.CORSRule{
-//							{
-//								AllowedHeaders: []*string{scw.StringPtr("*")},
-//								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST")},
-//								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
-//								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
-//								MaxAgeSeconds:  scw.Int64Ptr(3000),
-//							},
-//						},
-//					),
-//				),
-//			},
-//			{
-//				Config: fmt.Sprintf(`
-//					resource "scaleway_object_bucket" "bucket-cors-update" {
-//						name = %[1]q
-//						region = %[2]q
-//						cors_rule {
-//							allowed_headers = ["*"]
-//							allowed_methods = ["PUT", "POST", "GET"]
-//							allowed_origins = ["https://www.example.com"]
-//							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
-//							max_age_seconds = 3000
-//						}
-//					}`, bucketName, objectTestsMainRegion),
-//				Check: resource.ComposeTestCheckFunc(
-//					objectchecks.CheckBucketExists(tt, resourceName, true),
-//					testAccCheckObjectBucketCors(tt,
-//						resourceName,
-//						[]*s3.CORSRule{
-//							{
-//								AllowedHeaders: []*string{scw.StringPtr("*")},
-//								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST"), scw.StringPtr("GET")},
-//								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
-//								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
-//								MaxAgeSeconds:  scw.Int64Ptr(3000),
-//							},
-//						},
-//					),
-//				),
-//			},
-//			{
-//				Config: fmt.Sprintf(`
-//					resource "scaleway_object_bucket" "bucket-cors-update" {
-//						name = %[1]q
-//						region = %[2]q
-//						cors_rule {
-//							allowed_headers = ["*"]
-//							allowed_methods = ["PUT", "POST"]
-//							allowed_origins = ["https://www.example.com"]
-//							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
-//							max_age_seconds = 3000
-//						}
-//					}`, bucketName, objectTestsMainRegion),
-//				Check: resource.ComposeTestCheckFunc(
-//					objectchecks.CheckBucketExists(tt, resourceName, true),
-//					testAccCheckObjectBucketCors(tt,
-//						resourceName,
-//						[]*s3.CORSRule{
-//							{
-//								AllowedHeaders: []*string{scw.StringPtr("*")},
-//								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST")},
-//								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
-//								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
-//								MaxAgeSeconds:  scw.Int64Ptr(3000),
-//							},
-//						},
-//					),
-//				),
-//			},
-//		},
-//	})
-//}
+func TestAccObjectBucket_Cors_Update(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
 
-//	func TestAccObjectBucket_Cors_Delete(t *testing.T) {
-//		tt := acctest.NewTestTools(t)
-//		defer tt.Cleanup()
-//		ctx := context.Background()
-//
-//		resourceName := "scaleway_object_bucket.bucket"
-//		bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-cors-delete")
-//		deleteBucketCors := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
-//			return func(s *terraform.State) error {
-//				rs, ok := s.RootModule().Resources[n]
-//				if !ok {
-//					return fmt.Errorf("not found: %s", n)
-//				}
-//				bucketRegion := rs.Primary.Attributes["region"]
-//				conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
-//				if err != nil {
-//					return err
-//				}
-//				_, err = conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
-//					Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-//				})
-//				if err != nil && !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
-//					return err
-//				}
-//				return nil
-//			}
-//		}
-//
-//		resource.ParallelTest(t, resource.TestCase{
-//			PreCheck:          func() { acctest.PreCheck(t) },
-//			ProviderFactories: tt.ProviderFactories,
-//			CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
-//			Steps: []resource.TestStep{
-//				{
-//					Config: fmt.Sprintf(`
-//						resource "scaleway_object_bucket" "bucket" {
-//							name = %[1]q
-//							region = %[2]q
-//							cors_rule {
-//								allowed_headers = ["*"]
-//								allowed_methods = ["PUT", "POST"]
-//								allowed_origins = ["https://www.example.com"]
-//								expose_headers  = ["x-amz-server-side-encryption", "ETag"]
-//								max_age_seconds = 3000
-//							}
-//						}`, bucketName, objectTestsMainRegion),
-//					Check: resource.ComposeTestCheckFunc(
-//						objectchecks.CheckBucketExists(tt, resourceName, true),
-//						deleteBucketCors(tt, resourceName),
-//					),
-//					ExpectNonEmptyPlan: true,
-//				},
-//			},
-//		})
-//	}
-//
-//	func TestAccObjectBucket_Cors_EmptyOrigin(t *testing.T) {
-//		t.Skip("Skipping as AllowedOrigins can be empty at the moment")
-//		tt := acctest.NewTestTools(t)
-//		defer tt.Cleanup()
-//
-//		bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-cors-empty-origin")
-//		resource.ParallelTest(t, resource.TestCase{
-//			PreCheck:          func() { acctest.PreCheck(t) },
-//			ProviderFactories: tt.ProviderFactories,
-//			CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
-//			Steps: []resource.TestStep{
-//				{
-//					Config: fmt.Sprintf(`
-//						resource "scaleway_object_bucket" "bucket" {
-//							name = %[1]q
-//							region = %[2]q
-//							cors_rule {
-//								allowed_headers = ["*"]
-//								allowed_methods = ["PUT", "POST"]
-//								allowed_origins = [""]
-//								expose_headers  = ["x-amz-server-side-encryption", "ETag"]
-//								max_age_seconds = 3000
-//							}
-//						}`, bucketName, objectTestsMainRegion),
-//					ExpectError: regexp.MustCompile("error putting S3 CORS"),
-//				},
-//			},
-//		})
-//	}
-//
-//	func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []*s3.CORSRule) resource.TestCheckFunc {
-//		return func(s *terraform.State) error {
-//			ctx := context.Background()
-//
-//			rs := s.RootModule().Resources[n]
-//			bucketName := rs.Primary.Attributes["name"]
-//			bucketRegion := rs.Primary.Attributes["region"]
-//			s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
-//			if err != nil {
-//				return err
-//			}
-//
-//			_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
-//				Bucket: scw.StringPtr(bucketName),
-//			})
-//			if err != nil {
-//				return err
-//			}
-//
-//			out, err := s3Client.GetBucketCors(&s3.GetBucketCorsInput{
-//				Bucket: scw.StringPtr(bucketName),
-//			})
-//			if err != nil {
-//				if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != object.ErrCodeNoSuchCORSConfiguration {
-//					return fmt.Errorf("GetBucketCors error: %v", err)
-//				}
-//			}
-//
-//			if out == nil {
-//				return errors.New("CORS Rules nil")
-//			}
-//
-//			if !reflect.DeepEqual(out.CORSRules, corsRules) {
-//				return fmt.Errorf("bad error cors rule, expected: %v, got %v", corsRules, out.CORSRules)
-//			}
-//
-//			return nil
-//		}
-//	}
-//
-//	func TestAccObjectBucket_DestroyForce(t *testing.T) {
-//		tt := acctest.NewTestTools(t)
-//		defer tt.Cleanup()
-//
-//		resourceName := "scaleway_object_bucket.bucket"
-//		bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-force")
-//
-//		addObjectToBucket := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
-//			return func(s *terraform.State) error {
-//				rs, ok := s.RootModule().Resources[n]
-//				if !ok {
-//					return fmt.Errorf("not found: %s", n)
-//				}
-//				bucketRegion := rs.Primary.Attributes["region"]
-//				conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
-//				if err != nil {
-//					return err
-//				}
-//				_, err = conn.PutObject(&s3.PutObjectInput{
-//					Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-//					Key:    scw.StringPtr("test-file"),
-//				})
-//				if err != nil {
-//					return fmt.Errorf("failed to put object in test bucket: %s", err)
-//				}
-//				_, err = conn.PutObject(&s3.PutObjectInput{
-//					Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-//					Key:    scw.StringPtr("folder/test-file-in-folder"),
-//				})
-//				if err != nil {
-//					return fmt.Errorf("failed to put object in test bucket sub folder: %s", err)
-//				}
-//				return nil
-//			}
-//		}
-//
-//		resource.ParallelTest(t, resource.TestCase{
-//			PreCheck:          func() { acctest.PreCheck(t) },
-//			ProviderFactories: tt.ProviderFactories,
-//			CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
-//			Steps: []resource.TestStep{
-//				{
-//					Config: fmt.Sprintf(`
-//						resource "scaleway_object_bucket" "bucket" {
-//							name = %[1]q
-//							region = %[2]q
-//							force_destroy = true
-//							versioning {
-//								enabled = true
-//							}
-//						}`, bucketName, objectTestsMainRegion),
-//					Check: resource.ComposeTestCheckFunc(
-//						objectchecks.CheckBucketExists(tt, resourceName, true),
-//						addObjectToBucket(tt, resourceName),
-//					),
-//				},
-//			},
-//		})
-//	}
+	resourceName := "scaleway_object_bucket.bucket-cors-update"
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-cors-update")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket-cors-update" {
+						name = %[1]q
+						region = %[2]q
+						cors_rule {
+							allowed_headers = ["*"]
+							allowed_methods = ["PUT", "POST"]
+							allowed_origins = ["https://www.example.com"]
+							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
+							max_age_seconds = 3000
+						}
+					}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceName, true),
+					testAccCheckObjectBucketCors(tt,
+						resourceName,
+						[]s3Types.CORSRule{
+							{
+								AllowedHeaders: []string{"*"},
+								AllowedMethods: []string{"PUT", "POST"},
+								AllowedOrigins: []string{"https://www.example.com"},
+								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
+								MaxAgeSeconds:  scw.Int32Ptr(3000),
+							},
+						},
+					),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket-cors-update" {
+						name = %[1]q
+						region = %[2]q
+						cors_rule {
+							allowed_headers = ["*"]
+							allowed_methods = ["PUT", "POST", "GET"]
+							allowed_origins = ["https://www.example.com"]
+							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
+							max_age_seconds = 3000
+						}
+					}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceName, true),
+					testAccCheckObjectBucketCors(tt,
+						resourceName,
+						[]s3Types.CORSRule{
+							{
+								AllowedHeaders: []string{"*"},
+								AllowedMethods: []string{"PUT", "POST", "GET"},
+								AllowedOrigins: []string{"https://www.example.com"},
+								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
+								MaxAgeSeconds:  scw.Int32Ptr(3000),
+							},
+						},
+					),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket-cors-update" {
+						name = %[1]q
+						region = %[2]q
+						cors_rule {
+							allowed_headers = ["*"]
+							allowed_methods = ["PUT", "POST"]
+							allowed_origins = ["https://www.example.com"]
+							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
+							max_age_seconds = 3000
+						}
+					}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceName, true),
+					testAccCheckObjectBucketCors(tt,
+						resourceName,
+						[]s3Types.CORSRule{
+							{
+								AllowedHeaders: []string{"*"},
+								AllowedMethods: []string{"PUT", "POST"},
+								AllowedOrigins: []string{"https://www.example.com"},
+								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
+								MaxAgeSeconds:  scw.Int32Ptr(3000),
+							},
+						},
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccObjectBucket_Cors_Delete(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	ctx := context.Background()
+
+	resourceName := "scaleway_object_bucket.bucket"
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-cors-delete")
+	deleteBucketCors := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			rs, ok := s.RootModule().Resources[n]
+			if !ok {
+				return fmt.Errorf("not found: %s", n)
+			}
+			bucketRegion := rs.Primary.Attributes["region"]
+			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
+			if err != nil {
+				return err
+			}
+			_, err = conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
+				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+			})
+			if err != nil && !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
+				return err
+			}
+			return nil
+		}
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "bucket" {
+							name = %[1]q
+							region = %[2]q
+							cors_rule {
+								allowed_headers = ["*"]
+								allowed_methods = ["PUT", "POST"]
+								allowed_origins = ["https://www.example.com"]
+								expose_headers  = ["x-amz-server-side-encryption", "ETag"]
+								max_age_seconds = 3000
+							}
+						}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceName, true),
+					deleteBucketCors(tt, resourceName),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccObjectBucket_Cors_EmptyOrigin(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-cors-empty-origin")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "bucket" {
+							name = %[1]q
+							region = %[2]q
+							cors_rule {
+								allowed_headers = ["*"]
+								allowed_methods = ["PUT", "POST"]
+								allowed_origins = [""]
+								expose_headers  = ["x-amz-server-side-encryption", "ETag"]
+								max_age_seconds = 3000
+							}
+						}`, bucketName, objectTestsMainRegion),
+				ExpectError: regexp.MustCompile("error putting S3 CORS"),
+			},
+		},
+	})
+}
+
+func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []s3Types.CORSRule) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ctx := context.Background()
+
+		rs := s.RootModule().Resources[n]
+		bucketName := rs.Primary.Attributes["name"]
+		bucketRegion := rs.Primary.Attributes["region"]
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
+		if err != nil {
+			return err
+		}
+
+		_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
+			Bucket: scw.StringPtr(bucketName),
+		})
+		if err != nil {
+			return err
+		}
+
+		out, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
+			Bucket: scw.StringPtr(bucketName),
+		})
+		if err != nil {
+			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != object.ErrCodeNoSuchCORSConfiguration {
+				return fmt.Errorf("GetBucketCors error: %v", err)
+			}
+		}
+
+		if out == nil {
+			return errors.New("CORS Rules nil")
+		}
+
+		if !reflect.DeepEqual(out.CORSRules, corsRules) {
+			return fmt.Errorf("bad error cors rule, expected: %v, got %v", corsRules, out.CORSRules)
+		}
+
+		return nil
+	}
+}
+
+func TestAccObjectBucket_DestroyForce(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resourceName := "scaleway_object_bucket.bucket"
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-force")
+
+	addObjectToBucket := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			ctx := context.Background()
+			rs, ok := s.RootModule().Resources[n]
+			if !ok {
+				return fmt.Errorf("not found: %s", n)
+			}
+			bucketRegion := rs.Primary.Attributes["region"]
+			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
+			if err != nil {
+				return err
+			}
+
+			req := s3.PutObjectInput{
+				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+				Key:    scw.StringPtr("test-file"),
+				Body:   strings.NewReader("test content"),
+			}
+
+			_, err = conn.PutObject(ctx, &req)
+			if err != nil {
+				return fmt.Errorf("failed to put object in test bucket: %s", err)
+			}
+
+			_, err = conn.PutObject(ctx, &s3.PutObjectInput{
+				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+				Key:    scw.StringPtr("folder/test-file-in-folder"),
+				Body:   strings.NewReader("folder test content"), // Example body content
+			})
+			if err != nil {
+				return fmt.Errorf("failed to put object in test bucket sub folder: %s", err)
+			}
+			return nil
+		}
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "bucket" {
+							name = %[1]q
+							region = %[2]q
+							force_destroy = true
+							versioning {
+								enabled = true
+							}
+						}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceName, true),
+					addObjectToBucket(tt, resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckObjectBucketLifecycleConfigurationExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()

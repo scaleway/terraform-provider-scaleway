@@ -249,6 +249,17 @@ func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOut
 	return vcl
 }
 
+func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfiguration {
+	vc := &s3Types.VersioningConfiguration{}
+	vc.Status = s3Types.BucketVersioningStatusSuspended
+	if len(v) > 0 {
+		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
+			vc.Status = s3Types.BucketVersioningStatusEnabled
+		}
+	}
+	return vc
+}
+
 func expandObjectBucketVersioningCreate(v []interface{}) *s3Types.VersioningConfiguration {
 	vc := &s3Types.VersioningConfiguration{}
 	if len(v) > 0 {
@@ -275,7 +286,10 @@ func expandObjectBucketVersioningUpdate(v []interface{}) *s3Types.VersioningConf
 }
 
 func flattenBucketCORS(corsResponse interface{}) []interface{} {
-	if cors, ok := corsResponse.(s3.GetBucketCorsOutput); ok && len(cors.CORSRules) > 0 {
+	if corsResponse == nil {
+		return nil
+	}
+	if cors, ok := corsResponse.(*s3.GetBucketCorsOutput); ok && cors != nil && len(cors.CORSRules) > 0 {
 		var corsRules []interface{}
 		for _, ruleObject := range cors.CORSRules {
 			rule := map[string]interface{}{}
@@ -302,31 +316,66 @@ func flattenBucketCORS(corsResponse interface{}) []interface{} {
 }
 
 func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []s3Types.CORSRule {
-	if rawCors == nil {
+	if rawCors == nil || len(rawCors) == 0 {
+		tflog.Warn(ctx, fmt.Sprintf("No CORS configuration provided for bucket: %s", bucket))
 		return nil
 	}
-	var rules []s3Types.CORSRule
-	for _, cors := range rawCors {
-		corsMap := cors.(map[string]interface{})
-		rule := s3Types.CORSRule{}
-		for k, v := range corsMap {
-			tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, put CORS: %#v, %#v", bucket, k, v))
-			switch k {
-			case "allowed_headers":
-				rule.AllowedHeaders = v.([]string)
-			case "allowed_methods":
-				rule.AllowedMethods = v.([]string)
-			case "allowed_origins":
-				rule.AllowedOrigins = v.([]string)
-			case "expose_headers":
-				rule.ExposeHeaders = v.([]string)
-			case "max_age_seconds":
-				rule.MaxAgeSeconds = scw.Int32Ptr(int32(v.(int)))
-			}
-			rules = append(rules, rule)
+
+	// Preallocate memory for rules
+	rules := make([]s3Types.CORSRule, 0, len(rawCors))
+
+	for _, raw := range rawCors {
+		corsMap, ok := raw.(map[string]interface{})
+		if !ok {
+			tflog.Warn(ctx, fmt.Sprintf("Invalid CORS entry for bucket %s: %#v", bucket, raw))
+			continue
 		}
+
+		rule := s3Types.CORSRule{}
+		for key, value := range corsMap {
+			tflog.Debug(ctx, fmt.Sprintf("Processing CORS key: %s, value: %#v for bucket %s", key, value, bucket))
+			switch key {
+			case "allowed_headers":
+				rule.AllowedHeaders = toStringSlice(value)
+			case "allowed_methods":
+				rule.AllowedMethods = toStringSlice(value)
+			case "allowed_origins":
+				rule.AllowedOrigins = toStringSlice(value)
+			case "expose_headers":
+				rule.ExposeHeaders = toStringSlice(value)
+			case "max_age_seconds":
+				if maxAge, ok := value.(int); ok {
+					rule.MaxAgeSeconds = scw.Int32Ptr(int32(maxAge))
+				} else {
+					tflog.Warn(ctx, fmt.Sprintf("Invalid type for max_age_seconds in bucket %s: %T", bucket, value))
+				}
+			default:
+				tflog.Warn(ctx, fmt.Sprintf("Unknown key in CORS configuration for bucket %s: %s", bucket, key))
+			}
+		}
+
+		rules = append(rules, rule)
 	}
+
 	return rules
+}
+
+// TODO add to sdk-go
+func toStringSlice(input interface{}) []string {
+	var result []string
+	switch v := input.(type) {
+	case []interface{}:
+		for _, item := range v {
+			if str, ok := item.(string); ok {
+				result = append(result, str)
+			}
+		}
+	case []string:
+		return v
+	default:
+		tflog.Warn(context.Background(), fmt.Sprintf("Unexpected type for toStringSlice: %T", input))
+	}
+	return result
 }
 
 func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName string, key string, versionID string, force bool) error {
@@ -337,9 +386,9 @@ func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName stri
 	if versionID != "" {
 		input.VersionId = scw.StringPtr(versionID)
 	}
-	if force {
-		input.BypassGovernanceRetention = scw.BoolPtr(force)
-	}
+	//if force {
+	//	input.BypassGovernanceRetention = scw.BoolPtr(force)
+	//}
 
 	_, err := conn.DeleteObject(ctx, input)
 	return err

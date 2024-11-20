@@ -213,11 +213,11 @@ func ResourceBucket() *schema.Resource {
 		},
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 			if diff.Get("object_lock_enabled").(bool) {
-				versioning := diff.Get("versioning").([]interface{})
-				if len(versioning) == 0 || !versioning[0].(map[string]interface{})["enabled"].(bool) {
-					return fmt.Errorf("versioning must be enabled when object lock is enabled")
+				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
+					return errors.New("versioning must be enabled when object lock is enabled")
 				}
 			}
+
 			return nil
 		},
 	}
@@ -234,14 +234,14 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m i
 		Bucket: scw.StringPtr(bucketName),
 	}
 
+	if v, ok := d.GetOk("object_lock_enabled"); ok {
+		req.ObjectLockEnabledForBucket = scw.BoolPtr(v.(bool))
+	}
+
 	_, err = s3Client.CreateBucket(ctx, req)
 
 	if v, ok := d.GetOk("acl"); ok {
 		req.ACL = s3Types.BucketCannedACL(v.(string))
-	}
-
-	if v, ok := d.GetOk("object_lock_enabled"); ok {
-		req.ObjectLockEnabledForBucket = scw.BoolPtr(v.(bool))
 	}
 
 	if TimedOut(err) {
@@ -291,25 +291,9 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 
 	// Object Lock enables versioning so we don't want to update versioning it is enabled
 	objectLockEnabled := d.Get("object_lock_enabled").(bool)
-	//if !objectLockEnabled && d.HasChange("versioning") {
-	//	if err := resourceObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//}
-
-	if objectLockEnabled && d.HasChange("versioning") {
-		v := d.Get("versioning").([]interface{})
-		var versioning *s3Types.VersioningConfiguration
-		versioning = expandObjectBucketVersioningUpdate(v)
-		if versioning != nil {
-			input := &s3.PutBucketVersioningInput{
-				Bucket:                  scw.StringPtr(bucketName),
-				VersioningConfiguration: versioning,
-			}
-			_, err := s3Client.PutBucketVersioning(ctx, input)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("putting Bucket (%s) versioning: %s", bucketName, err))
-			}
+	if !objectLockEnabled && d.HasChange("versioning") {
+		if err := resourceObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -719,24 +703,25 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-//func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
-//	v := d.Get("versioning").([]interface{})
-//	bucketName := d.Get("name").(string)
-//	vc := expandObjectBucketVersioning(v)
-//
-//	i := &s3.PutBucketVersioningInput{
-//		Bucket:                  scw.StringPtr(bucketName),
-//		VersioningConfiguration: vc,
-//	}
-//	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
-//
-//	_, err := s3conn.PutBucketVersioning(ctx, i)
-//	if err != nil {
-//		return fmt.Errorf("error putting S3 versioning: %s", err)
-//	}
-//
-//	return nil
-//}
+func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
+	v := d.Get("versioning").([]interface{})
+	bucketName := d.Get("name").(string)
+	vc := expandObjectBucketVersioning(v)
+
+	i := &s3.PutBucketVersioningInput{
+		Bucket:                  scw.StringPtr(bucketName),
+		VersioningConfiguration: vc,
+	}
+	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
+
+	_, err := s3conn.PutBucketVersioning(ctx, i)
+	if err != nil {
+		return fmt.Errorf("error putting S3 versioning: %s", err)
+	}
+
+	return nil
+}
+
 //
 //func resourceObjectBucketVersioningCreate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
 //	v := d.Get("versioning").([]interface{})
