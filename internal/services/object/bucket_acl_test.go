@@ -251,7 +251,7 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 
 					}
 					`, testBucketName, objectTestsMainRegion),
-				ExpectError: regexp.MustCompile("error putting Object Storage ACL: NoSuchBucket: The specified bucket does not exist"),
+				ExpectError: regexp.MustCompile("api error NoSuchBucket: The specified bucket does not exist"),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -259,7 +259,7 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-
+			
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						acl = "public-read"
