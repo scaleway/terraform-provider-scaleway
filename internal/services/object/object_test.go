@@ -1,7 +1,7 @@
 package object_test
 
+// import (
 //
-//import (
 //	"encoding/base64"
 //	"errors"
 //	"fmt"
@@ -17,13 +17,15 @@ package object_test
 //	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 //	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 //	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
-//)
 //
-//// Service information constants
-//const (
-//	ServiceName = "scw"       // Name of service.
-//	EndpointsID = ServiceName // ID to look up a service endpoint with.
-//)
+// )
+//
+// // Service information constants
+const (
+	ServiceName = "scw"       // Name of service.
+	EndpointsID = ServiceName // ID to look up a service endpoint with.
+)
+
 //
 //func TestAccObject_Basic(t *testing.T) {
 //	tt := acctest.NewTestTools(t)
