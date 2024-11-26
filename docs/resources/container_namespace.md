@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_container_namespace"
 The `scaleway_container_namespace` resource allows you to
 for Scaleway [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
 
-Refer to the Containers namespace [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/create-a-containers-namespace/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-namespaces-list-all-your-namespaces) for more information.
+Refer to the Containers namespace [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/create-manage-delete-containers-namespace/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-namespaces-list-all-your-namespaces) for more information.
 
 ## Example Usage
 
