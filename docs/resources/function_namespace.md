@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_function_namespace"
 The `scaleway_function_namespace` resource allows you to
 for Scaleway [Serverless Functions](https://www.scaleway.com/en/docs/serverless/functions/).
 
-Refer to the Functions namespace [documentation](https://www.scaleway.com/en/docs/serverless/functions/how-to/create-a-functions-namespace/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-namespaces-list-all-your-namespaces) for more information.
+Refer to the Functions namespace [documentation](https://www.scaleway.com/en/docs/serverless/functions/how-to/create-manage-delete-functions-namespace/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-namespaces-list-all-your-namespaces) for more information.
 
 ## Example Usage
 
