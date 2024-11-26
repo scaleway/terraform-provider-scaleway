@@ -17,6 +17,8 @@ func DataSourceIP() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceIP().Schema)
 
+	datasource.AddOptionalFieldsToSchema(dsSchema, "project_id", "zone")
+
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
@@ -30,7 +32,6 @@ func DataSourceIP() *schema.Resource {
 		ConflictsWith:    []string{"ip_address"},
 		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
-	dsSchema["project_id"].Optional = true
 
 	return &schema.Resource{
 		ReadContext:   DataSourceLbIPRead,

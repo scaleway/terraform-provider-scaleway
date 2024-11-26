@@ -163,6 +163,20 @@ resource "scaleway_instance_server" "from_snapshot" {
 }
 ```
 
+#### Using Scaleway Block Storage (SBS) volume
+
+```terraform
+resource "scaleway_instance_server" "server" {
+  type = "PLAY2-MICRO"
+  image = "ubuntu_jammy"
+  root_volume {
+    volume_type = "sbs_volume"
+    sbs_iops = 15000
+    size_in_gb = 50
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -187,6 +201,8 @@ To retrieve more information by label please use: ```scw marketplace image get l
 
 - `security_group_id` - (Optional) The [security group](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-update-a-security-group9) the server is attached to.
 
+~> **Important:** If you don't specify a security group, a default one will be created, which won't be tracked by Terraform unless you import it.
+
 - `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-update-a-security-group the server is attached to.
 
 
@@ -198,8 +214,9 @@ To retrieve more information by label please use: ```scw marketplace image get l
       To find the right size use [this endpoint](https://www.scaleway.com/en/developers/api/instance/#path-instances-list-all-instances) and
       check the `volumes_constraint.{min|max}_size` (in bytes) for your `commercial_type`.
       Updates to this field will recreate a new resource.
-    - `volume_type` - (Optional) Volume type of root volume, can be `b_ssd` or `l_ssd`, default value depends on server type
+    - `volume_type` - (Optional) Volume type of root volume, can be `b_ssd`, `l_ssd` or `sbs_volume`, default value depends on server type
     - `delete_on_termination` - (Defaults to `true`) Forces deletion of the root volume on instance termination.
+    - `sbs_iops` - (Optional) Choose IOPS of your sbs volume, has to be used with `sbs_volume` for root volume type.
 
 ~> **Important:** Updates to `root_volume.size_in_gb` will be ignored after the creation of the server.
 
@@ -240,8 +257,6 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 
 - `replace_on_type_change` - (Defaults to false) If true, the server will be replaced if `type` is changed. Otherwise, the server will migrate.
-
-- `bootscript_id` (Deprecated) - The ID of the bootscript to use  (set boot_type to `bootscript`).
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 

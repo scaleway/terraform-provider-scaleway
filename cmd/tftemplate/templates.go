@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"text/template"
 
-	"strings"
 	"tftemplate/models"
 )
 

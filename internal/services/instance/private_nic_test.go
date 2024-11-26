@@ -135,6 +135,72 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 	})
 }
 
+func TestAccPrivateNIC_WithIPAM(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isPrivateNICDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "TestAccScalewayInstancePrivateNIC_IPAM"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  name = "TestAccScalewayInstancePrivateNIC_IPAM"
+					  ipv4_subnet {
+						subnet = "172.16.64.0/22"
+					  }
+					  vpc_id = scaleway_vpc.vpc01.id
+					}
+					
+					resource "scaleway_ipam_ip" "ip01" {
+					  address = "172.16.64.7"
+					  source {
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}
+					
+					resource "scaleway_instance_server" "server01" {
+					  name = "TestAccScalewayInstancePrivateNIC_IPAM"
+					  image = "ubuntu_focal"
+					  type  = "PLAY2-MICRO"
+					}
+					
+					resource "scaleway_instance_private_nic" "pnic01" {
+					  private_network_id = scaleway_vpc_private_network.pn01.id
+					  server_id          = scaleway_instance_server.server01.id
+					  ipam_ip_ids        = [scaleway_ipam_ip.ip01.id]
+					}     
+
+					data "scaleway_ipam_ip" "by_id" {
+					  resource {
+						id   = scaleway_instance_private_nic.pnic01.id
+						type = "instance_private_nic"
+					  }
+					  type = "ipv4"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isPrivateNICPresent(tt, "scaleway_instance_private_nic.pnic01"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_instance_private_nic.pnic01", "private_network_id",
+						"scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_instance_private_nic.pnic01", "ipam_ip_ids.0",
+						"scaleway_ipam_ip.ip01", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_ipam_ip.ip01", "address",
+						"data.scaleway_ipam_ip.by_id", "address_cidr"),
+				),
+			},
+		},
+	})
+}
+
 func isPrivateNICPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
