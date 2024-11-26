@@ -23,12 +23,44 @@ func TestAccUser_Basic(t *testing.T) {
 				Config: `
 						resource "scaleway_iam_user" "user_basic" {
 							email = "foo@scaleway.com"
+							tags = ["tf_tests", "tests"]
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamUserExists(tt, "scaleway_iam_user.user_basic"),
 					acctest.CheckResourceAttrUUID("scaleway_iam_user.user_basic", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "email", "foo@scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "tags.0", "tf_tests"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "tags.1", "tests"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iam_user" "user_basic" {
+							email = "foo@scaleway.com"
+							tags = ["tf_tests"]
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIamUserExists(tt, "scaleway_iam_user.user_basic"),
+					acctest.CheckResourceAttrUUID("scaleway_iam_user.user_basic", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "email", "foo@scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "tags.0", "tf_tests"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iam_user" "user_basic" {
+							email = "foo@scaleway.com"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIamUserExists(tt, "scaleway_iam_user.user_basic"),
+					acctest.CheckResourceAttrUUID("scaleway_iam_user.user_basic", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "email", "foo@scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.user_basic", "tags.#", "0"),
 				),
 			},
 		},

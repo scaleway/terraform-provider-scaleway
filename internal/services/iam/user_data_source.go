@@ -9,6 +9,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -30,6 +31,14 @@ func DataSourceUser() *schema.Resource {
 				ValidateDiagFunc: verify.IsEmail(),
 				ConflictsWith:    []string{"user_id"},
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the user",
+			},
 			"organization_id": {
 				Type:          schema.TypeString,
 				Description:   "The organization_id you want to attach the resource to",
@@ -44,6 +53,7 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 	iamAPI := NewAPI(m)
 
 	var email, organizationID string
+	var tags []string
 	userID, ok := d.GetOk("user_id")
 	if ok {
 		userID = d.Get("user_id")
@@ -55,6 +65,7 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 		}
 		email = res.Email
 		organizationID = res.OrganizationID
+		tags = res.Tags
 	} else {
 		res, err := iamAPI.ListUsers(&iam.ListUsersRequest{
 			OrganizationID: account.GetOrganizationID(m, d),
@@ -70,7 +81,7 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 				if userID != "" {
 					return diag.Errorf("more than 1 user found with the same email %s", d.Get("email"))
 				}
-				userID, email = user.ID, user.Email
+				userID, email, tags = user.ID, user.Email, user.Tags
 			}
 		}
 		if userID == "" {
@@ -86,6 +97,7 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	_ = d.Set("user_id", userID)
 	_ = d.Set("email", email)
+	_ = d.Set("tags", types.FlattenSliceString(tags))
 	_ = d.Set("organization_id", organizationID)
 
 	return nil
