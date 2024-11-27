@@ -67,9 +67,9 @@ resource "scaleway_instance_snapshot" "server_snapshot" {
 }
 
 resource "scaleway_instance_image" "image" {
-  name            = "image_with_extra_volumes"
-  root_volume_id  = scaleway_instance_snapshot.server_snapshot.id
-  additional_volumes = [
+  name                  = "image_with_extra_volumes"
+  root_volume_id        = scaleway_instance_snapshot.server_snapshot.id
+  additional_volume_ids = [
     scaleway_instance_snapshot.volume_snapshot.id
   ]
 }
