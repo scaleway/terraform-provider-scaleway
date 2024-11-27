@@ -255,7 +255,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					},
 				},
 			},
+			"partitioning_schema": PartitioningSchema(),
 		},
+
 		CustomizeDiff: customdiff.Sequence(
 			cdf.LocalityCheck("private_network.#.id"),
 			customDiffPrivateNetworkOption(),
