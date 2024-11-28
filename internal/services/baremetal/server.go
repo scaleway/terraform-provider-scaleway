@@ -2,8 +2,8 @@ package baremetal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -21,6 +21,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
+	"io"
+	"os"
 )
 
 func ResourceServer() *schema.Resource {
@@ -256,6 +258,11 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				},
 			},
 			"partitioning_schema": PartitioningSchema(),
+			"partitioning_file": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The path to the patitioning json file",
+			},
 		},
 
 		CustomizeDiff: customdiff.Sequence(
@@ -321,6 +328,33 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
+	partitioningSchema := baremetal.Schema{}
+	if file, ok := d.GetOk("partitioning_file"); ok {
+		if _, err = os.Stat(file.(string)); os.IsNotExist(err) {
+			err = json.Unmarshal(file.([]byte), &partitioningSchema)
+		} else {
+			partitioning, err := os.Open(file.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			defer partitioning.Close()
+			partioningByte, err := io.ReadAll(partitioning)
+			err = json.Unmarshal(partioningByte, &partitioningSchema)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	serverRequestInstall := baremetal.CreateServerRequestInstall{
+		OsID:               zonal.ExpandID(d.Get("os")).ID,
+		Hostname:           d.Get("hostname").(string),
+		SSHKeyIDs:          types.ExpandStrings(d.Get("ssh_key_ids")),
+		User:               types.ExpandStringPtr(d.Get("user")),
+		Password:           types.ExpandStringPtr(d.Get("password")),
+		PartitioningSchema: &partitioningSchema,
+	}
+
 	server, err := api.CreateServer(&baremetal.CreateServerRequest{
 		Zone:        zone,
 		Name:        types.ExpandOrGenerateString(d.Get("name"), "bm"),
@@ -328,6 +362,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		Description: d.Get("description").(string),
 		OfferID:     offerID.ID,
 		Tags:        types.ExpandStrings(d.Get("tags")),
+		Install:     &serverRequestInstall,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

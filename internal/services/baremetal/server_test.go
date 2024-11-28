@@ -2,6 +2,7 @@ package baremetal_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -16,12 +17,100 @@ import (
 
 const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 
+var jsonConfigPartitioning = `{
+"disks": [
+{
+"device": "/dev/sda",
+"partitions": [
+{
+"label": "legacy",
+"number": 1,
+"size": 536870912
+},
+{
+"label": "swap",
+"number": 2,
+"size": 4294967296
+},
+{
+"label": "boot",
+"number": 3,
+"size": 536870912
+},
+{
+"label": "root",
+"number": 4,
+"size": 994630959104
+}
+]
+},
+{
+"device": "/dev/sdb",
+"partitions": [
+{
+"label": "swap",
+"number": 1,
+"size": 4294967296
+},
+{
+"label": "boot",
+"number": 2,
+"size": 536870912
+},
+{
+"label": "root",
+"number": 3,
+"size": 994630959104
+}
+]
+}
+],
+"filesystems": [
+{
+"device": "/dev/md0",
+"format": "ext4",
+"mountpoint": "/boot"
+},
+{
+"device": "/dev/md1",
+"format": "ext4",
+"mountpoint": "/"
+}
+],
+"raids": [
+{
+"devices": [
+"/dev/sda3",
+"/dev/sdb2"
+],
+"level": "raid_level_1",
+"name": "/dev/md0"
+},
+{
+"devices": [
+"/dev/sda4",
+"/dev/sdb3"
+],
+"level": "raid_level_1",
+"name": "/dev/md1"
+}
+],
+"zfs": {
+"pools": []
+}
+}`
+
 func TestAccServer_Basic(t *testing.T) {
 	// t.Skip("Skipping Baremetal Server test as no stock is available currently")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
+	}
+	fileName := "partitioning.json"
+	err := os.WriteFile(fileName, []byte(jsonConfigPartitioning), 0644)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	SSHKeyName := "TestAccServer_Basic"
@@ -51,11 +140,12 @@ func TestAccServer_Basic(t *testing.T) {
 						description = "test a description"
 						offer       = "%s"
 						os    = data.scaleway_baremetal_os.my_os.os_id
+						partitioning_file = "%s"
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name, OfferName),
+				`, SSHKeyName, SSHKeyBaremetal, name, OfferName, fileName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
