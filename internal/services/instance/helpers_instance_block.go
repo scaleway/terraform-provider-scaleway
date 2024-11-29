@@ -83,6 +83,13 @@ func (volume *UnknownVolume) IsAttached() bool {
 	return volume.ServerID != nil && *volume.ServerID != ""
 }
 
+type UnknownSnapshot struct {
+	Zone       scw.Zone
+	ID         string
+	Name       string
+	VolumeType instance.VolumeVolumeType
+}
+
 func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, opts ...scw.RequestOption) (*UnknownVolume, error) {
 	getVolumeResponse, err := api.API.GetVolume(&instance.GetVolumeRequest{
 		Zone:     req.Zone,
@@ -159,6 +166,50 @@ func (api *BlockAndInstanceAPI) ResizeUnknownVolume(req *ResizeUnknownVolumeRequ
 	}
 
 	return err
+}
+
+type GetUnknownSnapshotRequest struct {
+	Zone       scw.Zone
+	SnapshotID string
+}
+
+func (api *BlockAndInstanceAPI) GetUnknownSnapshot(req *GetUnknownSnapshotRequest, opts ...scw.RequestOption) (*UnknownSnapshot, error) {
+	getSnapshotResponse, err := api.GetSnapshot(&instance.GetSnapshotRequest{
+		Zone:       req.Zone,
+		SnapshotID: req.SnapshotID,
+	}, opts...)
+	notFoundErr := &scw.ResourceNotFoundError{}
+	if err != nil && !errors.As(err, &notFoundErr) {
+		return nil, err
+	}
+
+	if getSnapshotResponse != nil {
+		snap := &UnknownSnapshot{
+			Zone:       getSnapshotResponse.Snapshot.Zone,
+			ID:         getSnapshotResponse.Snapshot.ID,
+			Name:       getSnapshotResponse.Snapshot.Name,
+			VolumeType: getSnapshotResponse.Snapshot.VolumeType,
+		}
+
+		return snap, nil
+	}
+
+	blockSnapshot, err := api.blockAPI.GetSnapshot(&block.GetSnapshotRequest{
+		Zone:       req.Zone,
+		SnapshotID: req.SnapshotID,
+	}, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	snap := &UnknownSnapshot{
+		Zone:       blockSnapshot.Zone,
+		ID:         blockSnapshot.ID,
+		Name:       blockSnapshot.Name,
+		VolumeType: instance.VolumeVolumeTypeSbsSnapshot,
+	}
+
+	return snap, nil
 }
 
 // newAPIWithZone returns a new instance API and the zone for a Create request

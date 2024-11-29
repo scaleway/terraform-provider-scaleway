@@ -179,7 +179,7 @@ func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, se
 			if err != nil {
 				return err
 			}
-		} else if volume.State != instance.VolumeServerStateAvailable {
+		} else if volume.State != nil && *volume.State != instance.VolumeServerStateAvailable {
 			_, err = api.WaitForVolume(&instance.WaitForVolumeRequest{
 				Zone:          zone,
 				VolumeID:      volume.ID,
@@ -407,22 +407,24 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 	}, nil
 }
 
-func getSnapshotsFromIDs(ctx context.Context, snapIDs []interface{}, instanceAPI *instance.API) ([]*instance.GetSnapshotResponse, error) {
-	snapResponses := []*instance.GetSnapshotResponse(nil)
+func getSnapshotsFromIDs(ctx context.Context, snapIDs []interface{}, api *BlockAndInstanceAPI) ([]*UnknownSnapshot, error) {
+	snapResponses := []*UnknownSnapshot(nil)
 	for _, snapID := range snapIDs {
 		zone, id, err := zonal.ParseID(snapID.(string))
 		if err != nil {
 			return nil, err
 		}
-		snapshot, err := instanceAPI.GetSnapshot(&instance.GetSnapshotRequest{
+
+		unknownSnapshot, err := api.GetUnknownSnapshot(&GetUnknownSnapshotRequest{
 			Zone:       zone,
 			SnapshotID: id,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return snapResponses, fmt.Errorf("extra volumes : could not find snapshot with id %s", snapID)
+			return nil, fmt.Errorf("extra volumes : could not find snapshot with id %s: %w", snapID, err)
 		}
-		snapResponses = append(snapResponses, snapshot)
+		snapResponses = append(snapResponses, unknownSnapshot)
 	}
+
 	return snapResponses, nil
 }
 

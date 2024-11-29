@@ -691,7 +691,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		}
 
 		var additionalVolumesIDs []string
-		for i, volume := range sortVolumeServer(server.Volumes) {
+		for i, serverVolume := range sortVolumeServer(server.Volumes) {
 			if i == 0 {
 				rootVolume := map[string]interface{}{}
 
@@ -701,31 +701,31 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 				}
 
 				vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
-					VolumeID: volume.ID,
+					VolumeID: serverVolume.ID,
 					Zone:     server.Zone,
 				})
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", volume.ID, err))
+					return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", serverVolume.ID, err))
 				}
 
 				rootVolume["volume_id"] = zonal.NewID(zone, vol.ID).String()
 				if vol.Size != nil {
 					rootVolume["size_in_gb"] = int(uint64(*vol.Size) / gb)
-				} else {
-					rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
+				} else if serverVolume.Size != nil {
+					rootVolume["size_in_gb"] = int(uint64(*serverVolume.Size) / gb)
 				}
 				if vol.IsBlockVolume() {
 					rootVolume["sbs_iops"] = types.FlattenUint32Ptr(vol.Iops)
 				}
 				_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 				rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
-				rootVolume["volume_type"] = volume.VolumeType
-				rootVolume["boot"] = volume.Boot
-				rootVolume["name"] = volume.Name
+				rootVolume["volume_type"] = serverVolume.VolumeType
+				rootVolume["boot"] = serverVolume.Boot
+				rootVolume["name"] = serverVolume.Name
 
 				_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 			} else {
-				additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, volume.ID).String())
+				additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
 			}
 		}
 
@@ -1144,8 +1144,8 @@ func instanceServerCanMigrate(api *instanceSDK.API, server *instanceSDK.Server, 
 	var localVolumeSize scw.Size
 
 	for _, volume := range server.Volumes {
-		if volume.VolumeType == instanceSDK.VolumeServerVolumeTypeLSSD {
-			localVolumeSize += volume.Size
+		if volume.VolumeType == instanceSDK.VolumeServerVolumeTypeLSSD && volume.Size != nil {
+			localVolumeSize += *volume.Size
 		}
 	}
 

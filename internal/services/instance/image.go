@@ -176,7 +176,7 @@ func ResourceImage() *schema.Resource {
 }
 
 func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := newAPIWithZone(d, m)
+	api, zone, err := instanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,7 +192,7 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	extraVolumesIDs, volumesExist := d.GetOk("additional_volume_ids")
 	if volumesExist {
-		snapResponses, err := getSnapshotsFromIDs(ctx, extraVolumesIDs.([]interface{}), instanceAPI)
+		snapResponses, err := getSnapshotsFromIDs(ctx, extraVolumesIDs.([]interface{}), api)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -206,14 +206,14 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		req.Public = types.ExpandBoolPtr(types.GetBool(d, "public"))
 	}
 
-	res, err := instanceAPI.CreateImage(req, scw.WithContext(ctx))
+	res, err := api.CreateImage(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(zonal.NewIDString(zone, res.Image.ID))
 
-	_, err = instanceAPI.WaitForImage(&instanceSDK.WaitForImageRequest{
+	_, err = api.WaitForImage(&instanceSDK.WaitForImageRequest{
 		ImageID:       res.Image.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
@@ -262,7 +262,7 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -283,7 +283,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 
-	image, err := instanceAPI.GetImage(&instanceSDK.GetImageRequest{
+	image, err := api.GetImage(&instanceSDK.GetImageRequest{
 		Zone:    zone,
 		ImageID: id,
 	}, scw.WithContext(ctx))
@@ -292,7 +292,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("additional_volume_ids") {
-		snapResponses, err := getSnapshotsFromIDs(ctx, d.Get("additional_volume_ids").([]interface{}), instanceAPI)
+		snapResponses, err := getSnapshotsFromIDs(ctx, d.Get("additional_volume_ids").([]interface{}), api)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -315,17 +315,17 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 		req.Arch = image.Image.Arch
 	}
 
-	_, err = waitForImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForImage(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = instanceAPI.UpdateImage(req, scw.WithContext(ctx))
+	_, err = api.UpdateImage(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't update image: %s", err))
 	}
 
-	_, err = waitForImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForImage(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
