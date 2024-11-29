@@ -2,8 +2,8 @@ package baremetal_test
 
 import (
 	"fmt"
-	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -17,100 +17,13 @@ import (
 
 const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 
-var jsonConfigPartitioning = `{
-"disks": [
-{
-"device": "/dev/sda",
-"partitions": [
-{
-"label": "legacy",
-"number": 1,
-"size": 536870912
-},
-{
-"label": "swap",
-"number": 2,
-"size": 4294967296
-},
-{
-"label": "boot",
-"number": 3,
-"size": 536870912
-},
-{
-"label": "root",
-"number": 4,
-"size": 994630959104
-}
-]
-},
-{
-"device": "/dev/sdb",
-"partitions": [
-{
-"label": "swap",
-"number": 1,
-"size": 4294967296
-},
-{
-"label": "boot",
-"number": 2,
-"size": 536870912
-},
-{
-"label": "root",
-"number": 3,
-"size": 994630959104
-}
-]
-}
-],
-"filesystems": [
-{
-"device": "/dev/md0",
-"format": "ext4",
-"mountpoint": "/boot"
-},
-{
-"device": "/dev/md1",
-"format": "ext4",
-"mountpoint": "/"
-}
-],
-"raids": [
-{
-"devices": [
-"/dev/sda3",
-"/dev/sdb2"
-],
-"level": "raid_level_1",
-"name": "/dev/md0"
-},
-{
-"devices": [
-"/dev/sda4",
-"/dev/sdb3"
-],
-"level": "raid_level_1",
-"name": "/dev/md1"
-}
-],
-"zfs": {
-"pools": []
-}
-}`
+var jsonConfigPartitioning = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912},{\"label\":\"swap\",\"number\":2,\"size\":4294967296},{\"label\":\"boot\",\"number\":3,\"size\":1073741824},{\"label\":\"root\",\"number\":4,\"size\":1017827045376}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"swap\",\"number\":1,\"size\":4294967296},{\"label\":\"boot\",\"number\":2,\"size\":1073741824},{\"label\":\"root\",\"number\":3,\"size\":1017827045376}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/md0\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/md1\",\"format\":\"ext4\",\"mountpoint\":\"/\"}],\"raids\":[{\"devices\":[\"/dev/nvme0n1p3\",\"/dev/nvme1n1p2\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md0\"},{\"devices\":[\"/dev/nvme0n1p4\",\"/dev/nvme1n1p3\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md1\"}],\"zfs\":{\"pools\":[]}}"
 
 func TestAccServer_Basic(t *testing.T) {
-	// t.Skip("Skipping Baremetal Server test as no stock is available currently")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
-	}
-	fileName := "partitioning.json"
-	err := os.WriteFile(fileName, []byte(jsonConfigPartitioning), 0644)
-	if err != nil {
-		t.Fatal(err)
 	}
 
 	SSHKeyName := "TestAccServer_Basic"
@@ -140,12 +53,11 @@ func TestAccServer_Basic(t *testing.T) {
 						description = "test a description"
 						offer       = "%s"
 						os    = data.scaleway_baremetal_os.my_os.os_id
-						partitioning_file = "%s"
-					
+						
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name, OfferName, fileName),
+				`, SSHKeyName, SSHKeyBaremetal, name, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
@@ -176,7 +88,7 @@ func TestAccServer_Basic(t *testing.T) {
 						name        = "%s"
 						zone        = "fr-par-1"
 						description = "test a description"
-						offer       = "%s"
+						offer       = %s
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
@@ -256,6 +168,64 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", "TestAccScalewayBaremetalServer_WithoutInstallConfig"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
 					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "os"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_CreateServerWithCustomInstallConfig"
+	name := "TestAccServer_CreateServerWithCustomInstallConfig"
+	//fileName := "partitioning.json"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "fr-par-1"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "fr-par-1"
+						description = "test a description"
+						offer       = "%s"
+						os    = data.scaleway_baremetal_os.my_os.os_id
+						partitioning = "%s"
+						
+						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name, OfferName, strings.ReplaceAll(jsonConfigPartitioning, "\"", "\\\"")),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "partitioning_schema.disks.0.partition.0.size", "536870912"),
+					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
 				),
 			},
 		},
