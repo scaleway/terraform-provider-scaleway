@@ -1,6 +1,7 @@
 package baremetal_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -224,7 +225,8 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "partitioning_schema.disks.0.partition.0.size", "536870912"),
+					testAccChechPartitioning(tt, "scaleway_baremetal_server.base", "partitioning_schema.disks.0.partition.0.size", "536870912", jsonConfigPartitioning),
+					//resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "install.partitioning_schema.disks.0.partition.0.size", "536870912"),
 					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
 				),
 			},
@@ -1048,6 +1050,40 @@ func testAccCheckBaremetalServerExists(tt *acctest.TestTools, n string) resource
 			return err
 		}
 
+		return nil
+	}
+}
+
+func testAccChechPartitioning(tt *acctest.TestTools, n string, key string, value string, source string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+		baremetalAPI, zonedID, err := baremetal.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		server, err := baremetalAPI.GetServer(&baremetalSDK.GetServerRequest{
+			ServerID: zonedID.ID,
+			Zone:     zonedID.Zone,
+		})
+		if err != nil {
+			return err
+		}
+		if server.Install.PartitioningSchema == nil {
+			return fmt.Errorf("server %s has no partitioning schema", n)
+		}
+		var schema baremetalSDK.Schema
+		//partitioning, _ := json.Marshal(source)
+		err = json.Unmarshal([]byte(source), &schema)
+		if err != nil {
+			return err
+		}
+		if &schema != server.Install.PartitioningSchema {
+			return fmt.Errorf("server %s has not custom partitioning install", n)
+		}
 		return nil
 	}
 }
