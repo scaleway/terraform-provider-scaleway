@@ -22,29 +22,28 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 	return nil
 }
 
-func expandImageExtraVolumesTemplates(snapshots []*UnknownSnapshot) map[string]*instance.VolumeTemplate {
+func expandImageExtraVolumesTemplates(snapshotIDs []string) map[string]*instance.VolumeTemplate {
 	volTemplates := map[string]*instance.VolumeTemplate{}
-	if snapshots == nil {
+	if len(snapshotIDs) == 0 {
 		return volTemplates
 	}
-	for i, snap := range snapshots {
+	for i, snapID := range snapshotIDs {
 		volTemplate := &instance.VolumeTemplate{
-			ID:   snap.ID,
-			Name: snap.Name,
+			ID: snapID,
 		}
 		volTemplates[strconv.Itoa(i+1)] = volTemplate
 	}
 	return volTemplates
 }
 
-func expandImageExtraVolumesUpdateTemplates(snapshots []*UnknownSnapshot) map[string]*instance.VolumeImageUpdateTemplate {
+func expandImageExtraVolumesUpdateTemplates(snapshotIDs []string) map[string]*instance.VolumeImageUpdateTemplate {
 	volTemplates := map[string]*instance.VolumeImageUpdateTemplate{}
-	if snapshots == nil {
+	if len(snapshotIDs) == 0 {
 		return volTemplates
 	}
-	for i, snap := range snapshots {
+	for i, snapID := range snapshotIDs {
 		volTemplate := &instance.VolumeImageUpdateTemplate{
-			ID: snap.ID,
+			ID: snapID,
 		}
 		volTemplates[strconv.Itoa(i+1)] = volTemplate
 	}

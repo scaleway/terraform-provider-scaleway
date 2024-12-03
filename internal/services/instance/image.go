@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -192,11 +193,7 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	extraVolumesIDs, volumesExist := d.GetOk("additional_volume_ids")
 	if volumesExist {
-		snapResponses, err := getSnapshotsFromIDs(ctx, extraVolumesIDs.([]interface{}), api)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.ExtraVolumes = expandImageExtraVolumesTemplates(snapResponses)
+		req.ExtraVolumes = expandImageExtraVolumesTemplates(locality.ExpandIDs(extraVolumesIDs))
 	}
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
@@ -292,11 +289,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("additional_volume_ids") {
-		snapResponses, err := getSnapshotsFromIDs(ctx, d.Get("additional_volume_ids").([]interface{}), api)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.ExtraVolumes = expandImageExtraVolumesUpdateTemplates(snapResponses)
+		req.ExtraVolumes = expandImageExtraVolumesUpdateTemplates(locality.ExpandIDs(d.Get("additional_volume_ids")))
 	} else {
 		volTemplate := map[string]*instanceSDK.VolumeImageUpdateTemplate{}
 		for key, vol := range image.Image.ExtraVolumes {

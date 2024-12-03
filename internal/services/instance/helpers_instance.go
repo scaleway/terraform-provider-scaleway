@@ -407,27 +407,6 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 	}, nil
 }
 
-func getSnapshotsFromIDs(ctx context.Context, snapIDs []interface{}, api *BlockAndInstanceAPI) ([]*UnknownSnapshot, error) {
-	snapResponses := []*UnknownSnapshot(nil)
-	for _, snapID := range snapIDs {
-		zone, id, err := zonal.ParseID(snapID.(string))
-		if err != nil {
-			return nil, err
-		}
-
-		unknownSnapshot, err := api.GetUnknownSnapshot(&GetUnknownSnapshotRequest{
-			Zone:       zone,
-			SnapshotID: id,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return nil, fmt.Errorf("extra volumes : could not find snapshot with id %s: %w", snapID, err)
-		}
-		snapResponses = append(snapResponses, unknownSnapshot)
-	}
-
-	return snapResponses, nil
-}
-
 func formatImageLabel(imageUUID string) string {
 	return strings.ReplaceAll(imageUUID, "-", "_")
 }
