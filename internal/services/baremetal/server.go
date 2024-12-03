@@ -259,7 +259,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			"partitioning": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The path to the patitioning json file",
+				Description: "The partitioning schema in json format",
 			},
 		},
 
