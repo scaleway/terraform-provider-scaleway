@@ -307,7 +307,6 @@ func ResourceInstance() *schema.Resource {
 			"encryption_at_rest": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Enable or disable encryption at rest for the database instance",
 			},
 			// Common
@@ -660,6 +659,21 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 				}
 			}
 		}
+	}
+
+	if d.HasChange("encryption_at_rest") {
+		oldValue, newValue := d.GetChange("encryption_at_rest")
+
+		if oldValue.(bool) && !newValue.(bool) {
+			return diag.FromErr(errors.New("disabling encryption_at_rest is not supported once it has been enabled"))
+		}
+
+		upgradeInstanceRequests = append(upgradeInstanceRequests,
+			rdb.UpgradeInstanceRequest{
+				Region:           region,
+				InstanceID:       ID,
+				EnableEncryption: scw.BoolPtr(newValue.(bool)),
+			})
 	}
 
 	// Carry out the upgrades
