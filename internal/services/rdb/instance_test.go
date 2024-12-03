@@ -1328,6 +1328,61 @@ func TestAccInstance_EncryptionAtRestFalse(t *testing.T) {
 	})
 }
 
+func TestAccInstance_UpdateEncryptionAtRest(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Step 1: Create without encryption
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name               = "test-rdb-update-encryption"
+						node_type          = "db-dev-s"
+						engine             = %q
+						is_ha_cluster      = false
+						disable_backup     = true
+						user_name          = "user_no_enc"
+						password           = "thiZ_is_v&ry_s3cret"
+						encryption_at_rest = false
+						tags               = [ "terraform-test", "no-encryption" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "encryption_at_rest", "false"),
+				),
+			},
+			// Step 2: Update encryption to true
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name               = "test-rdb-update-encryption"
+						node_type          = "db-dev-s"
+						engine             = %q
+						is_ha_cluster      = false
+						disable_backup     = true
+						user_name          = "user_enc"
+						password           = "thiZ_is_v&ry_s3cret"
+						encryption_at_rest = true
+						tags               = [ "terraform-test", "with-encryption" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "encryption_at_rest", "true"),
+				),
+			},
+		},
+	})
+}
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
