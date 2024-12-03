@@ -185,7 +185,6 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 
 	SSHKeyName := "TestAccServer_CreateServerWithCustomInstallConfig"
 	name := "TestAccServer_CreateServerWithCustomInstallConfig"
-	//fileName := "partitioning.json"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -1076,7 +1075,6 @@ func testAccChechPartitioning(tt *acctest.TestTools, n string, source string) re
 			return fmt.Errorf("server %s has no partitioning schema", n)
 		}
 		schema := baremetalSDK.Schema{}
-		//partitioning, _ := json.Marshal(source)
 		err = json.Unmarshal([]byte(source), &schema)
 		if err != nil {
 			return err

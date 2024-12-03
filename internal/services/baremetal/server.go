@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -336,6 +337,9 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if file != "" {
 			todecode, _ := file.(string)
 			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 		req.Install = &baremetal.CreateServerRequestInstall{
 			OsID:               zonal.ExpandID(d.Get("os")).ID,
@@ -486,63 +490,6 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	return nil
 }
-
-//func schemaToStringList(schema *baremetal.Schema) string {
-//	var result string
-//
-//	if schema.Disks != nil {
-//		for _, disk := range schema.Disks {
-//			if disk != nil {
-//				result += "Disk: " + disk.Device
-//				if disk.Partitions != nil {
-//					for _, partition := range disk.Partitions {
-//						if partition != nil {
-//							result += fmt.Sprintf("  Partition: %s Number: %d Size: %s", partition.Label, partition.Number, partition.Size.String())
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-//
-//	if schema.Raids != nil {
-//		for _, raid := range schema.Raids {
-//			if raid != nil {
-//				result += fmt.Sprintf("RAID: %s Level: %s", raid.Name, raid.Level)
-//				for _, device := range raid.Devices {
-//					result += "  Device: " + device
-//				}
-//			}
-//		}
-//	}
-//
-//	if schema.Filesystems != nil {
-//		for _, fs := range schema.Filesystems {
-//			if fs != nil {
-//				result += fmt.Sprintf("Filesystem: %s Format: %s Mountpoint: %s", fs.Device, fs.Format, fs.Mountpoint)
-//			}
-//		}
-//	}
-//
-//	if schema.Zfs != nil {
-//		for _, pool := range schema.Zfs.Pools {
-//			if pool != nil {
-//				result += fmt.Sprintf("ZFS Pool: %s Type: %s", pool.Name, pool.Type)
-//				for _, device := range pool.Devices {
-//					result += "  Device: " + device
-//				}
-//				for _, option := range pool.Options {
-//					result += "  Option: " + option
-//				}
-//				for _, fsOption := range pool.FilesystemOptions {
-//					result += "  Filesystem Option: " + fsOption
-//				}
-//			}
-//		}
-//	}
-//
-//	return result
-//}
 
 //gocyclo:ignore
 func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
