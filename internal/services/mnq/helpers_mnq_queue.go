@@ -68,7 +68,7 @@ func NewSQSClient(httpClient *http.Client, region string, endpoint string, acces
 	return sqs.New(s), nil
 }
 
-func NATSClientWithRegion( //nolint:ireturn
+func NATSClientWithRegion( //nolint:ireturn,nolintlint
 	d *schema.ResourceData,
 	m interface{},
 ) (nats.JetStreamContext, scw.Region, error) {
