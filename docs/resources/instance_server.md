@@ -272,10 +272,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 - `status` The private NIC state.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server must be created.
 
-~> **Important:**
-
-- You can only attach an instance in the same [zone](../guides/regions_and_zones.md#zones) as a private network.
-- Instance supports maximum 8 different private networks.
+~> **Important:** You can only attach an instance in the same [zone](../guides/regions_and_zones.md#zones) as a private network.
+~> **Important:** Instance supports a maximum of 8 different private networks.
 
 ## Attributes Reference
 
