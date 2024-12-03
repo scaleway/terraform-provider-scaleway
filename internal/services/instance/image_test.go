@@ -128,6 +128,18 @@ func TestAccImage_ExternalBlockVolume(t *testing.T) {
 						iops = 5000
 					}
 
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_block_volume.main.id
+					}
+				`,
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "main" {
+						size_in_gb = 50
+						iops = 5000
+					}
+
 					resource "scaleway_block_volume" "additional1" {
 						size_in_gb = 50
 						iops = 5000
