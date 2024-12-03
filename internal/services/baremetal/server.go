@@ -319,67 +319,48 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		offerID = zonal.NewID(zone, o.ID)
 	}
 
-	if !d.Get("install_config_afterward").(bool) {
-		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
-			return diags
-		}
-	}
-
-	partitioningSchema := baremetal.Schema{}
-	if file, ok := d.GetOk("partitioning"); ok {
-		todecode, _ := json.Marshal(file)
-		err = json.Unmarshal(todecode, &partitioningSchema)
-	}
-
-	serverRequestInstall := baremetal.CreateServerRequestInstall{
-		OsID:               zonal.ExpandID(d.Get("os")).ID,
-		Hostname:           d.Get("hostname").(string),
-		SSHKeyIDs:          types.ExpandStrings(d.Get("ssh_key_ids")),
-		User:               types.ExpandStringPtr(d.Get("user")),
-		Password:           types.ExpandStringPtr(d.Get("password")),
-		PartitioningSchema: &partitioningSchema,
-	}
-
-	server, err := api.CreateServer(&baremetal.CreateServerRequest{
+	req := &baremetal.CreateServerRequest{
 		Zone:        zone,
 		Name:        types.ExpandOrGenerateString(d.Get("name"), "bm"),
 		ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		Description: d.Get("description").(string),
 		OfferID:     offerID.ID,
 		Tags:        types.ExpandStrings(d.Get("tags")),
-		Install:     &serverRequestInstall,
-	}, scw.WithContext(ctx))
+	}
+
+	partitioningSchema := baremetal.Schema{}
+	if file, ok := d.GetOk("partitioning"); ok || !d.Get("install_config_afterward").(bool) {
+		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
+			return diags
+		}
+		if file != "" {
+			todecode, _ := file.(string)
+			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+		}
+		req.Install = &baremetal.CreateServerRequestInstall{
+			OsID:               zonal.ExpandID(d.Get("os")).ID,
+			Hostname:           d.Get("hostname").(string),
+			SSHKeyIDs:          types.ExpandStrings(d.Get("ssh_key_ids")),
+			User:               types.ExpandStringPtr(d.Get("user")),
+			Password:           types.ExpandStringPtr(d.Get("password")),
+			PartitioningSchema: &partitioningSchema,
+		}
+	}
+
+	server, err := api.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(zonal.NewID(server.Zone, server.ID).String())
 
-	_, err = waitForServer(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
+	if d.Get("install_config_afterward").(bool) {
+		_, err = waitForServer(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
+	} else {
+		_, err = waitForServerInstall(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
+	}
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	if !d.Get("install_config_afterward").(bool) {
-		_, err = api.InstallServer(&baremetal.InstallServerRequest{
-			Zone:            server.Zone,
-			ServerID:        server.ID,
-			OsID:            zonal.ExpandID(d.Get("os")).ID,
-			Hostname:        types.ExpandStringWithDefault(d.Get("hostname"), server.Name),
-			SSHKeyIDs:       types.ExpandStrings(d.Get("ssh_key_ids")),
-			User:            types.ExpandStringPtr(d.Get("user")),
-			Password:        types.ExpandStringPtr(d.Get("password")),
-			ServiceUser:     types.ExpandStringPtr(d.Get("service_user")),
-			ServicePassword: types.ExpandStringPtr(d.Get("service_password")),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForServerInstall(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
 	}
 
 	options, optionsExist := d.GetOk("options")
@@ -505,6 +486,63 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	return nil
 }
+
+//func schemaToStringList(schema *baremetal.Schema) string {
+//	var result string
+//
+//	if schema.Disks != nil {
+//		for _, disk := range schema.Disks {
+//			if disk != nil {
+//				result += "Disk: " + disk.Device
+//				if disk.Partitions != nil {
+//					for _, partition := range disk.Partitions {
+//						if partition != nil {
+//							result += fmt.Sprintf("  Partition: %s Number: %d Size: %s", partition.Label, partition.Number, partition.Size.String())
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	if schema.Raids != nil {
+//		for _, raid := range schema.Raids {
+//			if raid != nil {
+//				result += fmt.Sprintf("RAID: %s Level: %s", raid.Name, raid.Level)
+//				for _, device := range raid.Devices {
+//					result += "  Device: " + device
+//				}
+//			}
+//		}
+//	}
+//
+//	if schema.Filesystems != nil {
+//		for _, fs := range schema.Filesystems {
+//			if fs != nil {
+//				result += fmt.Sprintf("Filesystem: %s Format: %s Mountpoint: %s", fs.Device, fs.Format, fs.Mountpoint)
+//			}
+//		}
+//	}
+//
+//	if schema.Zfs != nil {
+//		for _, pool := range schema.Zfs.Pools {
+//			if pool != nil {
+//				result += fmt.Sprintf("ZFS Pool: %s Type: %s", pool.Name, pool.Type)
+//				for _, device := range pool.Devices {
+//					result += "  Device: " + device
+//				}
+//				for _, option := range pool.Options {
+//					result += "  Option: " + option
+//				}
+//				for _, fsOption := range pool.FilesystemOptions {
+//					result += "  Filesystem Option: " + fsOption
+//				}
+//			}
+//		}
+//	}
+//
+//	return result
+//}
 
 //gocyclo:ignore
 func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
