@@ -430,13 +430,13 @@ func emptyBucket(ctx context.Context, conn *s3.Client, bucketName string, force 
 	var nObjectMarker int64
 	var globalErr error
 
-	//Delete All Object Version
+	// Delete All Object Version
 	nObject, err := processAllPagesObject(ctx, bucketName, conn, force, deleteVersionBucket)
 	if err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	}
 
-	//Delete All Object Marker
+	// Delete All Object Marker
 	nObjectMarker, err = processAllPagesObject(ctx, bucketName, conn, force, deleteMarkerBucket)
 	if err != nil {
 		globalErr = multierror.Append(globalErr, err)
@@ -487,7 +487,7 @@ func deleteMarkerBucket(ctx context.Context, conn *s3.Client, bucketName string,
 			if err != nil {
 				return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
 			}
-			nObject += 1
+			nObject++
 			return nil
 		})
 	}
@@ -512,7 +512,7 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 					err = deleteS3ObjectVersion(ctx, conn, bucketName, objectKey, objectVersionID, force)
 				}
 			}
-			nObject += 1
+			nObject++
 			if err != nil {
 				return fmt.Errorf("failed to delete S3 object: %s", err)
 			}
