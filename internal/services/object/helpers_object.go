@@ -260,31 +260,6 @@ func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfigurat
 	return vc
 }
 
-func expandObjectBucketVersioningCreate(v []interface{}) *s3Types.VersioningConfiguration { //nolint:unused
-	vc := &s3Types.VersioningConfiguration{}
-	if len(v) > 0 {
-		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
-			vc.Status = s3Types.BucketVersioningStatusEnabled
-		} else {
-			vc.Status = s3Types.BucketVersioningStatusSuspended
-		}
-		return vc
-	}
-	return nil
-}
-
-func expandObjectBucketVersioningUpdate(v []interface{}) *s3Types.VersioningConfiguration { //nolint:unused
-	vc := &s3Types.VersioningConfiguration{}
-	if len(v) > 0 {
-		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
-			vc.Status = s3Types.BucketVersioningStatusEnabled
-		} else {
-			vc.Status = s3Types.BucketVersioningStatusSuspended
-		}
-	}
-	return vc
-}
-
 func flattenBucketCORS(corsResponse interface{}) []interface{} {
 	if corsResponse == nil {
 		return nil

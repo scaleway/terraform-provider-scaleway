@@ -711,27 +711,6 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client
 	return nil
 }
 
-func resourceObjectBucketVersioningCreate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error { //nolint:unused
-	v := d.Get("versioning").([]interface{})
-	bucketName := d.Get("name").(string)
-	vc := expandObjectBucketVersioning(v)
-	if vc.Status == "" {
-		return nil
-	}
-	i := &s3.PutBucketVersioningInput{
-		Bucket:                  scw.StringPtr(bucketName),
-		VersioningConfiguration: vc,
-	}
-	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
-
-	_, err := s3conn.PutBucketVersioning(ctx, i)
-	if err != nil {
-		return fmt.Errorf("error putting S3 versioning: %s", err)
-	}
-
-	return nil
-}
-
 func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
 	bucketName := d.Get("name").(string)
 	rawCors := d.Get("cors_rule").([]interface{})
