@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"regexp"
 	"testing"
 
@@ -40,43 +39,6 @@ func TestAccObjectBucketLockConfiguration_Basic(t *testing.T) {
 			objectchecks.IsBucketDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
-			//{
-			//	Config: fmt.Sprintf(`
-			//		resource "scaleway_object_bucket" "test" {
-			//			name = %[1]q
-			//			region = %[2]q
-			//			tags = {
-			//				TestName = "TestAccSCW_LockConfig_basic"
-			//			}
-			//
-			//			object_lock_enabled = true
-			//		}
-			//
-			//		resource "scaleway_object_bucket_acl" "test" {
-			//			bucket = scaleway_object_bucket.test.id
-			//			acl = "public-read"
-			//		}
-			//
-			//		resource "scaleway_object_bucket_lock_configuration" "test" {
-			//			bucket = scaleway_object_bucket.test.id
-			//			rule {
-			//				default_retention {
-			//					mode = "GOVERNANCE"
-			//					days = 1
-			//				}
-			//			}
-			//		}
-			//	`, rName, objectTestsMainRegion),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		testAccCheckBucketLockConfigurationExists(tt, resourceName),
-			//		objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.test", true),
-			//		resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
-			//		resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
-			//		resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
-			//		resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.mode", "GOVERNANCE"),
-			//		resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.days", "1"),
-			//	),
-			//},
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "test" {
@@ -85,15 +47,52 @@ func TestAccObjectBucketLockConfiguration_Basic(t *testing.T) {
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
-
+			
 						object_lock_enabled = true
 					}
-
+			
+					resource "scaleway_object_bucket_acl" "test" {
+						bucket = scaleway_object_bucket.test.id
+						acl = "public-read"
+					}
+			
+					resource "scaleway_object_bucket_lock_configuration" "test" {
+						bucket = scaleway_object_bucket.test.id
+						rule {
+							default_retention {
+								mode = "GOVERNANCE"
+								days = 1
+							}
+						}
+					}
+				`, rName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLockConfigurationExists(tt, resourceName),
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.test", true),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.mode", "GOVERNANCE"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.days", "1"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						region = %[2]q
+						tags = {
+							TestName = "TestAccSCW_LockConfig_basic"
+						}
+			
+						object_lock_enabled = true
+					}
+			
 					resource "scaleway_object_bucket_acl" "test" {
 						bucket = scaleway_object_bucket.test.name
 						acl = "public-read"
 					}
-
+			
 					resource "scaleway_object_bucket_lock_configuration" "test" {
 						bucket = scaleway_object_bucket.test.name
 						rule {
@@ -322,7 +321,7 @@ func testAccCheckBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.
 
 			output, err := conn.GetObjectLockConfiguration(ctx, input)
 
-			if errors.As(err, new(*s3Types.NoSuchBucket)) {
+			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "The specified bucket does not exist") {
 				continue
 			}
 
