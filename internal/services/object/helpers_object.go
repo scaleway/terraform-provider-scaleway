@@ -292,7 +292,7 @@ func flattenBucketCORS(corsResponse interface{}) []interface{} {
 
 func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []s3Types.CORSRule {
 	if len(rawCors) == 0 {
-		tflog.Warn(ctx, fmt.Sprintf("No CORS configuration provided for bucket: "+bucket))
+		tflog.Warn(ctx, "No CORS configuration provided for bucket: "+bucket)
 		return nil
 	}
 
