@@ -260,7 +260,7 @@ func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfigurat
 	return vc
 }
 
-func expandObjectBucketVersioningCreate(v []interface{}) *s3Types.VersioningConfiguration {
+func expandObjectBucketVersioningCreate(v []interface{}) *s3Types.VersioningConfiguration { //nolint:unused
 	vc := &s3Types.VersioningConfiguration{}
 	if len(v) > 0 {
 		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
@@ -273,7 +273,7 @@ func expandObjectBucketVersioningCreate(v []interface{}) *s3Types.VersioningConf
 	return nil
 }
 
-func expandObjectBucketVersioningUpdate(v []interface{}) *s3Types.VersioningConfiguration {
+func expandObjectBucketVersioningUpdate(v []interface{}) *s3Types.VersioningConfiguration { //nolint:unused
 	vc := &s3Types.VersioningConfiguration{}
 	if len(v) > 0 {
 		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
@@ -316,8 +316,8 @@ func flattenBucketCORS(corsResponse interface{}) []interface{} {
 }
 
 func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []s3Types.CORSRule {
-	if rawCors == nil || len(rawCors) == 0 {
-		tflog.Warn(ctx, fmt.Sprintf("No CORS configuration provided for bucket: %s", bucket))
+	if len(rawCors) == 0 {
+		tflog.Warn(ctx, fmt.Sprintf("No CORS configuration provided for bucket: "+bucket))
 		return nil
 	}
 
@@ -336,13 +336,13 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 			tflog.Debug(ctx, fmt.Sprintf("Processing CORS key: %s, value: %#v for bucket %s", key, value, bucket))
 			switch key {
 			case "allowed_headers":
-				rule.AllowedHeaders = toStringSlice(value)
+				rule.AllowedHeaders = toStringSlice(ctx, value)
 			case "allowed_methods":
-				rule.AllowedMethods = toStringSlice(value)
+				rule.AllowedMethods = toStringSlice(ctx, value)
 			case "allowed_origins":
-				rule.AllowedOrigins = toStringSlice(value)
+				rule.AllowedOrigins = toStringSlice(ctx, value)
 			case "expose_headers":
-				rule.ExposeHeaders = toStringSlice(value)
+				rule.ExposeHeaders = toStringSlice(ctx, value)
 			case "max_age_seconds":
 				if maxAge, ok := value.(int); ok {
 					rule.MaxAgeSeconds = scw.Int32Ptr(int32(maxAge))
@@ -361,7 +361,7 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 }
 
 // TODO add to sdk-go
-func toStringSlice(input interface{}) []string {
+func toStringSlice(ctx context.Context, input interface{}) []string {
 	var result []string
 	switch v := input.(type) {
 	case []interface{}:
@@ -373,12 +373,12 @@ func toStringSlice(input interface{}) []string {
 	case []string:
 		return v
 	default:
-		tflog.Warn(context.Background(), fmt.Sprintf("Unexpected type for toStringSlice: %T", input))
+		tflog.Warn(ctx, fmt.Sprintf("Unexpected type for toStringSlice: %T", input))
 	}
 	return result
 }
 
-func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName string, key string, versionID string, force bool) error {
+func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName string, key string, versionID string, _ bool) error {
 	input := &s3.DeleteObjectInput{
 		Bucket: scw.StringPtr(bucketName),
 		Key:    scw.StringPtr(key),
@@ -386,9 +386,6 @@ func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName stri
 	if versionID != "" {
 		input.VersionId = scw.StringPtr(versionID)
 	}
-	//if force {
-	//	input.BypassGovernanceRetention = scw.BoolPtr(force)
-	//}
 
 	_, err := conn.DeleteObject(ctx, input)
 	return err

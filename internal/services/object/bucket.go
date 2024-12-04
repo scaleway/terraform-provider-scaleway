@@ -351,7 +351,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		return nil
 	}
 
-	var rules []s3Types.LifecycleRule
+	rules := make([]s3Types.LifecycleRule, 0, len(lifecycleRules))
 
 	for i, lifecycleRule := range lifecycleRules {
 		r := lifecycleRule.(map[string]interface{})
@@ -361,7 +361,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		// Filter
 		prefix := r["prefix"].(string)
 		tags := ExpandObjectBucketTags(r["tags"])
-		ruleHasPrefix := &prefix != nil
+		ruleHasPrefix := prefix != ""
 		filter := &s3Types.LifecycleRuleFilter{}
 
 		if len(tags) > 1 || (ruleHasPrefix && len(tags) == 1) {
@@ -436,16 +436,6 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 				rule.Transitions = append(rule.Transitions, i)
 			}
 		}
-
-		// As a lifecycle rule requires 1 or more transition/expiration actions,
-		// we explicitly pass a default ExpiredObjectDeleteMarker value to be able to create
-		// the rule while keeping the policy unaffected if the conditions are not met.
-		//if rule.Expiration == nil && rule.NoncurrentVersionExpiration == nil &&
-		//	rule.Transitions == nil && rule.NoncurrentVersionTransitions == nil &&
-		//	rule.AbortIncompleteMultipartUpload == nil {
-		//	//rule.Expiration = &s3Types.LifecycleExpiration{}
-		//	rule.Transitions = []s3Types.Transition{}
-		//}
 
 		rules = append(rules, rule)
 	}
@@ -610,8 +600,8 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 					}
 				}
 			} else {
-				if lifecycleRule.Filter != nil && lifecycleRule.Filter.Prefix != nil { //nolint:staticcheck
-					rule["prefix"] = aws.ToString(lifecycleRule.Filter.Prefix) //nolint:staticcheck
+				if lifecycleRule.Filter != nil && lifecycleRule.Filter.Prefix != nil {
+					rule["prefix"] = aws.ToString(lifecycleRule.Filter.Prefix)
 				}
 			}
 
@@ -676,7 +666,6 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m i
 	_, err = s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
-
 	if err != nil {
 		var noSuchBucket *s3Types.NoSuchBucket
 		if errors.As(err, &noSuchBucket) {
@@ -688,10 +677,9 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m i
 				nObjectDeleted, err = emptyBucket(ctx, s3Client, bucketName, true)
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
-				} else {
-					log.Printf("[DEBUG] Deleted %d S3 objects", nObjectDeleted)
 				}
-				// Try to delete bucket again after deleting objects
+				log.Printf("[DEBUG] Deleted %d S3 objects", nObjectDeleted)
+
 				return resourceObjectBucketDelete(ctx, d, m)
 			}
 		}
@@ -723,27 +711,26 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client
 	return nil
 }
 
-//
-//func resourceObjectBucketVersioningCreate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
-//	v := d.Get("versioning").([]interface{})
-//	bucketName := d.Get("name").(string)
-//	vc := expandObjectBucketVersioning(v)
-//	if vc.Status == "" {
-//		return nil
-//	}
-//	i := &s3.PutBucketVersioningInput{
-//		Bucket:                  scw.StringPtr(bucketName),
-//		VersioningConfiguration: vc,
-//	}
-//	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
-//
-//	_, err := s3conn.PutBucketVersioning(ctx, i)
-//	if err != nil {
-//		return fmt.Errorf("error putting S3 versioning: %s", err)
-//	}
-//
-//	return nil
-//}
+func resourceObjectBucketVersioningCreate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error { //nolint:unused
+	v := d.Get("versioning").([]interface{})
+	bucketName := d.Get("name").(string)
+	vc := expandObjectBucketVersioning(v)
+	if vc.Status == "" {
+		return nil
+	}
+	i := &s3.PutBucketVersioningInput{
+		Bucket:                  scw.StringPtr(bucketName),
+		VersioningConfiguration: vc,
+	}
+	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
+
+	_, err := s3conn.PutBucketVersioning(ctx, i)
+	if err != nil {
+		return fmt.Errorf("error putting S3 versioning: %s", err)
+	}
+
+	return nil
+}
 
 func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
 	bucketName := d.Get("name").(string)

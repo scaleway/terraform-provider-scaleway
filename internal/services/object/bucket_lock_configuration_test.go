@@ -358,7 +358,7 @@ func testAccCheckBucketLockConfigurationExists(tt *acctest.TestTools, resourceNa
 		regionalID := regional.ExpandID(rs.Primary.ID)
 		bucketRegion := regionalID.Region
 		bucket := regionalID.ID
-		conn, err := object.NewS3ClientFromMeta(nil, tt.Meta, bucketRegion.String())
+		conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
 		if err != nil {
 			return err
 		}

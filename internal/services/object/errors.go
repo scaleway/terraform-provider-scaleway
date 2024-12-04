@@ -23,7 +23,7 @@ const (
 	ErrCodeAccessDenied = "AccessDenied"
 	// ErrCodeBucketNotEmpty bucket is not empty
 	ErrCodeBucketNotEmpty = "BucketNotEmpty"
-	//ErrCodeNoSuchBucket bucket not found
+	// ErrCodeNoSuchBucket bucket not found
 	ErrCodeNoSuchBucket = "NoSuchBucket"
 	// ErrCodeNoSuchBucketPolicy policy not found
 	ErrCodeNoSuchBucketPolicy = "NoSuchBucketPolicy"
