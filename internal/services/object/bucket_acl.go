@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"strings"
+
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
