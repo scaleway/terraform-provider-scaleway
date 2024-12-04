@@ -12,17 +12,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func TestAccObjectBucket_Basic(t *testing.T) {

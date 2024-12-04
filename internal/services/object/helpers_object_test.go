@@ -4,10 +4,9 @@ import (
 	"testing"
 
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/assert"
 )
 
