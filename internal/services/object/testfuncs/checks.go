@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -108,8 +107,7 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				Key:    scw.StringPtr(key),
 			})
 			if err != nil {
-				if errors.As(err, new(*types.NoSuchBucket)) {
-					// Bucket doesn't exist
+				if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "The specified bucket does not exist") {
 					continue
 				}
 				return fmt.Errorf("couldn't get object to verify if it still exists: %s", err)
@@ -121,44 +119,44 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	}
 }
 
-//func IsWebsiteConfigurationDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-//	return func(s *terraform.State) error {
-//		ctx := context.Background()
-//		for _, rs := range s.RootModule().Resources {
-//			if rs.Type != "scaleway_object_bucket_website_configuration" {
-//				continue
-//			}
-//
-//			regionalID := regional.ExpandID(rs.Primary.ID)
-//			bucket := regionalID.ID
-//			bucketRegion := regionalID.Region
-//
-//			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
-//			if err != nil {
-//				return err
-//			}
-//
-//			input := &s3.GetBucketWebsiteInput{
-//				Bucket: aws.String(bucket),
-//			}
-//
-//			output, err := conn.GetBucketWebsite(ctx, input)
-//			if tfawserr.ErrCodeEquals(err, s3.ErrCodeNoSuchBucket, object.ErrCodeNoSuchWebsiteConfiguration) {
-//				continue
-//			}
-//
-//			if err != nil {
-//				return fmt.Errorf("error getting object bucket website configuration (%s): %w", rs.Primary.ID, err)
-//			}
-//
-//			if output != nil {
-//				return fmt.Errorf("object bucket website configuration (%s) still exists", rs.Primary.ID)
-//			}
-//		}
-//
-//		return nil
-//	}
-//}
+func IsWebsiteConfigurationDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ctx := context.Background()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "scaleway_object_bucket_website_configuration" {
+				continue
+			}
+
+			regionalID := regional.ExpandID(rs.Primary.ID)
+			bucket := regionalID.ID
+			bucketRegion := regionalID.Region
+
+			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
+			if err != nil {
+				return err
+			}
+
+			input := &s3.GetBucketWebsiteInput{
+				Bucket: aws.String(bucket),
+			}
+
+			output, err := conn.GetBucketWebsite(ctx, input)
+			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "The specified bucket does not exist") {
+				continue
+			}
+
+			if err != nil {
+				return fmt.Errorf("error getting object bucket website configuration (%s): %w", rs.Primary.ID, err)
+			}
+
+			if output != nil {
+				return fmt.Errorf("object bucket website configuration (%s) still exists", rs.Primary.ID)
+			}
+		}
+
+		return nil
+	}
+}
 
 func IsWebsiteConfigurationPresent(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
