@@ -23,6 +23,7 @@ import (
 const (
 	ServiceName = "scw"       // Name of service.
 	EndpointsID = ServiceName // ID to look up a service endpoint with.
+	encryptionStr = "Pignouf"
 )
 
 func TestAccObject_Basic(t *testing.T) {
@@ -734,6 +735,85 @@ func TestAccObject_WithBucketName(t *testing.T) {
 	})
 }
 
+func TestAccObject_Encryption(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "file" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "myfile"
+						file   = "testfixture/empty.qcow2"
+					}
+				`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckObjectExists(tt, "scaleway_object.file"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "file" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "myfile/foo"
+						file   = "testfixture/empty.qcow2"
+					}
+				`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckObjectExists(tt, "scaleway_object.file"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "file" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "myfile/foo/bar"
+						file   = "testfixture/empty.qcow2"
+					}
+				`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckObjectExists(tt, "scaleway_object.file"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
@@ -764,6 +844,7 @@ func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestChec
 		_, err = s3Client.GetObject(ctx, &s3.GetObjectInput{
 			Bucket: scw.StringPtr(bucketName),
 			Key:    scw.StringPtr(key),
+			SSECustomerKey:
 		})
 		if err != nil {
 			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {
