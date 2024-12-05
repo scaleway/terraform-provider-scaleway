@@ -105,7 +105,6 @@ func TestAccObject_Basic(t *testing.T) {
 }
 
 func TestAccObject_Hash(t *testing.T) {
-	t.Skip("Cannot be tested with an empty file")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-hash")
@@ -130,7 +129,7 @@ func TestAccObject_Hash(t *testing.T) {
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
-						content = "hello world"
+						file   = "testfixture/empty.qcow2"
 						hash = "1"
 					}
 				`, bucketName, objectTestsMainRegion),
@@ -152,7 +151,7 @@ func TestAccObject_Hash(t *testing.T) {
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
-						content = "hello world"
+						file   = "testfixture/empty.qcow2"
 						hash = "2"
 					}
 				`, bucketName, objectTestsMainRegion),
