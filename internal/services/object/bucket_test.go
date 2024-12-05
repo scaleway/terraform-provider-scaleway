@@ -679,7 +679,7 @@ func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []s
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != object.ErrCodeNoSuchCORSConfiguration {
+			if !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
 				return fmt.Errorf("GetBucketCors error: %v", err)
 			}
 		}
