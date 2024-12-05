@@ -3,8 +3,10 @@ package object
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"os"
 	"strings"
 
@@ -105,6 +107,12 @@ func ResourceObject() *schema.Resource {
 					string(s3Types.ObjectCannedACLPublicRead),
 				}, false),
 			},
+			"sse-customer-key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Customer's encryption keys to encrypt data (SSE-C)",
+			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
@@ -146,6 +154,14 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	visibilityStr := types.ExpandStringPtr(d.Get("visibility").(string))
 	if visibilityStr != nil {
 		req.ACL = s3Types.ObjectCannedACL(*visibilityStr)
+	}
+
+	if encryptionKeyStr, ok := d.Get("sse-customer-key").(string); ok {
+		encryptionKey := base64.StdEncoding.EncodeToString([]byte(encryptionKeyStr))
+		encryptionKeyMD5 := md5.Sum([]byte(encryptionKey))
+		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+		req.SSECustomerKeyMD5 = aws.String(string(encryptionKeyMD5[:]))
+		req.SSECustomerKey = aws.String(string(encryptionKey[:]))
 	}
 
 	if filePath, hasFile := d.GetOk("file"); hasFile {
