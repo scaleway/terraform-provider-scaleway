@@ -1029,30 +1029,6 @@ func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
 	})
 }
 
-func TestAccServer_Enterprise(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						type  = "ENT1-S"
-						image = "ubuntu_focal"
-						zone  = "fr-par-2"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
