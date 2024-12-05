@@ -8,7 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -100,8 +101,8 @@ func ResourceObject() *schema.Resource {
 				Computed:    true,
 				Description: "Visibility of the object, public-read or private",
 				ValidateFunc: validation.StringInSlice([]string{
-					s3.ObjectCannedACLPrivate,
-					s3.ObjectCannedACLPublicRead,
+					string(s3Types.ObjectCannedACLPrivate),
+					string(s3Types.ObjectCannedACLPublicRead),
 				}, false),
 			},
 			"region":     regional.Schema(),
@@ -111,7 +112,7 @@ func ResourceObject() *schema.Resource {
 }
 
 func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -124,7 +125,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -132,13 +133,19 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	key := d.Get("key").(string)
+	storageClassStr := d.Get("storage_class").(string)
+	storageClass := s3Types.StorageClass(storageClassStr)
 
 	req := &s3.PutObjectInput{
-		ACL:          types.ExpandStringPtr(d.Get("visibility").(string)),
 		Bucket:       types.ExpandStringPtr(bucket),
 		Key:          types.ExpandStringPtr(key),
-		StorageClass: types.ExpandStringPtr(d.Get("storage_class")),
-		Metadata:     types.ExpandMapStringStringPtr(d.Get("metadata")),
+		StorageClass: storageClass,
+		Metadata:     types.ExpandMapStringString(d.Get("metadata")),
+	}
+
+	visibilityStr := types.ExpandStringPtr(d.Get("visibility").(string))
+	if visibilityStr != nil {
+		req.ACL = s3Types.ObjectCannedACL(*visibilityStr)
 	}
 
 	if filePath, hasFile := d.GetOk("file"); hasFile {
@@ -162,16 +169,16 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		req.Body = bytes.NewReader([]byte{})
 	}
 
-	_, err = s3Client.PutObjectWithContext(ctx, req)
+	_, err = s3Client.PutObject(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if rawTags, hasTags := d.GetOk("tags"); hasTags {
-		_, err := s3Client.PutObjectTaggingWithContext(ctx, &s3.PutObjectTaggingInput{
+		_, err := s3Client.PutObjectTagging(ctx, &s3.PutObjectTaggingInput{
 			Bucket: types.ExpandStringPtr(bucket),
 			Key:    types.ExpandStringPtr(key),
-			Tagging: &s3.Tagging{
+			Tagging: &s3Types.Tagging{
 				TagSet: ExpandObjectBucketTags(rawTags),
 			},
 		})
@@ -186,7 +193,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -201,9 +208,9 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		req := &s3.PutObjectInput{
 			Bucket:       types.ExpandStringPtr(bucketUpdated),
 			Key:          types.ExpandStringPtr(keyUpdated),
-			StorageClass: types.ExpandStringPtr(d.Get("storage_class")),
-			Metadata:     types.ExpandMapStringStringPtr(d.Get("metadata")),
-			ACL:          types.ExpandStringPtr(d.Get("visibility").(string)),
+			StorageClass: s3Types.StorageClass(d.Get("storage_class").(string)),
+			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
+			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
 		}
 
 		if filePath, hasFile := d.GetOk("file"); hasFile {
@@ -215,15 +222,15 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		} else {
 			req.Body = bytes.NewReader([]byte{})
 		}
-		_, err = s3Client.PutObjectWithContext(ctx, req)
+		_, err = s3Client.PutObject(ctx, req)
 	} else {
-		_, err = s3Client.CopyObjectWithContext(ctx, &s3.CopyObjectInput{
+		_, err = s3Client.CopyObject(ctx, &s3.CopyObjectInput{
 			Bucket:       types.ExpandStringPtr(bucketUpdated),
 			Key:          types.ExpandStringPtr(keyUpdated),
-			StorageClass: types.ExpandStringPtr(d.Get("storage_class")),
+			StorageClass: s3Types.StorageClass(d.Get("storage_class").(string)),
 			CopySource:   scw.StringPtr(fmt.Sprintf("%s/%s", bucket, key)),
-			Metadata:     types.ExpandMapStringStringPtr(d.Get("metadata")),
-			ACL:          types.ExpandStringPtr(d.Get("visibility").(string)),
+			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
+			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
 		})
 	}
 	if err != nil {
@@ -231,7 +238,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if d.HasChanges("key", "bucket") {
-		_, err := s3Client.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
+		_, err := s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
 			Key:    scw.StringPtr(key),
 			Bucket: scw.StringPtr(bucket),
 		})
@@ -241,10 +248,10 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if d.HasChange("tags") {
-		_, err := s3Client.PutObjectTaggingWithContext(ctx, &s3.PutObjectTaggingInput{
+		_, err := s3Client.PutObjectTagging(ctx, &s3.PutObjectTaggingInput{
 			Bucket: types.ExpandStringPtr(bucketUpdated),
 			Key:    types.ExpandStringPtr(key),
-			Tagging: &s3.Tagging{
+			Tagging: &s3Types.Tagging{
 				TagSet: ExpandObjectBucketTags(d.Get("tags")),
 			},
 		})
@@ -259,7 +266,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -267,7 +274,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
-	obj, err := s3Client.HeadObjectWithContext(ctx, &s3.HeadObjectInput{
+	obj, err := s3Client.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: types.ExpandStringPtr(bucket),
 		Key:    types.ExpandStringPtr(key),
 	})
@@ -285,9 +292,9 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 			delete(obj.Metadata, k)
 		}
 	}
-	_ = d.Set("metadata", types.FlattenMapStringStringPtr(obj.Metadata))
+	_ = d.Set("metadata", types.FlattenMap(obj.Metadata))
 
-	tags, err := s3Client.GetObjectTaggingWithContext(ctx, &s3.GetObjectTaggingInput{
+	tags, err := s3Client.GetObjectTagging(ctx, &s3.GetObjectTaggingInput{
 		Bucket: types.ExpandStringPtr(bucket),
 		Key:    types.ExpandStringPtr(key),
 	})
@@ -297,7 +304,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	_ = d.Set("tags", flattenObjectBucketTags(tags.TagSet))
 
-	acl, err := s3Client.GetObjectAclWithContext(ctx, &s3.GetObjectAclInput{
+	acl, err := s3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 		Bucket: types.ExpandStringPtr(bucket),
 		Key:    types.ExpandStringPtr(key),
 	})
@@ -306,16 +313,16 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	if objectIsPublic(acl) {
-		_ = d.Set("visibility", s3.ObjectCannedACLPublicRead)
+		_ = d.Set("visibility", s3Types.ObjectCannedACLPublicRead)
 	} else {
-		_ = d.Set("visibility", s3.ObjectCannedACLPrivate)
+		_ = d.Set("visibility", s3Types.ObjectCannedACLPrivate)
 	}
 
 	return nil
 }
 
 func resourceObjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(d, m, d.Id())
+	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -328,7 +335,7 @@ func resourceObjectDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		Key:    types.ExpandStringPtr(key),
 	}
 
-	_, err = s3Client.DeleteObjectWithContext(ctx, req)
+	_, err = s3Client.DeleteObject(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -343,7 +350,7 @@ func objectID(bucket, key string) string {
 func objectIsPublic(acl *s3.GetObjectAclOutput) bool {
 	for _, grant := range acl.Grants {
 		if grant.Grantee != nil &&
-			*grant.Grantee.Type == s3.TypeGroup &&
+			grant.Grantee.Type == s3Types.TypeGroup &&
 			*grant.Grantee.URI == "http://acs.amazonaws.com/groups/global/AllUsers" {
 			return true
 		}

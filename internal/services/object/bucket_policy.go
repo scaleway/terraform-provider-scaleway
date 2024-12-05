@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -51,7 +51,7 @@ func ResourceBucketPolicy() *schema.Resource {
 }
 
 func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -62,7 +62,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -82,7 +82,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	err = retry.RetryContext(ctx, 1*time.Minute, func() *retry.RetryError {
-		_, err := s3Client.PutBucketPolicyWithContext(ctx, params)
+		_, err := s3Client.PutBucketPolicy(ctx, params)
 		if tfawserr.ErrCodeEquals(err, "MalformedPolicy") {
 			return retry.RetryableError(err)
 		}
@@ -92,7 +92,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		return nil
 	})
 	if TimedOut(err) {
-		_, err = s3Client.PutBucketPolicyWithContext(ctx, params)
+		_, err = s3Client.PutBucketPolicy(ctx, params)
 	}
 
 	if err != nil {
@@ -106,7 +106,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 
 //gocyclo:ignore
 func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, _, err := s3ClientWithRegionAndName(d, m, d.Id())
+	s3Client, region, _, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,11 +117,11 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("region", region)
 
 	tflog.Debug(ctx, "[DEBUG] SCW bucket policy, read for bucket: "+d.Id())
-	pol, err := s3Client.GetBucketPolicyWithContext(ctx, &s3.GetBucketPolicyInput{
+	pol, err := s3Client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{
 		Bucket: aws.String(bucket),
 	})
 
-	if !d.IsNewResource() && tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, s3.ErrCodeNoSuchBucket) {
+	if !d.IsNewResource() && tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, ErrCodeNoSuchBucket) {
 		tflog.Warn(ctx, fmt.Sprintf("[WARN] SCW Bucket Policy (%s) not found, removing from state", d.Id()))
 		d.SetId("")
 		return nil
@@ -129,7 +129,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 
 	v := ""
 	if err == nil && pol.Policy != nil {
-		v = aws.StringValue(pol.Policy)
+		v = aws.ToString(pol.Policy)
 	}
 
 	policyToSet, err := SecondJSONUnlessEquivalent(d.Get("policy").(string), v)
@@ -151,7 +151,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var diags diag.Diagnostics
-	acl, err := s3Client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
@@ -166,17 +166,17 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, m, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("scw object bucket: %s, delete policy", bucketName))
-	_, err = s3Client.DeleteBucketPolicy(&s3.DeleteBucketPolicyInput{
+	_, err = s3Client.DeleteBucketPolicy(ctx, &s3.DeleteBucketPolicyInput{
 		Bucket: aws.String(bucketName),
 	})
 
-	if tfawserr.ErrCodeEquals(err, s3.ErrCodeNoSuchBucket) {
+	if tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucket) {
 		return nil
 	}
 
