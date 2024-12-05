@@ -760,6 +760,18 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 					addObjectToBucket(tt, resourceName),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "bucket" {
+							name = %[1]q
+							region = %[2]q
+							force_destroy = true
+						}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceName, true),
+					addObjectToBucket(tt, resourceName),
+				),
+			},
 		},
 	})
 }
