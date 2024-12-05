@@ -107,7 +107,7 @@ func ResourceObject() *schema.Resource {
 					string(s3Types.ObjectCannedACLPublicRead),
 				}, false),
 			},
-			"sse-customer-key": {
+			"sse_customer_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
@@ -156,12 +156,18 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		req.ACL = s3Types.ObjectCannedACL(*visibilityStr)
 	}
 
-	if encryptionKeyStr, ok := d.Get("sse-customer-key").(string); ok {
-		encryptionKey := base64.StdEncoding.EncodeToString([]byte(encryptionKeyStr))
-		encryptionKeyMD5 := md5.Sum([]byte(encryptionKey))
+	if encryptionKeyStr, ok := d.Get("sse_customer_key").(string); ok {
+		encryptionKey := []byte(encryptionKeyStr)
+		h := md5.New()
+		_, err := h.Write(encryptionKey)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		digest := h.Sum(nil)
+		digestMD5 := base64.StdEncoding.EncodeToString(digest)
 		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
-		req.SSECustomerKeyMD5 = aws.String(string(encryptionKeyMD5[:]))
-		req.SSECustomerKey = aws.String(string(encryptionKey[:]))
+		req.SSECustomerKeyMD5 = &digestMD5
+		req.SSECustomerKey = aws.String(base64.StdEncoding.EncodeToString(encryptionKey))
 	}
 
 	if filePath, hasFile := d.GetOk("file"); hasFile {
@@ -290,10 +296,12 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
-	obj, err := s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+	req := &s3.HeadObjectInput{
 		Bucket: types.ExpandStringPtr(bucket),
 		Key:    types.ExpandStringPtr(key),
-	})
+	}
+
+	obj, err := s3Client.HeadObject(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
