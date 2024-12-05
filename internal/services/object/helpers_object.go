@@ -335,7 +335,6 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 	return rules
 }
 
-// TODO add to sdk-go
 func toStringSlice(ctx context.Context, input interface{}) []string {
 	var result []string
 	switch v := input.(type) {
