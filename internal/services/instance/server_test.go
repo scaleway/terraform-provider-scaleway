@@ -146,6 +146,9 @@ func TestAccServer_Minimal2(t *testing.T) {
 func TestAccServer_RootVolume1(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	serverID := ""
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -166,6 +169,7 @@ func TestAccServer_RootVolume1(t *testing.T) {
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
 				),
 			},
 			{
@@ -183,6 +187,7 @@ func TestAccServer_RootVolume1(t *testing.T) {
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					acctest.CheckResourceIDChanged("scaleway_instance_server.base", &serverID), // Server should have been re-created as l_ssd cannot be resized.
 				),
 			},
 		},
@@ -1702,6 +1707,9 @@ func TestAccServer_BlockExternal(t *testing.T) {
 func TestAccServer_BlockExternalRootVolume(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	serverID := ""
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1725,6 +1733,7 @@ func TestAccServer_BlockExternalRootVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "15000"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &serverID),
 				),
 			},
 			{
@@ -1745,6 +1754,7 @@ func TestAccServer_BlockExternalRootVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "15000"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "60"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &serverID),
 				),
 			},
 		},
