@@ -192,7 +192,7 @@ func resolveSchemaPath(resourcePath string, resourceSchemas map[string]*schema.S
 }
 
 // Sets a specific SNS attribute from the resource data
-func awsResourceDataToAttribute(awsAttributes map[string]*string, awsAttribute string, resourceValue interface{}, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
+func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute string, resourceValue interface{}, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
 	resourceSchema := resolveSchemaPath(resourcePath, resourceSchemas)
 	if resourceSchema == nil {
 		return fmt.Errorf("unable to resolve schema for %s", resourcePath)
@@ -215,13 +215,13 @@ func awsResourceDataToAttribute(awsAttributes map[string]*string, awsAttribute s
 		return fmt.Errorf("unsupported type %s for %s", resourceSchema.Type, resourcePath)
 	}
 
-	awsAttributes[awsAttribute] = &s
+	awsAttributes[awsAttribute] = s
 	return nil
 }
 
 // awsResourceDataToAttributes returns a map of attributes from a terraform schema and a conversion map
-func awsResourceDataToAttributes(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]*string, error) {
-	attributes := make(map[string]*string)
+func awsResourceDataToAttributes(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]string, error) {
+	attributes := make(map[string]string)
 
 	for attribute, resourcePath := range attributesToResourceMap {
 		if v, ok := d.GetOk(resourcePath); ok {

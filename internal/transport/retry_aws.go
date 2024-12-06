@@ -6,7 +6,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	tfawserrV2 "github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
 )
+
+func RetryWhenAWSErrCodeEqualsV2[T any](ctx context.Context, codes []string, config *RetryWhenConfig[T]) (T, error) {
+	return retryWhen(ctx, config, func(err error) bool {
+		return tfawserrV2.ErrCodeEquals(err, codes...)
+	})
+}
 
 // RetryWhenAWSErrCodeEquals retries a function when it returns a specific AWS error
 func RetryWhenAWSErrCodeEquals[T any](ctx context.Context, codes []string, config *RetryWhenConfig[T]) (T, error) { //nolint: ireturn
