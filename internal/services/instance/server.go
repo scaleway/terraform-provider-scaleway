@@ -121,7 +121,6 @@ func ResourceServer() *schema.Resource {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Computed:    true,
-							ForceNew:    true,
 							Description: "Size of the root volume in gigabytes",
 						},
 						"volume_type": {
@@ -374,6 +373,7 @@ func ResourceServer() *schema.Resource {
 			),
 			customDiffInstanceServerType,
 			customDiffInstanceServerImage,
+			customDiffInstanceRootVolumeSize,
 		),
 	}
 }
@@ -1164,6 +1164,33 @@ func instanceServerCanMigrate(api *instanceSDK.API, server *instanceSDK.Server, 
 			serverType.VolumesConstraint.MinSize/scw.GB,
 			serverType.VolumesConstraint.MaxSize/scw.GB,
 			localVolumeSize/scw.GB)
+	}
+
+	return nil
+}
+
+func customDiffInstanceRootVolumeSize(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if !diff.HasChange("root_volume.0.size_in_gb") || diff.Id() == "" {
+		return nil
+	}
+
+	instanceAPI, zone, id, err := NewAPIWithZoneAndID(meta, diff.Id())
+	if err != nil {
+		return err
+	}
+
+	resp, err := instanceAPI.GetServer(&instanceSDK.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check server root volume type: %w", err)
+	}
+
+	if rootVolume, hasRootVolume := resp.Server.Volumes["0"]; hasRootVolume {
+		if rootVolume.VolumeType == instanceSDK.VolumeServerVolumeTypeLSSD {
+			return diff.ForceNew("root_volume.0.size_in_gb")
+		}
 	}
 
 	return nil
