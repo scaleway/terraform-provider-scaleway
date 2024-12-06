@@ -33,7 +33,7 @@ func TestAccDataSourceObjectBucketPolicy_Basic(t *testing.T) {
 				"s3:GetObject"
 			]
 		}
-   ]
+  ]
 }`
 
 	resource.ParallelTest(t, resource.TestCase{

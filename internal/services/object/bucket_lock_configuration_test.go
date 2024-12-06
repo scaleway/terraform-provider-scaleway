@@ -1,13 +1,14 @@
 package object_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -46,15 +47,15 @@ func TestAccObjectBucketLockConfiguration_Basic(t *testing.T) {
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
-
+			
 						object_lock_enabled = true
 					}
-
+			
 					resource "scaleway_object_bucket_acl" "test" {
 						bucket = scaleway_object_bucket.test.id
 						acl = "public-read"
 					}
-
+			
 					resource "scaleway_object_bucket_lock_configuration" "test" {
 						bucket = scaleway_object_bucket.test.id
 						rule {
@@ -83,15 +84,15 @@ func TestAccObjectBucketLockConfiguration_Basic(t *testing.T) {
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
-
+			
 						object_lock_enabled = true
 					}
-
+			
 					resource "scaleway_object_bucket_acl" "test" {
 						bucket = scaleway_object_bucket.test.name
 						acl = "public-read"
 					}
-
+			
 					resource "scaleway_object_bucket_lock_configuration" "test" {
 						bucket = scaleway_object_bucket.test.name
 						rule {
@@ -300,6 +301,7 @@ func TestAccObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
 
 func testAccCheckBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		ctx := context.Background()
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_object_bucket_lock_configuration" {
 				continue
@@ -308,7 +310,7 @@ func testAccCheckBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.
 			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucketRegion := regionalID.Region
 			bucket := regionalID.ID
-			conn, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion.String())
+			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
 			if err != nil {
 				return err
 			}
@@ -317,9 +319,9 @@ func testAccCheckBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.
 				Bucket: aws.String(bucket),
 			}
 
-			output, err := conn.GetObjectLockConfiguration(input)
+			output, err := conn.GetObjectLockConfiguration(ctx, input)
 
-			if object.IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "The specified bucket does not exist") {
 				continue
 			}
 
@@ -338,6 +340,7 @@ func testAccCheckBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.
 
 func testAccCheckBucketLockConfigurationExists(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		ctx := context.Background()
 		rs := s.RootModule().Resources[resourceName]
 		if rs == nil {
 			return errors.New("resource not found")
@@ -355,7 +358,7 @@ func testAccCheckBucketLockConfigurationExists(tt *acctest.TestTools, resourceNa
 		regionalID := regional.ExpandID(rs.Primary.ID)
 		bucketRegion := regionalID.Region
 		bucket := regionalID.ID
-		conn, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion.String())
+		conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
 		if err != nil {
 			return err
 		}
@@ -364,7 +367,7 @@ func testAccCheckBucketLockConfigurationExists(tt *acctest.TestTools, resourceNa
 			Bucket: aws.String(bucket),
 		}
 
-		output, err := conn.GetObjectLockConfiguration(input)
+		output, err := conn.GetObjectLockConfiguration(ctx, input)
 		if err != nil {
 			return fmt.Errorf("error getting object bucket lock configuration (%s): %w", rs.Primary.ID, err)
 		}

@@ -1,13 +1,14 @@
 package object_test
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"regexp"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -18,7 +19,7 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
-// Service information constants
+// // Service information constants
 const (
 	ServiceName = "scw"       // Name of service.
 	EndpointsID = ServiceName // ID to look up a service endpoint with.
@@ -45,10 +46,11 @@ func TestAccObject_Basic(t *testing.T) {
 							foo = "bar"
 						}
 					}
-			
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -65,10 +67,11 @@ func TestAccObject_Basic(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile/foo"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -85,10 +88,11 @@ func TestAccObject_Basic(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile/foo/bar"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -121,10 +125,11 @@ func TestAccObject_Hash(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 						hash = "1"
 					}
 				`, bucketName, objectTestsMainRegion),
@@ -142,10 +147,11 @@ func TestAccObject_Hash(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 						hash = "2"
 					}
 				`, bucketName, objectTestsMainRegion),
@@ -179,10 +185,11 @@ func TestAccObject_Move(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -198,10 +205,11 @@ func TestAccObject_Move(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile2"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -233,10 +241,11 @@ func TestAccObject_StorageClass(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						storage_class = "ONEZONE_IA"
 					}
@@ -256,10 +265,11 @@ func TestAccObject_StorageClass(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						storage_class = "STANDARD"
 					}
@@ -295,10 +305,11 @@ func TestAccObject_Metadata(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						metadata = {
 							key = "value"
@@ -320,10 +331,11 @@ func TestAccObject_Metadata(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						metadata = {
 							key = "other_value"
@@ -360,10 +372,11 @@ func TestAccObject_Tags(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						tags = {
 							key = "value"
@@ -382,10 +395,11 @@ func TestAccObject_Tags(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						tags = {
 							key = "other_value"
@@ -422,10 +436,11 @@ func TestAccObject_Visibility(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						visibility = "public-read"
 					}
@@ -442,10 +457,11 @@ func TestAccObject_Visibility(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						visibility = "private"
 					}
@@ -478,10 +494,11 @@ func TestAccObject_State(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						visibility = "public-read"
 					}
@@ -497,10 +514,11 @@ func TestAccObject_State(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						visibility = "public-read"
 					}
@@ -549,7 +567,7 @@ func TestAccObject_ByContent(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content"
@@ -568,7 +586,7 @@ func TestAccObject_ByContent(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content"
@@ -609,7 +627,7 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content-base64" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content-base64"
@@ -628,7 +646,7 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content-base64" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content-base64"
@@ -647,7 +665,7 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content-base64" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content-base64"
@@ -681,10 +699,11 @@ func TestAccObject_WithBucketName(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.name
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				ExpectError: regexp.MustCompile("NoSuchBucket: The specified bucket does not exist"),
@@ -698,11 +717,12 @@ func TestAccObject_WithBucketName(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.name
 						region = "%[2]s"
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -716,6 +736,7 @@ func TestAccObject_WithBucketName(t *testing.T) {
 
 func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
+		ctx := context.Background()
 		rs := state.RootModule().Resources[n]
 		if rs == nil {
 			return errors.New("resource not found")
@@ -726,7 +747,7 @@ func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestChec
 		bucketRegion := regionalID.Region.String()
 		bucketName := regionalID.ID
 
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -740,12 +761,12 @@ func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestChec
 			return errors.New("no ID is set")
 		}
 
-		_, err = s3Client.GetObject(&s3.GetObjectInput{
+		_, err = s3Client.GetObject(ctx, &s3.GetObjectInput{
 			Bucket: scw.StringPtr(bucketName),
 			Key:    scw.StringPtr(key),
 		})
 		if err != nil {
-			if object.IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {
 				return errors.New("s3 object not found")
 			}
 			return err

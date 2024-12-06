@@ -2,10 +2,12 @@ package object
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -80,7 +82,7 @@ func ResourceLockConfiguration() *schema.Resource {
 }
 
 func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(d, m)
+	conn, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -90,7 +92,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 	bucketRegion := regionalID.Region
 
 	if bucketRegion != "" && bucketRegion != region {
-		conn, err = s3ClientForceRegion(d, m, bucketRegion.String())
+		conn, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -99,13 +101,13 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 
 	input := &s3.PutObjectLockConfigurationInput{
 		Bucket: aws.String(bucket),
-		ObjectLockConfiguration: &s3.ObjectLockConfiguration{
-			ObjectLockEnabled: aws.String("Enabled"),
+		ObjectLockConfiguration: &s3Types.ObjectLockConfiguration{
+			ObjectLockEnabled: "Enabled",
 			Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]interface{})),
 		},
 	}
 
-	_, err = conn.PutObjectLockConfigurationWithContext(ctx, input)
+	_, err = conn.PutObjectLockConfiguration(ctx, input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err))
 	}
@@ -116,7 +118,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 }
 
 func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,8 +127,8 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 		Bucket: aws.String(bucket),
 	}
 
-	output, err := conn.GetObjectLockConfigurationWithContext(ctx, input)
-	if !d.IsNewResource() && IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+	output, err := conn.GetObjectLockConfiguration(ctx, input)
+	if !d.IsNewResource() && errors.As(err, new(*s3Types.NoSuchBucket)) {
 		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
 		return nil
@@ -142,7 +144,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 		return nil
 	}
 
-	acl, err := conn.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+	acl, err := conn.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
@@ -161,13 +163,13 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 }
 
 func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	lockConfig := &s3.ObjectLockConfiguration{
-		ObjectLockEnabled: aws.String(s3.ObjectLockEnabledEnabled),
+	lockConfig := &s3Types.ObjectLockConfiguration{
+		ObjectLockEnabled: s3Types.ObjectLockEnabledEnabled,
 		Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]interface{})),
 	}
 
@@ -176,7 +178,7 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 		ObjectLockConfiguration: lockConfig,
 	}
 
-	_, err = conn.PutObjectLockConfigurationWithContext(ctx, input)
+	_, err = conn.PutObjectLockConfiguration(ctx, input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating Object bucket lock configuration (%s): %w", d.Id(), err))
 	}
@@ -185,21 +187,21 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(d, m, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	input := &s3.PutObjectLockConfigurationInput{
 		Bucket: aws.String(bucket),
-		ObjectLockConfiguration: &s3.ObjectLockConfiguration{
-			ObjectLockEnabled: aws.String(s3.ObjectLockEnabledEnabled),
+		ObjectLockConfiguration: &s3Types.ObjectLockConfiguration{
+			ObjectLockEnabled: s3Types.ObjectLockEnabledEnabled,
 		},
 	}
 
-	_, err = conn.PutObjectLockConfigurationWithContext(ctx, input)
+	_, err = conn.PutObjectLockConfiguration(ctx, input)
 
-	if IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+	if errors.As(err, new(*s3Types.NoSuchBucket)) {
 		return nil
 	}
 
@@ -210,7 +212,7 @@ func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func expandBucketLockConfigurationRule(l []interface{}) *s3.ObjectLockRule {
+func expandBucketLockConfigurationRule(l []interface{}) *s3Types.ObjectLockRule {
 	if len(l) == 0 || l[0] == nil {
 		return nil
 	}
@@ -220,12 +222,12 @@ func expandBucketLockConfigurationRule(l []interface{}) *s3.ObjectLockRule {
 		return nil
 	}
 
-	return &s3.ObjectLockRule{
+	return &s3Types.ObjectLockRule{
 		DefaultRetention: expandBucketLockConfigurationRuleDefaultRetention(tfMap["default_retention"].([]interface{})),
 	}
 }
 
-func expandBucketLockConfigurationRuleDefaultRetention(l []interface{}) *s3.DefaultRetention {
+func expandBucketLockConfigurationRuleDefaultRetention(l []interface{}) *s3Types.DefaultRetention {
 	if len(l) == 0 || l[0] == nil {
 		return nil
 	}
@@ -235,22 +237,22 @@ func expandBucketLockConfigurationRuleDefaultRetention(l []interface{}) *s3.Defa
 		return nil
 	}
 
-	result := &s3.DefaultRetention{
-		Mode: aws.String(tfMap["mode"].(string)),
+	result := &s3Types.DefaultRetention{
+		Mode: s3Types.ObjectLockRetentionMode(tfMap["mode"].(string)),
 	}
 
 	if v, ok := tfMap["days"].(int); ok && v > 0 {
-		result.Days = aws.Int64(int64(v))
+		result.Days = aws.Int32(int32(v))
 	}
 
 	if v, ok := tfMap["years"].(int); ok && v > 0 {
-		result.Years = aws.Int64(int64(v))
+		result.Years = aws.Int32(int32(v))
 	}
 
 	return result
 }
 
-func flattenBucketLockConfigurationRule(i *s3.ObjectLockRule) []interface{} {
+func flattenBucketLockConfigurationRule(i *s3Types.ObjectLockRule) []interface{} {
 	if i == nil {
 		return []interface{}{}
 	}
@@ -262,21 +264,21 @@ func flattenBucketLockConfigurationRule(i *s3.ObjectLockRule) []interface{} {
 	return []interface{}{m}
 }
 
-func flattenBucketLockConfigurationRuleDefaultRetention(i *s3.DefaultRetention) []interface{} {
+func flattenBucketLockConfigurationRuleDefaultRetention(i *s3Types.DefaultRetention) []interface{} {
 	if i == nil {
 		return []interface{}{}
 	}
 
 	m := make(map[string]interface{})
 
-	m["mode"] = aws.StringValue(i.Mode)
+	m["mode"] = i.Mode
 
 	if i.Days != nil {
-		m["days"] = aws.Int64Value(i.Days)
+		m["days"] = i.Days
 	}
 
 	if i.Years != nil {
-		m["years"] = aws.Int64Value(i.Years)
+		m["years"] = i.Years
 	}
 
 	return []interface{}{m}
