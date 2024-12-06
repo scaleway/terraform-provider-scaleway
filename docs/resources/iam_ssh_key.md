@@ -22,7 +22,7 @@ resource "scaleway_iam_ssh_key" "main" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the SSH key.
-- `public_key` - (Required) The public SSH key to be added.
+- `public_key` - (Required) The public SSH key to be added. Key will be stored in state without its comment.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is
   associated with.
 - `disabled` - (Optional) The SSH key status.
