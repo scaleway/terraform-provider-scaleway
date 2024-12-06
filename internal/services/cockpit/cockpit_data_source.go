@@ -53,7 +53,7 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 		}
 	}
 
-	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{
+	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{ //nolint:staticcheck
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {

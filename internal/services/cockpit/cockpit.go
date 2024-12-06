@@ -103,7 +103,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 	if targetPlanI, ok := d.GetOk("plan"); ok {
 		targetPlan := targetPlanI.(string)
 
-		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -120,7 +120,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 			return diag.Errorf("plan %s not found", targetPlan)
 		}
 
-		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{
+		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{ //nolint:staticcheck
 			ProjectID: projectID,
 			PlanName:  cockpit.PlanName(planName),
 		}, scw.WithContext(ctx))
@@ -150,8 +150,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 			return diag.FromErr(err)
 		}
 	}
-
-	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{
+	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{ //nolint:staticcheck
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -214,7 +213,7 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			targetPlan = targetPlanI.(string)
 		}
 
-		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -231,7 +230,7 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			return diag.Errorf("plan %s not found", targetPlan)
 		}
 
-		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{
+		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{ //nolint:staticcheck
 			ProjectID: projectID,
 			PlanName:  cockpit.PlanName(planName),
 		}, scw.WithContext(ctx))
