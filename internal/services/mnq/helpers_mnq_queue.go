@@ -9,10 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/config"
+	awsType "github.com/aws/aws-sdk-go-v2/service/sqs/types"
+
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	smithylogging "github.com/aws/smithy-go/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -33,7 +35,15 @@ const (
 	DefaultQueueVisibilityTimeout             = 30
 )
 
-func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
+type httpDebugLogger struct{}
+
+func (h *httpDebugLogger) Logf(classification smithylogging.Classification, format string, v ...interface{}) {
+	if classification == smithylogging.Debug {
+		fmt.Printf("[HTTP DEBUG] %s\n", fmt.Sprintf(format, v...))
+	}
+}
+
+func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -51,21 +61,26 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	return sqsClient, region, err
 }
 
-func NewSQSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sqs.SQS, error) {
-	config := &aws.Config{}
-	config.WithRegion(region)
-	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
-	config.WithEndpoint(strings.ReplaceAll(endpoint, "{region}", region))
-	config.WithHTTPClient(httpClient)
+func NewSQSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sqs.Client, error) {
+	customEndpoint := strings.ReplaceAll(endpoint, "{region}", region)
+	customConfig, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithRegion(region),
+		config.WithBaseEndpoint(customEndpoint),
+		config.WithHTTPClient(httpClient),
+		config.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(accessKey, secretKey, ""),
+		),
+	)
+
 	if logging.IsDebugOrHigher() {
-		config.WithLogLevel(aws.LogDebugWithHTTPBody)
+		customConfig.Logger = &httpDebugLogger{}
 	}
 
-	s, err := session.NewSession(config)
 	if err != nil {
 		return nil, err
 	}
-	return sqs.New(s), nil
+	return sqs.NewFromConfig(customConfig), nil
 }
 
 func NATSClientWithRegion( //nolint:ireturn,nolintlint
@@ -132,20 +147,20 @@ func splitNATSJWTAndSeed(credentials string) (string, string, error) {
 const SQSFIFOQueueNameSuffix = ".fifo"
 
 var SQSAttributesToResourceMap = map[string]string{
-	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
-	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
-	sqs.QueueAttributeNameFifoQueue:                     "fifo_queue",
-	sqs.QueueAttributeNameContentBasedDeduplication:     "content_based_deduplication",
-	sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds: "receive_wait_time_seconds",
-	sqs.QueueAttributeNameVisibilityTimeout:             "visibility_timeout_seconds",
+	string(awsType.QueueAttributeNameMaximumMessageSize):            "message_max_size",
+	string(awsType.QueueAttributeNameMessageRetentionPeriod):        "message_max_age",
+	string(awsType.QueueAttributeNameFifoQueue):                     "fifo_queue",
+	string(awsType.QueueAttributeNameContentBasedDeduplication):     "content_based_deduplication",
+	string(awsType.QueueAttributeNameReceiveMessageWaitTimeSeconds): "receive_wait_time_seconds",
+	string(awsType.QueueAttributeNameVisibilityTimeout):             "visibility_timeout_seconds",
 }
 
 // Returns all managed SQS attribute names
-func getSQSAttributeNames() []*string {
-	attributeNames := make([]*string, 0, len(SQSAttributesToResourceMap))
+func getSQSAttributeNames() []awsType.QueueAttributeName {
+	attributeNames := make([]awsType.QueueAttributeName, 0, len(SQSAttributesToResourceMap))
 
 	for attribute := range SQSAttributesToResourceMap {
-		attributeNames = append(attributeNames, aws.String(attribute))
+		attributeNames = append(attributeNames, awsType.QueueAttributeName(attribute))
 	}
 
 	return attributeNames
