@@ -259,12 +259,12 @@ func awsAttributeToResourceData(values map[string]interface{}, value string, res
 }
 
 // awsAttributesToResourceData returns a map of valid values for a terraform schema from an attributes map and a conversion map
-func awsAttributesToResourceData(attributes map[string]*string, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]interface{}, error) {
+func awsAttributesToResourceData(attributes map[string]string, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
 
 	for attribute, resourcePath := range attributesToResourceMap {
-		if value, ok := attributes[attribute]; ok && value != nil {
-			err := awsAttributeToResourceData(values, *value, resourcePath, resourceSchemas)
+		if value, ok := attributes[attribute]; ok {
+			err := awsAttributeToResourceData(values, value, resourcePath, resourceSchemas)
 			if err != nil {
 				return nil, err
 			}
