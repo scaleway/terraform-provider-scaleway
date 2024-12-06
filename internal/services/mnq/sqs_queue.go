@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -170,6 +169,13 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m in
 		Attributes: attributes,
 		QueueName:  scw.StringPtr(queueName),
 	}
+	_, err = transport.RetryWhenAWSErrCodeEqualsV2(ctx, []string{"AWS.SimpleQueueService.QueueDeletedRecently"}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
+		Timeout:  d.Timeout(schema.TimeoutCreate),
+		Interval: defaultMNQQueueRetryInterval,
+		Function: func() (*sqs.CreateQueueOutput, error) {
+			return sqsClient.CreateQueueWithContext(ctx, input)
+		},
+	})
 
 	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{sqs.ErrCodeQueueDeletedRecently}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
