@@ -114,13 +114,6 @@ func ResourceObject() *schema.Resource {
 				Sensitive:   true,
 				Description: "Customer's encryption keys to encrypt data (SSE-C)",
 			},
-			"sse_cutomer_key_md5": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				Description: "Cutomer's encryption key MD5 to encrypt data (SSE-C)",
-				Computed:    true,
-			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
