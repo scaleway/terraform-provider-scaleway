@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -152,7 +151,7 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(fmt.Errorf("expected sqs to be enabled for given project, got: %q", sqsInfo.Status))
 	}
 
-	sqsClient, _, err := SQSClientWithRegion(d, m)
+	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,7 +186,7 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, m)
+	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -236,7 +235,7 @@ func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func ResourceMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, m)
+	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -276,7 +275,7 @@ func ResourceMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	sqsClient, _, err := SQSClientWithRegion(d, m)
+	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -290,7 +289,7 @@ func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m in
 		QueueName: &queueName,
 	})
 	if err != nil {
-		if tfawserr.ErrCodeEquals(err, "AWS.SimpleQueueService.NonExistentQueue") {
+		if IsAWSErrorCode(err, "AWS.SimpleQueueService.NonExistentQueue") {
 			return nil
 		}
 
@@ -301,10 +300,9 @@ func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m in
 		QueueUrl: queue.QueueUrl,
 	})
 	if err != nil {
-		if tfawserr.ErrCodeEquals(err, "AWS.SimpleQueueService.NonExistentQueue") {
+		if IsAWSErrorCode(err, "AWS.SimpleQueueService.NonExistentQueue") {
 			return nil
 		}
-
 		return diag.Errorf("failed to delete SQS Queue (%s): %s", d.Id(), err)
 	}
 

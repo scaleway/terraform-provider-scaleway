@@ -107,7 +107,7 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project, go %q", snsInfo.Status))
 	}
 
-	snsClient, _, err := SNSClientWithRegion(d, m)
+	snsClient, _, err := SNSClientWithRegion(nil, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,7 +140,7 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, m)
+	snsClient, _, err := SNSClientWithRegion(nil, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,7 +173,7 @@ func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, m)
+	snsClient, _, err := SNSClientWithRegion(nil, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -220,7 +220,7 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func ResourceMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegion(d, m)
+	snsClient, _, err := SNSClientWithRegion(nil, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
