@@ -1,10 +1,11 @@
 package mnq_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -16,11 +17,11 @@ import (
 func TestAccSNSTopicSubscription_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-
+	ctx := context.Background()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSNSTopicSubscriptionDestroyed(tt),
+		CheckDestroy:      isSNSTopicSubscriptionDestroyed(ctx, tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -67,12 +68,12 @@ func TestAccSNSTopicSubscription_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isSNSTopicSubscriptionPresent(tt, "scaleway_mnq_sns_topic_subscription.by_id"),
+					isSNSTopicSubscriptionPresent(ctx, tt, "scaleway_mnq_sns_topic_subscription.by_id"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic_subscription.by_id", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_id", "protocol", "http"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_id", "endpoint", "http://scaleway.com"),
 
-					isSNSTopicSubscriptionPresent(tt, "scaleway_mnq_sns_topic_subscription.by_arn"),
+					isSNSTopicSubscriptionPresent(ctx, tt, "scaleway_mnq_sns_topic_subscription.by_arn"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic_subscription.by_arn", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_arn", "protocol", "http"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_arn", "endpoint", "http://scaleway.com"),
@@ -82,7 +83,7 @@ func TestAccSNSTopicSubscription_Basic(t *testing.T) {
 	})
 }
 
-func isSNSTopicSubscriptionPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSNSTopicSubscriptionPresent(ctx context.Context, tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -99,7 +100,7 @@ func isSNSTopicSubscriptionPresent(tt *acctest.TestTools, n string) resource.Tes
 			return err
 		}
 
-		_, err = snsClient.GetSubscriptionAttributes(&sns.GetSubscriptionAttributesInput{
+		_, err = snsClient.GetSubscriptionAttributes(ctx, &sns.GetSubscriptionAttributesInput{
 			SubscriptionArn: scw.StringPtr(arn.String()),
 		})
 		if err != nil {
@@ -110,7 +111,7 @@ func isSNSTopicSubscriptionPresent(tt *acctest.TestTools, n string) resource.Tes
 	}
 }
 
-func isSNSTopicSubscriptionDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSNSTopicSubscriptionDestroyed(ctx context.Context, tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sns_topic_subscription" {
@@ -127,7 +128,7 @@ func isSNSTopicSubscriptionDestroyed(tt *acctest.TestTools) resource.TestCheckFu
 				return err
 			}
 
-			_, err = snsClient.GetSubscriptionAttributes(&sns.GetSubscriptionAttributesInput{
+			_, err = snsClient.GetSubscriptionAttributes(ctx, &sns.GetSubscriptionAttributesInput{
 				SubscriptionArn: scw.StringPtr(arn.String()),
 			})
 			if err != nil {

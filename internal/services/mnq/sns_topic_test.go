@@ -1,12 +1,13 @@
 package mnq_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 	"testing"
 
-	sns "github.com/aws/aws-sdk-go/service/sns"
+	sns "github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -19,10 +20,12 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	ctx := context.Background()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSNSTopicDestroyed(tt),
+		CheckDestroy:      isSNSTopicDestroyed(ctx, tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -49,7 +52,7 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isSNSTopicPresent(tt, "scaleway_mnq_sns_topic.main"),
+					isSNSTopicPresent(ctx, tt, "scaleway_mnq_sns_topic.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "name", "test-mnq-sns-topic-basic"),
 				),
@@ -81,7 +84,7 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isSNSTopicPresent(tt, "scaleway_mnq_sns_topic.main"),
+					isSNSTopicPresent(ctx, tt, "scaleway_mnq_sns_topic.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "name", "test-mnq-sns-topic-basic.fifo"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic.main", "content_based_deduplication", "true"),
@@ -114,7 +117,7 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					isSNSTopicPresent(tt, "scaleway_mnq_sns_topic.main"),
+					isSNSTopicPresent(ctx, tt, "scaleway_mnq_sns_topic.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sns_topic.main", "id"),
 					func(state *terraform.State) error {
 						topic, exists := state.RootModule().Resources["scaleway_mnq_sns_topic.main"]
@@ -139,7 +142,7 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 	})
 }
 
-func isSNSTopicPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSNSTopicPresent(ctx context.Context, tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -156,7 +159,7 @@ func isSNSTopicPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = snsClient.GetTopicAttributes(&sns.GetTopicAttributesInput{
+		_, err = snsClient.GetTopicAttributes(ctx, &sns.GetTopicAttributesInput{
 			TopicArn: scw.StringPtr(mnq.ComposeSNSARN(region, projectID, topicName)),
 		})
 		if err != nil {
@@ -167,7 +170,7 @@ func isSNSTopicPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	}
 }
 
-func isSNSTopicDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSNSTopicDestroyed(ctx context.Context, tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sns_topic" {
@@ -184,7 +187,7 @@ func isSNSTopicDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = snsClient.GetTopicAttributes(&sns.GetTopicAttributesInput{
+			_, err = snsClient.GetTopicAttributes(ctx, &sns.GetTopicAttributesInput{
 				TopicArn: scw.StringPtr(mnq.ComposeSNSARN(region, projectID, topicName)),
 			})
 			if err != nil {
