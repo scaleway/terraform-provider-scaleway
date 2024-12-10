@@ -125,7 +125,7 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m in
 		Attributes: attributes,
 	}
 
-	output, err := snsClient.CreateTopicWithContext(ctx, input)
+	output, err := snsClient.CreateTopic(ctx, input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to create SNS Topic: %w", err))
 	}
@@ -150,7 +150,7 @@ func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
-	topicAttributes, err := snsClient.GetTopicAttributesWithContext(ctx, &sns.GetTopicAttributesInput{
+	topicAttributes, err := snsClient.GetTopicAttributes(ctx, &sns.GetTopicAttributesInput{
 		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
@@ -197,7 +197,7 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
 
-	updatedAttributes := map[string]*string{}
+	updatedAttributes := map[string]string{}
 
 	for _, changedAttribute := range changedAttributes {
 		updatedAttributes[changedAttribute] = attributes[changedAttribute]
@@ -205,9 +205,9 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m in
 
 	if len(updatedAttributes) > 0 {
 		for attributeName, attributeValue := range updatedAttributes {
-			_, err := snsClient.SetTopicAttributes(&sns.SetTopicAttributesInput{
+			_, err := snsClient.SetTopicAttributes(ctx, &sns.SetTopicAttributesInput{
 				AttributeName:  scw.StringPtr(attributeName),
-				AttributeValue: attributeValue,
+				AttributeValue: &attributeValue,
 				TopicArn:       &topicARN,
 			})
 			if err != nil {
@@ -230,7 +230,7 @@ func ResourceMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	_, err = snsClient.DeleteTopicWithContext(ctx, &sns.DeleteTopicInput{
+	_, err = snsClient.DeleteTopic(ctx, &sns.DeleteTopicInput{
 		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
