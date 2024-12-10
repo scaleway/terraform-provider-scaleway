@@ -3,7 +3,7 @@ package object
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -164,8 +164,8 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		req.ACL = s3Types.ObjectCannedACL(*visibilityStr)
 	}
 
-	if encryptionKeyStr, ok := d.Get("sse_customer_key").(string); ok {
-		digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
+	if encryptionKeyStr, ok := d.GetOk("sse_customer_key"); ok {
+		digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -224,7 +224,7 @@ func EncryptCustomerKey(encryptionKeyStr string) (string, *string, error) {
 	if len(encryptionKey) != 32 {
 		return "", nil, errors.New("encryption key must be 32 bytes long")
 	}
-	h := md5.New()
+	h := md5.New() //nolint:gosec
 	_, err := h.Write(encryptionKey)
 	if err != nil {
 		return "", nil, err
