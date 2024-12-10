@@ -4,16 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-	awsType "github.com/aws/aws-sdk-go-v2/service/sqs/types"
-
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	awstype "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	smithylogging "github.com/aws/smithy-go/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
@@ -39,11 +39,11 @@ type httpDebugLogger struct{}
 
 func (h *httpDebugLogger) Logf(classification smithylogging.Classification, format string, v ...interface{}) {
 	if classification == smithylogging.Debug {
-		fmt.Printf("[HTTP DEBUG] %s\n", fmt.Sprintf(format, v...))
+		log.Printf("[HTTP DEBUG] %s", fmt.Sprintf(format, v...))
 	}
 }
 
-func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.Client, scw.Region, error) {
+func SQSClientWithRegion(ctx context.Context, d *schema.ResourceData, m interface{}) (*sqs.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -53,7 +53,7 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.Client, sc
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	sqsClient, err := NewSQSClient(meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
+	sqsClient, err := NewSQSClient(ctx, meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -61,10 +61,10 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.Client, sc
 	return sqsClient, region, err
 }
 
-func NewSQSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sqs.Client, error) {
+func NewSQSClient(ctx context.Context, httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sqs.Client, error) {
 	customEndpoint := strings.ReplaceAll(endpoint, "{region}", region)
 	customConfig, err := config.LoadDefaultConfig(
-		context.TODO(),
+		ctx,
 		config.WithRegion(region),
 		config.WithBaseEndpoint(customEndpoint),
 		config.WithHTTPClient(httpClient),
@@ -147,20 +147,20 @@ func splitNATSJWTAndSeed(credentials string) (string, string, error) {
 const SQSFIFOQueueNameSuffix = ".fifo"
 
 var SQSAttributesToResourceMap = map[string]string{
-	string(awsType.QueueAttributeNameMaximumMessageSize):            "message_max_size",
-	string(awsType.QueueAttributeNameMessageRetentionPeriod):        "message_max_age",
-	string(awsType.QueueAttributeNameFifoQueue):                     "fifo_queue",
-	string(awsType.QueueAttributeNameContentBasedDeduplication):     "content_based_deduplication",
-	string(awsType.QueueAttributeNameReceiveMessageWaitTimeSeconds): "receive_wait_time_seconds",
-	string(awsType.QueueAttributeNameVisibilityTimeout):             "visibility_timeout_seconds",
+	string(awstype.QueueAttributeNameMaximumMessageSize):            "message_max_size",
+	string(awstype.QueueAttributeNameMessageRetentionPeriod):        "message_max_age",
+	string(awstype.QueueAttributeNameFifoQueue):                     "fifo_queue",
+	string(awstype.QueueAttributeNameContentBasedDeduplication):     "content_based_deduplication",
+	string(awstype.QueueAttributeNameReceiveMessageWaitTimeSeconds): "receive_wait_time_seconds",
+	string(awstype.QueueAttributeNameVisibilityTimeout):             "visibility_timeout_seconds",
 }
 
 // Returns all managed SQS attribute names
-func getSQSAttributeNames() []awsType.QueueAttributeName {
-	attributeNames := make([]awsType.QueueAttributeName, 0, len(SQSAttributesToResourceMap))
+func getSQSAttributeNames() []awstype.QueueAttributeName {
+	attributeNames := make([]awstype.QueueAttributeName, 0, len(SQSAttributesToResourceMap))
 
 	for attribute := range SQSAttributesToResourceMap {
-		attributeNames = append(attributeNames, awsType.QueueAttributeName(attribute))
+		attributeNames = append(attributeNames, awstype.QueueAttributeName(attribute))
 	}
 
 	return attributeNames

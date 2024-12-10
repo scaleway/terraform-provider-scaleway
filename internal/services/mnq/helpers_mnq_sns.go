@@ -19,7 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.Client, scw.Region, error) {
+func SNSClientWithRegion(ctx context.Context, m interface{}, d *schema.ResourceData) (*sns.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -29,7 +29,7 @@ func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.Client, sc
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	snsClient, err := NewSNSClient(meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
+	snsClient, err := NewSNSClient(ctx, meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -37,7 +37,7 @@ func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.Client, sc
 	return snsClient, region, err
 }
 
-func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID string) (*sns.Client, scw.Region, error) {
+func SNSClientWithRegionFromID(ctx context.Context, d *schema.ResourceData, m interface{}, regionalID string) (*sns.Client, scw.Region, error) {
 	tab := strings.SplitN(regionalID, "/", 2)
 	if len(tab) != 2 {
 		return nil, "", errors.New("invalid ID format, expected parts separated by slashes")
@@ -51,7 +51,7 @@ func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	snsClient, err := NewSNSClient(meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
+	snsClient, err := NewSNSClient(ctx, meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -59,10 +59,11 @@ func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID
 	return snsClient, region, err
 }
 
-func NewSNSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sns.Client, error) {
+func NewSNSClient(ctx context.Context, httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sns.Client, error) {
 	customEndpoint := strings.ReplaceAll(endpoint, "{region}", region)
 	customConfig, err := config.LoadDefaultConfig(
-		context.TODO(),
+
+		ctx,
 		config.WithRegion(region),
 		config.WithBaseEndpoint(customEndpoint),
 		config.WithHTTPClient(httpClient),

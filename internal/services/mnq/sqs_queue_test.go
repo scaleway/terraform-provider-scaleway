@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -182,7 +181,7 @@ func isSQSQueuePresent(ctx context.Context, tt *acctest.TestTools, n string) res
 			return err
 		}
 
-		sqsClient, err := mnq.NewSQSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		sqsClient, err := mnq.NewSQSClient(ctx, tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
@@ -238,7 +237,7 @@ func isSQSQueueDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 				return nil
 			}
 
-			sqsClient, err := mnq.NewSQSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			sqsClient, err := mnq.NewSQSClient(ctx, tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}
@@ -247,7 +246,7 @@ func isSQSQueueDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 				QueueName: aws.String(queueName),
 			})
 			if err != nil {
-				if tfawserr.ErrCodeEquals(err, "AWS.SimpleQueueService.NonExistentQueue") || tfawserr.ErrCodeEquals(err, "AccessDeniedException") {
+				if mnq.IsAWSErrorCode(err, "AWS.SimpleQueueService.NonExistentQueue") || mnq.IsAWSErrorCode(err, "AccessDeniedException") {
 					return nil
 				}
 

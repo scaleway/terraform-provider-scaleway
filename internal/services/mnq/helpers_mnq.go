@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/smithy-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -272,4 +273,12 @@ func awsAttributesToResourceData(attributes map[string]string, resourceSchemas m
 	}
 
 	return values, nil
+}
+
+func IsAWSErrorCode(err error, code string) bool {
+	var apiErr *smithy.GenericAPIError
+	if errors.As(err, &apiErr) && apiErr.Code == code {
+		return true
+	}
+	return false
 }

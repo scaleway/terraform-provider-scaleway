@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	sns "github.com/aws/aws-sdk-go-v2/service/sns"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
+	"github.com/aws/smithy-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -154,7 +154,7 @@ func isSNSTopicPresent(ctx context.Context, tt *acctest.TestTools, n string) res
 			return fmt.Errorf("failed to parse id: %w", err)
 		}
 
-		snsClient, err := mnq.NewSNSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		snsClient, err := mnq.NewSNSClient(ctx, tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
@@ -182,7 +182,7 @@ func isSNSTopicDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 				return fmt.Errorf("failed to parse id: %w", err)
 			}
 
-			snsClient, err := mnq.NewSNSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			snsClient, err := mnq.NewSNSClient(ctx, tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}
@@ -191,7 +191,9 @@ func isSNSTopicDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 				TopicArn: scw.StringPtr(mnq.ComposeSNSARN(region, projectID, topicName)),
 			})
 			if err != nil {
-				if tfawserr.ErrCodeEquals(err, "AccessDeniedException") {
+				var apiErr *smithy.GenericAPIError
+				if errors.As(err, &apiErr) && apiErr.Code == "AccessDeniedException" {
+					// L'erreur AccessDenied signifie que la ressource est supprimée ou inaccessible
 					return nil
 				}
 				return err

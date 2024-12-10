@@ -108,7 +108,7 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project, go %q", snsInfo.Status))
 	}
 
-	snsClient, _, err := SNSClientWithRegion(d, m)
+	snsClient, _, err := SNSClientWithRegion(nil, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,7 +164,7 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 }
 
 func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	snsClient, region, err := SNSClientWithRegionFromID(d, m, d.Id())
+	snsClient, region, err := SNSClientWithRegionFromID(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -197,7 +197,7 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 }
 
 func ResourceMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegionFromID(d, m, d.Id())
+	snsClient, _, err := SNSClientWithRegionFromID(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

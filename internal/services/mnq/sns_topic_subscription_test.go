@@ -2,11 +2,12 @@ package mnq_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/sns"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/aws/smithy-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -95,7 +96,7 @@ func isSNSTopicSubscriptionPresent(ctx context.Context, tt *acctest.TestTools, n
 			return fmt.Errorf("failed to parse id: %w", err)
 		}
 
-		snsClient, err := mnq.NewSNSClient(tt.Meta.HTTPClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		snsClient, err := mnq.NewSNSClient(ctx, tt.Meta.HTTPClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
@@ -123,7 +124,7 @@ func isSNSTopicSubscriptionDestroyed(ctx context.Context, tt *acctest.TestTools)
 				return fmt.Errorf("failed to parse id: %w", err)
 			}
 
-			snsClient, err := mnq.NewSNSClient(tt.Meta.HTTPClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			snsClient, err := mnq.NewSNSClient(ctx, tt.Meta.HTTPClient(), arn.Region.String(), rs.Primary.Attributes["sns_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}
@@ -132,8 +133,11 @@ func isSNSTopicSubscriptionDestroyed(ctx context.Context, tt *acctest.TestTools)
 				SubscriptionArn: scw.StringPtr(arn.String()),
 			})
 			if err != nil {
-				if tfawserr.ErrCodeEquals(err, "AccessDeniedException") {
-					return nil
+				var apiErr *smithy.GenericAPIError
+				if errors.As(err, &apiErr) {
+					if apiErr.Code == "AccessDeniedException" {
+						return nil
+					}
 				}
 				return err
 			}
