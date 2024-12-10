@@ -785,6 +785,40 @@ func TestAccCluster_NoCertificate(t *testing.T) {
 	})
 }
 
+func TestAccCluster_MigrateToHAMode(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	latestRedisVersion := getLatestVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isClusterDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_redis_cluster" "main" {
+				  name         = "test_redis_migrate_to_ha"
+				  version      = "%s"
+				  node_type    = "RED1-XS"
+				  user_name    = "initial_user"
+				  password     = "thiZ_is_v&ry_s3cret"
+				  cluster_size = 2
+				  tls_enabled  = "true"
+				  zone         = "fr-par-1"
+				}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isClusterPresent(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "2"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_migrate_to_ha"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-1"),
+				),
+			},
+		},
+	})
+}
+
 func isClusterDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
