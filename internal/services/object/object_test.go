@@ -758,7 +758,7 @@ func TestAccObject_Encryption(t *testing.T) {
 						}
 					}
 
-					resource scaleway_object "file" {
+					resource scaleway_object "by-content" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile/foo"
 						content = "Hello World"
@@ -767,7 +767,7 @@ func TestAccObject_Encryption(t *testing.T) {
 				`, bucketName, objectTestsMainRegion, encryptionStr),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
-					testAccCheckObjectExists(tt, "scaleway_object.content"),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", "Hello World"),
 				),
 			},
 			{
@@ -780,7 +780,7 @@ func TestAccObject_Encryption(t *testing.T) {
 						}
 					}
 
-					resource scaleway_object "file" {
+					resource scaleway_object "by-content" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile/foo/bar"
 						content = "Hello World"
@@ -789,7 +789,7 @@ func TestAccObject_Encryption(t *testing.T) {
 				`, bucketName, objectTestsMainRegion, encryptionStr),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
-					testAccCheckObjectExists(tt, "scaleway_object.content"),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", "Hello World"),
 				),
 			},
 		},

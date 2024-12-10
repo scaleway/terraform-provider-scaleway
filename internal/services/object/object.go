@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"os"
@@ -113,6 +114,13 @@ func ResourceObject() *schema.Resource {
 				Sensitive:   true,
 				Description: "Customer's encryption keys to encrypt data (SSE-C)",
 			},
+			"sse_cutomer_key_md5": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Cutomer's encryption key MD5 to encrypt data (SSE-C)",
+				Computed:    true,
+			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
@@ -157,17 +165,13 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if encryptionKeyStr, ok := d.Get("sse_customer_key").(string); ok {
-		encryptionKey := []byte(encryptionKeyStr)
-		h := md5.New()
-		_, err := h.Write(encryptionKey)
+		digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		digest := h.Sum(nil)
-		digestMD5 := base64.StdEncoding.EncodeToString(digest)
 		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
 		req.SSECustomerKeyMD5 = &digestMD5
-		req.SSECustomerKey = aws.String(base64.StdEncoding.EncodeToString(encryptionKey))
+		req.SSECustomerKey = encryption
 	}
 
 	if filePath, hasFile := d.GetOk("file"); hasFile {
@@ -214,6 +218,23 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return resourceObjectRead(ctx, d, m)
 }
 
+func EncryptCustomerKey(encryptionKeyStr string) (string, *string, error) {
+	encryptionKey := []byte(encryptionKeyStr)
+	// TODO remove when error message fix
+	if len(encryptionKey) != 32 {
+		return "", nil, errors.New("encryption key must be 32 bytes long")
+	}
+	h := md5.New()
+	_, err := h.Write(encryptionKey)
+	if err != nil {
+		return "", nil, err
+	}
+	digest := h.Sum(nil)
+	digestMD5 := base64.StdEncoding.EncodeToString(digest)
+	encryption := aws.String(base64.StdEncoding.EncodeToString(encryptionKey))
+	return digestMD5, encryption, nil
+}
+
 func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
@@ -234,7 +255,15 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
 		}
-
+		if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
+			digestMD5, encryption, err := EncryptCustomerKey(encryptionKey.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+			req.SSECustomerKeyMD5 = &digestMD5
+			req.SSECustomerKey = encryption
+		}
 		if filePath, hasFile := d.GetOk("file"); hasFile {
 			file, err := os.Open(filePath.(string))
 			if err != nil {
@@ -246,14 +275,24 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		_, err = s3Client.PutObject(ctx, req)
 	} else {
-		_, err = s3Client.CopyObject(ctx, &s3.CopyObjectInput{
+		req := &s3.CopyObjectInput{
 			Bucket:       types.ExpandStringPtr(bucketUpdated),
 			Key:          types.ExpandStringPtr(keyUpdated),
 			StorageClass: s3Types.StorageClass(d.Get("storage_class").(string)),
 			CopySource:   scw.StringPtr(fmt.Sprintf("%s/%s", bucket, key)),
 			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
-		})
+		}
+		if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
+			digestMD5, encryption, err := EncryptCustomerKey(encryptionKey.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			req.CopySourceSSECustomerAlgorithm = scw.StringPtr("AES256")
+			req.CopySourceSSECustomerKeyMD5 = &digestMD5
+			req.CopySourceSSECustomerKey = encryption
+		}
+		_, err = s3Client.CopyObject(ctx, req)
 	}
 	if err != nil {
 		return diag.FromErr(err)
@@ -299,6 +338,11 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 	req := &s3.HeadObjectInput{
 		Bucket: types.ExpandStringPtr(bucket),
 		Key:    types.ExpandStringPtr(key),
+	}
+
+	if encryption, ok := d.GetOk("sse_customer_key"); ok {
+		req.SSECustomerKey = aws.String(base64.StdEncoding.EncodeToString([]byte(encryption.(string))))
+		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
 	}
 
 	obj, err := s3Client.HeadObject(ctx, req)
