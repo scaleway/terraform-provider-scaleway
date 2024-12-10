@@ -168,14 +168,13 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m in
 		Attributes: attributes,
 		QueueName:  scw.StringPtr(queueName),
 	}
-	_, err = transport.RetryWhenAWSErrCodeEqualsV2(ctx, []string{"AWS.SimpleQueueService.QueueDeletedRecently"}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
+	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{"AWS.SimpleQueueService.QueueDeletedRecently"}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.CreateQueueOutput, error) {
 			return sqsClient.CreateQueue(ctx, input)
 		},
 	})
-
 	if err != nil {
 		return diag.Errorf("failed to create SQS Queue: %s", err)
 	}
