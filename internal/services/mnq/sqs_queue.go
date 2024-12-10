@@ -168,7 +168,7 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m in
 		Attributes: attributes,
 		QueueName:  scw.StringPtr(queueName),
 	}
-	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{"AWS.SimpleQueueService.QueueDeletedRecently"}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
+	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{AWSErrQueueDeletedRecently}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.CreateQueueOutput, error) {
@@ -195,7 +195,7 @@ func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 
-	queue, err := transport.RetryWhenAWSErrCodeEquals(ctx, []string{"AWS.SimpleQueueService.NonExistentQueue"}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	queue, err := transport.RetryWhenAWSErrCodeEquals(ctx, []string{AWSErrNonExistentQueue}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutRead),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
@@ -244,7 +244,7 @@ func ResourceMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	queue, err := transport.RetryWhenAWSErrCodeEquals(ctx, []string{"AWS.SimpleQueueService.NonExistentQueue"}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	queue, err := transport.RetryWhenAWSErrCodeEquals(ctx, []string{AWSErrNonExistentQueue}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutUpdate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
@@ -288,7 +288,7 @@ func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m in
 		QueueName: &queueName,
 	})
 	if err != nil {
-		if IsAWSErrorCode(err, "AWS.SimpleQueueService.NonExistentQueue") {
+		if IsAWSErrorCode(err, AWSErrNonExistentQueue) {
 			return nil
 		}
 
@@ -299,13 +299,13 @@ func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m in
 		QueueUrl: queue.QueueUrl,
 	})
 	if err != nil {
-		if IsAWSErrorCode(err, "AWS.SimpleQueueService.NonExistentQueue") {
+		if IsAWSErrorCode(err, AWSErrNonExistentQueue) {
 			return nil
 		}
 		return diag.Errorf("failed to delete SQS Queue (%s): %s", d.Id(), err)
 	}
 
-	_, _ = transport.RetryWhenAWSErrCodeNotEquals(ctx, []string{"AWS.SimpleQueueService.NonExistentQueue"}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
+	_, _ = transport.RetryWhenAWSErrCodeNotEquals(ctx, []string{AWSErrNonExistentQueue}, &transport.RetryWhenConfig[*sqs.GetQueueUrlOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {

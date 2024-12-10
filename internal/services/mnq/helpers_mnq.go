@@ -14,6 +14,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+const (
+	AWSErrQueueDeletedRecently = "AWS.SimpleQueueService.QueueDeletedRecently"
+	AWSErrNonExistentQueue     = "AWS.SimpleQueueService.NonExistentQueue"
+)
+
 func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Region, error) {
 	api := mnq.NewNatsAPI(meta.ExtractScwClient(m))
 	region, err := meta.ExtractRegion(d, m)

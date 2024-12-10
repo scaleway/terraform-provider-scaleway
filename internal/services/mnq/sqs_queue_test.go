@@ -246,7 +246,7 @@ func isSQSQueueDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 				QueueName: aws.String(queueName),
 			})
 			if err != nil {
-				if mnq.IsAWSErrorCode(err, "AWS.SimpleQueueService.NonExistentQueue") || mnq.IsAWSErrorCode(err, "AccessDeniedException") {
+				if mnq.IsAWSErrorCode(err, mnq.AWSErrNonExistentQueue) || mnq.IsAWSErrorCode(err, "AccessDeniedException") {
 					return nil
 				}
 

@@ -193,7 +193,6 @@ func isSNSTopicDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 			if err != nil {
 				var apiErr *smithy.GenericAPIError
 				if errors.As(err, &apiErr) && apiErr.Code == "AccessDeniedException" {
-					// L'erreur AccessDenied signifie que la ressource est supprimée ou inaccessible
 					return nil
 				}
 				return err
