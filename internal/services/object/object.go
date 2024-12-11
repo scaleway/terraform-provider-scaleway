@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/md5" //nolint:gosec
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -109,10 +108,11 @@ func ResourceObject() *schema.Resource {
 				}, false),
 			},
 			"sse_customer_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				Description: "Customer's encryption keys to encrypt data (SSE-C)",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Sensitive:    true,
+				Description:  "Customer's encryption keys to encrypt data (SSE-C)",
+				ValidateFunc: validation.StringLenBetween(32, 32),
 			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
@@ -213,10 +213,6 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 func EncryptCustomerKey(encryptionKeyStr string) (string, *string, error) {
 	encryptionKey := []byte(encryptionKeyStr)
-	// TODO remove when error message fix
-	if len(encryptionKey) != 32 {
-		return "", nil, errors.New("encryption key must be 32 bytes long")
-	}
 	h := md5.New() //nolint:gosec
 	_, err := h.Write(encryptionKey)
 	if err != nil {
