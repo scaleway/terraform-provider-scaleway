@@ -2,13 +2,11 @@ package object
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -147,8 +145,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		Bucket: scw.StringPtr(bucket),
 	})
 	if err != nil {
-		var s3err awserr.Error
-		if errors.As(err, &s3err) && s3err.Code() == ErrCodeNoSuchBucket {
+		if IsS3Err(err, ErrCodeNoSuchBucket, "") {
 			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
 			d.SetId("")
 			return nil
