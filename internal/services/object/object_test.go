@@ -21,8 +21,10 @@ import (
 
 // // Service information constants
 const (
-	ServiceName = "scw"       // Name of service.
-	EndpointsID = ServiceName // ID to look up a service endpoint with.
+	ServiceName     = "scw"       // Name of service.
+	EndpointsID     = ServiceName // ID to look up a service endpoint with.
+	encryptionStr   = "1234567890abcdef1234567890abcdef"
+	contentToEncypt = "Hello World"
 )
 
 func TestAccObject_Basic(t *testing.T) {
@@ -728,6 +730,66 @@ func TestAccObject_WithBucketName(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					testAccCheckObjectExists(tt, "scaleway_object.file"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccObject_Encryption(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-encryption")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "myfile/foo"
+						content = "Hello World"
+						sse_customer_key = "%s"
+					}
+				`, bucketName, objectTestsMainRegion, encryptionStr),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", "Hello World"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "myfile/foo/bar"
+						content = "Hello World"
+						sse_customer_key = "%s"
+					}
+				`, bucketName, objectTestsMainRegion, encryptionStr),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", "Hello World"),
 				),
 			},
 		},
