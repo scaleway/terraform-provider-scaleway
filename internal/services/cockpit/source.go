@@ -18,6 +18,7 @@ func ResourceCockpitSource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceCockpitSourceCreate,
 		ReadContext:   ResourceCockpitSourceRead,
+		UpdateContext: ResourceCockpitSourceUpdate,
 		DeleteContext: ResourceCockpitSourceDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
@@ -46,7 +47,6 @@ func ResourceCockpitSource() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     6,
-				ForceNew:    true,
 				Description: "The number of days to retain data, must be between 1 and 365.",
 			},
 			// computed
@@ -93,6 +93,9 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	retentionDays := uint32(d.Get("retention_days").(int))
+	if retentionDays == 0 {
+		retentionDays = 6
+	}
 
 	res, err := api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
 		Region:        region,
@@ -101,7 +104,6 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 		Type:          cockpit.DataSourceType(d.Get("type").(string)),
 		RetentionDays: &retentionDays,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,7 +145,38 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("push_url", pushURL)
-	_ = d.Set("retention_days", res.RetentionDays)
+	_ = d.Set("retention_days", int(res.RetentionDays))
+
+	return nil
+}
+
+func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	updateRequest := &cockpit.RegionalAPIUpdateDataSourceRequest{
+		DataSourceID: id,
+		Region:       region,
+	}
+
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		updateRequest.Name = &name
+	}
+
+	if d.HasChange("retention_days") {
+		retentionDays := uint32(d.Get("retention_days").(int))
+		updateRequest.RetentionDays = &retentionDays
+	}
+
+	if updateRequest.Name != nil || updateRequest.RetentionDays != nil {
+		_, err = api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	return nil
 }

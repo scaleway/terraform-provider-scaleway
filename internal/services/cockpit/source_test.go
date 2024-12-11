@@ -133,6 +133,75 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 	})
 }
 
+func TestAccCockpitSource_Update(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isSourceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Initial creation
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_source_update"
+					}
+
+					resource "scaleway_cockpit_source" "main" {
+						project_id = scaleway_account_project.project.id
+						name       = "initial-name"
+						type       = "logs"
+						retention_days = 10
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isSourcePresent(tt, "scaleway_cockpit_source.main"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "name", "initial-name"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "retention_days", "10"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_source_update"
+					}
+
+					resource "scaleway_cockpit_source" "main" {
+						project_id = scaleway_account_project.project.id
+						name       = "initial-name"
+						type       = "logs"
+						retention_days = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isSourcePresent(tt, "scaleway_cockpit_source.main"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "retention_days", "20"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_source_update"
+					}
+
+					resource "scaleway_cockpit_source" "main" {
+						project_id = scaleway_account_project.project.id
+						name       = "updated-name"
+						type       = "logs"
+						retention_days = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isSourcePresent(tt, "scaleway_cockpit_source.main"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "name", "updated-name"),
+				),
+			},
+		},
+	})
+}
+
 func isSourcePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
