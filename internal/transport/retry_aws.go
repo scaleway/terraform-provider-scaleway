@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
 )
 
 // RetryWhenAWSErrCodeEquals retries a function when it returns a specific AWS error

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -108,7 +108,7 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project, go %q", snsInfo.Status))
 	}
 
-	snsClient, _, err := SNSClientWithRegion(d, m)
+	snsClient, _, err := SNSClientWithRegion(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,11 +140,11 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 		Attributes:            attributes,
 		Endpoint:              types.ExpandStringPtr(d.Get("endpoint")),
 		Protocol:              types.ExpandStringPtr(d.Get("protocol")),
-		ReturnSubscriptionArn: scw.BoolPtr(true),
+		ReturnSubscriptionArn: true,
 		TopicArn:              &topicARN,
 	}
 
-	output, err := snsClient.SubscribeWithContext(ctx, input)
+	output, err := snsClient.Subscribe(ctx, input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to create SNS Topic: %w", err))
 	}
@@ -164,7 +164,7 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 }
 
 func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	snsClient, region, err := SNSClientWithRegionFromID(d, m, d.Id())
+	snsClient, region, err := SNSClientWithRegionFromID(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -174,7 +174,7 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
-	subAttributes, err := snsClient.GetSubscriptionAttributesWithContext(ctx, &sns.GetSubscriptionAttributesInput{
+	subAttributes, err := snsClient.GetSubscriptionAttributes(ctx, &sns.GetSubscriptionAttributesInput{
 		SubscriptionArn: scw.StringPtr(arn.String()),
 	})
 	if err != nil {
@@ -197,7 +197,7 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 }
 
 func ResourceMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	snsClient, _, err := SNSClientWithRegionFromID(d, m, d.Id())
+	snsClient, _, err := SNSClientWithRegionFromID(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -207,7 +207,7 @@ func ResourceMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("failed to parse id: %w", err))
 	}
 
-	_, err = snsClient.UnsubscribeWithContext(ctx, &sns.UnsubscribeInput{
+	_, err = snsClient.Unsubscribe(ctx, &sns.UnsubscribeInput{
 		SubscriptionArn: scw.StringPtr(arn.String()),
 	})
 	if err != nil {
