@@ -45,8 +45,7 @@ func ResourceCockpitSource() *schema.Resource {
 			},
 			"retention_days": {
 				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     6,
+				Required:    true,
 				Description: "The number of days to retain data, must be between 1 and 365.",
 			},
 			// computed
@@ -93,10 +92,6 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	retentionDays := uint32(d.Get("retention_days").(int))
-	if retentionDays == 0 {
-		retentionDays = 6
-	}
-
 	res, err := api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
 		Region:        region,
 		ProjectID:     d.Get("project_id").(string),

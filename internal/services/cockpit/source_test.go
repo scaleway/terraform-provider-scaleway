@@ -31,6 +31,7 @@ func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 					  project_id = scaleway_account_project.project.id
 					  name       = "my-source"
 					  type       = "metrics"
+					  retention_days      = 31
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -38,7 +39,7 @@ func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "name", "my-source"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "type", "metrics"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "region", "fr-par"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "retention_days", "6"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "retention_days", "31"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "push_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_source.main", "origin"),
@@ -71,6 +72,8 @@ func TestAccCockpitSource_Basic_logs(t *testing.T) {
 					  project_id = scaleway_account_project.project.id
 					  name       = "my-source"
 					  type       = "logs"
+					  retention_days  = 31
+
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
