@@ -184,6 +184,37 @@ resource "scaleway_baremetal_server" "base" {
 }
 ```
 
+### With custom partitioning
+
+```terraform
+variable "configCustomPartitioning" {
+  default = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912},{\"label\":\"swap\",\"number\":2,\"size\":4294967296},{\"label\":\"boot\",\"number\":3,\"size\":1073741824},{\"label\":\"root\",\"number\":4,\"size\":1017827045376}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"swap\",\"number\":1,\"size\":4294967296},{\"label\":\"boot\",\"number\":2,\"size\":1073741824},{\"label\":\"root\",\"number\":3,\"size\":1017827045376}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/md0\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/md1\",\"format\":\"ext4\",\"mountpoint\":\"/\"}],\"raids\":[{\"devices\":[\"/dev/nvme0n1p3\",\"/dev/nvme1n1p2\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md0\"},{\"devices\":[\"/dev/nvme0n1p4\",\"/dev/nvme1n1p3\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md1\"}],\"zfs\":{\"pools\":[]}}"
+}
+
+data "scaleway_baremetal_os" "my_os" {
+  zone    = "fr-par-1"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+resource "scaleway_iam_ssh_key" "main" {
+  name 	   = "main"
+}
+
+resource "scaleway_baremetal_server" "base" {
+  name        = "%s"
+  zone        = "fr-par-1"
+  description = "test a description"
+  offer       = "EM-B220E-NVME"
+  os    = data.scaleway_baremetal_os.my_os.os_id
+  partitioning = var.configCustomPartitioning
+
+  tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
+  ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
+}
+
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -216,6 +247,7 @@ The following arguments are supported:
     - `id` - (Required) The id of the private network to attach.
     - `ipam_ip_ids` - (Optional) List of IPAM IP IDs to assign to the server in the requested private network.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
+- `partitioning` (Optional) The partitioning schema in JSON format
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
 
