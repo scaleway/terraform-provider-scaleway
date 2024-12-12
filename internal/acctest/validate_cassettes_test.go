@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
@@ -77,12 +77,10 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 	if isException {
 		return isException
 	}
-
 	// SQS returns 400 when the queue does not exist
-	if strings.Contains(i.Response.Body, sqs.ErrCodeQueueDoesNotExist) && i.Response.Code == 400 {
+	if strings.Contains(i.Response.Body, mnq.AWSErrNonExistentQueue) && i.Response.Code == 400 {
 		return true
 	}
-
 	if i.Response.Code >= 400 {
 		for _, httpCode := range codes {
 			if i.Response.Code == httpCode {
@@ -91,7 +89,6 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 		}
 		return false
 	}
-
 	return true
 }
 
