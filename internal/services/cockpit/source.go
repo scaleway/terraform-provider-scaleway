@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -44,9 +45,10 @@ func ResourceCockpitSource() *schema.Resource {
 				ValidateDiagFunc: verify.ValidateEnum[cockpit.DataSourceType](),
 			},
 			"retention_days": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The number of days to retain data, must be between 1 and 365.",
+				Type:         schema.TypeInt,
+				Required:     true,
+				ValidateFunc: validation.IntBetween(1, 365),
+				Description:  "The number of days to retain data, must be between 1 and 365.",
 			},
 			// computed
 			"url": {
@@ -166,7 +168,7 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 		updateRequest.RetentionDays = &retentionDays
 	}
 
-	if updateRequest.Name != nil || updateRequest.RetentionDays != nil {
+	if d.HasChange("retention_days") || d.HasChange("name") {
 		_, err = api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
