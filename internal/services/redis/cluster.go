@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -222,11 +221,11 @@ func ResourceCluster() *schema.Resource {
 
 func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
-		oldSize, newSize := diff.GetChange("cluster_size")
-		if newSize == 2 {
-			return errors.New("cluster_size can be either 1 (standalone) ou >3 (cluster mode), not 2")
-		}
-		if oldSize == 1 && newSize != 1 || newSize.(int) < oldSize.(int) {
+		oldSizeRaw, newSizeRaw := diff.GetChange("cluster_size")
+		oldSize, _ := oldSizeRaw.(int)
+		newSize, _ := newSizeRaw.(int)
+
+		if oldSize == 1 && newSize != 1 || newSize < oldSize {
 			return diff.ForceNew("cluster_size")
 		}
 		return nil
