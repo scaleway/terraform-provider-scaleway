@@ -168,7 +168,7 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 		updateRequest.RetentionDays = &retentionDays
 	}
 
-	if d.HasChange("retention_days") || d.HasChange("name") {
+	if d.HasChanges("retention_days", "name") {
 		_, err = api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
