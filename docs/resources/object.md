@@ -51,6 +51,8 @@ The following arguments are supported:
 
 * `tags` - (Optional) Map of tags.
 
+* `sse_customer_key` - (Optional) Customer's encryption keys to encrypt data (SSE-C)
+
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 ~> **Important:** The `project_id` attribute has a particular behavior with s3 products because the s3 API is scoped by project.
