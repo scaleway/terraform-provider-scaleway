@@ -32,6 +32,8 @@ require (
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 )
 
+replace github.com/scaleway/scaleway-sdk-go => /Users/jonathanremy/Desktop/scaleway-sdk-go
+
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
