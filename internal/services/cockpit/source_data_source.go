@@ -124,30 +124,18 @@ func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta 
 	if v, ok := d.GetOk("origin"); ok {
 		req.Origin = cockpit.DataSourceOrigin(v.(string))
 	}
-	var allDataSources []*cockpit.DataSource
-	page := int32(1)
-	for {
-		req.Page = &page
-		req.PageSize = scw.Uint32Ptr(1000)
 
-		res, err := api.ListDataSources(req, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		allDataSources = append(allDataSources, res.DataSources...)
-		if len(res.DataSources) < 1000 {
-			break
-		}
-		page++
+	res, err := api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if len(allDataSources) == 0 {
+	if res.TotalCount == 0 {
 		return diag.Errorf("no data source found matching the specified criteria")
 	}
 
 	if name, ok := d.GetOk("name"); ok {
-		for _, ds := range allDataSources {
+		for _, ds := range res.DataSources {
 			if ds.Name == name.(string) {
 				flattenDataSource(d, ds)
 				return nil
@@ -156,7 +144,7 @@ func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("no data source found with name '%s'", name.(string))
 	}
 
-	flattenDataSource(d, allDataSources[0])
+	flattenDataSource(d, res.DataSources[0])
 	return nil
 }
 
