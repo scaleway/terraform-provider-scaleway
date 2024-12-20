@@ -1,6 +1,7 @@
 package cockpit_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -84,23 +85,36 @@ func TestAccCockpitSource_DataSource_ByName(t *testing.T) {
 func TestAccCockpitSource_DataSource_Defaults(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
+
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
+
+					data scaleway_account_project "by_name" {
+						name = "default"
+						organization_id = "%s"
+					}
+					
+
 					data "scaleway_cockpit_source" "default_metrics" {
+					  	project_id = data.scaleway_account_project.by_name.id
 	  					type       = "metrics"
 						origin     = "scaleway"	
 					}
 
 					data "scaleway_cockpit_source" "default_logs" {
+					  	project_id = data.scaleway_account_project.by_name.id
 						type       = "logs"
 						origin     = "scaleway"
 					}
-				`,
+				`, orgID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.default_metrics", "name", "Scaleway Metrics"),
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.default_metrics", "type", "metrics"),
