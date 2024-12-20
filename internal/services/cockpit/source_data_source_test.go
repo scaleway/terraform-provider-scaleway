@@ -1,7 +1,6 @@
 package cockpit_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -91,7 +90,7 @@ func TestAccCockpitSource_DataSource_Defaults(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					data "scaleway_cockpit_source" "default_metrics" {
 	  					type       = "metrics"
 						origin     = "scaleway"	
@@ -101,7 +100,7 @@ func TestAccCockpitSource_DataSource_Defaults(t *testing.T) {
 						type       = "logs"
 						origin     = "scaleway"
 					}
-				`),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.default_metrics", "name", "Scaleway Metrics"),
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.default_metrics", "type", "metrics"),

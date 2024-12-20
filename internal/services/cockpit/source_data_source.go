@@ -47,13 +47,12 @@ func DataSourceCockpitSource() *schema.Resource {
 			"origin": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The origin of the data source (e.g., 'scaleway', 'external', 'custom').",
 				Computed:    true,
+				Description: "The origin of the data source (e.g., 'scaleway', 'external', 'custom').",
 				ValidateFunc: validation.StringInSlice([]string{
 					"scaleway", "external", "custom",
 				}, false),
 			},
-			// Computed fields
 			"url": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -84,22 +83,19 @@ func DataSourceCockpitSource() *schema.Resource {
 }
 
 func dataSourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	if _, ok := d.GetOk("id"); ok {
 		return fetchDataSourceByID(ctx, d, meta)
 	}
-
 	return fetchDataSourceByFilters(ctx, d, meta)
 }
 
 func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	regionalID := d.Get("id").(string)
 	api, region, id, err := NewAPIWithRegionAndID(meta, regionalID)
-	d.SetId(id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	d.SetId(id)
 	res, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
 		Region:       region,
 		DataSourceID: id,
@@ -112,7 +108,6 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,11 +136,9 @@ func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta 
 		}
 
 		allDataSources = append(allDataSources, res.DataSources...)
-
 		if len(res.DataSources) < 1000 {
 			break
 		}
-
 		page++
 	}
 
