@@ -35,7 +35,7 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "test-snapshot"
-						expires_at  = "2024-12-31T23:59:59Z"
+						expires_at  = "2025-12-31T23:59:59Z"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -69,11 +69,11 @@ func TestAccMongoDBSnapshot_Update(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "test-snapshot"
-						expires_at  = "2024-12-31T23:59:59Z"
+						expires_at  = "2025-12-31T23:59:59Z"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", "2024-12-31T23:59:59Z"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", "2025-12-31T23:59:59Z"),
 				),
 			},
 			{
