@@ -1,110 +1,213 @@
 ---
-page_title: "Using Scaleway SSH Bastion"
+page_title: "Migrating from Scaleway Cockpit to the New Infrastructure"
 ---
 
-# How to use pass to depecated resource cockpit to new infra <- change ici le titre pour que se soit plus claire 
+# How to Migrate from Deprecated Resource `scaleway_cockpit` to `scaleway_cockpit_source`
 
--> voici l'explication : ducoup je fais un guide pour pouvoir supprimer la resource cockpit des terraforms et utiliser la nouvelle resource source, explique moi cela bien en anglais
--> **Note:**
-Cockpit plans scheduled for deprecation on January 1st 2025.
-The retention period previously set for your logs and metrics will remain the same after that date.
-You will be able to edit the retention period for your metrics, logs, and traces for free during Beta.
+## Overview
 
+This guide provides a step-by-step process to remove the deprecated `scaleway_cockpit` resource from your Terraform configurations and transition to the new `scaleway_cockpit_source` resource. Note that this migration involves breaking down the functionalities of `scaleway_cockpit` into multiple specialized resources to manage endpoints effectively.
+
+> **Note:**
+> Scaleway Cockpit plans are scheduled for deprecation on **January 1st, 2025**. While the retention period for your logs and metrics will remain unchanged, you will be able to edit the retention period for metrics, logs, and traces for free during the Beta period.
 
 ## Prerequisites
 
-d'abord il faut s'assurer d'avoir la dernier version du provider 
--> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.17.2`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
+### Ensure the Latest Provider Version
 
-It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/language/providers/configuration#version-provider-versions).
-If you are following these recommendations, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
-
-Update to latest `1.X` version:
+Ensure your Scaleway provider is updated to at least version `2.49.0`.
 
 ```hcl
 terraform {
   required_providers {
     scaleway = {
-      source = "scaleway/scaleway"
-      version = "~> 1.17"
+      source  = "scaleway/scaleway"
+      version = "~> 2.49.0"
     }
   }
 }
 
 provider "scaleway" {
-  # ...
+  # Configuration details
 }
 ```
 
-Update to latest 2.X version:
+Run the following command to initialize the updated provider:
 
-## Set up your Public Gateway
-
-Public Gateways sit at the border of Private Networks and allow you to enable the bastion.
-You can also choose your port of preference on `bastion_port` option. The default port is `61000`
-
-You can check the types of gateways currently supported via our CLI.
-
-```shell
-scw vpc-gw gateway-type list
+```bash
+terraform init
 ```
 
-Example:
+## Migrating Resources
+
+### Transitioning from `scaleway_cockpit`
+
+The `scaleway_cockpit` resource is deprecated. Its functionalities, including endpoint management, are now divided across multiple specialized resources. Below are the steps to migrate:
+
+#### Deprecated Resource: `scaleway_cockpit`
+
+The following resource will no longer be supported after January 1st, 2025:
 
 ```hcl
-resource scaleway_vpc_public_gateway "pgw" {
-  type = "VPC-GW-S"
-  bastion_enabled = true
-  ip_id = scaleway_vpc_public_gateway_ip.pgw_ip.id
+resource "scaleway_cockpit" "main" {
+  project_id = "11111111-1111-1111-1111-111111111111"
+  plan       = "premium"
 }
 ```
 
-## Configure your DHCP on your subnet
+#### New Resources
 
-The [DHCP](https://fr.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol) server sets the IPv4 address dynamically,
-which is required to communicate over the private network.
+To handle specific functionalities previously managed by `scaleway_cockpit`, you need to use the following resources:
 
-The `dns_local_name` is the [TLD](https://en.wikipedia.org/wiki/Top-level_domain), the value by default is `priv`.
-This is used to resolve your Instance on a Private Network.
+**Data Source Management:**
 
-In order to resolve the Instances using your Bastion you should set the `dns_local_name` with `scaleway_vpc_private_network.pn.name`.
-
-Please check our API [documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-dhcp-create-a-dhcp-configuration) for more details.
+In the deprecated `scaleway_cockpit` resource, the `plan` argument determined the retention period for logs, metrics, and traces. Now, retention periods are set individually for each data source using the `retention_days` argument in `scaleway_cockpit_source` resources.
 
 ```hcl
-resource scaleway_vpc_public_gateway_dhcp "dhcp" {
-  subnet = "192.168.1.0/24"
-  dns_local_name = scaleway_vpc_private_network.pn.name
+resource "scaleway_account_project" "project" {
+  name = "test project data source"
+}
+
+resource "scaleway_cockpit_source" "metrics" {
+  project_id     = scaleway_account_project.project.id
+  name           = "metrics-source"
+  type           = "metrics"
+  retention_days = 6 # Customize retention period (1-365 days)
+}
+
+resource "scaleway_cockpit_source" "logs" {
+  project_id     = scaleway_account_project.project.id
+  name           = "logs-source"
+  type           = "logs"
+  retention_days = 30
+}
+
+resource "scaleway_cockpit_source" "traces" {
+  project_id     = scaleway_account_project.project.id
+  name           = "traces-source"
+  type           = "traces"
+  retention_days = 15
 }
 ```
 
-## Attach your VPC Gateway Network to a Private Network
+**Alert Manager:**
 
-To enable DHCP on this Private Network you must set `enable_dhcp` and `dhcp_id`.
-Do not set the `address` attribute.
+To retrieve the deprecated `alertmanager_url`, you must now explicitly create an Alert Manager using the `scaleway_cockpit_alert_manager` resource:
 
 ```hcl
-resource scaleway_vpc_gateway_network "gn" {
-  gateway_id          = scaleway_vpc_public_gateway.pgw.id
-  private_network_id  = scaleway_vpc_private_network.pn.id
-  dhcp_id             = scaleway_vpc_public_gateway_dhcp.dhcp.id
-  enable_dhcp         = true
+resource "scaleway_cockpit_alert_manager" "alert_manager" {
+  project_id            = scaleway_account_project.project.id
+  enable_managed_alerts = true
+
+  contact_points {
+    email = "alert1@example.com"
+  }
+
+  contact_points {
+    email = "alert2@example.com"
+  }
 }
 ```
 
-## Config my Bastion config
+**Grafana User:**
 
-You should add your config on your local config file e.g: `~/.ssh/config`
+To retrieve the deprecated `grafana_url`, you must create a Grafana user. Creating the user will trigger the creation of the Grafana instance:
 
-```
-Host *.myprivatenetwork
-ProxyJump bastion@<your-public-ip>:<bastion_port>
-```
-
-Then try to connect to it:
-
-```shell
-ssh root@<vm-name>.myprivatenetwork
+```hcl
+resource "scaleway_cockpit_grafana_user" "main" {
+  project_id = scaleway_account_project.project.id
+  login      = "my-awesome-user"
+  role       = "editor"
+}
 ```
 
-For further information using our console please check [our dedicated documentation](https://www.scaleway.com/en/docs/network/vpc/how-to/use-ssh-bastion/).
+### Notes on Regionalization
+
+- As of September 2024, Cockpit resources are regionalized for improved flexibility and resilience. Update your queries in Grafana to use the new regionalized data sources.
+- Metrics, logs, and traces now have dedicated resources that allow granular control over retention policies.
+
+### Before and After Example
+
+#### Before: Using `scaleway_cockpit` to Retrieve Endpoints
+
+```hcl
+resource "scaleway_cockpit" "main" {
+  project_id = "11111111-1111-1111-1111-111111111111"
+  plan       = "premium"
+}
+
+output "endpoints" {
+  value = scaleway_cockpit.main.endpoints
+}
+```
+
+#### After: Using Specialized Resources
+
+To retrieve all endpoints (metrics, logs, traces, alert manager, and Grafana):
+
+```hcl
+resource "scaleway_cockpit_source" "metrics" {
+  project_id     = scaleway_account_project.project.id
+  name           = "metrics-source"
+  type           = "metrics"
+  retention_days = 6
+}
+
+resource "scaleway_cockpit_source" "logs" {
+  project_id     = scaleway_account_project.project.id
+  name           = "logs-source"
+  type           = "logs"
+  retention_days = 30
+}
+
+resource "scaleway_cockpit_source" "traces" {
+  project_id     = scaleway_account_project.project.id
+  name           = "traces-source"
+  type           = "traces"
+  retention_days = 15
+}
+
+resource "scaleway_cockpit_alert_manager" "alert_manager" {
+  project_id = scaleway_account_project.project.id
+  enable_managed_alerts = true
+}
+
+resource "scaleway_cockpit_grafana_user" "main" {
+  project_id = scaleway_account_project.project.id
+  login      = "my-awesome-user"
+  role       = "editor"
+}
+
+output "endpoints" {
+  value = {
+    metrics        = scaleway_cockpit_source.metrics.url
+    logs           = scaleway_cockpit_source.logs.url
+    traces         = scaleway_cockpit_source.traces.url
+    alert_manager  = scaleway_cockpit_alert_manager.alert_manager.alert_manager_url
+    grafana        = scaleway_cockpit_grafana_user.main.grafana_url
+  }
+}
+```
+
+## Importing Resources
+
+### Import a Cockpit Source
+
+To import an existing `scaleway_cockpit_source` resource:
+
+```bash
+terraform import scaleway_cockpit_source.main fr-par/11111111-1111-1111-1111-111111111111
+```
+
+### Import a Grafana User
+
+To import an existing Grafana user:
+
+```bash
+terraform import scaleway_cockpit_grafana_user.main 11111111-1111-1111-1111-111111111111
+```
+
+## Conclusion
+
+By following this guide, you can successfully transition from the deprecated `scaleway_cockpit` resource to the new set of specialized resources. This ensures compatibility with the latest Terraform provider and Scaleway's updated infrastructure.
+
