@@ -650,7 +650,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = types.ExpandStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChange("tags") {

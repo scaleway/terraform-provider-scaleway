@@ -87,7 +87,19 @@ func TestAccCluster_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckK8SClusterConfigMinimal(previousK8SVersion),
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "minimal" {
+  name       = "test-minimal"
+}
+resource "scaleway_k8s_cluster" "minimal" {
+	cni = "calico"
+	version = "%s"
+	name = "test-minimal"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+	delete_additional_resources = false
+	private_network_id = scaleway_vpc_private_network.minimal.id
+	description = "terraform basic test cluster"
+}`, previousK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "version", previousK8SVersion),
@@ -102,10 +114,22 @@ func TestAccCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "description", "terraform basic test cluster"),
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterConfigMinimal(latestK8SVersion),
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "minimal" {
+  name       = "test-minimal"
+}
+resource "scaleway_k8s_cluster" "minimal" {
+	cni = "calico"
+	version = "%s"
+	name = "test-minimal"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+	delete_additional_resources = false
+	private_network_id = scaleway_vpc_private_network.minimal.id
+}`, latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "version", latestK8SVersion),
@@ -120,6 +144,7 @@ func TestAccCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "description", ""),
 				),
 			},
 		},
@@ -598,21 +623,6 @@ func testAccCheckK8sClusterPrivateNetworkID(tt *acctest.TestTools, clusterName, 
 
 		return nil
 	}
-}
-
-func testAccCheckK8SClusterConfigMinimal(version string) string {
-	return fmt.Sprintf(`
-resource "scaleway_vpc_private_network" "minimal" {
-  name       = "test-minimal"
-}
-resource "scaleway_k8s_cluster" "minimal" {
-	cni = "calico"
-	version = "%s"
-	name = "test-minimal"
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
-	delete_additional_resources = false
-	private_network_id = scaleway_vpc_private_network.minimal.id
-}`, version)
 }
 
 func testAccCheckK8SClusterConfigAutoscaler(version string) string {
