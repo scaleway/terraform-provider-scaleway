@@ -41,6 +41,18 @@ func expandIPSource(raw interface{}) *ipam.Source {
 	}
 }
 
+func expandCustomResource(raw interface{}) *ipam.CustomResource {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &ipam.CustomResource{
+		MacAddress: rawMap["mac_address"].(string),
+		Name:       types.ExpandStringPtr(rawMap["name"].(string)),
+	}
+}
+
 func flattenIPSource(source *ipam.Source, privateNetworkID string) interface{} {
 	if source == nil {
 		return nil

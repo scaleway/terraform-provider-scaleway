@@ -40,7 +40,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interfac
 			"status":             pn.Status.String(),
 			"zone":               pn.LB.Zone.String(),
 			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig), //nolint:staticcheck
-			"ipam_ids":           flattenLBIPAMIDs(pnRegion, pn.IpamIDs),
+			"ipam_ids":           regional.NewRegionalIDs(pnRegion, pn.IpamIDs),
 		})
 	}
 	return pnI
@@ -440,17 +440,6 @@ func flattenLBIPIDs(zone scw.Zone, ips []*lb.IP) []string {
 	flattenedIPs := make([]string, len(ips))
 	for i, ip := range ips {
 		flattenedIPs[i] = zonal.NewIDString(zone, ip.ID)
-	}
-	return flattenedIPs
-}
-
-func flattenLBIPAMIDs(region scw.Region, ips []string) []string {
-	if ips == nil {
-		return nil
-	}
-	flattenedIPs := make([]string, len(ips))
-	for i, ip := range ips {
-		flattenedIPs[i] = regional.NewIDString(region, ip)
 	}
 	return flattenedIPs
 }

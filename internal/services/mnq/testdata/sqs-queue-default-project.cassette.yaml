@@ -1,719 +1,4281 @@
 ---
 version: 2
 interactions:
-- request:
-    body: '{"name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":""}'
-    form: {}
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/account/v3/projects
-    method: POST
-  response:
-    body: '{"created_at":"2023-12-21T10:10:47.493156Z","description":"","id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2023-12-21T10:10:47.493156Z"}'
-    headers:
-      Content-Length:
-      - "253"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:47 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 88bab3fb-075a-40ce-90b0-30343f931476
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0"}'
-    form: {}
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/activate-sqs
-    method: POST
-  response:
-    body: '{"created_at":"2023-12-21T10:10:50.537172512Z","project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-21T10:10:50.537172512Z"}'
-    headers:
-      Content-Length:
-      - "239"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:50 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 4b489fbe-18bb-4e43-8c07-6d388c4c98e2
-    status: 200 OK
-    code: 200
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=6e1993ba-3d40-4c22-8f9e-6c400395d7c0
-    method: GET
-  response:
-    body: '{"created_at":"2023-12-21T10:10:50.537172Z","project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-21T10:10:50.537172Z"}'
-    headers:
-      Content-Length:
-      - "233"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:50 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 92942c86-c641-4f11-a7ae-66d9434020bf
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","name":"tf-sqs-credentials-bold-dewdney","permissions":{"can_publish":false,"can_receive":false,"can_manage":true}}'
-    form: {}
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials
-    method: POST
-  response:
-    body: '{"access_key":"ZM83L68eCSkKEixSoPmS","created_at":"2023-12-21T10:10:50.837999349Z","id":"43726ee8-2a24-44a7-b188-0b5b95e4a663","name":"tf-sqs-credentials-bold-dewdney","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","secret_checksum":"275161dcf86cae53d7d2892d3989df4b070e0aed","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
-    headers:
-      Content-Length:
-      - "471"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:50 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - ded241f9-e4b7-4a8c-9daf-5c17dd206d3f
-    status: 200 OK
-    code: 200
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/43726ee8-2a24-44a7-b188-0b5b95e4a663
-    method: GET
-  response:
-    body: '{"access_key":"ZM83L68eCSkKEixSoPmS","created_at":"2023-12-21T10:10:50.837999Z","id":"43726ee8-2a24-44a7-b188-0b5b95e4a663","name":"tf-sqs-credentials-bold-dewdney","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","secret_checksum":"275161dcf86cae53d7d2892d3989df4b070e0aed","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
-    headers:
-      Content-Length:
-      - "404"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:50 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 3282f427-694e-498c-80a9-f110bc7f0115
-    status: 200 OK
-    code: 200
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=6e1993ba-3d40-4c22-8f9e-6c400395d7c0
-    method: GET
-  response:
-    body: '{"created_at":"2023-12-21T10:10:50.537172Z","project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-21T10:10:50.537172Z"}'
-    headers:
-      Content-Length:
-      - "233"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:51 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 104dabb8-6b31-4347-8ae7-e0c49a3875f5
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"Attributes":{"MaximumMessageSize":"262144","MessageRetentionPeriod":"345600","VisibilityTimeout":"30"},"QueueName":"test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "144"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101051Z
-      X-Amz-Target:
-      - AmazonSQS.CreateQueue
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-6e1993ba-3d40-4c22-8f9e-6c400395d7c0/test-mnq-sqs-queue-basic"}'
-    headers:
-      Content-Length:
-      - "120"
-      Content-Type:
-      - application/x-amz-json-1.0; charset=utf-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:52 GMT
-      X-Amzn-Requestid:
-      - txa5349daa-1d52-47c3-af14-20ebf6539e09
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "40"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101052Z
-      X-Amz-Target:
-      - AmazonSQS.GetQueueUrl
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-6e1993ba-3d40-4c22-8f9e-6c400395d7c0/test-mnq-sqs-queue-basic"}'
-    headers:
-      Content-Length:
-      - "120"
-      Content-Type:
-      - application/x-amz-json-1.0; charset=utf-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:52 GMT
-      X-Amzn-Requestid:
-      - txa9b58948-25fa-492d-b2cc-e41be9753604
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"AttributeNames":["ReceiveMessageWaitTimeSeconds","VisibilityTimeout","MaximumMessageSize","MessageRetentionPeriod","FifoQueue","ContentBasedDeduplication"],"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-6e1993ba-3d40-4c22-8f9e-6c400395d7c0/test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "277"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101052Z
-      X-Amz-Target:
-      - AmazonSQS.GetQueueAttributes
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: '{"Attributes":{"MaximumMessageSize":"262144","MessageRetentionPeriod":"345600","ReceiveMessageWaitTimeSeconds":"0","VisibilityTimeout":"30"}}'
-    headers:
-      Content-Length:
-      - "141"
-      Content-Type:
-      - application/x-amz-json-1.0; charset=utf-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:52 GMT
-      X-Amzn-Requestid:
-      - tx73a8652b-69b2-4457-ac01-08596f2f1557
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "40"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101052Z
-      X-Amz-Target:
-      - AmazonSQS.GetQueueUrl
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-6e1993ba-3d40-4c22-8f9e-6c400395d7c0/test-mnq-sqs-queue-basic"}'
-    headers:
-      Content-Length:
-      - "120"
-      Content-Type:
-      - application/x-amz-json-1.0; charset=utf-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:52 GMT
-      X-Amzn-Requestid:
-      - txee1b221b-35f3-4d6f-ac6d-381777b09e76
-    status: 200 OK
-    code: 200
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=6e1993ba-3d40-4c22-8f9e-6c400395d7c0
-    method: GET
-  response:
-    body: '{"created_at":"2023-12-21T10:10:50.537172Z","project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-21T10:10:50.537172Z"}'
-    headers:
-      Content-Length:
-      - "233"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:54 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 0961f4a0-1796-4a64-8511-9bbaf4602555
-    status: 200 OK
-    code: 200
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/43726ee8-2a24-44a7-b188-0b5b95e4a663
-    method: GET
-  response:
-    body: '{"access_key":"ZM83L68eCSkKEixSoPmS","created_at":"2023-12-21T10:10:50.837999Z","id":"43726ee8-2a24-44a7-b188-0b5b95e4a663","name":"tf-sqs-credentials-bold-dewdney","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","secret_checksum":"275161dcf86cae53d7d2892d3989df4b070e0aed","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
-    headers:
-      Content-Length:
-      - "404"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:54 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 07a4605a-6577-4690-8ae8-fcceef889ff4
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "40"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101054Z
-      X-Amz-Target:
-      - AmazonSQS.GetQueueUrl
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-6e1993ba-3d40-4c22-8f9e-6c400395d7c0/test-mnq-sqs-queue-basic"}'
-    headers:
-      Content-Length:
-      - "120"
-      Content-Type:
-      - application/x-amz-json-1.0; charset=utf-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:54 GMT
-      X-Amzn-Requestid:
-      - txd0c3fee9-0c14-4d03-bed6-0f59b0e97d85
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"AttributeNames":["ReceiveMessageWaitTimeSeconds","VisibilityTimeout","MaximumMessageSize","MessageRetentionPeriod","FifoQueue","ContentBasedDeduplication"],"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-6e1993ba-3d40-4c22-8f9e-6c400395d7c0/test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "277"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101054Z
-      X-Amz-Target:
-      - AmazonSQS.GetQueueAttributes
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: '{"Attributes":{"MaximumMessageSize":"262144","MessageRetentionPeriod":"345600","ReceiveMessageWaitTimeSeconds":"0","VisibilityTimeout":"30"}}'
-    headers:
-      Content-Length:
-      - "141"
-      Content-Type:
-      - application/x-amz-json-1.0; charset=utf-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:54 GMT
-      X-Amzn-Requestid:
-      - txcfafea86-8a5b-40d8-ae6c-443404ab2d2b
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "40"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101057Z
-      X-Amz-Target:
-      - AmazonSQS.GetQueueUrl
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-6e1993ba-3d40-4c22-8f9e-6c400395d7c0/test-mnq-sqs-queue-basic"}'
-    headers:
-      Content-Length:
-      - "120"
-      Content-Type:
-      - application/x-amz-json-1.0; charset=utf-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:57 GMT
-      X-Amzn-Requestid:
-      - tx0eaef3c8-4490-4ba0-9203-b87f2406c473
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-6e1993ba-3d40-4c22-8f9e-6c400395d7c0/test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "120"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101057Z
-      X-Amz-Target:
-      - AmazonSQS.DeleteQueue
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: ""
-    headers:
-      Content-Length:
-      - "0"
-      Content-Type:
-      - application/x-amz-json-1.0; charset=utf-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:57 GMT
-      X-Amzn-Requestid:
-      - tx7e25be9c-ab54-4184-ab32-3e8a53b94bd7
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
-    form: {}
-    headers:
-      Content-Length:
-      - "40"
-      Content-Type:
-      - application/x-amz-json-1.0
-      User-Agent:
-      - aws-sdk-go/1.49.6 (go1.21.1; linux; amd64)
-      X-Amz-Date:
-      - 20231221T101057Z
-      X-Amz-Target:
-      - AmazonSQS.GetQueueUrl
-    url: https://sqs.mnq.fr-par.scaleway.com/
-    method: POST
-  response:
-    body: '{"__type":"com.scaleway.sqs#AWS.SimpleQueueService.NonExistentQueue","message":"Queue
-      \"test-mnq-sqs-queue-basic\" does not exist."}'
-    headers:
-      Content-Length:
-      - "132"
-      Content-Type:
-      - application/json; charset=UTF-8
-      Date:
-      - Thu, 21 Dec 2023 10:10:57 GMT
-      X-Amzn-Query-Error:
-      - AWS.SimpleQueueService.NonExistentQueue;Sender
-      X-Amzn-Requestid:
-      - txc0f4a795-88bb-48e1-90d9-892737bf6246
-    status: 400 Bad Request
-    code: 400
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/43726ee8-2a24-44a7-b188-0b5b95e4a663
-    method: DELETE
-  response:
-    body: ""
-    headers:
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:57 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 06cef290-5609-40b7-bcb5-485db82da494
-    status: 204 No Content
-    code: 204
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=6e1993ba-3d40-4c22-8f9e-6c400395d7c0
-    method: GET
-  response:
-    body: '{"created_at":"2023-12-21T10:10:50.537172Z","project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2023-12-21T10:10:50.537172Z"}'
-    headers:
-      Content-Length:
-      - "233"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:57 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 02b913b4-4c60-4682-8a75-f5c21593dfcb
-    status: 200 OK
-    code: 200
-- request:
-    body: '{"project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0"}'
-    form: {}
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/deactivate-sqs
-    method: POST
-  response:
-    body: '{"created_at":null,"project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"disabled","updated_at":null}'
-    headers:
-      Content-Length:
-      - "184"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:57 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - b660380f-5520-4f52-8e41-4a381f3d0314
-    status: 200 OK
-    code: 200
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/account/v3/projects/6e1993ba-3d40-4c22-8f9e-6c400395d7c0
-    method: GET
-  response:
-    body: '{"created_at":"2023-12-21T10:10:47.493156Z","description":"","id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2023-12-21T10:10:47.493156Z"}'
-    headers:
-      Content-Length:
-      - "253"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:57 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - e99025aa-8bbd-48b5-bbd1-664e9ccf778d
-    status: 200 OK
-    code: 200
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=6e1993ba-3d40-4c22-8f9e-6c400395d7c0
-    method: GET
-  response:
-    body: '{"created_at":null,"project_id":"6e1993ba-3d40-4c22-8f9e-6c400395d7c0","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"disabled","updated_at":null}'
-    headers:
-      Content-Length:
-      - "184"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:57 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - a1de5893-6cbc-433a-9fef-50679217a3c7
-    status: 200 OK
-    code: 200
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.1; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/account/v3/projects/6e1993ba-3d40-4c22-8f9e-6c400395d7c0
-    method: DELETE
-  response:
-    body: ""
-    headers:
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Dec 2023 10:10:58 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 6362ea49-54ec-4405-966d-b9ef7d548ccd
-    status: 204 No Content
-    code: 204
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 123
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":""}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 253
+        uncompressed: false
+        body: '{"created_at":"2024-12-10T13:19:53.545816Z","description":"","id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2024-12-10T13:19:53.545816Z"}'
+        headers:
+            Content-Length:
+                - "253"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:19:53 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6e01adce-22cf-4736-8b28-c4a33b247460
+        status: 200 OK
+        code: 200
+        duration: 725.232625ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 53
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d"}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/activate-sqs
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 239
+        uncompressed: false
+        body: '{"created_at":"2024-12-10T13:19:56.913742507Z","project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2024-12-10T13:19:56.913742507Z"}'
+        headers:
+            Content-Length:
+                - "239"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:19:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - f1945641-be65-4d8a-8fa7-0597c6e83e18
+        status: 200 OK
+        code: 200
+        duration: 123.159542ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=e4af8efa-a75f-46b1-8c24-291b98ca648d
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 233
+        uncompressed: false
+        body: '{"created_at":"2024-12-10T13:19:56.913742Z","project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2024-12-10T13:19:56.913742Z"}'
+        headers:
+            Content-Length:
+                - "233"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:19:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 50a34ee6-dfad-4939-8408-a7490764c47d
+        status: 200 OK
+        code: 200
+        duration: 75.63575ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 170
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","name":"tf-sqs-credentials-nifty-chatelet","permissions":{"can_publish":false,"can_receive":false,"can_manage":true}}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 473
+        uncompressed: false
+        body: '{"access_key":"ZIZkxJGK7HzBJAU6b0mW","created_at":"2024-12-10T13:19:57.147103413Z","id":"e837a976-ec1b-47b6-83d4-a9f2e583f341","name":"tf-sqs-credentials-nifty-chatelet","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","secret_checksum":"f94cc299279d805dc745a7399e4bd637f0be935a","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+        headers:
+            Content-Length:
+                - "473"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:19:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 988a5e2f-eee6-4cf5-aa7a-eddb2ef95b62
+        status: 200 OK
+        code: 200
+        duration: 129.232ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/e837a976-ec1b-47b6-83d4-a9f2e583f341
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 406
+        uncompressed: false
+        body: '{"access_key":"ZIZkxJGK7HzBJAU6b0mW","created_at":"2024-12-10T13:19:57.147103Z","id":"e837a976-ec1b-47b6-83d4-a9f2e583f341","name":"tf-sqs-credentials-nifty-chatelet","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","secret_checksum":"f94cc299279d805dc745a7399e4bd637f0be935a","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+        headers:
+            Content-Length:
+                - "406"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:19:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 1949f1a4-82b0-4c4d-98d6-7bfde6360ff9
+        status: 200 OK
+        code: 200
+        duration: 88.129417ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=e4af8efa-a75f-46b1-8c24-291b98ca648d
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 233
+        uncompressed: false
+        body: '{"created_at":"2024-12-10T13:19:56.913742Z","project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2024-12-10T13:19:56.913742Z"}'
+        headers:
+            Content-Length:
+                - "233"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:19:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 3bc632d1-3c45-431b-8d2b-978e267a8fa2
+        status: 200 OK
+        code: 200
+        duration: 60.28975ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 144
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"Attributes":{"MaximumMessageSize":"262144","MessageRetentionPeriod":"345600","VisibilityTimeout":"30"},"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - ff5d7712-5597-4147-8043-d95282db1088
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T131957Z
+            X-Amz-Target:
+                - AmazonSQS.CreateQueue
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 121
+        uncompressed: false
+        body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-e4af8efa-a75f-46b1-8c24-291b98ca648d/test-mnq-sqs-queue-basic"}'
+        headers:
+            Content-Length:
+                - "121"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:19:58 GMT
+            X-Amzn-Requestid:
+                - tx0fc37c60-fd0a-4b06-a916-450855611966
+        status: 200 OK
+        code: 200
+        duration: 1.286800958s
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - fc141755-009c-4997-9e2d-34e493b4d8d1
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T131958Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 121
+        uncompressed: false
+        body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-e4af8efa-a75f-46b1-8c24-291b98ca648d/test-mnq-sqs-queue-basic"}'
+        headers:
+            Content-Length:
+                - "121"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:19:58 GMT
+            X-Amzn-Requestid:
+                - tx8706c0ac-9205-4903-aa2c-4054acdb9b53
+        status: 200 OK
+        code: 200
+        duration: 22.729ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 277
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"AttributeNames":["MaximumMessageSize","MessageRetentionPeriod","FifoQueue","ContentBasedDeduplication","ReceiveMessageWaitTimeSeconds","VisibilityTimeout"],"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-e4af8efa-a75f-46b1-8c24-291b98ca648d/test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - d6ac2a50-27d9-4019-8eed-4f86a36fee28
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T131958Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueAttributes
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 142
+        uncompressed: false
+        body: '{"Attributes":{"MaximumMessageSize":"262144","MessageRetentionPeriod":"345600","ReceiveMessageWaitTimeSeconds":"0","VisibilityTimeout":"30"}}'
+        headers:
+            Content-Length:
+                - "142"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:19:58 GMT
+            X-Amzn-Requestid:
+                - tx32935d1d-0d56-4455-88ee-e01bfd5403e5
+        status: 200 OK
+        code: 200
+        duration: 34.540666ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 3e348eff-c0cb-4023-85a7-93a576ed78e4
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T131958Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 121
+        uncompressed: false
+        body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-e4af8efa-a75f-46b1-8c24-291b98ca648d/test-mnq-sqs-queue-basic"}'
+        headers:
+            Content-Length:
+                - "121"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:19:58 GMT
+            X-Amzn-Requestid:
+                - txe3bd6a55-b746-4670-95c9-f86d4652aa34
+        status: 200 OK
+        code: 200
+        duration: 30.250667ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=e4af8efa-a75f-46b1-8c24-291b98ca648d
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 233
+        uncompressed: false
+        body: '{"created_at":"2024-12-10T13:19:56.913742Z","project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2024-12-10T13:19:56.913742Z"}'
+        headers:
+            Content-Length:
+                - "233"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:20:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - ff357423-7db8-4507-93d5-d578e3b1a818
+        status: 200 OK
+        code: 200
+        duration: 108.8205ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/e837a976-ec1b-47b6-83d4-a9f2e583f341
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 406
+        uncompressed: false
+        body: '{"access_key":"ZIZkxJGK7HzBJAU6b0mW","created_at":"2024-12-10T13:19:57.147103Z","id":"e837a976-ec1b-47b6-83d4-a9f2e583f341","name":"tf-sqs-credentials-nifty-chatelet","permissions":{"can_manage":true,"can_publish":false,"can_receive":false},"project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","secret_checksum":"f94cc299279d805dc745a7399e4bd637f0be935a","secret_key":"00000000-0000-0000-0000-000000000000","updated_at":null}'
+        headers:
+            Content-Length:
+                - "406"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:20:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 807a3fac-3868-4180-9c6e-28adcb56eb2f
+        status: 200 OK
+        code: 200
+        duration: 52.241125ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - f00fd268-84a2-4237-8bf2-503972c7921c
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132000Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 121
+        uncompressed: false
+        body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-e4af8efa-a75f-46b1-8c24-291b98ca648d/test-mnq-sqs-queue-basic"}'
+        headers:
+            Content-Length:
+                - "121"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:00 GMT
+            X-Amzn-Requestid:
+                - tx3266f317-38d6-4184-88da-e1eb28cc6689
+        status: 200 OK
+        code: 200
+        duration: 24.4035ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 277
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"AttributeNames":["FifoQueue","ContentBasedDeduplication","ReceiveMessageWaitTimeSeconds","VisibilityTimeout","MaximumMessageSize","MessageRetentionPeriod"],"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-e4af8efa-a75f-46b1-8c24-291b98ca648d/test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - a8586b07-f1c4-4c38-bd5f-3c288ce8b69d
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132000Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueAttributes
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 142
+        uncompressed: false
+        body: '{"Attributes":{"MaximumMessageSize":"262144","MessageRetentionPeriod":"345600","ReceiveMessageWaitTimeSeconds":"0","VisibilityTimeout":"30"}}'
+        headers:
+            Content-Length:
+                - "142"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:00 GMT
+            X-Amzn-Requestid:
+                - txd0197e68-03d0-46c7-8ac4-796177177431
+        status: 200 OK
+        code: 200
+        duration: 44.7275ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 4c7b9747-fc8d-4ea5-a81c-0d82129eb3f7
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132001Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 121
+        uncompressed: false
+        body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-e4af8efa-a75f-46b1-8c24-291b98ca648d/test-mnq-sqs-queue-basic"}'
+        headers:
+            Content-Length:
+                - "121"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:01 GMT
+            X-Amzn-Requestid:
+                - tx2255bd38-db9d-4c82-ab7f-22b81e08f715
+        status: 200 OK
+        code: 200
+        duration: 28.937042ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 120
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueUrl":"https://sqs.mnq.fr-par.scaleway.com/project-e4af8efa-a75f-46b1-8c24-291b98ca648d/test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - e98e3052-d1d8-43c9-b506-0a00f5d0fb95
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132001Z
+            X-Amz-Target:
+                - AmazonSQS.DeleteQueue
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Length:
+                - "0"
+            Content-Type:
+                - application/x-amz-json-1.0; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:01 GMT
+            X-Amzn-Requestid:
+                - tx49ed21f4-a9f5-4d71-bbbd-a51ca9802892
+        status: 200 OK
+        code: 200
+        duration: 26.451209ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 71d01b23-aebf-4920-b2f2-34351b00e23e
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132001Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:01 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx625748e1-087a-4d34-bca2-3c96b0f5255e
+        status: 404 Not Found
+        code: 404
+        duration: 25.071334ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - bedc395b-1bb7-45ab-bc72-40743446b10f
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132006Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:06 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx4841242f-b79f-47f9-94be-acb4f9370b2d
+        status: 404 Not Found
+        code: 404
+        duration: 44.489084ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 2dbe62df-233c-4a21-8962-b240ff602581
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132011Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:11 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx79de215f-b113-40d6-94f0-1de67dcf3e54
+        status: 404 Not Found
+        code: 404
+        duration: 19.926166ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - bf9e27d7-8544-4d5c-ac4c-831e4a88aaef
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132016Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:16 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txe4a20765-f1b9-4182-a39e-09b9242e4a4e
+        status: 404 Not Found
+        code: 404
+        duration: 25.250083ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 49704c44-fd18-4056-8bd4-dc152fbda83c
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132021Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:21 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txe03078d5-5073-4499-b97a-d7657bf29889
+        status: 404 Not Found
+        code: 404
+        duration: 33.205667ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 5ef10f8c-746c-4e67-8319-0ebc60199afd
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132026Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:26 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txc5ef49c1-c5f8-41df-8780-f6e9855e6d67
+        status: 404 Not Found
+        code: 404
+        duration: 23.839375ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 09cd05f1-f2f9-4a08-8eaf-c528d274a136
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132031Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:31 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx9e0fb27e-716c-4472-96c0-fd8943e90d8f
+        status: 404 Not Found
+        code: 404
+        duration: 27.081375ms
+    - id: 23
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 00d7d812-53dd-4b1c-ba13-463631dbc9bb
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132036Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:36 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx0be5824e-a1c8-498f-940f-d29acc14320d
+        status: 404 Not Found
+        code: 404
+        duration: 23.252833ms
+    - id: 24
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 22f9e61f-66cf-4273-aaf4-8d95c772e042
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132041Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:41 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx417c2825-bf6e-4440-ab4c-32f87899c3fe
+        status: 404 Not Found
+        code: 404
+        duration: 34.636917ms
+    - id: 25
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 95f72434-5a6a-4c4c-930d-9ce21d3240ba
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132046Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:46 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txe6116f36-ecea-4694-a124-da17cf90abf0
+        status: 404 Not Found
+        code: 404
+        duration: 23.236042ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 1113fc1c-3430-42e5-80e1-fda07a8d88cd
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132051Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:51 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txac843dd9-9e88-4bbe-a969-02fbe4b1ad56
+        status: 404 Not Found
+        code: 404
+        duration: 54.803834ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 5c0bb546-2758-4c1c-8487-59fde5b43e21
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132056Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:20:57 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx0f5e1922-db99-451c-a38c-52f20d624d60
+        status: 404 Not Found
+        code: 404
+        duration: 27.568708ms
+    - id: 28
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - b1722fbd-b29d-4f87-97a6-a44cf0a557c8
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132102Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:02 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx98d5e395-e004-46c1-8f63-114bf9bc24c2
+        status: 404 Not Found
+        code: 404
+        duration: 139.709666ms
+    - id: 29
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 50ab6c59-a3ea-4544-b376-59a212c7b794
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132107Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:07 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txc3cbcf9e-4450-436e-be1d-421c5db903f4
+        status: 404 Not Found
+        code: 404
+        duration: 21.765875ms
+    - id: 30
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - ec2c691d-9a0f-45e3-ae6f-a9a8b57e67d9
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132112Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:12 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txe8324107-f2a2-4ef0-b521-bac59e1a312d
+        status: 404 Not Found
+        code: 404
+        duration: 24.783667ms
+    - id: 31
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 08229551-32f4-440e-945b-5313a148a5b9
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132117Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:17 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txab84afc3-19cb-4285-a048-bf0bf7253fa9
+        status: 404 Not Found
+        code: 404
+        duration: 22.776166ms
+    - id: 32
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - bf5a4abe-b740-4c25-aa98-3e240696b9e6
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132122Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:22 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txfcb090f1-d3ef-42ab-9676-6ab0298de531
+        status: 404 Not Found
+        code: 404
+        duration: 28.838125ms
+    - id: 33
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - f886aaae-1faa-4c13-910b-b9eb93af92f6
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132127Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:27 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txcc5b7456-3240-4b85-b627-eca16c7c6d3a
+        status: 404 Not Found
+        code: 404
+        duration: 19.938417ms
+    - id: 34
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - f3a74b3b-04a8-469d-81fb-9650bbcc6da8
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132132Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:32 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx4bb8bbed-84e1-44c6-8dad-b89f7dbc59b4
+        status: 404 Not Found
+        code: 404
+        duration: 24.655833ms
+    - id: 35
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 14246b42-7c1a-4fbf-9f65-709627319621
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132137Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:37 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx72748c09-cd39-407b-b26b-19a5fd86cec5
+        status: 404 Not Found
+        code: 404
+        duration: 23.512791ms
+    - id: 36
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - c342021b-e633-4ab2-b46c-97af240341ae
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132142Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:42 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txb52d84ab-7f3a-4fed-ba2f-692b8bf0afe2
+        status: 404 Not Found
+        code: 404
+        duration: 30.02325ms
+    - id: 37
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - b943f8e3-31ac-495d-98d1-ed958aa7e310
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132147Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:47 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txfcb8d310-f1c9-4bd2-85e3-d8e3ae69b46f
+        status: 404 Not Found
+        code: 404
+        duration: 43.992084ms
+    - id: 38
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 4b33668d-b884-48b9-9b01-dd8ac204df35
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132152Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:52 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txfb1056da-e7e8-49db-9024-6ef270cc5696
+        status: 404 Not Found
+        code: 404
+        duration: 33.593833ms
+    - id: 39
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - a6daca24-4ffe-4eb8-a622-5eeb8946d468
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132157Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:21:57 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txa0dc7245-1208-428c-a1e3-7e9bff1c3d82
+        status: 404 Not Found
+        code: 404
+        duration: 32.0255ms
+    - id: 40
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 902eed12-dcbb-44eb-b3f3-dbb4858cd299
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132202Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:02 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx0c1e18a2-f6c6-4686-b74b-36622721240b
+        status: 404 Not Found
+        code: 404
+        duration: 21.569584ms
+    - id: 41
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - bc1adde4-a531-4222-a64b-38c109324b0f
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132207Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:08 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx5fac8b01-2677-4482-80eb-1135cc3b394f
+        status: 404 Not Found
+        code: 404
+        duration: 493.32375ms
+    - id: 42
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 42b5d316-4b83-4f00-9da5-f01f6f16546a
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132213Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:13 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txd19dd694-6302-4f79-9413-e72d933e8c7e
+        status: 404 Not Found
+        code: 404
+        duration: 29.825625ms
+    - id: 43
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 265b117e-aff4-488e-bfe4-fc6e759e4648
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132218Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:18 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txae1c31e1-0a5e-4ed8-9096-de98e3368fcb
+        status: 404 Not Found
+        code: 404
+        duration: 26.308416ms
+    - id: 44
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 5bf6b254-0277-41d7-85ec-cdd430518642
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132223Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:23 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx5ff62bc0-1ad6-49cf-b14f-e3b0058fc8d6
+        status: 404 Not Found
+        code: 404
+        duration: 24.0015ms
+    - id: 45
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 652d427f-ea8f-4d09-98cc-ecbe4d4712ef
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132228Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:28 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx0c3baccf-9082-48af-8348-30b969d2d5e7
+        status: 404 Not Found
+        code: 404
+        duration: 23.290291ms
+    - id: 46
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 8198a77d-e5d0-4ddc-beaa-30e658c086c2
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132233Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:33 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx4741bf80-62a4-4512-8d85-0026b433a5b2
+        status: 404 Not Found
+        code: 404
+        duration: 22.731208ms
+    - id: 47
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - d6996e74-a86d-4aac-913a-731042d5cb6b
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132238Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:38 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx0a0a3d4b-296f-412e-9c77-6f7348d5ed99
+        status: 404 Not Found
+        code: 404
+        duration: 24.918042ms
+    - id: 48
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 2caa1133-719f-42f4-9c62-f96468c1b3b5
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132243Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:43 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txf25f8401-0a43-4e2c-8da1-23c4a9eda41f
+        status: 404 Not Found
+        code: 404
+        duration: 18.458291ms
+    - id: 49
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 19ace7f5-1bd0-4a77-a6f6-82f9d3cfbf65
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132248Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:48 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txa5d664a3-44d9-41c0-8426-90a560082111
+        status: 404 Not Found
+        code: 404
+        duration: 27.072292ms
+    - id: 50
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 83d20d3a-1933-4238-babb-52f272194bb3
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132253Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:53 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txaacd9b73-09b3-4877-b752-6093d613fcff
+        status: 404 Not Found
+        code: 404
+        duration: 20.748208ms
+    - id: 51
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 41442d4b-b232-471c-9fba-197cc0d6f2cc
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132258Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:22:58 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx2b1c1509-d12b-4024-8148-1cb0823cd139
+        status: 404 Not Found
+        code: 404
+        duration: 34.380959ms
+    - id: 52
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 5e56aa98-dc3b-4ff0-acd7-db00e9302380
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132303Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:03 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx1fa6f092-589b-4c92-a2d8-72c2ba1e5f67
+        status: 404 Not Found
+        code: 404
+        duration: 18.576042ms
+    - id: 53
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 4c626382-a133-4b8a-9eb2-68c6a66ba232
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132308Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:08 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txa2b448dc-8906-4dee-99bc-d11ab93f989d
+        status: 404 Not Found
+        code: 404
+        duration: 24.744792ms
+    - id: 54
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - a4960814-7de6-4d9a-9185-367335cf4b03
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132313Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:13 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txf14002a3-a316-493f-98da-39e5d1e394c2
+        status: 404 Not Found
+        code: 404
+        duration: 29.339667ms
+    - id: 55
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 9d3db5c6-5411-4fa1-9ede-29bdba92d875
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132318Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:18 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx1cbcec0e-5da3-4709-b815-e708a9f3cfbe
+        status: 404 Not Found
+        code: 404
+        duration: 36.593584ms
+    - id: 56
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 8942ac70-d82c-44c2-925b-2d5f46abb961
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132323Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:23 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txd0c61138-1a26-4be6-b4e6-81ce6acb0891
+        status: 404 Not Found
+        code: 404
+        duration: 16.451125ms
+    - id: 57
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 7576cdd8-c68f-49db-bc55-39d9f4efb0c2
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132328Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:28 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txd92ba43d-54b9-4c72-b064-d064ae6a2016
+        status: 404 Not Found
+        code: 404
+        duration: 24.04475ms
+    - id: 58
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - d731999f-190c-43b8-80e9-78df9beb9d90
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132333Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:33 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx2989802c-c9c4-4ec2-a84b-8afc8e6df1f1
+        status: 404 Not Found
+        code: 404
+        duration: 24.692084ms
+    - id: 59
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - f673f148-1726-4b12-81b7-78c1cd5478ce
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132338Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:38 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx6f12a4bd-f2ce-4799-bda4-fbbf81494e80
+        status: 404 Not Found
+        code: 404
+        duration: 28.33925ms
+    - id: 60
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 6cf2271c-6696-45fb-b3eb-aac4f9425fa9
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132343Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:43 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx72ecd4ea-9da0-436c-b64a-884da2010719
+        status: 404 Not Found
+        code: 404
+        duration: 26.895334ms
+    - id: 61
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - d6e675f8-073c-43aa-b4ee-77dfa00eee0e
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132348Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:48 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx3915f826-1073-45eb-b533-e2484702942f
+        status: 404 Not Found
+        code: 404
+        duration: 24.761ms
+    - id: 62
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 235a5774-9d09-4266-b0d9-aa4690694868
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132353Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:53 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx6a0d64a1-0015-42dd-b564-88f470bdc2ad
+        status: 404 Not Found
+        code: 404
+        duration: 28.336ms
+    - id: 63
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 2f799710-02f0-4c3b-9b7b-c17994c6ea0d
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132358Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:23:58 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx65bb0ba1-6b6e-4fcd-b50a-8a05a6e31a83
+        status: 404 Not Found
+        code: 404
+        duration: 27.703875ms
+    - id: 64
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 2fbf3c1a-3c1f-4244-a2a4-eed33bff01f4
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132403Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:03 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txe4173bfa-9895-4f99-b794-0e0c36761ff7
+        status: 404 Not Found
+        code: 404
+        duration: 42.950208ms
+    - id: 65
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - bf0fb6b7-86ec-4caa-b639-2b207c66e64e
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132408Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:08 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx8f1d1be1-2785-4122-a611-46addbdb997a
+        status: 404 Not Found
+        code: 404
+        duration: 18.778334ms
+    - id: 66
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 62ef902b-b47e-41e9-a7ae-e0acc28bc9c9
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132413Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:13 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txffc9e305-65ca-4afb-a2a0-ceb3bdd877ff
+        status: 404 Not Found
+        code: 404
+        duration: 17.92775ms
+    - id: 67
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 5712217d-e279-4369-9881-1d7b8ce2fd94
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132418Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:18 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txb67d4a8f-d82b-497a-a5a0-254682fd5606
+        status: 404 Not Found
+        code: 404
+        duration: 25.003167ms
+    - id: 68
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - efe98750-2a1a-45c9-9d9c-d74f5961ce2e
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132423Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:23 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txd3a8c8d6-efb3-4afc-ad59-6d14567ac837
+        status: 404 Not Found
+        code: 404
+        duration: 27.771417ms
+    - id: 69
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - ac762503-7b31-4dc5-8577-be53ad4dbe3a
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132428Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:28 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx29fbd5d3-50b1-4815-8d31-41194a4f546d
+        status: 404 Not Found
+        code: 404
+        duration: 31.299125ms
+    - id: 70
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 4f75d582-49fe-434c-8a1a-d5bd15b46d48
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132433Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:33 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txeb043c75-ab35-49af-a358-81ec156c5737
+        status: 404 Not Found
+        code: 404
+        duration: 17.227417ms
+    - id: 71
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 291d5d78-896c-4f37-82af-7eb7e8428994
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132438Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:38 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx8d8ed5ee-47dc-40d0-929b-64fe7e29c74f
+        status: 404 Not Found
+        code: 404
+        duration: 31.205125ms
+    - id: 72
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - da0ee0b4-a83f-47ba-821b-10808725c331
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132443Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:43 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - txf572075c-f434-44ab-85e2-09b1b0744b6b
+        status: 404 Not Found
+        code: 404
+        duration: 24.741334ms
+    - id: 73
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 703a7944-cdba-4960-9103-83d95824f6f4
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132448Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:48 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx82b97caf-b8a0-43b0-8a7f-a7d45df7d74a
+        status: 404 Not Found
+        code: 404
+        duration: 38.551333ms
+    - id: 74
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - be95d1de-55cf-43f9-9a1d-bc3e73c4d631
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132453Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:53 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx20d2059e-3bc9-43b0-9f9f-7211d689eb80
+        status: 404 Not Found
+        code: 404
+        duration: 21.445375ms
+    - id: 75
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 40
+        transfer_encoding: []
+        trailer: {}
+        host: sqs.mnq.fr-par.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"QueueName":"test-mnq-sqs-queue-basic"}'
+        form: {}
+        headers:
+            Amz-Sdk-Invocation-Id:
+                - 88a040fa-b97c-4557-bc01-91a5083d1cac
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/x-amz-json-1.0
+            User-Agent:
+                - aws-sdk-go-v2/1.32.6 ua/2.1 os/macos lang/go#1.23.3 md/GOOS#darwin md/GOARCH#arm64 api/sqs#1.37.2 m/E
+            X-Amz-Date:
+                - 20241210T132458Z
+            X-Amz-Target:
+                - AmazonSQS.GetQueueUrl
+            X-Amzn-Query-Mode:
+                - "true"
+        url: https://sqs.mnq.fr-par.scaleway.com/
+        method: POST
+      response:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        transfer_encoding: []
+        trailer: {}
+        content_length: 112
+        uncompressed: false
+        body: '{"__type":"com.amazonaws.sqs#QueueDoesNotExist","message":"Queue \"test-mnq-sqs-queue-basic\" does not exist."}'
+        headers:
+            Content-Length:
+                - "112"
+            Content-Type:
+                - application/json; charset=utf-8
+            Date:
+                - Tue, 10 Dec 2024 13:24:59 GMT
+            X-Amzn-Query-Error:
+                - AWS.SimpleQueueService.NonExistentQueue;Sender
+            X-Amzn-Requestid:
+                - tx62765399-9ac6-4ba0-af66-3996a2a23526
+        status: 404 Not Found
+        code: 404
+        duration: 65.861417ms
+    - id: 76
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-credentials/e837a976-ec1b-47b6-83d4-a9f2e583f341
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:25:04 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - c7fddf0a-75c1-4b14-974d-efc76990ff62
+        status: 204 No Content
+        code: 204
+        duration: 164.562667ms
+    - id: 77
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=e4af8efa-a75f-46b1-8c24-291b98ca648d
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 233
+        uncompressed: false
+        body: '{"created_at":"2024-12-10T13:19:56.913742Z","project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"enabled","updated_at":"2024-12-10T13:19:56.913742Z"}'
+        headers:
+            Content-Length:
+                - "233"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:25:04 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 3770a0ac-d784-4c80-9573-5980baf89c0f
+        status: 200 OK
+        code: 200
+        duration: 68.459792ms
+    - id: 78
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 53
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d"}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/deactivate-sqs
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 184
+        uncompressed: false
+        body: '{"created_at":null,"project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"disabled","updated_at":null}'
+        headers:
+            Content-Length:
+                - "184"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:25:04 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 54055b59-9913-438a-8a1d-543c5b21bf40
+        status: 200 OK
+        code: 200
+        duration: 205.79225ms
+    - id: 79
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/e4af8efa-a75f-46b1-8c24-291b98ca648d
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 253
+        uncompressed: false
+        body: '{"created_at":"2024-12-10T13:19:53.545816Z","description":"","id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","name":"tf_tests_mnq_sqs_queue_default_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2024-12-10T13:19:53.545816Z"}'
+        headers:
+            Content-Length:
+                - "253"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:25:04 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6b71e5bd-a94e-4700-8c01-84206a723f45
+        status: 200 OK
+        code: 200
+        duration: 103.630792ms
+    - id: 80
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/mnq/v1beta1/regions/fr-par/sqs-info?project_id=e4af8efa-a75f-46b1-8c24-291b98ca648d
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 184
+        uncompressed: false
+        body: '{"created_at":null,"project_id":"e4af8efa-a75f-46b1-8c24-291b98ca648d","region":"fr-par","sqs_endpoint_url":"https://sqs.mnq.fr-par.scaleway.com","status":"disabled","updated_at":null}'
+        headers:
+            Content-Length:
+                - "184"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:25:04 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 68c09281-a13a-400c-a9a3-63ac0eb33714
+        status: 200 OK
+        code: 200
+        duration: 68.106416ms
+    - id: 81
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/e4af8efa-a75f-46b1-8c24-291b98ca648d
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 10 Dec 2024 13:25:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - b87bd9b0-5655-4237-9fa1-e48d4e06ff78
+        status: 204 No Content
+        code: 204
+        duration: 1.459337125s

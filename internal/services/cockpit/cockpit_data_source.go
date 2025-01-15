@@ -46,8 +46,14 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	projectID := d.Get("project_id").(string)
+	if projectID == "" {
+		projectID, err = getDefaultProjectID(ctx, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
-	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{
+	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{ //nolint:staticcheck
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -63,7 +69,7 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 		Origin:    "external",
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
@@ -71,14 +77,17 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if grafana.GrafanaURL == "" {
+		grafana.GrafanaURL = createGrafanaURL(projectID, region)
+	}
 
 	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 	})
 	if err != nil {
 		return diag.FromErr(err)

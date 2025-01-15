@@ -8,10 +8,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,7 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.Region, error) {
+func SNSClientWithRegion(ctx context.Context, m interface{}, d *schema.ResourceData) (*sns.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -30,7 +29,7 @@ func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.R
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	snsClient, err := NewSNSClient(meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
+	snsClient, err := NewSNSClient(ctx, meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -38,7 +37,7 @@ func SNSClientWithRegion(d *schema.ResourceData, m interface{}) (*sns.SNS, scw.R
 	return snsClient, region, err
 }
 
-func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID string) (*sns.SNS, scw.Region, error) {
+func SNSClientWithRegionFromID(ctx context.Context, d *schema.ResourceData, m interface{}, regionalID string) (*sns.Client, scw.Region, error) {
 	tab := strings.SplitN(regionalID, "/", 2)
 	if len(tab) != 2 {
 		return nil, "", errors.New("invalid ID format, expected parts separated by slashes")
@@ -52,7 +51,7 @@ func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	snsClient, err := NewSNSClient(meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
+	snsClient, err := NewSNSClient(ctx, meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -60,22 +59,27 @@ func SNSClientWithRegionFromID(d *schema.ResourceData, m interface{}, regionalID
 	return snsClient, region, err
 }
 
-func NewSNSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sns.SNS, error) {
-	config := &aws.Config{}
-	config.WithRegion(region)
-	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
-	config.WithEndpoint(strings.ReplaceAll(endpoint, "{region}", region))
-	config.WithHTTPClient(httpClient)
+func NewSNSClient(ctx context.Context, httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sns.Client, error) {
+	customEndpoint := strings.ReplaceAll(endpoint, "{region}", region)
+	customConfig, err := config.LoadDefaultConfig(
+
+		ctx,
+		config.WithRegion(region),
+		config.WithBaseEndpoint(customEndpoint),
+		config.WithHTTPClient(httpClient),
+		config.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(accessKey, secretKey, ""),
+		),
+	)
+
 	if logging.IsDebugOrHigher() {
-		config.WithLogLevel(aws.LogDebugWithHTTPBody)
+		customConfig.Logger = &httpDebugLogger{}
 	}
 
-	s, err := session.NewSession(config)
 	if err != nil {
 		return nil, err
 	}
-
-	return sns.New(s), nil
+	return sns.NewFromConfig(customConfig), nil
 }
 
 func composeMNQSubscriptionID(region scw.Region, projectID string, topicName string, subscriptionID string) string {

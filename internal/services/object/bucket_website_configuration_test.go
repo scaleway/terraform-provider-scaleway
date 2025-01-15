@@ -43,7 +43,7 @@ func TestAccObjectBucketWebsiteConfiguration_Basic(t *testing.T) {
 							TestName = "TestAccScalewayObjectBucketWebsiteConfiguration_Basic"
 						}
 					}
-				
+
 				  	resource "scaleway_object_bucket_website_configuration" "test" {
 						bucket = scaleway_object_bucket.test.id
 						index_document {
@@ -118,7 +118,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 							]
 						})
 					}
-				
+
 				  	resource "scaleway_object_bucket_website_configuration" "test" {
 						bucket = scaleway_object_bucket.test.id
 						index_document {
@@ -249,7 +249,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T) {
 						region = %[2]q
 						acl  = "public-read"
 					}
-				
+
 				  	resource "scaleway_object_bucket_website_configuration" "test" {
 						bucket = scaleway_object_bucket.test.name
 						index_document {
@@ -257,7 +257,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T) {
 						}
 				  	}
 				`, rName, objectTestsMainRegion),
-				ExpectError: regexp.MustCompile("couldn't read bucket: NoSuchBucket: The specified bucket does not exist"),
+				ExpectError: regexp.MustCompile(`couldn't read bucket:.*NoSuchBucket.*`),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -266,7 +266,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T) {
 						region = %[2]q
 						acl  = "public-read"
 					}
-				
+
 				  	resource "scaleway_object_bucket_website_configuration" "test" {
 						bucket = scaleway_object_bucket.test.name
 						region = %[2]q

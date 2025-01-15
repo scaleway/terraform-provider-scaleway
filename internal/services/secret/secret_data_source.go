@@ -55,7 +55,7 @@ func DataSourceSecretRead(ctx context.Context, d *schema.ResourceData, m interfa
 		request := &secret.ListSecretsRequest{
 			Region:         region,
 			Name:           types.ExpandStringPtr(secretName),
-			ProjectID:      types.ExpandStringPtr(projectID),
+			ProjectID:      projectID,
 			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 			Path:           types.ExpandStringPtr(d.Get("path")),
 		}

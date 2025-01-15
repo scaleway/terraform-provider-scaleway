@@ -3,9 +3,10 @@ package object_test
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,20 +19,20 @@ func TestExpandObjectBucketTags(t *testing.T) {
 	tests := []struct {
 		name string
 		tags interface{}
-		want []*s3.Tag
+		want []s3Types.Tag
 	}{
 		{
 			name: "no tags",
 			tags: map[string]interface{}{},
-			want: []*s3.Tag(nil),
+			want: []s3Types.Tag(nil),
 		},
 		{
 			name: "single tag",
 			tags: map[string]interface{}{
 				"key1": "val1",
 			},
-			want: []*s3.Tag{
-				{Key: scw.StringPtr("key1"), Value: scw.StringPtr("val1")},
+			want: []s3Types.Tag{
+				{Key: scw.StringPtr("key1"), Value: types.ExpandStringPtr("val1")},
 			},
 		},
 		{
@@ -41,10 +42,10 @@ func TestExpandObjectBucketTags(t *testing.T) {
 				"key2": "val2",
 				"key3": "val3",
 			},
-			want: []*s3.Tag{
-				{Key: scw.StringPtr("key1"), Value: scw.StringPtr("val1")},
-				{Key: scw.StringPtr("key2"), Value: scw.StringPtr("val2")},
-				{Key: scw.StringPtr("key3"), Value: scw.StringPtr("val3")},
+			want: []s3Types.Tag{
+				{Key: scw.StringPtr("key1"), Value: types.ExpandStringPtr("val1")},
+				{Key: scw.StringPtr("key2"), Value: types.ExpandStringPtr("val2")},
+				{Key: scw.StringPtr("key3"), Value: types.ExpandStringPtr("val3")},
 			},
 		},
 	}

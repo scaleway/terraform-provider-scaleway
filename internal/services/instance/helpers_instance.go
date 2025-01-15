@@ -179,7 +179,7 @@ func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, se
 			if err != nil {
 				return err
 			}
-		} else if volume.State != instance.VolumeServerStateAvailable {
+		} else if volume.State != nil && *volume.State != instance.VolumeServerStateAvailable {
 			_, err = api.WaitForVolume(&instance.WaitForVolumeRequest{
 				Zone:          zone,
 				VolumeID:      volume.ID,
@@ -407,25 +407,6 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 	}, nil
 }
 
-func getSnapshotsFromIDs(ctx context.Context, snapIDs []interface{}, instanceAPI *instance.API) ([]*instance.GetSnapshotResponse, error) {
-	snapResponses := []*instance.GetSnapshotResponse(nil)
-	for _, snapID := range snapIDs {
-		zone, id, err := zonal.ParseID(snapID.(string))
-		if err != nil {
-			return nil, err
-		}
-		snapshot, err := instanceAPI.GetSnapshot(&instance.GetSnapshotRequest{
-			Zone:       zone,
-			SnapshotID: id,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return snapResponses, fmt.Errorf("extra volumes : could not find snapshot with id %s", snapID)
-		}
-		snapResponses = append(snapResponses, snapshot)
-	}
-	return snapResponses, nil
-}
-
 func formatImageLabel(imageUUID string) string {
 	return strings.ReplaceAll(imageUUID, "-", "_")
 }
@@ -511,7 +492,7 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 	// If the rootVolumeType is not defined, define it depending on the offer
 	if rootVolumeType == "" {
 		if serverTypeCanBootOnBlock {
-			rootVolumeType = instance.VolumeVolumeTypeBSSD.String()
+			rootVolumeType = instance.VolumeVolumeTypeSbsVolume.String()
 		} else {
 			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
 		}

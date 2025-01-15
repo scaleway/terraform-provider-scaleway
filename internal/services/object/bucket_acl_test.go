@@ -1,13 +1,14 @@
 package object_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -25,7 +26,7 @@ const (
 func TestAccObjectBucketACL_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-basic")
+	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-basic")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -38,7 +39,7 @@ func TestAccObjectBucketACL_Basic(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-				
+
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.id
 						acl = "private"
@@ -56,7 +57,7 @@ func TestAccObjectBucketACL_Basic(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-				
+
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.id
 						acl = "public-read"
@@ -75,7 +76,7 @@ func TestAccObjectBucketACL_Basic(t *testing.T) {
 func TestAccObjectBucketACL_Grantee(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-grantee")
+	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-grantee")
 
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	ownerIDChild := "50ab77d5-56bd-4981-a118-4e0fa5309b59"
@@ -90,7 +91,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 						name = "%[1]s"
 						region = "%[3]s"
 					}
-				
+
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.id
 						access_control_policy {
@@ -101,7 +102,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 								}
 								permission = "FULL_CONTROL"
 						  	}
-						
+
 						  	grant {
 								grantee {
 							  		id   = "%[2]s"
@@ -109,7 +110,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 								}
 								permission = "WRITE"
 						  	}
-						
+
 						  	owner {
 								id = "%[2]s"
 						  	}
@@ -127,7 +128,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 						name = "%[1]s"
 						region = "%[4]s"
 					}
-				
+			
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.id
 						access_control_policy {
@@ -138,7 +139,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 								}
 								permission = "FULL_CONTROL"
 						  	}
-						
+			
 						  	grant {
 								grantee {
 							  		id   = "%[2]s"
@@ -146,7 +147,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 								}
 								permission = "WRITE"
 						  	}
-
+			
 							grant {
 								grantee {
 								  	id   = "%[3]s"
@@ -154,7 +155,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 								}
 								permission = "FULL_CONTROL"
 							}
-						
+			
 						  	owner {
 								id = "%[2]s"
 						  	}
@@ -178,7 +179,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 func TestAccObjectBucketACL_GranteeWithOwner(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-owner")
+	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-owner")
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -191,7 +192,7 @@ func TestAccObjectBucketACL_GranteeWithOwner(t *testing.T) {
 						name = "%[1]s"
 						region = "%[3]s"
 					}
-				
+
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.id
 						expected_bucket_owner = "%[2]s"
@@ -203,7 +204,7 @@ func TestAccObjectBucketACL_GranteeWithOwner(t *testing.T) {
 							}
 							permission = "FULL_CONTROL"
 						  }
-						
+
 						  grant {
 							grantee {
 							  id   = "%[2]s"
@@ -211,7 +212,7 @@ func TestAccObjectBucketACL_GranteeWithOwner(t *testing.T) {
 							}
 							permission = "WRITE"
 						  }
-						
+
 						  owner {
 							id = "%[2]s"
 						  }
@@ -230,7 +231,7 @@ func TestAccObjectBucketACL_GranteeWithOwner(t *testing.T) {
 func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-name")
+	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-name")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -243,14 +244,14 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-				
+
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						acl = "public-read"
 
 					}
 					`, testBucketName, objectTestsMainRegion),
-				ExpectError: regexp.MustCompile("error putting Object Storage ACL: NoSuchBucket: The specified bucket does not exist"),
+				ExpectError: regexp.MustCompile("api error NoSuchBucket: The specified bucket does not exist"),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -258,7 +259,7 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-				
+			
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						acl = "public-read"
@@ -278,7 +279,7 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 func TestAccObjectBucketACL_Remove(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scw-object-acl-remove")
+	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-remove")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -306,7 +307,7 @@ func TestAccObjectBucketACL_Remove(t *testing.T) {
 						region = "%s"
 						acl = "authenticated-read"
 					}
-				
+
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.id
 						acl = "public-read"
@@ -353,13 +354,14 @@ func TestAccObjectBucketACL_Remove(t *testing.T) {
 
 func testAccObjectBucketACLCheck(tt *acctest.TestTools, name string, expectedACL string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		ctx := context.Background()
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", name)
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -368,7 +370,7 @@ func testAccObjectBucketACLCheck(tt *acctest.TestTools, name string, expectedACL
 		}
 
 		bucketName := rs.Primary.Attributes["name"]
-		actualACL, err := s3Client.GetBucketAcl(&s3.GetBucketAclInput{
+		actualACL, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 			Bucket: types.ExpandStringPtr(bucketName),
 		})
 		if err != nil {
@@ -387,14 +389,14 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	ownerID := *object.NormalizeOwnerID(actual.Owner.ID)
 	grantsMap := make(map[string]string)
 	for _, actualACL := range actual.Grants {
-		if actualACL.Permission == nil {
+		if actualACL.Permission == "" {
 			return append(errs, errors.New("grant has no permission"))
 		}
 		if actualACL.Grantee.ID != nil {
-			grantsMap[*actualACL.Permission] = *object.NormalizeOwnerID(actualACL.Grantee.ID)
+			grantsMap[string(actualACL.Permission)] = *object.NormalizeOwnerID(actualACL.Grantee.ID)
 		} else {
 			groupURI := strings.Split(*actualACL.Grantee.URI, "/")
-			grantsMap[*actualACL.Permission] = groupURI[len(groupURI)-1]
+			grantsMap[string(actualACL.Permission)] = groupURI[len(groupURI)-1]
 		}
 	}
 

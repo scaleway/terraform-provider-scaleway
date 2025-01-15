@@ -1,13 +1,14 @@
 package object_test
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -19,7 +20,7 @@ import (
 )
 
 func TestAccObjectBucketPolicy_Basic(t *testing.T) {
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-basic")
 
 	tfConfig := fmt.Sprintf(`
 		resource "scaleway_object_bucket" "bucket" {
@@ -72,7 +73,7 @@ func TestAccObjectBucketPolicy_Basic(t *testing.T) {
 				"s3:GetObject"
 			]
 		}
-   ]
+  ]
 }`
 
 	tt := acctest.NewTestTools(t)
@@ -107,7 +108,7 @@ func TestAccObjectBucketPolicy_Basic(t *testing.T) {
 }
 
 func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-with-bucket-id")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-with-bucket-id")
 
 	tfConfig := fmt.Sprintf(`
 		resource "scaleway_object_bucket" "bucket" {
@@ -158,7 +159,7 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 				"s3:*"
 			]
 		}
-   ]
+  ]
 }`
 
 	tt := acctest.NewTestTools(t)
@@ -193,7 +194,7 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 }
 
 func TestAccObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-with-bucket-name")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-with-bucket-name")
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -239,7 +240,7 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 							}
 						)
 					}`, bucketName, objectTestsSecondaryRegion),
-				ExpectError: regexp.MustCompile("error putting SCW bucket policy: NoSuchBucket: The specified bucket does not exist"),
+				ExpectError: regexp.MustCompile(`error putting SCW bucket policy:.*NoSuchBucket.*The specified bucket does not exist`),
 			},
 		},
 	})
@@ -247,13 +248,14 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 
 func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicyText string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		ctx := context.Background()
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -263,7 +265,7 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 		}
 
 		bucketName := rs.Primary.Attributes["name"]
-		policy, err := s3Client.GetBucketPolicy(&s3.GetBucketPolicyInput{
+		policy, err := s3Client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{
 			Bucket: types.ExpandStringPtr(bucketName),
 		})
 		if err != nil {

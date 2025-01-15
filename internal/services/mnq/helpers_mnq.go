@@ -6,11 +6,17 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/smithy-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+)
+
+const (
+	AWSErrQueueDeletedRecently = "AWS.SimpleQueueService.QueueDeletedRecently"
+	AWSErrNonExistentQueue     = "AWS.SimpleQueueService.NonExistentQueue"
 )
 
 func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Region, error) {
@@ -192,7 +198,7 @@ func resolveSchemaPath(resourcePath string, resourceSchemas map[string]*schema.S
 }
 
 // Sets a specific SNS attribute from the resource data
-func awsResourceDataToAttribute(awsAttributes map[string]*string, awsAttribute string, resourceValue interface{}, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
+func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute string, resourceValue interface{}, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
 	resourceSchema := resolveSchemaPath(resourcePath, resourceSchemas)
 	if resourceSchema == nil {
 		return fmt.Errorf("unable to resolve schema for %s", resourcePath)
@@ -215,13 +221,13 @@ func awsResourceDataToAttribute(awsAttributes map[string]*string, awsAttribute s
 		return fmt.Errorf("unsupported type %s for %s", resourceSchema.Type, resourcePath)
 	}
 
-	awsAttributes[awsAttribute] = &s
+	awsAttributes[awsAttribute] = s
 	return nil
 }
 
 // awsResourceDataToAttributes returns a map of attributes from a terraform schema and a conversion map
-func awsResourceDataToAttributes(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]*string, error) {
-	attributes := make(map[string]*string)
+func awsResourceDataToAttributes(d *schema.ResourceData, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]string, error) {
+	attributes := make(map[string]string)
 
 	for attribute, resourcePath := range attributesToResourceMap {
 		if v, ok := d.GetOk(resourcePath); ok {
@@ -259,12 +265,12 @@ func awsAttributeToResourceData(values map[string]interface{}, value string, res
 }
 
 // awsAttributesToResourceData returns a map of valid values for a terraform schema from an attributes map and a conversion map
-func awsAttributesToResourceData(attributes map[string]*string, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]interface{}, error) {
+func awsAttributesToResourceData(attributes map[string]string, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
 
 	for attribute, resourcePath := range attributesToResourceMap {
-		if value, ok := attributes[attribute]; ok && value != nil {
-			err := awsAttributeToResourceData(values, *value, resourcePath, resourceSchemas)
+		if value, ok := attributes[attribute]; ok {
+			err := awsAttributeToResourceData(values, value, resourcePath, resourceSchemas)
 			if err != nil {
 				return nil, err
 			}
@@ -272,4 +278,12 @@ func awsAttributesToResourceData(attributes map[string]*string, resourceSchemas 
 	}
 
 	return values, nil
+}
+
+func IsAWSErrorCode(err error, code string) bool {
+	var apiErr *smithy.GenericAPIError
+	if errors.As(err, &apiErr) && apiErr.Code == code {
+		return true
+	}
+	return false
 }

@@ -80,19 +80,19 @@ func ResourceContainer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The minimum of running container instances continuously. Defaults to 0.",
+				Description: "The minimum of running container instances continuously.",
 			},
 			"max_scale": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The maximum of number of instances this container can scale to. Default to 20.",
+				Description: "The maximum of number of instances this container can scale to.",
 			},
 			"memory_limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The memory computing resources in MB to allocate to each container. Defaults to 128.",
+				Description: "The memory computing resources in MB to allocate to each container.",
 			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
@@ -129,7 +129,7 @@ func ResourceContainer() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
-				Description:  "The maximum the number of simultaneous requests your container can handle at the same time. Defaults to 50.",
+				Description:  "The maximum the number of simultaneous requests your container can handle at the same time.",
 				ValidateFunc: validation.IntAtMost(containerMaxConcurrencyLimit),
 			},
 			"domain_name": {
@@ -148,7 +148,7 @@ func ResourceContainer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The port to expose the container. Defaults to 8080",
+				Description: "The port to expose the container.",
 			},
 			"deploy": {
 				Type:        schema.TypeBool,
@@ -352,7 +352,7 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if d.HasChanges("max_concurrency") {
-		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int)))
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int))) //nolint:staticcheck
 	}
 
 	if d.HasChanges("protocol") {
