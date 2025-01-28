@@ -10,12 +10,12 @@ page_title: "Scaleway: scaleway_iot_network"
 Creates and manages Scaleway IoT Networks. For more information, see the following:
 
 - [API documentation](https://www.scaleway.com/en/developers/api/iot/).
-- [Product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-networks/)
+- [Product documentation](https://www.scaleway.com/en/docs/iot-hub/)
 
 For more step-by-step instructions on how to setup the networks on the external providers backends, you can follow these guides:
 
-- [Configuring the Sigfox backend](https://www.scaleway.com/en/docs/scaleway-iothub-networks/#-Configuring-the-Sigfox-backend)
-- [Using the Rest Network](https://www.scaleway.com/en/docs/scaleway-iothub-networks/#-Using-the-Rest-Network)
+- [Configuring the Sigfox backend](https://www.scaleway.com/en/docs/iot-hub/how-to/setup-use-sigfox-network/)
+- [Using the Rest Network](https://www.scaleway.com/en/docs/iot-hub/how-to/setup-use-rest-network/)
 
 ## Example Usage
 

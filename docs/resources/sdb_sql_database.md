@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_sdb_sql_database"
 
 The `scaleway_sdb_sql_database` resource allows you to create and manage databases for Scaleway Serverless SQL Databases.
 
-Refer to the Serverless SQL Databases [documentation](https://www.scaleway.com/en/docs/serverless/sql-databases/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-databases/) for more information.
+Refer to the Serverless SQL Databases [documentation](https://www.scaleway.com/en/docs/serverless-sql-databases/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-databases/) for more information.
 
 ## Example Usage
 
@@ -23,9 +23,9 @@ resource scaleway_sdb_sql_database "database" {
 
 ### With IAM Application
 
-This example creates an [IAM application](https://www.scaleway.com/en/docs/identity-and-access-management/iam/concepts/#application) and an [API secret key](https://www.scaleway.com/en/docs/identity-and-access-management/iam/how-to/create-api-keys/) used to connect to the database.
+This example creates an [IAM application](https://www.scaleway.com/en/docs//iam/concepts/#application) and an [API secret key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) used to connect to the database.
 
--> **Note:** For more information, see [How to connect to a Serverless SQL Database](https://www.scaleway.com/en/docs/serverless/sql-databases/how-to/connect-to-a-database/)
+-> **Note:** For more information, see [How to connect to a Serverless SQL Database](https://www.scaleway.com/en/docs/serverless-sql-databases/how-to/connect-to-a-database/)
 
 ```hcl
 data scaleway_account_project "default" {
