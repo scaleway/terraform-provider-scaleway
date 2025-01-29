@@ -23,7 +23,7 @@ resource scaleway_sdb_sql_database "database" {
 
 ### With IAM Application
 
-This example creates an [IAM application](https://www.scaleway.com/en/docs//iam/concepts/#application) and an [API secret key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) used to connect to the database.
+This example creates an [IAM application](https://www.scaleway.com/en/docs/iam/concepts/#application) and an [API secret key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) used to connect to the database.
 
 -> **Note:** For more information, see [How to connect to a Serverless SQL Database](https://www.scaleway.com/en/docs/serverless-sql-databases/how-to/connect-to-a-database/)
 
