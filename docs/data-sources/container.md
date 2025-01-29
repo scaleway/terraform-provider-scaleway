@@ -8,7 +8,7 @@ The `scaleway_container` data source is used to retrieve information about a Ser
 
 Refer to the Serverless Containers [product documentation](https://www.scaleway.com/en/docs/serverless/containers/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/) for more information.
 
-For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/).
+For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
 
 ## Retrieve a Serverless Container
 
@@ -63,7 +63,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `description` The description of the container.
 
-- `environment_variables` - The [environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) variables of the container.
+- `environment_variables` - The [environment](https://www.scaleway.com/en/docs/serverless-containers/concepts/#environment-variables) variables of the container.
 
 - `min_scale` - The minimum number of container instances running continuously.
 

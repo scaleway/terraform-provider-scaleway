@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_mnq_sqs"
 
 Activate Scaleway Messaging and Queuing SQS in a Project.
 For further information, see
-our [main documentation](https://www.scaleway.com/en/docs/serverless/messaging/reference-content/sqs-overview/).
+our [main documentation](https://www.scaleway.com/en/docs/messaging/reference-content/sqs-overview/).
 
 ## Example Usage
 

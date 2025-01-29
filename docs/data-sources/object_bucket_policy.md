@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_object_bucket_policy"
 
 The `scaleway_object_bucket_policy` data source is used to retrieve information about the bucket policy of an Object Storage bucket.
 
-Refer to the Object Storage [documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-policy/) for more information.
+Refer to the Object Storage [documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-policy/) for more information.
 
 ## Retrieve the bucket policy of a bucket
 
@@ -31,7 +31,7 @@ This section lists the arguments that you can provide to the `scaleway_object_bu
 If you are using a project different from the default one, you have to specify the `project_id` for every child resource of the bucket,
 like bucket policies. Otherwise, Terraform will try to create the child resource with the default project ID and you will get a 403 error.
 
-For more information on Object Storage and Scaleway Projects, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/identity-and-access-management/iam/api-cli/using-api-key-object-storage/).
+For more information on Object Storage and Scaleway Projects, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/iam/api-cli/using-api-key-object-storage/).
 
 
 ## Attributes Reference
