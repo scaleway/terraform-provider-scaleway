@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_secret_version"
 
 The `scaleway_secret_version` resource allows you to create and manage secret versions in Scaleway Secret Manager.
 
-Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/identity-and-access-management/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
+Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
 
 ## Example Usage
 

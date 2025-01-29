@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_object_bucket_policy"
 
 # Resource: scaleway_object_bucket_policy
 
-The `scaleway_object_bucket_policy` resource allows you to create and manage bucket policies for [Scaleway Object storage](https://www.scaleway.com/en/docs/storage/object/).
+The `scaleway_object_bucket_policy` resource allows you to create and manage bucket policies for [Scaleway Object storage](https://www.scaleway.com/en/docs/object-storage/).
 
-Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-policy/) for more information on Object Storage bucket policies.
+Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-policy/) for more information on Object Storage bucket policies.
 
 ## Example Usage
 
@@ -215,7 +215,7 @@ resource "scaleway_object_bucket_policy" "policy" {
 }
 ```
 
-**NB:** To configure the AWS provider with Scaleway credentials, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/object-storage-aws-cli/).
+**NB:** To configure the AWS provider with Scaleway credentials, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-storage-aws-cli/).
 
 ## Argument Reference
 
