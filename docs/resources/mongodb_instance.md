@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_mongodb_instance"
 # Resource: scaleway_mongodb_instance
 
 Creates and manages Scaleway MongoDB® instance.
-For more information refer to [the API documentation](https://www.scaleway.com/en/docs/en/docs/managed-mongodb-databases/).
+For more information refer to [the API documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
 
 ## Example Usage
 
