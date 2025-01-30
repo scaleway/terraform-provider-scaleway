@@ -87,6 +87,7 @@ jobs:
           SLACK_WEBHOOK_NIGHTLY: ${{ secrets.SLACK_WEBHOOK_NIGHTLY }}
           FAILED_PRODUCT: ${{ matrix.products }}
       - name: Run acceptance test for cassettes
+        if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
         run: go test -v github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest -run TestAccCassettes_Validator
 
   # sweeper needs to run after nightly completed
