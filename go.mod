@@ -25,6 +25,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.0
+	github.com/hashicorp/terraform-plugin-testing v1.11.0
 	github.com/nats-io/jwt/v2 v2.7.3
 	github.com/nats-io/nats.go v1.38.0
 	github.com/robfig/cron/v3 v3.0.1

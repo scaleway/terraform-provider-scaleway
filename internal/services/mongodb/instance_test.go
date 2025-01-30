@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	mongodbSDK "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -235,7 +235,7 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
-			_, err = mongodbAPI.GetInstance(&mongodbSDK.GetInstanceRequest{
+			_, err = mongodbAPI.WaitForInstance(&mongodbSDK.WaitForInstanceRequest{
 				InstanceID: ID,
 				Region:     extractRegion,
 			})

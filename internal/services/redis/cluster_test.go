@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	redisSDK "github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -749,7 +749,7 @@ func isClusterDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = redisAPI.GetCluster(&redisSDK.GetClusterRequest{
+			_, err = redisAPI.WaitForCluster(&redisSDK.WaitForClusterRequest{
 				ClusterID: ID,
 				Zone:      zone,
 			})
