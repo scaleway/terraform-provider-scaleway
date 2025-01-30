@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_account_project"
 
 The `scaleway_account_project` data source is used to retrieve information about a Scaleway project.
 
-Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/identity-and-access-management/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
+Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
 
 ## Retrieve a Scaleway Project

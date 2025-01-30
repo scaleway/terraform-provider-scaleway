@@ -9,7 +9,7 @@ The `scaleway_container` resource allows you to create and manage [Serverless Co
 
 Refer to the Serverless Containers [product documentation](https://www.scaleway.com/en/docs/serverless/containers/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/) for more information.
 
-For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/).
+For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
 
 ## Example Usage
 
@@ -56,9 +56,9 @@ The following arguments are supported:
 
 - `description` (Optional) The description of the container.
 
-- `environment_variables` - (Optional) The [environment variables](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) of the container.
+- `environment_variables` - (Optional) The [environment variables](https://www.scaleway.com/en/docs/serverless-containers/concepts/#environment-variables) of the container.
 
-- `secret_environment_variables` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/compute/containers/concepts/#secrets) of the container.
+- `secret_environment_variables` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/serverless-containers/concepts/#secrets) of the container.
 
 - `min_scale` - (Optional) The minimum number of container instances running continuously.
 
@@ -88,7 +88,7 @@ The following arguments are supported:
 
 - `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
 
-Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/#configuration-restrictions) section.
+Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
 ## Attributes Reference
 
