@@ -3,8 +3,6 @@ package instance
 import (
 	"context"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -13,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceIP() *schema.Resource {
