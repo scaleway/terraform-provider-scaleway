@@ -262,7 +262,7 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 		req.EnableVpc = &enableVpc
 	}
 
-	if d.HasChange("private_network") {
+	if d.HasChange("private_network") && *req.EnableVpc {
 		privateNetwork := d.Get("private_network")
 
 		req := &applesilicon.PrivateNetworkAPISetServerPrivateNetworksRequest{
