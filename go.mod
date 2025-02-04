@@ -12,7 +12,7 @@ require (
 	github.com/aws/smithy-go v1.22.2
 	github.com/bflad/tfproviderdocs v0.12.1
 	github.com/bflad/tfproviderlint v0.30.0
-	github.com/docker/docker v27.4.1+incompatible
+	github.com/docker/docker v27.5.1+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/aws-sdk-go-base v1.1.0
@@ -26,10 +26,10 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.0
 	github.com/nats-io/jwt/v2 v2.7.3
-	github.com/nats-io/nats.go v1.37.0
+	github.com/nats-io/nats.go v1.38.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.30.0.20241129094524-023aa8142bc1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.32.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 )
@@ -90,7 +90,7 @@ require (
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.15 // indirect
-	github.com/klauspost/compress v1.17.2 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/cli v1.1.5 // indirect
