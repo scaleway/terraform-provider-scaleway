@@ -104,6 +104,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.23.5
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
       - name: Run sweepers
         run: make sweep
         env:
