@@ -1,6 +1,6 @@
 module github.com/scaleway/terraform-provider-scaleway/v2
 
-go 1.22.0
+go 1.23.5
 
 toolchain go1.23.5
 
