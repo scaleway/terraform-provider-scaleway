@@ -2,8 +2,6 @@ module github.com/scaleway/terraform-provider-scaleway/v2
 
 go 1.23.5
 
-toolchain go1.23.5
-
 require (
 	github.com/aws/aws-sdk-go-v2 v1.32.7
 	github.com/aws/aws-sdk-go-v2/config v1.28.7
