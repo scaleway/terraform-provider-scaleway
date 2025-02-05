@@ -3,7 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
-	"time"
+	//"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -706,49 +706,52 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 		// Construit la structure de données pour `domain_info[domainName]`
 		domainInfoObject := map[string]interface{}{}
 
-		// Remplit les champs calculés
-		domainInfoObject["auto_renew_status"] = string(domainResp.AutoRenewStatus)
-		domainInfoObject["dnssec_status"] = ""
+		fmt.Printf("Type: %T, Value: %v\n", domainResp.AutoRenewStatus, domainResp.AutoRenewStatus)
+
+		domainInfoObject["auto_renew_status"] = domainResp.AutoRenewStatus.String()
+
 		if domainResp.Dnssec != nil {
-			domainInfoObject["dnssec_status"] = string(domainResp.Dnssec.Status)
-		}
-		domainInfoObject["epp_code"] = domainResp.EppCode
-		if domainResp.ExpiredAt != nil {
-			domainInfoObject["expired_at"] = domainResp.ExpiredAt.Format(time.RFC3339)
+			domainInfoObject["dnssec_status"] = domainResp.Dnssec.Status.String()
 		} else {
-			domainInfoObject["expired_at"] = ""
+			domainInfoObject["dnssec_status"] = nil
 		}
-		if domainResp.UpdatedAt != nil {
-			domainInfoObject["updated_at"] = domainResp.UpdatedAt.Format(time.RFC3339)
-		} else {
-			domainInfoObject["updated_at"] = ""
-		}
-		domainInfoObject["registrar"] = domainResp.Registrar
-		domainInfoObject["status"] = string(domainResp.Status)
-		domainInfoObject["organization_id"] = domainResp.OrganizationID
-		domainInfoObject["pending_trade"] = domainResp.PendingTrade
-
-		// Status externes
-		if domainResp.ExternalDomainRegistrationStatus != nil {
-			domainInfoObject["external_domain_registration_status"] =
-				flattenExternalDomainRegistrationStatus(domainResp.ExternalDomainRegistrationStatus)
-		} else {
-			domainInfoObject["external_domain_registration_status"] = map[string]string{}
-		}
-
-		if domainResp.TransferRegistrationStatus != nil {
-			domainInfoObject["transfer_registration_status"] =
-				flattenDomainRegistrationStatusTransfer(domainResp.TransferRegistrationStatus)
-		} else {
-			domainInfoObject["transfer_registration_status"] = map[string]string{}
-		}
-
-		// Linked products
-		if len(domainResp.LinkedProducts) > 0 {
-			domainInfoObject["linked_products"] = domainResp.LinkedProducts
-		} else {
-			domainInfoObject["linked_products"] = []string{}
-		}
+		//domainInfoObject["epp_code"] = domainResp.EppCode
+		//if domainResp.ExpiredAt != nil {
+		//	domainInfoObject["expired_at"] = domainResp.ExpiredAt.Format(time.RFC3339)
+		//} else {
+		//	domainInfoObject["expired_at"] = ""
+		//}
+		//if domainResp.UpdatedAt != nil {
+		//	domainInfoObject["updated_at"] = domainResp.UpdatedAt.Format(time.RFC3339)
+		//} else {
+		//	domainInfoObject["updated_at"] = ""
+		//}
+		//domainInfoObject["registrar"] = domainResp.Registrar
+		//domainInfoObject["status"] = string(domainResp.Status)
+		//domainInfoObject["organization_id"] = domainResp.OrganizationID
+		//domainInfoObject["pending_trade"] = domainResp.PendingTrade
+		//
+		//// Status externes
+		//if domainResp.ExternalDomainRegistrationStatus != nil {
+		//	domainInfoObject["external_domain_registration_status"] =
+		//		flattenExternalDomainRegistrationStatus(domainResp.ExternalDomainRegistrationStatus)
+		//} else {
+		//	domainInfoObject["external_domain_registration_status"] = map[string]string{}
+		//}
+		//
+		//if domainResp.TransferRegistrationStatus != nil {
+		//	domainInfoObject["transfer_registration_status"] =
+		//		flattenDomainRegistrationStatusTransfer(domainResp.TransferRegistrationStatus)
+		//} else {
+		//	domainInfoObject["transfer_registration_status"] = map[string]string{}
+		//}
+		//
+		//// Linked products
+		//if len(domainResp.LinkedProducts) > 0 {
+		//	domainInfoObject["linked_products"] = domainResp.LinkedProducts
+		//} else {
+		//	domainInfoObject["linked_products"] = []string{}
+		//}
 
 		//// TLD
 		//if domainResp.Tld != nil {
@@ -766,10 +769,13 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 
 		// Au lieu d'un slice de type []map[string]interface{},
 		// on crée un slice de type []interface{} (et on y place l'objet)
+		fmt.Printf("domainInfoObject: %+v\n", domainInfoObject)
+
 		domainInfoMap[domainName] = []interface{}{
 			domainInfoObject,
 		}
 	}
+	fmt.Printf("domainInfoMap[%s]: %+v\n", domainNames[0], domainInfoMap[domainNames[0]])
 
 	// Assigne la map complète au champ "domain_info"
 	if err := d.Set("domain_info", domainInfoMap); err != nil {
