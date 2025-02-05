@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_vpc_route"
 # Resource: scaleway_vpc_route
 
 Creates and manages Scaleway VPC Routes.
-For more information, see [the main documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/).
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
 
 ## Example Usage
 

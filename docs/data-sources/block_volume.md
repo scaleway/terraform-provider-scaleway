@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_block_volume"
 # scaleway_block_volume
 
 The `scaleway_block_volume` data source is used to retrieve information about a Block Storage volume.
-Refer to the Block Storage [product documentation](https://www.scaleway.com/en/docs/storage/block/) and [API documentation](https://www.scaleway.com/en/developers/api/block/) for more information.
+Refer to the Block Storage [product documentation](https://www.scaleway.com/en/docs/block-storage/) and [API documentation](https://www.scaleway.com/en/developers/api/block/) for more information.
 
 ## Retrieve a Block Storage volume
 

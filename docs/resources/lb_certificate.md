@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_lb_certificate"
 
 Creates and manages Scaleway Load Balancer certificates.
 
-For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/how-to/add-certificate/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-certificate).
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/load-balancer/how-to/add-certificate/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-certificate).
 
 ## Example Usage
 
