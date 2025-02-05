@@ -119,7 +119,7 @@ func isHubDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = iotAPI.GetHub(&iotSDK.GetHubRequest{
+			_, err = iotAPI.WaitForHub(&iotSDK.WaitForHubRequest{
 				Region: region,
 				HubID:  hubID,
 			})
