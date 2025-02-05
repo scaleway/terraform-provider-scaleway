@@ -23,7 +23,7 @@ func IsGatewayNetworkDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = vpcgwNetworkAPI.GetGatewayNetwork(&vpcgwSDK.GetGatewayNetworkRequest{
+			_, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgwSDK.WaitForGatewayNetworkRequest{
 				GatewayNetworkID: ID,
 				Zone:             zone,
 			})
@@ -57,7 +57,7 @@ func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = vpcgwAPI.GetGateway(&vpcgwSDK.GetGatewayRequest{
+			_, err = vpcgwAPI.WaitForGateway(&vpcgwSDK.WaitForGatewayRequest{
 				GatewayID: ID,
 				Zone:      zone,
 			})
