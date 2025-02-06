@@ -262,9 +262,13 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 		req.EnableVpc = &enableVpc
 	}
 
+	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if d.HasChange("private_network") && *req.EnableVpc {
 		privateNetwork := d.Get("private_network")
-
 		req := &applesilicon.PrivateNetworkAPISetServerPrivateNetworksRequest{
 			Zone:                       zone,
 			ServerID:                   ID,
@@ -277,11 +281,6 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 
 		_, err = waitForAppleSiliconPrivateNetworkServer(ctx, appleSilisonPrivateNetworkAPI, zone, ID, d.Timeout(schema.TimeoutCreate))
-	}
-
-	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
 	}
 
 	return ResourceAppleSiliconServerRead(ctx, d, m)
