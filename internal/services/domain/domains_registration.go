@@ -275,132 +275,132 @@ func ResourceDomainsRegistration() *schema.Resource {
 								Description: "List of Scaleway resources linked to the domain.",
 							},
 
-							//"tld": {
-							//	Type:        schema.TypeList,
-							//	Computed:    true,
-							//	Description: "Details about the TLD (Top-Level Domain).",
-							//	Elem: &schema.Resource{
-							//		Schema: map[string]*schema.Schema{
-							//			"name": {
-							//				Type:        schema.TypeString,
-							//				Computed:    true,
-							//				Description: "Name of the TLD.",
-							//			},
-							//			"dnssec_support": {
-							//				Type:        schema.TypeBool,
-							//				Computed:    true,
-							//				Description: "Indicates whether dnssec is supported for this TLD.",
-							//			},
-							//			"duration_in_years_min": {
-							//				Type:        schema.TypeInt,
-							//				Computed:    true,
-							//				Description: "Minimum duration (in years) for which this TLD can be registered.",
-							//			},
-							//			"duration_in_years_max": {
-							//				Type:        schema.TypeInt,
-							//				Computed:    true,
-							//				Description: "Maximum duration (in years) for which this TLD can be registered.",
-							//			},
-							//			"idn_support": {
-							//				Type:        schema.TypeBool,
-							//				Computed:    true,
-							//				Description: "Indicates whether this TLD supports IDN (Internationalized Domain Names).",
-							//			},
-							//			"offers": {
-							//				Type:        schema.TypeList,
-							//				Computed:    true,
-							//				Description: "Available offers for the TLD.",
-							//				Elem: &schema.Resource{
-							//					Schema: map[string]*schema.Schema{
-							//						"action": {
-							//							Type:        schema.TypeString,
-							//							Computed:    true,
-							//							Description: "Type of the offer action (e.g., create, transfer).",
-							//						},
-							//						"operation_path": {
-							//							Type:        schema.TypeString,
-							//							Computed:    true,
-							//							Description: "Path of the operation associated with the offer.",
-							//						},
-							//						"price": {
-							//							Type:     schema.TypeMap,
-							//							Computed: true,
-							//							Elem: &schema.Schema{
-							//								Type: schema.TypeString,
-							//							},
-							//							Description: "Pricing information for the TLD offer.",
-							//						},
-							//					},
-							//				},
-							//			},
-							//			"specifications": {
-							//				Type:        schema.TypeMap,
-							//				Computed:    true,
-							//				Description: "Additional TLD specifications such as grace periods.",
-							//				Elem: &schema.Schema{
-							//					Type: schema.TypeString,
-							//				},
-							//			},
-							//		},
-							//	},
-							//},
-							//"dns_zones": {
-							//	Type:        schema.TypeList,
-							//	Computed:    true,
-							//	Description: "List of DNS zones with detailed information.",
-							//	Elem: &schema.Resource{
-							//		Schema: map[string]*schema.Schema{
-							//			"domain": {
-							//				Type:        schema.TypeString,
-							//				Computed:    true,
-							//				Description: "The domain name of the DNS zone.",
-							//			},
-							//			"subdomain": {
-							//				Type:        schema.TypeString,
-							//				Computed:    true,
-							//				Description: "The subdomain of the DNS zone.",
-							//			},
-							//			"ns": {
-							//				Type:        schema.TypeList,
-							//				Computed:    true,
-							//				Elem:        &schema.Schema{Type: schema.TypeString},
-							//				Description: "List of name servers (NS) of the DNS zone.",
-							//			},
-							//			"ns_default": {
-							//				Type:        schema.TypeList,
-							//				Computed:    true,
-							//				Elem:        &schema.Schema{Type: schema.TypeString},
-							//				Description: "List of default name servers of the DNS zone.",
-							//			},
-							//			"ns_master": {
-							//				Type:        schema.TypeList,
-							//				Computed:    true,
-							//				Elem:        &schema.Schema{Type: schema.TypeString},
-							//				Description: "List of master name servers of the DNS zone.",
-							//			},
-							//			"status": {
-							//				Type:        schema.TypeString,
-							//				Computed:    true,
-							//				Description: "The status of the DNS zone.",
-							//			},
-							//			"message": {
-							//				Type:        schema.TypeString,
-							//				Computed:    true,
-							//				Description: "Additional message for the DNS zone.",
-							//			},
-							//			"updated_at": {
-							//				Type:        schema.TypeString,
-							//				Computed:    true,
-							//				Description: "The last updated timestamp of the DNS zone.",
-							//			},
-							//			"project_id": {
-							//				Type:        schema.TypeString,
-							//				Computed:    true,
-							//				Description: "The project ID associated with the DNS zone.",
-							//			},
-							//		},
-							//	},
-							//},
+							"tld": {
+								Type:        schema.TypeList,
+								Computed:    true,
+								Description: "Details about the TLD (Top-Level Domain).",
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"name": {
+											Type:        schema.TypeString,
+											Computed:    true,
+											Description: "Name of the TLD.",
+										},
+										"dnssec_support": {
+											Type:        schema.TypeBool,
+											Computed:    true,
+											Description: "Indicates whether dnssec is supported for this TLD.",
+										},
+										"duration_in_years_min": {
+											Type:        schema.TypeInt,
+											Computed:    true,
+											Description: "Minimum duration (in years) for which this TLD can be registered.",
+										},
+										"duration_in_years_max": {
+											Type:        schema.TypeInt,
+											Computed:    true,
+											Description: "Maximum duration (in years) for which this TLD can be registered.",
+										},
+										"idn_support": {
+											Type:        schema.TypeBool,
+											Computed:    true,
+											Description: "Indicates whether this TLD supports IDN (Internationalized Domain Names).",
+										},
+										"offers": {
+											Type:        schema.TypeList,
+											Computed:    true,
+											Description: "Available offers for the TLD.",
+											Elem: &schema.Resource{
+												Schema: map[string]*schema.Schema{
+													"action": {
+														Type:        schema.TypeString,
+														Computed:    true,
+														Description: "Type of the offer action (e.g., create, transfer).",
+													},
+													"operation_path": {
+														Type:        schema.TypeString,
+														Computed:    true,
+														Description: "Path of the operation associated with the offer.",
+													},
+													"price": {
+														Type:     schema.TypeMap,
+														Computed: true,
+														Elem: &schema.Schema{
+															Type: schema.TypeString,
+														},
+														Description: "Pricing information for the TLD offer.",
+													},
+												},
+											},
+										},
+										"specifications": {
+											Type:        schema.TypeMap,
+											Computed:    true,
+											Description: "Additional TLD specifications such as grace periods.",
+											Elem: &schema.Schema{
+												Type: schema.TypeString,
+											},
+										},
+									},
+								},
+							},
+							"dns_zones": {
+								Type:        schema.TypeList,
+								Computed:    true,
+								Description: "List of DNS zones with detailed information.",
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"domain": {
+											Type:        schema.TypeString,
+											Computed:    true,
+											Description: "The domain name of the DNS zone.",
+										},
+										"subdomain": {
+											Type:        schema.TypeString,
+											Computed:    true,
+											Description: "The subdomain of the DNS zone.",
+										},
+										"ns": {
+											Type:        schema.TypeList,
+											Computed:    true,
+											Elem:        &schema.Schema{Type: schema.TypeString},
+											Description: "List of name servers (NS) of the DNS zone.",
+										},
+										"ns_default": {
+											Type:        schema.TypeList,
+											Computed:    true,
+											Elem:        &schema.Schema{Type: schema.TypeString},
+											Description: "List of default name servers of the DNS zone.",
+										},
+										"ns_master": {
+											Type:        schema.TypeList,
+											Computed:    true,
+											Elem:        &schema.Schema{Type: schema.TypeString},
+											Description: "List of master name servers of the DNS zone.",
+										},
+										"status": {
+											Type:        schema.TypeString,
+											Computed:    true,
+											Description: "The status of the DNS zone.",
+										},
+										"message": {
+											Type:        schema.TypeString,
+											Computed:    true,
+											Description: "Additional message for the DNS zone.",
+										},
+										"updated_at": {
+											Type:        schema.TypeString,
+											Computed:    true,
+											Description: "The last updated timestamp of the DNS zone.",
+										},
+										"project_id": {
+											Type:        schema.TypeString,
+											Computed:    true,
+											Description: "The project ID associated with the DNS zone.",
+										},
+									},
+								},
+							},
 						},
 					},
 				},
