@@ -158,7 +158,6 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	res, err := asAPI.CreateServer(createReq, scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
