@@ -61,7 +61,7 @@ func ResourceSnapshot() *schema.Resource {
 			"node_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The type of database instance you want to create",
+				Description: "The type of the database instance for which the snapshot was created.",
 			},
 			"volume_type": {
 				Type:        schema.TypeString,
