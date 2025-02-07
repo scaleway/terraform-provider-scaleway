@@ -562,14 +562,11 @@ func flattenTldOffers(offers map[string]*domain.TldOffer) []map[string]interface
 	return flattenedOffers
 }
 
-func flattenExternalDomainRegistrationStatus(status *domain.DomainRegistrationStatusExternalDomain) map[string]interface{} {
+func flattenExternalDomainRegistrationStatus(status *domain.DomainRegistrationStatusExternalDomain) []string {
 	if status == nil {
-		return nil
+		return []string{}
 	}
-
-	return map[string]interface{}{
-		"validation_token": status.ValidationToken,
-	}
+	return []string{status.ValidationToken}
 }
 
 func flattenDNSZones(dnsZones []*domain.DNSZone) []map[string]interface{} {
@@ -595,15 +592,15 @@ func flattenDNSZones(dnsZones []*domain.DNSZone) []map[string]interface{} {
 	return zones
 }
 
-func flattenDomainRegistrationStatusTransfer(transferStatus *domain.DomainRegistrationStatusTransfer) map[string]interface{} {
+func flattenDomainRegistrationStatusTransfer(transferStatus *domain.DomainRegistrationStatusTransfer) []string {
 	if transferStatus == nil {
-		return nil
+		return []string{}
 	}
 
-	return map[string]interface{}{
-		"status":             string(transferStatus.Status),
-		"vote_current_owner": transferStatus.VoteCurrentOwner,
-		"vote_new_owner":     transferStatus.VoteNewOwner,
+	return []string{
+		string(transferStatus.Status),
+		fmt.Sprintf("%t", transferStatus.VoteCurrentOwner),
+		fmt.Sprintf("%t", transferStatus.VoteNewOwner),
 	}
 }
 
