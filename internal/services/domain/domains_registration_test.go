@@ -16,7 +16,7 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	singleDomain := "test-single-updates24" + ".com" // à adapter
+	singleDomain := "test-single-updates28" + ".com" // à adapter
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -24,7 +24,6 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 		CheckDestroy:      testAccCheckDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				// Test initial : un seul domaine, owner_contact
 				Config: fmt.Sprintf(`
                     resource "scaleway_domain_domains_registration" "test" {
                       domain_names = [ "%s"]
@@ -50,7 +49,6 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "duration_in_years", "1"),
 				),
 			},
-			// Décommente ceci pour tester la mise à jour (administrative_contact + technical_contact)
 			/*
 			   {
 			       Config: fmt.Sprintf(`
