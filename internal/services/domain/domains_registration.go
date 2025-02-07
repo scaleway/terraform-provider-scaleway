@@ -3,8 +3,6 @@ package domain
 import (
 	"context"
 	"fmt"
-	"time"
-
 	// "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -187,220 +185,6 @@ func ResourceDomainsRegistration() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Indicates whether Scaleway is the domain's registrar.",
-			},
-
-			// Computed fields populated by the Read function
-			"auto_renew_status": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Map associating each domain with its auto-renewal status.",
-			},
-			"dnssec_status": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Map associating each domain with its dnssec status.",
-			},
-			"epp_code": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeList,
-					Elem: &schema.Schema{Type: schema.TypeString},
-				},
-				Description: "Map associating each domain with the list of its EPP codes.",
-			},
-			"expired_at": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Map associating each domain with its expiration date (RFC3339).",
-			},
-			"updated_at": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Map associating each domain with its last updated date (RFC3339).",
-			},
-			"registrar": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Map associating each domain with the registrar managing it.",
-			},
-			"status": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Map associating each domain with its status.",
-			},
-			"organization_id": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Map associating each domain with the ID of its associated organization.",
-			},
-			"pending_trade": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeBool},
-				Description: "Map associating each domain with the pending trade indicator.",
-			},
-			"external_domain_registration_status": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeList,
-					Elem: &schema.Schema{Type: schema.TypeString},
-				},
-				Description: "Map associating each domain with its external registration status (if applicable).",
-			},
-			"transfer_registration_status": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeList,
-					Elem: &schema.Schema{Type: schema.TypeString},
-				},
-				Description: "Map associating each domain with its transfer status (if applicable).",
-			},
-			"linked_products": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeList,
-					Elem: &schema.Schema{Type: schema.TypeString},
-				},
-				Description: "Map associating each domain with the list of linked Scaleway products.",
-			},
-			"tld": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeList,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"name": {
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "TLD name.",
-							},
-							"dnssec_support": {
-								Type:        schema.TypeBool,
-								Computed:    true,
-								Description: "Indicates whether the TLD supports dnssec.",
-							},
-							"duration_in_years_min": {
-								Type:        schema.TypeInt,
-								Computed:    true,
-								Description: "Minimum registration duration (in years) for the TLD.",
-							},
-							"duration_in_years_max": {
-								Type:        schema.TypeInt,
-								Computed:    true,
-								Description: "Maximum registration duration (in years) for the TLD.",
-							},
-							"idn_support": {
-								Type:        schema.TypeBool,
-								Computed:    true,
-								Description: "Indicates whether the TLD supports internationalized domain names (IDN).",
-							},
-							"offers": {
-								Type:     schema.TypeList,
-								Computed: true,
-								Elem: &schema.Resource{
-									Schema: map[string]*schema.Schema{
-										"action": {
-											Type:        schema.TypeString,
-											Computed:    true,
-											Description: "Offer action type (e.g., create, transfer).",
-										},
-										"operation_path": {
-											Type:        schema.TypeString,
-											Computed:    true,
-											Description: "Path of the operation associated with the offer.",
-										},
-										"price": {
-											Type:        schema.TypeMap,
-											Computed:    true,
-											Elem:        &schema.Schema{Type: schema.TypeString},
-											Description: "Pricing information for the offer.",
-										},
-									},
-								},
-								Description: "List of offers available for the TLD.",
-							},
-							"specifications": {
-								Type:        schema.TypeMap,
-								Computed:    true,
-								Elem:        &schema.Schema{Type: schema.TypeString},
-								Description: "Additional TLD specifications (e.g., grace period).",
-							},
-						},
-					},
-				},
-				Description: "Map associating each domain with its detailed TLD information.",
-			},
-			"dns_zones": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeList,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"domain": {
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "DNS zone domain name.",
-							},
-							"subdomain": {
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "DNS zone subdomain.",
-							},
-							"ns": {
-								Type:        schema.TypeList,
-								Computed:    true,
-								Elem:        &schema.Schema{Type: schema.TypeString},
-								Description: "List of name servers (NS) for the DNS zone.",
-							},
-							"ns_default": {
-								Type:        schema.TypeList,
-								Computed:    true,
-								Elem:        &schema.Schema{Type: schema.TypeString},
-								Description: "List of default name servers for the DNS zone.",
-							},
-							"ns_master": {
-								Type:        schema.TypeList,
-								Computed:    true,
-								Elem:        &schema.Schema{Type: schema.TypeString},
-								Description: "List of master name servers for the DNS zone.",
-							},
-							"status": {
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "DNS zone status.",
-							},
-							"message": {
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "Additional DNS zone message.",
-							},
-							"updated_at": {
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "Last updated date of the DNS zone.",
-							},
-							"project_id": {
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "Project ID associated with the DNS zone.",
-							},
-						},
-					},
-				},
-				Description: "Map associating each domain with its corresponding DNS zones.",
 			},
 		},
 	}
@@ -676,125 +460,23 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
-	// Extract the list of domain names from the TaskID.
 	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Prepare maps for each computed field.
-	autoRenewStatus := make(map[string]string)
-	dnssecStatus := make(map[string]string)
-	eppCode := make(map[string][]string)
-	expiredAt := make(map[string]string)
-	updatedAt := make(map[string]string)
-	registrar := make(map[string]string)
-	statusMap := make(map[string]string)
-	organizationID := make(map[string]string)
-	pendingTrade := make(map[string]bool)
-	externalDomainRegistrationStatus := make(map[string][]string)
-	transferRegistrationStatus := make(map[string][]string)
-	linkedProducts := make(map[string][]string)
-	tld := make(map[string][]map[string]interface{})
-	dnsZones := make(map[string][]map[string]interface{})
-
-	// Iterate through each domain and populate the maps.
 	for _, domainName := range domainNames {
-		domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+		_, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
 			Domain: domainName,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			if httperrors.Is404(err) {
-				// If the domain no longer exists, remove it from the state.
 				d.SetId("")
 				return nil
 			}
 			return diag.FromErr(err)
 		}
-
-		// Auto-renew status.
-		autoRenewStatus[domainName] = domainResp.AutoRenewStatus.String()
-
-		// Dnssec status.
-		if domainResp.Dnssec != nil {
-			dnssecStatus[domainName] = domainResp.Dnssec.Status.String()
-		} else {
-			dnssecStatus[domainName] = ""
-		}
-
-		// EPP codes (assuming domainResp.EppCode is []string).
-		eppCode[domainName] = domainResp.EppCode
-
-		// Expiration date.
-		if domainResp.ExpiredAt != nil {
-			expiredAt[domainName] = domainResp.ExpiredAt.Format(time.RFC3339)
-		} else {
-			expiredAt[domainName] = ""
-		}
-
-		// Updated date.
-		if domainResp.UpdatedAt != nil {
-			updatedAt[domainName] = domainResp.UpdatedAt.Format(time.RFC3339)
-		} else {
-			updatedAt[domainName] = ""
-		}
-
-		registrar[domainName] = domainResp.Registrar
-		statusMap[domainName] = string(domainResp.Status)
-		organizationID[domainName] = domainResp.OrganizationID
-		pendingTrade[domainName] = domainResp.PendingTrade
-
-		// External registration status.
-		if domainResp.ExternalDomainRegistrationStatus != nil {
-			externalDomainRegistrationStatus[domainName] = flattenExternalDomainRegistrationStatus(domainResp.ExternalDomainRegistrationStatus)
-		} else {
-			externalDomainRegistrationStatus[domainName] = []string{}
-		}
-
-		// Transfer registration status.
-		if domainResp.TransferRegistrationStatus != nil {
-			transferRegistrationStatus[domainName] = flattenDomainRegistrationStatusTransfer(domainResp.TransferRegistrationStatus)
-		} else {
-			transferRegistrationStatus[domainName] = []string{}
-		}
-
-		// Linked products.
-		var linkedProductsStr []string
-		for _, lp := range domainResp.LinkedProducts {
-			linkedProductsStr = append(linkedProductsStr, lp.String())
-		}
-		linkedProducts[domainName] = linkedProductsStr
-
-		// TLD details (assuming flattenTLD returns []map[string]interface{}).
-		if domainResp.Tld != nil {
-			tld[domainName] = flattenTLD(domainResp.Tld)
-		} else {
-			tld[domainName] = []map[string]interface{}{}
-		}
-
-		// DNS zones (assuming flattenDNSZones returns []map[string]interface{}).
-		if len(domainResp.DNSZones) > 0 {
-			dnsZones[domainName] = flattenDNSZones(domainResp.DNSZones)
-		} else {
-			dnsZones[domainName] = []map[string]interface{}{}
-		}
 	}
-
-	// Set computed fields (without checking the return values).
-	_ = d.Set("auto_renew_status", autoRenewStatus)
-	_ = d.Set("dnssec_status", dnssecStatus)
-	_ = d.Set("epp_code", eppCode)
-	_ = d.Set("expired_at", expiredAt)
-	_ = d.Set("updated_at", updatedAt)
-	_ = d.Set("registrar", registrar)
-	_ = d.Set("status", statusMap)
-	_ = d.Set("organization_id", organizationID)
-	_ = d.Set("pending_trade", pendingTrade)
-	_ = d.Set("external_domain_registration_status", externalDomainRegistrationStatus)
-	_ = d.Set("transfer_registration_status", transferRegistrationStatus)
-	_ = d.Set("linked_products", linkedProducts)
-	_ = d.Set("tld", tld)
-	_ = d.Set("dns_zones", dnsZones)
 
 	return nil
 }
