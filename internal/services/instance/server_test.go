@@ -702,7 +702,7 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 					
 					resource "scaleway_instance_server" "base" {
 						count = 3
-						name = "tf-tests-with-placement-group-${count.index}"
+						name = "tf-tests-server-${count.index}-with-placement-group"
 						image = "ubuntu_focal"
 						type  = "PLAY2-PICO"
 						placement_group_id = "${scaleway_instance_placement_group.ha.id}"
