@@ -45,3 +45,17 @@ func waitForAppleSiliconPrivateNetworkServer(ctx context.Context, api *applesili
 
 	return privateNetwork, err
 }
+
+func waitForTerminalVPCState(ctx context.Context, api *applesilicon.API, zone scw.Zone, serverID string, timeout time.Duration) {
+	retryInterval := defaultAppleSiliconServerRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	_ = api.WaitForServerVPCOptionTerminalState(&applesilicon.WaitForServerRequest{
+		ServerID:      serverID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
