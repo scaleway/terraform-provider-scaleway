@@ -27,6 +27,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zone
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, zone, nil
 }
 
@@ -37,6 +38,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, zone, ID, nil
 }
 
@@ -50,9 +52,11 @@ func retryUpdateGatewayReverseDNS(ctx context.Context, api *vpcgw.API, req *vpcg
 			if err != nil && instance.IsIPReverseDNSResolveError(err) {
 				continue
 			}
+
 			return err
 		case <-timeoutChannel:
 			_, err := api.UpdateIP(req, scw.WithContext(ctx))
+
 			return err
 		}
 	}
@@ -96,6 +100,7 @@ func flattenIpamConfig(config *vpcgw.IpamConfig) interface{} {
 	if config == nil {
 		return nil
 	}
+
 	return []map[string]interface{}{
 		{
 			"push_default_route": config.PushDefaultRoute,

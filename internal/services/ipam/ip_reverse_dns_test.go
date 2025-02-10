@@ -100,8 +100,10 @@ func testCheckResourceAttrExpectedIPAddress(resourceName string) resource.TestCh
 
 		if output, ok := rootModule.Outputs["calculated_ip_address"]; ok && output != nil {
 			expectedIPAddress := output.Value.(string)
+
 			return resource.TestCheckResourceAttr(resourceName, "address", expectedIPAddress)(s)
 		}
+
 		return errors.New("calculated_ip_address output not set or is nil")
 	}
 }

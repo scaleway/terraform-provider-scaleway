@@ -445,8 +445,10 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	_ = d.Set("name", res.Name)
@@ -464,6 +466,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	for _, endpoint := range res.Endpoints {
 		if endpoint.LoadBalancer != nil {
 			loadBalancerEndpoint = endpoint
+
 			break
 		}
 	}
@@ -509,6 +512,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 		for _, u := range users.Users {
 			if u.IsAdmin {
 				_ = d.Set("user_name", u.Name)
+
 				break
 			}
 		}
@@ -543,6 +547,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
+
 	return nil
 }
 

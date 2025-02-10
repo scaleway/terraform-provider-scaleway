@@ -15,12 +15,14 @@ type EnumValues[T ~string] interface {
 // ValidateEnum creates a schema validation function for the provided enum type
 func ValidateEnum[T EnumValues[T]]() schema.SchemaValidateDiagFunc {
 	values := filterUnknownValues(getValues[T]())
+
 	return validation.ToDiagFunc(validation.StringInSlice(values, false))
 }
 
 // ValidateEnumIgnoreCase creates a schema validation function for the provided enum type with case-insensitive validation
 func ValidateEnumIgnoreCase[T EnumValues[T]]() schema.SchemaValidateDiagFunc {
 	values := filterUnknownValues(getValues[T]())
+
 	return validation.ToDiagFunc(validation.StringInSlice(values, true))
 }
 
@@ -31,6 +33,7 @@ func getValues[T EnumValues[T]]() []string {
 	for i, v := range values {
 		result[i] = string(v)
 	}
+
 	return result
 }
 
@@ -43,5 +46,6 @@ func filterUnknownValues(values []string) []string {
 		}
 		filtered = append(filtered, v)
 	}
+
 	return filtered
 }

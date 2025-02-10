@@ -45,8 +45,10 @@ func CheckBucketExists(tt *acctest.TestTools, n string, shouldBeAllowed bool) re
 			if errors.As(err, new(*types.NoSuchBucket)) {
 				return errors.New("s3 bucket not found")
 			}
+
 			return err
 		}
+
 		return nil
 	}
 }
@@ -76,11 +78,13 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					// Bucket doesn't exist
 					continue
 				}
+
 				return fmt.Errorf("couldn't get bucket to verify if it still exists: %s", err)
 			}
 
 			return errors.New("bucket should be deleted")
 		}
+
 		return nil
 	}
 }
@@ -111,11 +115,13 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "The specified bucket does not exist") {
 					continue
 				}
+
 				return fmt.Errorf("couldn't get object to verify if it still exists: %s", err)
 			}
 
 			return errors.New("object should be deleted")
 		}
+
 		return nil
 	}
 }

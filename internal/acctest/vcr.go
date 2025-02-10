@@ -70,6 +70,7 @@ func compareJSONFields(expected, actualI interface{}) bool {
 		if _, isString := expected.(string); !isString {
 			return false
 		}
+
 		return compareJSONFieldsStrings(expected.(string), actual)
 	default:
 		// Consider equality when not handled
@@ -116,6 +117,7 @@ func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.R
 		} else if _, isFile := actualRequest.Body.(*os.File); isFile {
 			return true // Body match if request is sending a file, maybe do more check here
 		}
+
 		return false
 	}
 
@@ -243,6 +245,7 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 		return fmt.Errorf("failed to marshal anonymized body: %w", err)
 	}
 	i.Response.Body = string(anonymizedBody)
+
 	return nil
 }
 
@@ -290,6 +293,7 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 		delete(i.Request.Headers, "x-auth-token")
 		delete(i.Request.Headers, "X-Auth-Token")
 		delete(i.Request.Headers, "Authorization")
+
 		return nil
 	}, recorder.BeforeSaveHook)
 

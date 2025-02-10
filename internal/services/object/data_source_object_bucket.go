@@ -64,5 +64,6 @@ func DataSourceObjectStorageRead(ctx context.Context, d *schema.ResourceData, m 
 
 	bucketRegionalID := regional.NewIDString(region, bucket)
 	d.SetId(bucketRegionalID)
+
 	return resourceObjectBucketRead(ctx, d, m)
 }

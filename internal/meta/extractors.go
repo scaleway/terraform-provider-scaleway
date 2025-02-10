@@ -130,6 +130,7 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 				if value.IsNull() {
 					return nil, false
 				}
+
 				return value.AsString(), true
 			case cty.Bool:
 				if value.IsNull() {
@@ -138,16 +139,19 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 				if value.True() {
 					return true, true
 				}
+
 				return false, true
 			case cty.Number:
 				if value.IsNull() {
 					return nil, false
 				}
 				valueInt, _ := value.AsBigFloat().Int64()
+
 				return valueInt, true
 			}
 		}
 	}
+
 	return nil, false
 }
 
@@ -158,5 +162,6 @@ func GetRawConfigForKey(d *schema.ResourceData, key string, ty cty.Type) (interf
 	if rawConfig.IsNull() {
 		return nil, false
 	}
+
 	return getKeyInRawConfigMap(rawConfig.AsValueMap(), key, ty)
 }

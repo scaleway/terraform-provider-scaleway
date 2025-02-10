@@ -70,5 +70,6 @@ func DataSourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return resourceLbFrontendRead(ctx, d, m)
 }

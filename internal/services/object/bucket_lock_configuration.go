@@ -131,6 +131,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 	if !d.IsNewResource() && errors.As(err, new(*s3Types.NoSuchBucket)) {
 		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -141,6 +142,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 
 		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 

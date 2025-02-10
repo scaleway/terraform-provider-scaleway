@@ -52,6 +52,7 @@ func expandPrivateNetworks(pn interface{}) map[string]*[]string {
 		}
 		privateNetworks[id] = ipamIPIDs
 	}
+
 	return privateNetworks
 }
 
@@ -68,6 +69,7 @@ func flattenCPUs(cpus []*baremetal.CPU) interface{} {
 			"thread_count": cpu.ThreadCount,
 		})
 	}
+
 	return flattenedCPUs
 }
 
@@ -82,6 +84,7 @@ func flattenDisks(disks []*baremetal.Disk) interface{} {
 			"capacity": disk.Capacity,
 		})
 	}
+
 	return flattenedDisks
 }
 
@@ -98,6 +101,7 @@ func flattenMemory(memories []*baremetal.Memory) interface{} {
 			"is_ecc":    memory.IsEcc,
 		})
 	}
+
 	return flattenedMemories
 }
 
@@ -114,6 +118,7 @@ func flattenIPs(ips []*baremetal.IP) interface{} {
 			"version": ip.Version.String(),
 		})
 	}
+
 	return flatIPs
 }
 
@@ -132,6 +137,7 @@ func flattenIPv4s(ips []*baremetal.IP) interface{} {
 			})
 		}
 	}
+
 	return flatIPs
 }
 
@@ -150,6 +156,7 @@ func flattenIPv6s(ips []*baremetal.IP) interface{} {
 			})
 		}
 	}
+
 	return flatIPs
 }
 
@@ -165,6 +172,7 @@ func flattenOptions(zone scw.Zone, options []*baremetal.ServerOption) interface{
 			"name":       option.Name,
 		})
 	}
+
 	return flattenedOptions
 }
 
@@ -180,5 +188,6 @@ func flattenPrivateNetworks(region scw.Region, privateNetworks []*baremetalV3.Se
 			"updated_at":  types.FlattenTime(privateNetwork.UpdatedAt),
 		})
 	}
+
 	return flattenedPrivateNetworks
 }

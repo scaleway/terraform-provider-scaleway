@@ -43,6 +43,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interfac
 			"ipam_ids":           regional.NewRegionalIDs(pnRegion, pn.IpamIDs),
 		})
 	}
+
 	return pnI
 }
 
@@ -87,6 +88,7 @@ func expandLbBackendMarkdownAction(raw interface{}) lb.OnMarkedDownAction {
 	if raw == "none" {
 		return lb.OnMarkedDownActionOnMarkedDownActionNone
 	}
+
 	return lb.OnMarkedDownAction(raw.(string))
 }
 
@@ -118,6 +120,7 @@ func flattenLbHCTCP(config *lb.HealthCheckTCPConfig) interface{} {
 	if config == nil {
 		return nil
 	}
+
 	return []map[string]interface{}{
 		{},
 	}
@@ -127,6 +130,7 @@ func expandLbHCTCP(raw interface{}) *lb.HealthCheckTCPConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	return &lb.HealthCheckTCPConfig{}
 }
 
@@ -134,6 +138,7 @@ func flattenLbHCHTTP(config *lb.HealthCheckHTTPConfig) interface{} {
 	if config == nil {
 		return nil
 	}
+
 	return []map[string]interface{}{
 		{
 			"uri":         config.URI,
@@ -149,6 +154,7 @@ func expandLbHCHTTP(raw interface{}) *lb.HealthCheckHTTPConfig {
 		return nil
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
+
 	return &lb.HealthCheckHTTPConfig{
 		URI:        rawMap["uri"].(string),
 		Method:     rawMap["method"].(string),
@@ -161,6 +167,7 @@ func flattenLbHCHTTPS(config *lb.HealthCheckHTTPSConfig) interface{} {
 	if config == nil {
 		return nil
 	}
+
 	return []map[string]interface{}{
 		{
 			"uri":         config.URI,
@@ -178,6 +185,7 @@ func expandLbHCHTTPS(raw interface{}) *lb.HealthCheckHTTPSConfig {
 	}
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
+
 	return &lb.HealthCheckHTTPSConfig{
 		URI:        rawMap["uri"].(string),
 		Method:     rawMap["method"].(string),
@@ -200,6 +208,7 @@ func expandLbLetsEncrypt(raw interface{}) *lb.CreateCertificateRequestLetsencryp
 	for _, alternativeName := range alternativeNames {
 		config.SubjectAlternativeName = append(config.SubjectAlternativeName, alternativeName.(string))
 	}
+
 	return config
 }
 
@@ -212,6 +221,7 @@ func expandLbCustomCertificate(raw interface{}) *lb.CreateCertificateRequestCust
 	config := &lb.CreateCertificateRequestCustomCertificate{
 		CertificateChain: rawMap["certificate_chain"].(string),
 	}
+
 	return config
 }
 
@@ -227,6 +237,7 @@ func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
 	if action == lb.OnMarkedDownActionOnMarkedDownActionNone {
 		return "none"
 	}
+
 	return action.String()
 }
 
@@ -236,6 +247,7 @@ func flattenLbACL(acl *lb.ACL) interface{} {
 		"match":  flattenLbACLMatch(acl.Match),
 		"action": flattenLbACLAction(acl.Action),
 	}
+
 	return res
 }
 
@@ -277,6 +289,7 @@ func expandLbACLAction(raw interface{}) *lb.ACLAction {
 		return nil
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
+
 	return &lb.ACLAction{
 		Type:     lb.ACLActionType(rawMap["type"].(string)),
 		Redirect: expandLbACLActionRedirect(rawMap["redirect"]),
@@ -287,6 +300,7 @@ func flattenLbACLActionRedirect(redirect *lb.ACLActionRedirect) interface{} {
 	if redirect == nil {
 		return nil
 	}
+
 	return []map[string]interface{}{
 		{
 			"type":   redirect.Type,
@@ -301,6 +315,7 @@ func expandLbACLActionRedirect(raw interface{}) *lb.ACLActionRedirect {
 		return nil
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
+
 	return &lb.ACLActionRedirect{
 		Type:   lb.ACLActionRedirectRedirectType(rawMap["type"].(string)),
 		Target: rawMap["target"].(string),
@@ -328,6 +343,7 @@ func expandPrivateNetworks(data interface{}) ([]*lb.PrivateNetwork, error) {
 
 		pns = append(pns, privateNetwork)
 	}
+
 	return pns, nil
 }
 
@@ -335,6 +351,7 @@ func expandLbPrivateNetworkStaticConfig(raw interface{}) *lb.PrivateNetworkStati
 	if raw == nil || len(raw.([]interface{})) < 1 {
 		return nil
 	}
+
 	return &lb.PrivateNetworkStaticConfig{
 		IPAddress: types.ExpandStringsPtr(raw),
 	}
@@ -352,6 +369,7 @@ func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lb.PrivateNetworkDHCPCon
 	if raw == nil || !raw.(bool) {
 		return nil
 	}
+
 	return &lb.PrivateNetworkDHCPConfig{}
 }
 
@@ -388,6 +406,7 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 				}
 				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))     //nolint:staticcheck
 				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig)) //nolint:staticcheck
+
 				return nil, fmt.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
 			}
 		}
@@ -411,6 +430,7 @@ func flattenLbInstances(instances []*lb.Instance) interface{} {
 			"zone":       instance.Zone,
 		})
 	}
+
 	return flattenedInstances
 }
 
@@ -430,6 +450,7 @@ func flattenLbIPs(ips []*lb.IP) interface{} {
 			"lb_id":           types.FlattenStringPtr(ip.LBID),
 		})
 	}
+
 	return flattenedIPs
 }
 
@@ -441,5 +462,6 @@ func flattenLBIPIDs(zone scw.Zone, ips []*lb.IP) []string {
 	for i, ip := range ips {
 		flattenedIPs[i] = zonal.NewIDString(zone, ip.ID)
 	}
+
 	return flattenedIPs
 }

@@ -70,5 +70,6 @@ func DataSourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return resourceLbCertificateRead(ctx, d, m)
 }

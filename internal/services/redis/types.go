@@ -41,6 +41,7 @@ func expandPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error) {
 
 		epSpecs = append(epSpecs, &redis.EndpointSpec{PrivateNetwork: spec})
 	}
+
 	return epSpecs, nil
 }
 
@@ -73,6 +74,7 @@ func flattenACLs(aclRules []*redis.ACLRule) interface{} {
 			"description": types.FlattenStringPtr(acl.Description),
 		})
 	}
+
 	return flat
 }
 
@@ -85,6 +87,7 @@ func expandSettings(i interface{}) []*redis.ClusterSetting {
 			Value: value.(string),
 		})
 	}
+
 	return settings
 }
 
@@ -93,6 +96,7 @@ func flattenSettings(settings []*redis.ClusterSetting) interface{} {
 	for _, setting := range settings {
 		rawSettings[setting.Name] = setting.Value
 	}
+
 	return rawSettings
 }
 
@@ -119,6 +123,7 @@ func flattenPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
 			"service_ips": serviceIps,
 		})
 	}
+
 	return pnFlat, len(pnFlat) != 0
 }
 
@@ -137,7 +142,9 @@ func flattenPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 			"port": int(endpoint.Port),
 			"ips":  ipsFlat,
 		})
+
 		break
 	}
+
 	return pnFlat
 }

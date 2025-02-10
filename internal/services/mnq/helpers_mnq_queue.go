@@ -80,6 +80,7 @@ func NewSQSClient(ctx context.Context, httpClient *http.Client, region string, e
 	if err != nil {
 		return nil, err
 	}
+
 	return sqs.NewFromConfig(customConfig), nil
 }
 

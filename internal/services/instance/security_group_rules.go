@@ -66,8 +66,10 @@ func ResourceInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

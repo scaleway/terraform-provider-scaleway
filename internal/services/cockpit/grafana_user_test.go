@@ -145,6 +145,7 @@ func isGrafanaUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFun
 		for _, user := range res.GrafanaUsers {
 			if user.ID == grafanaUserID {
 				grafanaUser = user
+
 				break
 			}
 		}

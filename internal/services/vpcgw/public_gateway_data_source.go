@@ -72,5 +72,6 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 	zonedID := datasource.NewZonedID(publicGatewayID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("public_gateway_id", zonedID)
+
 	return ResourceVPCPublicGatewayRead(ctx, d, m)
 }

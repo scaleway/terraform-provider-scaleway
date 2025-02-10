@@ -19,6 +19,7 @@ func ValidateStringInSliceWithWarning(correctValues []string, field string) sche
 				AttributePath: path,
 			})
 		}
+
 		return res
 	}
 }

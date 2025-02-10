@@ -264,8 +264,10 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -327,6 +329,7 @@ func ResourceIotRouteDelete(ctx context.Context, d *schema.ResourceData, m inter
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

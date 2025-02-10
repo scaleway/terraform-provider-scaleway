@@ -86,6 +86,7 @@ func dataSourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, me
 	if _, ok := d.GetOk("id"); ok {
 		return fetchDataSourceByID(ctx, d, meta)
 	}
+
 	return fetchDataSourceByFilters(ctx, d, meta)
 }
 
@@ -104,6 +105,7 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 	flattenDataSource(d, res)
+
 	return nil
 }
 
@@ -138,13 +140,16 @@ func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta 
 		for _, ds := range res.DataSources {
 			if ds.Name == name.(string) {
 				flattenDataSource(d, ds)
+
 				return nil
 			}
 		}
+
 		return diag.Errorf("no data source found with name '%s'", name.(string))
 	}
 
 	flattenDataSource(d, res.DataSources[0])
+
 	return nil
 }
 

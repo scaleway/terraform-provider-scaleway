@@ -82,6 +82,7 @@ func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("password", grafanaUser.Password)
 	d.SetId(cockpitIDWithProjectID(projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)))
+
 	return ResourceCockpitGrafanaUserRead(ctx, d, m)
 }
 
@@ -97,8 +98,10 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -106,12 +109,14 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 	for _, user := range res.GrafanaUsers {
 		if user.ID == grafanaUserID {
 			grafanaUser = user
+
 			break
 		}
 	}
 
 	if grafanaUser == nil {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -121,8 +126,10 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -148,6 +155,7 @@ func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceDat
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

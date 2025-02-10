@@ -37,5 +37,6 @@ func DataSourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceD
 	zonedID := datasource.NewZonedID(dhcpID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("dhcp_id", zonedID)
+
 	return ResourceVPCPublicGatewayDHCPRead(ctx, d, m)
 }

@@ -118,8 +118,10 @@ func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -134,6 +136,7 @@ func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
 	_ = d.Set("region", region.String())
+
 	return nil
 }
 
@@ -191,8 +194,10 @@ func ResourceFunctionCronDelete(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

@@ -58,8 +58,10 @@ func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m int
 			// We check for 403 because instance API returns 403 for a deleted IP
 			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 		ID = res.IP.ID

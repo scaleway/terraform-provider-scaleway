@@ -28,6 +28,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Regi
 	if err != nil {
 		return nil, "", err
 	}
+
 	return k8sAPI, region, nil
 }
 
@@ -38,6 +39,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return k8sAPI, region, ID, nil
 }
 
@@ -73,6 +75,7 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 			return v.Name, nil
 		}
 	}
+
 	return "", fmt.Errorf("no available upstream version found for %s", version)
 }
 
@@ -91,6 +94,7 @@ func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
 		}
 		result = append(result, n)
 	}
+
 	return result
 }
 

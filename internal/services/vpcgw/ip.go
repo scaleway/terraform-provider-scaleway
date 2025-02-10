@@ -111,8 +111,10 @@ func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -179,6 +181,7 @@ func ResourceVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceDat
 				Summary:  err.Error(),
 			})
 		}
+
 		return diag.FromErr(err)
 	}
 

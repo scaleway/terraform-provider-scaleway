@@ -24,6 +24,7 @@ func testSweepFlexibleIP(_ string) error {
 		listIPs, err := fipAPI.ListFlexibleIPs(&flexibleipSDK.ListFlexibleIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
+
 			return nil
 		}
 

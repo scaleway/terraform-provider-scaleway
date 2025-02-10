@@ -18,6 +18,7 @@ func DataSourceDatabase() *schema.Resource {
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
+
 	return &schema.Resource{
 		ReadContext: DataSourceDatabaseRead,
 		Schema:      dsSchema,
@@ -42,5 +43,6 @@ func DataSourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return ResourceRdbDatabaseRead(ctx, d, m)
 }

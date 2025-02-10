@@ -24,6 +24,7 @@ func testSweepServer(_ string) error {
 		listServers, err := baremetalAPI.ListServers(&baremetalSDK.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
+
 			return nil
 		}
 

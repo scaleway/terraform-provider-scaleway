@@ -40,6 +40,7 @@ func testSweepAccountProject(_ string) error {
 				return fmt.Errorf("failed to delete project: %w", err)
 			}
 		}
+
 		return nil
 	})
 }

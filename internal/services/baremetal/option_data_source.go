@@ -73,6 +73,7 @@ func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, option := range res.Options {
 			if option.Name == d.Get("name") {
 				optionID, optionManageable, optionName = option.ID, option.Manageable, option.Name
+
 				break
 			}
 		}

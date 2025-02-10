@@ -75,6 +75,7 @@ func DataSourceOSRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		for _, os := range res.Os {
 			if os.Name == d.Get("name") && os.Version == d.Get("version") {
 				osID, osVersion, osName = os.ID, os.Version, os.Name
+
 				break
 			}
 		}

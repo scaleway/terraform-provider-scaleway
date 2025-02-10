@@ -118,8 +118,10 @@ func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -129,8 +131,10 @@ func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}
@@ -178,17 +182,21 @@ func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface
 			if httperrors.Is403(errGet) {
 				return retry.RetryableError(errGet)
 			}
+
 			return retry.NonRetryableError(errGet)
 		}
 
 		ip = res
+
 		return nil
 	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -197,8 +205,10 @@ func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}
@@ -232,8 +242,10 @@ func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}
@@ -258,10 +270,12 @@ func resourceLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface
 			if httperrors.Is403(errGet) {
 				return retry.RetryableError(errGet)
 			}
+
 			return retry.NonRetryableError(errGet)
 		}
 
 		ip = res
+
 		return nil
 	})
 	if err != nil {
@@ -274,8 +288,10 @@ func resourceLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}
@@ -295,8 +311,10 @@ func resourceLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}

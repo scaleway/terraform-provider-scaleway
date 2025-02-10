@@ -595,6 +595,7 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 			if err != nil && !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
 				return err
 			}
+
 			return nil
 		}
 	}
@@ -735,6 +736,7 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 			if err != nil {
 				return fmt.Errorf("failed to put object in test bucket sub folder: %s", err)
 			}
+
 			return nil
 		}
 	}
@@ -804,6 +806,7 @@ func testAccCheckObjectBucketLifecycleConfigurationExists(tt *acctest.TestTools,
 			if errors.Is(err, transport.ErrRetryWhenTimeout) {
 				return fmt.Errorf("object Storage Bucket Replication Configuration for bucket (%s) not found", rs.Primary.ID)
 			}
+
 			return err
 		}
 

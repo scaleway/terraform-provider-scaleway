@@ -228,6 +228,7 @@ func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
 		if oldSize == 1 && newSize != 1 || newSize < oldSize {
 			return diff.ForceNew("cluster_size")
 		}
+
 		return nil
 	}
 }
@@ -311,8 +312,10 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

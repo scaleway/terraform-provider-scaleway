@@ -277,8 +277,10 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	// set the region from zone
@@ -322,9 +324,11 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
+
 	return nil
 }
 
@@ -400,6 +404,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 			for id := range newIPIDsSet {
 				if id != ipv4ID {
 					ipv6ID = id
+
 					break
 				}
 			}
@@ -532,6 +537,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 				if err != nil && !httperrors.Is404(err) {
 					return diag.FromErr(err)
 				}
+
 				return diag.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
 			}
 		}

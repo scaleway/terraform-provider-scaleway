@@ -87,6 +87,7 @@ func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	d.SetId(zonal.NewIDString(zone, res.PlacementGroup.ID))
+
 	return ResourceInstancePlacementGroupRead(ctx, d, m)
 }
 
@@ -103,8 +104,10 @@ func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

@@ -117,8 +117,10 @@ func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	_ = d.Set("description", res.Description)

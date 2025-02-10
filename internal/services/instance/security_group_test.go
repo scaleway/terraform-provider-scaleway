@@ -481,6 +481,7 @@ func isSecurityGroupRuleMatching(tt *acctest.TestTools, name string, index int, 
 		if ok, _ := instance.SecurityGroupRuleEquals(expected, actual); !ok {
 			return fmt.Errorf("security group does not match %v, %v", actual, expected)
 		}
+
 		return nil
 	})
 }

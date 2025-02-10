@@ -18,5 +18,6 @@ func SharedS3ClientForRegion(region scw.Region) (*s3.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return NewS3ClientFromMeta(ctx, m, region.String())
 }

@@ -81,5 +81,6 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	d.SetId(regional.NewIDString(region, bucket))
+
 	return nil
 }

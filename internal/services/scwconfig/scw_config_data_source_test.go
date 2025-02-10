@@ -35,6 +35,7 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
+
 			return map[string]func() (*schema.Provider, error){
 				"default": func() (*schema.Provider, error) {
 					return provider.Provider(&provider.Config{Meta: metaDefault})(), nil
@@ -86,6 +87,7 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
+
 			return map[string]func() (*schema.Provider, error){
 				"other": func() (*schema.Provider, error) {
 					return provider.Provider(&provider.Config{Meta: metaOther})(), nil
@@ -138,6 +140,7 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
+
 			return map[string]func() (*schema.Provider, error){
 				"mixed": func() (*schema.Provider, error) {
 					return provider.Provider(&provider.Config{Meta: metaMixed})(), nil

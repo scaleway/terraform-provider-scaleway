@@ -24,6 +24,7 @@ func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []
 				return nil, errors.New("multiple records found with same type and data")
 			}
 			currentRecord = r
+
 			break
 		}
 	}
@@ -40,5 +41,6 @@ func FindDefaultReverse(address string) string {
 	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
 		parts[i], parts[j] = parts[j], parts[i]
 	}
+
 	return strings.Join(parts, "-") + ".instances.scw.cloud"
 }

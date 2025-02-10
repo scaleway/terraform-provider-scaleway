@@ -112,6 +112,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(ResourceCockpitAlertManagerID(region, projectID))
+
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
@@ -153,6 +154,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		}
 	}
 	_ = d.Set("contact_points", contactPointsList)
+
 	return nil
 }
 

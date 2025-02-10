@@ -99,13 +99,16 @@ func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceDat
 		// We check for 403 because instanceSDK API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("reverse", res.IP.Reverse)
+
 	return nil
 }
 
@@ -155,5 +158,6 @@ func ResourceInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	d.SetId("")
+
 	return nil
 }

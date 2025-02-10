@@ -381,6 +381,7 @@ func testAccObjectBucketACLCheck(tt *acctest.TestTools, name string, expectedACL
 		if len(errs) > 0 {
 			return fmt.Errorf("unexpected result: %w", errors.Join(errs...))
 		}
+
 		return nil
 	}
 }
@@ -404,6 +405,7 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	case "private":
 		if len(grantsMap) != 1 {
 			errs = append(errs, fmt.Errorf("expected 1 grant, but got %d", len(grantsMap)))
+
 			return errs
 		}
 		if grantsMap["FULL_CONTROL"] != ownerID {
@@ -413,6 +415,7 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	case "public-read":
 		if len(grantsMap) != 2 {
 			errs = append(errs, fmt.Errorf("expected 2 grants, but got %d", len(grantsMap)))
+
 			return errs
 		}
 		if grantsMap["FULL_CONTROL"] != ownerID {
@@ -425,6 +428,7 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	case "public-read-write":
 		if len(grantsMap) != 3 {
 			errs = append(errs, fmt.Errorf("expected 3 grants, but got %d", len(grantsMap)))
+
 			return errs
 		}
 		if grantsMap["FULL_CONTROL"] != ownerID {
@@ -440,6 +444,7 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	case "authenticated-read":
 		if len(grantsMap) != 2 {
 			errs = append(errs, fmt.Errorf("expected 2 grants, but got %d", len(grantsMap)))
+
 			return errs
 		}
 		if grantsMap["FULL_CONTROL"] != ownerID {
@@ -449,5 +454,6 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 			errs = append(errs, fmt.Errorf("expected READ to be granted to %q, instead got %q", s3ACLGranteeAuthenticatedUsers, grantsMap["READ"]))
 		}
 	}
+
 	return errs
 }

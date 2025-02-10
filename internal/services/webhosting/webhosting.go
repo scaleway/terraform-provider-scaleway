@@ -156,6 +156,7 @@ func ResourceWebhosting() *schema.Resource {
 					}
 				}
 			}
+
 			return nil
 		},
 	}
@@ -220,8 +221,10 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

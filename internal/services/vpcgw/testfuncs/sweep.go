@@ -50,6 +50,7 @@ func testSweepVPCPublicGateway(_ string) error {
 				return fmt.Errorf("error deleting public gateway in sweeper: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -77,6 +78,7 @@ func testSweepVPCGatewayNetwork(_ string) error {
 				return fmt.Errorf("error deleting gateway network in sweeper: %s", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -102,6 +104,7 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 				return fmt.Errorf("error deleting public gateway ip in sweeper: %s", err)
 			}
 		}
+
 		return nil
 	})
 }

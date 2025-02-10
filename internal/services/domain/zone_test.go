@@ -95,6 +95,7 @@ func testAccCheckDomainZoneDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 					rs.Primary.Attributes["subdomain"],
 					rs.Primary.Attributes["domain"])
 			}
+
 			return nil
 		}
 

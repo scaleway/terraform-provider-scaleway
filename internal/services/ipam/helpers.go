@@ -36,6 +36,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, str
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return ipamAPI, region, ID, err
 }
 

@@ -70,5 +70,6 @@ func DataSourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return ResourceInstanceVolumeRead(ctx, d, m)
 }

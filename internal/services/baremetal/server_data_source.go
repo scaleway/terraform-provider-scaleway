@@ -77,5 +77,6 @@ func DataSourceServerRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if d.Id() == "" {
 		return diag.Errorf("baremetal server (%s) not found", zoneID)
 	}
+
 	return nil
 }

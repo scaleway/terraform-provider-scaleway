@@ -109,10 +109,12 @@ func ResourceRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m in
 			if httperrors.Is409(errCreateDB) {
 				return retry.RetryableError(errCreateDB)
 			}
+
 			return retry.NonRetryableError(errCreateDB)
 		}
 		// set database information
 		db = currentDB
+
 		return nil
 	})
 	if err != nil {
@@ -158,8 +160,10 @@ func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -216,5 +220,6 @@ func ResourceRdbDatabaseParseID(resourceID string) (region scw.Region, instanceI
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
 	}
+
 	return scw.Region(idParts[0]), idParts[1], idParts[2], nil
 }

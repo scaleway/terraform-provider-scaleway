@@ -162,6 +162,7 @@ func DoesImageExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
+
 		return nil
 	}
 }

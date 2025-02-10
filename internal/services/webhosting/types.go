@@ -45,5 +45,6 @@ func flattenHostingOptions(options []*webhosting.HostingOption) []map[string]int
 			"name": option.Name,
 		})
 	}
+
 	return flattenedOptions
 }

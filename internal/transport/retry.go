@@ -35,6 +35,7 @@ func NewRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
 			return true, err
 		}
+
 		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 	}
 
@@ -46,6 +47,7 @@ func NewRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 		if err != nil {
 			return resp, err
 		}
+
 		return resp, nil
 	}
 
@@ -95,8 +97,10 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 		if err != nil {
 			return nil, err
 		}
+
 		return io.NopCloser(bytes.NewReader(b)), err
 	}
+
 	return c.Client.Do(req)
 }
 
@@ -108,7 +112,9 @@ func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter f
 		if err != nil {
 			return t, err
 		}
+
 		return RetryOnTransientStateError(action, waiter)
 	}
+
 	return t, err
 }

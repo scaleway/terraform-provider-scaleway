@@ -156,8 +156,10 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -172,8 +174,10 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -193,8 +197,10 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -220,6 +226,7 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m in
 			Detail:   errDetails,
 		})
 	}
+
 	return diags
 }
 
@@ -248,8 +255,10 @@ func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}

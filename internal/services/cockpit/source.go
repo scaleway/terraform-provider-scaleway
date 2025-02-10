@@ -106,6 +106,7 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	d.SetId(regional.NewIDString(region, res.ID))
+
 	return ResourceCockpitSourceRead(ctx, d, meta)
 }
 
@@ -122,8 +123,10 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

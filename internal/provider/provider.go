@@ -332,6 +332,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
+
 			return m, nil
 		}
 

@@ -247,6 +247,7 @@ func isVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 		}
+
 		return nil
 	}
 }

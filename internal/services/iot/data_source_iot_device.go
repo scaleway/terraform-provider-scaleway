@@ -83,5 +83,6 @@ func DataSourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if d.Id() == "" {
 		return diag.Errorf("IOT Device not found (%s)", regionalID)
 	}
+
 	return nil
 }
