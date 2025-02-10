@@ -219,6 +219,7 @@ func testAccCheckAlertManagerEnabled(tt *acctest.TestTools, resourceName string,
 		if alertManager.ManagedAlertsEnabled != expectedEnabled {
 			return fmt.Errorf("alert manager enabled state %t does not match expected state %t", alertManager.AlertManagerEnabled, expectedEnabled)
 		}
+
 		return nil
 	}
 }
@@ -244,6 +245,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 				return nil
 			}
 		}
+
 		return fmt.Errorf("contact point with email %s not found in project %s", rs.Primary.Attributes["emails.0"], projectID)
 	}
 }
@@ -274,6 +276,7 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 				return fmt.Errorf("cockpit alert manager (%s) is still enabled", rs.Primary.ID)
 			}
 		}
+
 		return nil
 	}
 }

@@ -148,8 +148,10 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		if IsS3Err(err, ErrCodeNoSuchBucket, "") {
 			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
 	}
 
@@ -157,6 +159,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 	if !d.IsNewResource() && ErrCodeEquals(err, ErrCodeNoSuchBucket, ErrCodeNoSuchWebsiteConfiguration) {
 		tflog.Debug(ctx, fmt.Sprintf("[WARN] Object Bucket Website Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -166,6 +169,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		}
 		tflog.Info(ctx, fmt.Sprintf("[WARN] object Bucket Website Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 

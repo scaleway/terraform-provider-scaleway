@@ -221,6 +221,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 			tflog.Debug(ctx, "cannot guess region: "+err.Error())
 		}
 	}
+
 	return profile, credentialsSource, nil
 }
 

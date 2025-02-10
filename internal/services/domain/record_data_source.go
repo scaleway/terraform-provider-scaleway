@@ -70,5 +70,6 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", d.Get("dns_zone"), recordID.(string)))
+
 	return resourceDomainRecordRead(ctx, d, m)
 }

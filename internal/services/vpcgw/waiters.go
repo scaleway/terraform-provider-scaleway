@@ -59,5 +59,6 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 	}
 
 	dhcpEntries, err := api.WaitForDHCPEntries(req, scw.WithContext(ctx))
+
 	return dhcpEntries, err
 }

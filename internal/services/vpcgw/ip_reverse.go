@@ -96,8 +96,10 @@ func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.Res
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -153,5 +155,6 @@ func ResourceVPCPublicGatewayIPReverseDNSDelete(ctx context.Context, d *schema.R
 	}
 
 	d.SetId("")
+
 	return nil
 }

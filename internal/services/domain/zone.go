@@ -117,6 +117,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 		if httperrors.Is409(err) {
 			return resourceDomainZoneRead(ctx, d, m)
 		}
+
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%s.%s", dnsZone.Subdomain, dnsZone.Domain))
@@ -136,8 +137,10 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -177,6 +180,7 @@ func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m interface
 			return diag.FromErr(err)
 		}
 	}
+
 	return resourceDomainZoneRead(ctx, d, m)
 }
 
@@ -188,6 +192,7 @@ func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m interface
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

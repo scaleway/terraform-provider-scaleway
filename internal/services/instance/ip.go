@@ -105,6 +105,7 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+
 	return ResourceInstanceIPRead(ctx, d, m)
 }
 
@@ -144,8 +145,10 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m inter
 		// We check for 403 because instanceSDK API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -195,8 +198,10 @@ func ResourceInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m int
 		// We check for 403 because instanceSDK API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

@@ -55,9 +55,11 @@ func GetLatestEngineVersion(tt *acctest.TestTools, engineName string) string {
 		if engine.Name == engineName {
 			if len(engine.Versions) > 0 {
 				latestEngineVersion = engine.Versions[0].Name
+
 				break
 			}
 		}
 	}
+
 	return latestEngineVersion
 }

@@ -24,6 +24,7 @@ func testSweepHub(_ string) error {
 		listHubs, err := iotAPI.ListHubs(&iotSDK.ListHubsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Debugf("sweeper: destroying the iot hub in (%s)", region)
+
 			return fmt.Errorf("error listing hubs in (%s) in sweeper: %s", region, err)
 		}
 

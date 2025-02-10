@@ -150,8 +150,10 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -174,6 +176,7 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 		_ = d.Set("inbound_rule", inboundRules)
 		_ = d.Set("outbound_rule", outboundRules)
 	}
+
 	return nil
 }
 
@@ -476,6 +479,7 @@ func securityGroupRuleFlatten(rule *instanceSDK.SecurityGroupRule) (map[string]i
 		"port_range": fmt.Sprintf("%d-%d", portFrom, portTo),
 		"action":     rule.Action.String(),
 	}
+
 	return res, nil
 }
 
@@ -485,6 +489,7 @@ func SecurityGroupRuleEquals(ruleA, ruleB *instanceSDK.SecurityGroupRule) (bool,
 		if v == nil {
 			return 0
 		}
+
 		return *v
 	}
 	portFromEqual := zeroIfNil(ruleA.DestPortFrom) == zeroIfNil(ruleB.DestPortFrom)

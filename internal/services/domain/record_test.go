@@ -832,6 +832,7 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 			if listDNSZones.TotalCount > 0 {
 				return fmt.Errorf("zone %s still exist", rs.Primary.Attributes["dns_zone"])
 			}
+
 			return nil
 		}
 

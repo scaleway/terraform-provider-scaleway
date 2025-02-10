@@ -80,5 +80,6 @@ func DataSourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return resourceLbRead(ctx, d, m)
 }

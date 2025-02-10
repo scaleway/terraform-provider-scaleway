@@ -40,6 +40,7 @@ func getTestFiles() (map[string]struct{}, error) {
 		if isCassette && !isException {
 			filesMap[fileNameWithoutExtSuffix(path)] = struct{}{}
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -87,8 +88,10 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 				return true
 			}
 		}
+
 		return false
 	}
+
 	return true
 }
 

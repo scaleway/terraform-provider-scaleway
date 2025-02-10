@@ -179,6 +179,7 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		state, err := serverStateFlatten(server.State)
 		if err != nil {
 			diags = append(diags, diag.FromErr(err)...)
+
 			continue
 		}
 		rawServer["state"] = state
@@ -210,6 +211,7 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)   //nolint:staticcheck
 			if err != nil {
 				diags = append(diags, diag.FromErr(fmt.Errorf("failed to read ipv6 netmask: %w", err))...)
+
 				continue
 			}
 

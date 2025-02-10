@@ -15,6 +15,7 @@ func Duration(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	if err1 != nil || err2 != nil {
 		return false
 	}
+
 	return d1 == d2
 }
 
@@ -27,5 +28,6 @@ func TimeRFC3339(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	if err1 != nil || err2 != nil {
 		return false
 	}
+
 	return t1.Equal(t2)
 }

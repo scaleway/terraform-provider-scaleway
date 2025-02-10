@@ -988,6 +988,7 @@ func testAccCheckK8SPoolNodesOneOfIsDeleting(name string) resource.TestCheckFunc
 			nodesZeroStatus == "deleting" && nodesOneStatus == "ready" {
 			return nil
 		}
+
 		return fmt.Errorf("nodes status were not as expected: got %q for nodes.0 and %q for nodes.1", nodesZeroStatus, nodesOneStatus)
 	}
 }

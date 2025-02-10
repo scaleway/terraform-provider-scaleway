@@ -831,8 +831,10 @@ func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestChec
 			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {
 				return errors.New("s3 object not found")
 			}
+
 			return err
 		}
+
 		return nil
 	}
 }

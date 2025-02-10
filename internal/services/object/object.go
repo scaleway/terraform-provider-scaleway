@@ -221,6 +221,7 @@ func EncryptCustomerKey(encryptionKeyStr string) (string, *string, error) {
 	digest := h.Sum(nil)
 	digestMD5 := base64.StdEncoding.EncodeToString(digest)
 	encryption := aws.String(base64.StdEncoding.EncodeToString(encryptionKey))
+
 	return digestMD5, encryption, nil
 }
 
@@ -412,6 +413,7 @@ func objectIsPublic(acl *s3.GetObjectAclOutput) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -428,6 +430,7 @@ func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
 				}}
 			}
 		}
+
 		return nil
 	}
 }

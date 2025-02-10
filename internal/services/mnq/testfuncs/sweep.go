@@ -85,6 +85,7 @@ func testSweepSQS(_ string) error {
 			})
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
+
 				return err
 			}
 		}
@@ -143,6 +144,7 @@ func testSweepSNS(_ string) error {
 			})
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
+
 				return err
 			}
 		}

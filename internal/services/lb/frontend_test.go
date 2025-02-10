@@ -540,6 +540,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if testAcl.Name == "" {
 				testAcl.Name = apiAcl.Name
 			}
+
 			return lb.ACLEquals(&testAcl, &apiAcl)
 		}
 

@@ -34,6 +34,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, zone, nil
 }
 
@@ -45,6 +46,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, er
 	if err != nil {
 		return nil, zonal.ID{}, err
 	}
+
 	return api, zonal.NewID(zone, ID), nil
 }
 
@@ -56,6 +58,7 @@ func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*barem
 	if err != nil {
 		return nil, "", err
 	}
+
 	return privateNetworkAPI, zone, nil
 }
 
@@ -67,6 +70,7 @@ func NewPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetalV3.P
 	if err != nil {
 		return nil, zonal.ID{}, err
 	}
+
 	return privateNetworkAPI, zonal.NewID(zone, ID), nil
 }
 
@@ -98,6 +102,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 	if err != nil && !httperrors.Is404(err) {
 		return err
 	}
+
 	return nil
 }
 
@@ -155,6 +160,7 @@ func compareOptions(slice1, slice2 []*baremetal.ServerOption) []*baremetal.Serve
 			}
 		}
 	}
+
 	return diff
 }
 

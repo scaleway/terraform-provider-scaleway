@@ -576,8 +576,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		if errorCheck(err, "is not found") {
 			log.Printf("[WARN] instance %s not found droping from state", d.Id())
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	////
@@ -748,6 +750,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 
 		return nil
 	}
+
 	return nil
 }
 
@@ -1244,11 +1247,13 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 		if httperrors.Is404(err) {
 			return diff.ForceNew("image")
 		}
+
 		return err
 	}
 	if marketplaceImage.Label != image.ID {
 		return diff.ForceNew("image")
 	}
+
 	return nil
 }
 

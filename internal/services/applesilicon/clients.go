@@ -16,6 +16,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, s
 	if err != nil {
 		return nil, "", err
 	}
+
 	return asAPI, zone, nil
 }
 
@@ -27,5 +28,6 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*applesilicon.API, scw.Zone,
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return asAPI, zone, ID, nil
 }

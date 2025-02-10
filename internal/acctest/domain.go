@@ -36,12 +36,14 @@ func init() {
 	for _, reservedDomain := range reservedDomains {
 		if reservedDomain.MatchString(TestDomain) {
 			isReserved = true
+
 			break
 		}
 	}
 
 	if isReserved {
 		logging.L.Warningf("TF_TEST_DOMAIN cannot be a Scaleway required domain. Please use another one.")
+
 		return
 	}
 

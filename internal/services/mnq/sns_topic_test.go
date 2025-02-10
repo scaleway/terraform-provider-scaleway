@@ -195,6 +195,7 @@ func isSNSTopicDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 				if errors.As(err, &apiErr) && apiErr.Code == "AccessDeniedException" {
 					return nil
 				}
+
 				return err
 			}
 

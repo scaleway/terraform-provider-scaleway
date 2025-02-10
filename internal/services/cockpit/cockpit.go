@@ -112,6 +112,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 		for _, plan := range plans.Plans {
 			if plan.Name.String() == targetPlan {
 				planName = plan.Name.String()
+
 				break
 			}
 		}
@@ -222,6 +223,7 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		for _, plan := range plans.Plans {
 			if plan.Name.String() == targetPlan {
 				planName = plan.Name.String()
+
 				break
 			}
 		}

@@ -65,6 +65,7 @@ func ResourceServer() *schema.Resource {
 					}
 					// if the offer was provided by name
 					offerName, ok := d.GetOk("offer_name")
+
 					return ok && newValue == offerName
 				},
 			},
@@ -429,8 +430,10 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -676,6 +679,7 @@ func ResourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -693,6 +697,7 @@ func installAttributeMissing(field *baremetal.OSOSField, d *schema.ResourceData,
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -743,5 +748,6 @@ func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interf
 			})
 		}
 	}
+
 	return diags
 }

@@ -40,6 +40,7 @@ func DataSourceCockpitPlanRead(ctx context.Context, d *schema.ResourceData, m in
 	for _, p := range res.Plans {
 		if p.Name.String() == name {
 			plan = p
+
 			break
 		}
 	}

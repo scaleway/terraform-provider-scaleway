@@ -64,6 +64,7 @@ func testSweepUser(_ string) error {
 				return fmt.Errorf("failed to delete user: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -121,6 +122,7 @@ func testSweepIamPolicy(_ string) error {
 				return fmt.Errorf("failed to delete policy: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -151,6 +153,7 @@ func testSweepIamGroup(_ string) error {
 				return fmt.Errorf("failed to delete group: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -182,6 +185,7 @@ func testSweepIamApplication(_ string) error {
 				return fmt.Errorf("failed to delete application: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -214,6 +218,7 @@ func testSweepIamAPIKey(_ string) error {
 				return fmt.Errorf("failed to delete api key: %w", err)
 			}
 		}
+
 		return nil
 	})
 }

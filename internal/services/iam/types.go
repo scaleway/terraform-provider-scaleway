@@ -13,6 +13,7 @@ func expandPermissionSetNames(rawPermissions interface{}) *[]string {
 	for _, rawPermission := range permissionSet.List() {
 		permissions = append(permissions, rawPermission.(string))
 	}
+
 	return &permissions
 }
 
@@ -21,6 +22,7 @@ func flattenPermissionSetNames(permissions []string) *schema.Set {
 	for _, perm := range permissions {
 		rawPermissions = append(rawPermissions, perm)
 	}
+
 	return schema.NewSet(func(i interface{}) int {
 		return types.StringHashcode(i.(string))
 	}, rawPermissions)
@@ -43,6 +45,7 @@ func expandPolicyRuleSpecs(d interface{}) []*iam.RuleSpecs {
 		}
 		rules = append(rules, rule)
 	}
+
 	return rules
 }
 
@@ -67,5 +70,6 @@ func flattenPolicyRules(rules []*iam.Rule) interface{} {
 
 		rawRules = append(rawRules, rawRule)
 	}
+
 	return rawRules
 }

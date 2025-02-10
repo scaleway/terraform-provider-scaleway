@@ -9,6 +9,7 @@ func flattenFlexibleIPMacAddress(mac *flexibleip.MACAddress) interface{} {
 	if mac == nil {
 		return nil
 	}
+
 	return []map[string]interface{}{
 		{
 			"id":          mac.ID,

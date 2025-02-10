@@ -14,6 +14,7 @@ func DataSourceAPIKey() *schema.Resource {
 	dsSchema["access_key"].Required = true
 	dsSchema["access_key"].Computed = false
 	delete(dsSchema, "secret_key")
+
 	return &schema.Resource{
 		ReadContext: DataSourceIamAPIKeyRead,
 		Schema:      dsSchema,

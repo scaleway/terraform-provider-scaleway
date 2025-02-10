@@ -1438,6 +1438,7 @@ func serverIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc 
 		if idFirst == idSecond {
 			return fmt.Errorf("IDs of both resources were equal when they should not have been (%s and %s)", nameFirst, nameSecond)
 		}
+
 		return nil
 	}
 }

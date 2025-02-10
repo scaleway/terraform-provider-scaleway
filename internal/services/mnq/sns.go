@@ -88,6 +88,7 @@ func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if sns.Status == mnq.SnsInfoStatusDisabled {
 		d.SetId("")
+
 		return nil
 	}
 

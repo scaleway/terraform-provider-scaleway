@@ -311,6 +311,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	d.SetId(recordID)
 	tflog.Debug(ctx, fmt.Sprintf("record ID[%s]", recordID))
+
 	return resourceDomainRecordRead(ctx, d, m)
 }
 
@@ -338,8 +339,10 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 
@@ -368,8 +371,10 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 
@@ -380,6 +385,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 
 	if record == nil {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -387,8 +393,10 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -418,6 +426,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 	} else {
 		_ = d.Set("fqdn", fmt.Sprintf("%s.%s", record.Name, dnsZone))
 	}
+
 	return nil
 }
 
@@ -500,6 +509,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m i
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -516,6 +526,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m i
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -527,6 +538,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m i
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

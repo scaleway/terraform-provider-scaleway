@@ -1082,6 +1082,7 @@ func testAccChechPartitioning(tt *acctest.TestTools, n string, source string) re
 		if !reflect.DeepEqual(&schema, server.Install.PartitioningSchema) {
 			return fmt.Errorf("server %s has not custom partitioning install", n)
 		}
+
 		return nil
 	}
 }

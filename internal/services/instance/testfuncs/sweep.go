@@ -65,6 +65,7 @@ func testSweepVolume(_ string) error {
 				}
 			}
 		}
+
 		return nil
 	})
 }
@@ -102,6 +103,7 @@ func testSweepServer(_ string) error {
 		listServers, err := instanceAPI.ListServers(&instanceSDK.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
+
 			return nil
 		}
 
@@ -140,6 +142,7 @@ func testSweepSecurityGroup(_ string) error {
 		}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing security groups in sweeper: %s", err)
+
 			return nil
 		}
 
@@ -170,6 +173,7 @@ func testSweepPlacementGroup(_ string) error {
 		}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing placement groups in (%s) in sweeper: %s", zone, err)
+
 			return nil
 		}
 
@@ -194,6 +198,7 @@ func testSweepIP(_ string) error {
 		listIPs, err := instanceAPI.ListIPs(&instanceSDK.ListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
+
 			return nil
 		}
 

@@ -99,10 +99,13 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m i
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errSetPrivilege)
 			}
+
 			return retry.NonRetryableError(errSetPrivilege)
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -131,8 +134,10 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -144,13 +149,16 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	if listUsers == nil || len(listUsers.Users) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -163,8 +171,10 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -200,13 +210,16 @@ func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	if listUsers == nil || len(listUsers.Users) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -227,10 +240,13 @@ func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m i
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errSet)
 			}
+
 			return retry.NonRetryableError(errSet)
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -267,13 +283,16 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	if listUsers != nil && len(listUsers.Users) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -296,13 +315,16 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 		if err != nil {
 			if httperrors.Is404(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return retry.NonRetryableError(errUserExist)
 		}
 
 		if listUsers != nil && len(listUsers.Users) == 0 {
 			d.SetId("")
+
 			return nil
 		}
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
@@ -312,10 +334,13 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errSet)
 			}
+
 			return retry.NonRetryableError(errSet)
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -342,5 +367,6 @@ func ResourceRdbUserPrivilegeParseID(resourceID string) (region scw.Region, inst
 	if len(idParts) != 4 {
 		return "", "", "", "", fmt.Errorf("can't parse user privilege resource id: %s", resourceID)
 	}
+
 	return scw.Region(idParts[0]), idParts[1], idParts[2], idParts[3], nil
 }

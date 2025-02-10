@@ -110,6 +110,7 @@ func flattenDomainHTTPService(config *domain.RecordHTTPServiceConfig) interface{
 			ips = append(ips, ip.String())
 		}
 	}
+
 	return []map[string]interface{}{
 		{
 			"must_contain": types.FlattenStringPtr(config.MustContain),
@@ -179,6 +180,7 @@ func expandDomainWeighted(i interface{}, ok bool) *domain.RecordWeightedConfig {
 			})
 		}
 	}
+
 	return &domain.RecordWeightedConfig{
 		WeightedIPs: weightedIPs,
 	}

@@ -69,5 +69,6 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m int
 	regionalizedID := datasource.NewRegionalID(clusterID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("cluster_id", regionalizedID)
+
 	return ResourceK8SClusterRead(ctx, d, m)
 }

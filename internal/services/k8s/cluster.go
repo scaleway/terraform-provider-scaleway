@@ -274,6 +274,7 @@ func ResourceCluster() *schema.Resource {
 						}
 					}
 				}
+
 				return nil
 			},
 			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
@@ -301,6 +302,7 @@ func ResourceCluster() *schema.Resource {
 						return err
 					}
 				}
+
 				return nil
 			},
 		),
@@ -524,8 +526,10 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -885,6 +889,7 @@ func ResourceK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m int
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

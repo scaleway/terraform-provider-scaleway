@@ -33,6 +33,7 @@ func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets
 			ipv6Subnets = append(ipv6Subnets, ipNet)
 		}
 	}
+
 	return
 }
 
@@ -138,10 +139,12 @@ func maskHexToDottedDecimal(mask net.IPMask) string {
 	for i, part := range mask {
 		parts[i] = strconv.Itoa(int(part))
 	}
+
 	return strings.Join(parts, ".")
 }
 
 func getPrefixLength(mask net.IPMask) int {
 	ones, _ := mask.Size()
+
 	return ones
 }

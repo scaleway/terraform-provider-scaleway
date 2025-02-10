@@ -340,8 +340,10 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -431,8 +433,10 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -454,8 +458,10 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -496,8 +502,10 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -520,8 +528,10 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -633,8 +643,10 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -656,8 +668,10 @@ func resourceLbBackendDelete(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -674,8 +688,10 @@ func resourceLbBackendDelete(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

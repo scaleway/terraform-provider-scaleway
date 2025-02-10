@@ -252,8 +252,10 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -304,8 +306,10 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -350,6 +354,7 @@ func flattenLBACLs(acls []*lbSDK.ACL) interface{} {
 	for _, apiACL := range acls {
 		rawACLs = append(rawACLs, flattenLbACL(apiACL))
 	}
+
 	return rawACLs
 }
 
@@ -396,6 +401,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			continue
 		}
 		// old acl doesn't exist, create a new one
@@ -421,6 +427,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 			return diag.FromErr(err)
 		}
 	}
+
 	return nil
 }
 
@@ -430,6 +437,7 @@ func expandsLBACLs(raw interface{}) []*lbSDK.ACL {
 	for _, rawACL := range d {
 		newACL = append(newACL, expandLbACL(rawACL))
 	}
+
 	return newACL
 }
 
@@ -449,8 +457,10 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -519,5 +529,6 @@ func ACLEquals(aclA, aclB *lbSDK.ACL) bool {
 	if !cmp.Equal(aclA.Action, aclB.Action) {
 		return false
 	}
+
 	return true
 }

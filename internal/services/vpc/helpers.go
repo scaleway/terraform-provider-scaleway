@@ -27,6 +27,7 @@ func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Regi
 	if err != nil {
 		return nil, "", err
 	}
+
 	return vpcAPI, region, err
 }
 
@@ -38,6 +39,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, stri
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return vpcAPI, region, ID, err
 }
 
@@ -53,6 +55,7 @@ func routesAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.RoutesWith
 	if err != nil {
 		return nil, "", err
 	}
+
 	return routesAPI, region, err
 }
 
@@ -108,6 +111,7 @@ func vpcRouteExpandResourceID(id string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to parse localized ID: %w", err)
 		}
+
 		return ID, nil
 	case 3:
 		// Parse as a nested ID and return the outerID
@@ -115,6 +119,7 @@ func vpcRouteExpandResourceID(id string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to parse nested ID: %w", err)
 		}
+
 		return ID, nil
 	default:
 		return "", fmt.Errorf("unrecognized ID format: %s", id)

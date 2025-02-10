@@ -114,8 +114,10 @@ func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -201,5 +203,6 @@ func ResourceContainerCronDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 	tflog.Info(ctx, "[INFO] cron job deleted")
+
 	return nil
 }

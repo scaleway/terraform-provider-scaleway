@@ -35,6 +35,7 @@ func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, nil
 }
 
@@ -46,6 +47,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region,
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }
 
@@ -122,6 +124,7 @@ func functionDeploy(ctx context.Context, functionAPI *function.API, region scw.R
 	if err != nil {
 		return errors.New("failed to deploy function")
 	}
+
 	return nil
 }
 
@@ -163,6 +166,7 @@ func retryCreateFunctionDomain(ctx context.Context, functionAPI *function.API, r
 			if err != nil && isFunctionDNSResolveError(err) {
 				continue
 			}
+
 			return domain, err
 		case <-timeoutChannel:
 			return functionAPI.CreateDomain(req, scw.WithContext(ctx))

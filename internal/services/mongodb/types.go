@@ -15,7 +15,9 @@ func flattenPublicNetwork(endpoints []*mongodb.Endpoint) (interface{}, bool) {
 			"port":       endpoint.Port,
 			"dns_record": endpoint.DNSRecords[0],
 		})
+
 		break
 	}
+
 	return publicFlat, len(publicFlat) != 0
 }

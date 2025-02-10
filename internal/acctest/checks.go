@@ -26,6 +26,7 @@ func CheckResourceIDChanged(resourceName string, resourceID *string) resource.Te
 			return errors.New("resource ID persisted when it should have changed")
 		}
 		*resourceID = rs.Primary.ID
+
 		return nil
 	}
 }
@@ -42,6 +43,7 @@ func CheckResourceIDPersisted(resourceName string, resourceID *string) resource.
 			return errors.New("resource ID changed when it should have persisted")
 		}
 		*resourceID = rs.Primary.ID
+
 		return nil
 	}
 }
@@ -90,6 +92,7 @@ func CheckResourceAttrFunc(name string, key string, test func(string) error) res
 		if err != nil {
 			return fmt.Errorf("test for %s %s did not pass test: %s", name, key, err)
 		}
+
 		return nil
 	}
 }
@@ -100,6 +103,7 @@ func CheckResourceAttrIPv4(name string, key string) resource.TestCheckFunc {
 		if ip.To4() == nil {
 			return fmt.Errorf("%s is not a valid IPv4", value)
 		}
+
 		return nil
 	})
 }
@@ -110,6 +114,7 @@ func CheckResourceAttrIPv6(name string, key string) resource.TestCheckFunc {
 		if ip.To16() == nil {
 			return fmt.Errorf("%s is not a valid IPv6", value)
 		}
+
 		return nil
 	})
 }
@@ -120,6 +125,7 @@ func CheckResourceAttrIP(name string, key string) resource.TestCheckFunc {
 		if ip == nil {
 			return fmt.Errorf("%s is not a valid IP", value)
 		}
+
 		return nil
 	})
 }

@@ -87,8 +87,10 @@ func resourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	_ = d.Set("name", app.Name)

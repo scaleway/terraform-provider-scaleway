@@ -11,6 +11,7 @@ func ParseLocalizedID(localizedID string) (locality, id string, err error) {
 	if len(tab) != 2 {
 		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
+
 	return tab[0], tab[1], nil
 }
 
@@ -20,6 +21,7 @@ func ParseLocalizedNestedID(localizedID string) (locality string, innerID, outer
 	if len(tab) < 3 {
 		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
+
 	return tab[0], tab[1], strings.Join(tab[2:], "/"), nil
 }
 
@@ -53,5 +55,6 @@ func CompareLocalities(loc1, loc2 string) bool {
 	if strings.HasPrefix(loc1, loc2) || strings.HasPrefix(loc2, loc1) {
 		return true
 	}
+
 	return false
 }

@@ -24,6 +24,7 @@ func temAPIWithRegion(d *schema.ResourceData, m interface{}) (*tem.API, scw.Regi
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, nil
 }
 
@@ -35,5 +36,6 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, stri
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }

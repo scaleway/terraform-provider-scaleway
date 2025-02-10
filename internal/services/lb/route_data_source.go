@@ -40,5 +40,6 @@ func DataSourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return resourceLbRouteRead(ctx, d, m)
 }

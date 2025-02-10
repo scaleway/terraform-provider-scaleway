@@ -134,6 +134,7 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 		for _, image := range matchingImages {
 			if image.Name == d.Get("name").(string) {
 				imageID = image.ID
+
 				break
 			}
 		}

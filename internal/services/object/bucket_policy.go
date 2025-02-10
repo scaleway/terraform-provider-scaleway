@@ -89,6 +89,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return retry.NonRetryableError(err)
 		}
+
 		return nil
 	})
 	if TimedOut(err) {
@@ -124,6 +125,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 	if !d.IsNewResource() && tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, ErrCodeNoSuchBucket) {
 		tflog.Warn(ctx, fmt.Sprintf("[WARN] SCW Bucket Policy (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 

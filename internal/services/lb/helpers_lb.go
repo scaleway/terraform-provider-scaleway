@@ -35,6 +35,7 @@ func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.
 	if err != nil {
 		return nil, "", err
 	}
+
 	return lbAPI, zone, nil
 }
 
@@ -46,6 +47,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*lbSDK.ZonedAPI, scw.Zone, s
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return lbAPI, zone, ID, nil
 }
 
@@ -185,6 +187,7 @@ func normalizeIPSubnet(ip string) string {
 	if strings.HasSuffix(ip, "/32") {
 		return strings.TrimSuffix(ip, "/32")
 	}
+
 	return ip
 }
 
@@ -216,5 +219,6 @@ func customizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDif
 	if oldValue.(bool) && !newValue.(bool) {
 		return diff.ForceNew("assign_flexible_ipv6")
 	}
+
 	return nil
 }

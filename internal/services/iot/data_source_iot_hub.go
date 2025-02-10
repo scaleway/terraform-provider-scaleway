@@ -75,5 +75,6 @@ func DataSourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if d.Id() == "" {
 		return diag.Errorf("IOT Hub not found (%s)", regionalID)
 	}
+
 	return nil
 }

@@ -37,6 +37,7 @@ func waitForVolume(ctx context.Context, api *instance.API, zone scw.Zone, id str
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+
 	return volume, err
 }
 

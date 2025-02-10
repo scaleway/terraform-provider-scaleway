@@ -177,6 +177,7 @@ func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return api.CreateGatewayNetwork(req, scw.WithContext(ctx))
 	}, func() (*vpcgw.Gateway, error) {
 		tflog.Warn(ctx, "Public gateway is in transient state after waiting, retrying...")
+
 		return waitForVPCPublicGateway(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	})
 	if err != nil {
@@ -208,8 +209,10 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutRead))

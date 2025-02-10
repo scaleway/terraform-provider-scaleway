@@ -139,6 +139,7 @@ func isSNSTopicSubscriptionDestroyed(ctx context.Context, tt *acctest.TestTools)
 						return nil
 					}
 				}
+
 				return err
 			}
 

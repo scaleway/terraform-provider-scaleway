@@ -92,6 +92,7 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 		for _, groupUserID := range group.UserIDs {
 			if groupUserID == userID {
 				foundInGroup = true
+
 				break
 			}
 		}
@@ -99,6 +100,7 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 		for _, groupApplicationID := range group.ApplicationIDs {
 			if groupApplicationID == applicationID {
 				foundInGroup = true
+
 				break
 			}
 		}
@@ -141,6 +143,7 @@ func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceDat
 
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

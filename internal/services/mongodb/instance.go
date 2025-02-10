@@ -250,8 +250,10 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -393,6 +395,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return append(diags, ResourceInstanceRead(ctx, d, m)...)
 }
 
@@ -421,5 +424,6 @@ func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId("")
+
 	return nil
 }

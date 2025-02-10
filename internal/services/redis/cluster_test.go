@@ -762,6 +762,7 @@ func isClusterDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 		}
+
 		return nil
 	}
 }
@@ -785,6 +786,7 @@ func isClusterPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
+
 		return nil
 	}
 }
@@ -811,6 +813,7 @@ func privateNetworksIpsAreEither(name string, possibilities ...string) resource.
 				return fmt.Errorf("no attribute private_network.*.service_ips.0 was found with value %v", p)
 			}
 		}
+
 		return nil
 	}
 }
@@ -845,6 +848,7 @@ func privateNetworksIDsAreEither(name string, possibilities ...string) resource.
 				return fmt.Errorf("no attribute private_network.*.id was found with value %v", p)
 			}
 		}
+
 		return nil
 	}
 }
@@ -864,6 +868,7 @@ func isCertificateValid(name string) resource.TestCheckFunc {
 		if err != nil {
 			return fmt.Errorf("failed to parse certificate: %w", err)
 		}
+
 		return nil
 	}
 }
@@ -877,7 +882,9 @@ func getLatestVersion(tt *acctest.TestTools) string {
 	}
 	if len(versions.Versions) > 0 {
 		latestRedisVersion := versions.Versions[0].Version
+
 		return latestRedisVersion
 	}
+
 	return ""
 }

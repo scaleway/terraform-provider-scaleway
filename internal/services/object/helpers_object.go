@@ -61,6 +61,7 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 		o.BaseEndpoint = aws.String(endpoint)
 		o.EndpointResolverV2 = &scalewayResolver{region: region}
 	})
+
 	return client, nil
 }
 
@@ -171,6 +172,7 @@ func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return nil, "", "", "", err
 	}
+
 	return s3Client, scw.Region(region), name, outerID, err
 }
 
@@ -240,12 +242,14 @@ func IsS3Err(err error, code string, message string) bool {
 	if errors.As(err, &awsErr) {
 		return awsErr.ErrorCode() == code && strings.Contains(awsErr.ErrorMessage(), message)
 	}
+
 	return false
 }
 
 func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]interface{} {
 	vcl := []map[string]interface{}{{}}
 	vcl[0]["enabled"] = versioningResponse.Status == s3Types.BucketVersioningStatusEnabled
+
 	return vcl
 }
 
@@ -257,6 +261,7 @@ func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfigurat
 			vc.Status = s3Types.BucketVersioningStatusEnabled
 		}
 	}
+
 	return vc
 }
 
@@ -285,14 +290,17 @@ func flattenBucketCORS(corsResponse interface{}) []interface{} {
 			}
 			corsRules = append(corsRules, rule)
 		}
+
 		return corsRules
 	}
+
 	return nil
 }
 
 func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []s3Types.CORSRule {
 	if len(rawCors) == 0 {
 		tflog.Warn(ctx, "No CORS configuration provided for bucket: "+bucket)
+
 		return nil
 	}
 
@@ -303,6 +311,7 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 		corsMap, ok := raw.(map[string]interface{})
 		if !ok {
 			tflog.Warn(ctx, fmt.Sprintf("Invalid CORS entry for bucket %s: %#v", bucket, raw))
+
 			continue
 		}
 
@@ -349,6 +358,7 @@ func toStringSlice(ctx context.Context, input interface{}) []string {
 	default:
 		tflog.Warn(ctx, fmt.Sprintf("Unexpected type for toStringSlice: %T", input))
 	}
+
 	return result
 }
 
@@ -362,6 +372,7 @@ func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName stri
 	}
 
 	_, err := conn.DeleteObject(ctx, input)
+
 	return err
 }
 
@@ -375,6 +386,7 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 	})
 	if err != nil {
 		err = fmt.Errorf("failed to get S3 object meta data: %s", err)
+
 		return false, err
 	}
 	if objectHead.ObjectLockLegalHoldStatus != s3Types.ObjectLockLegalHoldStatusOn {
@@ -390,8 +402,10 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 	})
 	if err != nil {
 		err = fmt.Errorf("failed to put S3 object legal hold: %s", err)
+
 		return false, err
 	}
+
 	return true, nil
 }
 
@@ -441,6 +455,7 @@ func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Clie
 
 	if errs := pool.CloseAndWait(); errs != nil {
 		globalErr = multierror.Append(nil, errs...)
+
 		return nObject, globalErr
 	}
 
@@ -458,9 +473,11 @@ func deleteMarkerBucket(ctx context.Context, conn *s3.Client, bucketName string,
 				return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
 			}
 			nObject++
+
 			return nil
 		})
 	}
+
 	return nObject, nil
 }
 
@@ -490,6 +507,7 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 			return nil
 		})
 	}
+
 	return nObject, nil
 }
 
@@ -498,6 +516,7 @@ func findDeletionWorkerCapacity() int {
 	if deletionWorkers > maxObjectVersionDeletionWorkers {
 		deletionWorkers = maxObjectVersionDeletionWorkers
 	}
+
 	return deletionWorkers
 }
 
@@ -515,6 +534,7 @@ func transitionHash(v interface{}) int {
 	if v, ok := m["storage_class"]; ok {
 		buf.WriteString(v.(string) + "-")
 	}
+
 	return types.StringHashcode(buf.String())
 }
 
@@ -598,6 +618,7 @@ type S3Website struct {
 
 func WebsiteEndpoint(bucket string, region scw.Region) *S3Website {
 	domain := WebsiteDomainURL(region.String())
+
 	return &S3Website{Endpoint: fmt.Sprintf("%s.%s", bucket, domain), Domain: domain}
 }
 
@@ -610,6 +631,7 @@ func WebsiteDomainURL(region string) string {
 
 func buildBucketOwnerID(id *string) *string {
 	s := fmt.Sprintf("%[1]s:%[1]s", *id)
+
 	return &s
 }
 
@@ -630,6 +652,7 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 			Summary:  "Bucket not found",
 			Detail:   "Got 404 error while reading bucket, removing from state",
 		})
+
 		return false, false
 
 	case IsS3Err(err, awsResourceNotFoundCode, ""):
@@ -656,6 +679,7 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 		}
 
 		*diags = append(*diags, d)
+
 		return true, true
 
 	default:
@@ -663,6 +687,7 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 			Severity: diag.Error,
 			Summary:  fmt.Errorf("couldn't read bucket %s: %w", resource, err).Error(),
 		})
+
 		return true, true
 	}
 }

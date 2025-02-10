@@ -392,6 +392,7 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m interf
 	if !d.IsNewResource() && errors.As(err, new(*s3Types.NoSuchBucket)) {
 		tflog.Warn(ctx, fmt.Sprintf("[WARN] Object Bucket ACL (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -421,6 +422,7 @@ func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
 	if acl == "" {
 		return regional.NewIDString(region, bucket)
 	}
+
 	return regional.NewIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
 }
 

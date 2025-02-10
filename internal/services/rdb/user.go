@@ -100,12 +100,15 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errCreateUser)
 			}
+
 			return retry.NonRetryableError(errCreateUser)
 		}
 		// set database information
 		user = currentUser
+
 		return nil
 	})
 	if err != nil {
@@ -128,8 +131,10 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -141,13 +146,16 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	if len(res.Users) == 0 {
 		tflog.Warn(ctx, fmt.Sprintf("couldn'd find user with name: [%s]", userName))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -221,8 +229,10 @@ func ResourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errDeleteUser)
 			}
+
 			return retry.NonRetryableError(errDeleteUser)
 		}
 		// set database information
@@ -249,5 +259,6 @@ func ResourceUserParseID(resourceID string) (region scw.Region, instanceID strin
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
 	}
+
 	return scw.Region(idParts[0]), idParts[1], idParts[2], nil
 }

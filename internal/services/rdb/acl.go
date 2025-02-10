@@ -124,8 +124,10 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -268,12 +270,14 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 		ip, err := types.ExpandIPNet(currentRule["ip"].(string))
 		if err != nil {
 			errors = append(errors, err)
+
 			continue
 		}
 
 		aclRule, aclRuleExists := ruleMap[ip.String()]
 		if !aclRuleExists {
 			errors = append(errors, fmt.Errorf("acl from state does not exist on server (%s)", ip.String()))
+
 			continue
 		}
 		ruleMapFromSchema[ip.String()] = struct{}{}
@@ -318,7 +322,9 @@ func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
 	sort.Slice(res, func(i, j int) bool {
 		ipI, _, _ := net.ParseCIDR(res[i]["ip"].(string))
 		ipJ, _, _ := net.ParseCIDR(res[j]["ip"].(string))
+
 		return bytes.Compare(ipI, ipJ) < 0
 	})
+
 	return res
 }

@@ -68,5 +68,6 @@ func DataSourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m
 	zonedID := datasource.NewZonedID(serverID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("server_id", zonedID)
+
 	return ResourceInstanceServerRead(ctx, d, m)
 }

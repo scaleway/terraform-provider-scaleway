@@ -286,6 +286,7 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Couldn't update bucket ACL: %s", err))
+
 			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
 		}
 	}
@@ -348,6 +349,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		if err != nil {
 			return fmt.Errorf("error removing S3 lifecycle for bucket %s: %w", bucket, err)
 		}
+
 		return nil
 	}
 
@@ -485,6 +487,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 		bucketFound, objectLockFound := addReadBucketErrorDiagnostic(&diags, err, "object lock configuration", ErrCodeObjectLockConfigurationNotFoundError)
 		if !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 		if !objectLockFound {
@@ -509,6 +512,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 	}
@@ -521,6 +525,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "tags", ErrCodeNoSuchTagSet); !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 	} else {
@@ -550,6 +555,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "versioning", ""); !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 	}
@@ -562,6 +568,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "lifecycle configuration", ErrCodeNoSuchLifecycleConfiguration); !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 	}

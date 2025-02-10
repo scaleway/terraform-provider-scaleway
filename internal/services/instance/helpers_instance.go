@@ -55,6 +55,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, scw.Z
 	if err != nil {
 		return nil, "", err
 	}
+
 	return instanceAPI, zone, nil
 }
 
@@ -66,6 +67,7 @@ func NewAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw.Zone
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return instanceAPI, zone, ID, nil
 }
 
@@ -77,6 +79,7 @@ func NewAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*instance.A
 	if err != nil {
 		return nil, "", "", "", err
 	}
+
 	return instanceAPI, zone, innerID, outerID, nil
 }
 
@@ -92,6 +95,7 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 	for _, index := range indexes {
 		orderedVolumes = append(orderedVolumes, v[index])
 	}
+
 	return orderedVolumes
 }
 
@@ -107,6 +111,7 @@ func sortVolumeServer(v map[string]*instance.VolumeServer) []*instance.VolumeSer
 	for _, index := range indexes {
 		sortedVolumes = append(sortedVolumes, v[index])
 	}
+
 	return sortedVolumes
 }
 
@@ -122,6 +127,7 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	case instance.ServerStateLocked:
 		return "", errors.New("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
 	}
+
 	return "", errors.New("server is in an invalid state, someone else might be executing action at the same time")
 }
 
@@ -203,6 +209,7 @@ func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, se
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -218,6 +225,7 @@ func getServerType(ctx context.Context, apiInstance *instance.API, zone scw.Zone
 		if serverType == nil {
 			tflog.Warn(ctx, "unrecognized server type: "+commercialType)
 		}
+
 		return serverType
 	}
 
@@ -248,6 +256,7 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 		}
 
 		maxSize := humanize.Bytes(uint64(volumeConstraint.MaxSize))
+
 		return fmt.Errorf("%s total local volume size must be between %s and %s", commercialType, minSize, maxSize)
 	}
 
@@ -305,6 +314,7 @@ func newPrivateNICHandler(api *instance.API, server string, zone scw.Zone) (*pri
 		serverID:    server,
 		zone:        zone,
 	}
+
 	return handler, handler.flatPrivateNICs()
 }
 
@@ -386,6 +396,7 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 		}
 		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
 	}
+
 	return d.Set("private_network", privateNetworks)
 }
 
@@ -398,6 +409,7 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, loc)
 	}
+
 	return map[string]interface{}{
 		"pn_id":       key,
 		"mac_address": pn.MacAddress,
@@ -437,9 +449,11 @@ func retryUpdateReverseDNS(ctx context.Context, instanceAPI *instance.API, req *
 			if err != nil && IsIPReverseDNSResolveError(err) {
 				continue
 			}
+
 			return err
 		case <-timeoutChannel:
 			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+
 			return err
 		}
 	}
@@ -478,6 +492,7 @@ func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Z
 	if err != nil {
 		return nil, err
 	}
+
 	return vol.VolumeTemplate(), nil
 }
 

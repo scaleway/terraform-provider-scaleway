@@ -98,6 +98,7 @@ func extractGeneratedNamePrefix(name string) string {
 	//         ^
 	dashIndex = strings.LastIndex(name, "-")
 	name = name[:dashIndex]
+
 	return name
 }
 
@@ -155,6 +156,7 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 			return false
 		}
 	}
+
 	return true
 }
 

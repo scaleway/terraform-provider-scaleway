@@ -208,5 +208,6 @@ func ResourceSnapshotDelete(_ context.Context, d *schema.ResourceData, m interfa
 	}
 
 	d.SetId("")
+
 	return nil
 }

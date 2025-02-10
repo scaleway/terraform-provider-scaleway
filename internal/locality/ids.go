@@ -6,6 +6,7 @@ func ExpandID(id interface{}) string {
 	if err != nil {
 		return id.(string)
 	}
+
 	return ID
 }
 
@@ -18,5 +19,6 @@ func ExpandIDs(data interface{}) []string {
 		expandedID := ExpandID(s.(string))
 		expandedIDs = append(expandedIDs, expandedID)
 	}
+
 	return expandedIDs
 }

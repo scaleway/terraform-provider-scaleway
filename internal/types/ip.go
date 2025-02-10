@@ -29,6 +29,7 @@ func FlattenIPPtr(ip *net.IP) interface{} {
 	if ip == nil {
 		return ""
 	}
+
 	return ip.String()
 }
 
@@ -37,5 +38,6 @@ func FlattenIPNet(ipNet scw.IPNet) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return string(raw[1 : len(raw)-1]), nil // remove quotes
 }

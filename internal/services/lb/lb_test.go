@@ -281,6 +281,7 @@ func TestAccLB_Migrate(t *testing.T) {
 							return fmt.Errorf("resource not found: %s", "scaleway_lb.main")
 						}
 						lbID = rs.Primary.ID
+
 						return nil
 					},
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
@@ -311,6 +312,7 @@ func TestAccLB_Migrate(t *testing.T) {
 						if rs.Primary.ID != lbID {
 							return errors.New("LB id has changed")
 						}
+
 						return nil
 					},
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-GP-M"),

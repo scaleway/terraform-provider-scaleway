@@ -29,6 +29,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.R
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, nil
 }
 
@@ -76,6 +77,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, s
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }
 
@@ -86,11 +88,13 @@ func NewVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Re
 		return nil, "", "", "", err
 	}
 	api := secret.NewAPI(meta.ExtractScwClient(m))
+
 	return api, scw.Region(region), id, revision, nil
 }
 
 func isBase64Encoded(data []byte) bool {
 	_, err := base64.StdEncoding.DecodeString(string(data))
+
 	return err == nil
 }
 
@@ -98,6 +102,7 @@ func Base64Encoded(data []byte) string {
 	if isBase64Encoded(data) {
 		return string(data)
 	}
+
 	return base64.StdEncoding.EncodeToString(data)
 }
 

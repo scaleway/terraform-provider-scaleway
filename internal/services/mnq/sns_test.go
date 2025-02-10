@@ -90,6 +90,7 @@ func isSNSDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if httperrors.Is404(err) {
 					return nil
 				}
+
 				return err
 			}
 

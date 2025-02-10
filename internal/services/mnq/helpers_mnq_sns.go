@@ -79,6 +79,7 @@ func NewSNSClient(ctx context.Context, httpClient *http.Client, region string, e
 	if err != nil {
 		return nil, err
 	}
+
 	return sns.NewFromConfig(customConfig), nil
 }
 

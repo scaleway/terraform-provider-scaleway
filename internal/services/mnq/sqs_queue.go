@@ -302,6 +302,7 @@ func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m in
 		if IsAWSErrorCode(err, AWSErrNonExistentQueue) {
 			return nil
 		}
+
 		return diag.Errorf("failed to delete SQS Queue (%s): %s", d.Id(), err)
 	}
 

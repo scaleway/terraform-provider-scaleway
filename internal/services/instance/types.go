@@ -19,6 +19,7 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 	}
 
 	ph.privateNICsMap = privateNICsMap
+
 	return nil
 }
 
@@ -33,6 +34,7 @@ func expandImageExtraVolumesTemplates(snapshotIDs []string) map[string]*instance
 		}
 		volTemplates[strconv.Itoa(i+1)] = volTemplate
 	}
+
 	return volTemplates
 }
 
@@ -47,6 +49,7 @@ func expandImageExtraVolumesUpdateTemplates(snapshotIDs []string) map[string]*in
 		}
 		volTemplates[strconv.Itoa(i+1)] = volTemplate
 	}
+
 	return volTemplates
 }
 
@@ -75,6 +78,7 @@ func flattenImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone
 		}
 		volumesFlat = append(volumesFlat, volumeFlat)
 	}
+
 	return volumesFlat
 }
 

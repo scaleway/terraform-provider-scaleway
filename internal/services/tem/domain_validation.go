@@ -66,8 +66,10 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	duration := d.Get("timeout").(int)
@@ -80,6 +82,7 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 		if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
 			return retry.RetryableError(errors.New("retry"))
 		}
+
 		return nil
 	})
 
@@ -101,8 +104,10 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -113,6 +118,7 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 
 func ResourceDomainValidationDelete(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	d.SetId("")
+
 	return nil
 }
 
@@ -121,5 +127,6 @@ func extractAfterSlash(s string) string {
 	if lastIndex == -1 {
 		return s
 	}
+
 	return s[lastIndex+1:]
 }

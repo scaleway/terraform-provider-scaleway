@@ -105,6 +105,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 				"enable_ipam": enableIpam,
 			})
+
 			return pnI, true
 		}
 	}
@@ -123,6 +124,7 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				"name":        endpoint.Name,
 				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 			})
+
 			return flat, true
 		}
 	}
@@ -225,11 +227,13 @@ func expandInstanceLogsPolicy(i interface{}) *rdb.LogsPolicy {
 	policyConfigRaw := i.([]interface{})
 	for _, policyRaw := range policyConfigRaw {
 		policy := policyRaw.(map[string]interface{})
+
 		return &rdb.LogsPolicy{
 			MaxAgeRetention:    types.ExpandUint32Ptr(policy["max_age_retention"]),
 			TotalDiskRetention: types.ExpandSize(policy["total_disk_retention"]),
 		}
 	}
+
 	return nil
 }
 
@@ -243,5 +247,6 @@ func flattenInstanceLogsPolicy(policy *rdb.LogsPolicy) interface{} {
 	} else {
 		return nil
 	}
+
 	return p
 }

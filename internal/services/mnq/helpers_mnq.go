@@ -114,6 +114,7 @@ func (a ARN) String() string {
 	if a.ExtraResourceID == "" {
 		return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s", a.Subject, a.Region, a.ProjectID, a.ResourceName)
 	}
+
 	return fmt.Sprintf("arn:scw:%s:%s:project-%s:%s:%s", a.Subject, a.Region, a.ProjectID, a.ResourceName, a.ExtraResourceID)
 }
 
@@ -177,6 +178,7 @@ func setResourceValue(values map[string]interface{}, resourcePath string, value 
 		}
 
 		setResourceValue(values[parts[0]].([]interface{})[0].(map[string]interface{}), strings.Join(parts[2:], "."), value, resourceSchemas[parts[0]].Elem.(*schema.Resource).Schema)
+
 		return
 	}
 
@@ -222,6 +224,7 @@ func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute st
 	}
 
 	awsAttributes[awsAttribute] = s
+
 	return nil
 }
 
@@ -285,5 +288,6 @@ func IsAWSErrorCode(err error, code string) bool {
 	if errors.As(err, &apiErr) && apiErr.Code == code {
 		return true
 	}
+
 	return false
 }
