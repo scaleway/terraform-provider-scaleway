@@ -66,8 +66,10 @@ func ResourceInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -79,6 +81,7 @@ func ResourceInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.Resou
 
 func ResourceInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
+
 	instanceAPI, zone, securityGroupID, err := NewAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -94,6 +97,7 @@ func ResourceInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.Res
 
 func ResourceInstanceSecurityGroupRulesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
+
 	instanceAPI, zone, securityGroupID, err := NewAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return diag.FromErr(err)

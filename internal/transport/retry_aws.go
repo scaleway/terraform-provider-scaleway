@@ -46,6 +46,7 @@ func retryWhen[T any](ctx context.Context, config *RetryWhenConfig[T], shouldRet
 				return result, ctx.Err()
 			default:
 				time.Sleep(retryInterval) // lintignore:R018
+
 				continue
 			}
 		}

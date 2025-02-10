@@ -108,8 +108,10 @@ func ResourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -143,9 +145,11 @@ func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	if d.HasChange("event_types") {
 		rawEventTypes := d.Get("event_types").([]interface{})
 		eventTypes := make([]tem.WebhookEventType, len(rawEventTypes))
+
 		for i, raw := range rawEventTypes {
 			eventTypes[i] = tem.WebhookEventType(raw.(string))
 		}
+
 		req.EventTypes = eventTypes
 	}
 

@@ -96,6 +96,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
 
@@ -131,6 +132,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 	if !d.IsNewResource() && errors.As(err, new(*s3Types.NoSuchBucket)) {
 		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -141,6 +143,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 
 		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -150,6 +153,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
 	}
+
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	_ = d.Set("bucket", bucket)

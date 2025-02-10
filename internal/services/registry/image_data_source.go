@@ -77,13 +77,16 @@ func DataSourceRegistryImageRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	var image *registry.Image
+
 	imageID, ok := d.GetOk("image_id")
 	if !ok {
 		var namespaceID *string
 		if d.Get("namespace_id") != "" {
 			namespaceID = types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id")))
 		}
+
 		imageName := d.Get("name").(string)
+
 		res, err := api.ListImages(&registry.ListImagesRequest{
 			Region:      region,
 			Name:        types.ExpandStringPtr(imageName),
@@ -93,6 +96,7 @@ func DataSourceRegistryImageRead(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		foundImage, err := datasource.FindExact(
 			res.Images,
 			func(s *registry.Image) bool { return s.Name == imageName },
@@ -111,6 +115,7 @@ func DataSourceRegistryImageRead(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		image = res
 	}
 

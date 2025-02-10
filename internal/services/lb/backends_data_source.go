@@ -216,6 +216,7 @@ func DataSourceLbBackendsRead(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	backends := []interface{}(nil)
+
 	for _, backend := range res.Backends {
 		rawBackend := make(map[string]interface{})
 		rawBackend["id"] = zonal.NewID(zone, backend.ID).String()

@@ -60,6 +60,7 @@ func DataSourceConfig() *schema.Resource {
 func dataSourceConfigRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := meta.ExtractScwClient(m)
 	providerMeta := m.(*meta.Meta)
+
 	d.SetId("0")
 
 	accessKey, _ := client.GetAccessKey()

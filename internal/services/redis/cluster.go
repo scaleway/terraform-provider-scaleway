@@ -228,6 +228,7 @@ func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
 		if oldSize == 1 && newSize != 1 || newSize < oldSize {
 			return diff.ForceNew("cluster_size")
 		}
+
 		return nil
 	}
 }
@@ -252,22 +253,27 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m interf
 	if tagsExist {
 		createReq.Tags = types.ExpandStrings(tags)
 	}
+
 	clusterSize, clusterSizeExist := d.GetOk("cluster_size")
 	if clusterSizeExist {
 		createReq.ClusterSize = scw.Int32Ptr(int32(clusterSize.(int)))
 	}
+
 	tlsEnabled, tlsEnabledExist := d.GetOk("tls_enabled")
 	if tlsEnabledExist {
 		createReq.TLSEnabled = tlsEnabled.(bool)
 	}
+
 	aclRules, aclRulesExist := d.GetOk("acl")
 	if aclRulesExist {
 		rules, err := expandACLSpecs(aclRules)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		createReq.ACLRules = rules
 	}
+
 	settings, settingsExist := d.GetOk("settings")
 	if settingsExist {
 		createReq.ClusterSettings = expandSettings(settings)
@@ -279,6 +285,7 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m interf
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		createReq.Endpoints = pnSpecs
 	}
 
@@ -307,12 +314,15 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 		Zone:      zone,
 		ClusterID: ID,
 	}
+
 	cluster, err := redisAPI.GetCluster(getReq, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -338,6 +348,7 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if pnExists {
 		_ = d.Set("private_network", pnI)
 	}
+
 	_ = d.Set("public_network", flattenPublicNetwork(cluster.Endpoints))
 
 	if cluster.TLSEnabled {
@@ -376,21 +387,26 @@ func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
+
 	if d.HasChange("user_name") {
 		req.UserName = types.ExpandStringPtr(d.Get("user_name"))
 	}
+
 	if d.HasChange("password") {
 		req.Password = types.ExpandStringPtr(d.Get("password"))
 	}
+
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
+
 	if d.HasChange("acl") {
 		diagnostics := updateACL(ctx, d, redisAPI, zone, ID)
 		if diagnostics != nil {
 			return diagnostics
 		}
 	}
+
 	if d.HasChange("settings") {
 		diagnostics := updateSettings(ctx, d, redisAPI, zone, ID)
 		if diagnostics != nil {
@@ -416,6 +432,7 @@ func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			ClusterSize: scw.Uint32Ptr(uint32(d.Get("cluster_size").(int))),
 		})
 	}
+
 	if d.HasChange("version") {
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
 			Zone:      zone,
@@ -423,6 +440,7 @@ func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			Version:   types.ExpandStringPtr(d.Get("version")),
 		})
 	}
+
 	if d.HasChange("node_type") {
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
 			Zone:      zone,
@@ -430,11 +448,13 @@ func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			NodeType:  types.ExpandStringPtr(d.Get("node_type")),
 		})
 	}
+
 	for i := range migrateClusterRequests {
 		_, err = waitForCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
+
 		_, err = redisAPI.MigrateCluster(&migrateClusterRequests[i], scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -503,10 +523,12 @@ func ResourceClusterUpdateEndpoints(ctx context.Context, d *schema.ResourceData,
 
 	// get new desired state of endpoints
 	rawNewEndpoints := d.Get("private_network")
+
 	newEndpoints, err := expandPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if len(newEndpoints) == 0 {
 		newEndpoints = append(newEndpoints, &redis.EndpointSpec{
 			PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},

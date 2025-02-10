@@ -81,6 +81,7 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	instanceID := d.Get("instance_id").(string)
+
 	_, err = waitForRDBInstance(ctx, api, region, locality.ExpandID(instanceID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -90,6 +91,7 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: locality.ExpandID(instanceID),
@@ -124,8 +126,10 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -147,10 +151,12 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface
 				})
 			}
 		}
+
 		_ = d.Set("acl_rules", aclRules)
 	} else {
 		_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
 	}
+
 	_ = d.Set("region", region)
 
 	return diags
@@ -177,6 +183,7 @@ func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req := &rdb.SetInstanceACLRulesRequest{
 			Region:     region,
 			InstanceID: instanceID,
@@ -197,11 +204,14 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	aclRuleIPs := make([]string, 0)
+
 	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	for _, acl := range aclRules {
 		aclRuleIPs = append(aclRuleIPs, acl.IP.String())
 	}
@@ -230,23 +240,28 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{
 
 func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	var res []*rdb.ACLRuleRequest
+
 	for _, rule := range data {
 		r := rule.(map[string]interface{})
 
 		ipRaw, ok := r["ip"]
 		if ok {
 			aclRule := &rdb.ACLRuleRequest{}
+
 			ip, err := types.ExpandIPNet(ipRaw.(string))
 			if err != nil {
 				return res, err
 			}
+
 			aclRule.IP = ip
 			if descriptionRaw, descriptionExist := r["description"]; descriptionExist {
 				aclRule.Description = descriptionRaw.(string)
 			}
+
 			res = append(res, aclRule)
 		}
 	}
+
 	sort.Slice(res, func(i, j int) bool {
 		return bytes.Compare(res[i].IP.IP, res[j].IP.IP) < 0
 	})
@@ -256,26 +271,33 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 
 func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interface{}) ([]map[string]interface{}, []error) {
 	res := make([]map[string]interface{}, 0, len(dataFromSchema))
+
 	var errors []error
+
 	ruleMap := make(map[string]*rdb.ACLRule)
 	for _, rule := range rules {
 		ruleMap[rule.IP.String()] = rule
 	}
 
 	ruleMapFromSchema := map[string]struct{}{}
+
 	for _, ruleFromSchema := range dataFromSchema {
 		currentRule := ruleFromSchema.(map[string]interface{})
+
 		ip, err := types.ExpandIPNet(currentRule["ip"].(string))
 		if err != nil {
 			errors = append(errors, err)
+
 			continue
 		}
 
 		aclRule, aclRuleExists := ruleMap[ip.String()]
 		if !aclRuleExists {
 			errors = append(errors, fmt.Errorf("acl from state does not exist on server (%s)", ip.String()))
+
 			continue
 		}
+
 		ruleMapFromSchema[ip.String()] = struct{}{}
 		r := map[string]interface{}{
 			"ip":          aclRule.IP.String(),
@@ -307,6 +329,7 @@ func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*
 
 func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
 	res := make([]map[string]interface{}, 0, len(rules))
+
 	for _, rule := range rules {
 		r := map[string]interface{}{
 			"ip":          rule.IP.String(),
@@ -318,7 +341,9 @@ func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
 	sort.Slice(res, func(i, j int) bool {
 		ipI, _, _ := net.ParseCIDR(res[i]["ip"].(string))
 		ipJ, _, _ := net.ParseCIDR(res[j]["ip"].(string))
+
 		return bytes.Compare(ipI, ipJ) < 0
 	})
+
 	return res
 }

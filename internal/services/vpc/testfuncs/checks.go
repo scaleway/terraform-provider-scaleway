@@ -22,6 +22,7 @@ func CheckPrivateNetworkDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
+
 			_, err = vpcAPI.GetPrivateNetwork(&vpc2.GetPrivateNetworkRequest{
 				PrivateNetworkID: ID,
 				Region:           region,

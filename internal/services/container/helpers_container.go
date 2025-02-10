@@ -32,6 +32,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.API, sc
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, nil
 }
 
@@ -43,6 +44,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }
 
@@ -156,6 +158,7 @@ func retryCreateContainerDomain(ctx context.Context, containerAPI *container.API
 			if err != nil && isContainerDNSResolveError(err) {
 				continue
 			}
+
 			return domain, err
 		case <-timeoutChannel:
 			return containerAPI.CreateDomain(req, scw.WithContext(ctx))

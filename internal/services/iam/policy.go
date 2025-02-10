@@ -153,16 +153,20 @@ func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m inte
 
 func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	pol, err := api.GetPolicy(&iam.GetPolicyRequest{
 		PolicyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("name", pol.Name)
 	_ = d.Set("description", pol.Description)
 	_ = d.Set("created_at", types.FlattenTime(pol.CreatedAt))
@@ -174,9 +178,11 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m interf
 	if pol.UserID != nil {
 		_ = d.Set("user_id", types.FlattenStringPtr(pol.UserID))
 	}
+
 	if pol.GroupID != nil {
 		_ = d.Set("group_id", types.FlattenStringPtr(pol.GroupID))
 	}
+
 	if pol.ApplicationID != nil {
 		_ = d.Set("application_id", types.FlattenStringPtr(pol.ApplicationID))
 	}
@@ -208,30 +214,37 @@ func resourceIamPolicyUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		hasUpdated = true
 		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
+
 	if d.HasChange("description") {
 		hasUpdated = true
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
+
 	if d.HasChange("tags") {
 		hasUpdated = true
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
+
 	if d.HasChange("user_id") {
 		hasUpdated = true
 		req.UserID = types.ExpandStringPtr(d.Get("user_id"))
 	}
+
 	if d.HasChange("group_id") {
 		hasUpdated = true
 		req.GroupID = types.ExpandStringPtr(d.Get("group_id"))
 	}
+
 	if d.HasChange("application_id") {
 		hasUpdated = true
 		req.ApplicationID = types.ExpandStringPtr(d.Get("application_id"))
 	}
+
 	if noPrincipal := d.Get("no_principal"); d.HasChange("no_principal") && noPrincipal.(bool) {
 		hasUpdated = true
 		req.NoPrincipal = types.ExpandBoolPtr(noPrincipal)
 	}
+
 	if hasUpdated {
 		_, err := api.UpdatePolicy(req, scw.WithContext(ctx))
 		if err != nil {
@@ -261,8 +274,10 @@ func resourceIamPolicyDelete(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

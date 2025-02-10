@@ -47,14 +47,17 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		for _, volume := range res.Volumes {
 			if volume.Name == d.Get("name").(string) {
 				if volumeID != "" {
 					return diag.Errorf("more than 1 volume found with the same name %s", d.Get("name"))
 				}
+
 				volumeID = volume.ID
 			}
 		}
+
 		if volumeID == "" {
 			return diag.Errorf("no volume found with the name %s", d.Get("name"))
 		}
@@ -62,6 +65,7 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m in
 
 	zoneID := datasource.NewZonedID(volumeID, zone)
 	d.SetId(zoneID)
+
 	err = d.Set("volume_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)

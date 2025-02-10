@@ -48,6 +48,7 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interf
 	if !ok {
 		poolName := d.Get("name").(string)
 		clusterID := regional.ExpandID(d.Get("cluster_id"))
+
 		res, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 			Region:    region,
 			Name:      types.ExpandStringPtr(poolName),
@@ -72,5 +73,6 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interf
 	regionalizedID := datasource.NewRegionalID(poolID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
+
 	return ResourceK8SPoolRead(ctx, d, m)
 }

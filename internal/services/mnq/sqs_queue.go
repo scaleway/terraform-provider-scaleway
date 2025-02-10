@@ -168,6 +168,7 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m in
 		Attributes: attributes,
 		QueueName:  scw.StringPtr(queueName),
 	}
+
 	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{AWSErrQueueDeletedRecently}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
@@ -302,6 +303,7 @@ func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m in
 		if IsAWSErrorCode(err, AWSErrNonExistentQueue) {
 			return nil
 		}
+
 		return diag.Errorf("failed to delete SQS Queue (%s): %s", d.Id(), err)
 	}
 

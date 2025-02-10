@@ -156,6 +156,7 @@ func DataSourceLbACLsRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	acls := []interface{}(nil)
+
 	for _, acl := range res.ACLs {
 		rawACL := make(map[string]interface{})
 		rawACL["id"] = zonal.NewIDString(zone, acl.ID)

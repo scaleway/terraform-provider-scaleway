@@ -20,6 +20,7 @@ func IsDate() schema.SchemaValidateDiagFunc {
 				Summary:       "invalid input, expected a string",
 			}}
 		}
+
 		_, err := time.Parse(time.RFC3339, date)
 		if err != nil {
 			return diag.Diagnostics{diag.Diagnostic{

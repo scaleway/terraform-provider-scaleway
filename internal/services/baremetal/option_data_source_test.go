@@ -62,6 +62,7 @@ func isOptionPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		}
 
 		api := baremetal.NewAPI(tt.Meta.ScwClient())
+
 		_, err = api.GetOption(&baremetal.GetOptionRequest{
 			OptionID: ID,
 			Zone:     zone,

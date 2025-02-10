@@ -34,6 +34,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Regi
 	if err != nil {
 		return nil, "", err
 	}
+
 	return newAPI(m), region, nil
 }
 
@@ -43,6 +44,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, stri
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return newAPI(m), region, ID, nil
 }
 
@@ -86,10 +88,12 @@ func getIPConfigCreate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 	if enableIpamSet {
 		ipamConfig = types.ExpandBoolPtr(enableIpam)
 	}
+
 	customIP, customIPSet := d.GetOk("private_network.0." + ipFieldName)
 	if customIPSet {
 		staticConfig = types.ExpandStringPtr(customIP)
 	}
+
 	return ipamConfig, staticConfig
 }
 
@@ -98,9 +102,11 @@ func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 	if ipamConfigI, _ := meta.GetRawConfigForKey(d, "private_network.#.enable_ipam", cty.Bool); ipamConfigI != nil {
 		ipamConfig = types.ExpandBoolPtr(ipamConfigI)
 	}
+
 	if staticConfigI, _ := meta.GetRawConfigForKey(d, "private_network.#."+ipFieldName, cty.String); staticConfigI != nil {
 		staticConfig = types.ExpandStringPtr(staticConfigI)
 	}
+
 	return ipamConfig, staticConfig
 }
 

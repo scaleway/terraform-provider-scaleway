@@ -42,6 +42,7 @@ func SNSClientWithRegionFromID(ctx context.Context, d *schema.ResourceData, m in
 	if len(tab) != 2 {
 		return nil, "", errors.New("invalid ID format, expected parts separated by slashes")
 	}
+
 	region, err := scw.ParseRegion(tab[0])
 	if err != nil {
 		return nil, "", fmt.Errorf("invalid region in id: %w", err)
@@ -79,6 +80,7 @@ func NewSNSClient(ctx context.Context, httpClient *http.Client, region string, e
 	if err != nil {
 		return nil, err
 	}
+
 	return sns.NewFromConfig(customConfig), nil
 }
 
@@ -129,6 +131,7 @@ func resourceMNQSNSTopicName(name interface{}, prefix interface{}, isSQS bool, i
 	} else {
 		output = types.NewRandomName("topic")
 	}
+
 	if isSQS && isSQSFifo {
 		return output + SQSFIFOQueueNameSuffix
 	}

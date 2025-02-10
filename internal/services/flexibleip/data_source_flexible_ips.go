@@ -143,26 +143,32 @@ func DataSourceFlexibleIPsRead(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	fips := []interface{}(nil)
+
 	for _, fip := range res.FlexibleIPs {
 		rawFip := make(map[string]interface{})
 		rawFip["id"] = zonal.NewID(fip.Zone, fip.ID).String()
 		rawFip["organization_id"] = fip.OrganizationID
 		rawFip["project_id"] = fip.ProjectID
 		rawFip["description"] = fip.Description
+
 		if len(fip.Tags) > 0 {
 			rawFip["tags"] = fip.Tags
 		}
+
 		rawFip["created_at"] = types.FlattenTime(fip.CreatedAt)
 		rawFip["updated_at"] = types.FlattenTime(fip.UpdatedAt)
 		rawFip["status"] = fip.Status
+
 		ip, err := types.FlattenIPNet(fip.IPAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		rawFip["ip_address"] = ip
 		if fip.MacAddress != nil {
 			rawFip["mac_address"] = flattenFlexibleIPMacAddress(fip.MacAddress)
 		}
+
 		rawFip["reverse"] = fip.Reverse
 		rawFip["zone"] = string(zone)
 

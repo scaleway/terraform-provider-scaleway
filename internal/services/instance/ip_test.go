@@ -136,6 +136,7 @@ func isIPCIDRValid(name string, key string) resource.TestCheckFunc {
 		if !exists {
 			return fmt.Errorf("requested attribute %s[%q] does not exist", name, key)
 		}
+
 		_, _, err := net.ParseCIDR(cidr)
 		if err != nil {
 			return fmt.Errorf("invalid cidr (%s) in %s[%q]", cidr, name, key)
@@ -172,6 +173,7 @@ func isIPAttachedToServer(tt *acctest.TestTools, ipResource, serverResource stri
 		if !ok {
 			return fmt.Errorf("resource not found: %s", ipResource)
 		}
+
 		serverState, ok := s.RootModule().Resources[serverResource]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", serverResource)

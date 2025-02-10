@@ -11,6 +11,7 @@ import (
 // It returns the first matching element and an error if either no match is found or multiple matches are found.
 func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, error) { //nolint:ireturn
 	var found T
+
 	var foundFlag bool
 
 	for _, elem := range slice {
@@ -18,8 +19,10 @@ func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, err
 			if foundFlag {
 				// More than one element found with the same search name
 				var zero T
+
 				return zero, fmt.Errorf("multiple elements found with the name %s", searchName)
 			}
+
 			found = elem
 			foundFlag = true
 		}
@@ -27,6 +30,7 @@ func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, err
 
 	if !foundFlag {
 		var zero T
+
 		return zero, fmt.Errorf("no element found with the name %s", searchName)
 	}
 
@@ -51,6 +55,7 @@ func SingularDataSourceFindError(resourceType string, err error) error {
 // retry.NotFoundError.
 func notFound(err error) bool {
 	var e *retry.NotFoundError // nosemgrep:ci.is-not-found-error
+
 	return errors.As(err, &e)
 }
 
@@ -65,6 +70,7 @@ func (e *TooManyResultsError) Error() string {
 
 func (e *TooManyResultsError) Is(err error) bool {
 	_, ok := err.(*TooManyResultsError) //nolint:errorlint // Explicitly does *not* match down the error tree
+
 	return ok
 }
 

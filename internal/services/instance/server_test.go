@@ -702,8 +702,9 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 					
 					resource "scaleway_instance_server" "base" {
 						count = 3
+						name = "tf-tests-server-${count.index}-with-placement-group"
 						image = "ubuntu_focal"
-						type  = "DEV1-S"
+						type  = "PLAY2-PICO"
 						placement_group_id = "${scaleway_instance_placement_group.ha.id}"
 						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
 					}`,
@@ -712,9 +713,12 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 					isServerPresent(tt, "scaleway_instance_server.base.1"),
 					isServerPresent(tt, "scaleway_instance_server.base.2"),
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.ha"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.0", "placement_group_policy_respected", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.1", "placement_group_policy_respected", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.2", "placement_group_policy_respected", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.ha", "policy_respected", "true"),
+
+					// placement_group_policy_respected is deprecated and should always be false.
+					resource.TestCheckResourceAttr("scaleway_instance_server.base.0", "placement_group_policy_respected", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base.1", "placement_group_policy_respected", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base.2", "placement_group_policy_respected", "false"),
 				),
 			},
 		},
@@ -1423,17 +1427,20 @@ func serverIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc 
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", nameFirst)
 		}
+
 		idFirst := rs.Primary.ID
 
 		rs, ok = s.RootModule().Resources[nameSecond]
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", nameSecond)
 		}
+
 		idSecond := rs.Primary.ID
 
 		if idFirst == idSecond {
 			return fmt.Errorf("IDs of both resources were equal when they should not have been (%s and %s)", nameFirst, nameSecond)
 		}
+
 		return nil
 	}
 }

@@ -41,6 +41,7 @@ func DataSourceObjectStorageRead(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
 
@@ -49,6 +50,7 @@ func DataSourceObjectStorageRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	log.Printf("[DEBUG] Reading Object Storage bucket: %s", bucket)
+
 	_, err = s3Client.HeadBucket(ctx, input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed getting Object Storage bucket (%s): %w", bucket, err))
@@ -60,9 +62,11 @@ func DataSourceObjectStorageRead(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
 	}
+
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	bucketRegionalID := regional.NewIDString(region, bucket)
 	d.SetId(bucketRegionalID)
+
 	return resourceObjectBucketRead(ctx, d, m)
 }

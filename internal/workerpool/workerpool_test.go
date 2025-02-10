@@ -36,16 +36,19 @@ func TestWorkerPoolWaitTime(t *testing.T) {
 
 	pool.AddTask(func() error {
 		time.Sleep(50 * time.Millisecond) // lintignore: R018
+
 		return nil
 	})
 
 	pool.AddTask(func() error {
 		time.Sleep(50 * time.Millisecond) // lintignore: R018
+
 		return errors.New("error")
 	})
 
 	pool.AddTask(func() error {
 		time.Sleep(50 * time.Millisecond) // lintignore: R018
+
 		return nil
 	})
 
@@ -80,9 +83,11 @@ func TestWorkerPoolWaitTimeMultiple(t *testing.T) {
 	for i := range iterations {
 		if i%2 == 0 {
 			found := false
+
 			for _, err := range errs {
 				if err.Error() == fmt.Sprintf("error %d", i) {
 					found = true
+
 					break
 				}
 			}

@@ -89,6 +89,7 @@ func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 			Tags:    scw.StringsPtr(types.ExpandStrings(d.Get("tags"))),
 			Reverse: types.ExpandStringPtr(reverse.(string)),
 		}
+
 		_, err = api.UpdateIP(updateRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -111,8 +112,10 @@ func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -168,6 +171,7 @@ func ResourceVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	var warnings diag.Diagnostics
+
 	err = api.DeleteIP(&vpcgw.DeleteIPRequest{
 		IPID: ID,
 		Zone: zone,
@@ -179,6 +183,7 @@ func ResourceVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceDat
 				Summary:  err.Error(),
 			})
 		}
+
 		return diag.FromErr(err)
 	}
 

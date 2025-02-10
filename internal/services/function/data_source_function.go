@@ -40,6 +40,7 @@ func DataSourceFunctionRead(ctx context.Context, d *schema.ResourceData, m inter
 	functionID, ok := d.GetOk("function_id")
 	if !ok {
 		functionName := d.Get("name").(string)
+
 		res, err := api.ListFunctions(&function.ListFunctionsRequest{
 			Region:      region,
 			NamespaceID: locality.ExpandID(d.Get("namespace_id").(string)),

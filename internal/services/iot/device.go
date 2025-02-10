@@ -216,6 +216,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m inte
 			if policy, ok := d.GetOk(fqfnS + iotPolicySuffix); ok {
 				mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(policy.(string))
 			}
+
 			if topics, ok := d.GetOk(fqfnS + iotTopicsSuffix); ok {
 				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
 			}
@@ -230,6 +231,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m inte
 			if policy, ok := d.GetOk(fqfnP + iotPolicySuffix); ok {
 				mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(policy.(string))
 			}
+
 			if topics, ok := d.GetOk(fqfnP + iotTopicsSuffix); ok {
 				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
 			}
@@ -284,8 +286,10 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -314,6 +318,7 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interf
 		(device.MessageFilters.Publish.Topics != nil && len(*device.MessageFilters.Publish.Topics) != 0) {
 		mfHasNonDefaultChange = true
 	}
+
 	if device.MessageFilters.Subscribe.Policy != iot.DeviceMessageFiltersRulePolicyReject ||
 		(device.MessageFilters.Subscribe.Topics != nil && len(*device.MessageFilters.Subscribe.Topics) != 0) {
 		mfHasNonDefaultChange = true

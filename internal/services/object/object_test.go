@@ -30,6 +30,7 @@ const (
 func TestAccObject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -109,6 +110,7 @@ func TestAccObject_Basic(t *testing.T) {
 func TestAccObject_Hash(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-hash")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -169,6 +171,7 @@ func TestAccObject_Hash(t *testing.T) {
 func TestAccObject_Move(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-move")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -225,6 +228,7 @@ func TestAccObject_Move(t *testing.T) {
 func TestAccObject_StorageClass(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-storage-class")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -289,6 +293,7 @@ func TestAccObject_StorageClass(t *testing.T) {
 func TestAccObject_Metadata(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-metadata")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -359,6 +364,7 @@ func TestAccObject_Metadata(t *testing.T) {
 func TestAccObject_Tags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-tags")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -423,6 +429,7 @@ func TestAccObject_Tags(t *testing.T) {
 func TestAccObject_Visibility(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -481,6 +488,7 @@ func TestAccObject_Visibility(t *testing.T) {
 func TestAccObject_State(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -550,6 +558,7 @@ func TestAccObject_State(t *testing.T) {
 func TestAccObject_ByContent(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content")
 
 	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
@@ -608,6 +617,7 @@ func TestAccObject_ByContent(t *testing.T) {
 func TestAccObject_ByContentBase64(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content-base64")
 
 	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
@@ -683,6 +693,7 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 func TestAccObject_WithBucketName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -739,6 +750,7 @@ func TestAccObject_WithBucketName(t *testing.T) {
 func TestAccObject_Encryption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-encryption")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -799,10 +811,12 @@ func TestAccObject_Encryption(t *testing.T) {
 func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		rs := state.RootModule().Resources[n]
 		if rs == nil {
 			return errors.New("resource not found")
 		}
+
 		key := rs.Primary.Attributes["key"]
 
 		regionalID := regional.ExpandID(rs.Primary.Attributes["bucket"])
@@ -831,8 +845,10 @@ func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestChec
 			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {
 				return errors.New("s3 object not found")
 			}
+
 			return err
 		}
+
 		return nil
 	}
 }

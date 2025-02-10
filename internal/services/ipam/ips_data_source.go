@@ -185,6 +185,7 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	ips := []interface{}(nil)
+
 	for _, ip := range resp.IPs {
 		address, err := types.FlattenIPNet(ip.Address)
 		if err != nil {

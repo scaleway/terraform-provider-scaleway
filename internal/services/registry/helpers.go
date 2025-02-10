@@ -27,6 +27,7 @@ func NewAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API, scw
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, nil
 }
 
@@ -38,5 +39,6 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Region,
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }

@@ -24,6 +24,7 @@ var jsonConfigPartitioning = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partiti
 func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -118,6 +119,7 @@ func TestAccServer_Basic(t *testing.T) {
 func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -179,6 +181,7 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -236,6 +239,7 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 func TestAccServer_CreateServerWithOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -301,6 +305,7 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 func TestAccServer_AddOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -392,6 +397,7 @@ func TestAccServer_AddOption(t *testing.T) {
 func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -546,6 +552,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -615,6 +622,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 func TestAccServer_AddPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -727,6 +735,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -852,6 +861,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -1059,6 +1069,7 @@ func testAccChechPartitioning(tt *acctest.TestTools, n string, source string) re
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
+
 		baremetalAPI, zonedID, err := baremetal.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -1071,17 +1082,22 @@ func testAccChechPartitioning(tt *acctest.TestTools, n string, source string) re
 		if err != nil {
 			return err
 		}
+
 		if server.Install.PartitioningSchema == nil {
 			return fmt.Errorf("server %s has no partitioning schema", n)
 		}
+
 		schema := baremetalSDK.Schema{}
+
 		err = json.Unmarshal([]byte(source), &schema)
 		if err != nil {
 			return err
 		}
+
 		if !reflect.DeepEqual(&schema, server.Install.PartitioningSchema) {
 			return fmt.Errorf("server %s has not custom partitioning install", n)
 		}
+
 		return nil
 	}
 }

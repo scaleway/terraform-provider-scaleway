@@ -53,10 +53,12 @@ func testSweepUser(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list users: %w", err)
 		}
+
 		for _, user := range listUsers.Users {
 			if !acctest.IsTestResource(user.Email) {
 				continue
 			}
+
 			err = api.DeleteUser(&iamSDK.DeleteUserRequest{
 				UserID: user.ID,
 			})
@@ -64,6 +66,7 @@ func testSweepUser(_ string) error {
 				return fmt.Errorf("failed to delete user: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -83,6 +86,7 @@ func testSweepSSHKey(_ string) error {
 			if !acctest.IsTestResource(sshKey.Name) {
 				continue
 			}
+
 			err := iamAPI.DeleteSSHKey(&iamSDK.DeleteSSHKeyRequest{
 				SSHKeyID: sshKey.ID,
 			})
@@ -110,10 +114,12 @@ func testSweepIamPolicy(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list policies: %w", err)
 		}
+
 		for _, pol := range listPols.Policies {
 			if !acctest.IsTestResource(pol.Name) {
 				continue
 			}
+
 			err = api.DeletePolicy(&iamSDK.DeletePolicyRequest{
 				PolicyID: pol.ID,
 			})
@@ -121,6 +127,7 @@ func testSweepIamPolicy(_ string) error {
 				return fmt.Errorf("failed to delete policy: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -140,10 +147,12 @@ func testSweepIamGroup(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list groups: %w", err)
 		}
+
 		for _, group := range listApps.Groups {
 			if !acctest.IsTestResource(group.Name) {
 				continue
 			}
+
 			err = api.DeleteGroup(&iamSDK.DeleteGroupRequest{
 				GroupID: group.ID,
 			})
@@ -151,6 +160,7 @@ func testSweepIamGroup(_ string) error {
 				return fmt.Errorf("failed to delete group: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -170,6 +180,7 @@ func testSweepIamApplication(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list applications: %w", err)
 		}
+
 		for _, app := range listApps.Applications {
 			if !acctest.IsTestResource(app.Name) {
 				continue
@@ -182,6 +193,7 @@ func testSweepIamApplication(_ string) error {
 				return fmt.Errorf("failed to delete application: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -203,10 +215,12 @@ func testSweepIamAPIKey(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list api keys: %w", err)
 		}
+
 		for _, key := range listAPIKeys.APIKeys {
 			if !acctest.IsTestResource(key.Description) {
 				continue
 			}
+
 			err = api.DeleteAPIKey(&iamSDK.DeleteAPIKeyRequest{
 				AccessKey: key.AccessKey,
 			})
@@ -214,6 +228,7 @@ func testSweepIamAPIKey(_ string) error {
 				return fmt.Errorf("failed to delete api key: %w", err)
 			}
 		}
+
 		return nil
 	})
 }

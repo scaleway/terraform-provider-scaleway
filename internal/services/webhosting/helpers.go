@@ -25,6 +25,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.API, s
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, nil
 }
 
@@ -36,6 +37,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*webhosting.API, scw.Regio
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }
 

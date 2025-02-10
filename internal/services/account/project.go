@@ -81,14 +81,17 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
+
 	res, err := accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -114,6 +117,7 @@ func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
+
 	if d.HasChange("description") {
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
@@ -143,6 +147,7 @@ func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m
 
 			return retry.NonRetryableError(err)
 		}
+
 		return nil
 	})
 	if err != nil {

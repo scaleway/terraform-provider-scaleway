@@ -51,6 +51,7 @@ func testAccCheckDomainZoneExists(tt *acctest.TestTools, n string) resource.Test
 		}
 
 		domainAPI := domain.NewDomainAPI(tt.Meta)
+
 		listDNSZones, err := domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
 			DNSZones: []string{fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])},
 		})
@@ -95,6 +96,7 @@ func testAccCheckDomainZoneDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 					rs.Primary.Attributes["subdomain"],
 					rs.Primary.Attributes["domain"])
 			}
+
 			return nil
 		}
 

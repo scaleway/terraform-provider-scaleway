@@ -33,7 +33,9 @@ func AddTestSweepers() {
 func testSweepFunctionTrigger(_ string) error {
 	return acctest.SweepRegions((&functionSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := functionSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the function triggers in (%s)", region)
+
 		listTriggers, err := functionAPI.ListTriggers(
 			&functionSDK.ListTriggersRequest{
 				Region: region,
@@ -61,7 +63,9 @@ func testSweepFunctionTrigger(_ string) error {
 func testSweepFunctionNamespace(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := functionSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the function namespaces in (%s)", region)
+
 		listNamespaces, err := functionAPI.ListNamespaces(
 			&functionSDK.ListNamespacesRequest{
 				Region: region,
@@ -89,7 +93,9 @@ func testSweepFunctionNamespace(_ string) error {
 func testSweepFunction(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := functionSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the function in (%s)", region)
+
 		listFunctions, err := functionAPI.ListFunctions(
 			&functionSDK.ListFunctionsRequest{
 				Region: region,
@@ -117,7 +123,9 @@ func testSweepFunction(_ string) error {
 func testSweepFunctionCron(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := functionSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the function cron in (%s)", region)
+
 		listCron, err := functionAPI.ListCrons(
 			&functionSDK.ListCronsRequest{
 				Region: region,

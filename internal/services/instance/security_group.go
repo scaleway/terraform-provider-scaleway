@@ -120,9 +120,11 @@ func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.Resource
 		EnableDefaultSecurity: types.ExpandBoolPtr(d.Get("enable_default_security")),
 	}
 	tags := types.ExpandStrings(d.Get("tags"))
+
 	if len(tags) > 0 {
 		req.Tags = tags
 	}
+
 	res, err := instanceAPI.CreateSecurityGroup(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -150,8 +152,10 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -171,9 +175,11 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_ = d.Set("inbound_rule", inboundRules)
 		_ = d.Set("outbound_rule", outboundRules)
 	}
+
 	return nil
 }
 
@@ -185,9 +191,11 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 	if err != nil {
 		return nil, nil, err
 	}
+
 	sort.Slice(resRules.Rules, func(i, j int) bool {
 		return resRules.Rules[i].Position < resRules.Rules[j].Position
 	})
+
 	apiRules := map[instanceSDK.SecurityGroupRuleDirection][]*instanceSDK.SecurityGroupRule{
 		instanceSDK.SecurityGroupRuleDirectionInbound:  {},
 		instanceSDK.SecurityGroupRuleDirectionOutbound: {},
@@ -202,6 +210,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 		if !apiRule.Editable {
 			continue
 		}
+
 		apiRules[apiRule.Direction] = append(apiRules[apiRule.Direction], apiRule)
 	}
 
@@ -213,6 +222,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 				if errGroup != nil {
 					return nil, nil, errGroup
 				}
+
 				if ok, _ := SecurityGroupRuleEquals(stateRule, apiRule); !ok {
 					stateRules[direction][index], err = securityGroupRuleFlatten(apiRule)
 					if err != nil {
@@ -224,6 +234,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 				if err != nil {
 					return nil, nil, err
 				}
+
 				stateRules[direction] = append(stateRules[direction], rulesGroup)
 			}
 		}
@@ -242,6 +253,7 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	zone, ID, err := zonal.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -251,6 +263,7 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 	if d.Get("inbound_default_policy") != nil {
 		inboundDefaultPolicy = instanceSDK.SecurityGroupPolicy(d.Get("inbound_default_policy").(string))
 	}
+
 	outboundDefaultPolicy := instanceSDK.SecurityGroupPolicy("")
 	if d.Get("outbound_default_policy") != nil {
 		outboundDefaultPolicy = instanceSDK.SecurityGroupPolicy(d.Get("outbound_default_policy").(string))
@@ -260,6 +273,7 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 	if d.Get("description") != nil {
 		description = d.Get("description").(string)
 	}
+
 	updateReq := &instanceSDK.UpdateSecurityGroupRequest{
 		Zone:                  zone,
 		SecurityGroupID:       ID,
@@ -307,6 +321,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 	}
 
 	setGroupRules := []*instanceSDK.SetSecurityGroupRulesRequestRule{}
+
 	for direction := range stateRules {
 		// Loop for all state rules in this direction
 		for _, rawStateRule := range stateRules[direction] {
@@ -345,6 +360,7 @@ func ResourceInstanceSecurityGroupDelete(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	zone, ID, err := zonal.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -421,10 +437,12 @@ func securityGroupRuleExpand(i interface{}) (*instanceSDK.SecurityGroupRule, err
 	}
 
 	action, _ := rawRule["action"].(string)
+
 	ipRange := rawRule["ip_range"].(string)
 	if ipRange == "" {
 		ipRange = rawRule["ip"].(string) + "/32"
 	}
+
 	if ipRange == "/32" {
 		ipRange = "0.0.0.0/0"
 	}
@@ -433,6 +451,7 @@ func securityGroupRuleExpand(i interface{}) (*instanceSDK.SecurityGroupRule, err
 	if err != nil {
 		return nil, err
 	}
+
 	rule := &instanceSDK.SecurityGroupRule{
 		DestPortFrom: &portFrom,
 		DestPortTo:   &portTo,
@@ -470,12 +489,14 @@ func securityGroupRuleFlatten(rule *instanceSDK.SecurityGroupRule) (map[string]i
 	if err != nil {
 		return nil, err
 	}
+
 	res := map[string]interface{}{
 		"protocol":   rule.Protocol.String(),
 		"ip_range":   ipnetRange,
 		"port_range": fmt.Sprintf("%d-%d", portFrom, portTo),
 		"action":     rule.Action.String(),
 	}
+
 	return res, nil
 }
 
@@ -485,18 +506,22 @@ func SecurityGroupRuleEquals(ruleA, ruleB *instanceSDK.SecurityGroupRule) (bool,
 		if v == nil {
 			return 0
 		}
+
 		return *v
 	}
 	portFromEqual := zeroIfNil(ruleA.DestPortFrom) == zeroIfNil(ruleB.DestPortFrom)
 	portToEqual := zeroIfNil(ruleA.DestPortTo) == zeroIfNil(ruleB.DestPortTo)
+
 	ipRangeA, err := types.FlattenIPNet(ruleA.IPRange)
 	if err != nil {
 		return false, err
 	}
+
 	ipRangeB, err := types.FlattenIPNet(ruleB.IPRange)
 	if err != nil {
 		return false, err
 	}
+
 	ipEqual := ipRangeA == ipRangeB
 
 	return ruleA.Action == ruleB.Action &&

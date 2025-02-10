@@ -47,6 +47,7 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 	publicGatewayID, ok := d.GetOk("public_gateway_id")
 	if !ok {
 		gwName := d.Get("name").(string)
+
 		res, err := api.ListGateways(
 			&vpcgw.ListGatewaysRequest{
 				Name:      types.ExpandStringPtr(gwName),
@@ -72,5 +73,6 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 	zonedID := datasource.NewZonedID(publicGatewayID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("public_gateway_id", zonedID)
+
 	return ResourceVPCPublicGatewayRead(ctx, d, m)
 }

@@ -140,6 +140,7 @@ func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &vpcgw.CreateDHCPRequest{
 		Zone:      zone,
 		ProjectID: d.Get("project_id").(string),
@@ -209,8 +210,10 @@ func ResourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -252,6 +255,7 @@ func ResourceVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.Subnet = &subnet
 	}
 

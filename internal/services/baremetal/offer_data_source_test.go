@@ -22,9 +22,11 @@ const (
 func TestAccDataSourceOffer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -72,9 +74,11 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -126,9 +130,11 @@ func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -191,6 +197,7 @@ func isOfferPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		}
 
 		api := baremetalSDK.NewAPI(tt.Meta.ScwClient())
+
 		_, err = baremetal.FindOfferByID(context.Background(), api, zone, id)
 		if err != nil {
 			return err

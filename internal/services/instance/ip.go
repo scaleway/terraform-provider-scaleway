@@ -76,15 +76,18 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &instanceSDK.CreateIPRequest{
 		Zone:    zone,
 		Project: types.ExpandStringPtr(d.Get("project_id")),
 		Type:    instanceSDK.IPType(d.Get("type").(string)),
 	}
 	tags := types.ExpandStrings(d.Get("tags"))
+
 	if len(tags) > 0 {
 		req.Tags = tags
 	}
+
 	res, err := instanceAPI.CreateIP(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -98,6 +101,7 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 			Reverse: &instanceSDK.NullableStringValue{Value: *reverseStrPtr},
 			Zone:    zone,
 		}
+
 		_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -105,6 +109,7 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+
 	return ResourceInstanceIPRead(ctx, d, m)
 }
 
@@ -113,6 +118,7 @@ func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &instanceSDK.UpdateIPRequest{
 		IP:   ID,
 		Zone: zone,
@@ -144,18 +150,22 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m inter
 		// We check for 403 because instanceSDK API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	address := res.IP.Address.String()
+
 	prefix := res.IP.Prefix.String()
 	if prefix == types.NetIPNil {
 		ipnet := scw.IPNet{}
 		_ = (&ipnet).UnmarshalJSON([]byte("\"" + res.IP.Address.String() + "\""))
 		prefix = ipnet.String()
 	}
+
 	if address == types.NetIPNil {
 		address = res.IP.Prefix.IP.String()
 	}
@@ -195,8 +205,10 @@ func ResourceInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m int
 		// We check for 403 because instanceSDK API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

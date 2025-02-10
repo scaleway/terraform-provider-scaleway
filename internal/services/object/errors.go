@@ -68,6 +68,7 @@ const (
 func TimedOut(err error) bool {
 	// This explicitly does *not* match wrapped TimeoutErrors
 	timeoutErr, ok := err.(*retry.TimeoutError) //nolint:errorlint // Explicitly does *not* match wrapped TimeoutErrors
+
 	return ok && timeoutErr.LastError == nil
 }
 
@@ -83,6 +84,7 @@ func ErrCodeEquals(err error, codes ...string) bool {
 			}
 		}
 	}
+
 	return false
 }
 
@@ -92,6 +94,7 @@ var serviceErrorCheckFunc map[string]ServiceErrorCheckFunc
 
 func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
 	t.Helper()
+
 	return func(err error) error {
 		if err == nil {
 			return nil

@@ -44,6 +44,7 @@ func DataSourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m 
 	crtID, ok := d.GetOk("certificate_id")
 	if !ok { // Get LB by name.
 		certificateName := d.Get("name").(string)
+
 		res, err := api.ListCertificates(&lbSDK.ZonedAPIListCertificatesRequest{
 			Zone: zone,
 			Name: types.ExpandStringPtr(certificateName),
@@ -64,11 +65,14 @@ func DataSourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m 
 
 		crtID = foundCertificate.ID
 	}
+
 	zonedID := datasource.NewZonedID(crtID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("certificate_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return resourceLbCertificateRead(ctx, d, m)
 }
