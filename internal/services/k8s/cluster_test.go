@@ -555,7 +555,7 @@ func testAccCheckK8SClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = k8sAPI.GetCluster(&k8sSDK.GetClusterRequest{
+			_, err = k8sAPI.WaitForCluster(&k8sSDK.WaitForClusterRequest{
 				Region:    region,
 				ClusterID: clusterID,
 			})
