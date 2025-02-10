@@ -37,6 +37,8 @@ const (
 	maxObjectVersionDeletionWorkers = 8
 
 	ErrCodeForbidden = "Forbidden"
+
+	defaultVersion = "v2.49.0"
 )
 
 type scalewayResolver struct {
@@ -47,9 +49,25 @@ func (r *scalewayResolver) ResolveEndpoint(ctx context.Context, params s3.Endpoi
 	return s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
 }
 
+type userAgentRoundTripper struct {
+	defaultRoundTripper http.RoundTripper
+	userAgent           string
+}
+
+var userAgent = fmt.Sprintf("scaleway-terraform-provider/%s (%s; %s; %s)", defaultVersion, runtime.Version(), runtime.GOOS, runtime.GOARCH)
+
+func (r *userAgentRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("User-Agent", userAgent)
+
+	return r.defaultRoundTripper.RoundTrip(req)
+}
+
 func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpClient *http.Client) (*s3.Client, error) {
 	endpoint := "https://s3." + region + ".scw.cloud"
-
+	httpClient.Transport = &userAgentRoundTripper{
+		defaultRoundTripper: httpClient.Transport,
+		userAgent:           userAgent,
+	}
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
