@@ -68,6 +68,7 @@ func DataSourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId(groupID.(string))
+
 	err := d.Set("group_id", groupID)
 	if err != nil {
 		return diag.FromErr(err)

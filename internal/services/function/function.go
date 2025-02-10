@@ -415,6 +415,7 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if err != nil {
 			return nil
 		}
+
 		err = functionDeploy(ctx, api, region, f.ID)
 		if err != nil {
 			return diag.FromErr(err)

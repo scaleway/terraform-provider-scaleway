@@ -6,10 +6,12 @@ import (
 
 func flattenPublicNetwork(endpoints []*mongodb.Endpoint) (interface{}, bool) {
 	publicFlat := []map[string]interface{}(nil)
+
 	for _, endpoint := range endpoints {
 		if endpoint.Public == nil {
 			continue
 		}
+
 		publicFlat = append(publicFlat, map[string]interface{}{
 			"id":         endpoint.ID,
 			"port":       endpoint.Port,

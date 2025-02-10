@@ -548,10 +548,12 @@ func isImageDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if rs.Type != "scaleway_instance_image" {
 				continue
 			}
+
 			instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
+
 			_, err = instanceAPI.GetImage(&instanceSDK.GetImageRequest{
 				ImageID: ID,
 				Zone:    zone,

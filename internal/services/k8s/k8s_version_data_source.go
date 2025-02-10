@@ -70,6 +70,7 @@ func DataSourceK8SVersionRead(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(res.Versions) == 0 {
 			return diag.FromErr(errors.New("could not find the latest version"))
 		}
@@ -83,6 +84,7 @@ func DataSourceK8SVersionRead(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		version = res
 	}
 

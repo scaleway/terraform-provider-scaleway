@@ -11,6 +11,7 @@ import (
 // It returns the first matching element and an error if either no match is found or multiple matches are found.
 func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, error) { //nolint:ireturn
 	var found T
+
 	var foundFlag bool
 
 	for _, elem := range slice {
@@ -21,6 +22,7 @@ func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, err
 
 				return zero, fmt.Errorf("multiple elements found with the name %s", searchName)
 			}
+
 			found = elem
 			foundFlag = true
 		}

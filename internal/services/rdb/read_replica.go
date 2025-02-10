@@ -171,9 +171,11 @@ func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m
 		if diags.HasError() {
 			return diags
 		}
+
 		for _, warning := range diags {
 			tflog.Warn(ctx, warning.Detail)
 		}
+
 		endpointSpecs = append(endpointSpecs, pn)
 	}
 
@@ -292,13 +294,16 @@ func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m
 		// create a new one if defined
 		if pn, pnExists := d.GetOk("private_network"); pnExists {
 			ipamConfig, staticConfig := getIPConfigUpdate(d, "service_ip")
+
 			pnEndpoint, diags := expandReadReplicaEndpointsSpecPrivateNetwork(pn, ipamConfig, staticConfig)
 			if diags.HasError() {
 				return diags
 			}
+
 			for _, warning := range diags {
 				tflog.Warn(ctx, warning.Detail)
 			}
+
 			newEndpoints = append(newEndpoints, pnEndpoint)
 		}
 	}
@@ -308,6 +313,7 @@ func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_, err = rdbAPI.CreateReadReplicaEndpoint(&rdb.CreateReadReplicaEndpointRequest{
 			Region:        region,
 			ReadReplicaID: ID,

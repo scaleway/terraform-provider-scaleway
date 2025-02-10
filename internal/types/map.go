@@ -4,6 +4,7 @@ func FlattenMap(m map[string]string) interface{} {
 	if m == nil {
 		return nil
 	}
+
 	flattenedMap := make(map[string]interface{})
 	for k, v := range m {
 		flattenedMap[k] = v
@@ -16,7 +17,9 @@ func FlattenMapStringStringPtr(m map[string]*string) interface{} {
 	if m == nil {
 		return nil
 	}
+
 	flattenedMap := make(map[string]interface{})
+
 	for k, v := range m {
 		if v != nil {
 			flattenedMap[k] = *v
@@ -32,6 +35,7 @@ func ExpandMapPtrStringString(data interface{}) *map[string]string {
 	if data == nil {
 		return nil
 	}
+
 	m := make(map[string]string)
 	for k, v := range data.(map[string]interface{}) {
 		m[k] = v.(string)
@@ -44,6 +48,7 @@ func ExpandMapStringStringPtr(data interface{}) map[string]*string {
 	if data == nil {
 		return nil
 	}
+
 	m := make(map[string]*string)
 	for k, v := range data.(map[string]interface{}) {
 		m[k] = ExpandStringPtr(v)
@@ -56,6 +61,7 @@ func ExpandMapStringString(data any) map[string]string {
 	if data == nil {
 		return nil
 	}
+
 	m := make(map[string]string)
 	for k, v := range data.(map[string]interface{}) {
 		m[k] = v.(string)
@@ -71,6 +77,7 @@ func GetMapValue[T any]( //nolint:ireturn
 	key string,
 ) T {
 	var val T
+
 	valI, exists := m[key]
 	if exists {
 		val = valI.(T)

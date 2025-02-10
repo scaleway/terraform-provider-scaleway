@@ -20,7 +20,9 @@ func AddTestSweepers() {
 func testSweepRedisCluster(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		redisAPI := redisSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the redis cluster in (%s)", zone)
+
 		listClusters, err := redisAPI.ListClusters(&redisSDK.ListClustersRequest{
 			Zone: zone,
 		}, scw.WithAllPages())

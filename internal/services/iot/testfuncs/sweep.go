@@ -20,7 +20,9 @@ func AddTestSweepers() {
 func testSweepHub(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		iotAPI := iotSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the iot hub in (%s)", region)
+
 		listHubs, err := iotAPI.ListHubs(&iotSDK.ListHubsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Debugf("sweeper: destroying the iot hub in (%s)", region)

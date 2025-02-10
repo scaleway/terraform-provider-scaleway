@@ -74,6 +74,7 @@ func DataSourceDomainRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	regionalID := datasource.NewRegionalID(domainID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("domain_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)

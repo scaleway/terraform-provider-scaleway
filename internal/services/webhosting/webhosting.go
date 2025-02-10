@@ -276,6 +276,7 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		updateRequest.OfferID = types.ExpandUpdatedStringPtr(offerID)
 		hasChanged = true
 	}

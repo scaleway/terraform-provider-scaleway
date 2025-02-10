@@ -120,6 +120,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 
 		return diag.FromErr(err)
 	}
+
 	d.SetId(fmt.Sprintf("%s.%s", dnsZone.Subdomain, dnsZone.Domain))
 
 	return resourceDomainZoneRead(ctx, d, m)

@@ -20,7 +20,9 @@ func AddTestSweepers() {
 func testSweepServer(_ string) error {
 	return acctest.SweepZones([]scw.Zone{scw.ZoneFrPar2}, func(scwClient *scw.Client, zone scw.Zone) error {
 		baremetalAPI := baremetalSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the baremetal server in (%s)", zone)
+
 		listServers, err := baremetalAPI.ListServers(&baremetalSDK.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)

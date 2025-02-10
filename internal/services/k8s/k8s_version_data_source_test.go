@@ -87,6 +87,7 @@ func testAccCheckK8SVersionExists(tt *acctest.TestTools, n string) resource.Test
 		}
 
 		k8sAPI := k8s.NewAPI(tt.Meta.ScwClient())
+
 		_, err = k8sAPI.GetVersion(&k8s.GetVersionRequest{
 			Region:      region,
 			VersionName: name,

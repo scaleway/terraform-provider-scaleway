@@ -11,6 +11,7 @@ import (
 func TestAccDataSourceSecurityGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	securityGroupName := "tf-security-group"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },

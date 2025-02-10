@@ -54,8 +54,10 @@ func DataSourceContainerRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	containerID, ok := d.GetOk("container_id")
 	namespaceID := d.Get("namespace_id")
+
 	if !ok {
 		containerName := d.Get("name").(string)
+
 		res, err := api.ListContainers(&container.ListContainersRequest{
 			Region:      region,
 			Name:        types.ExpandStringPtr(containerName),

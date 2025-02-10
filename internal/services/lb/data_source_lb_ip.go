@@ -59,17 +59,21 @@ func DataSourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(res.IPs) == 0 {
 			return diag.FromErr(fmt.Errorf("no ips found with the address %s", d.Get("ip_address")))
 		}
+
 		if len(res.IPs) > 1 {
 			return diag.FromErr(fmt.Errorf("%d ips found with the same address %s", len(res.IPs), d.Get("ip_address")))
 		}
+
 		ipID = res.IPs[0].ID
 	}
 
 	zoneID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zoneID)
+
 	err = d.Set("ip_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)

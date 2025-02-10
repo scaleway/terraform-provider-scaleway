@@ -168,6 +168,7 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m in
 		Attributes: attributes,
 		QueueName:  scw.StringPtr(queueName),
 	}
+
 	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{AWSErrQueueDeletedRecently}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,

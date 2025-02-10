@@ -15,6 +15,7 @@ import (
 func TestAccVPCPublicGateway_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	publicGatewayName := "public-gateway-test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -94,6 +95,7 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 func TestAccVPCPublicGateway_Bastion(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	publicGatewayName := "public-gateway-bastion-test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -177,6 +179,7 @@ func TestAccVPCPublicGateway_AttachToIP(t *testing.T) {
 func TestAccVPCPublicGateway_Upgrade(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	publicGatewayName := "public-gateway-upgrade-test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },

@@ -11,7 +11,9 @@ import (
 func ValidateStringInSliceWithWarning(correctValues []string, field string) schema.SchemaValidateDiagFunc {
 	return func(i interface{}, path cty.Path) diag.Diagnostics {
 		_, rawErr := validation.StringInSlice(correctValues, true)(i, field)
+
 		var res diag.Diagnostics
+
 		for _, e := range rawErr {
 			res = append(res, diag.Diagnostic{
 				Severity:      diag.Warning,

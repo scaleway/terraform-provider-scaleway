@@ -16,6 +16,7 @@ import (
 func TestAccToken_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	expiresAt := time.Now().Add(time.Hour * 24).Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.

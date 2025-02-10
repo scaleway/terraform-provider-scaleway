@@ -106,6 +106,7 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var grafanaUser *cockpit.GrafanaUser
+
 	for _, user := range res.GrafanaUsers {
 		if user.ID == grafanaUserID {
 			grafanaUser = user

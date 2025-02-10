@@ -28,6 +28,7 @@ func NewID(region scw.Region, id string) ID {
 func ExpandID(id interface{}) ID {
 	regionalID := ID{}
 	tab := strings.Split(id.(string), "/")
+
 	if len(tab) != 2 {
 		regionalID.ID = id.(string)
 	} else {
@@ -72,6 +73,7 @@ func NewRegionalIDs(region scw.Region, ids []string) []string {
 	if ids == nil {
 		return nil
 	}
+
 	flattenedIDs := make([]string, len(ids))
 	for i, id := range ids {
 		flattenedIDs[i] = NewIDString(region, id)

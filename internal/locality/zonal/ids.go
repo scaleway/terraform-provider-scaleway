@@ -28,6 +28,7 @@ func NewID(zone scw.Zone, id string) ID {
 func ExpandID(id interface{}) ID {
 	zonedID := ID{}
 	tab := strings.Split(id.(string), "/")
+
 	if len(tab) != 2 {
 		zonedID.ID = id.(string)
 	} else {

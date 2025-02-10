@@ -18,13 +18,16 @@ func CheckResourceIDChanged(resourceName string, resourceID *string) resource.Te
 		if resourceID == nil || *resourceID == "" {
 			return errors.New("resourceID was not set")
 		}
+
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", resourceName)
 		}
+
 		if *resourceID == rs.Primary.ID {
 			return errors.New("resource ID persisted when it should have changed")
 		}
+
 		*resourceID = rs.Primary.ID
 
 		return nil
@@ -39,9 +42,11 @@ func CheckResourceIDPersisted(resourceName string, resourceID *string) resource.
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", resourceName)
 		}
+
 		if *resourceID != "" && *resourceID != rs.Primary.ID {
 			return errors.New("resource ID changed when it should have persisted")
 		}
+
 		*resourceID = rs.Primary.ID
 
 		return nil
@@ -84,10 +89,12 @@ func CheckResourceAttrFunc(name string, key string, test func(string) error) res
 		if !ok {
 			return fmt.Errorf("resource not found: %s", name)
 		}
+
 		value, ok := rs.Primary.Attributes[key]
 		if !ok {
 			return fmt.Errorf("key not found: %s", key)
 		}
+
 		err := test(value)
 		if err != nil {
 			return fmt.Errorf("test for %s %s did not pass test: %s", name, key, err)

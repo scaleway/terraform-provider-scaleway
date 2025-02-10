@@ -49,6 +49,7 @@ func DataSourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	lbID, ok := d.GetOk("lb_id")
 	if !ok { // Get LB by name.
 		lbName := d.Get("name").(string)
+
 		res, err := api.ListLBs(&lbSDK.ZonedAPIListLBsRequest{
 			Zone:      zone,
 			Name:      types.ExpandStringPtr(lbName),
@@ -74,8 +75,10 @@ func DataSourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	zonedID := datasource.NewZonedID(lbID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("lb_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)

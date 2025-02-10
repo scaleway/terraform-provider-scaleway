@@ -142,6 +142,7 @@ func isGrafanaUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFun
 		}
 
 		var grafanaUser *cockpitSDK.GrafanaUser
+
 		for _, user := range res.GrafanaUsers {
 			if user.ID == grafanaUserID {
 				grafanaUser = user

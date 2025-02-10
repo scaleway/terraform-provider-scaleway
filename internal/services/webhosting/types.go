@@ -38,6 +38,7 @@ func flattenHostingOptions(options []*webhosting.HostingOption) []map[string]int
 	if options == nil {
 		return nil
 	}
+
 	flattenedOptions := []map[string]interface{}(nil)
 	for _, option := range options {
 		flattenedOptions = append(flattenedOptions, map[string]interface{}{

@@ -114,7 +114,9 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		var matchingImages []*instance.Image
+
 		for _, image := range res.Images {
 			if image.Name == d.Get("name").(string) {
 				matchingImages = append(matchingImages, image)
@@ -124,6 +126,7 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 		if len(matchingImages) == 0 {
 			return diag.FromErr(fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone))
 		}
+
 		if len(matchingImages) > 1 && !d.Get("latest").(bool) {
 			return diag.FromErr(fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), zone))
 		}
@@ -131,6 +134,7 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 		sort.Slice(matchingImages, func(i, j int) bool {
 			return matchingImages[i].ModificationDate.After(*matchingImages[j].ModificationDate)
 		})
+
 		for _, image := range matchingImages {
 			if image.Name == d.Get("name").(string) {
 				imageID = image.ID
@@ -183,6 +187,7 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 	for _, volume := range orderVolumes(resp.Image.ExtraVolumes) {
 		additionalVolumeIDs = append(additionalVolumeIDs, volume.ID)
 	}
+
 	_ = d.Set("additional_volume_ids", additionalVolumeIDs)
 
 	return nil

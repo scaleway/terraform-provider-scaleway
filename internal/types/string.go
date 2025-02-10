@@ -52,6 +52,7 @@ func ExpandSliceStringPtr(data interface{}) []*string {
 	if data == nil {
 		return nil
 	}
+
 	stringSlice := []*string(nil)
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, ExpandStringPtr(s))
@@ -89,11 +90,13 @@ func ExpandUpdatedStringPtr(data interface{}) *string {
 
 func ExpandStrings(data interface{}) []string {
 	stringSlice := make([]string, 0, len(data.([]interface{})))
+
 	for _, s := range data.([]interface{}) {
 		// zero-value is nil, ["foo", ""]
 		if s == nil {
 			s = ""
 		}
+
 		stringSlice = append(stringSlice, s.(string))
 	}
 
@@ -102,16 +105,20 @@ func ExpandStrings(data interface{}) []string {
 
 func ExpandStringsPtr(data interface{}) *[]string {
 	stringSlice := make([]string, 0, len(data.([]interface{})))
+
 	if _, ok := data.([]interface{}); !ok || data == nil {
 		return nil
 	}
+
 	for _, s := range data.([]interface{}) {
 		// zero-value is nil, ["foo", ""]
 		if s == nil {
 			s = ""
 		}
+
 		stringSlice = append(stringSlice, s.(string))
 	}
+
 	if len(stringSlice) == 0 {
 		return nil
 	}
@@ -126,11 +133,13 @@ func ExpandUpdatedStringsPtr(data interface{}) *[]string {
 	if _, ok := data.([]interface{}); !ok || data == nil {
 		return &stringSlice
 	}
+
 	for _, s := range data.([]interface{}) {
 		// zero-value is nil, ["foo", ""]
 		if s == nil {
 			s = ""
 		}
+
 		stringSlice = append(stringSlice, s.(string))
 	}
 
@@ -142,6 +151,7 @@ func ExpandSliceIDs(rawIDs interface{}) []string {
 	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
 		return stringSlice
 	}
+
 	for _, s := range rawIDs.([]interface{}) {
 		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
 	}
@@ -154,6 +164,7 @@ func ExpandSliceIDsPtr(rawIDs interface{}) *[]string {
 	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
 		return &stringSlice
 	}
+
 	for _, s := range rawIDs.([]interface{}) {
 		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
 	}
@@ -166,6 +177,7 @@ func ExpandStringsOrEmpty(data interface{}) []string {
 	if _, ok := data.([]interface{}); !ok || data == nil {
 		return stringSlice
 	}
+
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}
@@ -192,6 +204,7 @@ func StringHashcode(s string) int {
 	if v >= 0 {
 		return v
 	}
+
 	if -v >= 0 {
 		return -v
 	}

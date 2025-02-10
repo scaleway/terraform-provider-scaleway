@@ -24,15 +24,19 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interfac
 	}
 
 	pnI := []map[string]interface{}(nil)
+
 	var dhcpConfigExist bool
+
 	for _, pn := range privateNetworks {
 		if pn.DHCPConfig != nil { //nolint:staticcheck
 			dhcpConfigExist = true
 		}
+
 		pnRegion, err := pn.LB.Zone.Region()
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		pnRegionalID := regional.NewIDString(pnRegion, pn.PrivateNetworkID)
 		pnI = append(pnI, map[string]interface{}{
 			"private_network_id": pnRegionalID,
@@ -67,6 +71,7 @@ func expandLbACLMatch(raw interface{}) *lb.ACLMatch {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	// scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
@@ -153,6 +158,7 @@ func expandLbHCHTTP(raw interface{}) *lb.HealthCheckHTTPConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	return &lb.HealthCheckHTTPConfig{
@@ -205,6 +211,7 @@ func expandLbLetsEncrypt(raw interface{}) *lb.CreateCertificateRequestLetsencryp
 	config := &lb.CreateCertificateRequestLetsencryptConfig{
 		CommonName: rawMap["common_name"].(string),
 	}
+
 	for _, alternativeName := range alternativeNames {
 		config.SubjectAlternativeName = append(config.SubjectAlternativeName, alternativeName.(string))
 	}
@@ -288,6 +295,7 @@ func expandLbACLAction(raw interface{}) *lb.ACLAction {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	return &lb.ACLAction{
@@ -314,6 +322,7 @@ func expandLbACLActionRedirect(raw interface{}) *lb.ACLActionRedirect {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	return &lb.ACLActionRedirect{
@@ -334,11 +343,13 @@ func expandPrivateNetworks(data interface{}) ([]*lb.PrivateNetwork, error) {
 		rawPn := pn.(map[string]interface{})
 		privateNetwork := &lb.PrivateNetwork{}
 		privateNetwork.PrivateNetworkID = locality.ExpandID(rawPn["private_network_id"].(string))
+
 		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig && len(staticConfig.([]interface{})) > 0 {
 			privateNetwork.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig) //nolint:staticcheck
 		} else {
 			privateNetwork.DHCPConfig = expandLbPrivateNetworkDHCPConfig(rawPn["dhcp_config"]) //nolint:staticcheck
 		}
+
 		privateNetwork.IpamIDs = locality.ExpandIDs(rawPn["ipam_ids"])
 
 		pns = append(pns, privateNetwork)
@@ -404,6 +415,7 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 				if err != nil && !httperrors.Is404(err) {
 					return nil, err
 				}
+
 				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))     //nolint:staticcheck
 				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig)) //nolint:staticcheck
 
@@ -419,6 +431,7 @@ func flattenLbInstances(instances []*lb.Instance) interface{} {
 	if instances == nil {
 		return nil
 	}
+
 	flattenedInstances := []map[string]interface{}(nil)
 	for _, instance := range instances {
 		flattenedInstances = append(flattenedInstances, map[string]interface{}{
@@ -438,6 +451,7 @@ func flattenLbIPs(ips []*lb.IP) interface{} {
 	if ips == nil {
 		return nil
 	}
+
 	flattenedIPs := []map[string]interface{}(nil)
 	for _, ip := range ips {
 		flattenedIPs = append(flattenedIPs, map[string]interface{}{
@@ -458,6 +472,7 @@ func flattenLBIPIDs(zone scw.Zone, ips []*lb.IP) []string {
 	if ips == nil {
 		return nil
 	}
+
 	flattenedIPs := make([]string, len(ips))
 	for i, ip := range ips {
 		flattenedIPs[i] = zonal.NewIDString(zone, ip.ID)

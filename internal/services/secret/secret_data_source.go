@@ -79,6 +79,7 @@ func DataSourceSecretRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	regionalID := datasource.NewRegionalID(secretID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("secret_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)

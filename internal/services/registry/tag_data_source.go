@@ -73,6 +73,7 @@ func DataSourceImageTagRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	var tag *registry.Tag
+
 	tagID, tagIDExists := d.GetOk("tag_id")
 	imageID := d.Get("image_id").(string)
 
@@ -84,6 +85,7 @@ func DataSourceImageTagRead(ctx context.Context, d *schema.ResourceData, m inter
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		tag = res
 	} else {
 		tagName, nameExists := d.GetOk("name")

@@ -192,6 +192,7 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interfa
 				return diag.FromErr(fmt.Errorf("error parsing IP address: %s", err))
 			}
 		}
+
 		req.Address = scw.IPPtr(parsedIP)
 	}
 
@@ -218,6 +219,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	vpcAPI, err := vpc.NewAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -238,6 +240,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	privateNetworkID := ""
+
 	if source, ok := d.GetOk("source"); ok {
 		sourceData := expandIPSource(source)
 		if sourceData.PrivateNetworkID != nil {
@@ -250,6 +253,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 			}
 
 			ipv4Subnets, ipv6Subnets := vpc.FlattenAndSortSubnets(pn.Subnets)
+
 			var found bool
 
 			if d.Get("is_ipv6").(bool) {
@@ -268,6 +272,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("address", address)
 	_ = d.Set("source", flattenIPSource(res.Source, privateNetworkID))
 	_ = d.Set("resource", flattenIPResource(res.Resource))
@@ -276,12 +281,15 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_ipv6", res.IsIPv6)
 	_ = d.Set("region", region)
+
 	if res.Zone != nil {
 		_ = d.Set("zone", res.Zone.String())
 	}
+
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
 	}
+
 	_ = d.Set("reverses", flattenIPReverses(res.Reverses))
 
 	return nil

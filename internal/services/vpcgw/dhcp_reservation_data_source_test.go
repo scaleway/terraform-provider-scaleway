@@ -12,6 +12,7 @@ import (
 func TestAccDataSourceVPCPublicGatewayDHCPReservation_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	pnName := "TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Basic"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -116,6 +117,7 @@ func TestAccDataSourceVPCPublicGatewayDHCPReservation_Basic(t *testing.T) {
 func TestAccDataSourceVPCPublicGatewayDHCPReservation_Static(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	pnName := "TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Static"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },

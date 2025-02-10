@@ -136,6 +136,7 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 				if value.IsNull() {
 					return false, false
 				}
+
 				if value.True() {
 					return true, true
 				}
@@ -145,6 +146,7 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 				if value.IsNull() {
 					return nil, false
 				}
+
 				valueInt, _ := value.AsBigFloat().Int64()
 
 				return valueInt, true

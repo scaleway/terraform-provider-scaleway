@@ -87,6 +87,7 @@ func IsServerRootVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
+
 			rootVolumeID := locality.ExpandID(localizedRootVolumeID)
 
 			api := instance.NewBlockAndInstanceAPI(meta.ExtractScwClient(tt.Meta))
@@ -150,11 +151,14 @@ func DoesImageExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
+
 		zone, ID, err := zonal.ParseID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
+
 		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
 		_, err = instanceAPI.GetImage(&instanceSDK.GetImageRequest{
 			ImageID: ID,
 			Zone:    zone,

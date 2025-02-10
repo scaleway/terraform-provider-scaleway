@@ -25,7 +25,9 @@ func init() {
 func testSweepDatabaseBackup(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		rdbAPI := rdbSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the rdb database backups in (%s)", region)
+
 		listBackups, err := rdbAPI.ListDatabaseBackups(&rdbSDK.ListDatabaseBackupsRequest{
 			Region: region,
 		})

@@ -171,6 +171,7 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m interfac
 		}
 
 		var matches []*baremetal.Offer
+
 		for _, offer := range res.Offers {
 			if offer.Name == d.Get("name") {
 				if !offer.Enable && !d.Get("include_disabled").(bool) {

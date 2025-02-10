@@ -73,6 +73,7 @@ func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	functionID := locality.ExpandID(d.Get("function_id").(string))
+
 	f, err := waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -90,6 +91,7 @@ func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m i
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		request.Args = &jsonObj
 	}
 
@@ -128,6 +130,7 @@ func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("function_id", regional.NewID(region, cron.FunctionID).String())
 	_ = d.Set("schedule", cron.Schedule)
 	_ = d.Set("name", cron.Name)
+
 	args, err := scw.EncodeJSONObject(*cron.Args, scw.NoEscape)
 	if err != nil {
 		return diag.FromErr(err)
@@ -156,10 +159,12 @@ func ResourceFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m i
 		CronID: cron.ID,
 	}
 	shouldUpdate := false
+
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name").(string))
 		shouldUpdate = true
 	}
+
 	if d.HasChange("schedule") {
 		req.Schedule = types.ExpandStringPtr(d.Get("schedule").(string))
 		shouldUpdate = true
@@ -170,6 +175,7 @@ func ResourceFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m i
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		shouldUpdate = true
 		req.Args = &jsonObj
 	}

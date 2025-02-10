@@ -90,6 +90,7 @@ func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	instanceID := locality.ExpandID(d.Get("instance_id").(string))
 	createReq := &mongodb.CreateSnapshotRequest{
 		InstanceID: instanceID,
@@ -102,8 +103,10 @@ func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if snapshot != nil {
 		d.SetId(zonal.NewIDString(zone, snapshot.ID))
+
 		_, err = waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -118,16 +121,19 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	zone, snapshotID, err := zonal.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	instanceID := locality.ExpandID(d.Get("instance_id").(string))
+
 	snapshot, err := waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshotID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("instance_id", zonal.NewIDString(zone, snapshot.InstanceID))
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("instance_name", snapshot.InstanceName)
@@ -147,6 +153,7 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_, snapshotID, err := zonal.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -192,6 +199,7 @@ func ResourceSnapshotDelete(_ context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_, snapshotID, err := zonal.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
