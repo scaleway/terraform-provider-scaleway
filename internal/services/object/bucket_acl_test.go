@@ -378,6 +378,7 @@ func testAccObjectBucketACLCheck(tt *acctest.TestTools, name string, expectedACL
 		}
 
 		bucketName := rs.Primary.Attributes["name"]
+
 		actualACL, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 			Bucket: types.ExpandStringPtr(bucketName),
 		})

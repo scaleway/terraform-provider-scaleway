@@ -741,11 +741,8 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			// if key != "cloud-init" {
+
 			userData[key] = string(userDataValue)
-			//	} else {
-			// _ = d.Set("cloud_init", string(userDataValue))
-			// }
 		}
 
 		_ = d.Set("user_data", userData)

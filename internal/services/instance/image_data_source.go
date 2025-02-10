@@ -142,7 +142,6 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 				break
 			}
 		}
-		// imageID will always be set here
 	}
 
 	zonedID := datasource.NewZonedID(imageID, zone)

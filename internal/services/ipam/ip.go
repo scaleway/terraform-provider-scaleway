@@ -185,6 +185,7 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	address, addressOk := d.GetOk("address")
 	if addressOk {
 		addressStr := address.(string)
+
 		parsedIP, _, err := net.ParseCIDR(addressStr)
 		if err != nil {
 			parsedIP = net.ParseIP(addressStr)
