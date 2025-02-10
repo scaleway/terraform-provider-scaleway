@@ -673,7 +673,7 @@ func testAccCheckK8SPoolDestroy(tt *acctest.TestTools, n string) resource.TestCh
 			return err
 		}
 
-		_, err = k8sAPI.GetPool(&k8sSDK.GetPoolRequest{
+		_, err = k8sAPI.WaitForPool(&k8sSDK.WaitForPoolRequest{
 			Region: region,
 			PoolID: poolID,
 		})
