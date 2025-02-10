@@ -334,7 +334,7 @@ func testAccCheckFlexibleIPDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = fipAPI.GetFlexibleIP(&flexibleipSDK.GetFlexibleIPRequest{
+			_, err = fipAPI.WaitForFlexibleIP(&flexibleipSDK.WaitForFlexibleIPRequest{
 				FipID: id,
 				Zone:  zone,
 			})
