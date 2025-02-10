@@ -69,7 +69,7 @@ func (e *TooManyResultsError) Error() string {
 }
 
 func (e *TooManyResultsError) Is(err error) bool {
-	_, ok := err.(*TooManyResultsError) //nolint:errorlint // Explicitly does *not* match down the error tree
+	_, ok := err.(*TooManyResultsError)
 
 	return ok
 }
