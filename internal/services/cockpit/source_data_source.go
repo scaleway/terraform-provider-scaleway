@@ -92,11 +92,14 @@ func dataSourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, me
 
 func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	regionalID := d.Get("id").(string)
+
 	api, region, id, err := NewAPIWithRegionAndID(meta, regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(id)
+
 	res, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
 		Region:       region,
 		DataSourceID: id,
@@ -104,6 +107,7 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	flattenDataSource(d, res)
 
 	return nil
@@ -123,6 +127,7 @@ func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta 
 	if v, ok := d.GetOk("type"); ok {
 		req.Types = []cockpit.DataSourceType{cockpit.DataSourceType(v.(string))}
 	}
+
 	if v, ok := d.GetOk("origin"); ok {
 		req.Origin = cockpit.DataSourceOrigin(v.(string))
 	}

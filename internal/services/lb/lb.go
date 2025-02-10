@@ -300,10 +300,13 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	// For now API return lowercase lb type. This should be fixed in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(lb.Type))
 	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())
+
 	if len(lb.IP) > 0 {
 		_ = d.Set("ip_id", zonal.NewIDString(zone, lb.IP[0].ID))
 		_ = d.Set("ip_ids", flattenLBIPIDs(zone, lb.IP))
+
 		var ipv4Address, ipv6Address string
+
 		for _, ip := range lb.IP {
 			parsedIP := net.ParseIP(ip.IPAddress)
 			if parsedIP != nil {
@@ -314,6 +317,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 				}
 			}
 		}
+
 		_ = d.Set("ip_address", ipv4Address)
 		_ = d.Set("ipv6_address", ipv6Address)
 	}
@@ -327,6 +331,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
 
 	return nil
@@ -401,6 +406,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 			for id := range oldIPIDsSet {
 				ipv4ID = id
 			}
+
 			for id := range newIPIDsSet {
 				if id != ipv4ID {
 					ipv6ID = id
@@ -482,10 +488,12 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 		}
 
 		oldPNs, newPNs := d.GetChange("private_network")
+
 		oldPNConfigs, err := expandPrivateNetworks(oldPNs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		newPNConfigs, err := expandPrivateNetworks(newPNs)
 		if err != nil {
 			return diag.FromErr(err)
@@ -528,6 +536,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 
 		for _, pn := range privateNetworks {
 			tflog.Debug(ctx, fmt.Sprintf("PrivateNetwork ID %s state: %v", pn.PrivateNetworkID, pn.Status))
+
 			if pn.Status == lbSDK.PrivateNetworkStatusError {
 				err = lbAPI.DetachPrivateNetwork(&lbSDK.ZonedAPIDetachPrivateNetworkRequest{
 					Zone:             zone,

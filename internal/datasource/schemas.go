@@ -38,6 +38,7 @@ func NewRegionalID(idI interface{}, fallBackRegion scw.Region) string {
 // source: https://github.com/hashicorp/terraform-provider-google/blob/main/google/tpgresource/datasource_helpers.go
 func SchemaFromResourceSchema(rs map[string]*schema.Schema) map[string]*schema.Schema {
 	ds := make(map[string]*schema.Schema, len(rs))
+
 	for k, v := range rs {
 		dv := &schema.Schema{
 			Computed:    true,
@@ -69,6 +70,7 @@ func SchemaFromResourceSchema(rs map[string]*schema.Schema) map[string]*schema.S
 			// Elem of all other types are copied as-is
 			dv.Elem = v.Elem
 		}
+
 		ds[k] = dv
 	}
 

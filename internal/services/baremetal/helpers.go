@@ -79,6 +79,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return err
 	}
+
 	listPrivateNetwork, err := privateNetworkAPI.ListServerPrivateNetworks(&baremetalV3.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     zone,
 		ServerID: &serverID,
@@ -199,17 +200,22 @@ func privateNetworkSetHash(v interface{}) int {
 	id := locality.ExpandID(m["id"].(string))
 
 	var buf bytes.Buffer
+
 	buf.WriteString(id)
 
 	if ipamIPs, ok := m["ipam_ip_ids"]; ok && ipamIPs != nil {
 		ipamIPsList := ipamIPs.([]interface{})
+
 		var ipamIPIDs []string
+
 		for _, ip := range ipamIPsList {
 			if ipStr, ok := ip.(string); ok && ipStr != "" {
 				ipamIPIDs = append(ipamIPIDs, ipStr)
 			}
 		}
+
 		sort.Strings(ipamIPIDs)
+
 		for _, ipID := range ipamIPIDs {
 			buf.WriteString("-")
 			buf.WriteString(ipID)

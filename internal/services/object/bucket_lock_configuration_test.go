@@ -302,6 +302,7 @@ func TestAccObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
 func testAccCheckBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
+
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_object_bucket_lock_configuration" {
 				continue
@@ -310,6 +311,7 @@ func testAccCheckBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.
 			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucketRegion := regionalID.Region
 			bucket := regionalID.ID
+
 			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
 			if err != nil {
 				return err
@@ -341,6 +343,7 @@ func testAccCheckBucketLockConfigurationDestroy(tt *acctest.TestTools) resource.
 func testAccCheckBucketLockConfigurationExists(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
+
 		rs := s.RootModule().Resources[resourceName]
 		if rs == nil {
 			return errors.New("resource not found")
@@ -358,6 +361,7 @@ func testAccCheckBucketLockConfigurationExists(tt *acctest.TestTools, resourceNa
 		regionalID := regional.ExpandID(rs.Primary.ID)
 		bucketRegion := regionalID.Region
 		bucket := regionalID.ID
+
 		conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion.String())
 		if err != nil {
 			return err

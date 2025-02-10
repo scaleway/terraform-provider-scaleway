@@ -186,6 +186,7 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m in
 	topicARN := ComposeSNSARN(region, projectID, topicName)
 
 	changedAttributes := []string(nil)
+
 	for attributeName, schemaName := range SNSTopicAttributesToResourceMap {
 		if d.HasChange(schemaName) {
 			changedAttributes = append(changedAttributes, attributeName)

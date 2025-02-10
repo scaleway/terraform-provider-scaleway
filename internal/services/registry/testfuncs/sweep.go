@@ -20,7 +20,9 @@ func AddTestSweepers() {
 func testSweepNamespace(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		registryAPI := registrySDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the registry namespaces in (%s)", region)
+
 		listNamespaces, err := registryAPI.ListNamespaces(
 			&registrySDK.ListNamespacesRequest{Region: region}, scw.WithAllPages())
 		if err != nil {

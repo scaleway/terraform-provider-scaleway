@@ -158,12 +158,14 @@ func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData
 		EnableDHCP:       types.ExpandBoolPtr(d.Get("enable_dhcp")),
 		IpamConfig:       expandIpamConfig(d.Get("ipam_config")),
 	}
+
 	staticAddress, staticAddressExist := d.GetOk("static_address")
 	if staticAddressExist {
 		address, err := types.ExpandIPNet(staticAddress.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.Address = &address
 	}
 
@@ -215,6 +217,7 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 
 		return diag.FromErr(err)
 	}
+
 	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
@@ -229,6 +232,7 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_ = d.Set("static_address", staticAddressValue)
 	}
 
@@ -245,6 +249,7 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	var cleanUpDHCPValue bool
+
 	cleanUpDHCP, cleanUpDHCPExist := d.GetOk("cleanup_dhcp")
 	if cleanUpDHCPExist {
 		cleanUpDHCPValue = *types.ExpandBoolPtr(cleanUpDHCP)
@@ -291,16 +296,20 @@ func ResourceVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	if d.HasChange("enable_masquerade") {
 		updateRequest.EnableMasquerade = types.ExpandBoolPtr(d.Get("enable_masquerade"))
 	}
+
 	if d.HasChange("enable_dhcp") {
 		updateRequest.EnableDHCP = types.ExpandBoolPtr(d.Get("enable_dhcp"))
 	}
+
 	if d.HasChange("dhcp_id") {
 		dhcpID := zonal.ExpandID(d.Get("dhcp_id").(string)).ID
 		updateRequest.DHCPID = &dhcpID
 	}
+
 	if d.HasChange("ipam_config") {
 		updateRequest.IpamConfig = expandUpdateIpamConfig(d.Get("ipam_config"))
 	}
+
 	if d.HasChange("static_address") {
 		staticAddress, staticAddressExist := d.GetOk("static_address")
 		if staticAddressExist {
@@ -308,6 +317,7 @@ func ResourceVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			updateRequest.Address = &address
 		}
 	}
@@ -341,6 +351,7 @@ func ResourceVPCGatewayNetworkDelete(ctx context.Context, d *schema.ResourceData
 		Zone:             gwNetwork.Zone,
 		CleanupDHCP:      *types.ExpandBoolPtr(d.Get("cleanup_dhcp")),
 	}
+
 	err = api.DeleteGatewayNetwork(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

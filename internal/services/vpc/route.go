@@ -146,6 +146,7 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("destination", destination)
 
 	if len(res.Tags) > 0 {

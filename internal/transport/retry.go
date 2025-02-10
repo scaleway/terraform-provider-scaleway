@@ -54,9 +54,11 @@ func NewRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 	if options.RetryMax != nil {
 		c.RetryMax = *options.RetryMax
 	}
+
 	if options.RetryWaitMax != nil {
 		c.RetryWaitMax = *options.RetryWaitMax
 	}
+
 	if options.RetryWaitMin != nil {
 		c.RetryWaitMin = *options.RetryWaitMin
 	}
@@ -78,20 +80,25 @@ type RetryableTransport struct {
 // RoundTrip wraps calling an HTTP method with retries.
 func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	var body io.ReadSeeker
+
 	if r.Body != nil {
 		bs, err := io.ReadAll(r.Body)
 		if err != nil {
 			return nil, err
 		}
+
 		body = bytes.NewReader(bs)
 	}
+
 	req, err := retryablehttp.NewRequest(r.Method, r.URL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
 	for key, val := range r.Header {
 		req.Header.Set(key, val[0])
 	}
+
 	req.GetBody = func() (io.ReadCloser, error) {
 		b, err := req.BodyBytes()
 		if err != nil {
@@ -106,7 +113,9 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 
 func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) { //nolint:ireturn
 	t, err := action()
+
 	var transientStateError *scw.TransientStateError
+
 	if errors.As(err, &transientStateError) {
 		_, err := waiter()
 		if err != nil {

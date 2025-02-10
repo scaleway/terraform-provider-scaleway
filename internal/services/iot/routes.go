@@ -195,6 +195,7 @@ func ResourceIotRouteCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	hubID := zonal.ExpandID(d.Get("hub_id")).ID
+
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -316,6 +317,7 @@ func ResourceIotRouteDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	hubID := zonal.ExpandID(d.Get("hub_id")).ID
+
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)

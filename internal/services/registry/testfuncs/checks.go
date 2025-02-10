@@ -27,6 +27,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		}
 
 		meta := tt.Meta
+
 		var errorMessage registry.ErrorRegistryMessage
 
 		accessKey, _ := meta.ScwClient().GetAccessKey()
@@ -58,11 +59,13 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		defer out.Close()
 
 		buffIOReader := bufio.NewReader(out)
+
 		for {
 			streamBytes, errPull := buffIOReader.ReadBytes('\n')
 			if errPull == io.EOF {
 				break
 			}
+
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
 				return fmt.Errorf("could not unmarshal: %w", err)
@@ -74,6 +77,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		}
 
 		scwTag := registryEndpoint + "/alpine:" + tagName
+
 		err = cli.ImageTag(ctx, testDockerIMG, scwTag)
 		if err != nil {
 			return fmt.Errorf("could not tag image: %w", err)
@@ -86,11 +90,13 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		defer pusher.Close()
 
 		buffIOReader = bufio.NewReader(pusher)
+
 		for {
 			streamBytes, errPush := buffIOReader.ReadBytes('\n')
 			if errPush == io.EOF {
 				break
 			}
+
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
 				return fmt.Errorf("could not unmarshal: %w", err)

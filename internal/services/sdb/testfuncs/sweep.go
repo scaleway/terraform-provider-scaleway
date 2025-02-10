@@ -20,7 +20,9 @@ func AddTestSweepers() {
 func testSweepServerlessSQLDBDatabase(_ string) error {
 	return acctest.SweepRegions((&sdbSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		sdbAPI := sdbSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the serverless sql database in (%s)", region)
+
 		listServerlessSQLDBDatabases, err := sdbAPI.ListDatabases(
 			&sdbSDK.ListDatabasesRequest{
 				Region: region,

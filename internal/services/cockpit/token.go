@@ -151,6 +151,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m i
 	rawScopes, scopesSet := d.GetOk("scopes")
 
 	var scopes []cockpit.TokenScope
+
 	if !scopesSet || len(rawScopes.([]interface{})) == 0 {
 		schema := resourceCockpitTokenScopes().Schema
 		for key, val := range schema {

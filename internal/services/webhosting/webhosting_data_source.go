@@ -49,6 +49,7 @@ func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m int
 	webhostingID, ok := d.GetOk("webhosting_id")
 	if !ok {
 		hostingDomain := d.Get("domain").(string)
+
 		res, err := api.ListHostings(&webhosting.ListHostingsRequest{
 			Region:         region,
 			Domain:         types.ExpandStringPtr(hostingDomain),
@@ -73,6 +74,7 @@ func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m int
 
 	regionalID := datasource.NewRegionalID(webhostingID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("webhosting_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)

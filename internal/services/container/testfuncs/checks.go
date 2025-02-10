@@ -33,6 +33,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
+
 		api, region, id, err := container.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -47,6 +48,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 		}
 
 		meta := tt.Meta
+
 		var errorMessage registry.ErrorRegistryMessage
 
 		accessKey, _ := meta.ScwClient().GetAccessKey()
@@ -78,11 +80,13 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 		defer out.Close()
 
 		buffIOReader := bufio.NewReader(out)
+
 		for {
 			streamBytes, errPull := buffIOReader.ReadBytes('\n')
 			if errPull == io.EOF {
 				break
 			}
+
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
 				return fmt.Errorf("could not unmarshal: %w", err)
@@ -109,11 +113,13 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 		defer pusher.Close()
 
 		buffIOReader = bufio.NewReader(pusher)
+
 		for {
 			streamBytes, errPush := buffIOReader.ReadBytes('\n')
 			if errPush == io.EOF {
 				break
 			}
+
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
 				return fmt.Errorf("could not unmarshal: %w", err)

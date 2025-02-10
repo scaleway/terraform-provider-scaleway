@@ -117,6 +117,7 @@ func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]interface{
 
 func getDefaultProjectID(ctx context.Context, m interface{}) (string, error) {
 	accountAPI := account.NewProjectAPI(m)
+
 	res, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{
 		Name: types.ExpandStringPtr("default"),
 	}, scw.WithContext(ctx))

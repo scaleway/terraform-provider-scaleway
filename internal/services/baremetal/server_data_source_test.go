@@ -12,6 +12,7 @@ import (
 func TestAccDataSourceServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}

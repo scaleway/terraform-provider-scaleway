@@ -85,10 +85,12 @@ func TestAccCockpitSource_DataSource_ByName(t *testing.T) {
 func TestAccCockpitSource_DataSource_Defaults(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
 		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

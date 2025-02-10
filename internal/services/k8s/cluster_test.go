@@ -17,10 +17,12 @@ import (
 
 func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
 	}
+
 	if len(versions.Versions) > 1 {
 		latestK8SVersion := versions.Versions[0].Name
 
@@ -32,10 +34,12 @@ func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
 
 func testAccK8SClusterGetLatestK8SVersionMinor(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
 	}
+
 	if len(versions.Versions) > 1 {
 		latestK8SVersion := versions.Versions[0].Name
 		latestK8SVersionMinor, _ := k8s.GetMinorVersionFromFull(latestK8SVersion)
@@ -48,10 +52,12 @@ func testAccK8SClusterGetLatestK8SVersionMinor(tt *acctest.TestTools) string {
 
 func testAccK8SClusterGetPreviousK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
 	}
+
 	if len(versions.Versions) > 1 {
 		previousK8SVersion := versions.Versions[1].Name
 
@@ -63,10 +69,12 @@ func testAccK8SClusterGetPreviousK8SVersion(tt *acctest.TestTools) string {
 
 func testAccK8SClusterGetPreviousK8SVersionMinor(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
 	}
+
 	if len(versions.Versions) > 1 {
 		previousK8SVersion := versions.Versions[1].Name
 		previousK8SVersionMinor, _ := k8s.GetMinorVersionFromFull(previousK8SVersion)
@@ -547,7 +555,7 @@ func testAccCheckK8SClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = k8sAPI.GetCluster(&k8sSDK.GetClusterRequest{
+			_, err = k8sAPI.WaitForCluster(&k8sSDK.WaitForClusterRequest{
 				Region:    region,
 				ClusterID: clusterID,
 			})
@@ -626,6 +634,7 @@ func testAccCheckK8sClusterPrivateNetworkID(tt *acctest.TestTools, clusterName, 
 		if clusterPNID == nil {
 			return fmt.Errorf("expected %s private_network_id to be %s, got nil", clusterName, pnID)
 		}
+
 		if *clusterPNID != pnID {
 			return fmt.Errorf("expected %s private_network_id to be %s, got %s", clusterName, pnID, *clusterPNID)
 		}
@@ -813,6 +822,7 @@ resource "scaleway_k8s_pool" "multicloud" {
 func testAccCheckK8SClusterTypeChange(clusterType, cni, version string) string {
 	config := ""
 	isKapsule := strings.HasPrefix(clusterType, "kapsule")
+
 	if isKapsule {
 		config = `
 resource "scaleway_vpc_private_network" "type-change" {

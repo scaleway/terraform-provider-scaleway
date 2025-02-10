@@ -24,7 +24,9 @@ func AddTestSweepers() {
 func testSweepBlockVolume(_ string) error {
 	return acctest.SweepZones((&blockSDK.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
 		blockAPI := blockSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the block volumes in (%s)", zone)
+
 		listVolumes, err := blockAPI.ListVolumes(
 			&blockSDK.ListVolumesRequest{
 				Zone: zone,
@@ -52,7 +54,9 @@ func testSweepBlockVolume(_ string) error {
 func testSweepSnapshot(_ string) error {
 	return acctest.SweepZones((&blockSDK.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
 		blockAPI := blockSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the block snapshots in (%s)", zone)
+
 		listSnapshots, err := blockAPI.ListSnapshots(
 			&blockSDK.ListSnapshotsRequest{
 				Zone: zone,

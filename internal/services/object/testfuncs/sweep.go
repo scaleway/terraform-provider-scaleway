@@ -23,6 +23,7 @@ func testSweepStorageObjectBucket(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(_ *scw.Client, region scw.Region) error {
 		s3client, err := object.SharedS3ClientForRegion(region)
 		ctx := context.Background()
+
 		if err != nil {
 			return fmt.Errorf("error getting client: %w", err)
 		}
@@ -34,6 +35,7 @@ func testSweepStorageObjectBucket(_ string) error {
 
 		for _, bucket := range listBucketResponse.Buckets {
 			logging.L.Debugf("Deleting %q bucket", *bucket.Name)
+
 			if acctest.IsTestResource(*bucket.Name) {
 				_, err := s3client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 					Bucket: bucket.Name,

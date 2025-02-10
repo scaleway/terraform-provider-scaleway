@@ -350,6 +350,7 @@ func flattenLBACLs(acls []*lbSDK.ACL) interface{} {
 	sort.Slice(acls, func(i, j int) bool {
 		return acls[i].Index < acls[j].Index
 	})
+
 	rawACLs := make([]interface{}, 0, len(acls))
 	for _, apiACL := range acls {
 		rawACLs = append(rawACLs, flattenLbACL(apiACL))
@@ -367,6 +368,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	apiACLs := make(map[int32]*lbSDK.ACL)
 	for _, acl := range resACL.ACLs {
 		apiACLs[acl.Index] = acl
@@ -390,6 +392,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 			if ACLEquals(stateACL, apiACL) {
 				continue
 			}
+
 			_, err = lbAPI.UpdateACL(&lbSDK.ZonedAPIUpdateACLRequest{
 				Zone:   zone,
 				ACLID:  apiACL.ID,
@@ -434,6 +437,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 func expandsLBACLs(raw interface{}) []*lbSDK.ACL {
 	d := raw.([]interface{})
 	newACL := make([]*lbSDK.ACL, 0)
+
 	for _, rawACL := range d {
 		newACL = append(newACL, expandLbACL(rawACL))
 	}
@@ -468,6 +472,7 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &lbSDK.ZonedAPIUpdateFrontendRequest{
 		Zone:           zone,
 		FrontendID:     ID,
@@ -523,9 +528,11 @@ func ACLEquals(aclA, aclB *lbSDK.ACL) bool {
 	if aclA.Name != aclB.Name {
 		return false
 	}
+
 	if !cmp.Equal(aclA.Match, aclB.Match) {
 		return false
 	}
+
 	if !cmp.Equal(aclA.Action, aclB.Action) {
 		return false
 	}

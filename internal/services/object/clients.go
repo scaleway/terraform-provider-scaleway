@@ -11,6 +11,7 @@ import (
 // SharedS3ClientForRegion returns a common S3 client needed for the sweeper
 func SharedS3ClientForRegion(region scw.Region) (*s3.Client, error) {
 	ctx := context.Background()
+
 	m, err := meta.NewMeta(ctx, &meta.Config{
 		TerraformVersion: "terraform-tests",
 		ForceZone:        region.GetZones()[0],

@@ -94,6 +94,7 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 	}
 
 	gatewayID := zonal.ExpandID(d.Get("gateway_id").(string)).ID
+
 	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -188,6 +189,7 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	hasChange := false
+
 	if d.HasChange("private_ip") {
 		req.PrivateIP = scw.IPPtr(net.ParseIP(d.Get("private_ip").(string)))
 		hasChange = true

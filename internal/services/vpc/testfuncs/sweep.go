@@ -44,6 +44,7 @@ func testSweepVPC(_ string) error {
 			if v.IsDefault {
 				continue
 			}
+
 			err := vpcAPI.DeleteVPC(&vpcSDK.DeleteVPCRequest{
 				VpcID:  v.ID,
 				Region: region,

@@ -109,6 +109,7 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 		"response": string(respDump),
 		"request":  string(reqDump),
 	})
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to upload function (Status: %d)", resp.StatusCode)
 	}

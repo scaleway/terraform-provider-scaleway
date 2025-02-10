@@ -26,6 +26,7 @@ import (
 func TestAccObjectBucket_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	testBucketACL := "private"
 	testBucketUpdatedACL := "public-read"
 	bucketBasic := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-basic")
@@ -122,6 +123,7 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 func TestAccObjectBucket_Lifecycle(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lifecycle")
 	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle"
 	resource.ParallelTest(t, resource.TestCase{
@@ -408,6 +410,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 func TestAccObjectBucket_ObjectLock(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketObjectLock := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lock")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -574,6 +577,7 @@ func TestAccObjectBucket_Cors_Update(t *testing.T) {
 func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ctx := context.Background()
 
 	resourceName := "scaleway_object_bucket.bucket"
@@ -584,11 +588,14 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 			if !ok {
 				return fmt.Errorf("not found: %s", n)
 			}
+
 			bucketRegion := rs.Primary.Attributes["region"]
+
 			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 			if err != nil {
 				return err
 			}
+
 			_, err = conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 			})
@@ -664,6 +671,7 @@ func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []s
 		rs := s.RootModule().Resources[n]
 		bucketName := rs.Primary.Attributes["name"]
 		bucketRegion := rs.Primary.Attributes["region"]
+
 		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
@@ -707,11 +715,14 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 	addObjectToBucket := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
 			ctx := context.Background()
+
 			rs, ok := s.RootModule().Resources[n]
 			if !ok {
 				return fmt.Errorf("not found: %s", n)
 			}
+
 			bucketRegion := rs.Primary.Attributes["region"]
+
 			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 			if err != nil {
 				return err
@@ -780,6 +791,7 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 func testAccCheckObjectBucketLifecycleConfigurationExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
+
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
@@ -790,6 +802,7 @@ func testAccCheckObjectBucketLifecycleConfigurationExists(tt *acctest.TestTools,
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]
+
 		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err

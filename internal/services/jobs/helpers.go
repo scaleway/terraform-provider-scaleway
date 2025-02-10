@@ -67,6 +67,7 @@ func expandJobDefinitionCron(i any) *JobDefinitionCron {
 	if len(rawList) == 0 {
 		return nil
 	}
+
 	rawCron := rawList[0].(map[string]any)
 
 	return &JobDefinitionCron{

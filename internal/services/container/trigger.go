@@ -211,6 +211,7 @@ func ResourceContainerTriggerRead(ctx context.Context, d *schema.ResourceData, m
 		if trigger.ErrorMessage != nil {
 			errMsg = *trigger.ErrorMessage
 		}
+
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Trigger in error state",

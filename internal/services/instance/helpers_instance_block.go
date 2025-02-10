@@ -101,6 +101,7 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 		VolumeID: req.VolumeID,
 	}, opts...)
 	notFoundErr := &scw.ResourceNotFoundError{}
+
 	if err != nil && !errors.As(err, &notFoundErr) {
 		return nil, err
 	}
@@ -138,6 +139,7 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 	if blockVolume.Specs != nil {
 		vol.Iops = blockVolume.Specs.PerfIops
 	}
+
 	for _, ref := range blockVolume.References {
 		if ref.ProductResourceType == "instance_server" {
 			vol.ServerID = &ref.ProductResourceID
@@ -208,6 +210,7 @@ func (api *BlockAndInstanceAPI) GetUnknownSnapshot(req *GetUnknownSnapshotReques
 		SnapshotID: req.SnapshotID,
 	}, opts...)
 	notFoundErr := &scw.ResourceNotFoundError{}
+
 	if err != nil && !errors.As(err, &notFoundErr) {
 		return nil, err
 	}

@@ -140,6 +140,7 @@ func ResourceDatabaseUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if d.HasChange("max_cpu") {
 		req.CPUMax = types.ExpandUint32Ptr(d.Get("max_cpu"))
 	}
+
 	if d.HasChange("min_cpu") {
 		req.CPUMin = types.ExpandUint32Ptr(d.Get("min_cpu"))
 	}

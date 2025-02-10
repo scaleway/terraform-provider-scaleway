@@ -95,6 +95,7 @@ func NATSClientWithRegion( //nolint:ireturn,nolintlint
 
 	endpoint := d.Get("endpoint").(string)
 	creds := d.Get("credentials").(string)
+
 	js, err := newNATSJetStreamClient(region.String(), endpoint, creds)
 	if err != nil {
 		return nil, "", err
@@ -178,6 +179,7 @@ func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isSQ
 	} else {
 		output = types.NewRandomName("queue")
 	}
+
 	if isSQS && isSQSFifo {
 		return output + SQSFIFOQueueNameSuffix
 	}

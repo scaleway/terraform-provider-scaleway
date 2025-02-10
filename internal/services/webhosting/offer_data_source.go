@@ -97,16 +97,19 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if len(res.Offers) == 0 {
 		return diag.FromErr(fmt.Errorf("no offer found in region %s", region))
 	}
 
 	var filteredOffer *webhosting.Offer
+
 	for _, offer := range res.Offers {
 		if offer.ID == d.Get("offer_id") || offer.Product.Name == d.Get("name") {
 			filteredOffer = offer
 		}
 	}
+
 	if filteredOffer == nil {
 		return diag.FromErr(fmt.Errorf("no offer found with the name or id: %s%s in region %s", d.Get("name"), d.Get("offer_id"), region))
 	}

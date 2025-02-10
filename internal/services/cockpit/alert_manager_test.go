@@ -137,6 +137,7 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 
 func TestAccCockpitAlertManager_EnableDisable(t *testing.T) {
 	t.Skip("TestAccCockpit_WithSourceEndpoints skipped: encountered repeated HTTP 500 errors from the Scaleway Cockpit API.")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -216,6 +217,7 @@ func testAccCheckAlertManagerEnabled(tt *acctest.TestTools, resourceName string,
 		if err != nil {
 			return err
 		}
+
 		if alertManager.ManagedAlertsEnabled != expectedEnabled {
 			return fmt.Errorf("alert manager enabled state %t does not match expected state %t", alertManager.AlertManagerEnabled, expectedEnabled)
 		}
@@ -240,6 +242,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 		if err != nil {
 			return err
 		}
+
 		for _, cp := range contactPoints.ContactPoints {
 			if cp.Email != nil && cp.Email.To == rs.Primary.Attributes["contact_points.0.email"] {
 				return nil
@@ -272,6 +275,7 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 			if alertManager == nil {
 				return nil
 			}
+
 			if alertManager.AlertManagerEnabled {
 				return fmt.Errorf("cockpit alert manager (%s) is still enabled", rs.Primary.ID)
 			}

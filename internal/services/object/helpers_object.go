@@ -49,6 +49,7 @@ func (r *scalewayResolver) ResolveEndpoint(ctx context.Context, params s3.Endpoi
 
 func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpClient *http.Client) (*s3.Client, error) {
 	endpoint := "https://s3." + region + ".scw.cloud"
+
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
@@ -57,6 +58,7 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 	if err != nil {
 		return nil, err
 	}
+
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(endpoint)
 		o.EndpointResolverV2 = &scalewayResolver{region: region}
@@ -92,6 +94,7 @@ func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m interface
 	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
+
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
 	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, meta.ExtractHTTPClient(m))
@@ -112,6 +115,7 @@ func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m in
 	if len(parts) > 2 {
 		return nil, "", "", fmt.Errorf("invalid ID %q: expected ID in format <region>/<name>[@<project_id>]", id)
 	}
+
 	name = parts[0]
 
 	d.SetId(fmt.Sprintf("%s/%s", region, name))
@@ -146,6 +150,7 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
+
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
 	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, meta.ExtractHTTPClient(m))
@@ -166,6 +171,7 @@ func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, 
 	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
+
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
 	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, meta.ExtractHTTPClient(m))
@@ -181,6 +187,7 @@ func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m interfac
 	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
+
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 
 	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, meta.ExtractHTTPClient(m))
@@ -200,13 +207,17 @@ func flattenObjectBucketTags(tagsSet []s3Types.Tag) map[string]interface{} {
 
 	for _, tagSet := range tagsSet {
 		var key string
+
 		var value string
+
 		if tagSet.Key != nil {
 			key = *tagSet.Key
 		}
+
 		if tagSet.Value != nil {
 			value = *tagSet.Value
 		}
+
 		tags[key] = value
 	}
 
@@ -256,6 +267,7 @@ func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOut
 func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfiguration {
 	vc := &s3Types.VersioningConfiguration{}
 	vc.Status = s3Types.BucketVersioningStatusSuspended
+
 	if len(v) > 0 {
 		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
 			vc.Status = s3Types.BucketVersioningStatusEnabled
@@ -269,25 +281,32 @@ func flattenBucketCORS(corsResponse interface{}) []interface{} {
 	if corsResponse == nil {
 		return nil
 	}
+
 	if cors, ok := corsResponse.(*s3.GetBucketCorsOutput); ok && cors != nil && len(cors.CORSRules) > 0 {
 		var corsRules []interface{}
+
 		for _, ruleObject := range cors.CORSRules {
 			rule := map[string]interface{}{}
 			if len(ruleObject.AllowedHeaders) > 0 {
 				rule["allowed_headers"] = ruleObject.AllowedHeaders
 			}
+
 			if len(ruleObject.AllowedMethods) > 0 {
 				rule["allowed_methods"] = ruleObject.AllowedMethods
 			}
+
 			if len(ruleObject.AllowedOrigins) > 0 {
 				rule["allowed_origins"] = ruleObject.AllowedOrigins
 			}
+
 			if len(ruleObject.ExposeHeaders) > 0 {
 				rule["expose_headers"] = ruleObject.ExposeHeaders
 			}
+
 			if ruleObject.MaxAgeSeconds != nil {
 				rule["max_age_seconds"] = ruleObject.MaxAgeSeconds
 			}
+
 			corsRules = append(corsRules, rule)
 		}
 
@@ -316,8 +335,10 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 		}
 
 		rule := s3Types.CORSRule{}
+
 		for key, value := range corsMap {
 			tflog.Debug(ctx, fmt.Sprintf("Processing CORS key: %s, value: %#v for bucket %s", key, value, bucket))
+
 			switch key {
 			case "allowed_headers":
 				rule.AllowedHeaders = toStringSlice(ctx, value)
@@ -346,6 +367,7 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 
 func toStringSlice(ctx context.Context, input interface{}) []string {
 	var result []string
+
 	switch v := input.(type) {
 	case []interface{}:
 		for _, item := range v {
@@ -389,9 +411,11 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 
 		return false, err
 	}
+
 	if objectHead.ObjectLockLegalHoldStatus != s3Types.ObjectLockLegalHoldStatusOn {
 		return false, nil
 	}
+
 	_, err = conn.PutObjectLegalHold(ctx, &s3.PutObjectLegalHoldInput{
 		Bucket:    scw.StringPtr(bucketName),
 		Key:       objectVersion.Key,
@@ -411,7 +435,9 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 
 func emptyBucket(ctx context.Context, conn *s3.Client, bucketName string, force bool) (int64, error) {
 	var nObject int64
+
 	var nObjectMarker int64
+
 	var globalErr error
 
 	// Delete All Object Version
@@ -433,6 +459,7 @@ func emptyBucket(ctx context.Context, conn *s3.Client, bucketName string, force 
 
 func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Client, force bool, fn func(ctx context.Context, conn *s3.Client, bucket string, force bool, page *s3.ListObjectVersionsOutput, pool *workerpool.WorkerPool) (int64, error)) (int64, error) {
 	var globalErr error
+
 	deletionWorkers := findDeletionWorkerCapacity()
 	nObject := int64(0)
 	input := &s3.ListObjectVersionsInput{
@@ -446,10 +473,12 @@ func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Clie
 		if err != nil {
 			return nObject, fmt.Errorf("error listing S3 objects: %w", err)
 		}
+
 		n, taskErr := fn(ctx, conn, bucketName, force, page, pool)
 		if taskErr != nil {
 			return nObject, taskErr
 		}
+
 		nObject += n
 	}
 
@@ -464,14 +493,17 @@ func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Clie
 
 func deleteMarkerBucket(ctx context.Context, conn *s3.Client, bucketName string, force bool, page *s3.ListObjectVersionsOutput, pool *workerpool.WorkerPool) (int64, error) {
 	var nObject int64
+
 	for _, deleteMarkerEntry := range page.DeleteMarkers {
 		pool.AddTask(func() error {
 			deleteMarkerKey := aws.ToString(deleteMarkerEntry.Key)
 			deleteMarkerVersionsID := aws.ToString(deleteMarkerEntry.VersionId)
+
 			err := deleteS3ObjectVersion(ctx, conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
 			if err != nil {
 				return fmt.Errorf("failed to delete S3 object delete marker: %w", err)
 			}
+
 			nObject++
 
 			return nil
@@ -483,6 +515,7 @@ func deleteMarkerBucket(ctx context.Context, conn *s3.Client, bucketName string,
 
 func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string, force bool, page *s3.ListObjectVersionsOutput, pool *workerpool.WorkerPool) (int64, error) {
 	var nObject int64
+
 	for _, objectVersion := range page.Versions {
 		pool.AddTask(func() error {
 			objectKey := aws.ToString(objectVersion.Key)
@@ -499,7 +532,9 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 					err = deleteS3ObjectVersion(ctx, conn, bucketName, objectKey, objectVersionID, force)
 				}
 			}
+
 			nObject++
+
 			if err != nil {
 				return fmt.Errorf("failed to delete S3 object: %w", err)
 			}
@@ -522,6 +557,7 @@ func findDeletionWorkerCapacity() int {
 
 func transitionHash(v interface{}) int {
 	var buf bytes.Buffer
+
 	m, ok := v.(map[string]interface{})
 
 	if !ok {
@@ -531,6 +567,7 @@ func transitionHash(v interface{}) int {
 	if v, ok := m["days"]; ok {
 		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
 	}
+
 	if v, ok := m["storage_class"]; ok {
 		buf.WriteString(v.(string) + "-")
 	}
@@ -561,6 +598,7 @@ func TransitionSCWStorageClassValues() []string {
 func SuppressEquivalentPolicyDiffs(k, old, newP string, _ *schema.ResourceData) bool {
 	tflog.Debug(context.Background(),
 		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
+
 	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "" {
 		return true
 	}

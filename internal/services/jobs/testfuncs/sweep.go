@@ -20,7 +20,9 @@ func AddTestSweepers() {
 func testSweepJobDefinition(_ string) error {
 	return acctest.SweepRegions((&jobsSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		jobsAPI := jobsSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the jobs definitions in (%s)", region)
+
 		listJobDefinitions, err := jobsAPI.ListJobDefinitions(
 			&jobsSDK.ListJobDefinitionsRequest{
 				Region: region,

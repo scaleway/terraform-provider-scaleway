@@ -53,10 +53,12 @@ func testSweepUser(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list users: %w", err)
 		}
+
 		for _, user := range listUsers.Users {
 			if !acctest.IsTestResource(user.Email) {
 				continue
 			}
+
 			err = api.DeleteUser(&iamSDK.DeleteUserRequest{
 				UserID: user.ID,
 			})
@@ -84,6 +86,7 @@ func testSweepSSHKey(_ string) error {
 			if !acctest.IsTestResource(sshKey.Name) {
 				continue
 			}
+
 			err := iamAPI.DeleteSSHKey(&iamSDK.DeleteSSHKeyRequest{
 				SSHKeyID: sshKey.ID,
 			})
@@ -111,10 +114,12 @@ func testSweepIamPolicy(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list policies: %w", err)
 		}
+
 		for _, pol := range listPols.Policies {
 			if !acctest.IsTestResource(pol.Name) {
 				continue
 			}
+
 			err = api.DeletePolicy(&iamSDK.DeletePolicyRequest{
 				PolicyID: pol.ID,
 			})
@@ -142,10 +147,12 @@ func testSweepIamGroup(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list groups: %w", err)
 		}
+
 		for _, group := range listApps.Groups {
 			if !acctest.IsTestResource(group.Name) {
 				continue
 			}
+
 			err = api.DeleteGroup(&iamSDK.DeleteGroupRequest{
 				GroupID: group.ID,
 			})
@@ -173,6 +180,7 @@ func testSweepIamApplication(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list applications: %w", err)
 		}
+
 		for _, app := range listApps.Applications {
 			if !acctest.IsTestResource(app.Name) {
 				continue
@@ -207,10 +215,12 @@ func testSweepIamAPIKey(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list api keys: %w", err)
 		}
+
 		for _, key := range listAPIKeys.APIKeys {
 			if !acctest.IsTestResource(key.Description) {
 				continue
 			}
+
 			err = api.DeleteAPIKey(&iamSDK.DeleteAPIKeyRequest{
 				AccessKey: key.AccessKey,
 			})

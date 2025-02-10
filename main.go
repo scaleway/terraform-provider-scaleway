@@ -15,8 +15,10 @@ func main() {
 	ctx := context.Background()
 
 	var debugMode bool
+
 	flag.BoolVar(&debugMode, "debuggable", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
+
 	var serveOpts []tf5server.ServeOpt
 	if debugMode {
 		serveOpts = append(serveOpts, tf5server.WithManagedDebug())

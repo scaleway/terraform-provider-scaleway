@@ -24,6 +24,7 @@ import (
 func TestAccSQSQueue_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ctx := context.Background()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -212,6 +213,7 @@ func isSQSQueueDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 			// Project may have been deleted, check for it first
 			// Checking for Queue first may lead to an AccessDenied if project has been deleted
 			accountAPI := account.NewProjectAPI(tt.Meta)
+
 			_, err = accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
 				ProjectID: projectID,
 			})
@@ -224,6 +226,7 @@ func isSQSQueueDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 			}
 
 			mnqAPI := mnqSDK.NewSqsAPI(tt.Meta.ScwClient())
+
 			sqsInfo, err := mnqAPI.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
 				Region:    region,
 				ProjectID: projectID,

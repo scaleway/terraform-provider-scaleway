@@ -45,6 +45,7 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m int
 	clusterID, ok := d.GetOk("cluster_id")
 	if !ok {
 		clusterName := d.Get("name").(string)
+
 		res, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{
 			Region:    region,
 			Name:      types.ExpandStringPtr(clusterName),

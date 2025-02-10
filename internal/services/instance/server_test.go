@@ -1427,12 +1427,14 @@ func serverIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc 
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", nameFirst)
 		}
+
 		idFirst := rs.Primary.ID
 
 		rs, ok = s.RootModule().Resources[nameSecond]
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", nameSecond)
 		}
+
 		idSecond := rs.Primary.ID
 
 		if idFirst == idSecond {

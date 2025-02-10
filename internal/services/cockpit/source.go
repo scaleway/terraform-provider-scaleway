@@ -94,6 +94,7 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	retentionDays := uint32(d.Get("retention_days").(int))
+
 	res, err := api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
 		Region:        region,
 		ProjectID:     d.Get("project_id").(string),

@@ -59,6 +59,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
+
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
@@ -66,6 +67,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
 
@@ -86,6 +88,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		if tfawserr.ErrCodeEquals(err, "MalformedPolicy") {
 			return retry.RetryableError(err)
 		}
+
 		if err != nil {
 			return retry.NonRetryableError(err)
 		}
@@ -153,6 +156,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var diags diag.Diagnostics
+
 	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	})

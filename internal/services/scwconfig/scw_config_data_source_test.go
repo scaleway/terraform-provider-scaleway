@@ -20,6 +20,7 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == ciAccessKey {
 		t.Skip("Skipping TestAccDataSourceConfig_ActiveProfile")
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -71,6 +72,7 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == ciAccessKey {
 		t.Skip("Skipping TestAccDataSourceConfig_OtherProfile")
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -123,6 +125,7 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == ciAccessKey {
 		t.Skip("Skipping TestAccDataSourceConfig_MixedProfile")
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

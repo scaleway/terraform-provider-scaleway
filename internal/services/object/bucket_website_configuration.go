@@ -96,6 +96,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
 
@@ -167,6 +168,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		if d.IsNewResource() {
 			return diag.FromErr(fmt.Errorf("error reading object bucket website configuration (%s): empty output", d.Id()))
 		}
+
 		tflog.Info(ctx, fmt.Sprintf("[WARN] object Bucket Website Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
 
@@ -193,6 +195,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
 	}
+
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	return nil

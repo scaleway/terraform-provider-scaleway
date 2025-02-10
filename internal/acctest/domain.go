@@ -33,6 +33,7 @@ func init() {
 
 	// check if the test domain is not a Scaleway reserved domain
 	isReserved := false
+
 	for _, reservedDomain := range reservedDomains {
 		if reservedDomain.MatchString(TestDomain) {
 			isReserved = true

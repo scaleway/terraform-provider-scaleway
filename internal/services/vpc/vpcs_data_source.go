@@ -91,6 +91,7 @@ func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	vpcs := []interface{}(nil)
+
 	for _, virtualPrivateCloud := range res.Vpcs {
 		rawVpc := make(map[string]interface{})
 		rawVpc["id"] = regional.NewIDString(region, virtualPrivateCloud.ID)
@@ -98,9 +99,11 @@ func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m interface
 		rawVpc["created_at"] = types.FlattenTime(virtualPrivateCloud.CreatedAt)
 		rawVpc["update_at"] = types.FlattenTime(virtualPrivateCloud.UpdatedAt)
 		rawVpc["is_default"] = virtualPrivateCloud.IsDefault
+
 		if len(virtualPrivateCloud.Tags) > 0 {
 			rawVpc["tags"] = virtualPrivateCloud.Tags
 		}
+
 		rawVpc["region"] = region.String()
 		rawVpc["organization_id"] = virtualPrivateCloud.OrganizationID
 		rawVpc["project_id"] = virtualPrivateCloud.ProjectID

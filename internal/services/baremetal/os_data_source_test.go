@@ -63,6 +63,7 @@ func testAccCheckBaremetalOsExists(tt *acctest.TestTools, n string) resource.Tes
 		}
 
 		baremetalAPI := baremetal.NewAPI(tt.Meta.ScwClient())
+
 		_, err = baremetalAPI.GetOS(&baremetal.GetOSRequest{
 			OsID: ID,
 			Zone: zone,

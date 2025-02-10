@@ -81,6 +81,7 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
+
 	res, err := accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
@@ -116,6 +117,7 @@ func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
+
 	if d.HasChange("description") {
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true

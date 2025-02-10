@@ -109,6 +109,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 		}
 
 		var planName string
+
 		for _, plan := range plans.Plans {
 			if plan.Name.String() == targetPlan {
 				planName = plan.Name.String()
@@ -151,12 +152,14 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 			return diag.FromErr(err)
 		}
 	}
+
 	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{ //nolint:staticcheck
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("plan", res.Name.String())
 	_ = d.Set("plan_id", res.Name.String())
 
@@ -168,6 +171,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("project_id", projectID)
 	d.SetId(projectID)
 
@@ -177,6 +181,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if grafana.GrafanaURL == "" {
 		grafana.GrafanaURL = createGrafanaURL(projectID, region)
 	}
@@ -187,6 +192,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	alertManagerURL := ""
 	if alertManager.AlertManagerURL != nil {
 		alertManagerURL = *alertManager.AlertManagerURL
@@ -220,6 +226,7 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		}
 
 		var planName string
+
 		for _, plan := range plans.Plans {
 			if plan.Name.String() == targetPlan {
 				planName = plan.Name.String()

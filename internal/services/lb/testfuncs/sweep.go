@@ -29,6 +29,7 @@ func testSweepLB(_ string) error {
 		lbAPI := lbSDK.NewZonedAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the lbs in (%s)", zone)
+
 		listLBs, err := lbAPI.ListLBs(&lbSDK.ZonedAPIListLBsRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
@@ -52,6 +53,7 @@ func testSweepLB(_ string) error {
 			if err != nil {
 				return fmt.Errorf("error waiting for lb in sweeper: %w", err)
 			}
+
 			err = lbAPI.DeleteLB(&lbSDK.ZonedAPIDeleteLBRequest{
 				LBID:      l.ID,
 				ReleaseIP: true,
@@ -71,6 +73,7 @@ func testSweepIP(_ string) error {
 		lbAPI := lbSDK.NewZonedAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the lb ips in zone (%s)", zone)
+
 		listIPs, err := lbAPI.ListIPs(&lbSDK.ZonedAPIListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %w", zone, err)

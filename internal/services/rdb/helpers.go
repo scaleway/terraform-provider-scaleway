@@ -85,6 +85,7 @@ func getIPConfigCreate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 	if enableIpamSet {
 		ipamConfig = types.ExpandBoolPtr(enableIpam)
 	}
+
 	customIP, customIPSet := d.GetOk("private_network.0." + ipFieldName)
 	if customIPSet {
 		staticConfig = types.ExpandStringPtr(customIP)
@@ -98,6 +99,7 @@ func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 	if ipamConfigI, _ := meta.GetRawConfigForKey(d, "private_network.#.enable_ipam", cty.Bool); ipamConfigI != nil {
 		ipamConfig = types.ExpandBoolPtr(ipamConfigI)
 	}
+
 	if staticConfigI, _ := meta.GetRawConfigForKey(d, "private_network.#."+ipFieldName, cty.String); staticConfigI != nil {
 		staticConfig = types.ExpandStringPtr(staticConfigI)
 	}

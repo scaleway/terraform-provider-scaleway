@@ -72,6 +72,7 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	rdbAPI := newAPI(m)
 	// resource depends on the instance locality
 	regionalID := d.Get("instance_id").(string)
+
 	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
 		diag.FromErr(err)
@@ -122,6 +123,7 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 
 func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newAPI(m)
+
 	region, instanceID, userName, err := ResourceUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -152,6 +154,7 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 		return diag.FromErr(err)
 	}
+
 	if len(res.Users) == 0 {
 		tflog.Warn(ctx, fmt.Sprintf("couldn'd find user with name: [%s]", userName))
 		d.SetId("")
@@ -192,6 +195,7 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	if d.HasChange("password") {
 		req.Password = types.ExpandStringPtr(d.Get("password"))
 	}
+
 	if d.HasChange("is_admin") {
 		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
 	}

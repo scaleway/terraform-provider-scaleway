@@ -37,6 +37,7 @@ func DataSourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m inte
 	sshKeyID, sshKeyIDExists := d.GetOk("ssh_key_id")
 	if !sshKeyIDExists {
 		sshKeyName := d.Get("name").(string)
+
 		res, err := iamAPI.ListSSHKeys(&iam.ListSSHKeysRequest{
 			Name:      types.ExpandStringPtr(sshKeyName),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),

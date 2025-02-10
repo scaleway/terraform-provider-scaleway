@@ -20,7 +20,9 @@ func AddTestSweepers() {
 func testSweepInstance(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		rdbAPI := rdbSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the rdb instance in (%s)", region)
+
 		listInstances, err := rdbAPI.ListInstances(&rdbSDK.ListInstancesRequest{
 			Region: region,
 		}, scw.WithAllPages())

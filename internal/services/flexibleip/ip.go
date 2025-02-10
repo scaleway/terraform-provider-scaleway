@@ -177,6 +177,7 @@ func ResourceFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	updateRequest := &flexibleip.UpdateFlexibleIPRequest{
 		Zone:  zone,
 		FipID: flexibleIP.ID,
