@@ -37,7 +37,7 @@ func testSweepVPC(_ string) error {
 
 		listVPCs, err := vpcAPI.ListVPCs(&vpcSDK.ListVPCsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing secrets in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing secrets in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, v := range listVPCs.Vpcs {
@@ -51,7 +51,7 @@ func testSweepVPC(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting VPC in sweeper: %s", err)
+				return fmt.Errorf("error deleting VPC in sweeper: %w", err)
 			}
 		}
 
@@ -69,7 +69,7 @@ func testSweepVPCPrivateNetwork(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing private network in sweeper: %s", err)
+			return fmt.Errorf("error listing private network in sweeper: %w", err)
 		}
 
 		for _, pn := range listPNResponse.PrivateNetworks {
@@ -78,7 +78,7 @@ func testSweepVPCPrivateNetwork(_ string) error {
 				PrivateNetworkID: pn.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting private network in sweeper: %s", err)
+				return fmt.Errorf("error deleting private network in sweeper: %w", err)
 			}
 		}
 
@@ -102,7 +102,7 @@ func testSweepVPCRoute(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing route in sweeper: %s", err)
+			return fmt.Errorf("error listing route in sweeper: %w", err)
 		}
 
 		for _, routeWithNexthop := range listRoutesResponse.Routes {
@@ -112,7 +112,7 @@ func testSweepVPCRoute(_ string) error {
 					RouteID: routeWithNexthop.Route.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting route in sweeper: %s", err)
+					return fmt.Errorf("error deleting route in sweeper: %w", err)
 				}
 			} else {
 				return fmt.Errorf("route is nil in RouteWithNexthop: %v", routeWithNexthop)

@@ -30,7 +30,7 @@ func testSweepDatabaseBackup(_ string) error {
 			Region: region,
 		})
 		if err != nil {
-			return fmt.Errorf("error listing rdb database backups in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing rdb database backups in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, backup := range listBackups.DatabaseBackups {
@@ -39,7 +39,7 @@ func testSweepDatabaseBackup(_ string) error {
 				DatabaseBackupID: backup.ID,
 			})
 			if err != nil && !httperrors.Is404(err) {
-				return fmt.Errorf("error deleting rdb database backup in sweeper: %s", err)
+				return fmt.Errorf("error deleting rdb database backup in sweeper: %w", err)
 			}
 		}
 

@@ -446,7 +446,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 			Type:           volumeTypeToMarketplaceFilter(req.Volumes["0"].VolumeType),
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %w", zonal.NewID(zone, imageLabel), err))
 		}
 		imageUUID = image.ID
 	}

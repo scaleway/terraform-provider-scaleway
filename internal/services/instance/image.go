@@ -317,7 +317,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	_, err = api.UpdateImage(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't update image: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't update image: %w", err))
 	}
 
 	_, err = waitForImage(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))

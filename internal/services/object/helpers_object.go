@@ -385,7 +385,7 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 		VersionId: objectVersion.VersionId,
 	})
 	if err != nil {
-		err = fmt.Errorf("failed to get S3 object meta data: %s", err)
+		err = fmt.Errorf("failed to get S3 object meta data: %w", err)
 
 		return false, err
 	}
@@ -401,7 +401,7 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 		},
 	})
 	if err != nil {
-		err = fmt.Errorf("failed to put S3 object legal hold: %s", err)
+		err = fmt.Errorf("failed to put S3 object legal hold: %w", err)
 
 		return false, err
 	}
@@ -470,7 +470,7 @@ func deleteMarkerBucket(ctx context.Context, conn *s3.Client, bucketName string,
 			deleteMarkerVersionsID := aws.ToString(deleteMarkerEntry.VersionId)
 			err := deleteS3ObjectVersion(ctx, conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
 			if err != nil {
-				return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
+				return fmt.Errorf("failed to delete S3 object delete marker: %w", err)
 			}
 			nObject++
 
@@ -492,7 +492,7 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 			if IsS3Err(err, ErrCodeAccessDenied, "") && force {
 				legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(ctx, conn, bucketName, &objectVersion)
 				if errLegal != nil {
-					return fmt.Errorf("failed to remove legal hold: %s", errLegal)
+					return fmt.Errorf("failed to remove legal hold: %w", errLegal)
 				}
 
 				if legalHoldRemoved {
@@ -501,7 +501,7 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 			}
 			nObject++
 			if err != nil {
-				return fmt.Errorf("failed to delete S3 object: %s", err)
+				return fmt.Errorf("failed to delete S3 object: %w", err)
 			}
 
 			return nil

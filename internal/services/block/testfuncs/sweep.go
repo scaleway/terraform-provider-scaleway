@@ -30,7 +30,7 @@ func testSweepBlockVolume(_ string) error {
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing volume in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing volume in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, volume := range listVolumes.Volumes {
@@ -41,7 +41,7 @@ func testSweepBlockVolume(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting volume in sweeper: %s", err)
+				return fmt.Errorf("error deleting volume in sweeper: %w", err)
 			}
 		}
 
@@ -58,7 +58,7 @@ func testSweepSnapshot(_ string) error {
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing snapshot in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing snapshot in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, snapshot := range listSnapshots.Snapshots {
@@ -69,7 +69,7 @@ func testSweepSnapshot(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting snapshot in sweeper: %s", err)
+				return fmt.Errorf("error deleting snapshot in sweeper: %w", err)
 			}
 		}
 

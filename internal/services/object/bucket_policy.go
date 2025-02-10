@@ -97,7 +97,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %s", err))
+		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %w", err))
 	}
 
 	d.SetId(regional.NewIDString(region, bucket))
@@ -183,7 +183,7 @@ func resourceObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting SCW Object policy: %s", err))
+		return diag.FromErr(fmt.Errorf("error deleting SCW Object policy: %w", err))
 	}
 
 	return nil

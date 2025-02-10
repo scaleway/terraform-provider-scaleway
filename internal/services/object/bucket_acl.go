@@ -187,7 +187,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m inte
 
 	out, err := conn.PutBucketAcl(ctx, input)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %s", err))
+		return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %w", err))
 	}
 	tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
 

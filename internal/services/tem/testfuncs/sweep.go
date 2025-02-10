@@ -24,7 +24,7 @@ func testSweepDomain(_ string) error {
 
 		listDomains, err := temAPI.ListDomains(&temSDK.ListDomainsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing domains in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing domains in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, ns := range listDomains.Domains {
@@ -40,7 +40,7 @@ func testSweepDomain(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error revoking domain in sweeper: %s", err)
+				return fmt.Errorf("error revoking domain in sweeper: %w", err)
 			}
 		}
 

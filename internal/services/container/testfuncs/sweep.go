@@ -35,7 +35,7 @@ func testSweepTrigger(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing trigger in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing trigger in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, trigger := range listTriggers.Triggers {
@@ -46,7 +46,7 @@ func testSweepTrigger(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting trigger in sweeper: %s", err)
+				return fmt.Errorf("error deleting trigger in sweeper: %w", err)
 			}
 		}
 
@@ -63,7 +63,7 @@ func testSweepContainer(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing containers in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing containers in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, cont := range listNamespaces.Containers {
@@ -74,7 +74,7 @@ func testSweepContainer(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting container in sweeper: %s", err)
+				return fmt.Errorf("error deleting container in sweeper: %w", err)
 			}
 		}
 
@@ -91,7 +91,7 @@ func testSweepNamespace(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, ns := range listNamespaces.Namespaces {
@@ -102,7 +102,7 @@ func testSweepNamespace(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
+				return fmt.Errorf("error deleting namespace in sweeper: %w", err)
 			}
 		}
 

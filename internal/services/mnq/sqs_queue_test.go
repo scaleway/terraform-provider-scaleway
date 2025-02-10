@@ -250,7 +250,7 @@ func isSQSQueueDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 					return nil
 				}
 
-				return fmt.Errorf("failed to get queue url: %s", err)
+				return fmt.Errorf("failed to get queue url: %w", err)
 			}
 
 			if err == nil {

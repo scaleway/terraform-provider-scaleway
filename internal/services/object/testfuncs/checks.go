@@ -79,7 +79,7 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					continue
 				}
 
-				return fmt.Errorf("couldn't get bucket to verify if it still exists: %s", err)
+				return fmt.Errorf("couldn't get bucket to verify if it still exists: %w", err)
 			}
 
 			return errors.New("bucket should be deleted")
@@ -116,7 +116,7 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					continue
 				}
 
-				return fmt.Errorf("couldn't get object to verify if it still exists: %s", err)
+				return fmt.Errorf("couldn't get object to verify if it still exists: %w", err)
 			}
 
 			return errors.New("object should be deleted")

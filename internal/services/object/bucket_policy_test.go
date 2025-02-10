@@ -269,7 +269,7 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 			Bucket: types.ExpandStringPtr(bucketName),
 		})
 		if err != nil {
-			return fmt.Errorf("GetBucketPolicy error: %v", err)
+			return fmt.Errorf("GetBucketPolicy error: %w", err)
 		}
 
 		actualPolicyText := *policy.Policy
@@ -280,7 +280,7 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 
 		equivalent, err := awspolicy.PoliciesAreEquivalent(actualPolicyText, expectedPolicyText)
 		if err != nil {
-			return fmt.Errorf("error testing policy equivalence: %s", err)
+			return fmt.Errorf("error testing policy equivalence: %w", err)
 		}
 		if !equivalent {
 			return fmt.Errorf("non equivalent policy error:\n\nexpected: %s\n\n     got: %s",
@@ -298,7 +298,7 @@ func removePolicyStatementResources(policy string) (string, error) {
 	actualPolicyJSON := make(map[string]interface{})
 	err := json.Unmarshal([]byte(policy), &actualPolicyJSON)
 	if err != nil {
-		return "", fmt.Errorf("json.Unmarshal error: %v", err)
+		return "", fmt.Errorf("json.Unmarshal error: %w", err)
 	}
 
 	if statement, ok := actualPolicyJSON["Statement"].([]interface{}); ok && len(statement) > 0 {
@@ -311,7 +311,7 @@ func removePolicyStatementResources(policy string) (string, error) {
 
 	actualPolicyTextBytes, err := json.Marshal(actualPolicyJSON)
 	if err != nil {
-		return "", fmt.Errorf("json.Marshal error: %v", err)
+		return "", fmt.Errorf("json.Marshal error: %w", err)
 	}
 
 	return string(actualPolicyTextBytes), nil

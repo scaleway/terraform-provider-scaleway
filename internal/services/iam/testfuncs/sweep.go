@@ -77,7 +77,7 @@ func testSweepSSHKey(_ string) error {
 
 		listSSHKeys, err := iamAPI.ListSSHKeys(&iamSDK.ListSSHKeysRequest{}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing SSH keys in sweeper: %s", err)
+			return fmt.Errorf("error listing SSH keys in sweeper: %w", err)
 		}
 
 		for _, sshKey := range listSSHKeys.SSHKeys {
@@ -88,7 +88,7 @@ func testSweepSSHKey(_ string) error {
 				SSHKeyID: sshKey.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting SSH key in sweeper: %s", err)
+				return fmt.Errorf("error deleting SSH key in sweeper: %w", err)
 			}
 		}
 

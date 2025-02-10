@@ -40,12 +40,12 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 
 		cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 		if err != nil {
-			return fmt.Errorf("could not connect to Docker: %v", err)
+			return fmt.Errorf("could not connect to Docker: %w", err)
 		}
 
 		encodedJSON, err := json.Marshal(authConfig)
 		if err != nil {
-			return fmt.Errorf("could not marshal auth config: %v", err)
+			return fmt.Errorf("could not marshal auth config: %w", err)
 		}
 
 		ctx := context.Background()
@@ -53,7 +53,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 
 		out, err := cli.ImagePull(ctx, testDockerIMG, image.PullOptions{})
 		if err != nil {
-			return fmt.Errorf("could not pull image: %v", err)
+			return fmt.Errorf("could not pull image: %w", err)
 		}
 		defer out.Close()
 
@@ -65,7 +65,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 			}
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
-				return fmt.Errorf("could not unmarshal: %v", err)
+				return fmt.Errorf("could not unmarshal: %w", err)
 			}
 
 			if errorMessage.Error != "" {
@@ -76,12 +76,12 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		scwTag := registryEndpoint + "/alpine:" + tagName
 		err = cli.ImageTag(ctx, testDockerIMG, scwTag)
 		if err != nil {
-			return fmt.Errorf("could not tag image: %v", err)
+			return fmt.Errorf("could not tag image: %w", err)
 		}
 
 		pusher, err := cli.ImagePush(ctx, scwTag, image.PushOptions{RegistryAuth: authStr})
 		if err != nil {
-			return fmt.Errorf("could not push image: %v", err)
+			return fmt.Errorf("could not push image: %w", err)
 		}
 		defer pusher.Close()
 
@@ -93,7 +93,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 			}
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
-				return fmt.Errorf("could not unmarshal: %v", err)
+				return fmt.Errorf("could not unmarshal: %w", err)
 			}
 
 			if errorMessage.Error != "" {

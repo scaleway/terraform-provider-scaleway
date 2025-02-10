@@ -107,7 +107,7 @@ func testAccCheckDataSourcePolicyIsEquivalent(n, expectedPolicyText string) reso
 
 		equivalent, err := awspolicy.PoliciesAreEquivalent(expectedPolicyText, dataSourcePolicyToCompare)
 		if err != nil {
-			return fmt.Errorf("error testing policy equivalence: %s", err)
+			return fmt.Errorf("error testing policy equivalence: %w", err)
 		}
 		if !equivalent {
 			return fmt.Errorf("non equivalent policy error:\n\nexpected: %s\n\n     got: %s",
