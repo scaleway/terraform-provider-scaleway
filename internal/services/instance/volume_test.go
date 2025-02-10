@@ -207,6 +207,7 @@ func isVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		}
 
 		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
 		_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
 			VolumeID: id,
 			Zone:     zone,
@@ -222,6 +223,7 @@ func isVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 func isVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_volume" {
 				continue

@@ -155,12 +155,14 @@ func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	_ = d.Set("tags", ip.Tags)
 
 	isIPv6 := false
+
 	if ip.IPAddress != "" {
 		parsedIP := net.ParseIP(ip.IPAddress)
 		if parsedIP != nil && parsedIP.To4() == nil {
 			isIPv6 = true
 		}
 	}
+
 	_ = d.Set("is_ipv6", isIPv6)
 
 	return nil
@@ -173,6 +175,7 @@ func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	var ip *lbSDK.IP
+
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 		res, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
@@ -261,6 +264,7 @@ func resourceLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	var ip *lbSDK.IP
+
 	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		res, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,

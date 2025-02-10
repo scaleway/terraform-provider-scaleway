@@ -54,9 +54,11 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 				if placementGroupID != "" {
 					return diag.Errorf("more than 1 placement group found with the same name %s", d.Get("name"))
 				}
+
 				placementGroupID = placementGroup.ID
 			}
 		}
+
 		if placementGroupID == "" {
 			return diag.Errorf("no placementgroup found with the name %s", d.Get("name"))
 		}
@@ -64,6 +66,7 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 
 	zoneID := datasource.NewZonedID(placementGroupID, zone)
 	d.SetId(zoneID)
+
 	err = d.Set("placement_group_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)

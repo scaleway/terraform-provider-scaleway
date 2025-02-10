@@ -41,6 +41,7 @@ func newAPIWithZoneAndRegion(d *schema.ResourceData, m interface{}) (*mongodb.AP
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", "", err
@@ -73,6 +74,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*mongodb.API, scw.Region, 
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	region, err := zone.Region()
 	if err != nil {
 		return nil, "", "", err

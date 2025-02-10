@@ -41,6 +41,7 @@ func waitForNamespaceDelete(ctx context.Context, api *registry.API, region scw.R
 	}
 
 	start := time.Now()
+
 	for {
 		ns, err := api.GetNamespace(&registry.GetNamespaceRequest{
 			Region:      region,

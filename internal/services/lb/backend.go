@@ -351,22 +351,27 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	healthCheckDelay, err := types.ExpandDuration(d.Get("health_check_delay"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutServer, err := types.ExpandDuration(d.Get("timeout_server"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutConnect, err := types.ExpandDuration(d.Get("timeout_connect"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutTunnel, err := types.ExpandDuration(d.Get("timeout_tunnel"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	createReq := &lbSDK.ZonedAPICreateBackendRequest{
 		Zone:                     zone,
 		LBID:                     lbID,
@@ -400,24 +405,30 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if maxConn, ok := d.GetOk("max_connections"); ok {
 		createReq.MaxConnections = types.ExpandInt32Ptr(maxConn)
 	}
+
 	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
 		timeout, err := time.ParseDuration(timeoutQueue.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		createReq.TimeoutQueue = &scw.Duration{Seconds: int64(timeout.Seconds())}
 	}
+
 	if redispatchAttemptCount, ok := d.GetOk("redispatch_attempt_count"); ok {
 		createReq.RedispatchAttemptCount = types.ExpandInt32Ptr(redispatchAttemptCount)
 	}
+
 	if maxRetries, ok := d.GetOk("max_retries"); ok {
 		createReq.MaxRetries = types.ExpandInt32Ptr(maxRetries)
 	}
+
 	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
 		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		createReq.HealthCheck.TransientCheckDelay = &scw.Duration{Seconds: int64(timeout.Seconds()), Nanos: int32(timeout.Nanoseconds())}
 	}
 
@@ -539,10 +550,12 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutConnect, err := types.ExpandDuration(d.Get("timeout_connect"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutTunnel, err := types.ExpandDuration(d.Get("timeout_tunnel"))
 	if err != nil {
 		return diag.FromErr(err)
@@ -575,6 +588,7 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.TimeoutQueue = &scw.Duration{Seconds: int64(timeoutQueueParsed.Seconds())}
 	}
 
@@ -590,6 +604,7 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	healthCheckDelay, err := types.ExpandDuration(d.Get("health_check_delay"))
 	if err != nil {
 		return diag.FromErr(err)
@@ -606,11 +621,13 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 		CheckSendProxy:  d.Get("health_check_send_proxy").(bool),
 	}
+
 	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
 		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		updateHCRequest.TransientCheckDelay = &scw.Duration{Seconds: int64(timeout.Seconds()), Nanos: int32(timeout.Nanoseconds())}
 	}
 

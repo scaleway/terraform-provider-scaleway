@@ -60,6 +60,7 @@ func ResourceInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(zonal.NewIDString(zone, res.IP.ID))
 
 	if _, ok := d.GetOk("reverse"); ok {
@@ -131,6 +132,7 @@ func ResourceInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceD
 		} else {
 			updateReverseReq.Reverse = &instanceSDK.NullableStringValue{Null: true}
 		}
+
 		err := retryUpdateReverseDNS(ctx, instanceAPI, updateReverseReq, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -152,6 +154,7 @@ func ResourceInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceD
 		IP:      ID,
 		Reverse: &instanceSDK.NullableStringValue{Null: true},
 	}
+
 	_, err = instanceAPI.UpdateIP(updateReverseReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

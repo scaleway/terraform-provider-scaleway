@@ -20,6 +20,7 @@ import (
 func TestAccSecurityGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	ipnetOne, err := types.ExpandIPNet("1.1.1.1")
@@ -285,6 +286,7 @@ func TestAccSecurityGroup_ANY(t *testing.T) {
 func TestAccSecurityGroup_WithNoPort(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
@@ -320,6 +322,7 @@ func TestAccSecurityGroup_WithNoPort(t *testing.T) {
 func TestAccSecurityGroup_RemovePort(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
@@ -505,9 +508,11 @@ func securityGroupRuleIs(tt *acctest.TestTools, name string, direction instanceS
 		if err != nil {
 			return err
 		}
+
 		sort.Slice(resRules.Rules, func(i, j int) bool {
 			return resRules.Rules[i].Position < resRules.Rules[j].Position
 		})
+
 		apiRules := map[instanceSDK.SecurityGroupRuleDirection][]*instanceSDK.SecurityGroupRule{
 			instanceSDK.SecurityGroupRuleDirectionInbound:  {},
 			instanceSDK.SecurityGroupRuleDirectionOutbound: {},
@@ -517,6 +522,7 @@ func securityGroupRuleIs(tt *acctest.TestTools, name string, direction instanceS
 			if apiRule.Editable == false {
 				continue
 			}
+
 			apiRules[apiRule.Direction] = append(apiRules[apiRule.Direction], apiRule)
 		}
 
@@ -538,6 +544,7 @@ func isSecurityGroupPresent(tt *acctest.TestTools, n string) resource.TestCheckF
 		}
 
 		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
 		_, err = instanceAPI.GetSecurityGroup(&instanceSDK.GetSecurityGroupRequest{
 			SecurityGroupID: ID,
 			Zone:            zone,
@@ -553,6 +560,7 @@ func isSecurityGroupPresent(tt *acctest.TestTools, n string) resource.TestCheckF
 func isSecurityGroupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_instance_security_group" {
 				continue

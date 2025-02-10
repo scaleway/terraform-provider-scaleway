@@ -134,10 +134,12 @@ func deleteImage(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
+
 		api, region, _, err := registry.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
+
 		_, err = api.DeleteImage(&registrySDK.DeleteImageRequest{
 			Region:  region,
 			ImageID: locality.ExpandID(rs.Primary.ID),

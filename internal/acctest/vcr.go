@@ -48,6 +48,7 @@ var BodyMatcherIgnore = []string{
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
 func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	t.Helper()
+
 	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
 
 	// Replace nested tests separators.
@@ -91,6 +92,7 @@ func compareFormBodies(expected, actual url.Values) bool {
 			// We do not want to generate new cassettes for each new features
 			continue
 		}
+
 		if !compareJSONFields(expectedValue, actual[key]) {
 			return false
 		}
@@ -125,6 +127,7 @@ func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.R
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to copy actualRequest body: %w", err)) // lintignore: R009
 	}
+
 	actualRawBody, err := io.ReadAll(actualBody)
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to read actualRequest body: %w", err)) // lintignore: R009
@@ -186,10 +189,12 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 	actualURL := actual.URL
 	actualURLValues := actualURL.Query()
 	expectedURLValues := expectedURL.Query()
+
 	for _, query := range QueryMatcherIgnore {
 		actualURLValues.Del(query)
 		expectedURLValues.Del(query)
 	}
+
 	actualURL.RawQuery = actualURLValues.Encode()
 	expectedURL.RawQuery = expectedURLValues.Encode()
 
@@ -199,6 +204,7 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 		if !strings.HasSuffix(expectedURL.Host, "scw.cloud") {
 			return false
 		}
+
 		actualS3Host := strings.Split(actualURL.Host, ".")
 		expectedS3Host := strings.Split(expectedURL.Host, ".")
 
@@ -212,6 +218,7 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 			if strings.Contains(actualBucket, "-") {
 				actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
 			}
+
 			if strings.Contains(expectedBucket, "-") {
 				expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
 			}
@@ -230,20 +237,24 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 
 func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 	var jsonBody map[string]interface{}
+
 	err := json.Unmarshal([]byte(i.Response.Body), &jsonBody)
 	if err != nil {
 		//nolint:nilerr
 		return nil
 	}
+
 	for key, value := range SensitiveFields {
 		if _, ok := jsonBody[key]; ok {
 			jsonBody[key] = value
 		}
 	}
+
 	anonymizedBody, err := json.Marshal(jsonBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal anonymized body: %w", err)
 	}
+
 	i.Response.Body = string(anonymizedBody)
 
 	return nil
@@ -257,6 +268,7 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 // closed and saved after the requests.
 func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.Client, cleanup func(), err error) {
 	t.Helper()
+
 	recorderMode := recorder.ModeReplayOnly
 	if update {
 		recorderMode = recorder.ModeRecordOnly

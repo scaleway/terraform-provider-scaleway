@@ -143,6 +143,7 @@ func TestAccFunctionTrigger_Nats(t *testing.T) {
 func TestAccFunctionTrigger_Error(t *testing.T) {
 	// https://github.com/hashicorp/terraform-plugin-testing/issues/69
 	t.Skip("Currently cannot test warnings")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

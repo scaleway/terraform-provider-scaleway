@@ -76,15 +76,18 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &instanceSDK.CreateIPRequest{
 		Zone:    zone,
 		Project: types.ExpandStringPtr(d.Get("project_id")),
 		Type:    instanceSDK.IPType(d.Get("type").(string)),
 	}
 	tags := types.ExpandStrings(d.Get("tags"))
+
 	if len(tags) > 0 {
 		req.Tags = tags
 	}
+
 	res, err := instanceAPI.CreateIP(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -98,6 +101,7 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 			Reverse: &instanceSDK.NullableStringValue{Value: *reverseStrPtr},
 			Zone:    zone,
 		}
+
 		_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -114,6 +118,7 @@ func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &instanceSDK.UpdateIPRequest{
 		IP:   ID,
 		Zone: zone,
@@ -153,12 +158,14 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	address := res.IP.Address.String()
+
 	prefix := res.IP.Prefix.String()
 	if prefix == types.NetIPNil {
 		ipnet := scw.IPNet{}
 		_ = (&ipnet).UnmarshalJSON([]byte("\"" + res.IP.Address.String() + "\""))
 		prefix = ipnet.String()
 	}
+
 	if address == types.NetIPNil {
 		address = res.IP.Prefix.IP.String()
 	}

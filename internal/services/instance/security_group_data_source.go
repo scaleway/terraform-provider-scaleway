@@ -44,6 +44,7 @@ func DataSourceInstanceSecurityGroupRead(ctx context.Context, d *schema.Resource
 	securityGroupID, ok := d.GetOk("security_group_id")
 	if !ok {
 		sgName := d.Get("name").(string)
+
 		res, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(sgName),

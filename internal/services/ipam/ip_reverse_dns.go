@@ -67,6 +67,7 @@ func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(regional.NewIDString(region, res.ID))
+
 	if hostname, ok := d.GetOk("hostname"); ok {
 		reverse := &ipam.Reverse{
 			Hostname: hostname.(string),
@@ -110,6 +111,7 @@ func ResourceIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m
 
 	managedHostname := d.Get("hostname").(string)
 	managedAddress := d.Get("address").(string)
+
 	for _, reverse := range res.Reverses {
 		if reverse.Hostname == managedHostname && reverse.Address.String() == managedAddress {
 			_ = d.Set("hostname", reverse.Hostname)

@@ -36,6 +36,7 @@ func DataSourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	zonedID := datasource.NewZonedID(routeID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("route_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)

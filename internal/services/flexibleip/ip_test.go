@@ -361,6 +361,7 @@ func testAccCheckFlexibleIPAttachedToBaremetalServer(tt *acctest.TestTools, ipRe
 		if !ok {
 			return fmt.Errorf("resource not found: %s", ipResource)
 		}
+
 		serverState, ok := s.RootModule().Resources[serverResource]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", serverResource)
@@ -383,6 +384,7 @@ func testAccCheckFlexibleIPAttachedToBaremetalServer(tt *acctest.TestTools, ipRe
 		if err != nil {
 			return err
 		}
+
 		ip, err := fipAPI.GetFlexibleIP(&flexibleipSDK.GetFlexibleIPRequest{
 			FipID: ID,
 			Zone:  zone,

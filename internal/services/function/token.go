@@ -95,6 +95,7 @@ func ResourceFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	token, err := api.GetToken(&function.GetTokenRequest{
 		Region:  region,
 		TokenID: ID,

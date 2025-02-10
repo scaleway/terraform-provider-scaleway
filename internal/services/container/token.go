@@ -93,6 +93,7 @@ func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	token, err := api.GetToken(&container.GetTokenRequest{
 		Region:  region,
 		TokenID: ID,

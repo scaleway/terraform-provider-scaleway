@@ -531,6 +531,7 @@ func testAccCheckK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", clusterTFName)
 		}
+
 		k8sAPI, region, clusterID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -540,6 +541,7 @@ func testAccCheckK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", poolTFName)
 		}
+
 		_, _, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -549,6 +551,7 @@ func testAccCheckK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", pnTFName)
 		}
+
 		_, _, pnID, err := vpc.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -581,11 +584,13 @@ func testAccCheckK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, cluste
 			}
 
 			pnfound := false
+
 			for _, privateNic := range server.Server.PrivateNics {
 				if privateNic.PrivateNetworkID == pnID {
 					pnfound = true
 				}
 			}
+
 			if pnfound == false {
 				return fmt.Errorf("node %s is not in linked to private network %s", node.ID, pnID)
 			}
@@ -601,6 +606,7 @@ func testAccCheckK8SPoolPublicIP(tt *acctest.TestTools, clusterTFName, poolTFNam
 		if !ok {
 			return fmt.Errorf("resource not found: %s", clusterTFName)
 		}
+
 		k8sAPI, region, clusterID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -610,6 +616,7 @@ func testAccCheckK8SPoolPublicIP(tt *acctest.TestTools, clusterTFName, poolTFNam
 		if !ok {
 			return fmt.Errorf("resource not found: %s", poolTFName)
 		}
+
 		_, _, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -644,6 +651,7 @@ func testAccCheckK8SPoolPublicIP(tt *acctest.TestTools, clusterTFName, poolTFNam
 			if disabled == true && server.Server.PublicIPs != nil && len(server.Server.PublicIPs) > 0 {
 				return errors.New("found node with public IP when none was expected")
 			}
+
 			if disabled == false && len(server.Server.PublicIPs) == 0 {
 				return errors.New("found node with no public IP when one was expected")
 			}
@@ -976,14 +984,17 @@ func testAccCheckK8SPoolNodesOneOfIsDeleting(name string) resource.TestCheckFunc
 		if !ok {
 			return fmt.Errorf("resource not found: %s", name)
 		}
+
 		nodesZeroStatus, ok := rs.Primary.Attributes["nodes.0.status"]
 		if !ok {
 			return errors.New("attribute \"nodes.0.status\" was not set")
 		}
+
 		nodesOneStatus, ok := rs.Primary.Attributes["nodes.1.status"]
 		if !ok {
 			return errors.New("attribute \"nodes.1.status\" was not set")
 		}
+
 		if nodesZeroStatus == "ready" && nodesOneStatus == "deleting" ||
 			nodesZeroStatus == "deleting" && nodesOneStatus == "ready" {
 			return nil

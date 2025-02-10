@@ -75,6 +75,7 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	instanceID := locality.ExpandID(d.Get("instance_id").(string))
+
 	_, err = waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -181,6 +182,7 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 	if len(res.Privileges) == 0 {
 		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, databaseName))
 	}
+
 	privilege := res.Privileges[0]
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
@@ -193,10 +195,12 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 
 func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newAPI(m)
+
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -264,6 +268,7 @@ func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m i
 //gocyclo:ignore
 func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newAPI(m)
+
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -275,6 +280,7 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	_ = d.Set("permission", rdb.PermissionNone)
+
 	listUsers, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 		Region:     region,
 		InstanceID: instanceID,
@@ -312,6 +318,7 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 			InstanceID: instanceID,
 			Name:       &userName,
 		}, scw.WithContext(ctx))
+
 		if err != nil {
 			if httperrors.Is404(err) {
 				d.SetId("")
@@ -327,6 +334,7 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 
 			return nil
 		}
+
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
 			if httperrors.Is409(errSet) {

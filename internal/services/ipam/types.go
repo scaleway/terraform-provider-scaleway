@@ -18,6 +18,7 @@ import (
 // invalid -> invalid
 func expandLastID(i interface{}) string {
 	composedID := i.(string)
+
 	elems := strings.Split(composedID, "/")
 	for i := len(elems) - 1; i >= 0; i-- {
 		if validation.IsUUID(elems[i]) {

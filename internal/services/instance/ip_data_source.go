@@ -48,7 +48,9 @@ func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	id, ok := d.GetOk("id")
+
 	var ID string
+
 	if !ok {
 		res, err := instanceAPI.GetIP(&instance.GetIPRequest{
 			IP:   d.Get("address").(string),
@@ -64,10 +66,12 @@ func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m int
 
 			return diag.FromErr(err)
 		}
+
 		ID = res.IP.ID
 	} else {
 		_, ID, _ = locality.ParseLocalizedID(id.(string))
 	}
+
 	d.SetId(zonal.NewIDString(zone, ID))
 
 	return ResourceInstanceIPRead(ctx, d, m)

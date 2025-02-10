@@ -44,6 +44,7 @@ func DataSourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m inte
 	backID, ok := d.GetOk("backend_id")
 	if !ok { // Get LB by name.
 		backendName := d.Get("name").(string)
+
 		res, err := api.ListBackends(&lbSDK.ZonedAPIListBackendsRequest{
 			Zone: zone,
 			Name: types.ExpandStringPtr(backendName),
@@ -64,8 +65,10 @@ func DataSourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m inte
 
 		backID = foundBackend.ID
 	}
+
 	zonedID := datasource.NewZonedID(backID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("backend_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)

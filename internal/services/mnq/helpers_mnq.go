@@ -21,6 +21,7 @@ const (
 
 func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Region, error) {
 	api := mnq.NewNatsAPI(meta.ExtractScwClient(m))
+
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -130,13 +131,16 @@ func decomposeARN(arn string) (*ARN, error) {
 	if elems[0] != "arn" {
 		return nil, fmt.Errorf("expected part 0 to be \"arn\", got %q", elems[0])
 	}
+
 	if elems[1] != "scw" {
 		return nil, fmt.Errorf("expected part 1 to be \"scw\", got %q", elems[1])
 	}
+
 	region, err := scw.ParseRegion(elems[3])
 	if err != nil {
 		return nil, fmt.Errorf("expected part 2 to be a valid region: %w", err)
 	}
+
 	projectID, found := strings.CutPrefix(elems[4], "project-")
 	if !found {
 		return nil, errors.New("expected part 3 to have format \"project-{uuid}\"")
@@ -212,6 +216,7 @@ func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute st
 	}
 
 	var s string
+
 	switch resourceSchema.Type {
 	case schema.TypeBool:
 		s = strconv.FormatBool(resourceValue.(bool))

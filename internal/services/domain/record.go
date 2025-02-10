@@ -268,6 +268,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		ViewConfig:        expandDomainView(d.GetOk("view")),
 		Comment:           nil,
 	}
+
 	_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
 		DNSZone: dnsZone,
 		Changes: []*domain.RecordChange{
@@ -317,9 +318,13 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
+
 	var record *domain.Record
+
 	var dnsZone string
+
 	var projectID string
+
 	var err error
 
 	currentData := d.Get("data")
@@ -332,6 +337,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 
 		dnsZone = tab[0]
 		recordID := tab[1]
+
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			ID:      &recordID,
@@ -356,12 +362,14 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 		if !recordTypeExist {
 			return diag.FromErr(errors.New("record type not found"))
 		}
+
 		recordType := domain.RecordType(recordTypeRaw.(string))
 		if recordType == domain.RecordTypeUnknown {
 			return diag.FromErr(errors.New("record type unknow"))
 		}
 
 		idRecord := locality.ExpandID(d.Id())
+
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			Name:    d.Get("name").(string),
@@ -421,6 +429,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("weighted", flattenDomainWeighted(record.WeightedConfig))
 	_ = d.Set("view", flattenDomainView(record.ViewConfig))
 	_ = d.Set("project_id", projectID)
+
 	if record.Name == "" || record.Name == "@" {
 		_ = d.Set("fqdn", dnsZone)
 	} else {
@@ -481,6 +490,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m i
 	domainAPI := NewDomainAPI(m)
 
 	recordID := locality.ExpandID(d.Id())
+
 	_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
 		DNSZone: d.Get("dns_zone").(string),
 		Changes: []*domain.RecordChange{
@@ -495,6 +505,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId("")
 
 	// for non-root zone, if the zone have only NS records, then delete the zone
@@ -518,6 +529,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m i
 			// The zone isn't empty, keep it
 			return nil
 		}
+
 		tflog.Debug(ctx, fmt.Sprintf("record [%s], type [%s]", r.Name, r.Type))
 	}
 

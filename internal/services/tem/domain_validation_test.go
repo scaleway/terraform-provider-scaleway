@@ -13,6 +13,7 @@ const domainNameValidation = "scaleway-terraform.com"
 func TestAccDomainValidation_NoValidation(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	subDomainName := "validation-no-validation"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -50,6 +51,7 @@ func TestAccDomainValidation_NoValidation(t *testing.T) {
 func TestAccDomainValidation_Validation(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	subDomainName := "validation-validation"
 
 	resource.ParallelTest(t, resource.TestCase{

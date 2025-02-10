@@ -10,6 +10,7 @@ import (
 func expandPermissionSetNames(rawPermissions interface{}) *[]string {
 	permissions := []string{}
 	permissionSet := rawPermissions.(*schema.Set)
+
 	for _, rawPermission := range permissionSet.List() {
 		permissions = append(permissions, rawPermission.(string))
 	}
@@ -30,6 +31,7 @@ func flattenPermissionSetNames(permissions []string) *schema.Set {
 
 func expandPolicyRuleSpecs(d interface{}) []*iam.RuleSpecs {
 	rules := []*iam.RuleSpecs(nil)
+
 	rawRules := d.([]interface{})
 	for _, rawRule := range rawRules {
 		mapRule := rawRule.(map[string]interface{})
@@ -37,12 +39,15 @@ func expandPolicyRuleSpecs(d interface{}) []*iam.RuleSpecs {
 			PermissionSetNames: expandPermissionSetNames(mapRule["permission_set_names"]),
 			Condition:          mapRule["condition"].(string),
 		}
+
 		if orgID, orgIDExists := mapRule["organization_id"]; orgIDExists && orgID.(string) != "" {
 			rule.OrganizationID = scw.StringPtr(orgID.(string))
 		}
+
 		if projIDs, projIDsExists := mapRule["project_ids"]; projIDsExists {
 			rule.ProjectIDs = types.ExpandStringsPtr(projIDs)
 		}
+
 		rules = append(rules, rule)
 	}
 
@@ -51,6 +56,7 @@ func expandPolicyRuleSpecs(d interface{}) []*iam.RuleSpecs {
 
 func flattenPolicyRules(rules []*iam.Rule) interface{} {
 	rawRules := []interface{}(nil)
+
 	for _, rule := range rules {
 		rawRule := map[string]interface{}{}
 		if rule.OrganizationID != nil {
@@ -58,12 +64,15 @@ func flattenPolicyRules(rules []*iam.Rule) interface{} {
 		} else {
 			rawRule["organization_id"] = nil
 		}
+
 		if rule.ProjectIDs != nil {
 			rawRule["project_ids"] = types.FlattenSliceString(*rule.ProjectIDs)
 		}
+
 		if rule.PermissionSetNames != nil {
 			rawRule["permission_set_names"] = flattenPermissionSetNames(*rule.PermissionSetNames)
 		}
+
 		if rule.Condition != "" {
 			rawRule["condition"] = rule.Condition
 		}

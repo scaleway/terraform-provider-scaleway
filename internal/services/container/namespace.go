@@ -250,6 +250,7 @@ func ResourceContainerNamespaceDelete(ctx context.Context, d *schema.ResourceDat
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
+
 		_, err = registry.WaitForNamespace(ctx, registryAPI, region, registryID, d.Timeout(schema.TimeoutDelete))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)

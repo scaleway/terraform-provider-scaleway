@@ -72,6 +72,7 @@ func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]inte
 	if !exist {
 		return nil, errors.New("upgrade: id not exist")
 	}
+
 	rawState["id"], err = vpcPrivateNetworkUpgradeV1ZonalToRegionalID(ID.(string))
 	if err != nil {
 		return nil, err
@@ -131,6 +132,7 @@ func diffSuppressFuncRouteResourceID(_, oldValue, newValue string, _ *schema.Res
 	if err != nil {
 		return false
 	}
+
 	newResourceID, err := vpcRouteExpandResourceID(newValue)
 	if err != nil {
 		return false

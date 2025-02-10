@@ -66,6 +66,7 @@ func expandIpamConfig(raw interface{}) *vpcgw.CreateGatewayNetworkRequestIpamCon
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	ipamConfig := &vpcgw.CreateGatewayNetworkRequestIpamConfig{
@@ -83,6 +84,7 @@ func expandUpdateIpamConfig(raw interface{}) *vpcgw.UpdateGatewayNetworkRequestI
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	updateIpamConfig := &vpcgw.UpdateGatewayNetworkRequestIpamConfig{

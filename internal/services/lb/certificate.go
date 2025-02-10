@@ -220,6 +220,7 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m in
 		if certificate.StatusDetails != nil {
 			errDetails = *certificate.StatusDetails
 		}
+
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  fmt.Sprintf("certificate %s with error state", certificate.ID),
@@ -252,6 +253,7 @@ func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")

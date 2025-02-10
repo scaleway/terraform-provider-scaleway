@@ -89,6 +89,7 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 	for index := range v {
 		indexes = append(indexes, index)
 	}
+
 	sort.Strings(indexes)
 
 	orderedVolumes := make([]*instance.Volume, 0, len(indexes))
@@ -105,6 +106,7 @@ func sortVolumeServer(v map[string]*instance.VolumeServer) []*instance.VolumeSer
 	for index := range v {
 		indexes = append(indexes, index)
 	}
+
 	sort.Strings(indexes)
 
 	sortedVolumes := make([]*instance.VolumeServer, 0, len(indexes))
@@ -154,6 +156,7 @@ func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, se
 	if err != nil {
 		return err
 	}
+
 	fromState := response.Server.State
 
 	if response.Server.State == toState {
@@ -236,6 +239,7 @@ func getServerType(ctx context.Context, apiInstance *instance.API, zone scw.Zone
 func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate, serverType *instance.ServerType, commercialType string) error {
 	// Calculate local volume total size.
 	var localVolumeTotalSize scw.Size
+
 	for _, volume := range volumes {
 		if volume.VolumeType == instance.VolumeVolumeTypeLSSD && volume.Size != nil {
 			localVolumeTotalSize += *volume.Size
@@ -277,11 +281,13 @@ func preparePrivateNIC(
 		r := pn.(map[string]interface{})
 		zonedID, pnExist := r["pn_id"]
 		privateNetworkID := locality.ExpandID(zonedID.(string))
+
 		if pnExist {
 			region, err := server.Zone.Region()
 			if err != nil {
 				return nil, err
 			}
+
 			currentPN, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
 				PrivateNetworkID: locality.ExpandID(privateNetworkID),
 				Region:           region,
@@ -289,6 +295,7 @@ func preparePrivateNIC(
 			if err != nil {
 				return nil, err
 			}
+
 			query := &instance.CreatePrivateNICRequest{
 				Zone:             server.Zone,
 				ServerID:         server.ID,
@@ -387,13 +394,16 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout
 func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 	raw := d.Get("private_network")
 	privateNetworks := []map[string]interface{}(nil)
+
 	for index := range raw.([]interface{}) {
 		pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
 		keyValue := d.Get(pnKey)
+
 		keyRaw, err := ph.get(keyValue.(string))
 		if err != nil {
 			continue
 		}
+
 		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
 	}
 
@@ -405,6 +415,7 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	pn, ok := ph.privateNICsMap[id]
 	if !ok {
 		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, loc)

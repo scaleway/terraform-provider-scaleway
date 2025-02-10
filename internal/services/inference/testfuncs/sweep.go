@@ -21,7 +21,9 @@ func AddTestSweepers() {
 func testSweepDeployment(_ string) error {
 	return acctest.SweepRegions((&inference.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		inferenceAPI := inference.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the inference deployments in (%s)", region)
+
 		listDeployments, err := inferenceAPI.ListDeployments(
 			&inference.ListDeploymentsRequest{
 				Region: region,

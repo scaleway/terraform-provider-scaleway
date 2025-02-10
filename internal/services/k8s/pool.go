@@ -371,16 +371,20 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("autoscaling", pool.Autoscaling)
 	_ = d.Set("autohealing", pool.Autohealing)
 	_ = d.Set("current_size", int(pool.Size))
+
 	if !pool.Autoscaling {
 		_ = d.Set("size", int(pool.Size))
 	}
+
 	_ = d.Set("version", pool.Version)
 	_ = d.Set("min_size", int(pool.MinSize))
 	_ = d.Set("max_size", int(pool.MaxSize))
 	_ = d.Set("root_volume_type", pool.RootVolumeType)
+
 	if pool.RootVolumeSize != nil {
 		_ = d.Set("root_volume_size_in_gb", int(*pool.RootVolumeSize)/1e9)
 	}
+
 	_ = d.Set("tags", pool.Tags)
 	_ = d.Set("container_runtime", pool.ContainerRuntime)
 	_ = d.Set("created_at", pool.CreatedAt.Format(time.RFC3339))

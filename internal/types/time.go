@@ -14,6 +14,7 @@ func ExpandDuration(data interface{}) (*time.Duration, error) {
 	if data == nil || data == "" {
 		return nil, nil
 	}
+
 	d, err := time.ParseDuration(data.(string))
 	if err != nil {
 		return nil, err
@@ -37,6 +38,7 @@ func ExpandTimePtr(i interface{}) *time.Time {
 	if rawTime == nil {
 		return nil
 	}
+
 	parsedTime, err := time.Parse(time.RFC3339, *rawTime)
 	if err != nil {
 		return nil

@@ -145,6 +145,7 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m inte
 	if volume.Specs != nil {
 		_ = d.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
 	}
+
 	_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("project_id", volume.ProjectID)

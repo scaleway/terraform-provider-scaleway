@@ -65,11 +65,14 @@ func addBetaResources(provider *schema.Provider) {
 	if !terraformBetaEnabled {
 		return
 	}
+
 	betaResources := map[string]*schema.Resource{}
 	betaDataSources := map[string]*schema.Resource{}
+
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
 	}
+
 	for resourceName, resource := range betaDataSources {
 		provider.DataSourcesMap[resourceName] = resource
 	}

@@ -43,6 +43,7 @@ func DataSourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData,
 	snapshotID, ok := d.GetOk("snapshot_id")
 	if !ok {
 		snapshotName := d.Get("name").(string)
+
 		res, err := instanceAPI.ListSnapshots(&instance.ListSnapshotsRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(snapshotName),
@@ -72,6 +73,7 @@ func DataSourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	diags := ResourceInstanceSnapshotRead(ctx, d, m)
 	if len(diags) > 0 {
 		return diags

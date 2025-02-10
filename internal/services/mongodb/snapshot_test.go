@@ -121,6 +121,7 @@ func isSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err == nil {
 				return fmt.Errorf("instance (%s) still exists", rs.Primary.ID)
 			}
+
 			if !httperrors.Is404(err) {
 				return err
 			}

@@ -29,6 +29,7 @@ func ParseLocalizedNestedID(localizedID string) (locality string, innerID, outer
 func ParseLocalizedNestedOwnerID(localizedID string) (locality string, innerID, outerID string, err error) {
 	tab := strings.Split(localizedID, "/")
 	n := len(tab)
+
 	switch n {
 	case 2:
 		locality = tab[0]
@@ -52,6 +53,7 @@ func CompareLocalities(loc1, loc2 string) bool {
 	if loc1 == loc2 {
 		return true
 	}
+
 	if strings.HasPrefix(loc1, loc2) || strings.HasPrefix(loc2, loc1) {
 		return true
 	}

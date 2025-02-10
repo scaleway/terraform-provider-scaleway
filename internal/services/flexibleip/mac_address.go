@@ -89,6 +89,7 @@ func ResourceFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	fipID := locality.ExpandID(d.Get("flexible_ip_id"))
+
 	_, err = waitFlexibleIP(ctx, fipAPI, zone, fipID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -124,6 +125,7 @@ func ResourceFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m 
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			_, err = waitFlexibleIP(ctx, fipAPI, zone, locality.ExpandID(dupID), d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -164,6 +166,7 @@ func ResourceFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m in
 		_ = d.Set("updated_at", types.FlattenTime(fip.MacAddress.UpdatedAt))
 		_ = d.Set("zone", fip.MacAddress.Zone)
 	}
+
 	_ = d.Set("flexible_ip_ids_to_duplicate", types.ExpandStrings(d.Get("flexible_ip_ids_to_duplicate").(*schema.Set).List()))
 
 	return nil
@@ -212,6 +215,7 @@ func ResourceFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, m 
 				if err != nil {
 					return diag.FromErr(err)
 				}
+
 				_, err := fipAPI.DuplicateMACAddr(&flexibleip.DuplicateMACAddrRequest{
 					Zone:               zone,
 					FipID:              locality.ExpandID(newID),
@@ -220,6 +224,7 @@ func ResourceFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, m 
 				if err != nil {
 					return diag.FromErr(err)
 				}
+
 				_, err = waitFlexibleIP(ctx, fipAPI, zone, locality.ExpandID(newID), d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
 					return diag.FromErr(err)
@@ -236,6 +241,7 @@ func ResourceFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, m 
 				if err != nil {
 					return diag.FromErr(err)
 				}
+
 				_, err = waitFlexibleIP(ctx, fipAPI, zone, locality.ExpandID(oldID), d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
 					return diag.FromErr(err)
