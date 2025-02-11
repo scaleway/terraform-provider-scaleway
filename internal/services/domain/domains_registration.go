@@ -69,29 +69,17 @@ func ResourceDomainsRegistration() *schema.Resource {
 				},
 				Description: "Details of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
 			},
-			"administrative_contact_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"administrative_contact": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: contactSchema(),
 				},
 				Description: "Details of the administrative contact.",
 			},
-			"technical_contact_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"technical_contact": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: contactSchema(),
 				},
@@ -190,8 +178,6 @@ func ResourceDomainsRegistration() *schema.Resource {
 	}
 }
 
-// doc = https://developer.hashicorp.com/terraform/language/expressions/dynamic-blocks
-// add description
 func contactSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"legal_form": {
@@ -203,74 +189,90 @@ func contactSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "First name of the contact.",
 		},
 		"lastname": {
 			Type:             schema.TypeString,
 			Required:         true,
 			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "Last name of the contact.",
 		},
 		"company_name": {
 			Type:             schema.TypeString,
 			Optional:         true,
 			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "Name of the company associated with the contact (if applicable).",
 		},
 		"email": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Primary email address of the contact.",
 		},
 		"email_alt": {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Alternative email address for the contact.",
 		},
 		"phone_number": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Primary phone number of the contact.",
 		},
 		"fax_number": {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Fax number for the contact (if available).",
 		},
 		"address_line_1": {
 			Type:             schema.TypeString,
 			Required:         true,
 			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "Primary address line for the contact.",
 		},
 		"address_line_2": {
 			Type:             schema.TypeString,
 			Optional:         true,
 			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "Secondary address line for the contact (optional).",
 		},
 		"zip": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Postal code of the contact's address.",
 		},
 		"city": {
 			Type:             schema.TypeString,
 			Required:         true,
 			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "City of the contact's address.",
 		},
 		"country": {
 			Type:             schema.TypeString,
 			Required:         true,
 			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "Country code of the contact's address (ISO format).",
 		},
 		"vat_identification_code": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "VAT identification code of the contact, if applicable.",
 		},
 		"company_identification_code": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Company identification code (e.g., SIREN/SIRET in France) for the contact.",
 		},
 		"lang": {
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
 			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "Preferred language of the contact (e.g., 'en_US', 'fr_FR').",
 		},
 		"resale": {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Indicates if the contact is used for resale purposes.",
 		},
 		"extension_fr": {
 			Type:     schema.TypeList,
@@ -282,7 +284,7 @@ func contactSchema() map[string]*schema.Schema {
 					"mode": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Mode of the French extension.",
+						Description: "Mode of the French extension (e.g., 'individual', 'duns', 'association', etc.).",
 					},
 					"individual_info": {
 						Type:     schema.TypeList,
@@ -293,11 +295,11 @@ func contactSchema() map[string]*schema.Schema {
 								"whois_opt_in": {
 									Type:        schema.TypeBool,
 									Optional:    true,
-									Description: "Whether WHOIS opt-in is enabled.",
+									Description: "Whether the individual contact has opted into WHOIS publishing.",
 								},
 							},
 						},
-						Description: "Information about the individual owning the domain.",
+						Description: "Information about the individual registration for French domains.",
 					},
 					"duns_info": {
 						Type:     schema.TypeList,
@@ -308,16 +310,16 @@ func contactSchema() map[string]*schema.Schema {
 								"duns_id": {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "DUNS ID associated with the domain owner.",
+									Description: "DUNS ID associated with the domain owner (for French domains).",
 								},
 								"local_id": {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "Local ID of the domain owner.",
+									Description: "Local identifier of the domain owner (for French domains).",
 								},
 							},
 						},
-						Description: "DUNS information for the domain owner.",
+						Description: "DUNS information for the domain owner (specific to French domains).",
 					},
 					"association_info": {
 						Type:     schema.TypeList,
@@ -328,16 +330,16 @@ func contactSchema() map[string]*schema.Schema {
 								"publication_jo": {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "Publication date in the Official Journal (RFC3339 format).",
+									Description: "Publication date in the Official Journal (RFC3339 format) for association information.",
 								},
 								"publication_jo_page": {
 									Type:        schema.TypeInt,
 									Optional:    true,
-									Description: "Page number of the publication in the Official Journal.",
+									Description: "Page number of the publication in the Official Journal for association information.",
 								},
 							},
 						},
-						Description: "Association-specific information for the domain.",
+						Description: "Association-specific information for the domain (French extension).",
 					},
 					"trademark_info": {
 						Type:     schema.TypeList,
@@ -348,11 +350,11 @@ func contactSchema() map[string]*schema.Schema {
 								"trademark_inpi": {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "Trademark information from INPI.",
+									Description: "Trademark information from INPI (French extension).",
 								},
 							},
 						},
-						Description: "Trademark-related information for the domain.",
+						Description: "Trademark-related information for the domain (French extension).",
 					},
 					"code_auth_afnic_info": {
 						Type:     schema.TypeList,
@@ -363,11 +365,11 @@ func contactSchema() map[string]*schema.Schema {
 								"code_auth_afnic": {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "Authorization code from AFNIC.",
+									Description: "AFNIC authorization code for the contact (specific to French domains).",
 								},
 							},
 						},
-						Description: "Information regarding AFNIC authorization.",
+						Description: "AFNIC authorization information for the contact (French extension).",
 					},
 				},
 			},
@@ -390,20 +392,24 @@ func contactSchema() map[string]*schema.Schema {
 			Description: "Details specific to European domain extensions.",
 		},
 		"whois_opt_in": {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Indicates whether the contact has opted into WHOIS publishing.",
 		},
 		"state": {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "State or region of the contact.",
 		},
 		"extension_nl": {
 			Type:     schema.TypeList,
 			Optional: true,
 			Computed: true,
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:        schema.TypeString,
+				Description: "Additional extension field specific to Dutch domains.",
 			},
+			Description: "Extension details specific to Dutch domain registrations.",
 		},
 	}
 }
@@ -464,19 +470,61 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	for _, domainName := range domainNames {
-		_, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
-			Domain: domainName,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			if httperrors.Is404(err) {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(err)
-		}
+	if len(domainNames) == 0 {
+		d.SetId("")
+		return nil
 	}
+
+	firstDomain := domainNames[0]
+	firstResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+		Domain: firstDomain,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	var computedOwnerContactID string
+	if firstResp.OwnerContact != nil {
+		computedOwnerContactID = firstResp.OwnerContact.ID
+	}
+
+	computedOwnerContact := flattenContact(firstResp.OwnerContact)
+	computedAdministrativeContact := flattenContact(firstResp.AdministrativeContact)
+	computedTechnicalContact := flattenContact(firstResp.TechnicalContact)
+
+	computedAutoRenew := false
+	if firstResp.AutoRenewStatus.String() == "enabled" {
+		computedAutoRenew = true
+	}
+
+	computedDnssec := false
+
+	if firstResp.Dnssec.Status == "enabeld" || firstResp.Dnssec.Status == "enabling" {
+		computedDnssec = true
+	}
+
+	var computedDSRecord []interface{}
+	if firstResp.Dnssec != nil {
+		computedDSRecord = FlattenDSRecord(firstResp.Dnssec.DsRecords)
+	} else {
+		computedDSRecord = []interface{}{}
+	}
+
+	computedIsExternal := firstResp.IsExternal
+
+	_ = d.Set("domain_names", domainNames)
+	_ = d.Set("owner_contact_id", computedOwnerContactID)
+	_ = d.Set("owner_contact", computedOwnerContact)
+	_ = d.Set("administrative_contact", computedAdministrativeContact)
+	_ = d.Set("technical_contact", computedTechnicalContact)
+	_ = d.Set("auto_renew", computedAutoRenew)
+	_ = d.Set("dnssec", computedDnssec)
+	_ = d.Set("ds_record", computedDSRecord)
+	_ = d.Set("is_external", computedIsExternal)
 
 	return nil
 }
@@ -484,62 +532,88 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
-	domainName, err := ExtractDomainFromID(id)
+
+	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if len(domainNames) == 0 {
+		d.SetId("")
+		return nil
+	}
+
 	if d.HasChange("owner_contact_id") || d.HasChange("owner_contact") {
 		return diag.FromErr(fmt.Errorf("the domain ownership transfer feature is not implemented in this provider because it requires manual validation through email notifications. This action can only be performed via the Scaleway Console"))
 	}
 
-	hasChanges := false
-	updateRequest := &domain.RegistrarAPIUpdateDomainRequest{
-		Domain: domainName,
-	}
+	if d.HasChange("auto_renew") {
+		newAutoRenew := d.Get("auto_renew").(bool)
+		for _, domainName := range domainNames {
+			domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+				Domain: domainName,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %v", domainName, err))
+			}
 
-	if d.HasChange("administrative_contact_id") {
-		administrativeContactID := d.Get("administrative_contact_id").(string)
-		updateRequest.AdministrativeContactID = &administrativeContactID
-		hasChanges = true
-	}
-
-	if d.HasChange("technical_contact_id") {
-		technicalContactID := d.Get("technical_contact_id").(string)
-		updateRequest.TechnicalContactID = &technicalContactID
-		hasChanges = true
-	}
-
-	if d.HasChange("administrative_contact") {
-		if adminContacts, ok := d.GetOk("administrative_contact"); ok {
-			contacts := adminContacts.([]interface{})
-			if len(contacts) > 0 {
-				updateRequest.AdministrativeContact = ExpandNewContact(contacts[0].(map[string]interface{}))
-				hasChanges = true
+			if newAutoRenew {
+				if domainResp.AutoRenewStatus != domain.DomainFeatureStatusEnabled && domainResp.AutoRenewStatus != domain.DomainFeatureStatusEnabling {
+					_, err = registrarAPI.EnableDomainAutoRenew(&domain.RegistrarAPIEnableDomainAutoRenewRequest{
+						Domain: domainName,
+					}, scw.WithContext(ctx))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("failed to enable auto-renew for %s: %v", domainName, err))
+					}
+				}
+			} else {
+				if domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled || domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabling {
+					_, err = registrarAPI.DisableDomainAutoRenew(&domain.RegistrarAPIDisableDomainAutoRenewRequest{
+						Domain: domainName,
+					}, scw.WithContext(ctx))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("failed to disable auto-renew for %s: %v", domainName, err))
+					}
+				}
 			}
 		}
 	}
 
-	if d.HasChange("technical_contact") {
-		if techContacts, ok := d.GetOk("technical_contact"); ok {
-			contacts := techContacts.([]interface{})
-			if len(contacts) > 0 {
-				updateRequest.TechnicalContact = ExpandNewContact(contacts[0].(map[string]interface{}))
-				hasChanges = true
+	if d.HasChange("dnssec") {
+		newDnssec := d.Get("dnssec").(bool)
+		for _, domainName := range domainNames {
+			domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+				Domain: domainName,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %v", domainName, err))
+			}
+
+			if newDnssec {
+				var dsRecord *domain.DSRecord
+				if v, ok := d.GetOk("ds_record"); ok {
+					dsRecordList := v.([]interface{})
+					if len(dsRecordList) > 0 && dsRecordList[0] != nil {
+						dsRecord = ExpandDSRecord(dsRecordList)
+					}
+				}
+				_, err = registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
+					Domain:   domainName,
+					DsRecord: dsRecord,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("failed to enable dnssec for %s: %v", domainName, err))
+				}
+			} else {
+				if domainResp.Dnssec != nil && domainResp.Dnssec.Status == "enabled" {
+					_, err = registrarAPI.DisableDomainDNSSEC(&domain.RegistrarAPIDisableDomainDNSSECRequest{
+						Domain: domainName,
+					}, scw.WithContext(ctx))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("failed to disable dnssec for %s: %v", domainName, err))
+					}
+				}
 			}
 		}
-	}
-
-	if hasChanges {
-		_, err = registrarAPI.UpdateDomain(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		tasks, err := waitForUpdateDomainTaskCompletion(ctx, registrarAPI, domainName, 3600)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		fmt.Printf("coucou")
-		_ = tasks
 	}
 
 	return resourceDomainsRegistrationsRead(ctx, d, m)
@@ -549,26 +623,22 @@ func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceDa
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
-	// Récupère la liste de noms de domaines à partir du TaskID
 	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	for _, domainName := range domainNames {
-		// Récupère les détails du domaine
 		domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
 			Domain: domainName,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			// Si le domaine n'existe plus, on passe au suivant
 			if httperrors.Is404(err) {
 				continue
 			}
 			return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %v", domainName, err))
 		}
 
-		// Désactive l’auto-renew si nécessaire
 		if domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled ||
 			domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabling {
 			_, err = registrarAPI.DisableDomainAutoRenew(&domain.RegistrarAPIDisableDomainAutoRenewRequest{
@@ -580,7 +650,6 @@ func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	// On supprime la ressource (vider l'ID Terraform)
 	d.SetId("")
 
 	return nil

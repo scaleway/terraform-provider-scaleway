@@ -703,42 +703,46 @@ func ExpandDSRecord(dsRecordList []interface{}) *domain.DSRecord {
 	return dsRecord
 }
 
-func FlattenDSRecord(dsRecord *domain.DSRecord) []map[string]interface{} {
-	if dsRecord == nil {
-		return nil
+func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
+	if dsRecords == nil || len(dsRecords) == 0 {
+		return []interface{}{}
 	}
 
-	result := map[string]interface{}{
-		"key_id":    dsRecord.KeyID,
-		"algorithm": string(dsRecord.Algorithm),
-	}
-
-	if dsRecord.Digest != nil {
-		digest := map[string]interface{}{
-			"type":   string(dsRecord.Digest.Type),
-			"digest": dsRecord.Digest.Digest,
+	results := make([]interface{}, 0, len(dsRecords))
+	for _, dsRecord := range dsRecords {
+		item := map[string]interface{}{
+			"key_id":    dsRecord.KeyID,
+			"algorithm": string(dsRecord.Algorithm),
 		}
 
-		if dsRecord.Digest.PublicKey != nil {
-			digest["public_key"] = []map[string]interface{}{
-				{
-					"key": dsRecord.Digest.PublicKey.Key,
+		if dsRecord.Digest != nil {
+			digest := map[string]interface{}{
+				"type":   string(dsRecord.Digest.Type),
+				"digest": dsRecord.Digest.Digest,
+			}
+			if dsRecord.Digest.PublicKey != nil {
+				digest["public_key"] = []interface{}{
+					map[string]interface{}{
+						"key": dsRecord.Digest.PublicKey.Key,
+					},
+				}
+			}
+			// Le champ "digest" est défini dans le schéma comme une liste contenant un seul élément.
+			item["digest"] = []interface{}{digest}
+		}
+
+		if dsRecord.PublicKey != nil {
+			item["public_key"] = []interface{}{
+				map[string]interface{}{
+					"key": dsRecord.PublicKey.Key,
 				},
 			}
 		}
 
-		result["digest"] = []map[string]interface{}{digest}
+		results = append(results, item)
 	}
 
-	if dsRecord.PublicKey != nil {
-		result["public_key"] = []map[string]interface{}{
-			{
-				"key": dsRecord.PublicKey.Key,
-			},
-		}
-	}
-
-	return []map[string]interface{}{result}
+	return results
 }
 
 //func ExpandDSRecord(dsRecordList []interface{}) *domain.DSRecord {
@@ -777,40 +781,3 @@ func FlattenDSRecord(dsRecord *domain.DSRecord) []map[string]interface{} {
 //	return dsRecord
 //}
 //
-//func FlattenDSRecord(dsRecord *domain.DSRecord) []map[string]interface{} {
-//	if dsRecord == nil {
-//		return nil
-//	}
-//
-//	result := map[string]interface{}{
-//		"key_id":    dsRecord.KeyID,
-//		"algorithm": string(dsRecord.Algorithm),
-//	}
-//
-//	if dsRecord.Digest != nil {
-//		digest := map[string]interface{}{
-//			"type":   string(dsRecord.Digest.Type),
-//			"digest": dsRecord.Digest.Digest,
-//		}
-//
-//		if dsRecord.Digest.PublicKey != nil {
-//			digest["public_key"] = []map[string]interface{}{
-//				{
-//					"key": dsRecord.Digest.PublicKey.Key,
-//				},
-//			}
-//		}
-//
-//		result["digest"] = []map[string]interface{}{digest}
-//	}
-//
-//	if dsRecord.PublicKey != nil {
-//		result["public_key"] = []map[string]interface{}{
-//			{
-//				"key": dsRecord.PublicKey.Key,
-//			},
-//		}
-//	}
-//
-//	return []map[string]interface{}{result}
-//}
