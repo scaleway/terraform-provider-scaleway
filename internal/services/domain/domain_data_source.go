@@ -181,3 +181,80 @@ package domain
 //	}
 //}
 //
+
+//
+//func dataSourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+//	registrarAPI := NewRegistrarDomainAPI(m)
+//	domainName := d.Get("domain").(string)
+//
+//	resp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+//		Domain: domainName,
+//	}, scw.WithContext(ctx))
+//	if err != nil {
+//		return diag.FromErr(err)
+//	}
+//
+//	if err := d.Set("auto_renew_status", resp.AutoRenewStatus.String()); err != nil {
+//		return diag.FromErr(err)
+//	}
+//	if resp.Dnssec != nil {
+//		if err := d.Set("dnssec_status", resp.Dnssec.Status.String()); err != nil {
+//			return diag.FromErr(err)
+//		}
+//	}
+//	if err := d.Set("epp_code", resp.EppCode); err != nil {
+//		return diag.FromErr(err)
+//	}
+//	if resp.ExpiredAt != nil {
+//		if err := d.Set("expired_at", resp.ExpiredAt.Format(time.RFC3339)); err != nil {
+//			return diag.FromErr(err)
+//		}
+//	}
+//	if resp.UpdatedAt != nil {
+//		if err := d.Set("updated_at", resp.UpdatedAt.Format(time.RFC3339)); err != nil {
+//			return diag.FromErr(err)
+//		}
+//	}
+//	if err := d.Set("registrar", resp.Registrar); err != nil {
+//		return diag.FromErr(err)
+//	}
+//	if err := d.Set("status", string(resp.Status)); err != nil {
+//		return diag.FromErr(err)
+//	}
+//	if err := d.Set("organization_id", resp.OrganizationID); err != nil {
+//		return diag.FromErr(err)
+//	}
+//	if err := d.Set("pending_trade", resp.PendingTrade); err != nil {
+//		return diag.FromErr(err)
+//	}
+//	if resp.ExternalDomainRegistrationStatus != nil {
+//		if err := d.Set("external_domain_registration_status", flattenExternalDomainRegistrationStatus(resp.ExternalDomainRegistrationStatus)); err != nil {
+//			return diag.FromErr(err)
+//		}
+//	}
+//	if resp.TransferRegistrationStatus != nil {
+//		if err := d.Set("transfer_registration_status", flattenDomainRegistrationStatusTransfer(resp.TransferRegistrationStatus)); err != nil {
+//			return diag.FromErr(err)
+//		}
+//	}
+//	var linkedProductsStr []string
+//	for _, lp := range resp.LinkedProducts {
+//		linkedProductsStr = append(linkedProductsStr, lp.String())
+//	}
+//	if err := d.Set("linked_products", linkedProductsStr); err != nil {
+//		return diag.FromErr(err)
+//	}
+//	if resp.Tld != nil {
+//		if err := d.Set("tld", flattenTLD(resp.Tld)); err != nil {
+//			return diag.FromErr(err)
+//		}
+//	}
+//	if len(resp.DNSZones) > 0 {
+//		if err := d.Set("dns_zones", flattenDNSZones(resp.DNSZones)); err != nil {
+//			return diag.FromErr(err)
+//		}
+//	}
+//
+//	d.SetId(domainName)
+//	return nil
+//}
