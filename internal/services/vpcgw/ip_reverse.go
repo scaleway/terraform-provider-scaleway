@@ -59,6 +59,7 @@ func ResourceVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *schema.R
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(zonal.NewIDString(zone, res.ID))
 
 	if _, ok := d.GetOk("reverse"); ok {
@@ -96,8 +97,10 @@ func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.Res
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -147,11 +150,13 @@ func ResourceVPCPublicGatewayIPReverseDNSDelete(ctx context.Context, d *schema.R
 		IPID:    ID,
 		Reverse: new(string),
 	}
+
 	_, err = api.UpdateIP(updateReverseReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId("")
+
 	return nil
 }

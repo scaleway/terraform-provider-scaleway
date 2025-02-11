@@ -85,7 +85,7 @@ func ResourceLb() *schema.Resource {
 				Computed:         true,
 				Description:      "The load-balance public IP ID",
 				DiffSuppressFunc: dsf.Locality,
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				Deprecated:       "Please use ip_ids",
 			},
 			"ip_address": {
@@ -121,19 +121,19 @@ func ResourceLb() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"private_network_id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:  "The Private Network ID",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+							Description:      "The Private Network ID",
 						},
 						"static_config": {
 							Description: "Define an IP address in the subnet of your private network that will be assigned to your load balancer instance",
 							Type:        schema.TypeList,
 							Optional:    true,
-							Deprecated:  "static_config field is deprecated, please use dhcp_config instead",
+							Deprecated:  "static_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
 							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: verify.IsStandaloneIPorCIDR(),
+								Type:             schema.TypeString,
+								ValidateDiagFunc: verify.IsStandaloneIPorCIDR(),
 							},
 							MaxItems: 1,
 						},
@@ -142,6 +142,7 @@ func ResourceLb() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
+							Deprecated:  "dhcp_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
 						},
 						"ipam_ids": {
 							Type: schema.TypeList,
@@ -191,8 +192,8 @@ func ResourceLb() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description:      "List of IP IDs to attach to the Load Balancer",
 				DiffSuppressFunc: dsf.OrderDiff,
@@ -276,8 +277,10 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	// set the region from zone
@@ -297,10 +300,13 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	// For now API return lowercase lb type. This should be fixed in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(lb.Type))
 	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())
+
 	if len(lb.IP) > 0 {
 		_ = d.Set("ip_id", zonal.NewIDString(zone, lb.IP[0].ID))
 		_ = d.Set("ip_ids", flattenLBIPIDs(zone, lb.IP))
+
 		var ipv4Address, ipv6Address string
+
 		for _, ip := range lb.IP {
 			parsedIP := net.ParseIP(ip.IPAddress)
 			if parsedIP != nil {
@@ -311,6 +317,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 				}
 			}
 		}
+
 		_ = d.Set("ip_address", ipv4Address)
 		_ = d.Set("ipv6_address", ipv6Address)
 	}
@@ -321,9 +328,12 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
+
 	return nil
 }
 
@@ -396,9 +406,11 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 			for id := range oldIPIDsSet {
 				ipv4ID = id
 			}
+
 			for id := range newIPIDsSet {
 				if id != ipv4ID {
 					ipv6ID = id
+
 					break
 				}
 			}
@@ -476,10 +488,12 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 		}
 
 		oldPNs, newPNs := d.GetChange("private_network")
+
 		oldPNConfigs, err := expandPrivateNetworks(oldPNs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		newPNConfigs, err := expandPrivateNetworks(newPNs)
 		if err != nil {
 			return diag.FromErr(err)
@@ -522,6 +536,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 
 		for _, pn := range privateNetworks {
 			tflog.Debug(ctx, fmt.Sprintf("PrivateNetwork ID %s state: %v", pn.PrivateNetworkID, pn.Status))
+
 			if pn.Status == lbSDK.PrivateNetworkStatusError {
 				err = lbAPI.DetachPrivateNetwork(&lbSDK.ZonedAPIDetachPrivateNetworkRequest{
 					Zone:             zone,
@@ -531,6 +546,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 				if err != nil && !httperrors.Is404(err) {
 					return diag.FromErr(err)
 				}
+
 				return diag.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
 			}
 		}

@@ -29,11 +29,11 @@ func ResourceACL() *schema.Resource {
 		SchemaVersion: 1,
 		Schema: map[string]*schema.Schema{
 			"frontend_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The frontend ID on which the ACL is applied",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The frontend ID on which the ACL is applied",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -197,8 +197,10 @@ func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m interface{
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

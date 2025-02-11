@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -120,7 +121,6 @@ func ResourceServer() *schema.Resource {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Computed:    true,
-							ForceNew:    true,
 							Description: "Size of the root volume in gigabytes",
 						},
 						"volume_type": {
@@ -150,6 +150,12 @@ func ResourceServer() *schema.Resource {
 							Description:  "Volume ID of the root volume",
 							ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
 						},
+						"sbs_iops": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Optional:    true,
+							Description: "SBS Volume IOPS, only with volume_type as sbs_volume",
+						},
 					},
 				},
 			},
@@ -157,7 +163,7 @@ func ResourceServer() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
-					ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 					DiffSuppressFunc: dsf.Locality,
 				},
 				Optional:    true,
@@ -168,6 +174,7 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Determines if IPv6 is enabled for the server",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
 					// routed_ip enabled servers already support enable_ipv6. Let's ignore this argument if it is.
 					routedIPEnabled := types.GetBool(d, "routed_ip_enabled")
@@ -182,11 +189,13 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The Scaleway internal IP address of the server",
+				Deprecated:  "Use ipam_ip datasource instead to fetch your server's IP in your private network.",
 			},
 			"public_ip": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The public IPv4 address of the server",
+				Deprecated:  "Use public_ips instead",
 			},
 			"ip_id": {
 				Type:             schema.TypeString,
@@ -209,15 +218,18 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The default public IPv6 address routed to the server.",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 			},
 			"ipv6_gateway": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The IPv6 gateway address",
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 			},
 			"ipv6_prefix_length": {
 				Type:        schema.TypeInt,
 				Computed:    true,
+				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
 				Description: "The IPv6 prefix length routed to the server.",
 			},
 			"enable_dynamic_ip": {
@@ -245,11 +257,12 @@ func ResourceServer() *schema.Resource {
 				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.BootType](),
 			},
 			"bootscript_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "ID of the target bootscript (set boot_type to bootscript)",
-				ValidateFunc: verify.IsUUID(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "ID of the target bootscript (set boot_type to bootscript)",
+				ValidateDiagFunc: verify.IsUUID(),
+				Deprecated:       "bootscript is not supported anymore.",
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -266,6 +279,9 @@ func ResourceServer() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				DiffSuppressFunc: func(k, _, _ string, _ *schema.ResourceData) bool {
+					return k == "user_data.ssh-host-fingerprints"
+				},
 			},
 			"private_network": {
 				Type:        schema.TypeList,
@@ -280,7 +296,7 @@ func ResourceServer() *schema.Resource {
 						"pn_id": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							Description:      "The Private Network ID",
 							DiffSuppressFunc: dsf.Locality,
 						},
@@ -324,12 +340,6 @@ func ResourceServer() *schema.Resource {
 					},
 				},
 			},
-			"routed_ip_enabled": {
-				Type:        schema.TypeBool,
-				Description: "If server supports routed IPs, default to true if public_ips is used",
-				Optional:    true,
-				Computed:    true,
-			},
 			"zone":            zonal.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
@@ -342,6 +352,7 @@ func ResourceServer() *schema.Resource {
 			),
 			customDiffInstanceServerType,
 			customDiffInstanceServerImage,
+			customDiffInstanceRootVolumeSize,
 		),
 	}
 }
@@ -360,42 +371,20 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	commercialType := d.Get("type").(string)
 
 	imageUUID := locality.ExpandID(d.Get("image"))
-	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
-		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
-		imageLabel := formatImageLabel(imageUUID)
-
-		marketPlaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
-		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
-			CommercialType: commercialType,
-			Zone:           zone,
-			ImageLabel:     imageLabel,
-			Type:           marketplace.LocalImageTypeInstanceLocal,
-		})
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
-		}
-		imageUUID = image.ID
-	}
 
 	req := &instanceSDK.CreateServerRequest{
 		Zone:              zone,
 		Name:              types.ExpandOrGenerateString(d.Get("name"), "srv"),
 		Project:           types.ExpandStringPtr(d.Get("project_id")),
-		Image:             imageUUID,
 		CommercialType:    commercialType,
 		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              types.ExpandStrings(d.Get("tags")),
-		RoutedIPEnabled:   types.ExpandBoolPtr(types.GetBool(d, "routed_ip_enabled")),
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
 	if ok {
-		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool))
-	}
-
-	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
-		req.Bootscript = types.ExpandStringPtr(bootScriptID)
+		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool)) //nolint:staticcheck
 	}
 
 	if bootType, ok := d.GetOk("boot_type"); ok {
@@ -404,15 +393,11 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.PublicIP = types.ExpandStringPtr(zonal.ExpandID(ipID).ID)
+		req.PublicIP = types.ExpandStringPtr(zonal.ExpandID(ipID).ID) //nolint:staticcheck
 	}
 
 	if ipIDs, ok := d.GetOk("ip_ids"); ok {
 		req.PublicIPs = types.ExpandSliceIDsPtr(ipIDs)
-		// If server has multiple IPs, routed ip must be enabled per default
-		if types.GetBool(d, "routed_ip_enabled") == nil {
-			req.RoutedIPEnabled = scw.BoolPtr(true)
-		}
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -432,7 +417,8 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	req.Volumes = make(map[string]*instanceSDK.VolumeServerTemplate)
 	rootVolume := d.Get("root_volume.0").(map[string]any)
 
-	req.Volumes["0"] = prepareRootVolume(rootVolume, serverType, req.Image).VolumeTemplate()
+	req.Volumes["0"] = prepareRootVolume(rootVolume, serverType, imageUUID).VolumeTemplate()
+
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
 			// We have to get the volume to know whether it is a local or a block volume
@@ -440,6 +426,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("failed to get additional volume: %w", err))
 			}
+
 			req.Volumes[strconv.Itoa(i+1)] = volumeTemplate
 		}
 	}
@@ -447,6 +434,29 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	// Validate total local volume sizes.
 	if err = validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
+		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
+		imageLabel := formatImageLabel(imageUUID)
+
+		marketPlaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
+
+		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
+			CommercialType: commercialType,
+			Zone:           zone,
+			ImageLabel:     imageLabel,
+			Type:           volumeTypeToMarketplaceFilter(req.Volumes["0"].VolumeType),
+		})
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
+		}
+
+		imageUUID = image.ID
+	}
+
+	if imageUUID != "" {
+		req.Image = scw.StringPtr(imageUUID)
 	}
 
 	res, err := api.CreateServer(req, scw.WithContext(ctx))
@@ -459,6 +469,18 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	////
+	// Configure Block Volume
+	////
+	var diags diag.Diagnostics
+
+	if iops, ok := d.GetOk("root_volume.0.sbs_iops"); ok {
+		updateDiags := ResourceInstanceServerUpdateRootVolumeIOPS(ctx, api, zone, res.Server.ID, types.ExpandUint32Ptr(iops))
+		if len(updateDiags) > 0 {
+			diags = append(diags, updateDiags...)
+		}
 	}
 
 	////
@@ -497,6 +519,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	err = reachState(ctx, api, zone, res.Server.ID, targetState)
 	if err != nil {
 		return diag.FromErr(err)
@@ -510,6 +533,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		pnRequest, err := preparePrivateNIC(ctx, rawPNICs, res.Server, vpcAPI)
 		if err != nil {
 			return diag.FromErr(err)
@@ -525,6 +549,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			tflog.Debug(ctx, fmt.Sprintf("private network created (ID: %s, status: %s)", pn.PrivateNic.ID, pn.PrivateNic.State))
 
 			_, err = waitForPrivateNIC(ctx, api.API, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
@@ -539,7 +564,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return ResourceInstanceServerRead(ctx, d, m)
+	return append(diags, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
 func errorCheck(err error, message string) bool {
@@ -548,18 +573,20 @@ func errorCheck(err error, message string) bool {
 
 //gocyclo:ignore
 func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	server, err := waitForServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutRead))
+	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if errorCheck(err, "is not found") {
 			log.Printf("[WARN] instance %s not found droping from state", d.Id())
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 	////
@@ -571,23 +598,23 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_ = d.Set("state", state)
 		_ = d.Set("zone", string(zone))
 		_ = d.Set("name", server.Name)
 		_ = d.Set("boot_type", server.BootType)
-		if server.Bootscript != nil {
-			_ = d.Set("bootscript_id", server.Bootscript.ID)
-		}
+
 		_ = d.Set("type", server.CommercialType)
 		if len(server.Tags) > 0 {
 			_ = d.Set("tags", server.Tags)
 		}
+
 		_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
-		_ = d.Set("enable_ipv6", server.EnableIPv6)
+		// EnableIPv6 is deprecated
+		_ = d.Set("enable_ipv6", server.EnableIPv6) //nolint:staticcheck
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)
 		_ = d.Set("project_id", server.Project)
-		_ = d.Set("routed_ip_enabled", server.RoutedIPEnabled)
 
 		// Image could be empty in an import context.
 		image := regional.ExpandID(d.Get("image").(string))
@@ -604,9 +631,9 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("private_ip", types.FlattenStringPtr(server.PrivateIP))
 		}
 
-		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID {
-			if !server.PublicIP.Dynamic {
-				_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String())
+		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID { //nolint:staticcheck
+			if !server.PublicIP.Dynamic { //nolint:staticcheck
+				_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String()) //nolint:staticcheck
 			} else {
 				_ = d.Set("ip_id", "")
 			}
@@ -614,11 +641,11 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("ip_id", "")
 		}
 
-		if server.PublicIP != nil {
-			_ = d.Set("public_ip", server.PublicIP.Address.String())
+		if server.PublicIP != nil { //nolint:staticcheck
+			_ = d.Set("public_ip", server.PublicIP.Address.String()) //nolint:staticcheck
 			d.SetConnInfo(map[string]string{
 				"type": "ssh",
-				"host": server.PublicIP.Address.String(),
+				"host": server.PublicIP.Address.String(), //nolint:staticcheck
 			})
 		} else {
 			_ = d.Set("public_ip", "")
@@ -637,13 +664,15 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			_ = d.Set("ip_ids", []interface{}{})
 		}
 
-		if server.IPv6 != nil {
-			_ = d.Set("ipv6_address", server.IPv6.Address.String())
-			_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String())
-			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)
+		if server.IPv6 != nil { //nolint:staticcheck
+			_ = d.Set("ipv6_address", server.IPv6.Address.String()) //nolint:staticcheck
+			_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String()) //nolint:staticcheck
+
+			prefixLength, err := strconv.Atoi(server.IPv6.Netmask) //nolint:staticcheck
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			_ = d.Set("ipv6_prefix_length", prefixLength)
 		} else {
 			_ = d.Set("ipv6_address", nil)
@@ -652,7 +681,8 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		}
 
 		var additionalVolumesIDs []string
-		for i, volume := range sortVolumeServer(server.Volumes) {
+
+		for i, serverVolume := range sortVolumeServer(server.Volumes) {
 			if i == 0 {
 				rootVolume := map[string]interface{}{}
 
@@ -661,17 +691,34 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 					rootVolume = vs[0]
 				}
 
-				rootVolume["volume_id"] = zonal.NewID(zone, volume.ID).String()
-				rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
+				vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+					VolumeID: serverVolume.ID,
+					Zone:     server.Zone,
+				})
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", serverVolume.ID, err))
+				}
+
+				rootVolume["volume_id"] = zonal.NewID(zone, vol.ID).String()
+				if vol.Size != nil {
+					rootVolume["size_in_gb"] = int(uint64(*vol.Size) / gb)
+				} else if serverVolume.Size != nil {
+					rootVolume["size_in_gb"] = int(uint64(*serverVolume.Size) / gb)
+				}
+
+				if vol.IsBlockVolume() {
+					rootVolume["sbs_iops"] = types.FlattenUint32Ptr(vol.Iops)
+				}
+
 				_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 				rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
-				rootVolume["volume_type"] = volume.VolumeType
-				rootVolume["boot"] = volume.Boot
-				rootVolume["name"] = volume.Name
+				rootVolume["volume_type"] = serverVolume.VolumeType
+				rootVolume["boot"] = serverVolume.Boot
+				rootVolume["name"] = serverVolume.Name
 
 				_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 			} else {
-				additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, volume.ID).String())
+				additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
 			}
 		}
 
@@ -682,29 +729,28 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		////
 		// Read server user data
 		////
-		allUserData, _ := instanceAPI.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
+		allUserData, _ := api.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
 			Zone:     zone,
 			ServerID: id,
 		}, scw.WithContext(ctx))
 
 		userData := make(map[string]interface{})
+
 		for key, value := range allUserData.UserData {
 			userDataValue, err := io.ReadAll(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			// if key != "cloud-init" {
+
 			userData[key] = string(userDataValue)
-			//	} else {
-			// _ = d.Set("cloud_init", string(userDataValue))
-			// }
 		}
+
 		_ = d.Set("user_data", userData)
 
 		////
 		// Read server private networks
 		////
-		ph, err := newPrivateNICHandler(instanceAPI, id, zone)
+		ph, err := newPrivateNICHandler(api.API, id, zone)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -717,6 +763,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 
 		return nil
 	}
+
 	return nil
 }
 
@@ -773,34 +820,10 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
 	}
 
-	volumes := map[string]*instanceSDK.VolumeServerTemplate{}
-
-	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChanges("additional_volume_ids", "root_volume") {
-		volumes["0"] = &instanceSDK.VolumeServerTemplate{
-			ID:   scw.StringPtr(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
-			Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
-			Boot: types.ExpandBoolPtr(d.Get("root_volume.0.boot")),
-		}
-
-		if !hasAdditionalVolumes {
-			raw = []interface{}{} // Set an empty list if not volumes exist
-		}
-
-		for i, volumeID := range raw.([]interface{}) {
-			volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
-			volume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
-				VolumeID: zonal.ExpandID(volumeID).ID,
-				Zone:     zone,
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to get updated volume: %w", err))
-			}
-
-			// local volumes can only be added when the server is stopped
-			if volumeHasChange && !isStopped && volume.IsLocal() && volume.IsAttached() {
-				return diag.FromErr(errors.New("instanceSDK must be stopped to change local volumes"))
-			}
-			volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
+	if d.HasChanges("additional_volume_ids", "root_volume") {
+		volumes, err := instanceServerVolumesUpdate(ctx, d, api, zone, isStopped)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
 		serverShouldUpdate = true
@@ -809,6 +832,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("placement_group_id") {
 		serverShouldUpdate = true
+
 		placementGroupID := zonal.ExpandID(d.Get("placement_group_id")).ID
 		if placementGroupID == "" {
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Null: true}
@@ -816,6 +840,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			if !isStopped {
 				return diag.FromErr(errors.New("instanceSDK must be stopped to change placement group"))
 			}
+
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Value: placementGroupID}
 		}
 	}
@@ -831,10 +856,10 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 		ipID := zonal.ExpandID(d.Get("ip_id")).ID
 		// If an IP is already attached, and it's not a dynamic IP we detach it.
-		if server.PublicIP != nil && !server.PublicIP.Dynamic {
+		if server.PublicIP != nil && !server.PublicIP.Dynamic { //nolint:staticcheck
 			_, err = api.UpdateIP(&instanceSDK.UpdateIPRequest{
 				Zone:   zone,
-				IP:     server.PublicIP.ID,
+				IP:     server.PublicIP.ID, //nolint:staticcheck
 				Server: &instanceSDK.NullableStringValue{Null: true},
 			})
 			if err != nil {
@@ -880,21 +905,11 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		bootType := instanceSDK.BootType(d.Get("boot_type").(string))
 		serverShouldUpdate = true
 		updateRequest.BootType = &bootType
+
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  "instanceSDK may need to be rebooted to use the new boot type",
-			})
-		}
-	}
-
-	if d.HasChanges("bootscript_id") {
-		serverShouldUpdate = true
-		updateRequest.Bootscript = types.ExpandStringPtr(d.Get("bootscript_id").(string))
-		if !isStopped {
-			warnings = append(warnings, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "instanceSDK may need to be rebooted to use the new bootscript",
 			})
 		}
 	}
@@ -914,6 +929,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			for key, value := range userDataMap {
 				userDataRequests.UserData[key] = bytes.NewBufferString(value.(string))
 			}
+
 			if !isStopped && d.HasChange("user_data.cloud-init") {
 				warnings = append(warnings, diag.Diagnostic{
 					Severity: diag.Warning,
@@ -941,6 +957,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			diag.FromErr(err)
 		}
+
 		if raw, ok := d.GetOk("private_network"); ok {
 			// retrieve all current private network interfaces
 			for index := range raw.([]interface{}) {
@@ -957,6 +974,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 						if err != nil {
 							return diag.FromErr(err)
 						}
+
 						err = ph.attach(ctx, n, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
 							return diag.FromErr(err)
@@ -1018,11 +1036,8 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	if d.HasChanges("routed_ip_enabled") {
-		err := ResourceInstanceServerEnableRoutedIP(ctx, d, api.API, zone, id)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	if d.HasChanges("root_volume.0.sbs_iops") {
+		warnings = append(warnings, ResourceInstanceServerUpdateRootVolumeIOPS(ctx, api, zone, id, types.ExpandUint32Ptr(d.Get("root_volume.0.sbs_iops")))...)
 	}
 
 	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
@@ -1060,6 +1075,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 	if httperrors.Is404(err) {
 		return nil
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1074,6 +1090,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		for index := range raw.([]interface{}) {
 			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
 			pn := d.Get(pnKey)
+
 			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
 			if err != nil {
 				return diag.FromErr(err)
@@ -1106,7 +1123,8 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		if !volumeExist {
 			return diag.Errorf("volume ID not found")
 		}
-		err = api.DeleteVolume(&instanceSDK.DeleteVolumeRequest{
+
+		err = api.DeleteUnknownVolume(&DeleteUnknownVolumeRequest{
 			Zone:     zone,
 			VolumeID: locality.ExpandID(volumeID),
 		})
@@ -1122,8 +1140,8 @@ func instanceServerCanMigrate(api *instanceSDK.API, server *instanceSDK.Server, 
 	var localVolumeSize scw.Size
 
 	for _, volume := range server.Volumes {
-		if volume.VolumeType == instanceSDK.VolumeServerVolumeTypeLSSD {
-			localVolumeSize += volume.Size
+		if volume.VolumeType == instanceSDK.VolumeServerVolumeTypeLSSD && volume.Size != nil {
+			localVolumeSize += *volume.Size
 		}
 	}
 
@@ -1142,6 +1160,33 @@ func instanceServerCanMigrate(api *instanceSDK.API, server *instanceSDK.Server, 
 			serverType.VolumesConstraint.MinSize/scw.GB,
 			serverType.VolumesConstraint.MaxSize/scw.GB,
 			localVolumeSize/scw.GB)
+	}
+
+	return nil
+}
+
+func customDiffInstanceRootVolumeSize(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if !diff.HasChange("root_volume.0.size_in_gb") || diff.Id() == "" {
+		return nil
+	}
+
+	instanceAPI, zone, id, err := NewAPIWithZoneAndID(meta, diff.Id())
+	if err != nil {
+		return err
+	}
+
+	resp, err := instanceAPI.GetServer(&instanceSDK.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check server root volume type: %w", err)
+	}
+
+	if rootVolume, hasRootVolume := resp.Server.Volumes["0"]; hasRootVolume {
+		if rootVolume.VolumeType == instanceSDK.VolumeServerVolumeTypeLSSD {
+			return diff.ForceNew("root_volume.0.size_in_gb")
+		}
 	}
 
 	return nil
@@ -1190,6 +1235,7 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	if err != nil {
 		return err
 	}
+
 	server, err := instanceAPI.GetServer(&instanceSDK.GetServerRequest{
 		Zone:     zone,
 		ServerID: id,
@@ -1214,9 +1260,11 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	// If image is a label, we check that server.Image.ID matches the label in case the user has edited
 	// the image with another tool.
 	marketplaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
+
 	if err != nil {
 		return err
 	}
+
 	marketplaceImage, err := marketplaceAPI.GetLocalImage(&marketplace.GetLocalImageRequest{
 		LocalImageID: server.Server.Image.ID,
 	}, scw.WithContext(ctx))
@@ -1225,11 +1273,14 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 		if httperrors.Is404(err) {
 			return diff.ForceNew("image")
 		}
+
 		return err
 	}
+
 	if marketplaceImage.Label != image.ID {
 		return diff.ForceNew("image")
 	}
+
 	return nil
 }
 
@@ -1238,6 +1289,7 @@ func ResourceInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return fmt.Errorf("failed to wait for server before changing server type: %w", err)
 	}
+
 	beginningState := server.State
 
 	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateStopped)
@@ -1257,29 +1309,6 @@ func ResourceInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, 
 	err = reachState(ctx, api, zone, id, beginningState)
 	if err != nil {
 		return fmt.Errorf("failed to start server after changing server type: %w", err)
-	}
-
-	return nil
-}
-
-func ResourceInstanceServerEnableRoutedIP(ctx context.Context, d *schema.ResourceData, instanceAPI *instanceSDK.API, zone scw.Zone, id string) error {
-	server, err := waitForServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return err
-	}
-
-	_, err = instanceAPI.ServerAction(&instanceSDK.ServerActionRequest{
-		Zone:     server.Zone,
-		ServerID: server.ID,
-		Action:   "enable_routed_ip",
-	})
-	if err != nil {
-		return fmt.Errorf("failed to enable routed ip: %w", err)
-	}
-
-	_, err = waitForServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -1323,6 +1352,7 @@ func ResourceInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData
 		if isAttached {
 			continue
 		}
+
 		_, err := instanceAPI.UpdateIP(&instanceSDK.UpdateIPRequest{
 			Zone: zone,
 			IP:   ipID,
@@ -1336,4 +1366,89 @@ func ResourceInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData
 	}
 
 	return nil
+}
+
+func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, serverID string, iops *uint32) diag.Diagnostics {
+	res, err := api.GetServer(&instanceSDK.GetServerRequest{
+		Zone:     zone,
+		ServerID: serverID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	rootVolume, exists := res.Server.Volumes["0"]
+	if exists {
+		_, err := api.blockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+			Zone:     zone,
+			VolumeID: rootVolume.ID,
+			PerfIops: iops,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.Diagnostics{{
+				Severity:      diag.Warning,
+				Summary:       "Failed to update root_volume iops",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+			}}
+		}
+	} else {
+		return diag.Diagnostics{{
+			Severity:      diag.Warning,
+			Summary:       "Failed to find root_volume",
+			Detail:        "Failed to update root_volume IOPS",
+			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+		}}
+	}
+
+	return nil
+}
+
+// instanceServerVolumesUpdate updates root_volume size and returns the list of volumes templates that should be updated for the server.
+// It uses root_volume and additional_volume_ids to build the volumes templates.
+func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, api *BlockAndInstanceAPI, zone scw.Zone, serverIsStopped bool) (map[string]*instanceSDK.VolumeServerTemplate, error) {
+	volumes := map[string]*instanceSDK.VolumeServerTemplate{}
+	raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids")
+
+	if d.HasChange("root_volume.0.size_in_gb") {
+		err := api.ResizeUnknownVolume(&ResizeUnknownVolumeRequest{
+			VolumeID: zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID,
+			Zone:     zone,
+			Size:     scw.SizePtr(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	volumes["0"] = &instanceSDK.VolumeServerTemplate{
+		ID:   scw.StringPtr(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
+		Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
+		Boot: types.ExpandBoolPtr(d.Get("root_volume.0.boot")),
+	}
+
+	if !hasAdditionalVolumes {
+		raw = []interface{}{} // Set an empty list if not volumes exist
+	}
+
+	for i, volumeID := range raw.([]interface{}) {
+		volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
+
+		volume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+			VolumeID: zonal.ExpandID(volumeID).ID,
+			Zone:     zone,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, fmt.Errorf("failed to get updated volume: %w", err)
+		}
+
+		// local volumes can only be added when the server is stopped
+		if volumeHasChange && !serverIsStopped && volume.IsLocal() && volume.IsAttached() {
+			return nil, errors.New("instance must be stopped to change local volumes")
+		}
+
+		volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
+	}
+
+	return volumes, nil
 }

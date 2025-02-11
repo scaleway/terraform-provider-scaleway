@@ -109,6 +109,101 @@ func TestAccImage_BlockVolume(t *testing.T) {
 	})
 }
 
+func TestAccImage_ExternalBlockVolume(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isImageDestroyed(tt),
+			isSnapshotDestroyed(tt),
+			isVolumeDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_block_volume" "main" {
+						size_in_gb = 50
+						iops = 5000
+					}
+
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_block_volume.main.id
+					}
+				`,
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "main" {
+						size_in_gb = 50
+						iops = 5000
+					}
+
+					resource "scaleway_block_volume" "additional1" {
+						size_in_gb = 50
+						iops = 5000
+					}
+
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource "scaleway_block_snapshot" "additional1" {
+						volume_id = scaleway_block_volume.additional1.id
+					}
+
+					resource "scaleway_instance_image" "main" {
+						name 			= "tf-test-image-external-block-volume"
+						root_volume_id 	= scaleway_block_snapshot.main.id
+						additional_volume_ids = [scaleway_block_snapshot.additional1.id]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volume_ids.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.0", "scaleway_block_snapshot.additional1", "id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "main" {
+						size_in_gb = 50
+						iops = 5000
+					}
+
+					resource "scaleway_block_volume" "additional1" {
+						size_in_gb = 50
+						iops = 5000
+					}
+
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource "scaleway_block_snapshot" "additional1" {
+						volume_id = scaleway_block_volume.additional1.id
+					}
+
+					resource "scaleway_instance_image" "main" {
+						name 			= "tf-test-image-external-block-volume"
+						root_volume_id 	= scaleway_block_snapshot.main.id
+						additional_volume_ids = []
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volume_ids.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccImage_Server(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -453,10 +548,12 @@ func isImageDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if rs.Type != "scaleway_instance_image" {
 				continue
 			}
+
 			instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
+
 			_, err = instanceAPI.GetImage(&instanceSDK.GetImageRequest{
 				ImageID: ID,
 				Zone:    zone,

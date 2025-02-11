@@ -39,10 +39,10 @@ func ResourceCron() *schema.Resource {
 				Required:    true,
 			},
 			"schedule": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.ValidateCronExpression(),
-				Description:  "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.ValidateCronExpression(),
+				Description:      "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
 			},
 			"args": {
 				Type:        schema.TypeString,
@@ -73,6 +73,7 @@ func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	functionID := locality.ExpandID(d.Get("function_id").(string))
+
 	f, err := waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -90,6 +91,7 @@ func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m i
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		request.Args = &jsonObj
 	}
 
@@ -118,14 +120,17 @@ func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("function_id", regional.NewID(region, cron.FunctionID).String())
 	_ = d.Set("schedule", cron.Schedule)
 	_ = d.Set("name", cron.Name)
+
 	args, err := scw.EncodeJSONObject(*cron.Args, scw.NoEscape)
 	if err != nil {
 		return diag.FromErr(err)
@@ -134,6 +139,7 @@ func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
 	_ = d.Set("region", region.String())
+
 	return nil
 }
 
@@ -153,10 +159,12 @@ func ResourceFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m i
 		CronID: cron.ID,
 	}
 	shouldUpdate := false
+
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name").(string))
 		shouldUpdate = true
 	}
+
 	if d.HasChange("schedule") {
 		req.Schedule = types.ExpandStringPtr(d.Get("schedule").(string))
 		shouldUpdate = true
@@ -167,6 +175,7 @@ func ResourceFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m i
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		shouldUpdate = true
 		req.Args = &jsonObj
 	}
@@ -191,8 +200,10 @@ func ResourceFunctionCronDelete(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

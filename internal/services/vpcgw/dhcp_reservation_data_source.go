@@ -24,11 +24,11 @@ func DataSourceDHCPReservation() *schema.Resource {
 	dsSchema["mac_address"].ConflictsWith = []string{"reservation_id"}
 	dsSchema["gateway_network_id"].ConflictsWith = []string{"reservation_id"}
 	dsSchema["reservation_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of dhcp entry reservation",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"mac_address", "gateway_network_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of dhcp entry reservation",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"mac_address", "gateway_network_id"},
 	}
 	dsSchema["wait_for_dhcp"] = &schema.Schema{
 		Type:        schema.TypeBool,
@@ -55,6 +55,7 @@ func DataSourceDHCPReservationRead(ctx context.Context, d *schema.ResourceData, 
 	reservationIDRaw, ok := d.GetOk("reservation_id")
 	if !ok {
 		var res *vpcgw.ListDHCPEntriesResponse
+
 		gatewayNetworkID := locality.ExpandID(d.Get("gateway_network_id").(string))
 		macAddress := d.Get("mac_address").(string)
 
@@ -67,6 +68,7 @@ func DataSourceDHCPReservationRead(ctx context.Context, d *schema.ResourceData, 
 					MacAddress:       types.ExpandStringPtr(macAddress),
 				}, scw.WithContext(ctx))
 		}
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -79,6 +81,7 @@ func DataSourceDHCPReservationRead(ctx context.Context, d *schema.ResourceData, 
 				),
 			)
 		}
+
 		if res.TotalCount > 1 {
 			return diag.FromErr(
 				fmt.Errorf(
@@ -88,6 +91,7 @@ func DataSourceDHCPReservationRead(ctx context.Context, d *schema.ResourceData, 
 				),
 			)
 		}
+
 		reservationIDRaw = res.DHCPEntries[0].ID
 	}
 

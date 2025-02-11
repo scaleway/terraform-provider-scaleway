@@ -36,10 +36,10 @@ func ResourcePATRule() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The ID of the gateway this PAT rule is applied to",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The ID of the gateway this PAT rule is applied to",
 			},
 			"private_ip": {
 				Type:         schema.TypeString,
@@ -94,6 +94,7 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 	}
 
 	gatewayID := zonal.ExpandID(d.Get("gateway_id").(string)).ID
+
 	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,8 +142,10 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -186,6 +189,7 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	hasChange := false
+
 	if d.HasChange("private_ip") {
 		req.PrivateIP = scw.IPPtr(net.ParseIP(d.Get("private_ip").(string)))
 		hasChange = true
@@ -217,8 +221,10 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 		if err != nil {
 			if httperrors.Is404(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}
@@ -245,8 +251,10 @@ func ResourceVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schema.Resour
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_lb_frontend"
 
 Creates and manages Scaleway Load Balancer frontends.
 
-For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/reference-content/configuring-frontends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/load-balancer/reference-content/configuring-frontends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
 
 ## Example Usage
 
@@ -215,7 +215,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Load Balancer frontend IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `certificate_id` - (Deprecated) First certificate ID used by the frontend.
+- `certificate_id` - (Deprecated, use `certificate_ids` instead) First certificate ID used by the frontend.
 
 
 ## Import

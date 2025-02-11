@@ -22,11 +22,11 @@ func DataSourceCluster() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"cluster_id"}
 	dsSchema["cluster_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the cluster",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the cluster",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 
 	return &schema.Resource{
@@ -45,6 +45,7 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m int
 	clusterID, ok := d.GetOk("cluster_id")
 	if !ok {
 		clusterName := d.Get("name").(string)
+
 		res, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{
 			Region:    region,
 			Name:      types.ExpandStringPtr(clusterName),
@@ -69,5 +70,6 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m int
 	regionalizedID := datasource.NewRegionalID(clusterID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("cluster_id", regionalizedID)
+
 	return ResourceK8SClusterRead(ctx, d, m)
 }

@@ -20,11 +20,11 @@ func DataSourceSnapshot() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
 	dsSchema["snapshot_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the snapshot",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the snapshot",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["name"].ConflictsWith = []string{"snapshot_id"}
 
@@ -43,6 +43,7 @@ func DataSourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData,
 	snapshotID, ok := d.GetOk("snapshot_id")
 	if !ok {
 		snapshotName := d.Get("name").(string)
+
 		res, err := instanceAPI.ListSnapshots(&instance.ListSnapshotsRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(snapshotName),
@@ -72,6 +73,7 @@ func DataSourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	diags := ResourceInstanceSnapshotRead(ctx, d, m)
 	if len(diags) > 0 {
 		return diags

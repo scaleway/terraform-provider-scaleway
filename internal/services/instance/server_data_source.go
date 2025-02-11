@@ -21,11 +21,11 @@ func DataSourceServer() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"server_id"}
 	dsSchema["server_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the server",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the server",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 
 	return &schema.Resource{
@@ -44,6 +44,7 @@ func DataSourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m
 	serverID, ok := d.GetOk("server_id")
 	if !ok {
 		serverName := d.Get("name").(string)
+
 		res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(serverName),
@@ -68,5 +69,6 @@ func DataSourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m
 	zonedID := datasource.NewZonedID(serverID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("server_id", zonedID)
+
 	return ResourceInstanceServerRead(ctx, d, m)
 }

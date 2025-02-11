@@ -24,11 +24,11 @@ func DataSourcePool() *schema.Resource {
 	dsSchema["cluster_id"].ConflictsWith = []string{"pool_id"}
 	dsSchema["cluster_id"].RequiredWith = []string{"name"}
 	dsSchema["pool_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the pool",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name", "cluster_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the pool",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name", "cluster_id"},
 	}
 
 	return &schema.Resource{
@@ -48,6 +48,7 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interf
 	if !ok {
 		poolName := d.Get("name").(string)
 		clusterID := regional.ExpandID(d.Get("cluster_id"))
+
 		res, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 			Region:    region,
 			Name:      types.ExpandStringPtr(poolName),
@@ -72,5 +73,6 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interf
 	regionalizedID := datasource.NewRegionalID(poolID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
+
 	return ResourceK8SPoolRead(ctx, d, m)
 }

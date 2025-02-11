@@ -50,6 +50,12 @@ func ResourceCockpitGrafanaUser() *schema.Resource {
 				Description:      "The role of the Grafana user",
 				ValidateDiagFunc: verify.ValidateEnum[cockpit.GrafanaUserRole](),
 			},
+			"grafana_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The grafana URL",
+			},
+
 			"project_id": account.ProjectIDSchema(),
 		},
 	}
@@ -76,6 +82,7 @@ func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("password", grafanaUser.Password)
 	d.SetId(cockpitIDWithProjectID(projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)))
+
 	return ResourceCockpitGrafanaUserRead(ctx, d, m)
 }
 
@@ -91,27 +98,46 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	var grafanaUser *cockpit.GrafanaUser
+
 	for _, user := range res.GrafanaUsers {
 		if user.ID == grafanaUserID {
 			grafanaUser = user
+
 			break
 		}
 	}
 
 	if grafanaUser == nil {
 		d.SetId("")
+
 		return nil
+	}
+
+	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
+		ProjectID: projectID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("login", grafanaUser.Login)
 	_ = d.Set("role", grafanaUser.Role)
 	_ = d.Set("project_id", projectID)
+	_ = d.Set("grafana_url", grafana.GrafanaURL)
 
 	return nil
 }
@@ -130,6 +156,7 @@ func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceDat
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

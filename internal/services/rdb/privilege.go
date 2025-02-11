@@ -39,11 +39,11 @@ func ResourcePrivilege() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "Instance on which the database is created",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "Instance on which the database is created",
 			},
 			"user_name": {
 				Type:        schema.TypeString,
@@ -75,6 +75,7 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	instanceID := locality.ExpandID(d.Get("instance_id").(string))
+
 	_, err = waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -99,10 +100,13 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m i
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errSetPrivilege)
 			}
+
 			return retry.NonRetryableError(errSetPrivilege)
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -131,8 +135,10 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -144,13 +150,16 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	if listUsers == nil || len(listUsers.Users) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -163,14 +172,17 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	if len(res.Privileges) == 0 {
 		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, databaseName))
 	}
+
 	privilege := res.Privileges[0]
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
@@ -183,10 +195,12 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 
 func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newAPI(m)
+
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -200,13 +214,16 @@ func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	if listUsers == nil || len(listUsers.Users) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -227,10 +244,13 @@ func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m i
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errSet)
 			}
+
 			return retry.NonRetryableError(errSet)
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -248,6 +268,7 @@ func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m i
 //gocyclo:ignore
 func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newAPI(m)
+
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -259,6 +280,7 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	_ = d.Set("permission", rdb.PermissionNone)
+
 	listUsers, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 		Region:     region,
 		InstanceID: instanceID,
@@ -267,13 +289,16 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	if listUsers != nil && len(listUsers.Users) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -293,18 +318,23 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 			InstanceID: instanceID,
 			Name:       &userName,
 		}, scw.WithContext(ctx))
+
 		if err != nil {
 			if httperrors.Is404(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return retry.NonRetryableError(errUserExist)
 		}
 
 		if listUsers != nil && len(listUsers.Users) == 0 {
 			d.SetId("")
+
 			return nil
 		}
+
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
 			if httperrors.Is409(errSet) {
@@ -312,10 +342,13 @@ func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m i
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errSet)
 			}
+
 			return retry.NonRetryableError(errSet)
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -342,5 +375,6 @@ func ResourceRdbUserPrivilegeParseID(resourceID string) (region scw.Region, inst
 	if len(idParts) != 4 {
 		return "", "", "", "", fmt.Errorf("can't parse user privilege resource id: %s", resourceID)
 	}
+
 	return scw.Region(idParts[0]), idParts[1], idParts[2], idParts[3], nil
 }

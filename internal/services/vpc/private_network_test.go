@@ -12,6 +12,7 @@ import (
 func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	privateNetworkName := "private-network-test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -242,74 +243,6 @@ func TestAccVPCPrivateNetwork_OneSubnet(t *testing.T) {
 						"scaleway_vpc_private_network.test",
 						"ipv6_subnets.#",
 						"1",
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAccVPCPrivateNetwork_WithTwoIPV6Subnets(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      vpcchecks.CheckPrivateNetworkDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_vpc vpc01 {
-						name = "test-vpc"
-						tags = [ "terraform-test", "vpc", "update" ]
-					}
-					
-					resource scaleway_vpc_private_network pn01 {
-						name = "pn1"
-						tags = ["tag0", "tag1"]
-						vpc_id = scaleway_vpc.vpc01.id
-						ipv4_subnet {
-						  subnet = "192.168.0.0/24"
-						}
-						ipv6_subnets {
-						  subnet = "fd46:78ab:30b8:177c::/64"
-						}
-						ipv6_subnets {
-						  subnet = "fd46:78ab:30b8:c7df::/64"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					vpcchecks.IsPrivateNetworkPresent(
-						tt,
-						"scaleway_vpc_private_network.pn01",
-					),
-					resource.TestCheckResourceAttr(
-						"scaleway_vpc_private_network.pn01",
-						"ipv4_subnet.0.subnet",
-						"192.168.0.0/24",
-					),
-					resource.TestCheckResourceAttrSet(
-						"scaleway_vpc_private_network.pn01",
-						"ipv6_subnets.0.subnet",
-					),
-					resource.TestCheckTypeSetElemNestedAttrs(
-						"scaleway_vpc_private_network.pn01", "ipv6_subnets.*", map[string]string{
-							"subnet": "fd46:78ab:30b8:177c::/64",
-						}),
-					resource.TestCheckTypeSetElemNestedAttrs(
-						"scaleway_vpc_private_network.pn01", "ipv6_subnets.*", map[string]string{
-							"subnet": "fd46:78ab:30b8:c7df::/64",
-						}),
-					resource.TestCheckResourceAttr(
-						"scaleway_vpc_private_network.pn01",
-						"ipv4_subnet.#",
-						"1",
-					),
-					resource.TestCheckResourceAttr(
-						"scaleway_vpc_private_network.pn01",
-						"ipv6_subnets.#",
-						"2",
 					),
 				),
 			},

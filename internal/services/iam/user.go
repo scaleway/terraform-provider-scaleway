@@ -16,6 +16,7 @@ func ResourceUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIamUserCreate,
 		ReadContext:   resourceIamUserRead,
+		UpdateContext: resourceIamUserUpdate,
 		DeleteContext: resourceIamUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -27,6 +28,14 @@ func ResourceUser() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The description of the iam user",
+			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the user",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -75,9 +84,12 @@ func ResourceUser() *schema.Resource {
 
 func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+	email := d.Get("email").(string)
+
 	user, err := api.CreateUser(&iam.CreateUserRequest{
 		OrganizationID: d.Get("organization_id").(string),
-		Email:          d.Get("email").(string),
+		Email:          &email,
+		Tags:           types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -90,14 +102,17 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	user, err := api.GetUser(&iam.GetUserRequest{
 		UserID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -106,12 +121,36 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
 	_ = d.Set("organization_id", user.OrganizationID)
 	_ = d.Set("deletable", user.Deletable)
+	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
 	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
 	_ = d.Set("type", user.Type)
 	_ = d.Set("status", user.Status)
 	_ = d.Set("mfa", user.Mfa)
 
 	return nil
+}
+
+func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := NewAPI(m)
+
+	user, err := api.GetUser(&iam.GetUserRequest{
+		UserID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChanges("tags") {
+		_, err = api.UpdateUser(&iam.UpdateUserRequest{
+			UserID: user.ID,
+			Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return resourceIamUserRead(ctx, d, m)
 }
 
 func resourceIamUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

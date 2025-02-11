@@ -22,11 +22,11 @@ func DataSourceBackend() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"backend_id"}
 	dsSchema["backend_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the backend",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the backend",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 
 	return &schema.Resource{
@@ -44,6 +44,7 @@ func DataSourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m inte
 	backID, ok := d.GetOk("backend_id")
 	if !ok { // Get LB by name.
 		backendName := d.Get("name").(string)
+
 		res, err := api.ListBackends(&lbSDK.ZonedAPIListBackendsRequest{
 			Zone: zone,
 			Name: types.ExpandStringPtr(backendName),
@@ -64,11 +65,14 @@ func DataSourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m inte
 
 		backID = foundBackend.ID
 	}
+
 	zonedID := datasource.NewZonedID(backID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("backend_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return resourceLbBackendRead(ctx, d, m)
 }

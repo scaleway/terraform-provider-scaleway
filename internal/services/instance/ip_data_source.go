@@ -20,11 +20,11 @@ func DataSourceIP() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceIP().Schema)
 
 	dsSchema["id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IP address",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"address"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IP address",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"address"},
 	}
 	dsSchema["address"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -48,7 +48,9 @@ func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	id, ok := d.GetOk("id")
+
 	var ID string
+
 	if !ok {
 		res, err := instanceAPI.GetIP(&instance.GetIPRequest{
 			IP:   d.Get("address").(string),
@@ -58,14 +60,18 @@ func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m int
 			// We check for 403 because instance API returns 403 for a deleted IP
 			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
+
 		ID = res.IP.ID
 	} else {
 		_, ID, _ = locality.ParseLocalizedID(id.(string))
 	}
+
 	d.SetId(zonal.NewIDString(zone, ID))
 
 	return ResourceInstanceIPRead(ctx, d, m)

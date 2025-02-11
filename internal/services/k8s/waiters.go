@@ -58,6 +58,7 @@ func waitClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Cluste
 		if status == k8s.ClusterStatusDeleted && httperrors.Is404(err) {
 			return cluster, nil
 		}
+
 		return cluster, err
 	}
 
@@ -83,5 +84,6 @@ func waitPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, pool
 	if pool.Status != k8s.PoolStatusReady {
 		return nil, fmt.Errorf("pool %s has state %s, wants %s", poolID, pool.Status, k8s.PoolStatusReady)
 	}
+
 	return pool, nil
 }

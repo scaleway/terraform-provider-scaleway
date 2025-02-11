@@ -21,11 +21,11 @@ func DataSourceVPCPublicGateway() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"public_gateway_id"}
 	dsSchema["public_gateway_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the public gateway",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the public gateway",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 
 	return &schema.Resource{
@@ -47,6 +47,7 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 	publicGatewayID, ok := d.GetOk("public_gateway_id")
 	if !ok {
 		gwName := d.Get("name").(string)
+
 		res, err := api.ListGateways(
 			&vpcgw.ListGatewaysRequest{
 				Name:      types.ExpandStringPtr(gwName),
@@ -72,5 +73,6 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 	zonedID := datasource.NewZonedID(publicGatewayID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("public_gateway_id", zonedID)
+
 	return ResourceVPCPublicGatewayRead(ctx, d, m)
 }

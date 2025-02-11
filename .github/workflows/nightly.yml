@@ -19,11 +19,11 @@ jobs:
           - block
           - cockpit
           - container
-          - documentdb
           - domain
           - flexibleip
           - function
           - iam
+          - inference
           - instance
           - iot
           - ipam
@@ -32,6 +32,7 @@ jobs:
           - lb
           - marketplace
           - mnq
+          - mongodb
           - object
           - rdb
           - redis
@@ -44,12 +45,15 @@ jobs:
           - webhosting
     runs-on: ubuntu-latest
     steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22
-      - name: Checkout
-        uses: actions/checkout@v4
+          go-version: 1.23.5
       - name: Run Acceptance Tests
         run: go test -v ./internal/services/${{ matrix.products }} -timeout=4h
         env:
@@ -84,6 +88,9 @@ jobs:
         env:
           SLACK_WEBHOOK_NIGHTLY: ${{ secrets.SLACK_WEBHOOK_NIGHTLY }}
           FAILED_PRODUCT: ${{ matrix.products }}
+      - name: Run acceptance test for cassettes
+        if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
+        run: go test -v github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest -run TestAccCassettes_Validator
 
   # sweeper needs to run after nightly completed
   # no matter what are the results of the jobs
@@ -92,12 +99,15 @@ jobs:
     needs: nightly
     if: always()
     steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22
-      - name: Checkout
-        uses: actions/checkout@v4
+          go-version: 1.23.5
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
       - name: Run sweepers
         run: make sweep
         env:

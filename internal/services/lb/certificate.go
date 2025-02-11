@@ -84,6 +84,7 @@ func ResourceCertificate() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
+							Sensitive:   true,
 							Description: "The full PEM-formatted certificate chain",
 						},
 					},
@@ -155,8 +156,10 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -171,8 +174,10 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -192,8 +197,10 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -213,12 +220,14 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m in
 		if certificate.StatusDetails != nil {
 			errDetails = *certificate.StatusDetails
 		}
+
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  fmt.Sprintf("certificate %s with error state", certificate.ID),
 			Detail:   errDetails,
 		})
 	}
+
 	return diags
 }
 
@@ -244,11 +253,14 @@ func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}

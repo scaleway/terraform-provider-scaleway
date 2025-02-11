@@ -9,6 +9,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -17,18 +18,26 @@ func DataSourceUser() *schema.Resource {
 		ReadContext: DataSourceIamUserRead,
 		Schema: map[string]*schema.Schema{
 			"user_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The ID of the IAM user",
-				ValidateFunc:  verify.IsUUID(),
-				ConflictsWith: []string{"email"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The ID of the IAM user",
+				ValidateDiagFunc: verify.IsUUID(),
+				ConflictsWith:    []string{"email"},
 			},
 			"email": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The email address of the IAM user",
-				ValidateFunc:  verify.IsEmail(),
-				ConflictsWith: []string{"user_id"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The email address of the IAM user",
+				ValidateDiagFunc: verify.IsEmail(),
+				ConflictsWith:    []string{"user_id"},
+			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the user",
 			},
 			"organization_id": {
 				Type:          schema.TypeString,
@@ -44,17 +53,23 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 	iamAPI := NewAPI(m)
 
 	var email, organizationID string
+
+	var tags []string
+
 	userID, ok := d.GetOk("user_id")
 	if ok {
 		userID = d.Get("user_id")
+
 		res, err := iamAPI.GetUser(&iam.GetUserRequest{
 			UserID: userID.(string),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		email = res.Email
 		organizationID = res.OrganizationID
+		tags = res.Tags
 	} else {
 		res, err := iamAPI.ListUsers(&iam.ListUsersRequest{
 			OrganizationID: account.GetOrganizationID(m, d),
@@ -62,23 +77,28 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(res.Users) == 0 {
 			return diag.FromErr(fmt.Errorf("no user found with the email address %s", d.Get("email")))
 		}
+
 		for _, user := range res.Users {
 			if user.Email == d.Get("email").(string) {
 				if userID != "" {
 					return diag.Errorf("more than 1 user found with the same email %s", d.Get("email"))
 				}
-				userID, email = user.ID, user.Email
+
+				userID, email, tags = user.ID, user.Email, user.Tags
 			}
 		}
+
 		if userID == "" {
 			return diag.Errorf("no user found with the email %s", d.Get("email"))
 		}
 	}
 
 	d.SetId(userID.(string))
+
 	err := d.Set("user_id", userID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -86,6 +106,7 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	_ = d.Set("user_id", userID)
 	_ = d.Set("email", email)
+	_ = d.Set("tags", types.FlattenSliceString(tags))
 	_ = d.Set("organization_id", organizationID)
 
 	return nil

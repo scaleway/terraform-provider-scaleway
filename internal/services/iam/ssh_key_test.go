@@ -16,6 +16,7 @@ const (
 
 func TestAccSSHKey_basic(t *testing.T) {
 	name := "tf-test-iam-ssh-key-basic"
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -56,6 +57,7 @@ func TestAccSSHKey_basic(t *testing.T) {
 
 func TestAccSSHKey_WithNewLine(t *testing.T) {
 	name := "tf-test-iam-ssh-key-newline"
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -83,6 +85,7 @@ func TestAccSSHKey_WithNewLine(t *testing.T) {
 
 func TestAccSSHKey_ChangeResourceName(t *testing.T) {
 	name := "tf-test-iam-ssh-key-change-resource-name"
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -123,6 +126,7 @@ func TestAccSSHKey_ChangeResourceName(t *testing.T) {
 
 func TestAccSSHKey_Disabled(t *testing.T) {
 	name := "tf-test-iam-ssh-key-disabled"
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

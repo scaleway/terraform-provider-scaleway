@@ -27,18 +27,18 @@ func DataSourceImage() *schema.Resource {
 				ConflictsWith: []string{"image_id"},
 			},
 			"image_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The ID of the registry image",
-				ConflictsWith: []string{"name"},
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The ID of the registry image",
+				ConflictsWith:    []string{"name"},
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"namespace_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The namespace ID of the registry image",
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "The namespace ID of the registry image",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"size": {
 				Type:        schema.TypeInt,
@@ -77,13 +77,16 @@ func DataSourceRegistryImageRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	var image *registry.Image
+
 	imageID, ok := d.GetOk("image_id")
 	if !ok {
 		var namespaceID *string
 		if d.Get("namespace_id") != "" {
 			namespaceID = types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id")))
 		}
+
 		imageName := d.Get("name").(string)
+
 		res, err := api.ListImages(&registry.ListImagesRequest{
 			Region:      region,
 			Name:        types.ExpandStringPtr(imageName),
@@ -93,6 +96,7 @@ func DataSourceRegistryImageRead(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		foundImage, err := datasource.FindExact(
 			res.Images,
 			func(s *registry.Image) bool { return s.Name == imageName },
@@ -111,6 +115,7 @@ func DataSourceRegistryImageRead(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		image = res
 	}
 

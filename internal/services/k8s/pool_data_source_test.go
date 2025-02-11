@@ -12,6 +12,7 @@ import (
 func TestAccDataSourcePool_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	clusterName := "tf-cluster-pool"
 	poolName := "tf-pool"
 	version := testAccK8SClusterGetLatestK8SVersion(tt)
@@ -83,6 +84,7 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.prod", "name", poolName),
 					testAccCheckK8SPoolExists(tt, "data.scaleway_k8s_pool.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "name", poolName),
+					resource.TestCheckResourceAttrSet("data.scaleway_k8s_pool.stg", "nodes.0.public_ip"), // Deprecated attributes
 				),
 			},
 		},

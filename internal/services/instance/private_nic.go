@@ -68,6 +68,15 @@ func ResourcePrivateNIC() *schema.Resource {
 				Description: "IPAM ip list, should be for internal use only",
 				ForceNew:    true,
 			},
+			"ipam_ip_ids": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				ForceNew:    true,
+				Description: "IPAM IDs of a pre-reserved IP addresses to assign to the Instance in the requested private network",
+			},
 			"zone": zonal.Schema(),
 		},
 		CustomizeDiff: cdf.LocalityCheck("server_id", "private_network_id"),
@@ -91,6 +100,7 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
 		Tags:             types.ExpandStrings(d.Get("tags")),
 		IPIDs:            types.ExpandStringsPtr(d.Get("ip_ids")),
+		IpamIPIDs:        locality.ExpandIDs(d.Get("ipam_ip_ids")),
 	}
 
 	privateNIC, err := instanceAPI.CreatePrivateNIC(
@@ -122,6 +132,7 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	zone, privateNICID, serverID, err := zonal.ParseNestedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -131,8 +142,10 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -187,6 +200,7 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	zone, privateNICID, serverID, err := zonal.ParseNestedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -197,6 +211,7 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -209,6 +224,7 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -217,6 +233,7 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

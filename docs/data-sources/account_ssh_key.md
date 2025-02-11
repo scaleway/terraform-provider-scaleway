@@ -5,9 +5,17 @@ page_title: "Scaleway: scaleway_account_ssh_key"
 
 # scaleway_account_ssh_key
 
-Use this data source to get SSH key information based on its ID or name.
+The `scaleway_account_ssh_key` data source is used to retrieve information about a the SSH key of a Scaleway account.
 
-## Example Usage
+Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/how-to/create-ssh-key/) and [API documentation](https://www.scaleway.com/en/developers/api/iam/#path-ssh-keys) for more information.
+
+
+## Retrieve the SSH key of a Scaleway account
+
+The following commands allow you to:
+
+- retrieve an SSH key by its name
+- retrieve an SSH key by its ID
 
 ```hcl
 # Get info by SSH key name
@@ -23,17 +31,21 @@ data "scaleway_account_ssh_key" "my_key" {
 
 ## Argument Reference
 
-- `name` - The SSH key name.
-- `ssh_key_id` - The SSH key id.
+This section lists the arguments that you can provide to the `scaleway_account_ssh_key` data source to filter and retrieve the desired SSH key. Each argument has a specific purpose:
+
+- `name` - The name of the SSH key.
+- `ssh_key_id` - The unique identifier of the SSH key.
 
   -> **Note** You must specify at least one: `name` and/or `ssh_key_id`.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the SSH key is associated.
 
 ## Attributes Reference
 
+The `scaleway_account_ssh_key` data source exports certain attributes once the SSH key information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
+
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the SSH public key.
-- `public_key` - The SSH public key string
-- `organization_id` - The ID of the organization the SSH key is associated with.
+- `id` - The unique identifier of the SSH public key.
+- `public_key` - The string of the SSH public key.
+- `organization_id` - The unique identifier of the Organization with which the SSH key is associated.

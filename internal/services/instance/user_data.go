@@ -35,10 +35,10 @@ func ResourceUserData() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"server_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The ID of the server",
-				ValidateFunc: verify.IsUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The ID of the server",
+				ValidateDiagFunc: verify.IsUUIDWithLocality(),
 			},
 			"key": {
 				Type:        schema.TypeString,
@@ -63,6 +63,7 @@ func ResourceInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	serverID := locality.ExpandID(d.Get("server_id").(string))
+
 	server, err := waitForServer(ctx, instanceAPI, zone, serverID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -118,8 +119,10 @@ func ResourceInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -127,6 +130,7 @@ func ResourceInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("server_id", zonal.NewID(zone, server.ID).String())
 	_ = d.Set("key", key)
 	_ = d.Set("value", string(userDataValue))

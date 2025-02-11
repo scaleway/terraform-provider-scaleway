@@ -23,18 +23,18 @@ func DataSourceSecret() *schema.Resource {
 	dsSchema["name"].ConflictsWith = []string{"secret_id"}
 	dsSchema["path"].ConflictsWith = []string{"secret_id"}
 	dsSchema["secret_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the secret",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name", "path"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the secret",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name", "path"},
 	}
 	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The project ID the resource is associated to",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The project ID the resource is associated to",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -55,7 +55,7 @@ func DataSourceSecretRead(ctx context.Context, d *schema.ResourceData, m interfa
 		request := &secret.ListSecretsRequest{
 			Region:         region,
 			Name:           types.ExpandStringPtr(secretName),
-			ProjectID:      types.ExpandStringPtr(projectID),
+			ProjectID:      projectID,
 			OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 			Path:           types.ExpandStringPtr(d.Get("path")),
 		}
@@ -79,6 +79,7 @@ func DataSourceSecretRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	regionalID := datasource.NewRegionalID(secretID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("secret_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)

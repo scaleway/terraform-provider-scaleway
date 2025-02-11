@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -26,10 +25,12 @@ func TestAccSQSQueue_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	ctx := context.Background()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSQSQueueDestroyed(tt),
+		CheckDestroy:      isSQSQueueDestroyed(ctx, tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -57,7 +58,7 @@ func TestAccSQSQueue_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isSQSQueuePresent(tt, "scaleway_mnq_sqs_queue.main"),
+					isSQSQueuePresent(ctx, tt, "scaleway_mnq_sqs_queue.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "name", "test-mnq-sqs-queue-basic"),
 				),
@@ -90,7 +91,7 @@ func TestAccSQSQueue_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isSQSQueuePresent(tt, "scaleway_mnq_sqs_queue.main"),
+					isSQSQueuePresent(ctx, tt, "scaleway_mnq_sqs_queue.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "message_max_age", "720"),
 				),
@@ -130,7 +131,7 @@ func TestAccSQSQueue_DefaultProject(t *testing.T) {
 			}
 		}(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isSQSQueueDestroyed(tt),
+			isSQSQueueDestroyed(ctx, tt),
 			func(_ *terraform.State) error {
 				return accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
 					ProjectID: projectID,
@@ -159,7 +160,7 @@ func TestAccSQSQueue_DefaultProject(t *testing.T) {
 					}
 				`, projectID),
 				Check: resource.ComposeTestCheckFunc(
-					isSQSQueuePresent(tt, "scaleway_mnq_sqs_queue.main"),
+					isSQSQueuePresent(ctx, tt, "scaleway_mnq_sqs_queue.main"),
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "name", "test-mnq-sqs-queue-basic"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "project_id", projectID),
@@ -169,7 +170,7 @@ func TestAccSQSQueue_DefaultProject(t *testing.T) {
 	})
 }
 
-func isSQSQueuePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func isSQSQueuePresent(ctx context.Context, tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -181,13 +182,13 @@ func isSQSQueuePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		sqsClient, err := mnq.NewSQSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+		sqsClient, err := mnq.NewSQSClient(ctx, tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 		if err != nil {
 			return err
 		}
 
-		_, err = sqsClient.GetQueueUrl(&sqs.GetQueueUrlInput{
-			QueueName: aws.String(queueName),
+		_, err = sqsClient.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
+			QueueName: &queueName,
 		})
 		if err != nil {
 			return err
@@ -197,7 +198,7 @@ func isSQSQueuePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	}
 }
 
-func isSQSQueueDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+func isSQSQueueDestroyed(ctx context.Context, tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_mnq_sqs_queue" {
@@ -212,6 +213,7 @@ func isSQSQueueDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			// Project may have been deleted, check for it first
 			// Checking for Queue first may lead to an AccessDenied if project has been deleted
 			accountAPI := account.NewProjectAPI(tt.Meta)
+
 			_, err = accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
 				ProjectID: projectID,
 			})
@@ -224,6 +226,7 @@ func isSQSQueueDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}
 
 			mnqAPI := mnqSDK.NewSqsAPI(tt.Meta.ScwClient())
+
 			sqsInfo, err := mnqAPI.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
 				Region:    region,
 				ProjectID: projectID,
@@ -237,16 +240,16 @@ func isSQSQueueDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return nil
 			}
 
-			sqsClient, err := mnq.NewSQSClient(tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
+			sqsClient, err := mnq.NewSQSClient(ctx, tt.Meta.HTTPClient(), region.String(), rs.Primary.Attributes["sqs_endpoint"], rs.Primary.Attributes["access_key"], rs.Primary.Attributes["secret_key"])
 			if err != nil {
 				return err
 			}
 
-			_, err = sqsClient.GetQueueUrl(&sqs.GetQueueUrlInput{
+			_, err = sqsClient.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
 				QueueName: aws.String(queueName),
 			})
 			if err != nil {
-				if tfawserr.ErrCodeEquals(err, sqs.ErrCodeQueueDoesNotExist) || tfawserr.ErrCodeEquals(err, "AccessDeniedException") {
+				if mnq.IsAWSErrorCode(err, mnq.AWSErrNonExistentQueue) || mnq.IsAWSErrorCode(err, "AccessDeniedException") {
 					return nil
 				}
 

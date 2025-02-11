@@ -22,11 +22,11 @@ func DataSourceDomain() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"domain_id"}
 	dsSchema["domain_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the tem domain",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the tem domain",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 
 	return &schema.Resource{
@@ -74,6 +74,7 @@ func DataSourceDomainRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	regionalID := datasource.NewRegionalID(domainID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("domain_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)

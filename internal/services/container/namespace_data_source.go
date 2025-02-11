@@ -20,11 +20,11 @@ func DataSourceNamespace() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"namespace_id"}
 	dsSchema["namespace_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the Container namespace",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the Container namespace",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 
 	return &schema.Resource{
@@ -42,6 +42,7 @@ func DataSourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceDat
 	namespaceID, ok := d.GetOk("namespace_id")
 	if !ok {
 		namespaceName := d.Get("name").(string)
+
 		res, err := api.ListNamespaces(&container.ListNamespacesRequest{
 			Region:    region,
 			Name:      types.ExpandStringPtr(namespaceName),

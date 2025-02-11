@@ -5,10 +5,16 @@ page_title: "Scaleway: scaleway_object_bucket"
 
 # scaleway_object_bucket
 
-Gets information about the Bucket.
-For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).
+The `scaleway_object_bucket` data source is used to retrieve information about an Object Storage bucket.
 
-## Example Usage
+Refer to the Object Storage [documentation](https://www.scaleway.com/en/docs/object-storage/how-to/create-a-bucket/) for more information.
+
+## Retrieve an Object Storage bucket
+
+The following commands allow you to:
+
+- retrieve a bucket by its name
+- retrieve a bucket by its ID
 
 ```hcl
 resource "scaleway_object_bucket" "main" {
@@ -23,8 +29,7 @@ data "scaleway_object_bucket" "selected" {
 }
 ```
 
-
-### Fetching the bucket from a specific project
+## Retrieve a bucket from a specific project
 
 ```hcl
 data "scaleway_object_bucket" "selected" {
@@ -35,17 +40,21 @@ data "scaleway_object_bucket" "selected" {
 
 ## Argument Reference
 
-- `name` - (Required) The bucket name, or its terraform's ID (`{region}/{name}`)
-- `object_lock_enabled` - (Optional) Enable object lock on the bucket. Defaults to `false`. Updating this field will force creating a new bucket.
+This section lists the arguments that you can provide to the `scaleway_object_bucket` data source to filter and retrieve the desired Object Storage bucket. Each argument has a specific purpose:
+
+- `name` - (Required) The name of the bucket, or its terraform ID (`{region}/{name}`)
+- `object_lock_enabled` - (Optional) Enable object lock on the bucket. Defaults to `false`. Updating this field will force the creation of a new bucket.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project with which the bucket is associated.
 
 
 ## Attributes Reference
 
+The `scaleway_object_bucket` data source exports certain attributes once the bucket information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
+
 In addition to all above arguments, the following attribute is exported:
 
-* `id` - The unique name of the bucket.
+* `id` - The unique identifier of the bucket.
 
 ~> **Important:** Object buckets' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`
 

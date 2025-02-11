@@ -43,12 +43,12 @@ func ResourceSnapshot() *schema.Resource {
 				Description: "The name of the snapshot",
 			},
 			"volume_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "ID of the volume to take a snapshot from",
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"import"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "ID of the volume to take a snapshot from",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				ConflictsWith:    []string{"import"},
 			},
 			"type": {
 				Type:             schema.TypeString,
@@ -173,8 +173,10 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

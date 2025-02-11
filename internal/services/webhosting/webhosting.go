@@ -32,16 +32,16 @@ func ResourceWebhosting() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"offer_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The ID of the selected offer for the hosting",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The ID of the selected offer for the hosting",
 			},
 			"email": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.IsEmail(),
-				Description:  "Contact email of the client for the hosting",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.IsEmail(),
+				Description:      "Contact email of the client for the hosting",
 			},
 			"domain": {
 				Type:        schema.TypeString,
@@ -156,6 +156,7 @@ func ResourceWebhosting() *schema.Resource {
 					}
 				}
 			}
+
 			return nil
 		},
 	}
@@ -220,8 +221,10 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -273,6 +276,7 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		updateRequest.OfferID = types.ExpandUpdatedStringPtr(offerID)
 		hasChanged = true
 	}

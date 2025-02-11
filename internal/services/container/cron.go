@@ -40,10 +40,10 @@ func ResourceCron() *schema.Resource {
 				Description: "The Container ID to link with your trigger.",
 			},
 			"schedule": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: verify.ValidateCronExpression(),
-				Description:  "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: verify.ValidateCronExpression(),
+				Description:      "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
 			},
 			"args": {
 				Type:        schema.TypeString,
@@ -93,10 +93,12 @@ func ResourceContainerCronCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	tflog.Info(ctx, fmt.Sprintf("[INFO] Submitted new cron job: %#v", res.Schedule))
+
 	_, err = waitForCron(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	tflog.Info(ctx, "[INFO] cron job ready")
 
 	d.SetId(regional.NewIDString(region, res.ID))
@@ -114,8 +116,10 @@ func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -146,6 +150,7 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	shouldUpdate := false
+
 	if d.HasChange("schedule") {
 		req.Schedule = scw.StringPtr(d.Get("schedule").(string))
 		shouldUpdate = true
@@ -156,6 +161,7 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		shouldUpdate = true
 		req.Args = &jsonObj
 	}
@@ -172,11 +178,13 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 
 		tflog.Info(ctx, fmt.Sprintf("[INFO] Updated cron job: %#v", req.Schedule))
+
 		_, err = waitForCron(ctx, api, cron.ID, region, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
+
 	tflog.Info(ctx, "[INFO] cron job ready")
 
 	return ResourceContainerCronRead(ctx, d, m)
@@ -200,6 +208,8 @@ func ResourceContainerCronDelete(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	tflog.Info(ctx, "[INFO] cron job deleted")
+
 	return nil
 }

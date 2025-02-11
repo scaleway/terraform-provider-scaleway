@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceIP() *schema.Resource {
@@ -38,10 +39,12 @@ func ResourceIP() *schema.Resource {
 				Description: "The IP prefix",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The type of instance IP",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "The type of instance IP",
+				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.IPType](),
 			},
 			"reverse": {
 				Type:        schema.TypeString,
@@ -65,23 +68,6 @@ func ResourceIP() *schema.Resource {
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
 		},
-		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
-			// The only allowed change is
-			// nat -> routed_ipv4
-			if diff.HasChange("type") {
-				before, after := diff.GetChange("type")
-				oldType := instanceSDK.IPType(before.(string))
-				newType := instanceSDK.IPType(after.(string))
-
-				if oldType == "nat" && newType == "routed_ipv4" {
-					return nil
-				}
-
-				return diff.ForceNew("type")
-			}
-
-			return nil
-		},
 	}
 }
 
@@ -90,15 +76,18 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &instanceSDK.CreateIPRequest{
 		Zone:    zone,
 		Project: types.ExpandStringPtr(d.Get("project_id")),
 		Type:    instanceSDK.IPType(d.Get("type").(string)),
 	}
 	tags := types.ExpandStrings(d.Get("tags"))
+
 	if len(tags) > 0 {
 		req.Tags = tags
 	}
+
 	res, err := instanceAPI.CreateIP(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -112,6 +101,7 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 			Reverse: &instanceSDK.NullableStringValue{Value: *reverseStrPtr},
 			Zone:    zone,
 		}
+
 		_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -119,6 +109,7 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+
 	return ResourceInstanceIPRead(ctx, d, m)
 }
 
@@ -127,6 +118,7 @@ func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &instanceSDK.UpdateIPRequest{
 		IP:   ID,
 		Zone: zone,
@@ -134,10 +126,6 @@ func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-	}
-
-	if d.HasChange("type") {
-		req.Type = instanceSDK.IPType(d.Get("type").(string))
 	}
 
 	_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
@@ -162,18 +150,22 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m inter
 		// We check for 403 because instanceSDK API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	address := res.IP.Address.String()
+
 	prefix := res.IP.Prefix.String()
 	if prefix == types.NetIPNil {
 		ipnet := scw.IPNet{}
 		_ = (&ipnet).UnmarshalJSON([]byte("\"" + res.IP.Address.String() + "\""))
 		prefix = ipnet.String()
 	}
+
 	if address == types.NetIPNil {
 		address = res.IP.Prefix.IP.String()
 	}
@@ -213,8 +205,10 @@ func ResourceInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m int
 		// We check for 403 because instanceSDK API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

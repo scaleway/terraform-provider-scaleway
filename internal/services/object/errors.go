@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -22,6 +23,8 @@ const (
 	ErrCodeAccessDenied = "AccessDenied"
 	// ErrCodeBucketNotEmpty bucket is not empty
 	ErrCodeBucketNotEmpty = "BucketNotEmpty"
+	// ErrCodeNoSuchBucket bucket not found
+	ErrCodeNoSuchBucket = "NoSuchBucket"
 	// ErrCodeNoSuchBucketPolicy policy not found
 	ErrCodeNoSuchBucketPolicy = "NoSuchBucketPolicy"
 	// ErrCodeNoSuchWebsiteConfiguration website configuration not found
@@ -64,7 +67,8 @@ const (
 //   - TimeoutError.LastError is nil
 func TimedOut(err error) bool {
 	// This explicitly does *not* match wrapped TimeoutErrors
-	timeoutErr, ok := err.(*resource.TimeoutError) //nolint:errorlint // Explicitly does *not* match wrapped TimeoutErrors
+	timeoutErr, ok := err.(*retry.TimeoutError) //nolint:errorlint // Explicitly does *not* match wrapped TimeoutErrors
+
 	return ok && timeoutErr.LastError == nil
 }
 
@@ -80,6 +84,7 @@ func ErrCodeEquals(err error, codes ...string) bool {
 			}
 		}
 	}
+
 	return false
 }
 
@@ -89,6 +94,7 @@ var serviceErrorCheckFunc map[string]ServiceErrorCheckFunc
 
 func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
 	t.Helper()
+
 	return func(err error) error {
 		if err == nil {
 			return nil

@@ -36,10 +36,10 @@ func ResourceTrigger() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"container_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The ID of the container to create a trigger for",
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The ID of the container to create a trigger for",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -194,8 +194,10 @@ func ResourceContainerTriggerRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -209,6 +211,7 @@ func ResourceContainerTriggerRead(ctx context.Context, d *schema.ResourceData, m
 		if trigger.ErrorMessage != nil {
 			errMsg = *trigger.ErrorMessage
 		}
+
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Trigger in error state",
@@ -229,8 +232,10 @@ func ResourceContainerTriggerUpdate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

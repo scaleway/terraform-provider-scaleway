@@ -20,11 +20,11 @@ func DataSourceDevice() *schema.Resource {
 	dsSchema["name"].ConflictsWith = []string{"device_id"}
 	dsSchema["hub_id"].Optional = true
 	dsSchema["device_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IOT Device",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IOT Device",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -48,7 +48,9 @@ func DataSourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m inte
 				return diag.FromErr(err)
 			}
 		}
+
 		deviceName := d.Get("name").(string)
+
 		res, err := api.ListDevices(&iot.ListDevicesRequest{
 			Region: region,
 			Name:   types.ExpandStringPtr(deviceName),
@@ -72,16 +74,20 @@ func DataSourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	regionalID := datasource.NewRegionalID(deviceID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("device_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	diags := ResourceIotDeviceRead(ctx, d, m)
 	if diags != nil {
 		return diags
 	}
+
 	if d.Id() == "" {
 		return diag.Errorf("IOT Device not found (%s)", regionalID)
 	}
+
 	return nil
 }

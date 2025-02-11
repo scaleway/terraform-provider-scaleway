@@ -155,7 +155,7 @@ func ResourceCluster() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "The ID of the cluster's private network",
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"region":          regional.Schema(),
@@ -274,6 +274,7 @@ func ResourceCluster() *schema.Resource {
 						}
 					}
 				}
+
 				return nil
 			},
 			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
@@ -301,6 +302,7 @@ func ResourceCluster() *schema.Resource {
 						return err
 					}
 				}
+
 				return nil
 			},
 		),
@@ -436,8 +438,8 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	// Auto-upgrade configuration
 
-	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")
-	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour")
+	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")                              //nolint:staticcheck
+	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour") //nolint:staticcheck
 	autoUpgradeDay, okAutoUpgradeDay := d.GetOk("auto_upgrade.0.maintenance_window_day")
 
 	if okAutoUpgradeEnable {
@@ -470,6 +472,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m int
 	if okAutoUpgradeEnable && autoUpgradeEnable.(bool) && !versionIsOnlyMinor {
 		return append(diag.FromErr(errors.New("only minor version x.y can be used with auto upgrade enabled")), diags...)
 	}
+
 	if versionIsOnlyMinor && !autoUpgradeEnable.(bool) {
 		return append(diag.FromErr(errors.New("minor version x.y must only be used with auto upgrade enabled")), diags...)
 	}
@@ -497,6 +500,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	d.SetId(regional.NewIDString(region, res.ID))
+
 	if strings.Contains(clusterType.(string), "multicloud") {
 		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
 		_, err = waitCluster(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -504,6 +508,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m int
 		// If we are not in multi-cloud, we can wait for the pool to be created.
 		_, err = waitClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 	}
+
 	if err != nil {
 		return append(diag.FromErr(err), diags...)
 	}
@@ -524,8 +529,10 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -555,6 +562,7 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 			return diag.FromErr(err)
 		}
 	}
+
 	_ = d.Set("version", version)
 
 	// autoscaler_config
@@ -568,6 +576,7 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 	pnID := types.FlattenStringPtr(cluster.PrivateNetworkID)
 	clusterType := d.Get("type").(string)
 	_ = d.Set("private_network_id", pnID)
+
 	if pnID == "" && !strings.HasPrefix(clusterType, "multicloud") {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
@@ -592,6 +601,7 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 	} else {
 		diags = append(diags, diag.FromErr(err)...)
 	}
+
 	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconfig})
 
 	return diags
@@ -609,6 +619,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_, err = k8sAPI.SetClusterType(&k8s.SetClusterTypeRequest{
 			Region:    region,
 			ClusterID: clusterID,
@@ -650,7 +661,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = types.ExpandStringPtr(d.Get("description"))
+		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChange("tags") {
@@ -694,6 +705,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if autoupgradeEnabled && !versionIsOnlyMinor {
 		return append(diag.FromErr(errors.New("only minor version x.y can be used with auto upgrade enabled")), diags...)
 	}
+
 	if versionIsOnlyMinor && !autoupgradeEnabled {
 		return append(diag.FromErr(errors.New("minor version x.y must only be used with auto upgrade enabled")), diags...)
 	}
@@ -708,7 +720,6 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if d.HasChange("version") {
 		// maybe it's a change from minor to patch or patch to minor
 		// we need to check the current version
-
 		clusterResp, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
 			ClusterID: clusterID,
 			Region:    region,
@@ -842,6 +853,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m int
 			Version:      version,
 			UpgradePools: true,
 		}
+
 		_, err = k8sAPI.UpgradeCluster(upgradeRequest)
 		if err != nil {
 			return append(diag.FromErr(err), diags...)
@@ -885,6 +897,7 @@ func ResourceK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m int
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

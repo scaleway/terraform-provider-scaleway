@@ -66,6 +66,7 @@ func TestAccPool_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.2", "minimal"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.minimal", "nodes.0.public_ip"), // Deprecated attributes
 					testAccCheckK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.default", "scaleway_vpc_private_network.minimal"),
 					testAccCheckK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.minimal", "scaleway_vpc_private_network.minimal"),
 				),
@@ -530,6 +531,7 @@ func testAccCheckK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", clusterTFName)
 		}
+
 		k8sAPI, region, clusterID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -539,6 +541,7 @@ func testAccCheckK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", poolTFName)
 		}
+
 		_, _, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -548,6 +551,7 @@ func testAccCheckK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", pnTFName)
 		}
+
 		_, _, pnID, err := vpc.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -580,11 +584,13 @@ func testAccCheckK8SPoolServersAreInPrivateNetwork(tt *acctest.TestTools, cluste
 			}
 
 			pnfound := false
+
 			for _, privateNic := range server.Server.PrivateNics {
 				if privateNic.PrivateNetworkID == pnID {
 					pnfound = true
 				}
 			}
+
 			if pnfound == false {
 				return fmt.Errorf("node %s is not in linked to private network %s", node.ID, pnID)
 			}
@@ -600,6 +606,7 @@ func testAccCheckK8SPoolPublicIP(tt *acctest.TestTools, clusterTFName, poolTFNam
 		if !ok {
 			return fmt.Errorf("resource not found: %s", clusterTFName)
 		}
+
 		k8sAPI, region, clusterID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -609,6 +616,7 @@ func testAccCheckK8SPoolPublicIP(tt *acctest.TestTools, clusterTFName, poolTFNam
 		if !ok {
 			return fmt.Errorf("resource not found: %s", poolTFName)
 		}
+
 		_, _, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
@@ -643,7 +651,8 @@ func testAccCheckK8SPoolPublicIP(tt *acctest.TestTools, clusterTFName, poolTFNam
 			if disabled == true && server.Server.PublicIPs != nil && len(server.Server.PublicIPs) > 0 {
 				return errors.New("found node with public IP when none was expected")
 			}
-			if disabled == false && (server.Server.PublicIPs == nil || len(server.Server.PublicIPs) == 0) {
+
+			if disabled == false && len(server.Server.PublicIPs) == 0 {
 				return errors.New("found node with no public IP when one was expected")
 			}
 		}
@@ -664,7 +673,7 @@ func testAccCheckK8SPoolDestroy(tt *acctest.TestTools, n string) resource.TestCh
 			return err
 		}
 
-		_, err = k8sAPI.GetPool(&k8sSDK.GetPoolRequest{
+		_, err = k8sAPI.WaitForPool(&k8sSDK.WaitForPoolRequest{
 			Region: region,
 			PoolID: poolID,
 		})
@@ -975,18 +984,22 @@ func testAccCheckK8SPoolNodesOneOfIsDeleting(name string) resource.TestCheckFunc
 		if !ok {
 			return fmt.Errorf("resource not found: %s", name)
 		}
+
 		nodesZeroStatus, ok := rs.Primary.Attributes["nodes.0.status"]
 		if !ok {
 			return errors.New("attribute \"nodes.0.status\" was not set")
 		}
+
 		nodesOneStatus, ok := rs.Primary.Attributes["nodes.1.status"]
 		if !ok {
 			return errors.New("attribute \"nodes.1.status\" was not set")
 		}
+
 		if nodesZeroStatus == "ready" && nodesOneStatus == "deleting" ||
 			nodesZeroStatus == "deleting" && nodesOneStatus == "ready" {
 			return nil
 		}
+
 		return fmt.Errorf("nodes status were not as expected: got %q for nodes.0 and %q for nodes.1", nodesZeroStatus, nodesOneStatus)
 	}
 }

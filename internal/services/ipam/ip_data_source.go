@@ -24,11 +24,11 @@ func DataSourceIP() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Input
 			"ipam_ip_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The ID of the IPAM IP",
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"private_network_id", "resource", "mac_address", "type", "tags", "attached"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The ID of the IPAM IP",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				ConflictsWith:    []string{"private_network_id", "resource", "mac_address", "type", "tags", "attached"},
 			},
 			"private_network_id": {
 				Type:          schema.TypeString,
@@ -129,6 +129,7 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	var address, addressCidr string
+
 	var ip scw.IPNet
 
 	IPID, ok := d.GetOk("ipam_ip_id")
@@ -191,10 +192,12 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interfa
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}
+
 			if len(resp.IPs) == 0 {
 				// Retry if no IPs are found
 				return retry.RetryableError(errors.New("no ip found with given filters"))
 			}
+
 			if len(resp.IPs) > 1 {
 				return retry.NonRetryableError(errors.New("more than one ip found with given filter"))
 			}
@@ -220,6 +223,7 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	address = ip.IP.String()
+
 	addressCidr, err = types.FlattenIPNet(ip)
 	if err != nil {
 		return diag.FromErr(err)

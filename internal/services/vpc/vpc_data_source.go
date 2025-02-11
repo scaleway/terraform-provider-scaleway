@@ -21,18 +21,18 @@ func DataSourceVPC() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"vpc_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the VPC",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the VPC",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
 	}
 	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The project ID the resource is associated to",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The project ID the resource is associated to",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -48,6 +48,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	var vpcID interface{}
+
 	var ok bool
 
 	if d.Get("is_default").(bool) {
@@ -94,6 +95,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{
 
 	regionalID := datasource.NewRegionalID(vpcID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("vpc_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)

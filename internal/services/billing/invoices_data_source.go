@@ -140,6 +140,7 @@ func DataSourceBillingInvoicesRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	invoices := []interface{}(nil)
+
 	for _, invoice := range res.Invoices {
 		rawInvoice := make(map[string]interface{})
 		rawInvoice["id"] = invoice.ID

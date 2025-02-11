@@ -100,8 +100,13 @@ you cannot downgrade a Redis™ cluster.
 
 - `cluster_size` - (Optional) The number of nodes in the Redis™ cluster.
 
-~> **Important:** You cannot set `cluster_size` to 2, you either have to choose Standalone mode (1 node) or cluster mode
-which is minimum 3 (1 main node + 2 secondary nodes)
+~> **Important:**
+
+- Cluster_size = 1 for Standalone mode (single node).
+
+- Cluster_size = 2 for High Availability (HA) mode, with 1 main node and 1 standby node.
+
+- Cluster_size >= 3 for Cluster mode, which requires a minimum of 1 main node and 2 secondary nodes.
 
 ~> **Important:** If you are using the cluster mode (>=3 nodes), you can set a bigger `cluster_size` than you initially
 did, it will migrate the Redis™ cluster but keep in mind that you cannot downgrade a Redis™ cluster, so setting a smaller
@@ -144,7 +149,8 @@ The `private_network` block supports :
   Keep in mind that in cluster mode you cannot edit your Private Network after its creation so if you want to be able to
   scale your cluster horizontally (adding nodes) later, you should provide more IPs than nodes.
   If not set, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
-
+  ~> **Important:** When IPAM is enabled, the IPs specified here will be ignored and should not be provided.
+  
 ~> The `private_network` conflicts with `acl`. Only one should be specified.
 
 ~> **Important:** The way to use Private Networks differs whether you are using Redis™ in Standalone or cluster mode.

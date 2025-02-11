@@ -22,18 +22,18 @@ func DataSourcePrivateNetwork() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"private_network_id"}
 	dsSchema["vpc_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the vpc to which the private network belongs to",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"private_network_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the vpc to which the private network belongs to",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"private_network_id"},
 	}
 	dsSchema["private_network_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the private network",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"name", "vpc_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the private network",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"name", "vpc_id"},
 	}
 
 	return &schema.Resource{
@@ -51,6 +51,7 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	privateNetworkID, ok := d.GetOk("private_network_id")
 	if !ok {
 		pnName := d.Get("name").(string)
+
 		res, err := vpcAPI.ListPrivateNetworks(
 			&vpc.ListPrivateNetworksRequest{
 				Name:      types.ExpandStringPtr(pnName),
@@ -77,6 +78,7 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	regionalID := datasource.NewRegionalID(privateNetworkID, region)
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
+
 	diags := ResourceVPCPrivateNetworkRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read private network state")...)

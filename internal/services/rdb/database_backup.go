@@ -35,11 +35,11 @@ func ResourceDatabaseBackup() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "Instance on which the user is created",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "Instance on which the user is created",
 			},
 			"database_name": {
 				Type:        schema.TypeString,
@@ -127,8 +127,10 @@ func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

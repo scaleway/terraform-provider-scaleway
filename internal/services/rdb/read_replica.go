@@ -97,7 +97,7 @@ func ResourceReadReplica() *schema.Resource {
 						"private_network_id": {
 							Type:             schema.TypeString,
 							Description:      "UUID of the private network to be connected to the read replica (UUID format)",
-							ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							DiffSuppressFunc: dsf.Locality,
 							Required:         true,
 						},
@@ -171,9 +171,11 @@ func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m
 		if diags.HasError() {
 			return diags
 		}
+
 		for _, warning := range diags {
 			tflog.Warn(ctx, warning.Detail)
 		}
+
 		endpointSpecs = append(endpointSpecs, pn)
 	}
 
@@ -207,8 +209,10 @@ func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -236,8 +240,10 @@ func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -288,13 +294,16 @@ func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m
 		// create a new one if defined
 		if pn, pnExists := d.GetOk("private_network"); pnExists {
 			ipamConfig, staticConfig := getIPConfigUpdate(d, "service_ip")
+
 			pnEndpoint, diags := expandReadReplicaEndpointsSpecPrivateNetwork(pn, ipamConfig, staticConfig)
 			if diags.HasError() {
 				return diags
 			}
+
 			for _, warning := range diags {
 				tflog.Warn(ctx, warning.Detail)
 			}
+
 			newEndpoints = append(newEndpoints, pnEndpoint)
 		}
 	}
@@ -304,6 +313,7 @@ func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_, err = rdbAPI.CreateReadReplicaEndpoint(&rdb.CreateReadReplicaEndpointRequest{
 			Region:        region,
 			ReadReplicaID: ID,

@@ -159,6 +159,7 @@ func testAccCheckVPCPublicGatewayDHCPReservationExists(tt *acctest.TestTools, n 
 		}
 
 		logging.L.Debugf("reservation: ID: (%s) exist", entry.ID)
+
 		return nil
 	}
 }

@@ -60,19 +60,19 @@ func ResourceAPIKey() *schema.Resource {
 				Sensitive:   true,
 			},
 			"application_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "ID of the application attached to the api key",
-				ConflictsWith: []string{"user_id"},
-				ValidateFunc:  verify.IsUUID(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "ID of the application attached to the api key",
+				ConflictsWith:    []string{"user_id"},
+				ValidateDiagFunc: verify.IsUUID(),
 			},
 			"user_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "ID of the user attached to the api key",
-				ConflictsWith: []string{"application_id"},
-				ValidateFunc:  verify.IsUUID(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "ID of the user attached to the api key",
+				ConflictsWith:    []string{"application_id"},
+				ValidateDiagFunc: verify.IsUUID(),
 			},
 			"editable": {
 				Type:        schema.TypeBool,
@@ -91,6 +91,7 @@ func ResourceAPIKey() *schema.Resource {
 
 func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	res, err := api.CreateAPIKey(&iam.CreateAPIKeyRequest{
 		ApplicationID:    types.ExpandStringPtr(d.Get("application_id")),
 		UserID:           types.ExpandStringPtr(d.Get("user_id")),
@@ -111,16 +112,20 @@ func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m inte
 
 func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	res, err := api.GetAPIKey(&iam.GetAPIKeyRequest{
 		AccessKey: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("description", res.Description)
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
@@ -130,6 +135,7 @@ func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interf
 	if res.ApplicationID != nil {
 		_ = d.Set("application_id", res.ApplicationID)
 	}
+
 	if res.UserID != nil {
 		_ = d.Set("user_id", res.UserID)
 	}

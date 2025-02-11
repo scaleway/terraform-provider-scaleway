@@ -1,13 +1,14 @@
 package object_test
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"regexp"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -18,18 +19,18 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
-// Service information constants
+// // Service information constants
 const (
-	ServiceName = "scw"       // Name of service.
-	EndpointsID = ServiceName // ID to look up a service endpoint with.
+	ServiceName     = "scw"       // Name of service.
+	EndpointsID     = ServiceName // ID to look up a service endpoint with.
+	encryptionStr   = "1234567890abcdef1234567890abcdef"
+	contentToEncypt = "Hello World"
 )
 
 func TestAccObject_Basic(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -48,10 +49,11 @@ func TestAccObject_Basic(t *testing.T) {
 							foo = "bar"
 						}
 					}
-			
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -68,10 +70,11 @@ func TestAccObject_Basic(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile/foo"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -88,10 +91,11 @@ func TestAccObject_Basic(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile/foo/bar"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -104,11 +108,9 @@ func TestAccObject_Basic(t *testing.T) {
 }
 
 func TestAccObject_Hash(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-hash")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -127,10 +129,11 @@ func TestAccObject_Hash(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 						hash = "1"
 					}
 				`, bucketName, objectTestsMainRegion),
@@ -148,10 +151,11 @@ func TestAccObject_Hash(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 						hash = "2"
 					}
 				`, bucketName, objectTestsMainRegion),
@@ -165,11 +169,9 @@ func TestAccObject_Hash(t *testing.T) {
 }
 
 func TestAccObject_Move(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-move")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -188,10 +190,11 @@ func TestAccObject_Move(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -207,10 +210,11 @@ func TestAccObject_Move(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile2"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -222,11 +226,9 @@ func TestAccObject_Move(t *testing.T) {
 }
 
 func TestAccObject_StorageClass(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-storage-class")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -245,10 +247,11 @@ func TestAccObject_StorageClass(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						storage_class = "ONEZONE_IA"
 					}
@@ -268,10 +271,11 @@ func TestAccObject_StorageClass(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						storage_class = "STANDARD"
 					}
@@ -287,11 +291,9 @@ func TestAccObject_StorageClass(t *testing.T) {
 }
 
 func TestAccObject_Metadata(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-metadata")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -310,10 +312,11 @@ func TestAccObject_Metadata(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						metadata = {
 							key = "value"
@@ -335,10 +338,11 @@ func TestAccObject_Metadata(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						metadata = {
 							key = "other_value"
@@ -358,11 +362,9 @@ func TestAccObject_Metadata(t *testing.T) {
 }
 
 func TestAccObject_Tags(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-tags")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -378,10 +380,11 @@ func TestAccObject_Tags(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						tags = {
 							key = "value"
@@ -400,10 +403,11 @@ func TestAccObject_Tags(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						tags = {
 							key = "other_value"
@@ -423,11 +427,9 @@ func TestAccObject_Tags(t *testing.T) {
 }
 
 func TestAccObject_Visibility(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -443,10 +445,11 @@ func TestAccObject_Visibility(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						visibility = "public-read"
 					}
@@ -463,10 +466,11 @@ func TestAccObject_Visibility(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						visibility = "private"
 					}
@@ -482,11 +486,9 @@ func TestAccObject_Visibility(t *testing.T) {
 }
 
 func TestAccObject_State(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -502,10 +504,11 @@ func TestAccObject_State(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						visibility = "public-read"
 					}
@@ -521,10 +524,11 @@ func TestAccObject_State(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 
 						visibility = "public-read"
 					}
@@ -554,6 +558,7 @@ func TestAccObject_State(t *testing.T) {
 func TestAccObject_ByContent(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content")
 
 	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
@@ -573,7 +578,7 @@ func TestAccObject_ByContent(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content"
@@ -592,7 +597,7 @@ func TestAccObject_ByContent(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content"
@@ -612,6 +617,7 @@ func TestAccObject_ByContent(t *testing.T) {
 func TestAccObject_ByContentBase64(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content-base64")
 
 	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
@@ -633,7 +639,7 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content-base64" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content-base64"
@@ -652,7 +658,7 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content-base64" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content-base64"
@@ -671,7 +677,7 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-					
+
 					resource scaleway_object "by-content-base64" {
 						bucket = scaleway_object_bucket.base-01.id
 						key = "test-by-content-base64"
@@ -685,11 +691,9 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 }
 
 func TestAccObject_WithBucketName(t *testing.T) {
-	if !*acctest.UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -708,10 +712,11 @@ func TestAccObject_WithBucketName(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.name
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				ExpectError: regexp.MustCompile("NoSuchBucket: The specified bucket does not exist"),
@@ -725,11 +730,12 @@ func TestAccObject_WithBucketName(t *testing.T) {
 							foo = "bar"
 						}
 					}
-					
+
 					resource scaleway_object "file" {
 						bucket = scaleway_object_bucket.base-01.name
 						region = "%[2]s"
 						key = "myfile"
+						file   = "testfixture/empty.qcow2"
 					}
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -741,19 +747,83 @@ func TestAccObject_WithBucketName(t *testing.T) {
 	})
 }
 
+func TestAccObject_Encryption(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-encryption")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "myfile/foo"
+						content = "Hello World"
+						sse_customer_key = "%s"
+					}
+				`, bucketName, objectTestsMainRegion, encryptionStr),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", "Hello World"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "myfile/foo/bar"
+						content = "Hello World"
+						sse_customer_key = "%s"
+					}
+				`, bucketName, objectTestsMainRegion, encryptionStr),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", "Hello World"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
+		ctx := context.Background()
+
 		rs := state.RootModule().Resources[n]
 		if rs == nil {
 			return errors.New("resource not found")
 		}
+
 		key := rs.Primary.Attributes["key"]
 
 		regionalID := regional.ExpandID(rs.Primary.Attributes["bucket"])
 		bucketRegion := regionalID.Region.String()
 		bucketName := regionalID.ID
 
-		s3Client, err := object.NewS3ClientFromMeta(tt.Meta, bucketRegion)
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
@@ -767,16 +837,18 @@ func testAccCheckObjectExists(tt *acctest.TestTools, n string) resource.TestChec
 			return errors.New("no ID is set")
 		}
 
-		_, err = s3Client.GetObject(&s3.GetObjectInput{
+		_, err = s3Client.GetObject(ctx, &s3.GetObjectInput{
 			Bucket: scw.StringPtr(bucketName),
 			Key:    scw.StringPtr(key),
 		})
 		if err != nil {
-			if object.IsS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {
 				return errors.New("s3 object not found")
 			}
+
 			return err
 		}
+
 		return nil
 	}
 }

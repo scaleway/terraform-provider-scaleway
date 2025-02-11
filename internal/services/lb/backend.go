@@ -117,7 +117,7 @@ func ResourceBackend() *schema.Resource {
 				Optional:         true,
 				Default:          "5m",
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Maximum server connection inactivity time",
 			},
 			"timeout_connect": {
@@ -125,7 +125,7 @@ func ResourceBackend() *schema.Resource {
 				Optional:         true,
 				Default:          "5s",
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Maximum initial server connection establishment time",
 			},
 			"timeout_tunnel": {
@@ -133,7 +133,7 @@ func ResourceBackend() *schema.Resource {
 				Optional:         true,
 				Default:          "15m",
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Maximum tunnel inactivity time",
 			},
 
@@ -142,7 +142,7 @@ func ResourceBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Default:          "30s",
 				Description:      "Timeout before we consider a HC request failed",
 			},
@@ -150,7 +150,7 @@ func ResourceBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Default:          "60s",
 				Description:      "Interval between two HC requests",
 			},
@@ -249,7 +249,7 @@ func ResourceBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "0.5s",
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				DiffSuppressFunc: dsf.Duration,
 				Description:      "Time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN)",
 			},
@@ -299,7 +299,7 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "0s",
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				DiffSuppressFunc: dsf.Duration,
 				Description:      "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
 			},
@@ -340,8 +340,10 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -349,22 +351,27 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	healthCheckDelay, err := types.ExpandDuration(d.Get("health_check_delay"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutServer, err := types.ExpandDuration(d.Get("timeout_server"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutConnect, err := types.ExpandDuration(d.Get("timeout_connect"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutTunnel, err := types.ExpandDuration(d.Get("timeout_tunnel"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	createReq := &lbSDK.ZonedAPICreateBackendRequest{
 		Zone:                     zone,
 		LBID:                     lbID,
@@ -398,29 +405,35 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if maxConn, ok := d.GetOk("max_connections"); ok {
 		createReq.MaxConnections = types.ExpandInt32Ptr(maxConn)
 	}
+
 	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
 		timeout, err := time.ParseDuration(timeoutQueue.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		createReq.TimeoutQueue = &scw.Duration{Seconds: int64(timeout.Seconds())}
 	}
+
 	if redispatchAttemptCount, ok := d.GetOk("redispatch_attempt_count"); ok {
 		createReq.RedispatchAttemptCount = types.ExpandInt32Ptr(redispatchAttemptCount)
 	}
+
 	if maxRetries, ok := d.GetOk("max_retries"); ok {
 		createReq.MaxRetries = types.ExpandInt32Ptr(maxRetries)
 	}
+
 	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
 		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		createReq.HealthCheck.TransientCheckDelay = &scw.Duration{Seconds: int64(timeout.Seconds()), Nanos: int32(timeout.Nanoseconds())}
 	}
 
 	// deprecated attribute
-	createReq.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2"))
+	createReq.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2")) //nolint:staticcheck
 
 	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {
@@ -431,8 +444,10 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -454,8 +469,10 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -472,7 +489,7 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("timeout_connect", types.FlattenDuration(backend.TimeoutConnect))
 	_ = d.Set("timeout_tunnel", types.FlattenDuration(backend.TimeoutTunnel))
 	_ = d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(backend.OnMarkedDownAction))
-	_ = d.Set("send_proxy_v2", types.FlattenBoolPtr(backend.SendProxyV2))
+	_ = d.Set("send_proxy_v2", types.FlattenBoolPtr(backend.SendProxyV2)) //nolint:staticcheck
 	_ = d.Set("failover_host", backend.FailoverHost)
 	_ = d.Set("ssl_bridging", types.FlattenBoolPtr(backend.SslBridging))
 	_ = d.Set("ignore_ssl_server_verify", types.FlattenBoolPtr(backend.IgnoreSslServerVerify))
@@ -496,8 +513,10 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -520,8 +539,10 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -529,10 +550,12 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutConnect, err := types.ExpandDuration(d.Get("timeout_connect"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	timeoutTunnel, err := types.ExpandDuration(d.Get("timeout_tunnel"))
 	if err != nil {
 		return diag.FromErr(err)
@@ -565,11 +588,12 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.TimeoutQueue = &scw.Duration{Seconds: int64(timeoutQueueParsed.Seconds())}
 	}
 
 	// deprecated
-	req.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2"))
+	req.SendProxyV2 = types.ExpandBoolPtr(types.GetBool(d, "send_proxy_v2")) //nolint:staticcheck
 
 	_, err = lbAPI.UpdateBackend(req, scw.WithContext(ctx))
 	if err != nil {
@@ -580,6 +604,7 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	healthCheckDelay, err := types.ExpandDuration(d.Get("health_check_delay"))
 	if err != nil {
 		return diag.FromErr(err)
@@ -596,11 +621,13 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 		CheckSendProxy:  d.Get("health_check_send_proxy").(bool),
 	}
+
 	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
 		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		updateHCRequest.TransientCheckDelay = &scw.Duration{Seconds: int64(timeout.Seconds()), Nanos: int32(timeout.Nanoseconds())}
 	}
 
@@ -633,8 +660,10 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -656,8 +685,10 @@ func resourceLbBackendDelete(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -674,8 +705,10 @@ func resourceLbBackendDelete(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

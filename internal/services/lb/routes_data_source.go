@@ -84,6 +84,7 @@ func DataSourceLbRoutesRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	routes := []interface{}(nil)
+
 	for _, route := range res.Routes {
 		rawRoute := make(map[string]interface{})
 		rawRoute["id"] = zonal.NewID(zone, route.ID).String()

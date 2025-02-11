@@ -23,15 +23,17 @@ func flattenDomainData(data string, recordType domain.RecordType) interface{} {
 }
 
 func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) interface{} {
-	flattened := []map[string]interface{}{}
+	flattenedResult := []map[string]interface{}{}
 
 	if config == nil {
-		return flattened
+		return flattenedResult
 	}
 
-	flattened = []map[string]interface{}{{}}
-	if config.Matches != nil && len(config.Matches) > 0 {
+	flattenedResult = []map[string]interface{}{{}}
+
+	if len(config.Matches) > 0 {
 		matches := []map[string]interface{}{}
+
 		for _, match := range config.Matches {
 			rawMatch := map[string]interface{}{
 				"data": match.Data,
@@ -39,16 +41,18 @@ func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) interface{} {
 			if len(match.Continents) > 0 {
 				rawMatch["continents"] = match.Continents
 			}
+
 			if len(match.Countries) > 0 {
 				rawMatch["countries"] = match.Countries
 			}
 
 			matches = append(matches, rawMatch)
 		}
-		flattened[0]["matches"] = matches
+
+		flattenedResult[0]["matches"] = matches
 	}
 
-	return flattened
+	return flattenedResult
 }
 
 func expandDomainGeoIPConfig(defaultData string, i interface{}, ok bool) *domain.RecordGeoIPConfig {
@@ -68,6 +72,7 @@ func expandDomainGeoIPConfig(defaultData string, i interface{}, ok bool) *domain
 	}
 
 	matches := []*domain.RecordGeoIPConfigMatch{}
+
 	for _, rawMatch := range rawMatches {
 		rawMatchMap := rawMatch.(map[string]interface{})
 
@@ -82,6 +87,7 @@ func expandDomainGeoIPConfig(defaultData string, i interface{}, ok bool) *domain
 				match.Continents = append(match.Continents, rawContinent.(string))
 			}
 		}
+
 		rawCountries, ok := rawMatchMap["countries"].([]interface{})
 		if ok {
 			match.Countries = []string{}
@@ -92,6 +98,7 @@ func expandDomainGeoIPConfig(defaultData string, i interface{}, ok bool) *domain
 
 		matches = append(matches, match)
 	}
+
 	config.Matches = matches
 
 	return &config
@@ -105,11 +112,13 @@ func flattenDomainHTTPService(config *domain.RecordHTTPServiceConfig) interface{
 	}
 
 	ips := []interface{}{}
-	if config.IPs != nil && len(config.IPs) > 0 {
+
+	if len(config.IPs) > 0 {
 		for _, ip := range config.IPs {
 			ips = append(ips, ip.String())
 		}
 	}
+
 	return []map[string]interface{}{
 		{
 			"must_contain": types.FlattenStringPtr(config.MustContain),
@@ -129,6 +138,7 @@ func expandDomainHTTPService(i interface{}, ok bool) *domain.RecordHTTPServiceCo
 	rawMap := i.([]interface{})[0].(map[string]interface{})
 
 	ips := []net.IP{}
+
 	rawIPs, ok := rawMap["ips"].([]interface{})
 	if ok {
 		for _, rawIP := range rawIPs {
@@ -152,7 +162,7 @@ func flattenDomainWeighted(config *domain.RecordWeightedConfig) interface{} {
 		return flattened
 	}
 
-	if config.WeightedIPs != nil && len(config.WeightedIPs) > 0 {
+	if len(config.WeightedIPs) > 0 {
 		for _, weightedIPs := range config.WeightedIPs {
 			flattened = append(flattened, map[string]interface{}{
 				"ip":     weightedIPs.IP.String(),
@@ -170,6 +180,7 @@ func expandDomainWeighted(i interface{}, ok bool) *domain.RecordWeightedConfig {
 	}
 
 	weightedIPs := []*domain.RecordWeightedConfigWeightedIP{}
+
 	if raw := i.([]interface{}); len(raw) > 0 {
 		for _, rawWeighted := range raw {
 			rawMap := rawWeighted.(map[string]interface{})
@@ -179,6 +190,7 @@ func expandDomainWeighted(i interface{}, ok bool) *domain.RecordWeightedConfig {
 			})
 		}
 	}
+
 	return &domain.RecordWeightedConfig{
 		WeightedIPs: weightedIPs,
 	}
@@ -191,7 +203,7 @@ func flattenDomainView(config *domain.RecordViewConfig) interface{} {
 		return flattened
 	}
 
-	if config.Views != nil && len(config.Views) > 0 {
+	if len(config.Views) > 0 {
 		for _, view := range config.Views {
 			flattened = append(flattened, map[string]interface{}{
 				"subnet": view.Subnet,
@@ -209,6 +221,7 @@ func expandDomainView(i interface{}, ok bool) *domain.RecordViewConfig {
 	}
 
 	views := []*domain.RecordViewConfigView{}
+
 	if raw := i.([]interface{}); len(raw) > 0 {
 		for _, rawWeighted := range raw {
 			rawMap := rawWeighted.(map[string]interface{})

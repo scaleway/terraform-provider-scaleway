@@ -15,6 +15,7 @@ import (
 func TestAccVPCPublicGateway_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	publicGatewayName := "public-gateway-test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -94,6 +95,7 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 func TestAccVPCPublicGateway_Bastion(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	publicGatewayName := "public-gateway-bastion-test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -168,6 +170,44 @@ func TestAccVPCPublicGateway_AttachToIP(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_vpc_public_gateway.main", "ip_id",
 						"scaleway_vpc_public_gateway_ip.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccVPCPublicGateway_Upgrade(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	publicGatewayName := "public-gateway-upgrade-test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      vpcgwchecks.IsGatewayDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway main {
+						name = "%s"
+						type = "VPC-GW-S"
+					}
+				`, publicGatewayName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-S"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway main {
+						name = "%s"
+						type = "VPC-GW-M"
+					}
+				`, publicGatewayName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-M"),
 				),
 			},
 		},

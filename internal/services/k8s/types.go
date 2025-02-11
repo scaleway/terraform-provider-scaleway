@@ -26,6 +26,7 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]interface
 		// should never happen
 		return nil
 	}
+
 	autoscalerConfig["scale_down_utilization_threshold"] = thresholdF64
 	autoscalerConfig["max_graceful_termination_sec"] = cluster.AutoscalerConfig.MaxGracefulTerminationSec
 

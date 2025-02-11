@@ -6,19 +6,19 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 111
+        content_length: 130
         transfer_encoding: []
         trailer: {}
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","domain_name":"terraform-ds.test.local","accept_tos":true}'
+        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","domain_name":"terraform-ds.test.local","accept_tos":true,"autoconfig":false}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains
         method: POST
       response:
@@ -27,20 +27,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1132
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307361Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.020370798Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1132"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:51 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -48,10 +48,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 5341a802-5788-4bbb-bcde-95879416e3c5
+                - 939e2582-514d-47ea-9ae6-51891ea27221
         status: 200 OK
         code: 200
-        duration: 299.982913ms
+        duration: 529.135935ms
     - id: 1
       request:
         proto: HTTP/1.1
@@ -67,8 +67,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -76,20 +76,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.043968598Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:51 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -97,10 +97,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 1fdc9477-3039-4a24-8c59-bc8f1db2bf04
+                - 9d0763fe-fdf8-4d4d-9560-ff92b76939bf
         status: 200 OK
         code: 200
-        duration: 30.755013ms
+        duration: 56.346579ms
     - id: 2
       request:
         proto: HTTP/1.1
@@ -116,8 +116,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains?name=terraform-ds.test.local
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -125,20 +125,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 971
+        content_length: 1173
         uncompressed: false
-        body: '{"domains":[{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}],"total_count":1}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.121253892Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "971"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:51 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -146,10 +146,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 203816e6-e198-4443-b181-b95aaf6420b3
+                - 30af1551-d398-4ac0-a922-723d5d98ffa9
         status: 200 OK
         code: 200
-        duration: 59.836902ms
+        duration: 21.710575ms
     - id: 3
       request:
         proto: HTTP/1.1
@@ -165,8 +165,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains?name=terraform-ds.test.local
         method: GET
       response:
         proto: HTTP/2.0
@@ -174,20 +174,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1204
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"domains":[{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.243328063Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}],"total_count":1}'
         headers:
             Content-Length:
-                - "1129"
+                - "1204"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:51 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -195,10 +195,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - f8563237-7d60-4822-b694-5d7581a16b21
+                - 15cf8d9b-f754-4462-a9f0-8b325f5393d8
         status: 200 OK
         code: 200
-        duration: 74.687761ms
+        duration: 144.181043ms
     - id: 4
       request:
         proto: HTTP/1.1
@@ -214,8 +214,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -223,20 +223,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.266652109Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:51 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -244,10 +244,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 5e262d51-5445-4faf-a42f-2bb535b5f229
+                - 4052eb12-77ef-4998-a04c-75ea4374c81c
         status: 200 OK
         code: 200
-        duration: 44.56721ms
+        duration: 24.404118ms
     - id: 5
       request:
         proto: HTTP/1.1
@@ -263,8 +263,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -272,20 +272,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.421180533Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:51 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -293,10 +293,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 842b888f-8032-4bdd-bfe0-84e0893404be
+                - a98e9940-c50a-42a5-91f8-55d66c058b4b
         status: 200 OK
         code: 200
-        duration: 53.551594ms
+        duration: 31.772765ms
     - id: 6
       request:
         proto: HTTP/1.1
@@ -312,8 +312,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -321,20 +321,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.449860852Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:51 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -342,10 +342,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 8e5da8f2-467d-460c-9a3b-4f0a57598bbe
+                - c63d44da-3041-4a51-97b6-a4023c4ac281
         status: 200 OK
         code: 200
-        duration: 30.555081ms
+        duration: 22.889439ms
     - id: 7
       request:
         proto: HTTP/1.1
@@ -361,8 +361,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -370,20 +370,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.602178401Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:52 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -391,10 +391,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 2f3d7c0d-238f-42b8-b4d1-1920c6d41088
+                - 18a30c9a-bfde-43d0-9f30-9fa59e2eff46
         status: 200 OK
         code: 200
-        duration: 27.180064ms
+        duration: 23.041731ms
     - id: 8
       request:
         proto: HTTP/1.1
@@ -410,7 +410,7 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains?name=terraform-ds.test.local
         method: GET
       response:
@@ -419,20 +419,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 971
+        content_length: 1204
         uncompressed: false
-        body: '{"domains":[{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}],"total_count":1}'
+        body: '{"domains":[{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.667442191Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}],"total_count":1}'
         headers:
             Content-Length:
-                - "971"
+                - "1204"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:52 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -440,10 +440,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - d5a2fe10-b335-4f69-bdad-c92dd02a96c7
+                - 9e348d1b-e1d4-4d99-8e16-b388476e2a76
         status: 200 OK
         code: 200
-        duration: 31.351373ms
+        duration: 91.910437ms
     - id: 9
       request:
         proto: HTTP/1.1
@@ -459,8 +459,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -468,20 +468,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:02.694631303Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:52 GMT
+                - Fri, 20 Sep 2024 13:01:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -489,10 +489,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 0bddcb4d-7b2a-4b4c-aa61-91d2b3bba5b6
+                - 9c87ed09-b39c-424b-a0ef-a9db4ad0aa4a
         status: 200 OK
         code: 200
-        duration: 26.787595ms
+        duration: 22.811585ms
     - id: 10
       request:
         proto: HTTP/1.1
@@ -508,8 +508,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -517,20 +517,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:03.135645333Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:52 GMT
+                - Fri, 20 Sep 2024 13:01:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -538,10 +538,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - ac469410-7874-417b-b2ba-50f6b6dba82d
+                - c78f5bb3-91d0-4dc7-9ede-13a07b3ff9ab
         status: 200 OK
         code: 200
-        duration: 33.676449ms
+        duration: 224.373746ms
     - id: 11
       request:
         proto: HTTP/1.1
@@ -557,8 +557,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -566,20 +566,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:03.163302970Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:52 GMT
+                - Fri, 20 Sep 2024 13:01:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -587,10 +587,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 20bf55ae-e83c-4149-bb91-0331f9ebaa1b
+                - 12e1c242-ab0c-4610-9b48-4babb7c2212a
         status: 200 OK
         code: 200
-        duration: 36.432458ms
+        duration: 53.102727ms
     - id: 12
       request:
         proto: HTTP/1.1
@@ -606,7 +606,7 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains?name=terraform-ds.test.local
         method: GET
       response:
@@ -615,20 +615,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 971
+        content_length: 1204
         uncompressed: false
-        body: '{"domains":[{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}],"total_count":1}'
+        body: '{"domains":[{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:03.329440826Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}],"total_count":1}'
         headers:
             Content-Length:
-                - "971"
+                - "1204"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:52 GMT
+                - Fri, 20 Sep 2024 13:01:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -636,10 +636,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - c2713901-1dc1-4f01-b919-fc3baa4880ea
+                - 9f5a90d8-258e-45cd-9b2c-83dc2f2596aa
         status: 200 OK
         code: 200
-        duration: 56.828622ms
+        duration: 188.437146ms
     - id: 13
       request:
         proto: HTTP/1.1
@@ -655,8 +655,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -664,20 +664,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:03.351745348Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:52 GMT
+                - Fri, 20 Sep 2024 13:01:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -685,10 +685,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 4b029eb9-537a-4d31-98a5-35ecaa5cd737
+                - 82b020bb-c09b-4db7-beeb-62737475885d
         status: 200 OK
         code: 200
-        duration: 54.836981ms
+        duration: 21.750537ms
     - id: 14
       request:
         proto: HTTP/1.1
@@ -704,7 +704,7 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains?name=terraform-ds.test.local
         method: GET
       response:
@@ -713,20 +713,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 971
+        content_length: 1204
         uncompressed: false
-        body: '{"domains":[{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}],"total_count":1}'
+        body: '{"domains":[{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:03.622625691Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}],"total_count":1}'
         headers:
             Content-Length:
-                - "971"
+                - "1204"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:53 GMT
+                - Fri, 20 Sep 2024 13:01:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -734,10 +734,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 300f330c-e70b-476a-9d35-cc1989f09d84
+                - 309bdb5c-9754-47ce-9426-1941e9953297
         status: 200 OK
         code: 200
-        duration: 56.27715ms
+        duration: 153.870014ms
     - id: 15
       request:
         proto: HTTP/1.1
@@ -753,8 +753,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -762,20 +762,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:03.639433156Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:53 GMT
+                - Fri, 20 Sep 2024 13:01:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -783,10 +783,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 78e6e94d-2010-4eae-bc3d-b755ca7cd3d4
+                - 93240611-8c4a-489d-b8c6-a10196b0cb63
         status: 200 OK
         code: 200
-        duration: 64.040824ms
+        duration: 172.322093ms
     - id: 16
       request:
         proto: HTTP/1.1
@@ -802,8 +802,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -811,20 +811,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:03.649881649Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:53 GMT
+                - Fri, 20 Sep 2024 13:01:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -832,10 +832,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 19b41b1f-37a7-4905-bab5-3f00b42a66c4
+                - 185cad2d-a957-4a6c-a999-8a971185c7c4
         status: 200 OK
         code: 200
-        duration: 26.504547ms
+        duration: 59.670147ms
     - id: 17
       request:
         proto: HTTP/1.1
@@ -851,8 +851,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -860,20 +860,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1129
+        content_length: 1173
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc","value":"v=DMARC1; p=none; rua=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud; ruf=mailto:797e772f-b030-4c29-b767-67ead8d821a9@dmarc.scw-tem.cloud"}},"region":"fr-par","reputation":null,"revoked_at":null,"spf_config":"include:_spf.scw-tem.cloud","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":{"dmarc":{"name":"_dmarc.terraform-ds","value":"v=DMARC1; p=none"}},"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:04.207739006Z","status":"excellent"},"revoked_at":null,"spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"unchecked"}'
         headers:
             Content-Length:
-                - "1129"
+                - "1173"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:53 GMT
+                - Fri, 20 Sep 2024 13:01:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -881,10 +881,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 37ead2d4-4ff0-477a-bd62-e4650d69aad7
+                - adc39bf3-2d76-4891-b15d-a91262234e61
         status: 200 OK
         code: 200
-        duration: 30.948667ms
+        duration: 195.691198ms
     - id: 18
       request:
         proto: HTTP/1.1
@@ -902,8 +902,8 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91/revoke
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c/revoke
         method: POST
       response:
         proto: HTTP/2.0
@@ -911,20 +911,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 941
+        content_length: 979
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-04-10T13:29:54.242277452Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-09-20T13:01:04.876039127Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
         headers:
             Content-Length:
-                - "941"
+                - "979"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:54 GMT
+                - Fri, 20 Sep 2024 13:01:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -932,10 +932,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 9722f6a8-eb80-4c72-bbf2-1b70aa570a21
+                - 12f7aafd-229d-4f3f-9b56-00794311778a
         status: 200 OK
         code: 200
-        duration: 416.634143ms
+        duration: 670.567403ms
     - id: 19
       request:
         proto: HTTP/1.1
@@ -951,8 +951,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -960,20 +960,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 938
+        content_length: 1132
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-04-10T13:29:54.242277Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:05.052441037Z","status":"excellent"},"revoked_at":"2024-09-20T13:01:04.876039Z","spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
         headers:
             Content-Length:
-                - "938"
+                - "1132"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:54 GMT
+                - Fri, 20 Sep 2024 13:01:05 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -981,10 +981,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 90ede6fc-1dc2-4614-812b-51bff93dfb53
+                - 47564954-9492-48e5-b9b7-d37d17180353
         status: 200 OK
         code: 200
-        duration: 55.946594ms
+        duration: 197.207827ms
     - id: 20
       request:
         proto: HTTP/1.1
@@ -1002,8 +1002,8 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91/revoke
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c/revoke
         method: POST
       response:
         proto: HTTP/2.0
@@ -1011,20 +1011,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 938
+        content_length: 976
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-04-10T13:29:54.242277Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-09-20T13:01:04.876039Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
         headers:
             Content-Length:
-                - "938"
+                - "976"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:54 GMT
+                - Fri, 20 Sep 2024 13:01:05 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1032,10 +1032,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 21232e68-5db3-424c-ab1f-d4c140135b50
+                - d8571cbf-e6c8-43de-9f04-cc355bb56d33
         status: 200 OK
         code: 200
-        duration: 60.21511ms
+        duration: 64.44296ms
     - id: 21
       request:
         proto: HTTP/1.1
@@ -1051,8 +1051,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -1060,20 +1060,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 938
+        content_length: 1132
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-04-10T13:29:54.242277Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:05.223145908Z","status":"excellent"},"revoked_at":"2024-09-20T13:01:04.876039Z","spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
         headers:
             Content-Length:
-                - "938"
+                - "1132"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:54 GMT
+                - Fri, 20 Sep 2024 13:01:05 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1081,10 +1081,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - ee048627-d472-4847-a912-199d6c3ac2fe
+                - c83154ee-dce0-4abc-9b72-fa72eb65d979
         status: 200 OK
         code: 200
-        duration: 30.447714ms
+        duration: 24.536238ms
     - id: 22
       request:
         proto: HTTP/1.1
@@ -1102,8 +1102,8 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91/revoke
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c/revoke
         method: POST
       response:
         proto: HTTP/2.0
@@ -1111,20 +1111,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 938
+        content_length: 976
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-04-10T13:29:54.242277Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-09-20T13:01:04.876039Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
         headers:
             Content-Length:
-                - "938"
+                - "976"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:54 GMT
+                - Fri, 20 Sep 2024 13:01:05 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1132,10 +1132,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 3cb1e89f-ab54-4646-9af2-d7f2dd5f9310
+                - 2d520d9d-3921-4dbb-8ae5-ff9c43d09324
         status: 200 OK
         code: 200
-        duration: 52.653693ms
+        duration: 84.86753ms
     - id: 23
       request:
         proto: HTTP/1.1
@@ -1151,8 +1151,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -1160,20 +1160,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 938
+        content_length: 1132
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-04-10T13:29:54.242277Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:05.330298641Z","status":"excellent"},"revoked_at":"2024-09-20T13:01:04.876039Z","spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
         headers:
             Content-Length:
-                - "938"
+                - "1132"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:54 GMT
+                - Fri, 20 Sep 2024 13:01:05 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1181,10 +1181,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 9afe216b-01eb-425a-bc03-5efbb7745c6c
+                - e8cea170-ade8-4a2f-95e7-17723e38bd63
         status: 200 OK
         code: 200
-        duration: 57.965828ms
+        duration: 21.376522ms
     - id: 24
       request:
         proto: HTTP/1.1
@@ -1202,8 +1202,8 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91/revoke
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c/revoke
         method: POST
       response:
         proto: HTTP/2.0
@@ -1211,20 +1211,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 938
+        content_length: 976
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-04-10T13:29:54.242277Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-09-20T13:01:04.876039Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
         headers:
             Content-Length:
-                - "938"
+                - "976"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:54 GMT
+                - Fri, 20 Sep 2024 13:01:05 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1232,10 +1232,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 2bcfacdb-b4f2-4761-b976-e2704a363906
+                - 4ed6034e-1cbf-41c6-97b8-de713b9ecf47
         status: 200 OK
         code: 200
-        duration: 25.195955ms
+        duration: 22.508556ms
     - id: 25
       request:
         proto: HTTP/1.1
@@ -1251,8 +1251,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.21.5; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/6516a91c-c751-47e5-8970-8ab331f09c91
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/domains/716b423b-4801-4f1a-86f4-d89b9576664c
         method: GET
       response:
         proto: HTTP/2.0
@@ -1260,20 +1260,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 938
+        content_length: 1132
         uncompressed: false
-        body: '{"created_at":"2024-04-10T13:29:51.256307Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0U4HyMkTJ5gP0c8kZk65afiCaxEI8+8bbTQebdEFVK8GTCKVxiKd0hN3DXDAfTJiZE2ZiYa3UcOmQANErrutg/CcCYAC4IVSNlv9fBKTRW/915zgRaw4t77ldbZOJpKvXTSP3wBgZwj7FzgvasLMyr6XtgxFdRTi0mBngN3hP5omtvvNBujeVtwRufnBvq70OsbHhYr8XYxDrCVacaTe69PF6QYjBdlibwK+4XgCcaUJ/1X8mFD4qgghcur4wNIP90uJZsLoqbGCSfET6rHU/x7mw+z23iPN3aPWn5h71gWWH+8E4b4/c4Wu9L2mjht+QA9Oh2l84FMBISnXT946UQIDAQAB","id":"6516a91c-c751-47e5-8970-8ab331f09c91","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":null,"revoked_at":"2024-04-10T13:29:54.242277Z","spf_config":"","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
+        body: '{"autoconfig":false,"created_at":"2024-09-20T13:01:01.983093Z","dkim_config":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyqstL2/AIrF8r6b4gIUA4jCOnLQjxuNzsOt/XOH3CxLWt4jx0PUq8g1/8T+lCqnhDHD5jNUKfSTwnZS6mdpgIoyX/VRB7qbNrLsiYjL1obu5XcVS0QTUtKMB3Z8HF2e9mGk4ds6WsYZzRuC0uI936V6zANe7OvTi1Q183YZy/AlYUkRhu4qtlvOXSwkkF7t1qYD2M9HN3lGEc3zN3hpgP9B2jCQaZN/Rcfgd/0l2yF9S2wfmavsjrBcN8ygnMJXXieHyrhDtM4dp2lWwn1qMkE3p8n+bxcqAFjDdykCkaMXamLsZd/B0UqG3GsDl7yQBBr7ckmGZ0iGl6FkGCdDXbwIDAQAB","id":"716b423b-4801-4f1a-86f4-d89b9576664c","last_error":null,"last_valid_at":null,"name":"terraform-ds.test.local","next_check_at":null,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","records":null,"region":"fr-par","reputation":{"previous_score":null,"previous_scored_at":null,"score":100,"scored_at":"2024-09-20T13:01:05.525138788Z","status":"excellent"},"revoked_at":"2024-09-20T13:01:04.876039Z","spf_config":"include:_spf.tem.scaleway.com","statistics":{"canceled_count":0,"failed_count":0,"sent_count":0,"total_count":0},"status":"revoked"}'
         headers:
             Content-Length:
-                - "938"
+                - "1132"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 10 Apr 2024 13:29:54 GMT
+                - Fri, 20 Sep 2024 13:01:05 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1281,7 +1281,7 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - bfb8ae6c-8041-4023-90c1-0dd5e5be87fb
+                - 92ab91a1-4083-4be4-a9b7-38dfa302072a
         status: 200 OK
         code: 200
-        duration: 46.671039ms
+        duration: 174.288085ms

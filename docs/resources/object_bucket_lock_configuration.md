@@ -5,14 +5,15 @@ page_title: "Scaleway: scaleway_object_bucket_lock_configuration"
 
 # Resource: scaleway_object_bucket_lock_configuration
 
-Provides an Object bucket lock configuration resource.
-For more information, see [Setting up object lock](https://www.scaleway.com/en/docs/storage/object/api-cli/object-lock/).
+The `scaleway_object_bucket_lock_configuration` resource allows you to create and manage an object lock configuration for [Scaleway Object storage](https://www.scaleway.com/en/docs/object-storage/).
+
+Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-lock/) for more information on object lock.
 
 ## Example Usage
 
 ### Configure an Object Lock for a new bucket
 
-Please note that `object_lock_enabled` must be set to `true` before configuring the lock.
+-> **Note:** `object_lock_enabled` must be set to `true` before configuring the lock.
 
 ```terraform
 resource "scaleway_object_bucket" "main" {
@@ -34,25 +35,25 @@ resource "scaleway_object_bucket_lock_configuration" "main" {
 }
 ```
 
-### Configure an Object Lock for an existing bucket
+### Configure an object Lock for an existing bucket
 
-You should [contact Scaleway support](https://console.scaleway.com/support/tickets/create) to enable object lock on an existing bucket.
+[Contact Scaleway support](https://console.scaleway.com/support/tickets/create) to enable object lock on an existing bucket.
 
 ## Argument Reference
 
 The following arguments are supported:
 
-- `bucket` - (Required, Forces new resource) The name of the bucket, or its Terraform ID.
+- `bucket` - (Required, forces new resource) The name of the bucket, or its Terraform ID.
 
-- `rule` - (Optional) Specifies the Object Lock rule for the specified object.
+- `rule` - (Optional) Specifies the object lock rule for the specified object.
 
     - `default_retention` - (Required) The default retention for the lock.
 
-        - `mode` - (Required) The default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Valid values are `GOVERNANCE` or `COMPLIANCE`. To learn more about the difference between these modes, see [Object Lock retention modes](https://www.scaleway.com/en/docs/storage/object/api-cli/object-lock/#retention-modes).
+        - `mode` - (Required) The default object lock retention mode you want to apply to new objects placed in the specified bucket. Valid values are `GOVERNANCE` or `COMPLIANCE`. Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-lock/#retention-modes) for more information on retention modes.
 
-        - `days` - (Optional) The number of days that you want to specify for the default retention period.
+        - `days` - (Optional) The number of days you want to specify for the default retention period.
 
-        - `years` - (Optional) The number of years that you want to specify for the default retention period.
+        - `years` - (Optional) The number of years you want to specify for the default retention period.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
@@ -62,15 +63,15 @@ like object lock configurations. Otherwise, Terraform will try to create the chi
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+The `scaleway_object_bucket_lock_configuration` resource exports certain attributes once the object lock configuration is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-- `id` - The ID of the Object bucket lock configuration.
+- `id` - The unique identifier of the Object bucket lock configuration.
 
-~> **Important:** Object buckets lock configurations' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+~> **Important:** Object Storage bucket lock configuration IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 ## Import
 
-Bucket lock configurations can be imported using the `{region}/{bucketName}` identifier, e.g.
+Bucket lock configurations can be imported using the `{region}/{bucketName}` identifier, as shown below:
 
 ```bash
 terraform import scaleway_object_bucket_lock_configuration.some_bucket fr-par/some-bucket

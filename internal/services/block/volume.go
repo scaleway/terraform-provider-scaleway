@@ -133,8 +133,10 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -143,6 +145,7 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m inte
 	if volume.Specs != nil {
 		_ = d.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
 	}
+
 	_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("project_id", volume.ProjectID)
@@ -167,8 +170,10 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -205,6 +210,12 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m in
 
 	_, err = waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 

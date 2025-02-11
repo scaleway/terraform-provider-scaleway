@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -21,6 +22,17 @@ type GetUnknownVolumeRequest struct {
 	Zone     scw.Zone
 }
 
+type ResizeUnknownVolumeRequest struct {
+	VolumeID string
+	Zone     scw.Zone
+	Size     *scw.Size
+}
+
+type DeleteUnknownVolumeRequest struct {
+	VolumeID string
+	Zone     scw.Zone
+}
+
 type UnknownVolume struct {
 	Zone     scw.Zone
 	ID       string
@@ -28,6 +40,10 @@ type UnknownVolume struct {
 	Size     *scw.Size
 	ServerID *string
 	Boot     *bool
+
+	// Iops is set for Block volume only, use IsBlockVolume
+	// Can be nil if not available in the Block API.
+	Iops *uint32
 
 	InstanceVolumeType instance.VolumeVolumeType
 }
@@ -72,12 +88,20 @@ func (volume *UnknownVolume) IsAttached() bool {
 	return volume.ServerID != nil && *volume.ServerID != ""
 }
 
+type UnknownSnapshot struct {
+	Zone       scw.Zone
+	ID         string
+	Name       string
+	VolumeType instance.VolumeVolumeType
+}
+
 func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, opts ...scw.RequestOption) (*UnknownVolume, error) {
 	getVolumeResponse, err := api.API.GetVolume(&instance.GetVolumeRequest{
 		Zone:     req.Zone,
 		VolumeID: req.VolumeID,
 	}, opts...)
 	notFoundErr := &scw.ResourceNotFoundError{}
+
 	if err != nil && !errors.As(err, &notFoundErr) {
 		return nil, err
 	}
@@ -112,6 +136,10 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 		Size:               &blockVolume.Size,
 		InstanceVolumeType: instance.VolumeVolumeTypeSbsVolume,
 	}
+	if blockVolume.Specs != nil {
+		vol.Iops = blockVolume.Specs.PerfIops
+	}
+
 	for _, ref := range blockVolume.References {
 		if ref.ProductResourceType == "instance_server" {
 			vol.ServerID = &ref.ProductResourceID
@@ -121,34 +149,140 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 	return vol, nil
 }
 
+func (api *BlockAndInstanceAPI) ResizeUnknownVolume(req *ResizeUnknownVolumeRequest, opts ...scw.RequestOption) error {
+	unknownVolume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+		VolumeID: req.VolumeID,
+		Zone:     req.Zone,
+	}, opts...)
+	if err != nil {
+		return err
+	}
+
+	if unknownVolume.IsBlockVolume() {
+		_, err = api.blockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+			Size:     req.Size,
+		}, opts...)
+	} else {
+		_, err = api.API.UpdateVolume(&instance.UpdateVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+			Size:     req.Size,
+		}, opts...)
+	}
+
+	return err
+}
+
+func (api *BlockAndInstanceAPI) DeleteUnknownVolume(req *DeleteUnknownVolumeRequest, opts ...scw.RequestOption) error {
+	unknownVolume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+		VolumeID: req.VolumeID,
+		Zone:     req.Zone,
+	}, opts...)
+	if err != nil {
+		return err
+	}
+
+	if unknownVolume.IsBlockVolume() {
+		err = api.blockAPI.DeleteVolume(&block.DeleteVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+		}, opts...)
+	} else {
+		err = api.API.DeleteVolume(&instance.DeleteVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+		}, opts...)
+	}
+
+	return err
+}
+
+type GetUnknownSnapshotRequest struct {
+	Zone       scw.Zone
+	SnapshotID string
+}
+
+func (api *BlockAndInstanceAPI) GetUnknownSnapshot(req *GetUnknownSnapshotRequest, opts ...scw.RequestOption) (*UnknownSnapshot, error) {
+	getSnapshotResponse, err := api.GetSnapshot(&instance.GetSnapshotRequest{
+		Zone:       req.Zone,
+		SnapshotID: req.SnapshotID,
+	}, opts...)
+	notFoundErr := &scw.ResourceNotFoundError{}
+
+	if err != nil && !errors.As(err, &notFoundErr) {
+		return nil, err
+	}
+
+	if getSnapshotResponse != nil {
+		snap := &UnknownSnapshot{
+			Zone:       getSnapshotResponse.Snapshot.Zone,
+			ID:         getSnapshotResponse.Snapshot.ID,
+			Name:       getSnapshotResponse.Snapshot.Name,
+			VolumeType: getSnapshotResponse.Snapshot.VolumeType,
+		}
+
+		return snap, nil
+	}
+
+	blockSnapshot, err := api.blockAPI.GetSnapshot(&block.GetSnapshotRequest{
+		Zone:       req.Zone,
+		SnapshotID: req.SnapshotID,
+	}, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	snap := &UnknownSnapshot{
+		Zone:       blockSnapshot.Zone,
+		ID:         blockSnapshot.ID,
+		Name:       blockSnapshot.Name,
+		VolumeType: instance.VolumeVolumeTypeSbsSnapshot,
+	}
+
+	return snap, nil
+}
+
+func NewBlockAndInstanceAPI(client *scw.Client) *BlockAndInstanceAPI {
+	instanceAPI := instance.NewAPI(client)
+	blockAPI := block.NewAPI(client)
+
+	return &BlockAndInstanceAPI{
+		API:      instanceAPI,
+		blockAPI: blockAPI,
+	}
+}
+
 // newAPIWithZone returns a new instance API and the zone for a Create request
 func instanceAndBlockAPIWithZone(d *schema.ResourceData, m interface{}) (*BlockAndInstanceAPI, scw.Zone, error) {
-	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
-	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
-
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
 	}
 
-	return &BlockAndInstanceAPI{
-		API:      instanceAPI,
-		blockAPI: blockAPI,
-	}, zone, nil
+	return NewBlockAndInstanceAPI(meta.ExtractScwClient(m)), zone, nil
 }
 
 // NewAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
 func instanceAndBlockAPIWithZoneAndID(m interface{}, zonedID string) (*BlockAndInstanceAPI, scw.Zone, string, error) {
-	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
-	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
-
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
 		return nil, "", "", err
 	}
 
-	return &BlockAndInstanceAPI{
-		API:      instanceAPI,
-		blockAPI: blockAPI,
-	}, zone, ID, nil
+	return NewBlockAndInstanceAPI(meta.ExtractScwClient(m)), zone, ID, nil
+}
+
+func volumeTypeToMarketplaceFilter(volumeType instance.VolumeVolumeType) marketplace.LocalImageType {
+	switch volumeType {
+	case instance.VolumeVolumeTypeSbsVolume:
+		return marketplace.LocalImageTypeInstanceSbs
+	case instance.VolumeVolumeTypeBSSD:
+		return marketplace.LocalImageTypeInstanceLocal
+	case instance.VolumeVolumeTypeLSSD:
+		return marketplace.LocalImageTypeInstanceLocal
+	}
+
+	return marketplace.LocalImageTypeInstanceSbs
 }

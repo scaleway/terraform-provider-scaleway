@@ -15,5 +15,6 @@ func marketplaceAPIWithZone(d *schema.ResourceData, m interface{}) (*marketplace
 	if err != nil {
 		return nil, "", err
 	}
+
 	return marketplaceAPI, zone, nil
 }

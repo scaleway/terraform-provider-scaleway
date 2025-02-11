@@ -18,6 +18,7 @@ func DataSourceACL() *schema.Resource {
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
+
 	return &schema.Resource{
 		ReadContext: DataSourceRDBACLRead,
 		Schema:      dsSchema,
@@ -29,18 +30,22 @@ func DataSourceRDBACLRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	instanceID, _ := d.GetOk("instance_id")
 
 	_, _, err = locality.ParseLocalizedID(instanceID.(string))
 	regionalID := instanceID
+
 	if err != nil {
 		regionalID = datasource.NewRegionalID(instanceID, region)
 	}
 
 	d.SetId(regionalID.(string))
+
 	err = d.Set("instance_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return ResourceRdbACLRead(ctx, d, m)
 }

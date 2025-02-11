@@ -19,11 +19,11 @@ func DataSourceProject() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"project_id"}
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Computed:     true,
-		Optional:     true,
-		Description:  "The ID of the SSH key",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Computed:         true,
+		Optional:         true,
+		Description:      "The ID of the SSH key",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -43,6 +43,7 @@ func DataSourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m
 			// required not in schema as we could use default
 			return diag.Errorf("organization_id is required with name")
 		}
+
 		res, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{
 			OrganizationID: *orgID,
 			Name:           types.ExpandStringPtr(name),

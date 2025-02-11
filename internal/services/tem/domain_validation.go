@@ -58,7 +58,9 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(d.Get("domain_id").(string))
+
 	domain, err := api.GetDomain(&tem.GetDomainRequest{
 		Region:   region,
 		DomainID: extractAfterSlash(d.Get("domain_id").(string)),
@@ -66,10 +68,13 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	duration := d.Get("timeout").(int)
 	timeout := time.Duration(duration) * time.Second
 	_ = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
@@ -77,9 +82,10 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 			Region:   region,
 			DomainID: domain.ID,
 		})
-		if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" {
+		if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
 			return retry.RetryableError(errors.New("retry"))
 		}
+
 		return nil
 	})
 
@@ -97,12 +103,15 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 		Region:   region,
 		DomainID: extractAfterSlash(domainID),
 	}
+
 	domain, err := api.GetDomain(getDomainRequest, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -113,6 +122,7 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 
 func ResourceDomainValidationDelete(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	d.SetId("")
+
 	return nil
 }
 
@@ -121,5 +131,6 @@ func extractAfterSlash(s string) string {
 	if lastIndex == -1 {
 		return s
 	}
+
 	return s[lastIndex+1:]
 }

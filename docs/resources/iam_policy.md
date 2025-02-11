@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_iam_policy"
 
 Creates and manages Scaleway IAM Policies. For more information refer to the [IAM API documentation](https://www.scaleway.com/en/developers/api/iam/#path-policies-create-a-new-policy).
 
--> You can find a detailed list of all permission sets available at Scaleway in the permission sets [reference page](https://www.scaleway.com/en/docs/identity-and-access-management/iam/reference-content/permission-sets/).
+-> You can find a detailed list of all permission sets available at Scaleway in the permission sets [reference page](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/).
 
 ## Example Usage
 
@@ -90,12 +90,34 @@ resource "scaleway_iam_policy" "iam_tf_storage_policy" {
 }
 ```
 
+### Create a policy with a particular condition
+
+IAM policy rule can use a condition to be applied.
+The following variables are available:
+
+- `request.ip`
+- `request.user_agent`
+- `request.time`
+
+```terraform
+resource "scaleway_iam_policy" "main" {
+  name         = "tf_tests_policy_condition"
+  no_principal = true
+  rule {
+    organization_id      = "%s"
+    permission_set_names = ["AllProductsFullAccess"]
+    condition = "request.user_agent == 'My User Agent'"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 - `name` - (Optional) The name of the IAM policy.
 - `description` - (Optional) The description of the IAM policy.
+- `condition` - (Optional) The condition of the IAM policy.
 - `tags` - (Optional) The tags associated with the IAM policy.
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the policy is associated with.
 - `user_id` - ID of the user the policy will be linked to

@@ -14,10 +14,10 @@ func DataSourceDHCP() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCP().Schema)
 
 	dsSchema["dhcp_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  "The ID of the public gateway DHCP configuration",
-		ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The ID of the public gateway DHCP configuration",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -37,5 +37,6 @@ func DataSourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceD
 	zonedID := datasource.NewZonedID(dhcpID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("dhcp_id", zonedID)
+
 	return ResourceVPCPublicGatewayDHCPRead(ctx, d, m)
 }

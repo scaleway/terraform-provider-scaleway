@@ -12,7 +12,7 @@ on:
       - docs/**
 
 env:
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.23.5"
   GO111MODULE: on
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: gaurav-nelson/github-action-markdown-link-check@1.0.15
+      - uses: gaurav-nelson/github-action-markdown-link-check@1.0.16
         with:
           use-quiet-mode: 'yes'
           use-verbose-mode: 'yes'
@@ -38,6 +38,7 @@ jobs:
   misspell:
     runs-on: ubuntu-latest
     steps:
+      # Checkout should always be before setup-go to ensure caching is working
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:

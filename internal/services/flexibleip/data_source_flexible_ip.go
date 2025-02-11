@@ -23,19 +23,19 @@ func DataSourceFlexibleIP() *schema.Resource {
 		ConflictsWith: []string{"flexible_ip_id"},
 	}
 	dsSchema["flexible_ip_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IPv4 address",
-		ConflictsWith: []string{"ip_address"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IPv4 address",
+		ConflictsWith:    []string{"ip_address"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 	dsSchema["project_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The project_id you want to attach the resource to",
-		Optional:     true,
-		ForceNew:     true,
-		Computed:     true,
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Description:      "The project_id you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		Computed:         true,
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -66,9 +66,11 @@ func DataSourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m int
 				if ipID != "" {
 					return diag.Errorf("more than 1 flexible ip found with the same IPv4 address %s", d.Get("ip_address"))
 				}
+
 				ipID = ip.ID
 			}
 		}
+
 		if ipID == "" {
 			return diag.Errorf("no flexible ip found with the same IPv4 address %s", d.Get("ip_address"))
 		}
@@ -76,6 +78,7 @@ func DataSourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m int
 
 	zoneID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zoneID)
+
 	err = d.Set("flexible_ip_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)

@@ -5,25 +5,28 @@ page_title: "Scaleway: scaleway_account_project"
 
 # Resource: scaleway_account_project
 
-Manages organization's projects on Scaleway.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/account/project-api/).
+The `scaleway_account_project` resource allows you to create and manage the Projects of a Scaleway Organization.
+
+Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
 ## Example Usage
 
-### Basic
+### Create a Scaleway Project
 
-```terraform
+The following command allows you to create a project named `project`.
+
+```hcl
 resource "scaleway_account_project" "project" {
   name = "project"
 }
 ```
 
-### Use project in provider configuration
+### Use a project in provider configuration
 
 If you want to use as default a project created in terraform you can use a temporary provider alias.
 This project can then be used to configure your default provider.
 
-```terraform
+```hcl
 provider "scaleway" {
   alias = "tmp"
 }
@@ -49,19 +52,21 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the Project.
 - `description` - (Optional) The description of the Project.
-- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`)The organization ID the Project is associated with. Please note that any change in `organization_id` will recreate the resource.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`)The organization ID the Project is associated with. Any change made to the `organization_id` will recreate the resource.
 
 ## Attributes Reference
 
+The `scaleway_account_project` resource exports certain attributes once the Project information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
+
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the project (UUID format).
-- `created_at` - The Project creation time.
-- `updated_at` - The Project last update time.
+- `id` - The unique identifier of the project (UUID format).
+- `created_at` - The creation time of the Project.
+- `updated_at` - The last update time of the Project.
 
 ## Import
 
-Projects can be imported using the `id`, e.g.
+Projects can be imported using the `id` argument, as shown below:
 
 ```bash
 terraform import scaleway_account_project.project 11111111-1111-1111-1111-111111111111

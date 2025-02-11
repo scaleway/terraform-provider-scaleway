@@ -26,11 +26,11 @@ func DataSourcePrivateNIC() *schema.Resource {
 	dsSchema["private_network_id"].ConflictsWith = []string{"private_nic_id"}
 
 	dsSchema["private_nic_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the Private NIC",
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-		ConflictsWith: []string{"private_network_id"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the Private NIC",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		ConflictsWith:    []string{"private_network_id"},
 	}
 
 	return &schema.Resource{
@@ -48,7 +48,9 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 	serverID := locality.ExpandID(d.Get("server_id"))
 
 	id, ok := d.GetOk("private_nic_id")
+
 	var privateNICID string
+
 	if !ok {
 		resp, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
 			Zone:     zone,
@@ -75,6 +77,7 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 		privateNICID,
 	)
 	d.SetId(zonedID)
+
 	err = d.Set("private_nic_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -113,6 +116,7 @@ func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.Resourc
 			if privateNIC != nil {
 				return nil, fmt.Errorf("found more than one private nic for request private network (%s)", privateNetworkID)
 			}
+
 			privateNIC = pnic
 		}
 	}

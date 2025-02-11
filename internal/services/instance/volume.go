@@ -55,12 +55,12 @@ func ResourceVolume() *schema.Resource {
 				ConflictsWith: []string{"from_snapshot_id"},
 			},
 			"from_snapshot_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Create a volume based on a image",
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"size_in_gb"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "Create a volume based on a image",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				ConflictsWith:    []string{"size_in_gb"},
 			},
 			"server_id": {
 				Type:        schema.TypeString,
@@ -96,6 +96,7 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		Project:    types.ExpandStringPtr(d.Get("project_id")),
 	}
 	tags := types.ExpandStrings(d.Get("tags"))
+
 	if len(tags) > 0 {
 		createVolumeRequest.Tags = tags
 	}
@@ -142,8 +143,10 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(fmt.Errorf("couldn't read volume: %v", err))
 	}
 
@@ -194,6 +197,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 		if d.Get("type") != instanceSDK.VolumeVolumeTypeBSSD.String() {
 			return diag.FromErr(errors.New("only block volume can be resized"))
 		}
+
 		if oldSize, newSize := d.GetChange("size_in_gb"); oldSize.(int) > newSize.(int) {
 			return diag.FromErr(errors.New("block volumes cannot be resized down"))
 		}
@@ -204,6 +208,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
+
 		_, err = instanceAPI.UpdateVolume(&instanceSDK.UpdateVolumeRequest{
 			VolumeID: id,
 			Zone:     zone,
@@ -212,6 +217,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't resize volume: %s", err))
 		}
+
 		_, err = waitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -242,6 +248,7 @@ func ResourceInstanceVolumeDelete(ctx context.Context, d *schema.ResourceData, m
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

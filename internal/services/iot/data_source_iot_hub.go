@@ -19,11 +19,11 @@ func DataSourceHub() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"hub_id"}
 	dsSchema["hub_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IOT Hub",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IOT Hub",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
 	return &schema.Resource{
@@ -41,6 +41,7 @@ func DataSourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interfa
 	hubID, ok := d.GetOk("hub_id")
 	if !ok {
 		hubName := d.Get("name").(string)
+
 		res, err := api.ListHubs(&iot.ListHubsRequest{
 			Region:    region,
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
@@ -64,16 +65,20 @@ func DataSourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	regionalID := datasource.NewRegionalID(hubID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("hub_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	diags := ResourceIotHubRead(ctx, d, m)
 	if diags != nil {
 		return diags
 	}
+
 	if d.Id() == "" {
 		return diag.Errorf("IOT Hub not found (%s)", regionalID)
 	}
+
 	return nil
 }

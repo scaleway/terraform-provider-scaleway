@@ -84,9 +84,11 @@ func TestAccRoute_S3(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iot-route-s3")
+
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-iot-route-s3")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },

@@ -13,6 +13,7 @@ func TestAccDataSourceSSHKey_Basic(t *testing.T) {
 	dataSourceIamSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ foobar@example.com"
 	dataSourceIamSSHKeyWithoutComment := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ"
 	sshKeyName := "tf-test-ds-iam-ssh-key-basic"
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

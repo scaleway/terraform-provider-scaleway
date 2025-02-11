@@ -34,7 +34,7 @@ func expandListKeys(key string, diff *schema.ResourceDiff) []string {
 
 	keys := make([]string, 0, listLength)
 
-	for i := 0; i < listLength; i++ {
+	for i := range listLength {
 		addr[index] = strconv.FormatInt(int64(i), 10)
 		keys = append(keys, strings.Join(addr, "."))
 	}
@@ -57,6 +57,7 @@ func getLocality(diff *schema.ResourceDiff, m interface{}) string {
 		region, _ := meta.ExtractRegion(diff, m)
 		loc = region.String()
 	}
+
 	return loc
 }
 
@@ -91,6 +92,7 @@ func LocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 				}
 			}
 		}
+
 		return nil
 	}
 }

@@ -13,6 +13,10 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
+
 	SSHKeyName := "TestAccScalewayDataSourceBaremetalServer_Basic"
 	name := "TestAccScalewayDataSourceBaremetalServer_Basic"
 
@@ -31,7 +35,7 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					resource "scaleway_iam_ssh_key" "main" {
@@ -48,7 +52,7 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 					
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -60,7 +64,7 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "fr-par-1"
-						name = "EM-A115X-SSD"
+						name = "%s"
 					}
 
 					resource "scaleway_iam_ssh_key" "main" {
@@ -87,7 +91,7 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 						server_id = "${scaleway_baremetal_server.main.id}"
 						zone = "fr-par-1"
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name),
+				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "data.scaleway_baremetal_server.by_id"),
 					testAccCheckBaremetalServerExists(tt, "data.scaleway_baremetal_server.by_name"),

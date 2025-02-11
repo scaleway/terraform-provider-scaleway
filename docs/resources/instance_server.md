@@ -163,6 +163,20 @@ resource "scaleway_instance_server" "from_snapshot" {
 }
 ```
 
+#### Using Scaleway Block Storage (SBS) volume
+
+```terraform
+resource "scaleway_instance_server" "server" {
+  type = "PLAY2-MICRO"
+  image = "ubuntu_jammy"
+  root_volume {
+    volume_type = "sbs_volume"
+    sbs_iops = 15000
+    size_in_gb = 50
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -187,6 +201,8 @@ To retrieve more information by label please use: ```scw marketplace image get l
 
 - `security_group_id` - (Optional) The [security group](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-update-a-security-group9) the server is attached to.
 
+~> **Important:** If you don't specify a security group, a default one will be created, which won't be tracked by Terraform unless you import it.
+
 - `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-update-a-security-group the server is attached to.
 
 
@@ -197,9 +213,10 @@ To retrieve more information by label please use: ```scw marketplace image get l
     - `size_in_gb` - (Required) Size of the root volume in gigabytes.
       To find the right size use [this endpoint](https://www.scaleway.com/en/developers/api/instance/#path-instances-list-all-instances) and
       check the `volumes_constraint.{min|max}_size` (in bytes) for your `commercial_type`.
-      Updates to this field will recreate a new resource.
-    - `volume_type` - (Optional) Volume type of root volume, can be `b_ssd` or `l_ssd`, default value depends on server type
+      Depending on `volume_type`, updates to this field may recreate a new resource.
+    - `volume_type` - (Optional) Volume type of root volume, can be `b_ssd`, `l_ssd` or `sbs_volume`, default value depends on server type
     - `delete_on_termination` - (Defaults to `true`) Forces deletion of the root volume on instance termination.
+    - `sbs_iops` - (Optional) Choose IOPS of your sbs volume, has to be used with `sbs_volume` for root volume type.
 
 ~> **Important:** Updates to `root_volume.size_in_gb` will be ignored after the creation of the server.
 
@@ -211,6 +228,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 ~> **Important:** If this field contains local volumes, you have to first detach them, in one apply, and then delete the volume in another apply.
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server. Useful only with `routed_ip_enabled` as false, otherwise ipv6 is always supported.
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 
 - `ip_id` - (Optional) The ID of the reserved IP that is attached to the server.
 
@@ -240,8 +258,6 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `replace_on_type_change` - (Defaults to false) If true, the server will be replaced if `type` is changed. Otherwise, the server will migrate.
 
-- `bootscript_id` (Deprecated) - The ID of the bootscript to use  (set boot_type to `bootscript`).
-
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
@@ -256,10 +272,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 - `status` The private NIC state.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server must be created.
 
-~> **Important:**
-
-- You can only attach an instance in the same [zone](../guides/regions_and_zones.md#zones) as a private network.
-- Instance supports maximum 8 different private networks.
+~> **Important:** You can only attach an instance in the same [zone](../guides/regions_and_zones.md#zones) as a private network.
+~> **Important:** Instance supports a maximum of 8 different private networks.
 
 ## Attributes Reference
 
@@ -269,17 +283,20 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Instance servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `placement_group_policy_respected` - True when the placement group policy is respected.
+- `placement_group_policy_respected` - (Deprecated) Always false, use [instance_placement_group ressource](instance_placement_group.md) to known when the placement group policy is respected.
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.
-- `private_ip` - The Scaleway internal IP address of the server.
-- `public_ip` - The public IP address of the server.
+- `private_ip` - The Scaleway internal IP address of the server (Deprecated use [ipam_ip datasource](../data-sources/ipam_ip.md#instance-private-network-ip) instead).
+- `public_ip` -  The public IP address of the server (Deprecated use `public_ips` instead).
 - `public_ips` - The list of public IPs of the server.
     - `id` - The ID of the IP
     - `address` - The address of the IP
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
+  Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 - `organization_id` - The organization ID the server is associated with.
 

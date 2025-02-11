@@ -42,7 +42,7 @@ func ResourceSnapshot() *schema.Resource {
 			"volume_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:      "ID of the volume from which creates a snapshot",
 				DiffSuppressFunc: dsf.Locality,
 			},
@@ -97,19 +97,23 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("zone", snapshot.Zone)
 	_ = d.Set("project_id", snapshot.ProjectID)
+
 	if snapshot.ParentVolume != nil {
 		_ = d.Set("volume_id", snapshot.ParentVolume.ID)
 	} else {
 		_ = d.Set("volume_id", "")
 	}
+
 	_ = d.Set("tags", snapshot.Tags)
 
 	return nil
@@ -125,8 +129,10 @@ func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -156,7 +162,7 @@ func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForBlockSnapshot(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForBlockSnapshotToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

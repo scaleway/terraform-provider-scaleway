@@ -3,6 +3,7 @@ package baremetal
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -16,9 +17,11 @@ func expandOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 	for _, op := range i.(*schema.Set).List() {
 		rawOption := op.(map[string]interface{})
 		option := &baremetal.ServerOption{}
+
 		if optionExpiresAt, hasExpiresAt := rawOption["expires_at"]; hasExpiresAt {
 			option.ExpiresAt = types.ExpandTimePtr(optionExpiresAt)
 		}
+
 		id := locality.ExpandID(rawOption["id"].(string))
 		name := rawOption["name"].(string)
 
@@ -31,22 +34,38 @@ func expandOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 	return options, nil
 }
 
-func expandPrivateNetworks(pn interface{}) []string {
-	privateNetworkIDs := make([]string, 0, len(pn.(*schema.Set).List()))
+func expandPrivateNetworks(pn interface{}) map[string]*[]string {
+	privateNetworks := make(map[string]*[]string)
 
 	for _, op := range pn.(*schema.Set).List() {
 		rawPN := op.(map[string]interface{})
 		id := locality.ExpandID(rawPN["id"].(string))
-		privateNetworkIDs = append(privateNetworkIDs, id)
+
+		ipamIPIDs := &[]string{}
+
+		if ipamIPs, ok := rawPN["ipam_ip_ids"]; ok && ipamIPs != nil {
+			ipamIPsList := ipamIPs.([]interface{})
+			if len(ipamIPsList) > 0 {
+				ips := make([]string, len(ipamIPsList))
+				for i, ip := range ipamIPsList {
+					ips[i] = locality.ExpandID(ip.(string))
+				}
+
+				ipamIPIDs = &ips
+			}
+		}
+
+		privateNetworks[id] = ipamIPIDs
 	}
 
-	return privateNetworkIDs
+	return privateNetworks
 }
 
 func flattenCPUs(cpus []*baremetal.CPU) interface{} {
 	if cpus == nil {
 		return nil
 	}
+
 	flattenedCPUs := []map[string]interface{}(nil)
 	for _, cpu := range cpus {
 		flattenedCPUs = append(flattenedCPUs, map[string]interface{}{
@@ -56,6 +75,7 @@ func flattenCPUs(cpus []*baremetal.CPU) interface{} {
 			"thread_count": cpu.ThreadCount,
 		})
 	}
+
 	return flattenedCPUs
 }
 
@@ -63,6 +83,7 @@ func flattenDisks(disks []*baremetal.Disk) interface{} {
 	if disks == nil {
 		return nil
 	}
+
 	flattenedDisks := []map[string]interface{}(nil)
 	for _, disk := range disks {
 		flattenedDisks = append(flattenedDisks, map[string]interface{}{
@@ -70,6 +91,7 @@ func flattenDisks(disks []*baremetal.Disk) interface{} {
 			"capacity": disk.Capacity,
 		})
 	}
+
 	return flattenedDisks
 }
 
@@ -77,6 +99,7 @@ func flattenMemory(memories []*baremetal.Memory) interface{} {
 	if memories == nil {
 		return nil
 	}
+
 	flattenedMemories := []map[string]interface{}(nil)
 	for _, memory := range memories {
 		flattenedMemories = append(flattenedMemories, map[string]interface{}{
@@ -86,6 +109,7 @@ func flattenMemory(memories []*baremetal.Memory) interface{} {
 			"is_ecc":    memory.IsEcc,
 		})
 	}
+
 	return flattenedMemories
 }
 
@@ -93,6 +117,7 @@ func flattenIPs(ips []*baremetal.IP) interface{} {
 	if ips == nil {
 		return nil
 	}
+
 	flatIPs := []map[string]interface{}(nil)
 	for _, ip := range ips {
 		flatIPs = append(flatIPs, map[string]interface{}{
@@ -102,6 +127,7 @@ func flattenIPs(ips []*baremetal.IP) interface{} {
 			"version": ip.Version.String(),
 		})
 	}
+
 	return flatIPs
 }
 
@@ -109,7 +135,9 @@ func flattenIPv4s(ips []*baremetal.IP) interface{} {
 	if ips == nil {
 		return nil
 	}
+
 	flatIPs := []map[string]interface{}(nil)
+
 	for _, ip := range ips {
 		if ip.Version == baremetal.IPVersionIPv4 {
 			flatIPs = append(flatIPs, map[string]interface{}{
@@ -120,6 +148,7 @@ func flattenIPv4s(ips []*baremetal.IP) interface{} {
 			})
 		}
 	}
+
 	return flatIPs
 }
 
@@ -127,7 +156,9 @@ func flattenIPv6s(ips []*baremetal.IP) interface{} {
 	if ips == nil {
 		return nil
 	}
+
 	flatIPs := []map[string]interface{}(nil)
+
 	for _, ip := range ips {
 		if ip.Version == baremetal.IPVersionIPv6 {
 			flatIPs = append(flatIPs, map[string]interface{}{
@@ -138,6 +169,7 @@ func flattenIPv6s(ips []*baremetal.IP) interface{} {
 			})
 		}
 	}
+
 	return flatIPs
 }
 
@@ -145,6 +177,7 @@ func flattenOptions(zone scw.Zone, options []*baremetal.ServerOption) interface{
 	if options == nil {
 		return nil
 	}
+
 	flattenedOptions := []map[string]interface{}(nil)
 	for _, option := range options {
 		flattenedOptions = append(flattenedOptions, map[string]interface{}{
@@ -153,19 +186,22 @@ func flattenOptions(zone scw.Zone, options []*baremetal.ServerOption) interface{
 			"name":       option.Name,
 		})
 	}
+
 	return flattenedOptions
 }
 
-func flattenPrivateNetworks(region scw.Region, privateNetworks []*baremetal.ServerPrivateNetwork) interface{} {
+func flattenPrivateNetworks(region scw.Region, privateNetworks []*baremetalV3.ServerPrivateNetwork) interface{} {
 	flattenedPrivateNetworks := []map[string]interface{}(nil)
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
-			"id":         regional.NewIDString(region, privateNetwork.PrivateNetworkID),
-			"vlan":       types.FlattenUint32Ptr(privateNetwork.Vlan),
-			"status":     privateNetwork.Status,
-			"created_at": types.FlattenTime(privateNetwork.CreatedAt),
-			"updated_at": types.FlattenTime(privateNetwork.UpdatedAt),
+			"id":          regional.NewIDString(region, privateNetwork.PrivateNetworkID),
+			"ipam_ip_ids": regional.NewRegionalIDs(region, privateNetwork.IpamIPIDs),
+			"vlan":        types.FlattenUint32Ptr(privateNetwork.Vlan),
+			"status":      privateNetwork.Status,
+			"created_at":  types.FlattenTime(privateNetwork.CreatedAt),
+			"updated_at":  types.FlattenTime(privateNetwork.UpdatedAt),
 		})
 	}
+
 	return flattenedPrivateNetworks
 }

@@ -28,6 +28,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Regi
 	if err != nil {
 		return nil, "", err
 	}
+
 	return k8sAPI, region, nil
 }
 
@@ -38,6 +39,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return k8sAPI, region, ID, nil
 }
 
@@ -69,28 +71,35 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 		if len(vSplit) != 3 {
 			return "", fmt.Errorf("upstream version %s is not correctly formatted", v.Name) // should never happen
 		}
+
 		if versionSplit[0] == vSplit[0] && versionSplit[1] == vSplit[1] {
 			return v.Name, nil
 		}
 	}
+
 	return "", fmt.Errorf("no available upstream version found for %s", version)
 }
 
 // convert a list of nodes to a list of map
 func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(res.Nodes))
+
 	for _, node := range res.Nodes {
 		n := make(map[string]interface{})
 		n["name"] = node.Name
 		n["status"] = node.Status.String()
-		if node.PublicIPV4 != nil && node.PublicIPV4.String() != types.NetIPNil {
-			n["public_ip"] = node.PublicIPV4.String()
+
+		if node.PublicIPV4 != nil && node.PublicIPV4.String() != types.NetIPNil { //nolint:staticcheck
+			n["public_ip"] = node.PublicIPV4.String() //nolint:staticcheck
 		}
-		if node.PublicIPV6 != nil && node.PublicIPV6.String() != types.NetIPNil {
-			n["public_ip_v6"] = node.PublicIPV6.String()
+
+		if node.PublicIPV6 != nil && node.PublicIPV6.String() != types.NetIPNil { //nolint:staticcheck
+			n["public_ip_v6"] = node.PublicIPV6.String() //nolint:staticcheck
 		}
+
 		result = append(result, n)
 	}
+
 	return result
 }
 

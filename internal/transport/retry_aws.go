@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
 )
 
 // RetryWhenAWSErrCodeEquals retries a function when it returns a specific AWS error
@@ -46,6 +46,7 @@ func retryWhen[T any](ctx context.Context, config *RetryWhenConfig[T], shouldRet
 				return result, ctx.Err()
 			default:
 				time.Sleep(retryInterval) // lintignore:R018
+
 				continue
 			}
 		}

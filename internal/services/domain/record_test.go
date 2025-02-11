@@ -700,6 +700,7 @@ func testAccCheckDomainRecordExists(tt *acctest.TestTools, n string) resource.Te
 		}
 
 		domainAPI := domain.NewDomainAPI(tt.Meta)
+
 		listDNSZones, err := domainAPI.ListDNSZoneRecords(&domainSDK.ListDNSZoneRecordsRequest{
 			DNSZone: rs.Primary.Attributes["dns_zone"],
 		})
@@ -818,6 +819,7 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 
 			// check if the zone still exists
 			domainAPI := domain.NewDomainAPI(tt.Meta)
+
 			listDNSZones, err := domainAPI.ListDNSZoneRecords(&domainSDK.ListDNSZoneRecordsRequest{
 				DNSZone: rs.Primary.Attributes["dns_zone"],
 			})
@@ -832,6 +834,7 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 			if listDNSZones.TotalCount > 0 {
 				return fmt.Errorf("zone %s still exist", rs.Primary.Attributes["dns_zone"])
 			}
+
 			return nil
 		}
 

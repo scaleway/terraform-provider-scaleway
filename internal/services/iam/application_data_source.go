@@ -21,11 +21,11 @@ func DataSourceApplication() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"application_id"}
 	dsSchema["application_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IAM application",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IAM application",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -46,6 +46,7 @@ func DataSourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m
 
 	if !appIDExists {
 		applicationName := d.Get("name").(string)
+
 		res, err := api.ListApplications(&iam.ListApplicationsRequest{
 			OrganizationID: types.FlattenStringPtr(account.GetOrganizationID(m, d)).(string),
 			Name:           types.ExpandStringPtr(applicationName),
@@ -67,6 +68,7 @@ func DataSourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.SetId(appID.(string))
+
 	err := d.Set("application_id", appID)
 	if err != nil {
 		return diag.FromErr(err)

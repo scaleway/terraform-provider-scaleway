@@ -17,6 +17,7 @@ func DataSourcePrivilege() *schema.Resource {
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
+
 	return &schema.Resource{
 		ReadContext: DataSourceRDBPrivilegeRead,
 		Schema:      dsSchema,
@@ -35,5 +36,6 @@ func DataSourceRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, m i
 	databaseName, _ := d.Get("database_name").(string)
 
 	d.SetId(ResourceRdbUserPrivilegeID(region, instanceID, databaseName, userName))
+
 	return ResourceRdbPrivilegeRead(ctx, d, m)
 }

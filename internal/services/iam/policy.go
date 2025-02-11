@@ -53,25 +53,25 @@ func ResourcePolicy() *schema.Resource {
 			},
 			"organization_id": account.OrganizationIDOptionalSchema(),
 			"user_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "User id",
-				ValidateFunc: verify.IsUUID(),
-				ExactlyOneOf: []string{"group_id", "application_id", "no_principal"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "User id",
+				ValidateDiagFunc: verify.IsUUID(),
+				ExactlyOneOf:     []string{"group_id", "application_id", "no_principal"},
 			},
 			"group_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Group id",
-				ValidateFunc: verify.IsUUID(),
-				ExactlyOneOf: []string{"user_id", "application_id", "no_principal"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Group id",
+				ValidateDiagFunc: verify.IsUUID(),
+				ExactlyOneOf:     []string{"user_id", "application_id", "no_principal"},
 			},
 			"application_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Application id",
-				ValidateFunc: verify.IsUUID(),
-				ExactlyOneOf: []string{"user_id", "group_id", "no_principal"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Application id",
+				ValidateDiagFunc: verify.IsUUID(),
+				ExactlyOneOf:     []string{"user_id", "group_id", "no_principal"},
 			},
 			"no_principal": {
 				Type:         schema.TypeBool,
@@ -86,18 +86,18 @@ func ResourcePolicy() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"organization_id": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
-							ValidateFunc: verify.IsUUID(),
+							Type:             schema.TypeString,
+							Optional:         true,
+							Description:      "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
+							ValidateDiagFunc: verify.IsUUID(),
 						},
 						"project_ids": {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
 							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: verify.IsUUID(),
+								Type:             schema.TypeString,
+								ValidateDiagFunc: verify.IsUUID(),
 							},
 						},
 						"permission_set_names": {
@@ -107,6 +107,11 @@ func ResourcePolicy() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+						},
+						"condition": {
+							Type:        schema.TypeString,
+							Description: "Conditions of the policy",
+							Optional:    true,
 						},
 					},
 				},
@@ -148,16 +153,20 @@ func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m inte
 
 func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	pol, err := api.GetPolicy(&iam.GetPolicyRequest{
 		PolicyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("name", pol.Name)
 	_ = d.Set("description", pol.Description)
 	_ = d.Set("created_at", types.FlattenTime(pol.CreatedAt))
@@ -169,9 +178,11 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m interf
 	if pol.UserID != nil {
 		_ = d.Set("user_id", types.FlattenStringPtr(pol.UserID))
 	}
+
 	if pol.GroupID != nil {
 		_ = d.Set("group_id", types.FlattenStringPtr(pol.GroupID))
 	}
+
 	if pol.ApplicationID != nil {
 		_ = d.Set("application_id", types.FlattenStringPtr(pol.ApplicationID))
 	}
@@ -203,30 +214,37 @@ func resourceIamPolicyUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		hasUpdated = true
 		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
+
 	if d.HasChange("description") {
 		hasUpdated = true
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
+
 	if d.HasChange("tags") {
 		hasUpdated = true
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
+
 	if d.HasChange("user_id") {
 		hasUpdated = true
 		req.UserID = types.ExpandStringPtr(d.Get("user_id"))
 	}
+
 	if d.HasChange("group_id") {
 		hasUpdated = true
 		req.GroupID = types.ExpandStringPtr(d.Get("group_id"))
 	}
+
 	if d.HasChange("application_id") {
 		hasUpdated = true
 		req.ApplicationID = types.ExpandStringPtr(d.Get("application_id"))
 	}
+
 	if noPrincipal := d.Get("no_principal"); d.HasChange("no_principal") && noPrincipal.(bool) {
 		hasUpdated = true
 		req.NoPrincipal = types.ExpandBoolPtr(noPrincipal)
 	}
+
 	if hasUpdated {
 		_, err := api.UpdatePolicy(req, scw.WithContext(ctx))
 		if err != nil {
@@ -256,8 +274,10 @@ func resourceIamPolicyDelete(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

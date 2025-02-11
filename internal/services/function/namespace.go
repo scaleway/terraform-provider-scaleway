@@ -44,6 +44,14 @@ func ResourceNamespace() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the function namespace",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the function namespace",
+			},
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
@@ -88,14 +96,21 @@ func ResourceFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.CreateNamespace(&function.CreateNamespaceRequest{
+	createReq := &function.CreateNamespaceRequest{
 		Description:                types.ExpandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandFunctionsSecrets(d.Get("secret_environment_variables")),
 		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "func"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
-	}, scw.WithContext(ctx))
+	}
+
+	rawTag, tagExist := d.GetOk("tags")
+	if tagExist {
+		createReq.Tags = types.ExpandStrings(rawTag)
+	}
+
+	ns, err := api.CreateNamespace(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -120,12 +135,15 @@ func ResourceFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("description", ns.Description)
+	_ = d.Set("tags", types.FlattenSliceString(ns.Tags))
 	_ = d.Set("environment_variables", ns.EnvironmentVariables)
 	_ = d.Set("name", ns.Name)
 	_ = d.Set("organization_id", ns.OrganizationID)
@@ -147,8 +165,10 @@ func ResourceFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -159,6 +179,10 @@ func ResourceFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChange("description") {
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChanges("environment_variables") {

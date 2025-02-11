@@ -40,18 +40,18 @@ func ResourceFrontend() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer ID",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The load-balancer ID",
 			},
 			"backend_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer backend ID",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				Description:      "The load-balancer backend ID",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -69,7 +69,7 @@ func ResourceFrontend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: dsf.Duration,
-				ValidateFunc:     verify.IsDuration(),
+				ValidateDiagFunc: verify.IsDuration(),
 				Description:      "Set the maximum inactivity time on the client side",
 			},
 			"certificate_id": {
@@ -82,8 +82,8 @@ func ResourceFrontend() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: verify.IsUUIDorUUIDWithLocality(),
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				},
 				Description:      "Collection of Certificate IDs related to the load balancer and domain",
 				DiffSuppressFunc: dsf.OrderDiff,
@@ -252,8 +252,10 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -304,8 +306,10 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -316,8 +320,8 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("timeout_client", types.FlattenDuration(frontend.TimeoutClient))
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 
-	if frontend.Certificate != nil {
-		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID))
+	if frontend.Certificate != nil { //nolint:staticcheck
+		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
 	} else {
 		_ = d.Set("certificate_id", "")
 	}
@@ -346,10 +350,12 @@ func flattenLBACLs(acls []*lbSDK.ACL) interface{} {
 	sort.Slice(acls, func(i, j int) bool {
 		return acls[i].Index < acls[j].Index
 	})
+
 	rawACLs := make([]interface{}, 0, len(acls))
 	for _, apiACL := range acls {
 		rawACLs = append(rawACLs, flattenLbACL(apiACL))
 	}
+
 	return rawACLs
 }
 
@@ -362,6 +368,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	apiACLs := make(map[int32]*lbSDK.ACL)
 	for _, acl := range resACL.ACLs {
 		apiACLs[acl.Index] = acl
@@ -385,6 +392,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 			if ACLEquals(stateACL, apiACL) {
 				continue
 			}
+
 			_, err = lbAPI.UpdateACL(&lbSDK.ZonedAPIUpdateACLRequest{
 				Zone:   zone,
 				ACLID:  apiACL.ID,
@@ -396,6 +404,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			continue
 		}
 		// old acl doesn't exist, create a new one
@@ -421,15 +430,18 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 			return diag.FromErr(err)
 		}
 	}
+
 	return nil
 }
 
 func expandsLBACLs(raw interface{}) []*lbSDK.ACL {
 	d := raw.([]interface{})
 	newACL := make([]*lbSDK.ACL, 0)
+
 	for _, rawACL := range d {
 		newACL = append(newACL, expandLbACL(rawACL))
 	}
+
 	return newACL
 }
 
@@ -449,8 +461,10 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -458,6 +472,7 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &lbSDK.ZonedAPIUpdateFrontendRequest{
 		Zone:           zone,
 		FrontendID:     ID,
@@ -513,11 +528,14 @@ func ACLEquals(aclA, aclB *lbSDK.ACL) bool {
 	if aclA.Name != aclB.Name {
 		return false
 	}
+
 	if !cmp.Equal(aclA.Match, aclB.Match) {
 		return false
 	}
+
 	if !cmp.Equal(aclA.Action, aclB.Action) {
 		return false
 	}
+
 	return true
 }

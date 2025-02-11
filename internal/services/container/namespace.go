@@ -46,6 +46,14 @@ func ResourceNamespace() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the container namespace",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the container namespace",
+			},
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
@@ -97,14 +105,21 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.CreateNamespace(&container.CreateNamespaceRequest{
+	createReq := &container.CreateNamespaceRequest{
 		Description:                types.ExpandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandContainerSecrets(d.Get("secret_environment_variables")),
 		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "ns"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
-	}, scw.WithContext(ctx))
+	}
+
+	rawTag, tagExist := d.GetOk("tags")
+	if tagExist {
+		createReq.Tags = types.ExpandStrings(rawTag)
+	}
+
+	ns, err := api.CreateNamespace(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,12 +144,15 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("description", types.FlattenStringPtr(ns.Description))
+	_ = d.Set("tags", types.FlattenSliceString(ns.Tags))
 	_ = d.Set("environment_variables", ns.EnvironmentVariables)
 	_ = d.Set("name", ns.Name)
 	_ = d.Set("organization_id", ns.OrganizationID)
@@ -166,6 +184,10 @@ func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceDat
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
+	if d.HasChange("tags") {
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	}
+
 	if d.HasChanges("environment_variables") {
 		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("environment_variables"))
 	}
@@ -191,8 +213,10 @@ func ResourceContainerNamespaceDelete(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -226,6 +250,7 @@ func ResourceContainerNamespaceDelete(ctx context.Context, d *schema.ResourceDat
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
+
 		_, err = registry.WaitForNamespace(ctx, registryAPI, region, registryID, d.Timeout(schema.TimeoutDelete))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)

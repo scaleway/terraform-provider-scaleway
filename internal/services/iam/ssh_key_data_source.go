@@ -19,10 +19,10 @@ func DataSourceSSHKey() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"ssh_key_id"}
 	dsSchema["ssh_key_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the SSH key",
-		ValidateFunc: verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the SSH key",
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 
 	return &schema.Resource{
@@ -37,6 +37,7 @@ func DataSourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m inte
 	sshKeyID, sshKeyIDExists := d.GetOk("ssh_key_id")
 	if !sshKeyIDExists {
 		sshKeyName := d.Get("name").(string)
+
 		res, err := iamAPI.ListSSHKeys(&iam.ListSSHKeysRequest{
 			Name:      types.ExpandStringPtr(sshKeyName),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),

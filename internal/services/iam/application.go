@@ -64,6 +64,7 @@ func ResourceApplication() *schema.Resource {
 
 func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	app, err := api.CreateApplication(&iam.CreateApplicationRequest{
 		Name:           types.ExpandOrGenerateString(d.Get("name"), "application"),
 		Description:    d.Get("description").(string),
@@ -81,16 +82,20 @@ func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	app, err := api.GetApplication(&iam.GetApplicationRequest{
 		ApplicationID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("name", app.Name)
 	_ = d.Set("description", app.Description)
 	_ = d.Set("created_at", types.FlattenTime(app.CreatedAt))
@@ -115,10 +120,12 @@ func resourceIamApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 		req.Name = types.ExpandStringPtr(d.Get("name"))
 		hasChanged = true
 	}
+
 	if d.HasChange("description") {
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
+
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true

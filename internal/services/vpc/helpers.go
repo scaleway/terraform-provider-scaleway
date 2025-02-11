@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -26,6 +27,7 @@ func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Regi
 	if err != nil {
 		return nil, "", err
 	}
+
 	return vpcAPI, region, err
 }
 
@@ -37,6 +39,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, stri
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return vpcAPI, region, ID, err
 }
 
@@ -52,6 +55,7 @@ func routesAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.RoutesWith
 	if err != nil {
 		return nil, "", err
 	}
+
 	return routesAPI, region, err
 }
 
@@ -68,6 +72,7 @@ func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]inte
 	if !exist {
 		return nil, errors.New("upgrade: id not exist")
 	}
+
 	rawState["id"], err = vpcPrivateNetworkUpgradeV1ZonalToRegionalID(ID.(string))
 	if err != nil {
 		return nil, err
@@ -93,4 +98,45 @@ func vpcPrivateNetworkUpgradeV1ZonalToRegionalID(element string) (string, error)
 	}
 
 	return fmt.Sprintf("%s/%s", fetchRegion.String(), id), nil
+}
+
+func vpcRouteExpandResourceID(id string) (string, error) {
+	parts := strings.Split(id, "/")
+	partCount := len(parts)
+
+	switch partCount {
+	case 1:
+		return id, nil
+	case 2:
+		_, ID, err := locality.ParseLocalizedID(id)
+		if err != nil {
+			return "", fmt.Errorf("failed to parse localized ID: %w", err)
+		}
+
+		return ID, nil
+	case 3:
+		// Parse as a nested ID and return the outerID
+		_, _, ID, err := locality.ParseLocalizedNestedID(id)
+		if err != nil {
+			return "", fmt.Errorf("failed to parse nested ID: %w", err)
+		}
+
+		return ID, nil
+	default:
+		return "", fmt.Errorf("unrecognized ID format: %s", id)
+	}
+}
+
+func diffSuppressFuncRouteResourceID(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	oldResourceID, err := vpcRouteExpandResourceID(oldValue)
+	if err != nil {
+		return false
+	}
+
+	newResourceID, err := vpcRouteExpandResourceID(newValue)
+	if err != nil {
+		return false
+	}
+
+	return oldResourceID == newResourceID
 }

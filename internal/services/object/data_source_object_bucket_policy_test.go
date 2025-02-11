@@ -16,7 +16,7 @@ func TestAccDataSourceObjectBucketPolicy_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scw-obp-data-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-data-basic")
 
 	expectedPolicyText := `{
 	"Version":"2012-10-17",
@@ -33,7 +33,7 @@ func TestAccDataSourceObjectBucketPolicy_Basic(t *testing.T) {
 				"s3:GetObject"
 			]
 		}
-   ]
+  ]
 }`
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -98,6 +98,7 @@ func testAccCheckDataSourcePolicyIsEquivalent(n, expectedPolicyText string) reso
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
+
 		dataSourcePolicy := ds.Primary.Attributes["policy"]
 
 		dataSourcePolicyToCompare, err := removePolicyStatementResources(dataSourcePolicy)
@@ -109,6 +110,7 @@ func testAccCheckDataSourcePolicyIsEquivalent(n, expectedPolicyText string) reso
 		if err != nil {
 			return fmt.Errorf("error testing policy equivalence: %s", err)
 		}
+
 		if !equivalent {
 			return fmt.Errorf("non equivalent policy error:\n\nexpected: %s\n\n     got: %s",
 				expectedPolicyText, dataSourcePolicyToCompare)

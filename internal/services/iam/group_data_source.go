@@ -21,11 +21,11 @@ func DataSourceGroup() *schema.Resource {
 
 	dsSchema["name"].ConflictsWith = []string{"group_id"}
 	dsSchema["group_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IAM group",
-		ConflictsWith: []string{"name"},
-		ValidateFunc:  verify.IsUUID(),
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the IAM group",
+		ConflictsWith:    []string{"name"},
+		ValidateDiagFunc: verify.IsUUID(),
 	}
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -68,6 +68,7 @@ func DataSourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId(groupID.(string))
+
 	err := d.Set("group_id", groupID)
 	if err != nil {
 		return diag.FromErr(err)

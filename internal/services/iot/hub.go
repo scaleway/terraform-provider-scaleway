@@ -130,6 +130,7 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	req := &iot.CreateHubRequest{
 		Region:      region,
 		Name:        types.ExpandOrGenerateString(d.Get("name"), "hub"),
@@ -152,6 +153,7 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(regional.NewIDString(region, res.ID))
 
 	_, err = waitIotHub(ctx, iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -200,6 +202,7 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			return diag.FromErr(err)
 		}
 	}
+
 	MQTTUrl := computeIotHubCaURL(req.ProductPlan, region)
 	_ = d.Set("mqtt_ca_url", MQTTUrl)
 
@@ -219,8 +222,10 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -241,6 +246,7 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("device_auto_provisioning", response.EnableDeviceAutoProvisioning)
 	_ = d.Set("mqtt_ca_url", computeIotHubCaURL(response.ProductPlan, region))
 	mqttURL := d.Get("mqtt_ca_url")
+
 	mqttCa, err := computeIotHubMQTTCa(ctx, fmt.Sprintf("%v", mqttURL), m)
 	if err != nil {
 		_ = diag.Diagnostic{
@@ -250,6 +256,7 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interface
 			Detail:        err.Error(),
 		}
 	}
+
 	_ = d.Set("mqtt_ca", mqttCa)
 
 	return nil
@@ -279,6 +286,7 @@ func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				HubID:  hubID,
 			}, scw.WithContext(ctx))
 		}
+
 		if err != nil {
 			return diag.FromErr(err)
 		}

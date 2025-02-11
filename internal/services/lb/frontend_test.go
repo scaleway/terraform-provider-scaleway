@@ -141,6 +141,7 @@ func TestAccFrontend_Certificate(t *testing.T) {
 					isFrontendPresent(tt, "scaleway_lb_frontend.frt01"),
 					isFrontendCertificatePresent(tt, "scaleway_lb_frontend.frt01", "scaleway_lb_certificate.cert01"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "certificate_ids.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_frontend.frt01", "certificate_id"),
 				),
 			},
 		},
@@ -539,6 +540,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if testAcl.Name == "" {
 				testAcl.Name = apiAcl.Name
 			}
+
 			return lb.ACLEquals(&testAcl, &apiAcl)
 		}
 
@@ -580,6 +582,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if _, found := aclMap[int32(i)]; !found {
 				return fmt.Errorf("cannot find an index set [%d]", i)
 			}
+
 			if !testCompareAcls(*expectedAcls[i-1], *aclMap[int32(i)]) {
 				return fmt.Errorf("two acls are not equal on stage %d", i)
 			}

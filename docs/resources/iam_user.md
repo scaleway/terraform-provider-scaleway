@@ -38,6 +38,8 @@ resource scaleway_iam_user user {
 
 - `email` - (Required) The email of the IAM user.
 
+- `tags` - (Optional) The tags associated with the user.
+
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the user is associated with.
 
 ## Attributes Reference

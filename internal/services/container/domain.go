@@ -43,7 +43,7 @@ func ResourceDomain() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				Description:      "Container the domain will be bound to",
-				ValidateFunc:     verify.IsUUIDorUUIDWithLocality(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"url": {
@@ -102,8 +102,10 @@ func ResourceContainerDomainRead(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -125,8 +127,10 @@ func ResourceContainerDomainDelete(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

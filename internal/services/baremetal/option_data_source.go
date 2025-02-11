@@ -24,11 +24,11 @@ func DataSourceOption() *schema.Resource {
 				ConflictsWith: []string{"option_id"},
 			},
 			"option_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The ID of the option",
-				ValidateFunc:  verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith: []string{"name"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The ID of the option",
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				ConflictsWith:    []string{"name"},
 			},
 			"manageable": {
 				Type:        schema.TypeBool,
@@ -47,10 +47,13 @@ func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	var optionName string
+
 	var optionManageable bool
+
 	optionID, ok := d.GetOk("option_id")
 	if ok {
 		optionID = d.Get("option_id")
+
 		res, err := api.GetOption(&baremetal.GetOptionRequest{
 			Zone:     zone,
 			OptionID: optionID.(string),
@@ -58,6 +61,7 @@ func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		optionManageable = res.Manageable
 		optionName = res.Name
 	} else {
@@ -67,12 +71,15 @@ func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(res.Options) == 0 {
 			return diag.FromErr(fmt.Errorf("no option found with the name %s", d.Get("name")))
 		}
+
 		for _, option := range res.Options {
 			if option.Name == d.Get("name") {
 				optionID, optionManageable, optionName = option.ID, option.Manageable, option.Name
+
 				break
 			}
 		}

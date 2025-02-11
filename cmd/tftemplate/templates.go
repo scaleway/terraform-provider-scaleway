@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"text/template"
+
 	"tftemplate/models"
 )
 
@@ -23,9 +25,10 @@ type TerraformTemplate struct {
 func executeTemplate(tmpl *TerraformTemplate, data models.ResourceTemplate) error {
 	var outputFile *os.File
 	var err error
-
+	lastInd := strings.LastIndex(tmpl.FileName, "/")
+	_ = os.Mkdir(tmpl.FileName[:lastInd], os.ModePerm)
 	if tmpl.Append {
-		outputFile, err = os.OpenFile(tmpl.FileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		outputFile, err = os.OpenFile(tmpl.FileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	} else {
 		outputFile, err = os.Create(tmpl.FileName)
 	}
