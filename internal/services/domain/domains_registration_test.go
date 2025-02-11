@@ -16,7 +16,7 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	singleDomain := "test-single-updates28" + ".com" // à adapter
+	singleDomain := "test-single-updates34" + ".com" // à adapter
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -45,17 +45,17 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
                     }
                 `, singleDomain),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "domains_info.0.domain_name", singleDomain),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "domain_names.0", singleDomain),
 					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "duration_in_years", "1"),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "owner_contact.0.firstname", "John"),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "auto_renew", "false"),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "dnssec", "false"),
 				),
 			},
-			/*
-			   {
-			       Config: fmt.Sprintf(`
+			{
+				Config: fmt.Sprintf(`
 			           resource "scaleway_domain_domains_registration" "test" {
-			             domains_info = [
-			               { domain_name = "%s" }
-			             ]
+			             domain_names = [ "%s"]
 			             duration_in_years = 1
 
 			             owner_contact {
@@ -72,41 +72,15 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 			               company_identification_code = "123456789"
 			             }
 
-			             administrative_contact {
-			               firstname       = "Jane"
-			               lastname        = "DOE"
-			               email           = "jane.doe@example.com"
-			               phone_number    = "+1.98765432"
-			               address_line_1  = "456 Another Street"
-			               city            = "Lyon"
-			               zip             = "69002"
-			               country         = "FR"
-			               legal_form      = "individual"
-			               vat_identification_code     = "FR12345678901"
-			               company_identification_code = "123456789"
-			             }
+					     auto_renew = true
 
-			             technical_contact {
-			               firstname       = "Tech"
-			               lastname        = "Support"
-			               email           = "tech.support@example.com"
-			               phone_number    = "+1.55555555"
-			               address_line_1  = "789 Tech Road"
-			               city            = "Marseille"
-			               zip             = "13001"
-			               country         = "FR"
-			               legal_form      = "individual"
-			               vat_identification_code     = "FR12345678901"
-			               company_identification_code = "123456789"
-			             }
+					     dnssec = true
 			           }
 			       `, singleDomain),
-			       Check: resource.ComposeTestCheckFunc(
-			           resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "administrative_contact.0.firstname", "Jane"),
-			           resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "technical_contact.0.firstname", "Tech"),
-			       ),
-			   },
-			*/
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "auto_renew", "true"),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.test", "dnssec", "true")),
+			},
 		},
 	})
 }
@@ -115,9 +89,9 @@ func TestAccDomainRegistration_MultipleDomainsNoUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	domainName1 := "test-multi-1.com"
-	domainName2 := "test-multi-2.com"
-	domainName3 := "test-multi-3.com"
+	domainName1 := "test-multiple-1.com"
+	domainName2 := "test-multiple-2.com"
+	domainName3 := "test-multiple-3.com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -125,15 +99,9 @@ func TestAccDomainRegistration_MultipleDomainsNoUpdate(t *testing.T) {
 		CheckDestroy:      testAccCheckDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				// Création d'une ressource unique avec plusieurs domaines,
-				// aucune mise à jour ensuite (1 seule étape).
 				Config: fmt.Sprintf(`
                     resource "scaleway_domain_domains_registration" "multi" {
-                      domains_info = [
-                        { domain_name = "%s" },
-                        { domain_name = "%s" },
-                        { domain_name = "%s" }
-                      ]
+                      domain_names = ["%s","%s","%s"]
 
                       duration_in_years = 1
 
@@ -153,9 +121,9 @@ func TestAccDomainRegistration_MultipleDomainsNoUpdate(t *testing.T) {
                     }
                 `, domainName1, domainName2, domainName3),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domains_info.0.domain_name", domainName1),
-					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domains_info.1.domain_name", domainName2),
-					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domains_info.2.domain_name", domainName3),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domain_names.0", domainName1),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domain_names.0", domainName2),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domain_names.0", domainName3),
 				),
 			},
 		},
