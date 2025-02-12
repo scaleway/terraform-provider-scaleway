@@ -337,6 +337,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	var id string
 
 	if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
