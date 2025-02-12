@@ -9,6 +9,7 @@ import (
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
@@ -223,22 +224,21 @@ func TestAccImage_Server(t *testing.T) {
 						type 	= "DEV1-S"
 					}
 
-					resource "scaleway_instance_snapshot" "main" {
+					resource "scaleway_block_snapshot" "main" {
 						volume_id	= scaleway_instance_server.main.root_volume.0.volume_id
 						depends_on 	= [ scaleway_instance_server.main ]
 					}
 
 					resource "scaleway_instance_image" "main" {
-						root_volume_id 			= scaleway_instance_snapshot.main.id
+						root_volume_id 			= scaleway_block_snapshot.main.id
 						tags 					= ["test_remove_tags"]
-						depends_on 				= [ scaleway_instance_snapshot.main ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.main"),
-					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "test_remove_tags"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
@@ -252,21 +252,20 @@ func TestAccImage_Server(t *testing.T) {
 						type 	= "DEV1-S"
 					}
 
-					resource "scaleway_instance_snapshot" "main" {
+					resource "scaleway_block_snapshot" "main" {
 						volume_id 	= scaleway_instance_server.main.root_volume.0.volume_id
 						depends_on	= [ scaleway_instance_server.main ]
 					}
 
 					resource "scaleway_instance_image" "main" {
-						root_volume_id 			= scaleway_instance_snapshot.main.id
-						depends_on 				= [ scaleway_instance_snapshot.main ]
+						root_volume_id 			= scaleway_block_snapshot.main.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.main"),
-					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_image.main", "tags.0"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
@@ -305,6 +304,9 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					resource "scaleway_instance_server" "server" {
 						image	= "ubuntu_focal"
 						type 	= "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -328,6 +330,9 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					resource "scaleway_instance_server" "server" {
 						image	= "ubuntu_focal"
 						type 	= "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}
 					resource "scaleway_instance_snapshot" "server" {
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
@@ -383,6 +388,9 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					resource "scaleway_instance_server" "server" {
 						image	= "ubuntu_focal"
 						type 	= "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}
 					resource "scaleway_instance_snapshot" "server" {
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
