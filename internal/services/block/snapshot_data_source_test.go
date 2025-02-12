@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
 
 func TestAccDataSourceSnapshot_Basic(t *testing.T) {
@@ -14,7 +15,7 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isSnapshotDestroyed(tt),
+			blocktestfuncs.IsSnapshotDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -38,7 +39,7 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 
 					resource.TestCheckResourceAttrPair("scaleway_block_snapshot.main", "name", "data.scaleway_block_snapshot.find_by_name", "name"),
 					resource.TestCheckResourceAttrPair("scaleway_block_snapshot.main", "name", "data.scaleway_block_snapshot.find_by_id", "name"),

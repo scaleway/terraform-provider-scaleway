@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
 
 func TestAccDataSourceVolume_Basic(t *testing.T) {
@@ -14,7 +15,7 @@ func TestAccDataSourceVolume_Basic(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isVolumeDestroyed(tt),
+			blocktestfuncs.IsVolumeDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -34,7 +35,7 @@ func TestAccDataSourceVolume_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "scaleway_block_volume.main"),
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 
 					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "name", "data.scaleway_block_volume.find_by_name", "name"),
 					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "name", "data.scaleway_block_volume.find_by_id", "name"),
