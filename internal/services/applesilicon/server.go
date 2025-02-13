@@ -284,9 +284,8 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		_, err = waitForAppleSiliconPrivateNetworkServer(ctx, appleSilisonPrivateNetworkAPI, zone, ID, d.Timeout(schema.TimeoutCreate))
 	}
+	_, err = waitForAppleSiliconPrivateNetworkServer(ctx, appleSilisonPrivateNetworkAPI, zone, ID, d.Timeout(schema.TimeoutCreate))
 
 	return ResourceAppleSiliconServerRead(ctx, d, m)
 }

@@ -45,7 +45,6 @@ func TestAccServer_Basic(t *testing.T) {
 }
 
 func TestAccServer_EnableDisabledVPC(t *testing.T) {
-	//t.Skip("Skipping AppleSilicon VPC not available")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
