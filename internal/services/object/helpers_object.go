@@ -68,6 +68,7 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 		defaultRoundTripper: httpClient.Transport,
 		userAgent:           userAgent,
 	}
+
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
