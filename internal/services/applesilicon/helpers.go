@@ -2,6 +2,7 @@ package applesilicon
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -13,6 +14,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return err
 	}
+
 	listPrivateNetwork, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     zone,
 		ServerID: &serverID,
@@ -36,5 +38,6 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 	if err != nil && !httperrors.Is404(err) {
 		return err
 	}
+
 	return nil
 }

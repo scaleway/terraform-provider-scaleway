@@ -17,18 +17,23 @@ func expandPrivateNetworks(pn interface{}) map[string]*[]string {
 		id := locality.ExpandID(rawPN["id"].(string))
 
 		ipamIPIDs := &[]string{}
+
 		if ipamIPs, ok := rawPN["ipam_ip_ids"]; ok && ipamIPs != nil {
 			ipamIPsList := ipamIPs.([]interface{})
 			if len(ipamIPsList) > 0 {
 				ips := make([]string, len(ipamIPsList))
+
 				for i, ip := range ipamIPsList {
 					ips[i] = locality.ExpandID(ip.(string))
 				}
+
 				ipamIPIDs = &ips
 			}
 		}
+
 		privateNetworks[id] = ipamIPIDs
 	}
+
 	return privateNetworks
 }
 
@@ -44,5 +49,6 @@ func flattenPrivateNetworks(region scw.Region, privateNetworks []*applesilicon.S
 			"updated_at":  types.FlattenTime(privateNetwork.UpdatedAt),
 		})
 	}
+
 	return flattenedPrivateNetworks
 }

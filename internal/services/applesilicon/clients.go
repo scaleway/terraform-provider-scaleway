@@ -39,5 +39,6 @@ func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*apple
 	if err != nil {
 		return nil, "", err
 	}
+
 	return privateNetworkAPI, zone, nil
 }

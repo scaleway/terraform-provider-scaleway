@@ -2,9 +2,6 @@ package applesilicon
 
 import (
 	"context"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,9 +9,12 @@ import (
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceServer() *schema.Resource {
@@ -176,11 +176,16 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 			ServerID:                   res.ID,
 			PerPrivateNetworkIpamIPIDs: expandPrivateNetworks(pn),
 		}
+
 		_, err := privateNetworkAPI.SetServerPrivateNetworks(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_, err = waitForAppleSiliconPrivateNetworkServer(ctx, privateNetworkAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceAppleSiliconServerRead(ctx, d, m)
@@ -220,6 +225,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("zone", res.Zone.String())
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
+
 	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     res.Zone,
 		ServerID: &res.ID,
@@ -227,11 +233,12 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	pnRegion, err := res.Zone.Region()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	//check if pn
+
 	_ = d.Set("private_network", flattenPrivateNetworks(pnRegion, listPrivateNetworks.ServerPrivateNetworks))
 
 	return nil
@@ -243,7 +250,7 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	appleSilisonPrivateNetworkAPI, zone, err := newPrivateNetworkAPIWithZone(d, m)
+	appleSilisonPrivateNetworkAPI, zonePN, err := newPrivateNetworkAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -275,7 +282,7 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	if d.HasChange("private_network") && d.Get("enable_vpc").(bool) {
 		privateNetwork := d.Get("private_network")
 		req := &applesilicon.PrivateNetworkAPISetServerPrivateNetworksRequest{
-			Zone:                       zone,
+			Zone:                       zonePN,
 			ServerID:                   ID,
 			PerPrivateNetworkIpamIPIDs: expandPrivateNetworks(privateNetwork),
 		}
@@ -285,7 +292,11 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 	}
+
 	_, err = waitForAppleSiliconPrivateNetworkServer(ctx, appleSilisonPrivateNetworkAPI, zone, ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceAppleSiliconServerRead(ctx, d, m)
 }

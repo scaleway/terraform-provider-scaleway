@@ -58,9 +58,9 @@ func waitForTerminalVPCState(ctx context.Context, api *applesilicon.API, zone sc
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
