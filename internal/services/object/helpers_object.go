@@ -73,7 +73,6 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
 		config.WithHTTPClient(httpClient),
 	)
-
 	if err != nil {
 		return nil, err
 	}
