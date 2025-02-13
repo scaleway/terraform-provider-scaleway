@@ -10,9 +10,10 @@ import (
 )
 
 const (
-	defaultDomainRecordTimeout     = 5 * time.Minute
-	defaultDomainZoneTimeout       = 5 * time.Minute
-	defaultDomainZoneRetryInterval = 5 * time.Second
+	defaultDomainRecordTimeout       = 5 * time.Minute
+	defaultDomainZoneTimeout         = 5 * time.Minute
+	defaultDomainZoneRetryInterval   = 5 * time.Second
+	defaultDomainRegistrationTimeout = 30 * time.Minute
 )
 
 func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, timeout time.Duration) (*domain.DNSZone, error) {
@@ -49,6 +50,30 @@ func waitForDomainsRegistration(ctx context.Context, api *domain.RegistrarAPI, d
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 	return api.WaitForOrderDomain(&domain.WaitForOrderDomainRequest{
+		Domain:        domainName,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+func waitForAutoRenewStatus(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
+	retryInterval := defaultWaitDomainsRegistrationRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+	return api.WaitForAutoRenewStatus(&domain.WaitForAutoRenewStatusRequest{
+		Domain:        domainName,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
+	retryInterval := defaultWaitDomainsRegistrationRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+	return api.WaitForDNSSECStatus(&domain.WaitForDNSSECStatusRequest{
 		Domain:        domainName,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,

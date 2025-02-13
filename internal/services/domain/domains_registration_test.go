@@ -85,13 +85,13 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 	})
 }
 
-func TestAccDomainRegistration_MultipleDomainsNoUpdate(t *testing.T) {
+func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	domainName1 := "test-multiple-1.com"
-	domainName2 := "test-multiple-2.com"
-	domainName3 := "test-multiple-3.com"
+	domainName1 := "test-multiple-118.com"
+	domainName2 := "test-multiple-119.com"
+	domainName3 := "test-multiple-120.com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -122,12 +122,75 @@ func TestAccDomainRegistration_MultipleDomainsNoUpdate(t *testing.T) {
                 `, domainName1, domainName2, domainName3),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domain_names.0", domainName1),
-					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domain_names.0", domainName2),
-					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domain_names.0", domainName3),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domain_names.1", domainName2),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "domain_names.2", domainName3),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+                    resource "scaleway_domain_domains_registration" "multi" {
+                      domain_names = ["%s", "%s", "%s"]
+                      duration_in_years = 1
+
+                      owner_contact {
+                        firstname                   = "John"
+                        lastname                    = "DOE"
+                        email                       = "john.doe@example.com"
+                        phone_number                = "+1.23456789"
+                        address_line_1              = "123 Main Street"
+                        city                        = "Paris"
+                        zip                         = "75001"
+                        country                     = "FR"
+                        legal_form                  = "individual"
+                        vat_identification_code     = "FR12345678901"
+                        company_identification_code = "123456789"
+                      }
+
+                      auto_renew = true
+                      dnssec     = true
+                    }
+                `, domainName1, domainName2, domainName3),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "auto_renew", "true"),
+					resource.TestCheckResourceAttr("scaleway_domain_domains_registration.multi", "dnssec", "true"),
+					testAccCheckDomainStatus(tt, domainSDK.DomainFeatureStatusEnabled.String(), domainSDK.DomainFeatureStatusEnabled.String()),
 				),
 			},
 		},
 	})
+}
+
+func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expectedDNSSEC string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_domain_domains_registration" {
+				continue
+			}
+
+			registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
+			domainNames, err := domain.ExtractDomainsFromTaskID(nil, rs.Primary.ID, registrarAPI)
+			if err != nil {
+				return fmt.Errorf("error extracting domains: %w", err)
+			}
+
+			for _, domainName := range domainNames {
+				domainResp, getErr := registrarAPI.GetDomain(&domainSDK.RegistrarAPIGetDomainRequest{
+					Domain: domainName,
+				})
+				if getErr != nil {
+					return fmt.Errorf("failed to get details for domain %s: %w", domainName, getErr)
+				}
+
+				if domainResp.AutoRenewStatus.String() != expectedAutoRenew {
+					return fmt.Errorf("domain %s has auto_renew status %s, expected %s", domainName, domainResp.AutoRenewStatus, expectedAutoRenew)
+				}
+				if domainResp.Dnssec.Status.String() != expectedDNSSEC {
+					return fmt.Errorf("domain %s has dnssec status %s, expected %s", domainName, domainResp.Dnssec.Status.String(), expectedDNSSEC)
+				}
+			}
+		}
+		return nil
+	}
 }
 
 func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {

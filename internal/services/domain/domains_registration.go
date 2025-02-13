@@ -21,11 +21,11 @@ func ResourceDomainsRegistration() *schema.Resource {
 		UpdateContext: resourceDomainsRegistrationUpdate,
 		DeleteContext: resourceDomainsRegistrationDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultDomainRecordTimeout),
-			Read:    schema.DefaultTimeout(defaultDomainRecordTimeout),
-			Update:  schema.DefaultTimeout(defaultDomainRecordTimeout),
-			Delete:  schema.DefaultTimeout(defaultDomainRecordTimeout),
-			Default: schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Create:  schema.DefaultTimeout(defaultDomainRegistrationTimeout),
+			Read:    schema.DefaultTimeout(defaultDomainRegistrationTimeout),
+			Update:  schema.DefaultTimeout(defaultDomainRegistrationTimeout),
+			Delete:  schema.DefaultTimeout(defaultDomainRegistrationTimeout),
+			Default: schema.DefaultTimeout(defaultDomainRegistrationTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -503,7 +503,7 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 
 	computedDnssec := false
 
-	if firstResp.Dnssec.Status == "enabeld" || firstResp.Dnssec.Status == "enabling" {
+	if firstResp.Dnssec.Status == "enabled" {
 		computedDnssec = true
 	}
 
@@ -575,6 +575,10 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 					}
 				}
 			}
+			_, err = waitForAutoRenewStatus(ctx, registrarAPI, domainName, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -612,6 +616,10 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 						return diag.FromErr(fmt.Errorf("failed to disable dnssec for %s: %v", domainName, err))
 					}
 				}
+			}
+			_, err = waitForDNSSECStatus(ctx, registrarAPI, domainName, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}
