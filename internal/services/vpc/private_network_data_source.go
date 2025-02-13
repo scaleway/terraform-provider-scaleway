@@ -51,6 +51,7 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	privateNetworkID, ok := d.GetOk("private_network_id")
 	if !ok {
 		pnName := d.Get("name").(string)
+
 		res, err := vpcAPI.ListPrivateNetworks(
 			&vpc.ListPrivateNetworksRequest{
 				Name:      types.ExpandStringPtr(pnName),
@@ -77,6 +78,7 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	regionalID := datasource.NewRegionalID(privateNetworkID, region)
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
+
 	diags := ResourceVPCPrivateNetworkRead(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read private network state")...)

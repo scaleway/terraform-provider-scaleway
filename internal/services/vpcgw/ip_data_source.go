@@ -37,5 +37,6 @@ func DataSourceVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceDat
 	zonedID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("ip_id", zonedID)
+
 	return ResourceIPRead(ctx, d, m)
 }

@@ -48,10 +48,12 @@ func DataSourceOSRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	}
 
 	var osVersion, osName string
+
 	osID, ok := d.GetOk("os_id")
 	if ok {
 		// We fetch the name and version using the os id
 		osID = d.Get("os_id")
+
 		res, err := api.GetOS(&baremetal.GetOSRequest{
 			Zone: zone,
 			OsID: osID.(string),
@@ -59,6 +61,7 @@ func DataSourceOSRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		osVersion = res.Version
 		osName = res.Name
 	} else {
@@ -69,12 +72,15 @@ func DataSourceOSRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(res.Os) == 0 {
 			return diag.FromErr(fmt.Errorf("no os found with the name %s", d.Get("name")))
 		}
+
 		for _, os := range res.Os {
 			if os.Name == d.Get("name") && os.Version == d.Get("version") {
 				osID, osVersion, osName = os.ID, os.Version, os.Name
+
 				break
 			}
 		}

@@ -69,6 +69,7 @@ func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceDat
 
 func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -88,10 +89,12 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	foundInGroup := false
+
 	if userID != "" {
 		for _, groupUserID := range group.UserIDs {
 			if groupUserID == userID {
 				foundInGroup = true
+
 				break
 			}
 		}
@@ -99,6 +102,7 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 		for _, groupApplicationID := range group.ApplicationIDs {
 			if groupApplicationID == applicationID {
 				foundInGroup = true
+
 				break
 			}
 		}
@@ -119,6 +123,7 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 
 func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,6 +146,7 @@ func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceDat
 
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

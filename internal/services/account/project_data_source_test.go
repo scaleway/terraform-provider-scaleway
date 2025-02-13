@@ -11,10 +11,12 @@ import (
 func TestAccDataSourceProject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
 		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -50,10 +52,12 @@ func TestAccDataSourceProject_Basic(t *testing.T) {
 func TestAccDataSourceProject_Default(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
 		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

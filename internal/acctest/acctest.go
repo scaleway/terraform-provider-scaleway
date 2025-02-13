@@ -26,6 +26,7 @@ type TestTools struct {
 
 func NewTestTools(t *testing.T) *TestTools {
 	t.Helper()
+
 	ctx := context.Background()
 
 	folder, err := os.Getwd()
@@ -98,6 +99,7 @@ func extractGeneratedNamePrefix(name string) string {
 	//         ^
 	dashIndex = strings.LastIndex(name, "-")
 	name = name[:dashIndex]
+
 	return name
 }
 
@@ -141,6 +143,7 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 			// We do not want to generate new cassettes for each new features
 			continue
 		}
+
 		if !compareJSONFields(expectedValue, actual[key]) {
 			return false
 		}
@@ -155,6 +158,7 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 			return false
 		}
 	}
+
 	return true
 }
 

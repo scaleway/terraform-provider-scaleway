@@ -84,6 +84,7 @@ func DataSourceBillingConsumptionsRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	consumptions := []interface{}(nil)
+
 	for _, consumption := range res.Consumptions {
 		rawConsumption := make(map[string]interface{})
 		rawConsumption["value"] = consumption.Value.String()

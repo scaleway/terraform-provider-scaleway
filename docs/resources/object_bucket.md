@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_object_bucket"
 
 # Resource: scaleway_object_bucket
 
-The `scaleway_object_bucket` resource allows you to create and manage buckets for [Scaleway Object storage](https://www.scaleway.com/en/docs/storage/object/).
+The `scaleway_object_bucket` resource allows you to create and manage buckets for [Scaleway Object storage](https://www.scaleway.com/en/docs/object-storage/).
 
-Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/how-to/create-a-bucket/) for more information on Object Storage buckets.
+Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/how-to/create-a-bucket/) for more information on Object Storage buckets.
 
 ## Example Usage
 
@@ -129,11 +129,11 @@ If you make any change to your bucket's tags using the console, it will overwrit
 
 * `region` - (Optional) The [region](https://www.scaleway.com/en/developers/api/#region-definition) in which the bucket will be created.
 
-* `versioning` - (Optional) A state of [versioning](https://www.scaleway.com/en/docs/storage/object/how-to/use-bucket-versioning/). The `versioning` object supports the following:
+* `versioning` - (Optional) A state of [versioning](https://www.scaleway.com/en/docs/object-storage/how-to/use-bucket-versioning/). The `versioning` object supports the following:
 
     * `enabled` - (Optional) Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state. You can, however, suspend versioning on that bucket.
 
-* `cors_rule` - (Optional) A rule of [Cross-Origin Resource Sharing](https://www.scaleway.com/en/docs/storage/object/api-cli/setting-cors-rules/). The `CORS` object supports the following:
+* `cors_rule` - (Optional) A rule of [Cross-Origin Resource Sharing](https://www.scaleway.com/en/docs/object-storage/api-cli/setting-cors-rules/). The `CORS` object supports the following:
 
     * `allowed_headers` (Optional) Specifies which headers are allowed.
     * `allowed_methods` (Required) Specifies which methods are allowed (`GET`, `PUT`, `POST`, `DELETE` or `HEAD`).
@@ -141,7 +141,7 @@ If you make any change to your bucket's tags using the console, it will overwrit
     * `expose_headers` (Optional) Specifies header exposure in the response.
     * `max_age_seconds` (Optional) Specifies time in seconds that the browser can cache the response for a preflight request.
 
-* `force_destroy` - (Optional) Whether to allow the object to be deleted by removing any legal hold on any object version. Default is false. This value should be set to true only if the bucket has object lock enabled.
+* `force_destroy` - (Optional) Boolean that, when set to true, allows the deletion of all objects (including locked objects) when the bucket is destroyed. This operation is irreversible, and the objects cannot be recovered. The default is false.
 
 * `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
 
@@ -165,7 +165,7 @@ At least one of `abort_incomplete_multipart_upload_days`, `expiration`, `transit
 
 * `days` (Optional) Specifies the number of days after object creation when the specific rule action takes effect.
 
-* `storage_class` (Required) Specifies the Scaleway [storage class](https://www.scaleway.com/en/docs/storage/object/concepts/#storage-class) `STANDARD`, `GLACIER`, `ONEZONE_IA`  to which you want the object to transition.
+* `storage_class` (Required) Specifies the Scaleway [storage class](https://www.scaleway.com/en/docs/object-storage/concepts/#storage-class) `STANDARD`, `GLACIER`, `ONEZONE_IA`  to which you want the object to transition.
 
 ~> **Important:**  If versioning is enabled, this rule only deletes the current version of an object.
 

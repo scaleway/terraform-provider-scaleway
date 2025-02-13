@@ -13,6 +13,7 @@ func TestAccDataSourceAccountSSHKey_Basic(t *testing.T) {
 	dataSourceAccountSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ foobar@example.com"
 	dataSourceAccountSSHKeyWithoutComment := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ"
 	sshKeyName := "TestAccScalewayDataSourceAccountSSHKey_Basic"
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

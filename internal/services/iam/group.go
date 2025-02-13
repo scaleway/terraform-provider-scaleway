@@ -90,6 +90,7 @@ func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m inter
 		Description:    d.Get("description").(string),
 		Tags:           types.ExpandStrings(d.Get("tags")),
 	}
+
 	group, err := api.CreateGroup(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -99,6 +100,7 @@ func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	appIDs := types.ExpandStrings(d.Get("application_ids").(*schema.Set).List())
 	userIDs := types.ExpandStrings(d.Get("user_ids").(*schema.Set).List())
+
 	if !d.Get("external_membership").(bool) && (len(appIDs) > 0 || len(userIDs) > 0) {
 		_, err := api.SetGroupMembers(&iam.SetGroupMembersRequest{
 			GroupID:        group.ID,
@@ -115,14 +117,17 @@ func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
+
 	group, err := api.GetGroup(&iam.GetGroupRequest{
 		GroupID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -166,6 +171,7 @@ func resourceIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if !d.Get("external_membership").(bool) && d.HasChanges("application_ids", "user_ids") {
 		appIDs := types.ExpandStrings(d.Get("application_ids").(*schema.Set).List())
 		userIDs := types.ExpandStrings(d.Get("user_ids").(*schema.Set).List())
+
 		if len(appIDs) > 0 || len(userIDs) > 0 {
 			_, err = api.SetGroupMembers(&iam.SetGroupMembersRequest{
 				ApplicationIDs: appIDs,
@@ -185,6 +191,7 @@ func resourceIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m inter
 					return diag.FromErr(err)
 				}
 			}
+
 			for i := range group.UserIDs {
 				_, err = api.RemoveGroupMember(&iam.RemoveGroupMemberRequest{
 					GroupID: group.ID,

@@ -65,11 +65,14 @@ func addBetaResources(provider *schema.Provider) {
 	if !terraformBetaEnabled {
 		return
 	}
+
 	betaResources := map[string]*schema.Resource{}
 	betaDataSources := map[string]*schema.Resource{}
+
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
 	}
+
 	for resourceName, resource := range betaDataSources {
 		provider.DataSourcesMap[resourceName] = resource
 	}
@@ -204,6 +207,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_rdb_privilege":                       rdb.ResourcePrivilege(),
 				"scaleway_rdb_read_replica":                    rdb.ResourceReadReplica(),
 				"scaleway_rdb_user":                            rdb.ResourceUser(),
+				"scaleway_rdb_snapshot":                        rdb.ResourceSnapshot(),
 				"scaleway_redis_cluster":                       redis.ResourceCluster(),
 				"scaleway_registry_namespace":                  registry.ResourceNamespace(),
 				"scaleway_sdb_sql_database":                    sdb.ResourceDatabase(),
@@ -332,6 +336,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
+
 			return m, nil
 		}
 

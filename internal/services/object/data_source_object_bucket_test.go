@@ -17,6 +17,7 @@ import (
 func TestAccDataSourceObjectBucket_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket")
 	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
@@ -90,6 +91,7 @@ func TestAccDataSourceObjectBucket_Basic(t *testing.T) {
 func TestAccDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket")
 
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(tt)
@@ -139,6 +141,7 @@ func TestAccDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 func TestAccDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
 
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(tt)

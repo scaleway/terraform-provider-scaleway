@@ -28,6 +28,7 @@ func NewID(zone scw.Zone, id string) ID {
 func ExpandID(id interface{}) ID {
 	zonedID := ID{}
 	tab := strings.Split(id.(string), "/")
+
 	if len(tab) != 2 {
 		zonedID.ID = id.(string)
 	} else {
@@ -57,6 +58,7 @@ func ParseID(zonedID string) (zone scw.Zone, id string, err error) {
 	}
 
 	zone, err = scw.ParseZone(rawZone)
+
 	return
 }
 
@@ -68,5 +70,6 @@ func ParseNestedID(zonedNestedID string) (zone scw.Zone, outerID, innerID string
 	}
 
 	zone, err = scw.ParseZone(rawZone)
+
 	return
 }

@@ -42,6 +42,7 @@ func DataSourceRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m in
 	instanceID, ok := d.GetOk("instance_id")
 	if !ok { // Get instance by region and name.
 		instanceName := d.Get("name").(string)
+
 		res, err := api.ListInstances(&rdb.ListInstancesRequest{
 			Region:    region,
 			Name:      scw.StringPtr(instanceName),
@@ -65,9 +66,11 @@ func DataSourceRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m in
 
 	regionalID := datasource.NewRegionalID(instanceID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("instance_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return ResourceRdbInstanceRead(ctx, d, m)
 }

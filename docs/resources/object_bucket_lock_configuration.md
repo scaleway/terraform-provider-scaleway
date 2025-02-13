@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_object_bucket_lock_configuration"
 
 # Resource: scaleway_object_bucket_lock_configuration
 
-The `scaleway_object_bucket_lock_configuration` resource allows you to create and manage an object lock configuration for [Scaleway Object storage](https://www.scaleway.com/en/docs/storage/object/).
+The `scaleway_object_bucket_lock_configuration` resource allows you to create and manage an object lock configuration for [Scaleway Object storage](https://www.scaleway.com/en/docs/object-storage/).
 
-Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/object-lock/) for more information on object lock.
+Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-lock/) for more information on object lock.
 
 ## Example Usage
 
@@ -49,7 +49,7 @@ The following arguments are supported:
 
     - `default_retention` - (Required) The default retention for the lock.
 
-        - `mode` - (Required) The default object lock retention mode you want to apply to new objects placed in the specified bucket. Valid values are `GOVERNANCE` or `COMPLIANCE`. Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/object-lock/#retention-modes) for more information on retention modes.
+        - `mode` - (Required) The default object lock retention mode you want to apply to new objects placed in the specified bucket. Valid values are `GOVERNANCE` or `COMPLIANCE`. Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-lock/#retention-modes) for more information on retention modes.
 
         - `days` - (Optional) The number of days you want to specify for the default retention period.
 

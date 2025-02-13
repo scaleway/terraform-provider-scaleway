@@ -16,14 +16,18 @@ func NewDomainAPI(m interface{}) *domain.API {
 
 func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []*domain.Record) (*domain.Record, error) {
 	var currentRecord *domain.Record
+
 	for _, r := range records {
 		flattedData := flattenDomainData(strings.ToLower(r.Data), r.Type).(string)
 		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
+
 		if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
 			if currentRecord != nil {
 				return nil, errors.New("multiple records found with same type and data")
 			}
+
 			currentRecord = r
+
 			break
 		}
 	}
@@ -40,5 +44,6 @@ func FindDefaultReverse(address string) string {
 	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
 		parts[i], parts[j] = parts[j], parts[i]
 	}
+
 	return strings.Join(parts, "-") + ".instances.scw.cloud"
 }

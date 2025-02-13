@@ -40,6 +40,7 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	regionalAPI, region, err := cockpitAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -59,10 +60,13 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("project_id", d.Get("project_id").(string))
 	_ = d.Set("plan", res.Name)
 	_ = d.Set("plan_id", res.Name)
@@ -82,6 +86,7 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if grafana.GrafanaURL == "" {
 		grafana.GrafanaURL = createGrafanaURL(projectID, region)
 	}
@@ -92,6 +97,7 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	alertManagerURL := ""
 	if alertManager.AlertManagerURL != nil {
 		alertManagerURL = *alertManager.AlertManagerURL
@@ -102,5 +108,6 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("endpoints", endpoints)
 	_ = d.Set("push_url", createCockpitPushURLList(endpoints))
 	d.SetId(projectID)
+
 	return nil
 }

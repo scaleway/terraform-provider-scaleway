@@ -540,6 +540,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if testAcl.Name == "" {
 				testAcl.Name = apiAcl.Name
 			}
+
 			return lb.ACLEquals(&testAcl, &apiAcl)
 		}
 
@@ -581,6 +582,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if _, found := aclMap[int32(i)]; !found {
 				return fmt.Errorf("cannot find an index set [%d]", i)
 			}
+
 			if !testCompareAcls(*expectedAcls[i-1], *aclMap[int32(i)]) {
 				return fmt.Errorf("two acls are not equal on stage %d", i)
 			}

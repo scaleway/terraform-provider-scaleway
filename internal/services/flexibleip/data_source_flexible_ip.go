@@ -66,9 +66,11 @@ func DataSourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m int
 				if ipID != "" {
 					return diag.Errorf("more than 1 flexible ip found with the same IPv4 address %s", d.Get("ip_address"))
 				}
+
 				ipID = ip.ID
 			}
 		}
+
 		if ipID == "" {
 			return diag.Errorf("no flexible ip found with the same IPv4 address %s", d.Get("ip_address"))
 		}
@@ -76,6 +78,7 @@ func DataSourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m int
 
 	zoneID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zoneID)
+
 	err = d.Set("flexible_ip_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)

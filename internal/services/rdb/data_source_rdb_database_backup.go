@@ -48,6 +48,7 @@ func DataSourceRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData
 	backupID, backupIDExists := d.GetOk("backup_id")
 	if !backupIDExists {
 		backupName := d.Get("name").(string)
+
 		res, err := api.ListDatabaseBackups(&rdb.ListDatabaseBackupsRequest{
 			Region:     region,
 			Name:       types.ExpandStringPtr(backupName),
@@ -72,6 +73,7 @@ func DataSourceRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData
 
 	regionID := datasource.NewRegionalID(backupID, region)
 	d.SetId(regionID)
+
 	err = d.Set("backup_id", regionID)
 	if err != nil {
 		return diag.FromErr(err)

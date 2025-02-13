@@ -267,6 +267,7 @@ func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m inte
 			ContainerID: res.ID,
 			Redeploy:    types.ExpandBoolPtr(shouldDeploy),
 		}
+
 		_, err = api.UpdateContainer(reqUpdate, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -293,8 +294,10 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 

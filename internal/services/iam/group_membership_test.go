@@ -153,6 +153,7 @@ func testAccCheckIamGroupMembershipApplicationInGroup(tt *acctest.TestTools, n s
 		expectedApplicationID := appRS.Primary.ID
 
 		api := iam.NewAPI(tt.Meta)
+
 		groupID, _, applicationID, err := iam.ExpandGroupMembershipID(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -200,6 +201,7 @@ func testAccCheckIamGroupMembershipUserInGroup(tt *acctest.TestTools, n string, 
 		expectedUserID := appRS.Primary.ID
 
 		api := iam.NewAPI(tt.Meta)
+
 		groupID, userID, _, err := iam.ExpandGroupMembershipID(rs.Primary.ID)
 		if err != nil {
 			return err

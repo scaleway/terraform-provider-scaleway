@@ -172,7 +172,9 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	nodeNumber := scw.Uint32Ptr(uint32(d.Get("node_number").(int)))
 
 	snapshotID, exist := d.GetOk("snapshot_id")
+
 	var res *mongodb.Instance
+
 	if exist {
 		volume := &mongodb.RestoreSnapshotRequestVolumeDetails{
 			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
@@ -185,6 +187,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			NodeType:     d.Get("node_type").(string),
 			Volume:       volume,
 		}
+
 		res, err = mongodbAPI.RestoreSnapshot(restoreSnapshotRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -204,11 +207,13 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
 		}
 		volumeSize, volumeSizeExist := d.GetOk("volume_size_in_gb")
+
 		if volumeSizeExist {
 			volumeRequestDetails.VolumeSize = scw.Size(uint64(volumeSize.(int)) * uint64(scw.GB))
 		} else {
 			volumeRequestDetails.VolumeSize = scw.Size(defaultVolumeSize * uint64(scw.GB))
 		}
+
 		createReq.Volume = volumeRequestDetails
 
 		tags, tagsExist := d.GetOk("tags")
@@ -226,7 +231,9 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			return diag.FromErr(err)
 		}
 	}
+
 	d.SetId(zonal.NewIDString(zone, res.ID))
+
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -250,8 +257,10 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -279,6 +288,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, setting := range instance.Settings {
 			settingsMap[setting.Name] = setting.Value
 		}
+
 		_ = d.Set("settings", settingsMap)
 	}
 
@@ -299,6 +309,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
 		oldSize := uint64(oldSizeInterface.(int))
 		newSize := uint64(newSizeInterface.(int))
+
 		if newSize < oldSize {
 			return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
 		}
@@ -306,6 +317,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if newSize%5 != 0 {
 			return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
 		}
+
 		size := scw.Size(newSize * uint64(scw.GB))
 
 		upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
@@ -318,6 +330,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -393,6 +406,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return append(diags, ResourceInstanceRead(ctx, d, m)...)
 }
 
@@ -421,5 +435,6 @@ func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId("")
+
 	return nil
 }

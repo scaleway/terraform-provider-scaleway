@@ -43,6 +43,7 @@ func DataSourceServerRead(ctx context.Context, d *schema.ResourceData, m interfa
 	serverID, ok := d.GetOk("server_id")
 	if !ok { // Get server by zone and name.
 		serverName := d.Get("name").(string)
+
 		res, err := api.ListServers(&baremetal.ListServersRequest{
 			Zone:      zone,
 			Name:      scw.StringPtr(serverName),
@@ -66,16 +67,20 @@ func DataSourceServerRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	zoneID := datasource.NewZonedID(serverID, zone)
 	d.SetId(zoneID)
+
 	err = d.Set("server_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	diags := ResourceServerRead(ctx, d, m)
 	if diags != nil {
 		return diags
 	}
+
 	if d.Id() == "" {
 		return diag.Errorf("baremetal server (%s) not found", zoneID)
 	}
+
 	return nil
 }

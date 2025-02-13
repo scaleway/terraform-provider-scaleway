@@ -40,6 +40,7 @@ func cockpitAPIWithRegion(d *schema.ResourceData, m interface{}) (*cockpit.Regio
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, err
 }
 
@@ -50,6 +51,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*cockpit.RegionalAPI, scw.
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }
 
@@ -84,6 +86,7 @@ func parseCockpitID(id string) (projectID string, cockpitID string, err error) {
 	if len(parts) != 2 {
 		return "", "", fmt.Errorf("invalid cockpit ID: %s", id)
 	}
+
 	return parts[0], parts[1], nil
 }
 
@@ -114,11 +117,13 @@ func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]interface{
 
 func getDefaultProjectID(ctx context.Context, m interface{}) (string, error) {
 	accountAPI := account.NewProjectAPI(m)
+
 	res, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{
 		Name: types.ExpandStringPtr("default"),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return "", err
 	}
+
 	return res.Projects[0].ID, nil
 }

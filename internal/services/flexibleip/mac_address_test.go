@@ -201,6 +201,7 @@ func testAccCheckFlexibleIPAttachedMACAddress(tt *acctest.TestTools, fipResource
 		if !ok {
 			return fmt.Errorf("resource not found: %s", fipResource)
 		}
+
 		macState, ok := s.RootModule().Resources[macResource]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", macResource)
@@ -210,6 +211,7 @@ func testAccCheckFlexibleIPAttachedMACAddress(tt *acctest.TestTools, fipResource
 		if err != nil {
 			return err
 		}
+
 		ip, err := fipAPI.GetFlexibleIP(&flexibleipSDK.GetFlexibleIPRequest{
 			FipID: ID,
 			Zone:  zone,

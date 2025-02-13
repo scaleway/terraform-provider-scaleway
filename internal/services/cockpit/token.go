@@ -151,6 +151,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m i
 	rawScopes, scopesSet := d.GetOk("scopes")
 
 	var scopes []cockpit.TokenScope
+
 	if !scopesSet || len(rawScopes.([]interface{})) == 0 {
 		schema := resourceCockpitTokenScopes().Schema
 		for key, val := range schema {
@@ -178,6 +179,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m i
 
 	_ = d.Set("secret_key", res.SecretKey)
 	d.SetId(regional.NewIDString(region, res.ID))
+
 	return ResourceCockpitTokenRead(ctx, d, m)
 }
 
@@ -194,8 +196,10 @@ func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

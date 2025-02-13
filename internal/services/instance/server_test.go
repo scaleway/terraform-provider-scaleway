@@ -38,7 +38,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
@@ -61,7 +61,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
@@ -92,7 +92,7 @@ func TestAccServer_Minimal2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "started"),
@@ -112,7 +112,7 @@ func TestAccServer_Minimal2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "20"), // It resizes to 20GB as terraform will take max space available for l_ssd.
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", "l_ssd"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "enable_dynamic_ip", "false"),
@@ -160,6 +160,7 @@ func TestAccServer_RootVolume1(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						root_volume {
+							volume_type = "l_ssd"
 							size_in_gb = 10
 							delete_on_termination = true
 						}
@@ -178,6 +179,7 @@ func TestAccServer_RootVolume1(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						root_volume {
+							volume_type = "l_ssd"
 							size_in_gb = 20
 							delete_on_termination = true
 						}
@@ -702,8 +704,9 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 					
 					resource "scaleway_instance_server" "base" {
 						count = 3
+						name = "tf-tests-server-${count.index}-with-placement-group"
 						image = "ubuntu_focal"
-						type  = "DEV1-S"
+						type  = "PLAY2-PICO"
 						placement_group_id = "${scaleway_instance_placement_group.ha.id}"
 						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
 					}`,
@@ -712,9 +715,12 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 					isServerPresent(tt, "scaleway_instance_server.base.1"),
 					isServerPresent(tt, "scaleway_instance_server.base.2"),
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.ha"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.0", "placement_group_policy_respected", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.1", "placement_group_policy_respected", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.2", "placement_group_policy_respected", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.ha", "policy_respected", "true"),
+
+					// placement_group_policy_respected is deprecated and should always be false.
+					resource.TestCheckResourceAttr("scaleway_instance_server.base.0", "placement_group_policy_respected", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base.1", "placement_group_policy_respected", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base.2", "placement_group_policy_respected", "false"),
 				),
 			},
 		},
@@ -1019,7 +1025,7 @@ func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
 
 					resource "scaleway_instance_server" "main" {
 						type = "DEV1-S"
-						image = "ubuntu-bionic"
+						image = "ubuntu-jammy"
 						root_volume {
 							delete_on_termination = false
 					  	}
@@ -1283,7 +1289,9 @@ func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
 						type  = "DEV1-L"
-						
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
@@ -1295,7 +1303,9 @@ func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
 						type  = "DEV1-S"
-						
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
@@ -1322,6 +1332,9 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						root_volume {
+							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -1335,11 +1348,17 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						root_volume {
+							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
+						}
 					}
 					resource "scaleway_instance_server" "copy" {
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						root_volume {
+							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -1365,11 +1384,17 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image = data.scaleway_marketplace_image.jammy.id
 						type = "DEV1-S"
 						state = "stopped"
+						root_volume {
+							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
+						}
 					}
 					resource "scaleway_instance_server" "copy" {
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						root_volume {
+							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -1397,11 +1422,17 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image = data.scaleway_marketplace_image.focal.id
 						type = "DEV1-S"
 						state = "stopped"
+						root_volume {
+							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
+						}
 					}
 					resource "scaleway_instance_server" "copy" {
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						root_volume {
+							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
+						}
 					}
 				`,
 				PlanOnly:           true,
@@ -1423,17 +1454,20 @@ func serverIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc 
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", nameFirst)
 		}
+
 		idFirst := rs.Primary.ID
 
 		rs, ok = s.RootModule().Resources[nameSecond]
 		if !ok {
 			return fmt.Errorf("resource was not found: %s", nameSecond)
 		}
+
 		idSecond := rs.Primary.ID
 
 		if idFirst == idSecond {
 			return fmt.Errorf("IDs of both resources were equal when they should not have been (%s and %s)", nameFirst, nameSecond)
 		}
+
 		return nil
 	}
 }
@@ -1461,7 +1495,6 @@ func TestAccServer_IPs(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
 				),
@@ -1485,7 +1518,6 @@ func TestAccServer_IPs(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "2"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.1.id", "scaleway_instance_ip.ip2", "id"),
@@ -1510,7 +1542,6 @@ func TestAccServer_IPs(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip2", "id"),
 				),
@@ -1588,7 +1619,6 @@ func TestAccServer_IPsRemoved(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.main", "id"),
 				),
@@ -1608,7 +1638,6 @@ func TestAccServer_IPsRemoved(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
 					serverHasNoIPAssigned(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "routed_ip_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
 				),
 			},

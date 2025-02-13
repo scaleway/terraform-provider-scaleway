@@ -63,6 +63,7 @@ func ResourceFunctionDomainCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	functionID := regional.ExpandID(d.Get("function_id").(string)).ID
+
 	_, err = waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -101,8 +102,10 @@ func ResourceFunctionDomainRead(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -124,8 +127,10 @@ func ResourceFunctionDomainDelete(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return nil
 	}
 

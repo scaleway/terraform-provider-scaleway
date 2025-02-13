@@ -43,6 +43,7 @@ func DataSourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m
 			// required not in schema as we could use default
 			return diag.Errorf("organization_id is required with name")
 		}
+
 		res, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{
 			OrganizationID: *orgID,
 			Name:           types.ExpandStringPtr(name),

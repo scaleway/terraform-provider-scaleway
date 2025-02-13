@@ -34,12 +34,15 @@ func exceptionsCassettesCases() map[string]struct{} {
 func getTestFiles() (map[string]struct{}, error) {
 	filesMap := make(map[string]struct{})
 	exceptions := exceptionsCassettesCases()
+
 	err := filepath.WalkDir("../services", func(path string, _ fs.DirEntry, _ error) error {
 		isCassette := strings.Contains(path, "cassette")
 		_, isException := exceptions[path]
+
 		if isCassette && !isException {
 			filesMap[fileNameWithoutExtSuffix(path)] = struct{}{}
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -73,6 +76,7 @@ func checkErrorCode(c *cassette.Cassette) error {
 
 func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...int) bool {
 	exceptions := exceptionsCassettesCases()
+
 	_, isException := exceptions[c.File]
 	if isException {
 		return isException
@@ -81,14 +85,17 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 	if strings.Contains(i.Response.Body, mnq.AWSErrNonExistentQueue) && i.Response.Code == 400 {
 		return true
 	}
+
 	if i.Response.Code >= 400 {
 		for _, httpCode := range codes {
 			if i.Response.Code == httpCode {
 				return true
 			}
 		}
+
 		return false
 	}
+
 	return true
 }
 

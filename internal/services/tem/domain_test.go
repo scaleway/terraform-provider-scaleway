@@ -73,6 +73,7 @@ func TestAccDomain_Tos(t *testing.T) {
 func TestAccDomain_Autoconfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	subDomainName := "test-autoconfig"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -119,6 +120,7 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	subDomainName := "test-autoconfig-update"
 
 	resource.ParallelTest(t, resource.TestCase{

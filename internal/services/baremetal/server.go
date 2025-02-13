@@ -65,6 +65,7 @@ func ResourceServer() *schema.Resource {
 					}
 					// if the offer was provided by name
 					offerName, ok := d.GetOk("offer_name")
+
 					return ok && newValue == offerName
 				},
 			},
@@ -317,6 +318,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		offerID = zonal.NewID(zone, o.ID)
 	}
 
@@ -330,17 +332,21 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	partitioningSchema := baremetal.Schema{}
+
 	if file, ok := d.GetOk("partitioning"); ok || !d.Get("install_config_afterward").(bool) {
 		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 			return diags
 		}
+
 		if file != "" {
 			todecode, _ := file.(string)
+
 			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
+
 		req.Install = &baremetal.CreateServerRequestInstall{
 			OsID:               zonal.ExpandID(d.Get("os")).ID,
 			Hostname:           d.Get("hostname").(string),
@@ -363,6 +369,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	} else {
 		_, err = waitForServerInstall(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -373,6 +380,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		for i := range opSpecs {
 			_, err = api.AddOptionServer(&baremetal.AddOptionServerRequest{
 				Zone:      server.Zone,
@@ -429,8 +437,10 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -465,6 +475,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("ips", flattenIPs(server.IPs))
 	_ = d.Set("ipv4", flattenIPv4s(server.IPs))
 	_ = d.Set("ipv6", flattenIPv6s(server.IPs))
+
 	if server.Install != nil {
 		_ = d.Set("os", zonal.NewIDString(server.Zone, os.ID))
 		_ = d.Set("os_name", os.Name)
@@ -472,6 +483,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 		_ = d.Set("user", server.Install.User)
 		_ = d.Set("service_user", server.Install.ServiceUser)
 	}
+
 	_ = d.Set("description", server.Description)
 	_ = d.Set("options", flattenOptions(server.Zone, server.Options))
 
@@ -482,10 +494,12 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to list server's private networks: %w", err))
 	}
+
 	pnRegion, err := server.Zone.Region()
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("private_network", flattenPrivateNetworks(pnRegion, listPrivateNetworks.ServerPrivateNetworks))
 
 	return nil
@@ -519,6 +533,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		optionsToDelete := compareOptions(options, serverGetOptionIDs)
 		for i := range optionsToDelete {
 			_, err = api.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
@@ -617,6 +632,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 			return diags
 		}
+
 		err = installServer(ctx, d, api, installReq)
 		if err != nil {
 			return diag.FromErr(err)
@@ -642,6 +658,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 				return diags
 			}
+
 			err = installServer(ctx, d, api, installReq)
 			if err != nil {
 				return diag.FromErr(err)
@@ -676,6 +693,7 @@ func ResourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -693,6 +711,7 @@ func installAttributeMissing(field *baremetal.OSOSField, d *schema.ResourceData,
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -712,6 +731,7 @@ func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	diags := diag.Diagnostics(nil)
+
 	installAttributes := []struct {
 		Attribute string
 		Field     *baremetal.OSOSField
@@ -743,5 +763,6 @@ func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interf
 			})
 		}
 	}
+
 	return diags
 }

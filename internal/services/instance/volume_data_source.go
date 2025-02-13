@@ -43,6 +43,7 @@ func DataSourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m
 	volumeID, ok := d.GetOk("volume_id")
 	if !ok { // Get volumes by zone and name.
 		volumeName := d.Get("name").(string)
+
 		res, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(volumeName),
@@ -66,9 +67,11 @@ func DataSourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m
 
 	zonedID := datasource.NewZonedID(volumeID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("volume_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return ResourceInstanceVolumeRead(ctx, d, m)
 }

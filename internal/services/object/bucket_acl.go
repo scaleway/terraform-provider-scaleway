@@ -163,6 +163,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m inte
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
 
@@ -189,6 +190,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %s", err))
 	}
+
 	tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
 
 	d.SetId(BucketACLCreateResourceID(region, bucket, acl))
@@ -374,6 +376,7 @@ func flattenBucketACLAccessControlPolicyOwner(owner *s3Types.Owner) []interface{
 
 func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	expectedBucketOwner := d.Get("expected_bucket_owner")
+
 	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -392,6 +395,7 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m interf
 	if !d.IsNewResource() && errors.As(err, new(*s3Types.NoSuchBucket)) {
 		tflog.Warn(ctx, fmt.Sprintf("[WARN] Object Bucket ACL (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -405,9 +409,11 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	_ = d.Set("acl", acl)
 	_ = d.Set("expected_bucket_owner", expectedBucketOwner)
+
 	if err := d.Set("access_control_policy", flattenBucketACLAccessControlPolicy(output)); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting access_control_policy: %w", err))
 	}
+
 	_ = d.Set("region", region)
 	_ = d.Set("project_id", NormalizeOwnerID(output.Owner.ID))
 	_ = d.Set("bucket", locality.ExpandID(bucket))
@@ -421,6 +427,7 @@ func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
 	if acl == "" {
 		return regional.NewIDString(region, bucket)
 	}
+
 	return regional.NewIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
 }
 

@@ -60,6 +60,7 @@ func ResourceInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(zonal.NewIDString(zone, res.IP.ID))
 
 	if _, ok := d.GetOk("reverse"); ok {
@@ -99,13 +100,16 @@ func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceDat
 		// We check for 403 because instanceSDK API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("reverse", res.IP.Reverse)
+
 	return nil
 }
 
@@ -128,6 +132,7 @@ func ResourceInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceD
 		} else {
 			updateReverseReq.Reverse = &instanceSDK.NullableStringValue{Null: true}
 		}
+
 		err := retryUpdateReverseDNS(ctx, instanceAPI, updateReverseReq, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -149,11 +154,13 @@ func ResourceInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceD
 		IP:      ID,
 		Reverse: &instanceSDK.NullableStringValue{Null: true},
 	}
+
 	_, err = instanceAPI.UpdateIP(updateReverseReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId("")
+
 	return nil
 }

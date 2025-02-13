@@ -23,6 +23,7 @@ func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
 func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	rawRule := i.(map[string]interface{})
 	res := make([]*rdb.InstanceSetting, 0, len(rawRule))
+
 	for key, value := range rawRule {
 		res = append(res, &rdb.InstanceSetting{
 			Name:  key,
@@ -37,9 +38,11 @@ func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, static
 	if data == nil || !exist {
 		return nil, nil
 	}
+
 	var diags diag.Diagnostics
 
 	res := make([]*rdb.EndpointSpec, 0, len(data.([]interface{})))
+
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
 		spec := &rdb.EndpointSpec{
@@ -54,8 +57,10 @@ func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, static
 			if err != nil {
 				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network ip_net (%s): %s", r["ip_net"], err))...)
 			}
+
 			spec.PrivateNetwork.ServiceIP = &ip
 			spec.PrivateNetwork.IpamConfig = nil
+
 			if ipamConfig != nil && *ipamConfig {
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Warning,
@@ -65,6 +70,7 @@ func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, static
 		} else if ipamConfig == nil || !*ipamConfig {
 			return nil, diag.FromErr(errors.New("at least one of `ip_net` or `enable_ipam` (set to true) must be set"))
 		}
+
 		res = append(res, spec)
 	}
 
@@ -79,22 +85,28 @@ func expandLoadBalancer() *rdb.EndpointSpec {
 
 func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	pnI := []map[string]interface{}(nil)
+
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork != nil {
 			pn := endpoint.PrivateNetwork
+
 			fetchRegion, err := pn.Zone.Region()
 			if err != nil {
 				return diag.FromErr(err), false
 			}
+
 			pnRegionalID := regional.NewIDString(fetchRegion, pn.PrivateNetworkID)
+
 			serviceIP, err := types.FlattenIPNet(pn.ServiceIP)
 			if err != nil {
 				return pnI, false
 			}
+
 			enableIpam := false
 			if endpoint.PrivateNetwork.ProvisioningMode == rdb.EndpointPrivateNetworkDetailsProvisioningModeIpam {
 				enableIpam = true
 			}
+
 			pnI = append(pnI, map[string]interface{}{
 				"endpoint_id": endpoint.ID,
 				"ip":          types.FlattenIPPtr(endpoint.IP),
@@ -105,6 +117,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 				"enable_ipam": enableIpam,
 			})
+
 			return pnI, true
 		}
 	}
@@ -114,6 +127,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 
 func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	flat := []map[string]interface{}(nil)
+
 	for _, endpoint := range endpoints {
 		if endpoint.LoadBalancer != nil {
 			flat = append(flat, map[string]interface{}{
@@ -123,6 +137,7 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				"name":        endpoint.Name,
 				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 			})
+
 			return flat, true
 		}
 	}
@@ -149,6 +164,7 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *
 	data = data.([]interface{})[0]
 
 	rawEndpoint := data.(map[string]interface{})
+
 	var diags diag.Diagnostics
 
 	endpoint := &rdb.ReadReplicaEndpointSpec{
@@ -163,8 +179,10 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *
 		if err != nil {
 			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network service_ip (%s): %s", rawEndpoint["service_ip"], err))...)
 		}
+
 		endpoint.PrivateNetwork.ServiceIP = &ipNet
 		endpoint.PrivateNetwork.IpamConfig = nil
+
 		if ipamConfig != nil && !*ipamConfig {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
@@ -191,16 +209,20 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 		if endpoint.DirectAccess != nil {
 			directAccess = rawEndpoint
 		}
+
 		if endpoint.PrivateNetwork != nil {
 			fetchRegion, err := endpoint.PrivateNetwork.Zone.Region()
 			if err != nil {
 				return diag.FromErr(err), false
 			}
+
 			pnRegionalID := regional.NewIDString(fetchRegion, endpoint.PrivateNetwork.PrivateNetworkID)
+
 			enableIpam := false
 			if endpoint.PrivateNetwork.ProvisioningMode == rdb.EndpointPrivateNetworkDetailsProvisioningModeIpam {
 				enableIpam = true
 			}
+
 			rawEndpoint["private_network_id"] = pnRegionalID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
@@ -214,6 +236,7 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 	if directAccess != nil {
 		directAccess = []interface{}{directAccess}
 	}
+
 	if privateNetwork != nil {
 		privateNetwork = []interface{}{privateNetwork}
 	}
@@ -225,11 +248,13 @@ func expandInstanceLogsPolicy(i interface{}) *rdb.LogsPolicy {
 	policyConfigRaw := i.([]interface{})
 	for _, policyRaw := range policyConfigRaw {
 		policy := policyRaw.(map[string]interface{})
+
 		return &rdb.LogsPolicy{
 			MaxAgeRetention:    types.ExpandUint32Ptr(policy["max_age_retention"]),
 			TotalDiskRetention: types.ExpandSize(policy["total_disk_retention"]),
 		}
 	}
+
 	return nil
 }
 
@@ -243,5 +268,6 @@ func flattenInstanceLogsPolicy(policy *rdb.LogsPolicy) interface{} {
 	} else {
 		return nil
 	}
+
 	return p
 }

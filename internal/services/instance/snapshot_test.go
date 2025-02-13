@@ -94,6 +94,9 @@ func TestAccSnapshot_Server(t *testing.T) {
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_focal"
 						type = "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}
 
 					resource "scaleway_instance_snapshot" "main" {

@@ -54,10 +54,23 @@ func ResourceInstance() *schema.Resource {
 			},
 			"engine": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
+				Computed:         true,
 				ForceNew:         true,
 				Description:      "Database's engine version id",
 				DiffSuppressFunc: dsf.IgnoreCase,
+				ConflictsWith: []string{
+					"snapshot_id",
+				},
+			},
+			"snapshot_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` attribute.",
+				ConflictsWith: []string{
+					"engine",
+				},
 			},
 			"is_ha_cluster": {
 				Type:        schema.TypeBool,
@@ -318,83 +331,160 @@ func ResourceInstance() *schema.Resource {
 	}
 }
 
+//gocyclo:ignore
 func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	createReq := &rdb.CreateInstanceRequest{
-		Region:        region,
-		ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
-		Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-		NodeType:      d.Get("node_type").(string),
-		Engine:        d.Get("engine").(string),
-		IsHaCluster:   d.Get("is_ha_cluster").(bool),
-		DisableBackup: d.Get("disable_backup").(bool),
-		UserName:      d.Get("user_name").(string),
-		Password:      d.Get("password").(string),
-		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
-		Encryption: &rdb.EncryptionAtRest{
-			Enabled: d.Get("encryption_at_rest").(bool),
-		},
-	}
+	var id string
 
-	if initSettings, ok := d.GetOk("init_settings"); ok {
-		createReq.InitSettings = expandInstanceSettings(initSettings)
-	}
+	if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
+		haCluster := d.Get("is_ha_cluster").(bool)
+		nodeType := d.Get("node_type").(string)
 
-	rawTag, tagExist := d.GetOk("tags")
-	if tagExist {
-		createReq.Tags = types.ExpandStrings(rawTag)
-	}
-
-	// Init Endpoints
-	if pn, pnExist := d.GetOk("private_network"); pnExist {
-		ipamConfig, staticConfig := getIPConfigCreate(d, "ip_net")
-		var diags diag.Diagnostics
-		createReq.InitEndpoints, diags = expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
-		if diags.HasError() {
-			return diags
+		_, snapshotID, err := regional.ParseID(regionalSnapshotID.(string))
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		for _, warning := range diags {
-			tflog.Warn(ctx, warning.Detail)
+
+		createReqFromSnapshot := &rdb.CreateInstanceFromSnapshotRequest{
+			SnapshotID:   snapshotID,
+			Region:       region,
+			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "rdb"),
+			IsHaCluster:  &haCluster,
+			NodeType:     &nodeType,
 		}
-	}
-	if _, lbExists := d.GetOk("load_balancer"); lbExists {
-		createReq.InitEndpoints = append(createReq.InitEndpoints, expandLoadBalancer())
-	}
 
-	if size, ok := d.GetOk("volume_size_in_gb"); ok {
-		if createReq.VolumeType == rdb.VolumeTypeLssd {
-			return diag.FromErr(fmt.Errorf("volume_size_in_gb should not be used with volume_type %s", rdb.VolumeTypeLssd.String()))
+		res, err := rdbAPI.CreateInstanceFromSnapshot(createReqFromSnapshot, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		createReq.VolumeSize = scw.Size(uint64(size.(int)) * uint64(scw.GB))
-	}
 
-	res, err := rdbAPI.CreateInstance(createReq, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+		rawTag, tagExist := d.GetOk("tags")
+		if tagExist {
+			updateReq := &rdb.UpdateInstanceRequest{
+				Region:     region,
+				InstanceID: res.ID,
+			}
+			tags := types.ExpandStrings(rawTag)
+			updateReq.Tags = &tags
+
+			_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		d.SetId(regional.NewIDString(region, res.ID))
+		id = res.ID
+	} else {
+		createReq := &rdb.CreateInstanceRequest{
+			Region:        region,
+			ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
+			Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
+			NodeType:      d.Get("node_type").(string),
+			Engine:        d.Get("engine").(string),
+			IsHaCluster:   d.Get("is_ha_cluster").(bool),
+			DisableBackup: d.Get("disable_backup").(bool),
+			UserName:      d.Get("user_name").(string),
+			Password:      d.Get("password").(string),
+			VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
+			Encryption: &rdb.EncryptionAtRest{
+				Enabled: d.Get("encryption_at_rest").(bool),
+			},
+		}
+
+		if initSettings, ok := d.GetOk("init_settings"); ok {
+			createReq.InitSettings = expandInstanceSettings(initSettings)
+		}
+
+		rawTag, tagExist := d.GetOk("tags")
+		if tagExist {
+			createReq.Tags = types.ExpandStrings(rawTag)
+		}
+
+		// Init Endpoints
+		if pn, pnExist := d.GetOk("private_network"); pnExist {
+			ipamConfig, staticConfig := getIPConfigCreate(d, "ip_net")
+
+			var diags diag.Diagnostics
+
+			createReq.InitEndpoints, diags = expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
+			if diags.HasError() {
+				return diags
+			}
+
+			for _, warning := range diags {
+				tflog.Warn(ctx, warning.Detail)
+			}
+		}
+
+		if _, lbExists := d.GetOk("load_balancer"); lbExists {
+			createReq.InitEndpoints = append(createReq.InitEndpoints, expandLoadBalancer())
+		}
+		// Init Endpoints
+		if pn, pnExist := d.GetOk("private_network"); pnExist {
+			ipamConfig, staticConfig := getIPConfigCreate(d, "ip_net")
+
+			var diags diag.Diagnostics
+
+			createReq.InitEndpoints, diags = expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
+			if diags.HasError() {
+				return diags
+			}
+
+			for _, warning := range diags {
+				tflog.Warn(ctx, warning.Detail)
+			}
+		}
+
+		if _, lbExists := d.GetOk("load_balancer"); lbExists {
+			createReq.InitEndpoints = append(createReq.InitEndpoints, expandLoadBalancer())
+		}
+
+		if size, ok := d.GetOk("volume_size_in_gb"); ok {
+			if createReq.VolumeType == rdb.VolumeTypeLssd {
+				return diag.FromErr(fmt.Errorf("volume_size_in_gb should not be used with volume_type %s", rdb.VolumeTypeLssd.String()))
+			}
+
+			createReq.VolumeSize = scw.Size(uint64(size.(int)) * uint64(scw.GB))
+		}
+
+		res, err := rdbAPI.CreateInstance(createReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		d.SetId(regional.NewIDString(region, res.ID))
+		id = res.ID
+	}
 
 	mustUpdate := false
 	updateReq := &rdb.UpdateInstanceRequest{
 		Region:     region,
-		InstanceID: res.ID,
+		InstanceID: id,
 	}
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
 			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
 		}
+
 		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
 			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
 		}
+
 		mustUpdate = true
 	}
 
@@ -405,10 +495,11 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	if mustUpdate {
-		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -416,12 +507,12 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
-		res, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+		res, err := waitForRDBInstance(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+		_, err = rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
 			InstanceID: res.ID,
 			Region:     region,
 			Settings:   expandInstanceSettings(settings),
@@ -445,10 +536,13 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
@@ -464,6 +558,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	for _, endpoint := range res.Endpoints {
 		if endpoint.LoadBalancer != nil {
 			loadBalancerEndpoint = endpoint
+
 			break
 		}
 	}
@@ -477,6 +572,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 		default:
 			_ = d.Set("endpoint_ip", "")
 		}
+
 		_ = d.Set("endpoint_port", int(loadBalancerEndpoint.Port))
 	} else {
 		_ = d.Set("endpoint_ip", "")
@@ -487,10 +583,12 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 		_ = d.Set("volume_type", res.Volume.Type)
 		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))
 	}
+
 	_ = d.Set("read_replicas", []string{})
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
+
 	if res.Encryption != nil {
 		_ = d.Set("encryption_at_rest", res.Encryption.Enabled)
 	}
@@ -506,13 +604,16 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		for _, u := range users.Users {
 			if u.IsAdmin {
 				_ = d.Set("user_name", u.Name)
+
 				break
 			}
 		}
 	}
+
 	_ = d.Set("password", d.Get("password").(string))
 
 	// set certificate
@@ -523,10 +624,12 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	certContent, err := io.ReadAll(cert.Content)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("certificate", string(certContent))
 
 	// set settings
@@ -540,9 +643,11 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
 		_ = d.Set("private_network", pnI)
 	}
+
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
+
 	return nil
 }
 
@@ -565,6 +670,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	diskIsFull := rdbInstance.Status == rdb.InstanceStatusDiskFull
 	volType := rdb.VolumeType(d.Get("volume_type").(string))
 
@@ -580,10 +686,12 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 						VolumeType: &volType,
 					})
 			}
+
 			if d.HasChange("volume_size_in_gb") {
 				oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
 				oldSize := uint64(oldSizeInterface.(int))
 				newSize := uint64(newSizeInterface.(int))
+
 				if newSize < oldSize {
 					return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
 				}
@@ -604,6 +712,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 			if d.HasChange("volume_size_in_gb") && ok {
 				return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
 			}
+
 			if d.HasChange("volume_type") {
 				upgradeInstanceRequests = append(upgradeInstanceRequests,
 					rdb.UpgradeInstanceRequest{
@@ -705,18 +814,23 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
+
 	if d.HasChange("disable_backup") {
 		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 	}
+
 	if d.HasChange("backup_schedule_frequency") {
 		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
 	}
+
 	if d.HasChange("backup_schedule_retention") {
 		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
 	}
+
 	if d.HasChange("backup_same_region") {
 		req.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 	}
+
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
@@ -746,6 +860,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
+
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
 			InstanceID: ID,
 			Region:     region,
@@ -810,13 +925,16 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 		pn, pnExist := d.GetOk("private_network")
 		if pnExist {
 			ipamConfig, staticConfig := getIPConfigUpdate(d, "ip_net")
+
 			privateEndpoints, diags := expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
 			if diags.HasError() {
 				return diags
 			}
+
 			for _, warning := range diags {
 				tflog.Warn(ctx, warning.Detail)
 			}
+
 			for _, e := range privateEndpoints {
 				_, err := rdbAPI.CreateEndpoint(
 					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
@@ -827,6 +945,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 			}
 		}
 	}
+
 	if d.HasChanges("load_balancer") {
 		// retrieve state
 		res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))

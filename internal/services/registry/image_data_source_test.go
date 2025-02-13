@@ -13,8 +13,10 @@ import (
 
 func TestAccDataSourceImage_Basic(t *testing.T) {
 	t.Skip("It is difficult to test this datasource as we cannot create registry images with Terraform.")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ubuntuImageID := "4b5a47c0-6fbf-4388-8783-c07c28d3c2eb"
 
 	resource.ParallelTest(t, resource.TestCase{

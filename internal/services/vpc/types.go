@@ -15,10 +15,12 @@ func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets
 	if v, ok := d.GetOk("ipv4_subnet"); ok {
 		for _, s := range v.([]interface{}) {
 			rawSubnet := s.(map[string]interface{})
+
 			ipNet, err := types.ExpandIPNet(rawSubnet["subnet"].(string))
 			if err != nil {
 				return nil, nil, err
 			}
+
 			ipv4Subnets = append(ipv4Subnets, ipNet)
 		}
 	}
@@ -26,13 +28,16 @@ func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets
 	if v, ok := d.GetOk("ipv6_subnets"); ok {
 		for _, s := range v.(*schema.Set).List() {
 			rawSubnet := s.(map[string]interface{})
+
 			ipNet, err := types.ExpandIPNet(rawSubnet["subnet"].(string))
 			if err != nil {
 				return nil, nil, err
 			}
+
 			ipv6Subnets = append(ipv6Subnets, ipNet)
 		}
 	}
+
 	return
 }
 
@@ -62,6 +67,7 @@ func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) 
 			if err != nil {
 				return "", nil
 			}
+
 			flatIpv4Subnets = append(flatIpv4Subnets, map[string]interface{}{
 				"subnet":        sub,
 				"address":       s.IP.String(),
@@ -73,6 +79,7 @@ func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) 
 			if err != nil {
 				return "", nil
 			}
+
 			flatIpv6Subnets = append(flatIpv6Subnets, map[string]interface{}{
 				"subnet":        sub,
 				"address":       s.IP.String(),
@@ -100,6 +107,7 @@ func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (interface{}, interface{}) {
 			if err != nil {
 				return "", nil
 			}
+
 			flatIpv4Subnets = append(flatIpv4Subnets, map[string]interface{}{
 				"id":            s.ID,
 				"created_at":    types.FlattenTime(s.CreatedAt),
@@ -114,6 +122,7 @@ func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (interface{}, interface{}) {
 			if err != nil {
 				return "", nil
 			}
+
 			flatIpv6Subnets = append(flatIpv6Subnets, map[string]interface{}{
 				"id":            s.ID,
 				"created_at":    types.FlattenTime(s.CreatedAt),
@@ -138,10 +147,12 @@ func maskHexToDottedDecimal(mask net.IPMask) string {
 	for i, part := range mask {
 		parts[i] = strconv.Itoa(int(part))
 	}
+
 	return strings.Join(parts, ".")
 }
 
 func getPrefixLength(mask net.IPMask) int {
 	ones, _ := mask.Size()
+
 	return ones
 }

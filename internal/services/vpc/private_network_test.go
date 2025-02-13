@@ -12,6 +12,7 @@ import (
 func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	privateNetworkName := "private-network-test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },

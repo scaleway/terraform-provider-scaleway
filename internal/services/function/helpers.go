@@ -35,6 +35,7 @@ func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, nil
 }
 
@@ -46,6 +47,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region,
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }
 
@@ -107,6 +109,7 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 		"response": string(respDump),
 		"request":  string(reqDump),
 	})
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to upload function (Status: %d)", resp.StatusCode)
 	}
@@ -122,6 +125,7 @@ func functionDeploy(ctx context.Context, functionAPI *function.API, region scw.R
 	if err != nil {
 		return errors.New("failed to deploy function")
 	}
+
 	return nil
 }
 
@@ -163,6 +167,7 @@ func retryCreateFunctionDomain(ctx context.Context, functionAPI *function.API, r
 			if err != nil && isFunctionDNSResolveError(err) {
 				continue
 			}
+
 			return domain, err
 		case <-timeoutChannel:
 			return functionAPI.CreateDomain(req, scw.WithContext(ctx))

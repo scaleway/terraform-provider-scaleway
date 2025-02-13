@@ -45,6 +45,7 @@ func ResourceDomain() *schema.Resource {
 					v := i.(bool)
 					if !v {
 						errs = append(errs, errors.New("you must accept the Scaleway Terms of Service to use this service"))
+
 						return warnings, errs
 					}
 
@@ -223,8 +224,10 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -252,6 +255,7 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
 	_ = d.Set("smtps_auth_user", domain.ProjectID)
+
 	return nil
 }
 
@@ -287,6 +291,7 @@ func ResourceDomainDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
 

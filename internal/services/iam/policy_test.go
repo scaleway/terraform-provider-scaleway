@@ -17,6 +17,7 @@ import (
 func TestAccPolicy_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
@@ -90,6 +91,7 @@ func TestAccPolicy_Basic(t *testing.T) {
 func TestAccPolicy_NoUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
@@ -156,6 +158,7 @@ func TestAccPolicy_ChangeLinkedEntity(t *testing.T) {
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
+
 	randAppName := "tf-tests-scaleway-iam-app-policy-permissions"
 	randGroupName := "tf-tests-scaleway-iam-group-policy-permissions"
 
@@ -257,6 +260,7 @@ func TestAccPolicy_ChangeLinkedEntity(t *testing.T) {
 func TestAccPolicy_ChangePermissions(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
@@ -347,6 +351,7 @@ func TestAccPolicy_ChangePermissions(t *testing.T) {
 func TestAccPolicy_ProjectID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
@@ -412,6 +417,7 @@ func TestAccPolicy_ProjectID(t *testing.T) {
 func TestAccPolicy_Condition(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
@@ -506,6 +512,7 @@ func TestAccPolicy_Condition(t *testing.T) {
 func TestAccPolicy_ChangeRulePrincipal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
