@@ -82,9 +82,10 @@ func TestAccDataSourceContainer_HealthCheck(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_container.main", "health_check.#", "1"),
 					resource.TestCheckResourceAttr("data.scaleway_container.main", "health_check.0.failure_threshold", "30"),
 					resource.TestCheckResourceAttr("data.scaleway_container.main", "health_check.0.interval", "10s"),
+				),
 			},
 		},
-	}
+	})
 }
 
 func TestAccDataSourceContainer_ScalingOption(t *testing.T) {
