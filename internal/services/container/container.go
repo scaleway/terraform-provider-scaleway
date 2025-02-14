@@ -425,6 +425,7 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		if errExpandHealthCheck != nil {
 			return diag.FromErr(errExpandHealthCheck)
 		}
+
 		req.HealthCheck = healthCheckReq
 	}
 

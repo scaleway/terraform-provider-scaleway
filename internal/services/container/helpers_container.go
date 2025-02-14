@@ -122,6 +122,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		if errExpandHealthCheck != nil {
 			return nil, errExpandHealthCheck
 		}
+
 		req.HealthCheck = healthCheckReq
 	}
 
@@ -153,6 +154,7 @@ func expandHealthCheck(healthCheckSchema interface{}) (*container.ContainerHealt
 			if err != nil {
 				return nil, err
 			}
+
 			healthCheckSpec.Interval = scw.NewDurationFromTimeDuration(*duration)
 		}
 
