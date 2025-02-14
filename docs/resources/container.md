@@ -90,6 +90,11 @@ The following arguments are supported:
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
     - `interval`- Period between health checks (in seconds).
 
+- `scaling_option` - (Optional) Configuration block used to decide when to scale up or down. Possible values:
+    - `concurrent_requests_threshold` - Scale depending on the number of concurrent requests being processed per container instance.
+    - `cpu_usage_threshold` - Scale depending on the CPU usage of a container instance.
+    - `memory_usage_threshold`- Scale depending on the memory usage of a container instance.
+
 - `port` - (Optional) The port to expose the container.
 
 - `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
@@ -188,4 +193,26 @@ resource scaleway_container main {
 
 ~>**Important:** Another probe type can be set to TCP with the API, but currently the SDK has not been updated with this parameter.
 This is why the only probe that can be used here is the HTTP probe.
+Refer to the [Serverless Containers pricing](https://www.scaleway.com/en/docs/faq/serverless-containers/#prices) for more information.
+
+## Scaling option configuration
+
+Scaling option block configuration allows you to choose which parameter will scale up/down containers.
+Options are number of concurrent requests, CPU or memory usage.
+It replaces current `max_concurrency` that has been deprecated.
+
+Example:
+
+```terraform
+resource scaleway_container main {
+    name = "my-container-02"
+    namespace_id = scaleway_container_namespace.main.id
+
+    scaling_option {
+      concurrent_requests_threshold = 15
+    }
+}
+```
+
+~>**Important**: A maximum of one of these parameters may be set. Also, when `cpu_usage_threshold` or `memory_usage_threshold` are used, `min_scale` can't be set to 0.
 Refer to the [API Reference](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-create-a-new-container) for more information.
