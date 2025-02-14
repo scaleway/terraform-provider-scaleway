@@ -76,6 +76,12 @@ func ResourceVolume() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the volume",
 			},
+			"migrate_to_sbs": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If true, consider that this volume may have been migrated and no longer exists.",
+			},
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
 			"zone":            zonal.Schema(),
@@ -135,6 +141,10 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.Get("migrate_to_sbs").(bool) {
+		return nil
 	}
 
 	res, err := instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
