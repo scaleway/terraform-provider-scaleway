@@ -190,7 +190,7 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			parsedIP = net.ParseIP(addressStr)
 			if parsedIP == nil {
-				return diag.FromErr(fmt.Errorf("error parsing IP address: %s", err))
+				return diag.FromErr(fmt.Errorf("error parsing IP address: %w", err))
 			}
 		}
 

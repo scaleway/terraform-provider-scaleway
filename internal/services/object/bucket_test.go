@@ -689,7 +689,7 @@ func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []s
 		})
 		if err != nil {
 			if !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
-				return fmt.Errorf("GetBucketCors error: %v", err)
+				return fmt.Errorf("GetBucketCors error: %w", err)
 			}
 		}
 
@@ -736,7 +736,7 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 
 			_, err = conn.PutObject(ctx, &req)
 			if err != nil {
-				return fmt.Errorf("failed to put object in test bucket: %s", err)
+				return fmt.Errorf("failed to put object in test bucket: %w", err)
 			}
 
 			_, err = conn.PutObject(ctx, &s3.PutObjectInput{
@@ -745,7 +745,7 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 				Body:   strings.NewReader("folder test content"), // Example body content
 			})
 			if err != nil {
-				return fmt.Errorf("failed to put object in test bucket sub folder: %s", err)
+				return fmt.Errorf("failed to put object in test bucket sub folder: %w", err)
 			}
 
 			return nil

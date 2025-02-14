@@ -61,7 +61,7 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("bucket %s doesn't exist or has no policy", bucket))
 		}
 
-		return diag.FromErr(fmt.Errorf("couldn't read bucket %s policy: %s", bucket, err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket %s policy: %w", bucket, err))
 	}
 
 	policyString := "{}"
@@ -80,7 +80,7 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
 	}
 
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))

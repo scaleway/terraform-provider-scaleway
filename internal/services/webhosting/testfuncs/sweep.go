@@ -25,7 +25,7 @@ func testSweepWebhosting(_ string) error {
 
 		listHostings, err := webhsotingAPI.ListHostings(&webhostingSDK.ListHostingsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing hostings in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing hostings in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, hosting := range listHostings.Hostings {
@@ -36,7 +36,7 @@ func testSweepWebhosting(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting hosting in sweeper: %s", err)
+				return fmt.Errorf("error deleting hosting in sweeper: %w", err)
 			}
 		}
 

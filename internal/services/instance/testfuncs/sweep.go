@@ -52,7 +52,7 @@ func testSweepVolume(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing volumes in sweeper: %s", err)
+			return fmt.Errorf("error listing volumes in sweeper: %w", err)
 		}
 
 		for _, volume := range listVolumesResponse.Volumes {
@@ -62,7 +62,7 @@ func testSweepVolume(_ string) error {
 					VolumeID: volume.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting volume in sweeper: %s", err)
+					return fmt.Errorf("error deleting volume in sweeper: %w", err)
 				}
 			}
 		}
@@ -118,7 +118,7 @@ func testSweepServer(_ string) error {
 					ServerID: srv.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting server in sweeper: %s", err)
+					return fmt.Errorf("error deleting server in sweeper: %w", err)
 				}
 			} else if srv.State == instanceSDK.ServerStateRunning {
 				_, err := instanceAPI.ServerAction(&instanceSDK.ServerActionRequest{
@@ -127,7 +127,7 @@ func testSweepServer(_ string) error {
 					Action:   instanceSDK.ServerActionTerminate,
 				})
 				if err != nil {
-					return fmt.Errorf("error terminating server in sweeper: %s", err)
+					return fmt.Errorf("error terminating server in sweeper: %w", err)
 				}
 			}
 		}
@@ -162,7 +162,7 @@ func testSweepSecurityGroup(_ string) error {
 				SecurityGroupID: securityGroup.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting security groups in sweeper: %s", err)
+				return fmt.Errorf("error deleting security groups in sweeper: %w", err)
 			}
 		}
 
@@ -191,7 +191,7 @@ func testSweepPlacementGroup(_ string) error {
 				PlacementGroupID: pg.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting placement group in sweeper: %s", err)
+				return fmt.Errorf("error deleting placement group in sweeper: %w", err)
 			}
 		}
 
@@ -216,7 +216,7 @@ func testSweepIP(_ string) error {
 				Zone: zone,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting ip in sweeper: %s", err)
+				return fmt.Errorf("error deleting ip in sweeper: %w", err)
 			}
 		}
 

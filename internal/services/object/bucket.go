@@ -289,7 +289,7 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Couldn't update bucket ACL: %s", err))
 
-			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
+			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %w", err))
 		}
 	}
 
@@ -705,7 +705,7 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m i
 			if d.Get("force_destroy").(bool) {
 				nObjectDeleted, err = emptyBucket(ctx, s3Client, bucketName, true)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
+					return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %w", err))
 				}
 
 				log.Printf("[DEBUG] Deleted %d S3 objects", nObjectDeleted)
@@ -735,7 +735,7 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client
 
 	_, err := s3conn.PutBucketVersioning(ctx, i)
 	if err != nil {
-		return fmt.Errorf("error putting S3 versioning: %s", err)
+		return fmt.Errorf("error putting S3 versioning: %w", err)
 	}
 
 	return nil
@@ -753,7 +753,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			return fmt.Errorf("error deleting S3 CORS: %s", err)
+			return fmt.Errorf("error deleting S3 CORS: %w", err)
 		}
 	} else {
 		// Put CORS
@@ -768,7 +768,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 
 		_, err := s3conn.PutBucketCors(ctx, corsInput)
 		if err != nil {
-			return fmt.Errorf("error putting S3 CORS: %s", err)
+			return fmt.Errorf("error putting S3 CORS: %w", err)
 		}
 	}
 

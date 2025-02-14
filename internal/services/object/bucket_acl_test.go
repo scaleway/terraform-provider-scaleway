@@ -383,7 +383,7 @@ func testAccObjectBucketACLCheck(tt *acctest.TestTools, name string, expectedACL
 			Bucket: types.ExpandStringPtr(bucketName),
 		})
 		if err != nil {
-			return fmt.Errorf("could not get ACL for bucket %s: %v", bucketName, err)
+			return fmt.Errorf("could not get ACL for bucket %s: %w", bucketName, err)
 		}
 
 		errs := s3ACLAreEqual(expectedACL, actualACL)

@@ -27,7 +27,7 @@ func testSweepInstance(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing rdb instances in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing rdb instances in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, instance := range listInstances.Instances {
@@ -36,7 +36,7 @@ func testSweepInstance(_ string) error {
 				InstanceID: instance.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting rdb instance in sweeper: %s", err)
+				return fmt.Errorf("error deleting rdb instance in sweeper: %w", err)
 			}
 		}
 

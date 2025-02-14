@@ -208,7 +208,7 @@ func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData,
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't update snapshot: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't update snapshot: %w", err))
 	}
 
 	return ResourceInstanceSnapshotRead(ctx, d, m)

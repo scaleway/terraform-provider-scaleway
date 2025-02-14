@@ -66,7 +66,7 @@ func testSweepVPCGatewayNetwork(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing gateway network in sweeper: %s", err)
+			return fmt.Errorf("error listing gateway network in sweeper: %w", err)
 		}
 
 		for _, gn := range listPNResponse.GatewayNetworks {
@@ -77,7 +77,7 @@ func testSweepVPCGatewayNetwork(_ string) error {
 				CleanupDHCP: true,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting gateway network in sweeper: %s", err)
+				return fmt.Errorf("error deleting gateway network in sweeper: %w", err)
 			}
 		}
 
@@ -95,7 +95,7 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing public gateway ip in sweeper: %s", err)
+			return fmt.Errorf("error listing public gateway ip in sweeper: %w", err)
 		}
 
 		for _, ip := range listIPResponse.IPs {
@@ -104,7 +104,7 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 				IPID: ip.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting public gateway ip in sweeper: %s", err)
+				return fmt.Errorf("error deleting public gateway ip in sweeper: %w", err)
 			}
 		}
 
