@@ -1,22 +1,23 @@
-package instancehelpers
+package instancehelpers_test
 
 import (
 	"testing"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 	tests := []struct {
 		name   string
-		volume *UnknownVolume
+		volume *instancehelpers.UnknownVolume
 		want   *instance.VolumeServerTemplate
 	}{
 		{
 			name: "Root Volume",
-			volume: &UnknownVolume{
+			volume: &instancehelpers.UnknownVolume{
 				Name:               "",
 				ID:                 "",
 				InstanceVolumeType: instance.VolumeVolumeTypeLSSD,
@@ -31,7 +32,7 @@ func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 		},
 		{
 			name: "Root Volume from ID",
-			volume: &UnknownVolume{
+			volume: &instancehelpers.UnknownVolume{
 				Name:               "tf-vol-stoic-johnson",
 				ID:                 "25152794-d15a-4dd5-abfc-b19ec276aa20",
 				InstanceVolumeType: instance.VolumeVolumeTypeLSSD,
@@ -46,7 +47,7 @@ func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 		},
 		{
 			name: "Additional Volume sbs",
-			volume: &UnknownVolume{
+			volume: &instancehelpers.UnknownVolume{
 				Name:               "tf-volume-elegant-minsky",
 				ID:                 "cc380989-b71b-47f0-829f-062e329f4097",
 				InstanceVolumeType: instance.VolumeVolumeTypeSbsVolume,

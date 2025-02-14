@@ -93,14 +93,13 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	var volume *block.Volume
-	instanceVolumeID, migrateVolume := d.GetOk("instance_volume_id")
 
+	instanceVolumeID, migrateVolume := d.GetOk("instance_volume_id")
 	if migrateVolume {
 		volume, err = migrateInstanceToBlockVolume(ctx, api, zone, locality.ExpandID(instanceVolumeID.(string)), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 	} else {
 		req := &block.CreateVolumeRequest{
 			Zone:      zone,
