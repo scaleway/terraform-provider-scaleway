@@ -86,7 +86,7 @@ The following arguments are supported:
 
 - `heath_check` - (Optional) Health check configuration block of the container.
     - `http` - HTTP health check configuration.
-        - `path` - Path to use for the HTTP health check.    
+        - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
     - `interval`- Period between health checks (in seconds).
 
@@ -162,11 +162,11 @@ Refer to the [Serverless Containers pricing](https://www.scaleway.com/en/docs/fa
 
 ## Health check configuration
 
-Custom health checks can be configured on the container. 
+Custom health checks can be configured on the container.
 
-It's possible to specify the HTTP path that the probe will listen to and the number of failures before considering the container as unhealthy. 
-During a deployment, if a newly created container fails to pass the health check, the deployment is aborted. 
-As a result, lowering this value can help to reduce the time it takes to detect a failed deployment. 
+It's possible to specify the HTTP path that the probe will listen to and the number of failures before considering the container as unhealthy.
+During a deployment, if a newly created container fails to pass the health check, the deployment is aborted.
+As a result, lowering this value can help to reduce the time it takes to detect a failed deployment.
 The period between health checks is also configurable.
 
 Example:
