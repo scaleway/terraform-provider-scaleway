@@ -93,20 +93,16 @@ In addition to all arguments above, the following attributes are exported:
 
 - `sandbox` - Execution environment of the container.
 
-<<<<<<< HEAD
 - `heath_check` - Health check configuration block of the container.
     - `http` - HTTP health check configuration.
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
     - `interval`- Period between health checks (in seconds).
-||||||| parent of d04ca3f0 (feat(container/serverless): add scaling_option block)
 - `sandbox` - (Optional) Execution environment of the container.
-=======
 - `scaling_option` - Configuration block used to decide when to scale up or down. Possible values:
     - `concurrent_requests_threshold` - Scale depending on the number of concurrent requests being processed per container instance.
     - `cpu_usage_threshold` - Scale depending on the CPU usage of a container instance.
     - `memory_usage_threshold`- Scale depending on the memory usage of a container instance.
->>>>>>> d04ca3f0 (feat(container/serverless): add scaling_option block)
 
 - `status` - The container status.
 

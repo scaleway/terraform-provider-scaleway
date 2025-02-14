@@ -50,7 +50,6 @@ func TestAccDataSourceContainer_Basic(t *testing.T) {
 	})
 }
 
-<<<<<<< HEAD
 func TestAccDataSourceContainer_HealthCheck(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -83,8 +82,11 @@ func TestAccDataSourceContainer_HealthCheck(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_container.main", "health_check.#", "1"),
 					resource.TestCheckResourceAttr("data.scaleway_container.main", "health_check.0.failure_threshold", "30"),
 					resource.TestCheckResourceAttr("data.scaleway_container.main", "health_check.0.interval", "10s"),
-||||||| parent of d04ca3f0 (feat(container/serverless): add scaling_option block)
-=======
+			},
+		},
+	}
+}
+
 func TestAccDataSourceContainer_ScalingOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -114,7 +116,6 @@ func TestAccDataSourceContainer_ScalingOption(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "scaling_option.0.concurrent_requests_threshold", "50"),
 					resource.TestCheckResourceAttr("data.scaleway_container.main", "scaling_option.#", "1"),
 					resource.TestCheckResourceAttr("data.scaleway_container.main", "scaling_option.0.concurrent_requests_threshold", "50"),
->>>>>>> d04ca3f0 (feat(container/serverless): add scaling_option block)
 				),
 			},
 		},

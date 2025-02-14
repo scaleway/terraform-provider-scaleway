@@ -84,19 +84,16 @@ The following arguments are supported:
 
 - `sandbox` - (Optional) Execution environment of the container.
 
-<<<<<<< HEAD
 - `heath_check` - (Optional) Health check configuration block of the container.
     - `http` - HTTP health check configuration.
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
     - `interval`- Period between health checks (in seconds).
-||||||| parent of d04ca3f0 (feat(container/serverless): add scaling_option block)
-=======
+
 - `scaling_option` - (Optional) Configuration block used to decide when to scale up or down. Possible values:
     - `concurrent_requests_threshold` - Scale depending on the number of concurrent requests being processed per container instance.
     - `cpu_usage_threshold` - Scale depending on the CPU usage of a container instance.
     - `memory_usage_threshold`- Scale depending on the memory usage of a container instance.
->>>>>>> d04ca3f0 (feat(container/serverless): add scaling_option block)
 
 - `port` - (Optional) The port to expose the container.
 
@@ -168,7 +165,6 @@ The `memory_limit` (in MB) must correspond with the right amount of vCPU. Refer 
 ~>**Important:** Make sure to select the right resources, as you will be billed based on compute usage over time and the number of Containers executions.
 Refer to the [Serverless Containers pricing](https://www.scaleway.com/en/docs/faq/serverless-containers/#prices) for more information.
 
-<<<<<<< HEAD
 ## Health check configuration
 
 Custom health checks can be configured on the container.
@@ -197,9 +193,8 @@ resource scaleway_container main {
 
 ~>**Important:** Another probe type can be set to TCP with the API, but currently the SDK has not been updated with this parameter.
 This is why the only probe that can be used here is the HTTP probe.
-||||||| parent of d04ca3f0 (feat(container/serverless): add scaling_option block)
 Refer to the [Serverless Containers pricing](https://www.scaleway.com/en/docs/faq/serverless-containers/#prices) for more information.
-=======
+
 ## Scaling option configuration
 
 Scaling option block configuration allows you to choose which parameter will scale up/down containers.
@@ -220,5 +215,4 @@ resource scaleway_container main {
 ```
 
 ~>**Important**: A maximum of one of these parameters may be set. Also, when `cpu_usage_threshold` or `memory_usage_threshold` are used, `min_scale` can't be set to 0.
->>>>>>> d04ca3f0 (feat(container/serverless): add scaling_option block)
 Refer to the [API Reference](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-create-a-new-container) for more information.

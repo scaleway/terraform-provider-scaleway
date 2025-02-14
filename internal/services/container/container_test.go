@@ -400,7 +400,6 @@ func TestAccContainer_Sandbox(t *testing.T) {
 	})
 }
 
-<<<<<<< HEAD
 func TestAccContainer_HealthCheck(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -449,8 +448,12 @@ func TestAccContainer_HealthCheck(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "health_check.0.http.0.path", "/test"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "health_check.0.failure_threshold", "40"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "health_check.0.interval", "12s"),
-||||||| parent of d04ca3f0 (feat(container/serverless): add scaling_option block)
-=======
+				),
+			},
+		},
+	})
+}
+
 func TestAccContainer_ScalingOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -534,7 +537,6 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "scaling_option.0.memory_usage_threshold", "66"),
->>>>>>> d04ca3f0 (feat(container/serverless): add scaling_option block)
 				),
 			},
 		},
