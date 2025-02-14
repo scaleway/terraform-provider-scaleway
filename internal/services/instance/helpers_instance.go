@@ -508,21 +508,10 @@ func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Z
 }
 
 func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerType, image string) *UnknownVolume {
-	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
-
 	rootVolumeIsBootVolume := types.ExpandBoolPtr(types.GetMapValue[bool](rootVolumeI, "boot"))
 	rootVolumeType := types.GetMapValue[string](rootVolumeI, "volume_type")
 	sizeInput := types.GetMapValue[int](rootVolumeI, "size_in_gb")
 	rootVolumeID := zonal.ExpandID(types.GetMapValue[string](rootVolumeI, "volume_id")).ID
-
-	// If the rootVolumeType is not defined, define it depending on the offer
-	if rootVolumeType == "" {
-		if serverTypeCanBootOnBlock {
-			rootVolumeType = instance.VolumeVolumeTypeSbsVolume.String()
-		} else {
-			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
-		}
-	}
 
 	rootVolumeName := ""
 	if image == "" { // When creating an instance from an image, volume should not have a name
