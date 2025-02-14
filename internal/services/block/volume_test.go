@@ -124,6 +124,8 @@ func TestAccVolume_FromInstance(t *testing.T) {
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.volume"),
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.volume", "id"),
 					acctest.CheckResourceIDPersisted("scaleway_block_volume.volume", &volumeID),
+					resource.TestCheckResourceAttrPair("scaleway_instance_volume.volume", "name", "scaleway_block_volume.volume", "name"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.volume", "name", "test-block-volume-from-instance"),
 				),
 			},
 			{
@@ -137,6 +139,7 @@ func TestAccVolume_FromInstance(t *testing.T) {
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.volume"),
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.volume", "id"),
 					acctest.CheckResourceIDPersisted("scaleway_block_volume.volume", &volumeID),
+					resource.TestCheckResourceAttr("scaleway_block_volume.volume", "name", "test-block-volume-from-instance"),
 				),
 			},
 			{
@@ -151,6 +154,7 @@ func TestAccVolume_FromInstance(t *testing.T) {
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.volume"),
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.volume", "id"),
 					acctest.CheckResourceIDPersisted("scaleway_block_volume.volume", &volumeID),
+					resource.TestCheckResourceAttr("scaleway_block_volume.volume", "name", "test-block-volume-from-instance"),
 				),
 			},
 		},
