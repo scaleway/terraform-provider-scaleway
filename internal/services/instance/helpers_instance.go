@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -40,7 +41,6 @@ const (
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
 	defaultInstanceIPReverseDNSTimeout      = 10 * time.Minute
-	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 
@@ -148,7 +148,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	return apiState, nil
 }
 
-func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, serverID string, toState instance.ServerState) error {
+func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, serverID string, toState instance.ServerState) error {
 	response, err := api.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: serverID,
@@ -180,7 +180,7 @@ func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, se
 	// We need to check that all volumes are ready
 	for _, volume := range response.Server.Volumes {
 		if volume.VolumeType == block.BlockVolumeType {
-			_, err := api.blockAPI.WaitForVolumeAndReferences(&blockSDK.WaitForVolumeAndReferencesRequest{
+			_, err := api.BlockAPI.WaitForVolumeAndReferences(&blockSDK.WaitForVolumeAndReferencesRequest{
 				VolumeID:      volume.ID,
 				Zone:          zone,
 				RetryInterval: transport.DefaultWaitRetryInterval,
@@ -351,7 +351,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 				PrivateNicID:  p.ID,
 				Zone:          ph.zone,
 				Timeout:       &timeout,
-				RetryInterval: scw.TimeDurationPtr(defaultInstanceRetryInterval),
+				RetryInterval: scw.TimeDurationPtr(instancehelpers.DefaultInstanceRetryInterval),
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err
@@ -455,7 +455,7 @@ func retryUpdateReverseDNS(ctx context.Context, instanceAPI *instance.API, req *
 
 	for {
 		select {
-		case <-time.After(defaultInstanceRetryInterval):
+		case <-time.After(instancehelpers.DefaultInstanceRetryInterval):
 			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
 			if err != nil && IsIPReverseDNSResolveError(err) {
 				continue
@@ -495,8 +495,8 @@ func instanceIPHasMigrated(d *schema.ResourceData) bool {
 	return false
 }
 
-func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Zone, volumeID string) (*instance.VolumeServerTemplate, error) {
-	vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+func instanceServerAdditionalVolumeTemplate(api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumeID string) (*instance.VolumeServerTemplate, error) {
+	vol, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
 		VolumeID: locality.ExpandID(volumeID),
 		Zone:     zone,
 	})
@@ -507,7 +507,7 @@ func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Z
 	return vol.VolumeTemplate(), nil
 }
 
-func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerType, image string) *UnknownVolume {
+func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerType, image string) *instancehelpers.UnknownVolume {
 	rootVolumeIsBootVolume := types.ExpandBoolPtr(types.GetMapValue[bool](rootVolumeI, "boot"))
 	rootVolumeType := types.GetMapValue[string](rootVolumeI, "volume_type")
 	sizeInput := types.GetMapValue[int](rootVolumeI, "size_in_gb")
@@ -528,7 +528,7 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
 	}
 
-	return &UnknownVolume{
+	return &instancehelpers.UnknownVolume{
 		Name:               rootVolumeName,
 		ID:                 rootVolumeID,
 		InstanceVolumeType: instance.VolumeVolumeType(rootVolumeType),

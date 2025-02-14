@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
 func TestAccDataSourceSnapshot_Basic(t *testing.T) {
@@ -18,7 +19,7 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isVolumeDestroyed(tt),
+			instancetestfuncs.IsVolumeDestroyed(tt),
 			isSnapshotDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
