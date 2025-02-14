@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 )
 
 func CheckIPExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
@@ -90,9 +91,9 @@ func IsServerRootVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			rootVolumeID := locality.ExpandID(localizedRootVolumeID)
 
-			api := instance.NewBlockAndInstanceAPI(meta.ExtractScwClient(tt.Meta))
+			api := instancehelpers.NewBlockAndInstanceAPI(meta.ExtractScwClient(tt.Meta))
 
-			_, err = api.GetUnknownVolume(&instance.GetUnknownVolumeRequest{
+			_, err = api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
 				VolumeID: rootVolumeID,
 				Zone:     scw.Zone(zone),
 			})
@@ -165,6 +166,67 @@ func DoesImageExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		})
 		if err != nil {
 			return err
+		}
+
+		return nil
+	}
+}
+
+func IsVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		zone, id, err := zonal.ParseID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
+		_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
+			VolumeID: id,
+			Zone:     zone,
+		})
+		if err != nil {
+			return fmt.Errorf("volume (%s) not found: %w", id, err)
+		}
+
+		return nil
+	}
+}
+
+func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_volume" {
+				continue
+			}
+
+			zone, id, err := zonal.ParseID(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
+				Zone:     zone,
+				VolumeID: id,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("volume (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !httperrors.Is404(err) {
+				return err
+			}
 		}
 
 		return nil

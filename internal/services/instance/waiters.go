@@ -6,11 +6,12 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func waitForSnapshot(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Snapshot, error) {
-	retryInterval := defaultInstanceRetryInterval
+	retryInterval := instancehelpers.DefaultInstanceRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
@@ -25,24 +26,8 @@ func waitForSnapshot(ctx context.Context, api *instance.API, zone scw.Zone, id s
 	return snapshot, err
 }
 
-func waitForVolume(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Volume, error) {
-	retryInterval := defaultInstanceRetryInterval
-	if transport.DefaultWaitRetryInterval != nil {
-		retryInterval = *transport.DefaultWaitRetryInterval
-	}
-
-	volume, err := api.WaitForVolume(&instance.WaitForVolumeRequest{
-		VolumeID:      id,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
-	return volume, err
-}
-
 func waitForServer(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Server, error) {
-	retryInterval := defaultInstanceRetryInterval
+	retryInterval := instancehelpers.DefaultInstanceRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
@@ -58,7 +43,7 @@ func waitForServer(ctx context.Context, api *instance.API, zone scw.Zone, id str
 }
 
 func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) (*instance.PrivateNIC, error) {
-	retryInterval := defaultInstanceRetryInterval
+	retryInterval := instancehelpers.DefaultInstanceRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
@@ -75,7 +60,7 @@ func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.
 }
 
 func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) (*instance.PrivateNIC, error) {
-	retryInterval := defaultInstanceRetryInterval
+	retryInterval := instancehelpers.DefaultInstanceRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
@@ -92,7 +77,7 @@ func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.
 }
 
 func waitForImage(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Image, error) {
-	retryInterval := defaultInstanceRetryInterval
+	retryInterval := instancehelpers.DefaultInstanceRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}

@@ -610,7 +610,7 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "scaleway_instance_volume.block"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block"),
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.block", "size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
@@ -627,7 +627,7 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isVolumeDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -679,7 +679,7 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "scaleway_instance_volume.main"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
 				),
 			},

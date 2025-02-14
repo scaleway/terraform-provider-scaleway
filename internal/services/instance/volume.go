@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -75,6 +76,12 @@ func ResourceVolume() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the volume",
 			},
+			"migrate_to_sbs": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If true, consider that this volume may have been migrated and no longer exists.",
+			},
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
 			"zone":            zonal.Schema(),
@@ -134,6 +141,10 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.Get("migrate_to_sbs").(bool) {
+		return nil
 	}
 
 	res, err := instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
@@ -202,7 +213,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(errors.New("block volumes cannot be resized down"))
 		}
 
-		_, err = waitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+		_, err = instancehelpers.WaitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -218,7 +229,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(fmt.Errorf("couldn't resize volume: %w", err))
 		}
 
-		_, err = waitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+		_, err = instancehelpers.WaitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
