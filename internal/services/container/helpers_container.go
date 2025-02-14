@@ -131,6 +131,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		if err != nil {
 			return nil, err
 		}
+
 		req.ScalingOption = scalingOptionReq
 	}
 
@@ -241,15 +242,18 @@ func expandScalingOptions(scalingOptionSchema interface{}) (*container.Container
 		}
 
 		setFields := 0
+
 		cso := &container.ContainerScalingOption{}
 		if concurrentRequestThresold, ok := rawOption["concurrent_requests_threshold"].(int); ok && concurrentRequestThresold != 0 {
 			cso.ConcurrentRequestsThreshold = scw.Uint32Ptr(uint32(concurrentRequestThresold))
 			setFields++
 		}
+
 		if cpuUsageThreshold, ok := rawOption["cpu_usage_threshold"].(int); ok && cpuUsageThreshold != 0 {
 			cso.CPUUsageThreshold = scw.Uint32Ptr(uint32(cpuUsageThreshold))
 			setFields++
 		}
+
 		if memoryUsageThreshold, ok := rawOption["memory_usage_threshold"].(int); ok && memoryUsageThreshold != 0 {
 			cso.MemoryUsageThreshold = scw.Uint32Ptr(uint32(memoryUsageThreshold))
 			setFields++
@@ -258,6 +262,7 @@ func expandScalingOptions(scalingOptionSchema interface{}) (*container.Container
 		if setFields > 1 {
 			return &container.ContainerScalingOption{}, errors.New("a maximum of one scaling option can be set")
 		}
+
 		return cso, nil
 	}
 

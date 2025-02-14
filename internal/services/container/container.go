@@ -468,6 +468,7 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.ScalingOption = scalingOptionReq
 >>>>>>> d04ca3f0 (feat(container/serverless): add scaling_option block)
 	}
