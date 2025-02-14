@@ -166,6 +166,8 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 	var configFileNotFoundError *scw.ConfigFileNotFoundError
 	if errors.As(err, &configFileNotFoundError) {
 		config = &scw.Config{}
+	} else if err != nil {
+		return nil, nil, err
 	}
 
 	// By default we set default zone and region to fr-par
