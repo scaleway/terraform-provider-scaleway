@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -177,7 +178,7 @@ func ResourceImage() *schema.Resource {
 }
 
 func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := instanceAndBlockAPIWithZone(d, m)
+	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -263,7 +264,7 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
