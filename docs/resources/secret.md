@@ -69,8 +69,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-This section explains how to import a secret using the `{region}/{id}` format.
+This section explains how to import a secret using the `{region}/{id}/{version}` format.
 
 ```bash
-terraform import scaleway_secret.main fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_secret.main fr-par/11111111-1111-1111-1111-111111111111/1
 ```
