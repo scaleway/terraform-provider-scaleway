@@ -5,10 +5,8 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp"
 
 # Resource: scaleway_vpc_public_gateway_dhcp
 
-
-
 Creates and manages Scaleway VPC Public Gateway DHCP configurations.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-c05544).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-c05544).
 
 ## Example Usage
 

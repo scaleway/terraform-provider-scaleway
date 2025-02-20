@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_baremetal_server"
 
 # Resource: scaleway_baremetal_server
 
-Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/elastic-metal/).
+Creates and manages Scaleway Compute Baremetal servers. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/elastic-metal/).
 
 ## Example Usage
 

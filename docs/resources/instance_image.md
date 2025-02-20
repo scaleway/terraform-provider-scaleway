@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_instance_image"
 # Resource: scaleway_instance_image
 
 Creates and manages Scaleway Compute Images.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#path-images-list-instance-images).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/instance/#path-images-list-instance-images).
 
 ## Example Usage
 
@@ -120,7 +120,7 @@ In addition to all arguments above, the following attributes are exported:
     - `state` - State of the volume.
     - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the volume is.
     - `server` - Description of the server containing the volume (in case the image is a backup from a server).
-  
+
     -> The `server` block contains :
       - `id` - ID of the server containing the volume.
       - `name` - Name of the server containing the volume.

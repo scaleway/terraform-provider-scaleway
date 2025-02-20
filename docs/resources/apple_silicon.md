@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_apple_silicon"
 # Resource: scaleway_apple_silicon
 
 Creates and manages Scaleway Apple silicon. For more information,
-see [the documentation](https://www.scaleway.com/en/developers/api/apple-silicon/).
+see the [API documentation](https://www.scaleway.com/en/developers/api/apple-silicon/).
 
 ## Example Usage
 

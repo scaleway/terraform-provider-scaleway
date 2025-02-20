@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_pat_rule"
 # scaleway_vpc_public_gateway_pat_rule
 
 Gets information about a Public Gateway PAT rule. For further information, please see the
-API [documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-pat-rules-list-pat-rules).
+[API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-pat-rules-list-pat-rules).
 
 ## Example Usage
 

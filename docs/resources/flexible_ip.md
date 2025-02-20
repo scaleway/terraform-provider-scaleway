@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_flexible_ip"
 # Resource: scaleway_flexible_ip
 
 Creates and manages Scaleway flexible IPs.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/elastic-metal-flexible-ip).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/elastic-metal-flexible-ip).
 
 ## Example Usage
 
@@ -45,13 +45,13 @@ resource "scaleway_account_ssh_key" "main" {
 data "scaleway_baremetal_os" "by_id" {
     zone = "fr-par-2"
     name = "Ubuntu"
-    version = "20.04 LTS (Focal Fossa)"						
+    version = "20.04 LTS (Focal Fossa)"
 }
 
 data "scaleway_baremetal_offer" "my_offer" {
     zone = "fr-par-2"
     name = "EM-A210R-HDD"
-}	
+}
 
 resource "scaleway_baremetal_server" "base" {
     zone = "fr-par-2"

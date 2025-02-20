@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_instance_security_group"
 
 # Resource: scaleway_instance_security_group
 
-Creates and manages Scaleway compute Instance security groups. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-list-security-groups).
+Creates and manages Scaleway compute Instance security groups. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-list-security-groups).
 
 ## Example Usage
 
