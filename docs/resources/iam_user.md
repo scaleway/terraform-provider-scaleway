@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_iam_user"
 # Resource: scaleway_iam_user
 
 Creates and manages Scaleway IAM Users.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/iam/#path-users-list-users-of-an-organization).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/iam/#path-users-list-users-of-an-organization).
 
 ## Example Usage
 

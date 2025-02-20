@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_rdb_privilege"
 # Resource: scaleway_rdb_privilege
 
 Create and manage Scaleway database privileges.
-For more information refer to [the API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/#user-and-permissions).
+For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/#user-and-permissions).
 
 ## Example Usage
 

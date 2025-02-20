@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_k8s_pool"
 
 # Resource: scaleway_k8s_pool
 
-Creates and manages Scaleway Kubernetes cluster pools. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
+Creates and manages Scaleway Kubernetes cluster pools. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
 
 ## Example Usage
 
@@ -118,7 +118,7 @@ Please note that a pool belongs to only one cluster, in the same region.`region`
 If you are working with cluster type `multicloud` please set the `zone` where your placement group is e.g:
 
 ```terraform
-resource "scaleway_instance_placement_group" "placement_group" { 
+resource "scaleway_instance_placement_group" "placement_group" {
   name        = "pool-placement-group"
   policy_type = "max_availability"
   policy_mode = "optional"
