@@ -55,7 +55,7 @@ func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, static
 		if staticConfig != nil {
 			ip, err := types.ExpandIPNet(*staticConfig)
 			if err != nil {
-				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network ip_net (%s): %s", r["ip_net"], err))...)
+				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network ip_net (%s): %w", r["ip_net"], err))...)
 			}
 
 			spec.PrivateNetwork.ServiceIP = &ip
@@ -177,7 +177,7 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *
 	if staticConfig != nil {
 		ipNet, err := types.ExpandIPNet(*staticConfig)
 		if err != nil {
-			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network service_ip (%s): %s", rawEndpoint["service_ip"], err))...)
+			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err))...)
 		}
 
 		endpoint.PrivateNetwork.ServiceIP = &ipNet

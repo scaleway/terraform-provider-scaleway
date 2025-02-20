@@ -25,7 +25,7 @@ func testSweepIPAMIP(_ string) error {
 
 		listIPs, err := ipamAPI.ListIPs(&ipamSDK.ListIPsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing ips in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing ips in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, v := range listIPs.IPs {
@@ -36,7 +36,7 @@ func testSweepIPAMIP(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error releasing IP in sweeper: %s", err)
+				return fmt.Errorf("error releasing IP in sweeper: %w", err)
 			}
 		}
 

@@ -154,7 +154,7 @@ func expandEphemeralPolicy(rawSchemaPolicy any) (*secret.EphemeralPolicy, error)
 
 	ttl, err := types.ExpandDuration(rawPolicy["ttl"])
 	if err != nil {
-		return nil, fmt.Errorf("error parsing ttl: %s", err)
+		return nil, fmt.Errorf("error parsing ttl: %w", err)
 	}
 
 	policy := &secret.EphemeralPolicy{

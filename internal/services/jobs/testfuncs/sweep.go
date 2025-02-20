@@ -28,7 +28,7 @@ func testSweepJobDefinition(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing definition in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing definition in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, definition := range listJobDefinitions.JobDefinitions {
@@ -39,7 +39,7 @@ func testSweepJobDefinition(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting definition in sweeper: %s", err)
+				return fmt.Errorf("error deleting definition in sweeper: %w", err)
 			}
 		}
 

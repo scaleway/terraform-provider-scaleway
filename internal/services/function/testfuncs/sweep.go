@@ -41,7 +41,7 @@ func testSweepFunctionTrigger(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing trigger in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing trigger in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, trigger := range listTriggers.Triggers {
@@ -52,7 +52,7 @@ func testSweepFunctionTrigger(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting trigger in sweeper: %s", err)
+				return fmt.Errorf("error deleting trigger in sweeper: %w", err)
 			}
 		}
 
@@ -71,7 +71,7 @@ func testSweepFunctionNamespace(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, ns := range listNamespaces.Namespaces {
@@ -82,7 +82,7 @@ func testSweepFunctionNamespace(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
+				return fmt.Errorf("error deleting namespace in sweeper: %w", err)
 			}
 		}
 
@@ -101,7 +101,7 @@ func testSweepFunction(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing functions in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing functions in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, f := range listFunctions.Functions {
@@ -112,7 +112,7 @@ func testSweepFunction(_ string) error {
 			if err != nil && !httperrors.Is404(err) {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting functions in sweeper: %s", err)
+				return fmt.Errorf("error deleting functions in sweeper: %w", err)
 			}
 		}
 
@@ -131,7 +131,7 @@ func testSweepFunctionCron(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing cron in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing cron in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, cron := range listCron.Crons {
@@ -142,7 +142,7 @@ func testSweepFunctionCron(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting cron in sweeper: %s", err)
+				return fmt.Errorf("error deleting cron in sweeper: %w", err)
 			}
 		}
 

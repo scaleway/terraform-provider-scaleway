@@ -46,7 +46,7 @@ func testSweepSQSCredentials(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing sqs credentials in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing sqs credentials in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, credentials := range listSqsCredentials.SqsCredentials {
@@ -57,7 +57,7 @@ func testSweepSQSCredentials(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting sqs credentials in sweeper: %s", err)
+				return fmt.Errorf("error deleting sqs credentials in sweeper: %w", err)
 			}
 		}
 
@@ -108,7 +108,7 @@ func testSweepSNSCredentials(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing sns credentials in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing sns credentials in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, credentials := range listSnsCredentials.SnsCredentials {
@@ -119,7 +119,7 @@ func testSweepSNSCredentials(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting sns credentials in sweeper: %s", err)
+				return fmt.Errorf("error deleting sns credentials in sweeper: %w", err)
 			}
 		}
 
@@ -170,7 +170,7 @@ func testSweepNatsAccount(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing nats account in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing nats account in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, account := range listNatsAccounts.NatsAccounts {
@@ -181,7 +181,7 @@ func testSweepNatsAccount(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting nats account in sweeper: %s", err)
+				return fmt.Errorf("error deleting nats account in sweeper: %w", err)
 			}
 		}
 

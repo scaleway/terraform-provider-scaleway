@@ -27,7 +27,7 @@ func testSweepHub(_ string) error {
 		if err != nil {
 			logging.L.Debugf("sweeper: destroying the iot hub in (%s)", region)
 
-			return fmt.Errorf("error listing hubs in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing hubs in (%s) in sweeper: %w", region, err)
 		}
 
 		deleteDevices := true
@@ -38,7 +38,7 @@ func testSweepHub(_ string) error {
 				DeleteDevices: &deleteDevices,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting hub in sweeper: %s", err)
+				return fmt.Errorf("error deleting hub in sweeper: %w", err)
 			}
 		}
 

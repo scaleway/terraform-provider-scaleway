@@ -23,7 +23,7 @@ func TestAccImage_BlockVolume(t *testing.T) {
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isImageDestroyed(tt),
 			isSnapshotDestroyed(tt),
-			isVolumeDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -47,7 +47,7 @@ func TestAccImage_BlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "scaleway_instance_volume.main"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
 					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_basic"),
@@ -89,7 +89,7 @@ func TestAccImage_BlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "scaleway_instance_volume.main"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
 					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_renamed"),
@@ -119,7 +119,7 @@ func TestAccImage_ExternalBlockVolume(t *testing.T) {
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isImageDestroyed(tt),
 			isSnapshotDestroyed(tt),
-			isVolumeDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -286,7 +286,7 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isImageDestroyed(tt),
 			isSnapshotDestroyed(tt),
-			isVolumeDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -310,7 +310,7 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "scaleway_instance_volume.block01"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block01"),
 					isServerPresent(tt, "scaleway_instance_server.server"),
 					isSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
 				),
@@ -351,7 +351,7 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "scaleway_instance_volume.block01"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block01"),
 					isServerPresent(tt, "scaleway_instance_server.server"),
 					isSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
 					isSnapshotPresent(tt, "scaleway_instance_snapshot.server"),
@@ -409,8 +409,8 @@ func TestAccImage_ServerWithBlockVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "scaleway_instance_volume.block01"),
-					isVolumePresent(tt, "scaleway_instance_volume.block02"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block01"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block02"),
 					isServerPresent(tt, "scaleway_instance_server.server"),
 					isSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
 					isSnapshotPresent(tt, "scaleway_instance_snapshot.block02"),
@@ -438,7 +438,7 @@ func TestAccImage_ServerWithLocalVolume(t *testing.T) {
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isImageDestroyed(tt),
 			isSnapshotDestroyed(tt),
-			isVolumeDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{

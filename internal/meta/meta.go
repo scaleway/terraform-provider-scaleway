@@ -2,6 +2,7 @@ package meta
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -162,7 +163,8 @@ func customizeUserAgent(providerVersion string, terraformVersion string) string 
 func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *CredentialsSource, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
-	if _, isNotFoundError := err.(*scw.ConfigFileNotFoundError); isNotFoundError {
+	var configFileNotFoundError *scw.ConfigFileNotFoundError
+	if errors.As(err, &configFileNotFoundError) {
 		config = &scw.Config{}
 	} else if err != nil {
 		return nil, nil, err

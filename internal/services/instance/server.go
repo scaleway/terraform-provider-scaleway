@@ -30,6 +30,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -359,7 +360,7 @@ func ResourceServer() *schema.Resource {
 
 //gocyclo:ignore
 func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := instanceAndBlockAPIWithZone(d, m)
+	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -449,7 +450,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 			Type:           volumeTypeToMarketplaceFilter(req.Volumes["0"].VolumeType),
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", zonal.NewID(zone, imageLabel), err))
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %w", zonal.NewID(zone, imageLabel), err))
 		}
 
 		imageUUID = image.ID
@@ -573,7 +574,7 @@ func errorCheck(err error, message string) bool {
 
 //gocyclo:ignore
 func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -691,7 +692,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 					rootVolume = vs[0]
 				}
 
-				vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+				vol, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
 					VolumeID: serverVolume.ID,
 					Zone:     server.Zone,
 				})
@@ -769,7 +770,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 
 //gocyclo:ignore
 func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1044,7 +1045,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1124,7 +1125,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			return diag.Errorf("volume ID not found")
 		}
 
-		err = api.DeleteUnknownVolume(&DeleteUnknownVolumeRequest{
+		err = api.DeleteUnknownVolume(&instancehelpers.DeleteUnknownVolumeRequest{
 			Zone:     zone,
 			VolumeID: locality.ExpandID(volumeID),
 		})
@@ -1284,7 +1285,7 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	return nil
 }
 
-func ResourceInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, api *BlockAndInstanceAPI, zone scw.Zone, id string) error {
+func ResourceInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string) error {
 	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return fmt.Errorf("failed to wait for server before changing server type: %w", err)
@@ -1368,7 +1369,7 @@ func ResourceInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, serverID string, iops *uint32) diag.Diagnostics {
+func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, serverID string, iops *uint32) diag.Diagnostics {
 	res, err := api.GetServer(&instanceSDK.GetServerRequest{
 		Zone:     zone,
 		ServerID: serverID,
@@ -1379,7 +1380,7 @@ func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *BlockA
 
 	rootVolume, exists := res.Server.Volumes["0"]
 	if exists {
-		_, err := api.blockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+		_, err := api.BlockAPI.UpdateVolume(&block.UpdateVolumeRequest{
 			Zone:     zone,
 			VolumeID: rootVolume.ID,
 			PerfIops: iops,
@@ -1406,12 +1407,12 @@ func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *BlockA
 
 // instanceServerVolumesUpdate updates root_volume size and returns the list of volumes templates that should be updated for the server.
 // It uses root_volume and additional_volume_ids to build the volumes templates.
-func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, api *BlockAndInstanceAPI, zone scw.Zone, serverIsStopped bool) (map[string]*instanceSDK.VolumeServerTemplate, error) {
+func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, serverIsStopped bool) (map[string]*instanceSDK.VolumeServerTemplate, error) {
 	volumes := map[string]*instanceSDK.VolumeServerTemplate{}
 	raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids")
 
 	if d.HasChange("root_volume.0.size_in_gb") {
-		err := api.ResizeUnknownVolume(&ResizeUnknownVolumeRequest{
+		err := api.ResizeUnknownVolume(&instancehelpers.ResizeUnknownVolumeRequest{
 			VolumeID: zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID,
 			Zone:     zone,
 			Size:     scw.SizePtr(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
@@ -1434,7 +1435,7 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 	for i, volumeID := range raw.([]interface{}) {
 		volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
 
-		volume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+		volume, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
 			VolumeID: zonal.ExpandID(volumeID).ID,
 			Zone:     zone,
 		}, scw.WithContext(ctx))

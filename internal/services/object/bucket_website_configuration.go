@@ -112,7 +112,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		Bucket: scw.StringPtr(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket: %w", err))
 	}
 
 	input := &s3.PutBucketWebsiteInput{
@@ -153,7 +153,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket: %w", err))
 	}
 
 	output, err := conn.GetBucketWebsite(ctx, input)
@@ -193,7 +193,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
 	}
 
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
