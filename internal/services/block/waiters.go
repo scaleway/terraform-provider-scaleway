@@ -25,6 +25,25 @@ func waitForBlockVolume(ctx context.Context, blockAPI *block.API, zone scw.Zone,
 	return volume, err
 }
 
+func waitForBlockVolumeToBeAvailable(ctx context.Context, blockAPI *block.API, zone scw.Zone, id string, timeout time.Duration) (*block.Volume, error) {
+	retryInterval := defaultBlockRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	terminalStatus := block.VolumeStatusAvailable
+	volume, err := blockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
+		Zone:          zone,
+		VolumeID:      id,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+
+		VolumeTerminalStatus: &terminalStatus,
+	}, scw.WithContext(ctx))
+
+	return volume, err
+}
+
 func waitForBlockSnapshot(ctx context.Context, blockAPI *block.API, zone scw.Zone, id string, timeout time.Duration) (*block.Snapshot, error) {
 	retryInterval := defaultBlockRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
