@@ -300,14 +300,6 @@ func mapToStruct(data map[string]interface{}, target interface{}) {
 	}
 }
 
-func ExtractDomainFromID(id string) (string, error) {
-	parts := strings.Split(id, "/")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid ID format, expected 'projectID/domainName', got: %s", id)
-	}
-	return parts[1], nil
-}
-
 func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string) (domain.TaskStatus, error) {
 	var page int32 = 1
 	var pageSize uint32 = 1000
@@ -562,48 +554,6 @@ func flattenTldOffers(offers map[string]*domain.TldOffer) []map[string]interface
 	return flattenedOffers
 }
 
-func flattenExternalDomainRegistrationStatus(status *domain.DomainRegistrationStatusExternalDomain) []string {
-	if status == nil {
-		return []string{}
-	}
-	return []string{status.ValidationToken}
-}
-
-func flattenDNSZones(dnsZones []*domain.DNSZone) []map[string]interface{} {
-	if dnsZones == nil {
-		return nil
-	}
-
-	var zones []map[string]interface{}
-	for _, zone := range dnsZones {
-		zones = append(zones, map[string]interface{}{
-			"domain":     zone.Domain,
-			"subdomain":  zone.Subdomain,
-			"ns":         zone.Ns,
-			"ns_default": zone.NsDefault,
-			"ns_master":  zone.NsMaster,
-			"status":     zone.Status,
-			"message":    zone.Message,
-			"updated_at": zone.UpdatedAt.Format(time.RFC3339),
-			"project_id": zone.ProjectID,
-		})
-	}
-
-	return zones
-}
-
-func flattenDomainRegistrationStatusTransfer(transferStatus *domain.DomainRegistrationStatusTransfer) []string {
-	if transferStatus == nil {
-		return []string{}
-	}
-
-	return []string{
-		string(transferStatus.Status),
-		fmt.Sprintf("%t", transferStatus.VoteCurrentOwner),
-		fmt.Sprintf("%t", transferStatus.VoteNewOwner),
-	}
-}
-
 func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, taskID string, duration int) error {
 	timeout := time.Duration(duration) * time.Second
 	return retry.RetryContext(ctx, timeout, func() *retry.RetryError {
@@ -626,45 +576,6 @@ func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAP
 
 		return retry.NonRetryableError(fmt.Errorf("unexpected task status: %v", status))
 	})
-}
-
-func waitForUpdateDomainTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, duration int) ([]*domain.Task, error) {
-	timeout := time.Duration(duration) * time.Second
-	var completedTasks []*domain.Task
-
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		tasks, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
-			Domain: &domainName,
-		}, scw.WithContext(ctx), scw.WithAllPages())
-		if err != nil {
-			return retry.NonRetryableError(fmt.Errorf("failed to list tasks: %w", err))
-		}
-
-		allSuccess := true
-		completedTasks = tasks.Tasks
-		for _, task := range tasks.Tasks {
-			if task.Type == domain.TaskTypeUpdateDomain {
-				if task.Status != domain.TaskStatusSuccess {
-					allSuccess = false
-					if task.Status == domain.TaskStatusPending {
-						return retry.RetryableError(errors.New("update_domain task is still pending, retrying"))
-					}
-				}
-			}
-		}
-
-		if allSuccess {
-			return nil
-		}
-
-		return retry.RetryableError(errors.New("not all update_domain tasks are successful, retrying"))
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return completedTasks, nil
 }
 
 func ExpandDSRecord(dsRecordList []interface{}) *domain.DSRecord {
@@ -727,7 +638,6 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 					},
 				}
 			}
-			// Le champ "digest" est défini dans le schéma comme une liste contenant un seul élément.
 			item["digest"] = []interface{}{digest}
 		}
 
@@ -744,6 +654,87 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 
 	return results
 }
+
+//func flattenDNSZones(dnsZones []*domain.DNSZone) []map[string]interface{} {
+//	if dnsZones == nil {
+//		return nil
+//	}
+//
+//	var zones []map[string]interface{}
+//	for _, zone := range dnsZones {
+//		zones = append(zones, map[string]interface{}{
+//			"domain":     zone.Domain,
+//			"subdomain":  zone.Subdomain,
+//			"ns":         zone.Ns,
+//			"ns_default": zone.NsDefault,
+//			"ns_master":  zone.NsMaster,
+//			"status":     zone.Status,
+//			"message":    zone.Message,
+//			"updated_at": zone.UpdatedAt.Format(time.RFC3339),
+//			"project_id": zone.ProjectID,
+//		})
+//	}
+//
+//	return zones
+//}
+
+//func flattenExternalDomainRegistrationStatus(status *domain.DomainRegistrationStatusExternalDomain) []string {
+//	if status == nil {
+//		return []string{}
+//	}
+//	return []string{status.ValidationToken}
+//}
+
+//func flattenDomainRegistrationStatusTransfer(transferStatus *domain.DomainRegistrationStatusTransfer) []string {
+//	if transferStatus == nil {
+//		return []string{}
+//	}
+//
+//	return []string{
+//		string(transferStatus.Status),
+//		fmt.Sprintf("%t", transferStatus.VoteCurrentOwner),
+//		fmt.Sprintf("%t", transferStatus.VoteNewOwner),
+//	}
+//}
+
+//func waitForUpdateDomainTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, duration int) ([]*domain.Task, error) {
+//	timeout := time.Duration(duration) * time.Second
+//	var completedTasks []*domain.Task
+//
+//	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+//		tasks, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
+//			Domain: &domainName,
+//		}, scw.WithContext(ctx), scw.WithAllPages())
+//		if err != nil {
+//			return retry.NonRetryableError(fmt.Errorf("failed to list tasks: %w", err))
+//		}
+//
+//		allSuccess := true
+//		completedTasks = tasks.Tasks
+//		for _, task := range tasks.Tasks {
+//			if task.Type == domain.TaskTypeUpdateDomain {
+//				if task.Status != domain.TaskStatusSuccess {
+//					allSuccess = false
+//					if task.Status == domain.TaskStatusPending {
+//						return retry.RetryableError(errors.New("update_domain task is still pending, retrying"))
+//					}
+//				}
+//			}
+//		}
+//
+//		if allSuccess {
+//			return nil
+//		}
+//
+//		return retry.RetryableError(errors.New("not all update_domain tasks are successful, retrying"))
+//	})
+//
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return completedTasks, nil
+//}
 
 //func ExpandDSRecord(dsRecordList []interface{}) *domain.DSRecord {
 //	if len(dsRecordList) == 0 || dsRecordList[0] == nil {

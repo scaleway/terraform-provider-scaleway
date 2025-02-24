@@ -3,7 +3,6 @@ package domain
 import (
 	"context"
 	"fmt"
-	// "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -278,7 +277,7 @@ func contactSchema() map[string]*schema.Schema {
 			Type:     schema.TypeList,
 			Optional: true,
 			Computed: true,
-			MaxItems: 1, // Ensure it's a single-item list if needed
+			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"mode": {
