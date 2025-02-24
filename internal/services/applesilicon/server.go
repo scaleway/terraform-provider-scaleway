@@ -317,7 +317,7 @@ func ResourceAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceDat
 		ServerID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !httperrors.Is404(err) {
+	if err != nil && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
 
