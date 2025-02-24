@@ -545,10 +545,6 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 		return nil
 	}
 
-	if d.HasChange("owner_contact_id") || d.HasChange("owner_contact") {
-		return diag.FromErr(fmt.Errorf("the domain ownership transfer feature is not implemented in this provider because it requires manual validation through email notifications. This action can only be performed via the Scaleway Console"))
-	}
-
 	if d.HasChange("auto_renew") {
 		newAutoRenew := d.Get("auto_renew").(bool)
 		for _, domainName := range domainNames {
@@ -645,7 +641,7 @@ func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceDa
 			if httperrors.Is404(err) {
 				continue
 			}
-			
+
 			return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %w", domainName, err))
 		}
 
