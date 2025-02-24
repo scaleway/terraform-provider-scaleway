@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -135,7 +134,6 @@ func ExpandContact(contactMap map[string]interface{}) *domain.Contact {
 }
 
 func expandContactExtension(extensionMap map[string]interface{}, extensionType string) interface{} {
-
 	if extensionMap == nil || len(extensionMap) == 0 {
 		return nil
 	}
@@ -308,7 +306,6 @@ func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string
 			Page:     &page,
 			PageSize: &pageSize,
 		}, scw.WithContext(ctx))
-
 		if err != nil {
 			return "", fmt.Errorf("error retrieving tasks: %w", err)
 		}
@@ -368,7 +365,6 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 		}
 	}
 	return nil, fmt.Errorf("task with ID '%s' not found", taskID)
-
 }
 
 func flattenContact(contact *domain.Contact) []map[string]interface{} {
@@ -510,49 +506,49 @@ func flattenContactExtensionNL(ext *domain.ContactExtensionNL) []map[string]inte
 	}
 }
 
-func flattenTLD(tld *domain.Tld) []map[string]interface{} {
-	if tld == nil {
-		return []map[string]interface{}{}
-	}
-	tldMap := map[string]interface{}{
-		"name":                  tld.Name,
-		"dnssec_support":        tld.DnssecSupport,
-		"duration_in_years_min": tld.DurationInYearsMin,
-		"duration_in_years_max": tld.DurationInYearsMax,
-		"idn_support":           tld.IDnSupport,
-	}
+//func flattenTLD(tld *domain.Tld) []map[string]interface{} {
+//	if tld == nil {
+//		return []map[string]interface{}{}
+//	}
+//	tldMap := map[string]interface{}{
+//		"name":                  tld.Name,
+//		"dnssec_support":        tld.DnssecSupport,
+//		"duration_in_years_min": tld.DurationInYearsMin,
+//		"duration_in_years_max": tld.DurationInYearsMax,
+//		"idn_support":           tld.IDnSupport,
+//	}
+//
+//	tldMap["offers"] = flattenTldOffers(tld.Offers)
+//
+//	if tld.Specifications != nil {
+//		tldMap["specifications"] = tld.Specifications
+//	} else {
+//		tldMap["specifications"] = map[string]interface{}{}
+//	}
+//
+//	return []map[string]interface{}{tldMap}
+//}
 
-	tldMap["offers"] = flattenTldOffers(tld.Offers)
-
-	if tld.Specifications != nil {
-		tldMap["specifications"] = tld.Specifications
-	} else {
-		tldMap["specifications"] = map[string]interface{}{}
-	}
-
-	return []map[string]interface{}{tldMap}
-}
-
-func flattenTldOffers(offers map[string]*domain.TldOffer) []map[string]interface{} {
-	if offers == nil {
-		return nil
-	}
-
-	flattenedOffers := []map[string]interface{}{}
-	for _, offer := range offers {
-		flattenedOffers = append(flattenedOffers, map[string]interface{}{
-			"action":         offer.Action,
-			"operation_path": offer.OperationPath,
-			"price": map[string]interface{}{
-				"currency_code": offer.Price.CurrencyCode,
-				"units":         strconv.Itoa(int(offer.Price.Units)),
-				"nanos":         strconv.Itoa(int(offer.Price.Nanos)),
-			},
-		})
-	}
-
-	return flattenedOffers
-}
+//func flattenTldOffers(offers map[string]*domain.TldOffer) []map[string]interface{} {
+//	if offers == nil {
+//		return nil
+//	}
+//
+//	flattenedOffers := []map[string]interface{}{}
+//	for _, offer := range offers {
+//		flattenedOffers = append(flattenedOffers, map[string]interface{}{
+//			"action":         offer.Action,
+//			"operation_path": offer.OperationPath,
+//			"price": map[string]interface{}{
+//				"currency_code": offer.Price.CurrencyCode,
+//				"units":         strconv.Itoa(int(offer.Price.Units)),
+//				"nanos":         strconv.Itoa(int(offer.Price.Nanos)),
+//			},
+//		})
+//	}
+//
+//	return flattenedOffers
+//}
 
 func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, taskID string, duration int) error {
 	timeout := time.Duration(duration) * time.Second
@@ -655,7 +651,7 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 	return results
 }
 
-//func flattenDNSZones(dnsZones []*domain.DNSZone) []map[string]interface{} {
+// func flattenDNSZones(dnsZones []*domain.DNSZone) []map[string]interface{} {
 //	if dnsZones == nil {
 //		return nil
 //	}
@@ -676,16 +672,16 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 //	}
 //
 //	return zones
-//}
+// }
 
-//func flattenExternalDomainRegistrationStatus(status *domain.DomainRegistrationStatusExternalDomain) []string {
+// func flattenExternalDomainRegistrationStatus(status *domain.DomainRegistrationStatusExternalDomain) []string {
 //	if status == nil {
 //		return []string{}
 //	}
 //	return []string{status.ValidationToken}
-//}
+// }
 
-//func flattenDomainRegistrationStatusTransfer(transferStatus *domain.DomainRegistrationStatusTransfer) []string {
+// func flattenDomainRegistrationStatusTransfer(transferStatus *domain.DomainRegistrationStatusTransfer) []string {
 //	if transferStatus == nil {
 //		return []string{}
 //	}
@@ -695,9 +691,9 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 //		fmt.Sprintf("%t", transferStatus.VoteCurrentOwner),
 //		fmt.Sprintf("%t", transferStatus.VoteNewOwner),
 //	}
-//}
+// }
 
-//func waitForUpdateDomainTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, duration int) ([]*domain.Task, error) {
+// func waitForUpdateDomainTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, duration int) ([]*domain.Task, error) {
 //	timeout := time.Duration(duration) * time.Second
 //	var completedTasks []*domain.Task
 //
@@ -734,9 +730,9 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 //	}
 //
 //	return completedTasks, nil
-//}
+// }
 
-//func ExpandDSRecord(dsRecordList []interface{}) *domain.DSRecord {
+// func ExpandDSRecord(dsRecordList []interface{}) *domain.DSRecord {
 //	if len(dsRecordList) == 0 || dsRecordList[0] == nil {
 //		return nil
 //	}
@@ -770,5 +766,5 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 //	}
 //
 //	return dsRecord
-//}
+// }
 //

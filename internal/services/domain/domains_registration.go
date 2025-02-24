@@ -496,13 +496,13 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	computedTechnicalContact := flattenContact(firstResp.TechnicalContact)
 
 	computedAutoRenew := false
-	if firstResp.AutoRenewStatus.String() == "enabled" {
+	if firstResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled {
 		computedAutoRenew = true
 	}
 
 	computedDnssec := false
 
-	if firstResp.Dnssec.Status == "enabled" {
+	if firstResp.Dnssec.Status == domain.DomainFeatureStatusEnabled {
 		computedDnssec = true
 	}
 
@@ -552,7 +552,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 				Domain: domainName,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %v", domainName, err))
+				return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %w", domainName, err))
 			}
 
 			if newAutoRenew {
@@ -561,7 +561,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 						Domain: domainName,
 					}, scw.WithContext(ctx))
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("failed to enable auto-renew for %s: %v", domainName, err))
+						return diag.FromErr(fmt.Errorf("failed to enable auto-renew for %s: %w", domainName, err))
 					}
 				}
 			} else {
@@ -570,7 +570,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 						Domain: domainName,
 					}, scw.WithContext(ctx))
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("failed to disable auto-renew for %s: %v", domainName, err))
+						return diag.FromErr(fmt.Errorf("failed to disable auto-renew for %s: %w", domainName, err))
 					}
 				}
 			}
@@ -588,7 +588,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 				Domain: domainName,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %v", domainName, err))
+				return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %w", domainName, err))
 			}
 
 			if newDnssec {
@@ -604,16 +604,14 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 					DsRecord: dsRecord,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("failed to enable dnssec for %s: %v", domainName, err))
+					return diag.FromErr(fmt.Errorf("failed to enable dnssec for %s: %w", domainName, err))
 				}
-			} else {
-				if domainResp.Dnssec != nil && domainResp.Dnssec.Status == "enabled" {
-					_, err = registrarAPI.DisableDomainDNSSEC(&domain.RegistrarAPIDisableDomainDNSSECRequest{
-						Domain: domainName,
-					}, scw.WithContext(ctx))
-					if err != nil {
-						return diag.FromErr(fmt.Errorf("failed to disable dnssec for %s: %v", domainName, err))
-					}
+			} else if domainResp.Dnssec != nil && domainResp.Dnssec.Status == domain.DomainFeatureStatusEnabled {
+				_, err = registrarAPI.DisableDomainDNSSEC(&domain.RegistrarAPIDisableDomainDNSSECRequest{
+					Domain: domainName,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("failed to disable dnssec for %s: %w", domainName, err))
 				}
 			}
 			_, err = waitForDNSSECStatus(ctx, registrarAPI, domainName, d.Timeout(schema.TimeoutUpdate))
@@ -643,7 +641,7 @@ func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceDa
 			if httperrors.Is404(err) {
 				continue
 			}
-			return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %v", domainName, err))
+			return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %w", domainName, err))
 		}
 
 		if domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled ||
@@ -652,7 +650,7 @@ func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceDa
 				Domain: domainName,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to disable auto-renew for %s: %v", domainName, err))
+				return diag.FromErr(fmt.Errorf("failed to disable auto-renew for %s: %w", domainName, err))
 			}
 		}
 	}
