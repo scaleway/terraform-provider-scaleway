@@ -141,7 +141,7 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 	switch extensionType {
 	case "fr":
 		return &domain.ContactExtensionFR{
-			Mode:              domain.ContactExtensionFRMode(parseEnum[domain.ContactExtensionFRMode](extensionMap, "mode", domain.ContactExtensionFRModeModeUnknown.String())),
+			Mode:              domain.ContactExtensionFRMode(parseEnum(extensionMap, "mode", domain.ContactExtensionFRModeModeUnknown.String())),
 			IndividualInfo:    parseStruct[domain.ContactExtensionFRIndividualInfo](extensionMap, "individual_info"),
 			DunsInfo:          parseStruct[domain.ContactExtensionFRDunsInfo](extensionMap, "duns_info"),
 			AssociationInfo:   parseStruct[domain.ContactExtensionFRAssociationInfo](extensionMap, "association_info"),
@@ -157,7 +157,7 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 		}
 
 		return &domain.ContactExtensionNL{
-			LegalForm:                   domain.ContactExtensionNLLegalForm(parseEnum[domain.ContactExtensionNLLegalForm](extensionMap, "legal_form", domain.ContactExtensionNLLegalFormLegalFormUnknown.String())),
+			LegalForm:                   domain.ContactExtensionNLLegalForm(parseEnum(extensionMap, "legal_form", domain.ContactExtensionNLLegalFormLegalFormUnknown.String())),
 			LegalFormRegistrationNumber: legalFormRegistrationNumber,
 		}
 	case "eu":
