@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -168,7 +169,7 @@ func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expected
 			}
 
 			registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
-			domainNames, err := domain.ExtractDomainsFromTaskID(nil, rs.Primary.ID, registrarAPI)
+			domainNames, err := domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
 			if err != nil {
 				return fmt.Errorf("error extracting domains: %w", err)
 			}
@@ -180,12 +181,10 @@ func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expected
 				if getErr != nil {
 					return fmt.Errorf("failed to get details for domain %s: %w", domainName, getErr)
 				}
-
 				if domainResp.AutoRenewStatus.String() != expectedAutoRenew {
 					return fmt.Errorf("domain %s has auto_renew status %s, expected %s", domainName, domainResp.AutoRenewStatus, expectedAutoRenew)
 				}
 				if domainResp.Dnssec.Status.String() != expectedDNSSEC {
-
 					return fmt.Errorf("domain %s has dnssec status %s, expected %s", domainName, domainResp.Dnssec.Status.String(), expectedDNSSEC)
 				}
 			}
@@ -204,7 +203,7 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
 
-			domainNames, err := domain.ExtractDomainsFromTaskID(nil, rs.Primary.ID, registrarAPI)
+			domainNames, err := domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
 			if err != nil {
 				return err
 			}
@@ -222,7 +221,6 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				}
 
 				if domainResp.AutoRenewStatus != domainSDK.DomainFeatureStatusDisabled {
-
 					return fmt.Errorf(
 						"domain %s still exists, and auto-renew is not disabled (current: %s)",
 						domainName,

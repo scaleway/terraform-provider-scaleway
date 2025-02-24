@@ -417,10 +417,12 @@ func resourceDomainsRegistrationCreate(ctx context.Context, d *schema.ResourceDa
 	registrarAPI := NewRegistrarDomainAPI(m)
 
 	projectID := d.Get("project_id").(string)
+
 	domainNames := make([]string, 0)
 	for _, v := range d.Get("domain_names").([]interface{}) {
 		domainNames = append(domainNames, v.(string))
 	}
+
 	durationInYears := uint32(d.Get("duration_in_years").(int))
 
 	buyDomainsRequest := &domain.RegistrarAPIBuyDomainsRequest{
@@ -430,6 +432,7 @@ func resourceDomainsRegistrationCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	ownerContactID := d.Get("owner_contact_id").(string)
+
 	if ownerContactID != "" {
 		buyDomainsRequest.OwnerContactID = &ownerContactID
 	} else if ownerContacts, ok := d.GetOk("owner_contact"); ok {
@@ -469,6 +472,7 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if len(domainNames) == 0 {
 		d.SetId("")
 
@@ -504,7 +508,6 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	computedDnssec := false
-
 	if firstResp.Dnssec.Status == domain.DomainFeatureStatusEnabled {
 		computedDnssec = true
 	}
@@ -539,6 +542,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if len(domainNames) == 0 {
 		d.SetId("")
 
@@ -547,6 +551,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("auto_renew") {
 		newAutoRenew := d.Get("auto_renew").(bool)
+
 		for _, domainName := range domainNames {
 			domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
 				Domain: domainName,
@@ -556,7 +561,8 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 			}
 
 			if newAutoRenew {
-				if domainResp.AutoRenewStatus != domain.DomainFeatureStatusEnabled && domainResp.AutoRenewStatus != domain.DomainFeatureStatusEnabling {
+				if domainResp.AutoRenewStatus != domain.DomainFeatureStatusEnabled &&
+					domainResp.AutoRenewStatus != domain.DomainFeatureStatusEnabling {
 					_, err = registrarAPI.EnableDomainAutoRenew(&domain.RegistrarAPIEnableDomainAutoRenewRequest{
 						Domain: domainName,
 					}, scw.WithContext(ctx))
@@ -565,7 +571,8 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 					}
 				}
 			} else {
-				if domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled || domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabling {
+				if domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled ||
+					domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabling {
 					_, err = registrarAPI.DisableDomainAutoRenew(&domain.RegistrarAPIDisableDomainAutoRenewRequest{
 						Domain: domainName,
 					}, scw.WithContext(ctx))
@@ -574,6 +581,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 					}
 				}
 			}
+
 			_, err = waitForAutoRenewStatus(ctx, registrarAPI, domainName, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -583,6 +591,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("dnssec") {
 		newDnssec := d.Get("dnssec").(bool)
+
 		for _, domainName := range domainNames {
 			domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
 				Domain: domainName,
@@ -593,12 +602,14 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 
 			if newDnssec {
 				var dsRecord *domain.DSRecord
+
 				if v, ok := d.GetOk("ds_record"); ok {
 					dsRecordList := v.([]interface{})
 					if len(dsRecordList) > 0 && dsRecordList[0] != nil {
 						dsRecord = ExpandDSRecord(dsRecordList)
 					}
 				}
+
 				_, err = registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
 					Domain:   domainName,
 					DsRecord: dsRecord,
@@ -606,7 +617,8 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("failed to enable dnssec for %s: %w", domainName, err))
 				}
-			} else if domainResp.Dnssec != nil && domainResp.Dnssec.Status == domain.DomainFeatureStatusEnabled {
+			} else if domainResp.Dnssec != nil &&
+				domainResp.Dnssec.Status == domain.DomainFeatureStatusEnabled {
 				_, err = registrarAPI.DisableDomainDNSSEC(&domain.RegistrarAPIDisableDomainDNSSECRequest{
 					Domain: domainName,
 				}, scw.WithContext(ctx))
@@ -614,6 +626,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 					return diag.FromErr(fmt.Errorf("failed to disable dnssec for %s: %w", domainName, err))
 				}
 			}
+
 			_, err = waitForDNSSECStatus(ctx, registrarAPI, domainName, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)
