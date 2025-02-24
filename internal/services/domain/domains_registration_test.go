@@ -185,10 +185,12 @@ func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expected
 					return fmt.Errorf("domain %s has auto_renew status %s, expected %s", domainName, domainResp.AutoRenewStatus, expectedAutoRenew)
 				}
 				if domainResp.Dnssec.Status.String() != expectedDNSSEC {
+
 					return fmt.Errorf("domain %s has dnssec status %s, expected %s", domainName, domainResp.Dnssec.Status.String(), expectedDNSSEC)
 				}
 			}
 		}
+
 		return nil
 	}
 }
@@ -204,7 +206,7 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			domainNames, err := domain.ExtractDomainsFromTaskID(nil, rs.Primary.ID, registrarAPI)
 			if err != nil {
-				return nil
+				return err
 			}
 
 			for _, domainName := range domainNames {
@@ -215,10 +217,12 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					if httperrors.Is404(getErr) {
 						continue
 					}
+
 					return fmt.Errorf("failed to get domain details for %s: %w", domainName, getErr)
 				}
 
 				if domainResp.AutoRenewStatus != domainSDK.DomainFeatureStatusDisabled {
+
 					return fmt.Errorf(
 						"domain %s still exists, and auto-renew is not disabled (current: %s)",
 						domainName,
@@ -227,6 +231,7 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				}
 			}
 		}
+
 		return nil
 	}
 }

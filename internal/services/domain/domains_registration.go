@@ -471,6 +471,7 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	}
 	if len(domainNames) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -481,8 +482,10 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -538,6 +541,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 	if len(domainNames) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -641,6 +645,7 @@ func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceDa
 			if httperrors.Is404(err) {
 				continue
 			}
+			
 			return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %w", domainName, err))
 		}
 
