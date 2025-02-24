@@ -1,17 +1,19 @@
 ---
-page_title: "Migrating instance volumes to SBS"
+page_title: "Migrating the management of Instance Block Storage volumes to SBS"
 ---
 
 # Migration
 
-This page describe how migrate your instance's volumes to SBS (Scaleway Block Storage).
-You can migrate your instance's volumes if they are block volumes (`b_ssd`).
+This page describes how to migrate the management of your Instance's volumes from Block Storage legacy to SBS (Scaleway Block Storage).
+This documentation **only applies if you have created Block Storage legacy volumes** (`b_ssd`).
 
-Migration of local volumes is not supported, you'll have to migrate your data manually.
+Migration of local volumes is not supported, you will have to migrate your data manually.
+
+Find out about the advantages of migrating from the Instance API to the Block Storage API for managing block volumes in the [dedicated documentation](https://www.scaleway.com/en/docs/block-storage/reference-content/advantages-migrating-to-sbs/).
 
 ## Migrate your implicit root_volume
 
-Given your infrastructure with a server that has a root_volume that must be migrated:
+If your infrastructure includes a server with a root volume that must be migrated:
 
 ```terraform
 resource scaleway_instance_server "server" {
@@ -23,7 +25,7 @@ resource scaleway_instance_server "server" {
 }
 ```
 
-In the previous snippet, the root_volume type is explicitly configured as a b_ssd, this configuration must be removed to prepare for migration.
+In the snippet above, the `root_volume` type is explicitly configured as a `b_ssd`. This configuration must be removed to prepare for migration.
 
 ```terraform
 resource scaleway_instance_server "server" {
@@ -32,12 +34,12 @@ resource scaleway_instance_server "server" {
 }
 ```
 
-You can now migrate your root_volume using Scaleway's CLI ([documentation](https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/#migrating-an-existing-block-storage-volume-to-scaleway-block-storage-management)).
-After migration, your terraform plan should be empty as the provider should have picked up that the volume is now managed by SBS API.
+You can now migrate your root_volume using the [Scaleway CLI documentation](https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/#migrating-an-existing-block-storage-volume-to-scaleway-block-storage-management).
+After migration, the output when running `terraform plan` should be empty as the provider should have picked up that the volume is now managed by the Scaleway Block Storage API.
 
 ## Migrate your explicit volumes
 
-Given your infrastructure with a server and explicit volumes.
+If your infrastructure includes servers and explicit volumes.
 
 ```terraform
 resource scaleway_instance_volume "root_volume" {
@@ -101,9 +103,9 @@ resource scaleway_instance_server "server" {
 }
 ```
 
-The first migration step should have created your new block volumes and updated the old instance_volume resources.
-You can now remove the old instance resources for the final step.
-To be sure, the resource `scaleway_instance_volume` is not capable of deleting a volume that is on SBS API, you can check using Console or CLI that your volume successfully migrated before applying the final step.
+The first migration step should have created your new Block Storage volumes and updated the existing instance_volume resources.
+After confirming the migration is successful, you must remove the old Instance's resources manually.
+Terraform's scaleway_instance_volume resource cannot delete a volume that has been migrated to the Scaleway Block Storage API. Before applying the final step, check in the Scaleway [console](https://console.scaleway.com) or using the [CLI](https://cli.scaleway.com/block/#list-volumes) to confirm that your volume was successfully migrated.
 
 
 ```terraform
