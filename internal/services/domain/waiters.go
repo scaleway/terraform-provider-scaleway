@@ -49,6 +49,7 @@ func waitForDomainsRegistration(ctx context.Context, api *domain.RegistrarAPI, d
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
+
 	return api.WaitForOrderDomain(&domain.WaitForOrderDomainRequest{
 		Domain:        domainName,
 		Timeout:       scw.TimeDurationPtr(timeout),
@@ -61,6 +62,7 @@ func waitForAutoRenewStatus(ctx context.Context, api *domain.RegistrarAPI, domai
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
+
 	return api.WaitForAutoRenewStatus(&domain.WaitForAutoRenewStatusRequest{
 		Domain:        domainName,
 		Timeout:       scw.TimeDurationPtr(timeout),
@@ -73,6 +75,7 @@ func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainNa
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
+
 	return api.WaitForDNSSECStatus(&domain.WaitForDNSSECStatusRequest{
 		Domain:        domainName,
 		Timeout:       scw.TimeDurationPtr(timeout),
