@@ -18,7 +18,7 @@ data "scaleway_iam_ssh_key" "main" {
 
 resource "scaleway_baremetal_server" "base" {
   zone		  = "fr-par-2"
-  offer       = "GP-BM1-S"
+  offer       = "fd7605a7-7493-49ba-9019-0e9c2897d4a0"
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
 }
@@ -205,7 +205,7 @@ resource "scaleway_baremetal_server" "base" {
   name        = "%s"
   zone        = "fr-par-1"
   description = "test a description"
-  offer       = "EM-B220E-NVME"
+  offer       = "206ea234-9097-4ae1-af68-6d2be09f47ed"
   os    = data.scaleway_baremetal_os.my_os.os_id
   partitioning = var.configCustomPartitioning
 
@@ -219,7 +219,7 @@ resource "scaleway_baremetal_server" "base" {
 
 The following arguments are supported:
 
-- `offer` - (Required) The offer name or UUID of the baremetal server.
+- `offer` - (Required) The offer UUID of the baremetal server.
   Use [this endpoint](https://www.scaleway.com/en/developers/api/elastic-metal/#path-servers-get-a-specific-elastic-metal-server) to find the right offer.
 
 ~> **Important:** Updates to `offer` will recreate the server.
