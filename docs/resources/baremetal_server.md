@@ -16,9 +16,14 @@ data "scaleway_iam_ssh_key" "main" {
   name = "main"
 }
 
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-I220E-NVME"
+}
+
 resource "scaleway_baremetal_server" "base" {
   zone		  = "fr-par-2"
-  offer       = "fd7605a7-7493-49ba-9019-0e9c2897d4a0"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
 }
@@ -201,11 +206,17 @@ resource "scaleway_iam_ssh_key" "main" {
   name 	   = "main"
 }
 
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-1"
+  name = "EM-B220E-NVME"
+  subscription_period = "hourly"
+}
+
 resource "scaleway_baremetal_server" "base" {
   name        = "%s"
   zone        = "fr-par-1"
   description = "test a description"
-  offer       = "206ea234-9097-4ae1-af68-6d2be09f47ed"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os    = data.scaleway_baremetal_os.my_os.os_id
   partitioning = var.configCustomPartitioning
 
