@@ -1,0 +1,25 @@
+name: Manual Purge
+on:
+  workflow_dispatch:
+
+jobs:
+  sweeper:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.5
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: Run sweepers
+        run: make sweep
+        env:
+          TF_TEST_DOMAIN: scaleway-terraform.com
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
