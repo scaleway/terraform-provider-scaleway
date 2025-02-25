@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	webhostingSDK "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
+	webhostingSDK "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
@@ -64,7 +64,7 @@ func testAccCheckWebhostingExists(tt *acctest.TestTools, n string) resource.Test
 			return err
 		}
 
-		_, err = api.GetHosting(&webhostingSDK.GetHostingRequest{
+		_, err = api.GetHosting(&webhostingSDK.HostingAPIGetHostingRequest{
 			HostingID: id,
 			Region:    region,
 		})
@@ -88,7 +88,7 @@ func testAccCheckWebhostingDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			res, err := api.GetHosting(&webhostingSDK.GetHostingRequest{
+			res, err := api.GetHosting(&webhostingSDK.HostingAPIGetHostingRequest{
 				HostingID: id,
 				Region:    region,
 			})

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
+	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -33,8 +33,9 @@ func DataSourceOffer() *schema.Resource {
 				Type:     schema.TypeString,
 			},
 			"product": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:       schema.TypeList,
+				Computed:   true,
+				Deprecated: "The product field is deprecated. Please use the offer field instead.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -46,32 +47,113 @@ func DataSourceOffer() *schema.Resource {
 							Computed: true,
 						},
 						"email_accounts_quota": {
-							Computed: true,
 							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"email_storage_quota": {
-							Computed: true,
 							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"databases_quota": {
-							Computed: true,
 							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"hosting_storage_quota": {
-							Computed: true,
 							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"support_included": {
-							Computed: true,
 							Type:     schema.TypeBool,
+							Computed: true,
 						},
 						"v_cpu": {
-							Computed: true,
 							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"ram": {
-							Computed: true,
 							Type:     schema.TypeInt,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"offer": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The offer details of the hosting",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"billing_operation_path": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"available": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"control_panel_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"end_of_life": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"quota_warning": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"price": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"options": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"billing_operation_path": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"min_value": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"current_value": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"max_value": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"quota_warning": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"price": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -86,12 +168,12 @@ func DataSourceOffer() *schema.Resource {
 }
 
 func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := newAPIWithRegion(d, m)
+	api, region, err := newOfferAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := api.ListOffers(&webhosting.ListOffersRequest{
+	res, err := api.ListOffers(&webhosting.OfferAPIListOffersRequest{
 		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -105,8 +187,9 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m interfac
 	var filteredOffer *webhosting.Offer
 
 	for _, offer := range res.Offers {
-		if offer.ID == d.Get("offer_id") || offer.Product.Name == d.Get("name") {
+		if offer.ID == d.Get("offer_id") || offer.Name == d.Get("name") {
 			filteredOffer = offer
+			break
 		}
 	}
 
@@ -117,10 +200,11 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m interfac
 	regionalID := datasource.NewRegionalID(filteredOffer.ID, region)
 	d.SetId(regionalID)
 	_ = d.Set("offer_id", regionalID)
-	_ = d.Set("name", filteredOffer.Product.Name)
+	_ = d.Set("name", filteredOffer.Name)
 	_ = d.Set("region", region)
 	_ = d.Set("billing_operation_path", filteredOffer.BillingOperationPath)
-	_ = d.Set("product", flattenOfferProduct(filteredOffer.Product))
+	_ = d.Set("product", nil)
+	_ = d.Set("offer", flattenOffer(filteredOffer))
 	_ = d.Set("price", flattenOfferPrice(filteredOffer.Price))
 
 	return nil

@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/webhosting/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -68,12 +68,12 @@ func ResourceWebhosting() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "IsDate and time of hosting's creation (RFC 3339 format)",
+				Description: "Date and time of hosting's creation (RFC 3339 format)",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "IsDate and time of hosting's last update (RFC 3339 format)",
+				Description: "Date and time of hosting's last update (RFC 3339 format)",
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -139,31 +139,33 @@ func ResourceWebhosting() *schema.Resource {
 				Computed:    true,
 				Description: "Main hosting cPanel username",
 			},
-			"region":          regional.Schema(),
-			"project_id":      account.ProjectIDSchema(),
-			"organization_id": account.OrganizationIDSchema(),
+			"region":     regional.Schema(),
+			"project_id": account.ProjectIDSchema(),
+			"organization_id": func() *schema.Schema {
+				s := account.OrganizationIDSchema()
+				s.Deprecated = "The organization_id field is deprecated and will be removed in the next major version."
+				return s
+			}(),
 		},
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 			if diff.HasChange("tags") {
 				oldTagsInterface, newTagsInterface := diff.GetChange("tags")
 				oldTags := types.ExpandStrings(oldTagsInterface)
 				newTags := types.ExpandStrings(newTagsInterface)
-				// If the 'internal' tag has been added, remove it from the diff
+				// If the 'internal' tag was present and is now removed, restore it.
 				if types.SliceContainsString(oldTags, "internal") && !types.SliceContainsString(newTags, "internal") {
-					err := diff.SetNew("tags", oldTags)
-					if err != nil {
+					if err := diff.SetNew("tags", oldTags); err != nil {
 						return err
 					}
 				}
 			}
-
 			return nil
 		},
 	}
 }
 
 func resourceWebhostingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := newAPIWithRegion(d, m)
+	api, region, err := newHostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,27 +175,23 @@ func resourceWebhostingCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	hostingCreateRequest := &webhosting.CreateHostingRequest{
+	hostingCreateRequest := &webhosting.HostingAPICreateHostingRequest{
 		Region:    region,
 		OfferID:   offerID,
 		ProjectID: d.Get("project_id").(string),
 		Domain:    d.Get("domain").(string),
-		OptionIDs: types.ExpandStrings(d.Get("option_ids")),
 	}
 
-	rawTags, tagsExist := d.GetOk("tags")
-	if tagsExist {
+	if rawTags, ok := d.GetOk("tags"); ok {
 		hostingCreateRequest.Tags = types.ExpandStrings(rawTags)
 	}
 
-	rawOptionIDs, rawOptionIDsExist := d.GetOk("option_ids")
-	if rawOptionIDsExist {
-		hostingCreateRequest.OptionIDs = types.ExpandStrings(rawOptionIDs)
+	if rawOptionIDs, ok := d.GetOk("option_ids"); ok {
+		hostingCreateRequest.OfferOptions = expandOfferOptions(rawOptionIDs)
 	}
 
-	rawEmail, emailExist := d.GetOk("email")
-	if emailExist {
-		hostingCreateRequest.Email = types.ExpandStringPtr(rawEmail)
+	if rawEmail, ok := d.GetOk("email"); ok {
+		hostingCreateRequest.Email = rawEmail.(string)
 	}
 
 	hostingResponse, err := api.CreateHosting(hostingCreateRequest, scw.WithContext(ctx))
@@ -221,28 +219,26 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
-
 			return nil
 		}
-
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("tags", webhostingResponse.Tags)
-	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.OfferID))
+	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.Offer.ID))
 	_ = d.Set("domain", webhostingResponse.Domain)
 	_ = d.Set("created_at", types.FlattenTime(webhostingResponse.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(webhostingResponse.UpdatedAt))
 	_ = d.Set("status", webhostingResponse.Status.String())
-	_ = d.Set("platform_hostname", webhostingResponse.PlatformHostname)
-	_ = d.Set("platform_number", types.FlattenInt32Ptr(webhostingResponse.PlatformNumber))
-	_ = d.Set("options", flattenHostingOptions(webhostingResponse.Options))
-	_ = d.Set("offer_name", webhostingResponse.OfferName)
+	_ = d.Set("platform_hostname", webhostingResponse.Platform.Hostname)
+	_ = d.Set("platform_number", webhostingResponse.Platform.Number)
+	_ = d.Set("options", flattenHostingOptions(webhostingResponse.Offer.Options))
+	_ = d.Set("offer_name", webhostingResponse.Offer.Name)
 	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String())
-	_ = d.Set("cpanel_urls", flattenHostingCpanelUrls(webhostingResponse.CpanelURLs))
-	_ = d.Set("username", webhostingResponse.Username)
+	_ = d.Set("cpanel_urls", flattenHostingCpanelUrls(webhostingResponse.Platform.ControlPanel.URLs))
+	_ = d.Set("username", webhostingResponse.User.Username)
 	_ = d.Set("region", string(region))
-	_ = d.Set("organization_id", webhostingResponse.OrganizationID)
+	_ = d.Set("organization_id", "")
 	_ = d.Set("project_id", webhostingResponse.ProjectID)
 
 	return nil
@@ -259,7 +255,7 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	updateRequest := &webhosting.UpdateHostingRequest{
+	updateRequest := &webhosting.HostingAPIUpdateHostingRequest{
 		Region:    region,
 		HostingID: res.ID,
 	}
@@ -267,7 +263,7 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m int
 	hasChanged := false
 
 	if d.HasChange("option_ids") {
-		updateRequest.OptionIDs = types.ExpandUpdatedStringsPtr(d.Get("option_ids"))
+		updateRequest.OfferOptions = expandOfferOptions(d.Get("option_ids"))
 		hasChanged = true
 	}
 
@@ -276,7 +272,6 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 		updateRequest.OfferID = types.ExpandUpdatedStringPtr(offerID)
 		hasChanged = true
 	}
@@ -312,7 +307,7 @@ func resourceHostingDelete(ctx context.Context, d *schema.ResourceData, m interf
 		return nil
 	}
 
-	_, err = api.DeleteHosting(&webhosting.DeleteHostingRequest{
+	_, err = api.DeleteHosting(&webhosting.HostingAPIDeleteHostingRequest{
 		Region:    region,
 		HostingID: id,
 	}, scw.WithContext(ctx))
