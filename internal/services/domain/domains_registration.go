@@ -483,6 +483,7 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	firstResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
 		Domain: firstDomain,
 	}, scw.WithContext(ctx))
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")

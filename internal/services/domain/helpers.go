@@ -36,6 +36,7 @@ func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []
 		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
 
 		if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
+
 			if currentRecord != nil {
 				return nil, errors.New("multiple records found with same type and data")
 			}
@@ -83,30 +84,39 @@ func ExpandContact(contactMap map[string]interface{}) *domain.Contact {
 	if v, ok := contactMap["company_name"].(string); ok && v != "" {
 		contact.CompanyName = v
 	}
+
 	if v, ok := contactMap["email_alt"].(string); ok && v != "" {
 		contact.EmailAlt = v
 	}
+
 	if v, ok := contactMap["fax_number"].(string); ok && v != "" {
 		contact.FaxNumber = v
 	}
+
 	if v, ok := contactMap["address_line_2"].(string); ok && v != "" {
 		contact.AddressLine2 = v
 	}
+
 	if v, ok := contactMap["vat_identification_code"].(string); ok && v != "" {
 		contact.VatIDentificationCode = v
 	}
+
 	if v, ok := contactMap["company_identification_code"].(string); ok && v != "" {
 		contact.CompanyIDentificationCode = v
 	}
+
 	if v, ok := contactMap["lang"].(string); ok && v != "" {
 		contact.Lang = std.LanguageCode(v)
 	}
+
 	if v, ok := contactMap["resale"].(bool); ok {
 		contact.Resale = v
 	}
+
 	if v, ok := contactMap["state"].(string); ok && v != "" {
 		contact.State = v
 	}
+
 	if v, ok := contactMap["whois_opt_in"].(bool); ok {
 		contact.WhoisOptIn = v
 	}
@@ -213,21 +223,27 @@ func ExpandNewContact(contactMap map[string]interface{}) *domain.NewContact {
 	if v, ok := contactMap["company_name"].(string); ok {
 		contact.CompanyName = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["email_alt"].(string); ok {
 		contact.EmailAlt = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["fax_number"].(string); ok {
 		contact.FaxNumber = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["address_line_2"].(string); ok {
 		contact.AddressLine2 = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["vat_identification_code"].(string); ok {
 		contact.VatIDentificationCode = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["company_identification_code"].(string); ok {
 		contact.CompanyIDentificationCode = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["state"].(string); ok {
 		contact.State = scw.StringPtr(v)
 	}
@@ -267,6 +283,7 @@ func parseEnum(data map[string]interface{}, key string, defaultValue string) str
 func parseStruct[T any](data map[string]interface{}, key string) *T {
 	if nested, ok := data[key].(map[string]interface{}); ok {
 		var result T
+
 		mapToStruct(nested, &result)
 
 		return &result
@@ -347,6 +364,7 @@ func SplitDomains(input *string) []string {
 	}
 
 	domains := strings.Split(*input, ",")
+
 	var result []string
 
 	for _, domain := range domains {
@@ -598,6 +616,7 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 	}
 
 	results := make([]interface{}, 0, len(dsRecords))
+
 	for _, dsRecord := range dsRecords {
 		item := map[string]interface{}{
 			"key_id":    dsRecord.KeyID,
@@ -609,6 +628,7 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 				"type":   string(dsRecord.Digest.Type),
 				"digest": dsRecord.Digest.Digest,
 			}
+
 			if dsRecord.Digest.PublicKey != nil {
 				digest["public_key"] = []interface{}{
 					map[string]interface{}{
@@ -616,6 +636,7 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 					},
 				}
 			}
+
 			item["digest"] = []interface{}{digest}
 		}
 
