@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -20,7 +19,7 @@ func TestAccProvider_InstanceIPZones(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
@@ -78,7 +77,7 @@ func TestAccProvider_SSHKeys(t *testing.T) {
 	SSHKeyName := "TestAccScalewayProvider_SSHKeys"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },

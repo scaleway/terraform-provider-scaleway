@@ -1,7 +1,6 @@
 package scwconfig_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -24,7 +23,7 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
@@ -76,7 +75,7 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
@@ -129,7 +128,7 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
