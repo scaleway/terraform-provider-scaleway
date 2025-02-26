@@ -144,6 +144,7 @@ func ResourceWebhosting() *schema.Resource {
 			"organization_id": func() *schema.Schema {
 				s := account.OrganizationIDSchema()
 				s.Deprecated = "The organization_id field is deprecated and will be removed in the next major version."
+
 				return s
 			}(),
 		},
@@ -159,6 +160,7 @@ func ResourceWebhosting() *schema.Resource {
 					}
 				}
 			}
+
 			return nil
 		},
 	}
@@ -219,8 +221,10 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -234,7 +238,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("platform_number", webhostingResponse.Platform.Number)
 	_ = d.Set("options", flattenHostingOptions(webhostingResponse.Offer.Options))
 	_ = d.Set("offer_name", webhostingResponse.Offer.Name)
-	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String())
+	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String()) // nolint:staticcheck
 	_ = d.Set("cpanel_urls", flattenHostingCpanelUrls(webhostingResponse.Platform.ControlPanel.URLs))
 	_ = d.Set("username", webhostingResponse.User.Username)
 	_ = d.Set("region", string(region))
@@ -269,9 +273,11 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	if d.HasChange("offer_id") {
 		_, offerID, err := regional.ParseID(d.Get("offer_id").(string))
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		updateRequest.OfferID = types.ExpandUpdatedStringPtr(offerID)
 		hasChanged = true
 	}

@@ -10,6 +10,7 @@ func flattenOffer(offer *webhosting.Offer) interface{} {
 	if offer == nil {
 		return []interface{}{}
 	}
+
 	return []map[string]interface{}{
 		{
 			"id":                     offer.ID,
@@ -29,7 +30,9 @@ func flattenOfferOptions(options []*webhosting.OfferOption) interface{} {
 	if options == nil {
 		return []interface{}{}
 	}
+
 	res := make([]map[string]interface{}, 0, len(options))
+
 	for _, option := range options {
 		res = append(res, map[string]interface{}{
 			"id":                     option.ID,
@@ -42,6 +45,7 @@ func flattenOfferOptions(options []*webhosting.OfferOption) interface{} {
 			"price":                  flattenOfferPrice(option.Price),
 		})
 	}
+
 	return res
 }
 
@@ -76,15 +80,19 @@ func flattenHostingOptions(options []*webhosting.OfferOption) []map[string]inter
 
 func expandOfferOptions(data interface{}) []*webhosting.OfferOptionRequest {
 	optionIDs := types.ExpandStrings(data)
+
 	offerOptions := make([]*webhosting.OfferOptionRequest, 0, len(optionIDs))
+
 	for _, id := range optionIDs {
 		if id == "" {
 			continue
 		}
+
 		offerOptions = append(offerOptions, &webhosting.OfferOptionRequest{
 			ID:       id,
 			Quantity: 1,
 		})
 	}
+
 	return offerOptions
 }

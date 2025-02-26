@@ -199,6 +199,7 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m interfac
 		cp, _ := d.Get("control_panel").(string)
 		if offer.ID == d.Get("offer_id") || (offer.Name == d.Get("name") && (cp == "" || strings.EqualFold(offer.ControlPanelName, cp))) {
 			filteredOffer = offer
+			
 			break
 		}
 	}
