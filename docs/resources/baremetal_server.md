@@ -16,9 +16,14 @@ data "scaleway_iam_ssh_key" "main" {
   name = "main"
 }
 
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-I220E-NVME"
+}
+
 resource "scaleway_baremetal_server" "base" {
   zone		  = "fr-par-2"
-  offer       = "GP-BM1-S"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
 }
@@ -201,11 +206,17 @@ resource "scaleway_iam_ssh_key" "main" {
   name 	   = "main"
 }
 
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-1"
+  name = "EM-B220E-NVME"
+  subscription_period = "hourly"
+}
+
 resource "scaleway_baremetal_server" "base" {
   name        = "%s"
   zone        = "fr-par-1"
   description = "test a description"
-  offer       = "EM-B220E-NVME"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os    = data.scaleway_baremetal_os.my_os.os_id
   partitioning = var.configCustomPartitioning
 
@@ -219,7 +230,7 @@ resource "scaleway_baremetal_server" "base" {
 
 The following arguments are supported:
 
-- `offer` - (Required) The offer name or UUID of the baremetal server.
+- `offer` - (Required) The offer UUID of the baremetal server.
   Use [this endpoint](https://www.scaleway.com/en/developers/api/elastic-metal/#path-servers-get-a-specific-elastic-metal-server) to find the right offer.
 
 ~> **Important:** Updates to `offer` will recreate the server.
