@@ -1,7 +1,6 @@
 package secret_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -15,7 +14,7 @@ func TestAccDataSourceSecret_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	secretName := "scalewayDataSourceSecret"
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)

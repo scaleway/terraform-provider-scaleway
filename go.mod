@@ -1,6 +1,6 @@
 module github.com/scaleway/terraform-provider-scaleway/v2
 
-go 1.23.5
+go 1.24.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.0
@@ -10,8 +10,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sns v1.33.17
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.37.12
 	github.com/aws/smithy-go v1.22.2
-	github.com/bflad/tfproviderdocs v0.12.1
-	github.com/bflad/tfproviderlint v0.30.0
 	github.com/docker/docker v27.5.1+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.6.0
@@ -30,7 +28,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.32.0.20250226134545-32bb2d9f1eee
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.32.0
+	golang.org/x/crypto v0.33.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 )
 
@@ -58,6 +56,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.13 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.12 // indirect
 	github.com/bflad/gopaniccheck v0.1.0 // indirect
+	github.com/bflad/tfproviderdocs v0.12.1 // indirect
+	github.com/bflad/tfproviderlint v0.31.0 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
@@ -123,13 +123,13 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.22.0 // indirect
 	go.opentelemetry.io/otel/metric v1.31.0 // indirect
 	go.opentelemetry.io/otel/trace v1.31.0 // indirect
-	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.34.0 // indirect
+	golang.org/x/mod v0.23.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
+	golang.org/x/tools v0.30.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
 	google.golang.org/grpc v1.69.4 // indirect
@@ -137,4 +137,9 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.0.3 // indirect
+)
+
+tool (
+	github.com/bflad/tfproviderdocs
+	github.com/bflad/tfproviderlint/cmd/tfproviderlint
 )
