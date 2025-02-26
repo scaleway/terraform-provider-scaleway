@@ -26,9 +26,9 @@ resource "scaleway_instance_server" "web" {
 ### With additional volumes and tags
 
 ```terraform
-resource "scaleway_instance_volume" "data" {
+resource "scaleway_block_volume" "data" {
   size_in_gb = 100
-  type = "b_ssd"
+  iops = 5000
 }
 
 resource "scaleway_instance_server" "web" {
@@ -41,7 +41,7 @@ resource "scaleway_instance_server" "web" {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ scaleway_instance_volume.data.id ]
+  additional_volume_ids = [ scaleway_block_volume.data.id ]
 }
 ```
 
@@ -137,7 +137,6 @@ resource "scaleway_instance_server" "image" {
   type = "PRO2-XXS"
   image = "ubuntu_jammy"
   root_volume {
-    volume_type = "b_ssd"
     size_in_gb = 100
   }
 }
@@ -146,19 +145,20 @@ resource "scaleway_instance_server" "image" {
 #### From snapshot
 
 ```terraform
-data "scaleway_instance_snapshot" "snapshot" {
+data "scaleway_block_snapshot" "snapshot" {
   name = "my_snapshot"
 }
 
-resource "scaleway_instance_volume" "from_snapshot" {
-  from_snapshot_id = data.scaleway_instance_snapshot.snapshot.id
-  type = "b_ssd"
+resource "scaleway_block_volume" "from_snapshot" {
+  snapshot_id = data.scaleway_block_snapshot.snapshot.id
+  iops = 5000
 }
 
 resource "scaleway_instance_server" "from_snapshot" {
   type = "PRO2-XXS"
   root_volume {
-    volume_id = scaleway_instance_volume.from_snapshot.id
+    volume_id = scaleway_block_volume.from_snapshot.id
+    volume_type = "sbs_volume"
   }
 }
 ```
