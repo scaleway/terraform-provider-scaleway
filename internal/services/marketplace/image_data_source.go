@@ -26,6 +26,12 @@ func DataSourceImage() *schema.Resource {
 				Default:     "DEV1-S",
 				Description: "The instance commercial type of the desired image",
 			},
+			"image_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "instance_local", // Keep the old default as default to avoid a breaking change.
+				Description: "The type of the desired image, instance_local or instance_sbs",
+			},
 			"zone": zonal.Schema(),
 		},
 	}
@@ -41,7 +47,7 @@ func DataSourceMarketplaceImageRead(ctx context.Context, d *schema.ResourceData,
 		ImageLabel:     d.Get("label").(string),
 		CommercialType: d.Get("instance_type").(string),
 		Zone:           zone,
-		Type:           marketplace.LocalImageTypeInstanceLocal,
+		Type:           marketplace.LocalImageType(d.Get("image_type").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -52,6 +58,7 @@ func DataSourceMarketplaceImageRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("zone", zone)
 	_ = d.Set("label", d.Get("label"))
 	_ = d.Set("instance_type", d.Get("type"))
+	_ = d.Set("image_type", image.Type)
 
 	return nil
 }
