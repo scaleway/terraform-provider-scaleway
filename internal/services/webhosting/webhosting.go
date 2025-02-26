@@ -238,7 +238,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("platform_number", webhostingResponse.Platform.Number)
 	_ = d.Set("options", flattenHostingOptions(webhostingResponse.Offer.Options))
 	_ = d.Set("offer_name", webhostingResponse.Offer.Name)
-	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String()) // nolint:staticcheck
+	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String()) //nolint:staticcheck
 	_ = d.Set("cpanel_urls", flattenHostingCpanelUrls(webhostingResponse.Platform.ControlPanel.URLs))
 	_ = d.Set("username", webhostingResponse.User.Username)
 	_ = d.Set("region", string(region))
@@ -273,7 +273,6 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	if d.HasChange("offer_id") {
 		_, offerID, err := regional.ParseID(d.Get("offer_id").(string))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}

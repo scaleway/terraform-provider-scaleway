@@ -56,13 +56,13 @@ In addition to all arguments above, the following attributes are exported:
     - `quota_warning` - Warning information regarding quota limitations.
     - `price` - The price of the offer.
     - `options` - A list of available options for the offer:
-      - `id` - The unique identifier of the option.
-      - `name` - The name of the option.
-      - `billing_operation_path` - The billing operation identifier for the option.
-      - `min_value` - The minimum value for the option.
-      - `current_value` - The current value set for the option.
-      - `max_value` - The maximum allowed value for the option.
-      - `quota_warning` - Warning information regarding quota limitations for the option.
-      - `price` - The price of the option.
+        - `id` - The unique identifier of the option.
+        - `name` - The name of the option.
+        - `billing_operation_path` - The billing operation identifier for the option.
+        - `min_value` - The minimum value for the option.
+        - `current_value` - The current value set for the option.
+        - `max_value` - The maximum allowed value for the option.
+        - `quota_warning` - Warning information regarding quota limitations for the option.
+        - `price` - The price of the option.
 - `price` - The offer price.
 
