@@ -3,12 +3,14 @@ package webhosting
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -22,11 +24,18 @@ func DataSourceOffer() *schema.Resource {
 				Description:   "Exact name of the desired offer",
 				ConflictsWith: []string{"offer_id"},
 			},
+			"control_panel": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Name of the control panel.(Cpanel or Plesk)",
+				DiffSuppressFunc: dsf.IgnoreCase,
+				ConflictsWith:    []string{"offer_id"},
+			},
 			"offer_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "ID of the desired offer",
-				ConflictsWith: []string{"name"},
+				ConflictsWith: []string{"name", "control_panel"},
 			},
 			"billing_operation_path": {
 				Computed: true,
@@ -187,7 +196,8 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m interfac
 	var filteredOffer *webhosting.Offer
 
 	for _, offer := range res.Offers {
-		if offer.ID == d.Get("offer_id") || offer.Name == d.Get("name") {
+		cp, _ := d.Get("control_panel").(string)
+		if offer.ID == d.Get("offer_id") || (offer.Name == d.Get("name") && (cp == "" || strings.EqualFold(offer.ControlPanelName, cp))) {
 			filteredOffer = offer
 			break
 		}
