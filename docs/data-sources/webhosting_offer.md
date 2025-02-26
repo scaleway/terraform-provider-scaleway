@@ -13,7 +13,7 @@ Gets information about a webhosting offer.
 # Get info by offer name
 data "scaleway_webhosting_offer" "by_name" { 
   name = "performance"
-  control_panel = "plesk"
+  control_panel = "Cpanel"
 }
 
 # Get info by offer id
