@@ -1,7 +1,6 @@
 package lb_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -692,7 +691,7 @@ func TestLbUpgradeV1SchemaUpgradeFunc(t *testing.T) {
 		"id": "fr-par-1/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
 	}
 
-	actual, err := lb.UpgradeStateV1Func(context.Background(), v0Schema, nil)
+	actual, err := lb.UpgradeStateV1Func(t.Context(), v0Schema, nil)
 	if err != nil {
 		t.Fatalf("error migrating state: %s", err)
 	}

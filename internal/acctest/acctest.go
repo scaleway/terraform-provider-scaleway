@@ -1,7 +1,6 @@
 package acctest
 
 import (
-	"context"
 	"os"
 	"strconv"
 	"strings"
@@ -27,7 +26,7 @@ type TestTools struct {
 func NewTestTools(t *testing.T) *TestTools {
 	t.Helper()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	folder, err := os.Getwd()
 	if err != nil {

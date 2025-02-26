@@ -1,7 +1,6 @@
 package rdb_test
 
 import (
-	"context"
 	"reflect"
 	"testing"
 
@@ -22,7 +21,7 @@ func TestPrivilegeV1SchemaUpgradeFunc(t *testing.T) {
 		"user_name":     "username",
 	}
 
-	actual, err := rdb.PrivilegeV1SchemaUpgradeFunc(context.Background(), v0Schema, nil)
+	actual, err := rdb.PrivilegeV1SchemaUpgradeFunc(t.Context(), v0Schema, nil)
 	if err != nil {
 		t.Fatalf("error migrating state: %s", err)
 	}

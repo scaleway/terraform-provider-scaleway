@@ -218,11 +218,11 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 			rawServer["placement_group_policy_respected"] = server.PlacementGroup.PolicyRespected
 		}
 
-		if server.IPv6 != nil { //nolint:staticcheck
-			rawServer["ipv6_address"] = server.IPv6.Address.String() //nolint:staticcheck
-			rawServer["ipv6_gateway"] = server.IPv6.Gateway.String() //nolint:staticcheck
+		if server.IPv6 != nil {
+			rawServer["ipv6_address"] = server.IPv6.Address.String()
+			rawServer["ipv6_gateway"] = server.IPv6.Gateway.String()
 
-			prefixLength, err := strconv.Atoi(server.IPv6.Netmask) //nolint:staticcheck
+			prefixLength, err := strconv.Atoi(server.IPv6.Netmask)
 			if err != nil {
 				diags = append(diags, diag.FromErr(fmt.Errorf("failed to read ipv6 netmask: %w", err))...)
 

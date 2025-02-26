@@ -31,7 +31,7 @@ func DataSourceCockpitPlanRead(ctx context.Context, d *schema.ResourceData, m in
 
 	name := d.Get("name").(string)
 
-	res, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
+	res, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -25,7 +25,7 @@ func TestAccSQSQueue_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -104,7 +104,7 @@ func TestAccSQSQueue_DefaultProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	accountAPI := accountSDK.NewProjectAPI(tt.Meta.ScwClient())
 	projectID := ""
