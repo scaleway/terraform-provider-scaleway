@@ -578,7 +578,7 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resourceName := "scaleway_object_bucket.bucket"
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-cors-delete")
@@ -714,7 +714,7 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 
 	addObjectToBucket := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
-			ctx := context.Background()
+			ctx := t.Context()
 
 			rs, ok := s.RootModule().Resources[n]
 			if !ok {

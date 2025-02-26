@@ -1,7 +1,6 @@
 package object_test
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"testing"
@@ -97,7 +96,7 @@ func TestAccDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(tt)
 	require.NoError(t, err)
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -147,7 +146,7 @@ func TestAccDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(tt)
 	require.NoError(t, err)
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
