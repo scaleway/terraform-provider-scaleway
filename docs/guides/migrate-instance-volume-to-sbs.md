@@ -62,9 +62,9 @@ resource scaleway_instance_server "server" {
 }
 ```
 
-You can rely on terraform to realize migration, it will be done in 2 steps.
-The first one will be a transitional state to migrate.
-The `migrate_to_sbs` field in your instance_volume will prevent the volume state from being updated during our migration.
+You can rely on Terraform to perform the migration which will be done in 2 steps.
+The first one will be a transitional state to migrate and is described in the next snippet.
+In this snippet, the `migrate_to_sbs` field will prevent the old volume state from being updated during the migration.
 
 
 ```terraform
