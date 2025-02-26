@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	webhosting "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/webhosting/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -41,7 +41,7 @@ func DataSourceWebhosting() *schema.Resource {
 }
 
 func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := newAPIWithRegion(d, m)
+	api, region, err := newHostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -50,7 +50,7 @@ func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m int
 	if !ok {
 		hostingDomain := d.Get("domain").(string)
 
-		res, err := api.ListHostings(&webhosting.ListHostingsRequest{
+		res, err := api.ListHostings(&webhosting.HostingAPIListHostingsRequest{
 			Region:         region,
 			Domain:         types.ExpandStringPtr(hostingDomain),
 			ProjectID:      types.ExpandStringPtr(d.Get("project_id")),
@@ -62,7 +62,7 @@ func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m int
 
 		foundDomain, err := datasource.FindExact(
 			res.Hostings,
-			func(s *webhosting.Hosting) bool { return s.Domain == hostingDomain },
+			func(s *webhosting.HostingSummary) bool { return s.Domain == hostingDomain },
 			hostingDomain,
 		)
 		if err != nil {
