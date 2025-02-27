@@ -36,7 +36,6 @@ func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []
 		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
 
 		if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
-
 			if currentRecord != nil {
 				return nil, errors.New("multiple records found with same type and data")
 			}
@@ -164,6 +163,7 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 	case "nl":
 		legalFormRegistrationNumber := ""
 		if value, ok := extensionMap["legal_form_registration_number"]; ok {
+
 			if str, isString := value.(string); isString {
 				legalFormRegistrationNumber = str
 			}
@@ -176,6 +176,7 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 
 	case "eu":
 		europeanCitizenship := ""
+
 		if value, ok := extensionMap["european_citizenship"]; ok {
 			if str, isString := value.(string); isString {
 				europeanCitizenship = str
@@ -303,16 +304,19 @@ func mapToStruct(data map[string]interface{}, target interface{}) {
 		if v, ok := data["duns_id"].(string); ok {
 			t.DunsID = v
 		}
+
 		if v, ok := data["local_id"].(string); ok {
 			t.LocalID = v
 		}
 
 	case *domain.ContactExtensionFRAssociationInfo:
 		if v, ok := data["publication_jo"].(string); ok {
+
 			if parsedTime, err := time.Parse(time.RFC3339, v); err == nil {
 				t.PublicationJo = &parsedTime
 			}
 		}
+
 		if v, ok := data["publication_jo_page"].(float64); ok {
 			t.PublicationJoPage = uint32(v)
 		}
@@ -331,6 +335,7 @@ func mapToStruct(data map[string]interface{}, target interface{}) {
 
 func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string) (domain.TaskStatus, error) {
 	var page int32 = 1
+
 	var pageSize uint32 = 1000
 
 	for {
@@ -338,6 +343,7 @@ func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string
 			Page:     &page,
 			PageSize: &pageSize,
 		}, scw.WithContext(ctx))
+
 		if err != nil {
 			return "", fmt.Errorf("error retrieving tasks: %w", err)
 		}
