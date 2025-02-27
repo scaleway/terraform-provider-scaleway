@@ -163,7 +163,6 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 	case "nl":
 		legalFormRegistrationNumber := ""
 		if value, ok := extensionMap["legal_form_registration_number"]; ok {
-
 			if str, isString := value.(string); isString {
 				legalFormRegistrationNumber = str
 			}
@@ -311,7 +310,6 @@ func mapToStruct(data map[string]interface{}, target interface{}) {
 
 	case *domain.ContactExtensionFRAssociationInfo:
 		if v, ok := data["publication_jo"].(string); ok {
-
 			if parsedTime, err := time.Parse(time.RFC3339, v); err == nil {
 				t.PublicationJo = &parsedTime
 			}

@@ -170,7 +170,6 @@ func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expected
 
 			registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
 			domainNames, err := domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
-
 			if err != nil {
 				return fmt.Errorf("error extracting domains: %w", err)
 			}
