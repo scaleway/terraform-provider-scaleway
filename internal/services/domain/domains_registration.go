@@ -480,7 +480,7 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	firstDomain := domainNames[0]
-	
+
 	firstResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
 		Domain: firstDomain,
 	}, scw.WithContext(ctx))

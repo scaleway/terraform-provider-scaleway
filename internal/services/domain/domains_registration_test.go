@@ -17,7 +17,7 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	singleDomain := "test-single-updates35" + ".com" // à adapter
+	singleDomain := "test-single-updates35" + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -169,6 +169,7 @@ func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expected
 			}
 
 			registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
+
 			domainNames, err := domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
 			if err != nil {
 				return fmt.Errorf("error extracting domains: %w", err)

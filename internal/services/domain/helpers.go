@@ -162,8 +162,11 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 
 	case "nl":
 		legalFormRegistrationNumber := ""
-		if value, ok := extensionMap["legal_form_registration_number"]; ok {
-			if str, isString := value.(string); isString {
+		value, ok := extensionMap["legal_form_registration_number"]
+
+		if ok {
+			str, isString := value.(string)
+			if isString {
 				legalFormRegistrationNumber = str
 			}
 		}
@@ -341,7 +344,6 @@ func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string
 			Page:     &page,
 			PageSize: &pageSize,
 		}, scw.WithContext(ctx))
-
 		if err != nil {
 			return "", fmt.Errorf("error retrieving tasks: %w", err)
 		}
