@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func DataSourceImage() *schema.Resource {
@@ -27,10 +28,11 @@ func DataSourceImage() *schema.Resource {
 				Description: "The instance commercial type of the desired image",
 			},
 			"image_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "instance_local", // Keep the old default as default to avoid a breaking change.
-				Description: "The type of the desired image, instance_local or instance_sbs",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "instance_local", // Keep the old default as default to avoid a breaking change.
+				Description:      "The type of the desired image, instance_local or instance_sbs",
+				ValidateDiagFunc: verify.ValidateEnum[marketplace.LocalImageType](),
 			},
 			"zone": zonal.Schema(),
 		},
