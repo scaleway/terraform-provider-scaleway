@@ -178,7 +178,7 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("description", types.FlattenStringPtr(ns.Description))
 	_ = d.Set("tags", types.FlattenSliceString(ns.Tags))
 	_ = d.Set("environment_variables", ns.EnvironmentVariables)
-	_ = d.Set("secret_environment_variables", flattenContainerSecretEnvironmentVariables(ns.SecretEnvironmentVariables))
+	_ = d.Set("secret_environment_variables", flattenContainerHashedSecretEnvironmentVariables(ns.SecretEnvironmentVariables, d.Get("secret_environment_variables")))
 	_ = d.Set("name", ns.Name)
 	_ = d.Set("organization_id", ns.OrganizationID)
 	_ = d.Set("project_id", ns.ProjectID)

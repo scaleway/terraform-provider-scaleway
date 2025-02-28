@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alexedwards/argon2id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -330,10 +331,33 @@ func retryCreateContainerDomain(ctx context.Context, containerAPI *container.API
 	}
 }
 
-func flattenContainerSecretEnvironmentVariables(secrets []*container.SecretHashedValue) map[string]any {
+func flattenContainerSecretEnvironmentVariables(secrets []*container.Secret) map[string]any {
 	m := make(map[string]any, len(secrets))
 	for _, s := range secrets {
-		m[s.Key] = s.HashedValue
+		m[s.Key] = s.Value
+	}
+
+	return m
+}
+
+// flattenContainerHashedSecretEnvironmentVariables convert secret hashed values to a state ready map.
+// It needs stateSecrets which is the old map stored in state. It will
+func flattenContainerHashedSecretEnvironmentVariables(secrets []*container.SecretHashedValue, stateSecrets any) map[string]any {
+	stateSecretsMap := stateSecrets.(map[string]any)
+	_ = stateSecretsMap
+
+	m := make(map[string]any, len(secrets))
+	for _, s := range secrets {
+		secret := s.HashedValue
+
+		if oldValue, hasOldValue := stateSecretsMap[s.Key]; hasOldValue {
+			match, _ := argon2id.ComparePasswordAndHash(oldValue.(string), secret)
+			if match {
+				secret = oldValue.(string) // Keep state value if hashed value is the same
+			}
+		}
+
+		m[s.Key] = secret
 	}
 
 	return m
