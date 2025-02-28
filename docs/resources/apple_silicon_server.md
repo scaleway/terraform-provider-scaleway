@@ -3,7 +3,7 @@ subcategory: "Apple Silicon"
 page_title: "Scaleway: scaleway_apple_silicon"
 ---
 
-# Resource: scaleway_apple_silicon
+# Resource: scaleway_apple_silicon_server
 
 Creates and manages Scaleway Apple silicon. For more information,
 see the [API documentation](https://www.scaleway.com/en/developers/api/apple-silicon/).
