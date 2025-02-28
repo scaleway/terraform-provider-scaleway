@@ -570,20 +570,8 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(cluster))
 	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(cluster))
 
-	var diags diag.Diagnostics
-
 	// private_network
-	pnID := types.FlattenStringPtr(cluster.PrivateNetworkID)
-	clusterType := d.Get("type").(string)
-	_ = d.Set("private_network_id", pnID)
-
-	if pnID == "" && !strings.HasPrefix(clusterType, "multicloud") {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Public clusters are deprecated",
-			Detail:   "Important: Harden your cluster's security by enabling a free Private Network ASAP. Full public clusters are deprecated and will reach End of Support in Q1 2024.",
-		})
-	}
+	_ = d.Set("private_network_id", types.FlattenStringPtr(cluster.PrivateNetworkID))
 
 	////
 	// Read kubeconfig
@@ -591,20 +579,19 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, region, clusterID)
 	if err != nil {
 		if httperrors.Is403(err) {
-			diags = append(diags, diag.Diagnostic{
+			return diag.Diagnostics{diag.Diagnostic{
 				Severity:      diag.Warning,
 				Summary:       "Cannot read kubeconfig: unauthorized",
 				Detail:        "Got 403 while reading kubeconfig, please check your permissions",
 				AttributePath: cty.GetAttrPath("kubeconfig"),
-			})
+			}}
+		} else {
+			return diag.FromErr(err)
 		}
-	} else {
-		diags = append(diags, diag.FromErr(err)...)
 	}
-
 	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconfig})
 
-	return diags
+	return nil
 }
 
 //gocyclo:ignore
