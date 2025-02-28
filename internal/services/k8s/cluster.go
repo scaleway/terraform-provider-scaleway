@@ -585,10 +585,11 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 				Detail:        "Got 403 while reading kubeconfig, please check your permissions",
 				AttributePath: cty.GetAttrPath("kubeconfig"),
 			}}
-		} else {
-			return diag.FromErr(err)
 		}
+
+		return diag.FromErr(err)
 	}
+
 	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconfig})
 
 	return nil
