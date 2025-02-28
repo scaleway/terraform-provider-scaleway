@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"sort"
 	"time"
 
@@ -192,6 +194,39 @@ func customDiffPrivateNetworkOption() func(ctx context.Context, diff *schema.Res
 		}
 
 		return nil
+	}
+}
+
+func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+		api, zone, err := NewAPIWithZoneAndID(i, diff.Id())
+		if err != nil {
+			return err
+		}
+
+		oldOffer, newOffer := diff.GetChange("newOfferID")
+		newOfferID := regional.ExpandID(newOffer)
+		oldOfferID := regional.ExpandID(oldOffer)
+		if !validation.IsUUID(newOfferID.ID) {
+			//TODO warning use datasource instead
+		}
+		oldOfferDetails, err := FindOfferByID(ctx, api, zone.Zone, oldOfferID.ID)
+		if err != nil {
+			return err
+		}
+		newOfferDetails, err := FindOfferByID(ctx, api, zone.Zone, newOfferID.ID)
+		if err != nil {
+			return err
+		}
+		if oldOfferDetails.Name != newOfferDetails.Name {
+			//TODO error
+		}
+		if oldOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodMonthly && newOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodHourly {
+			//TODO error
+		}
+		//TODO manage the migration
+		return nil
+
 	}
 }
 
