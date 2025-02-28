@@ -201,7 +201,7 @@ func TestAccNamespace_DestroyRegistry(t *testing.T) {
 	})
 }
 
-func TestAccScalewayContainerNamespace_ImportWithSecrets(t *testing.T) {
+func TestAccNamespace_ImportWithSecrets(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
