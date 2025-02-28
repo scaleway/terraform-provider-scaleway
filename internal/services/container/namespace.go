@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	"strings"
 
 	"github.com/alexedwards/argon2id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -76,7 +77,25 @@ func ResourceNamespace() *schema.Resource {
 				},
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
-					match, _ := argon2id.ComparePasswordAndHash(oldValue, newValue)
+					secretKey := strings.TrimPrefix(k, "secret_environment_variables.")
+					if secretKey == "" || secretKey == "%" {
+						return false
+					}
+
+					match, _ := argon2id.ComparePasswordAndHash(newValue, oldValue)
+
+					// If values match, we can store the correct value in state
+					// This has impact when we import a namespace with secrets, check container_test.TestAccNamespace_ImportWithSecrets
+					if match {
+						secrets := expandContainerSecrets(d.Get("secret_environment_variables"))
+						for _, secret := range secrets {
+							if secret.Key == secretKey {
+								secret.Value = scw.StringPtr(newValue)
+							}
+						}
+						_ = d.Set("secret_environment_variables", flattenContainerSecretEnvironmentVariables(secrets))
+					}
+
 					return match
 				},
 			},
