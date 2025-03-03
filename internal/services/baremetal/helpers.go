@@ -219,14 +219,12 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 			return err
 		}
 		if oldOfferDetails.Name != newOfferDetails.Name {
-			//TODO error
+			return diff.ForceNew("offer changed")
 		}
 		if oldOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodMonthly && newOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodHourly {
-			//TODO error
+			return errors.New("Offer's subscription period is restricted to monthly or hourly")
 		}
-		//TODO manage the migration
 		return nil
-
 	}
 }
 
