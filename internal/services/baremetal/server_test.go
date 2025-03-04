@@ -862,9 +862,9 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	//if !IsOfferAvailable(OfferID, "fr-par-2", tt) {
-	//	t.Skip("Offer is out of stock")
-	//}
+	if !IsOfferAvailable(OfferID, "fr-par-2", tt) {
+		t.Skip("Offer is out of stock")
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
