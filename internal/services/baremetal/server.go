@@ -56,18 +56,7 @@ func ResourceServer() *schema.Resource {
 			"offer": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "ID or name of the server offer",
-				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
-					// remove the locality from the IDs when checking diff
-					if locality.ExpandID(newValue) == locality.ExpandID(oldValue) {
-						return true
-					}
-					// if the offer was provided by name
-					offerName, ok := d.GetOk("offer_name")
-
-					return ok && newValue == offerName
-				},
 			},
 			"offer_id": {
 				Type:        schema.TypeString,
@@ -266,6 +255,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 
 		CustomizeDiff: customdiff.Sequence(
 			cdf.LocalityCheck("private_network.#.id"),
+			customDiffOffer(),
 			customDiffPrivateNetworkOption(),
 		),
 	}
