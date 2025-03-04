@@ -250,7 +250,7 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 		_ = d.Set("dmarc_name", "")
 		_ = d.Set("dmarc_config", "")
 	}
-	
+
 	_ = d.Set("smtp_host", tem.SMTPHost)
 	_ = d.Set("smtp_port_unsecure", tem.SMTPPortUnsecure)
 	_ = d.Set("smtp_port", tem.SMTPPort)
