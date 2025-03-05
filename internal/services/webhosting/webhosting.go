@@ -244,7 +244,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	dnsApi, _, err := newDnsAPIWithRegion(d, m)
+	dnsAPI, _, err := newDnsAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -260,7 +260,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	dnsRecordsResponse, err := dnsApi.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
+	dnsRecordsResponse, err := dnsAPI.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
 		Domain: webhostingResponse.Domain,
 	}, scw.WithContext(ctx))
 	if err != nil {

@@ -89,6 +89,7 @@ func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]interface{}
 			"status":   r.Status.String(),
 		})
 	}
+
 	return result
 }
 
@@ -101,5 +102,6 @@ func flattenNameServers(servers []*webhosting.Nameserver) []map[string]interface
 			"is_default": s.IsDefault,
 		})
 	}
+
 	return result
 }
