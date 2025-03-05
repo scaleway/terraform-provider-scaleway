@@ -68,7 +68,7 @@ The following arguments are supported:
 
 - `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container.
 
-- `timeout` - (Optional) The maximum amount of time your container can spend processing a request before being stopped.
+- `timeout` - (Optional) The maximum amount of time in seconds your container can spend processing a request before being stopped. Default to `300` seconds.
 
 - `privacy` - (Optional) The privacy type defines the way to authenticate to your container. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8).
 
