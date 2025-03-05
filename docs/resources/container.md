@@ -84,7 +84,7 @@ The following arguments are supported:
 
 - `sandbox` - (Optional) Execution environment of the container.
 
-- `heath_check` - (Optional) Health check configuration block of the container.
+- `health_check` - (Optional) Health check configuration block of the container.
     - `http` - HTTP health check configuration.
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
