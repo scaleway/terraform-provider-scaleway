@@ -139,6 +139,33 @@ func ResourceWebhosting() *schema.Resource {
 				Computed:    true,
 				Description: "Main hosting cPanel username",
 			},
+			"records": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of DNS records associated with the webhosting.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name":     {Type: schema.TypeString, Computed: true},
+						"type":     {Type: schema.TypeString, Computed: true},
+						"ttl":      {Type: schema.TypeInt, Computed: true},
+						"value":    {Type: schema.TypeString, Computed: true},
+						"priority": {Type: schema.TypeInt, Computed: true},
+						"status":   {Type: schema.TypeString, Computed: true},
+					},
+				},
+			},
+			"name_servers": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of nameservers associated with the webhosting.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"hostname":   {Type: schema.TypeString, Computed: true},
+						"status":     {Type: schema.TypeString, Computed: true},
+						"is_default": {Type: schema.TypeBool, Computed: true},
+					},
+				},
+			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 			"organization_id": func() *schema.Schema {
@@ -217,6 +244,11 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
+	dnsApi, _, err := newDnsAPIWithRegion(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	webhostingResponse, err := waitForHosting(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
@@ -227,6 +259,16 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 
 		return diag.FromErr(err)
 	}
+
+	dnsRecordsResponse, err := dnsApi.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
+		Domain: webhostingResponse.Domain,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("records", flattenDNSRecords(dnsRecordsResponse.Records))
+	_ = d.Set("name_servers", flattenNameServers(dnsRecordsResponse.NameServers))
 
 	_ = d.Set("tags", webhostingResponse.Tags)
 	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.Offer.ID))
