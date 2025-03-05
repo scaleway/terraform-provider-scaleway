@@ -125,12 +125,24 @@ func ResourceServer() *schema.Resource {
 							Description: "Size of the root volume in gigabytes",
 						},
 						"volume_type": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Computed:         true,
-							ForceNew:         true,
-							Description:      "Volume type of the root volume",
-							ValidateDiagFunc: verify.ValidateEnum[instanceSDK.VolumeVolumeType](),
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							ForceNew:    true,
+							Description: "Volume type of the root volume",
+							ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+								diags := verify.ValidateEnum[instanceSDK.VolumeVolumeType]()(i, path)
+								if i.(string) == "b_ssd" {
+									diags = append(diags, diag.Diagnostic{
+										Severity:      diag.Error,
+										Summary:       "b_ssd volumes are not supported anymore",
+										Detail:        "Remove explicit b_ssd volume_type, migrate to sbs or downgrade terraform.\nLearn more about migration: https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/",
+										AttributePath: path,
+									})
+								}
+
+								return diags
+							},
 						},
 						"delete_on_termination": {
 							Type:        schema.TypeBool,
