@@ -244,7 +244,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	dnsAPI, _, err := newDnsAPIWithRegion(d, m)
+	dnsAPI, _, err := newDNSAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

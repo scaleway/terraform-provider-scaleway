@@ -40,7 +40,7 @@ func newHostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting
 	return api, region, nil
 }
 
-func newDnsAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.DnsAPI, scw.Region, error) {
+func newDNSAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.DnsAPI, scw.Region, error) {
 	api := webhosting.NewDnsAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
