@@ -75,12 +75,12 @@ resource "scaleway_edge_services_backend_stage" "main" {
     - `bucket_region` - The region of the Bucket.
     - `is_website` - Defines whether the bucket website feature is enabled.
 - `lb_backend_config` - (Optional) The Scaleway Load Balancer linked to the backend stage.
-  - `lb_config` - The Load Balancer config.
-    - `id` - The ID of the Load Balancer.
-    - `frontend_id` - The ID of the frontend.
-    - `is_ssl` - Defines whether the Load Balancer's frontend handles SSL connections.
-    - `domain_name` - The Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer.
-    - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Load Balancer.
+    - `lb_config` - The Load Balancer config.
+        - `id` - The ID of the Load Balancer.
+        - `frontend_id` - The ID of the frontend.
+        - `is_ssl` - Defines whether the Load Balancer's frontend handles SSL connections.
+        - `domain_name` - The Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer.
+        - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Load Balancer.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the backend stage is associated with.
 
 ## Attributes Reference
