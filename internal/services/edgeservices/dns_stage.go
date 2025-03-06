@@ -4,9 +4,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -24,6 +23,11 @@ func ResourceDNSStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
+			"pipeline_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the pipeline",
+			},
 			"backend_stage_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -56,11 +60,6 @@ func ResourceDNSStage() *schema.Resource {
 				Computed:    true,
 				Description: "The type of the stage",
 			},
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "TThe pipeline ID the DNS stage belongs to",
-			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -80,7 +79,7 @@ func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m inter
 	api := NewEdgeServicesAPI(m)
 
 	dnsStage, err := api.CreateDNSStage(&edgeservices.CreateDNSStageRequest{
-		ProjectID:      d.Get("project_id").(string),
+		PipelineID:     d.Get("pipeline_id").(string),
 		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 		CacheStageID:   types.ExpandStringPtr(d.Get("cache_stage_id").(string)),
 		TLSStageID:     types.ExpandStringPtr(d.Get("tls_stage_id").(string)),
@@ -104,22 +103,24 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(dnsStage.BackendStageID))
 	_ = d.Set("cache_stage_id", types.FlattenStringPtr(dnsStage.CacheStageID))
-	_ = d.Set("pipeline_id", types.FlattenStringPtr(dnsStage.PipelineID))
+	_ = d.Set("pipeline_id", dnsStage.PipelineID)
 	_ = d.Set("tls_stage_id", types.FlattenStringPtr(dnsStage.TLSStageID))
 	_ = d.Set("created_at", types.FlattenTime(dnsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(dnsStage.UpdatedAt))
 	_ = d.Set("type", dnsStage.Type.String())
-	_ = d.Set("project_id", dnsStage.ProjectID)
 
 	oldFQDNs := d.Get("fqdns").([]interface{})
 	oldFQDNsSet := make(map[string]bool)
+
 	for _, fqdn := range oldFQDNs {
 		oldFQDNsSet[fqdn.(string)] = true
 	}
@@ -135,16 +136,20 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m interfa
 	// add any FQDNs from the old state that aren't in the API response
 	for _, oldFQDN := range oldFQDNs {
 		found := false
+
 		for _, newFQDN := range newFQDNs {
 			if oldFQDN.(string) == newFQDN {
 				found = true
+
 				break
 			}
 		}
+
 		if !found {
 			newFQDNs = append(newFQDNs, oldFQDN.(string))
 		}
 	}
+
 	if err = d.Set("fqdns", newFQDNs); err != nil {
 		return diag.FromErr(err)
 	}
@@ -194,19 +199,10 @@ func ResourceDNSStageUpdate(ctx context.Context, d *schema.ResourceData, m inter
 func ResourceDNSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := retry.RetryContext(ctx, defaultEdgeServicesTimeout, func() *retry.RetryError {
-		err := api.DeleteDNSStage(&edgeservices.DeleteDNSStageRequest{
-			DNSStageID: d.Id(),
-		}, scw.WithContext(ctx))
-		if err != nil && !httperrors.Is403(err) {
-			if isStageUsedInPipelineError(err) {
-				return retry.RetryableError(err)
-			}
-			return retry.NonRetryableError(err)
-		}
-		return nil
-	})
-	if err != nil {
+	err := api.DeleteDNSStage(&edgeservices.DeleteDNSStageRequest{
+		DNSStageID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

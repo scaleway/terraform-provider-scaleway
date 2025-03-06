@@ -4,9 +4,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -25,6 +24,11 @@ func ResourceBackendStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
+			"pipeline_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the pipeline",
+			},
 			"s3_backend_config": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -92,11 +96,6 @@ func ResourceBackendStage() *schema.Resource {
 					},
 				},
 			},
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The pipeline ID the backend stage belongs to",
-			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -116,7 +115,7 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m i
 	api := NewEdgeServicesAPI(m)
 
 	req := &edgeservices.CreateBackendStageRequest{
-		ProjectID: d.Get("project_id").(string),
+		PipelineID: d.Get("pipeline_id").(string),
 	}
 
 	if s3Config, ok := d.GetOk("s3_backend_config"); ok {
@@ -146,15 +145,16 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("pipeline_id", types.FlattenStringPtr(backendStage.PipelineID))
+	_ = d.Set("pipeline_id", backendStage.PipelineID)
 	_ = d.Set("created_at", types.FlattenTime(backendStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(backendStage.UpdatedAt))
-	_ = d.Set("project_id", backendStage.ProjectID)
 	_ = d.Set("s3_backend_config", flattenS3BackendConfig(backendStage.ScalewayS3))
 	_ = d.Set("lb_backend_config", flattenLBBackendConfig(backendStage.ScalewayLB))
 
@@ -193,19 +193,10 @@ func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m i
 func ResourceBackendStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := retry.RetryContext(ctx, defaultEdgeServicesTimeout, func() *retry.RetryError {
-		err := api.DeleteBackendStage(&edgeservices.DeleteBackendStageRequest{
-			BackendStageID: d.Id(),
-		}, scw.WithContext(ctx))
-		if err != nil && !httperrors.Is403(err) {
-			if isStageUsedInPipelineError(err) {
-				return retry.RetryableError(err)
-			}
-			return retry.NonRetryableError(err)
-		}
-		return nil
-	})
-	if err != nil {
+	err := api.DeleteBackendStage(&edgeservices.DeleteBackendStageRequest{
+		BackendStageID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	edge "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edge "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"

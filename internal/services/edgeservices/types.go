@@ -2,7 +2,7 @@ package edgeservices
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -12,7 +12,9 @@ func expandS3BackendConfig(raw interface{}) *edge_services.ScalewayS3BackendConf
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
+
 	return &edge_services.ScalewayS3BackendConfig{
 		BucketName:   types.ExpandStringPtr(rawMap["bucket_name"].(string)),
 		BucketRegion: types.ExpandStringPtr(rawMap["bucket_region"].(string)),
@@ -36,6 +38,7 @@ func expandPurge(raw interface{}) []*edge_services.PurgeRequest {
 	}
 
 	purgeRequests := []*edge_services.PurgeRequest(nil)
+
 	for _, pr := range raw.(*schema.Set).List() {
 		rawPr := pr.(map[string]interface{})
 		purgeRequest := &edge_services.PurgeRequest{}
@@ -45,12 +48,14 @@ func expandPurge(raw interface{}) []*edge_services.PurgeRequest {
 
 		purgeRequests = append(purgeRequests, purgeRequest)
 	}
+
 	return purgeRequests
 }
 
 func expandTLSSecrets(raw interface{}, region scw.Region) []*edge_services.TLSSecret {
 	secrets := []*edge_services.TLSSecret(nil)
 	rawSecrets := raw.([]interface{})
+
 	for _, rawSecret := range rawSecrets {
 		mapSecret := rawSecret.(map[string]interface{})
 		secret := &edge_services.TLSSecret{
@@ -59,6 +64,7 @@ func expandTLSSecrets(raw interface{}, region scw.Region) []*edge_services.TLSSe
 		}
 		secrets = append(secrets, secret)
 	}
+
 	return secrets
 }
 
@@ -68,6 +74,7 @@ func flattenTLSSecrets(secrets []*edge_services.TLSSecret) interface{} {
 	}
 
 	secretsI := []map[string]interface{}(nil)
+
 	for _, secret := range secrets {
 		secretMap := map[string]interface{}{
 			"secret_id": secret.SecretID,
@@ -75,12 +82,14 @@ func flattenTLSSecrets(secrets []*edge_services.TLSSecret) interface{} {
 		}
 		secretsI = append(secretsI, secretMap)
 	}
+
 	return secretsI
 }
 
 func expandLBBackendConfig(raw interface{}) *edge_services.ScalewayLBBackendConfig {
 	lbConfigs := []*edge_services.ScalewayLB(nil)
 	rawLbConfigs := raw.([]interface{})
+
 	for _, rawLbConfig := range rawLbConfigs {
 		mapLbConfig := rawLbConfig.(map[string]interface{})
 		lbConfig := &edge_services.ScalewayLB{
@@ -104,6 +113,7 @@ func flattenLBBackendConfig(lbConfigs *edge_services.ScalewayLBBackendConfig) in
 	}
 
 	lbConfigsI := []map[string]interface{}(nil)
+
 	for _, lbConfig := range lbConfigs.LBs {
 		secretMap := map[string]interface{}{
 			"id":          lbConfig.ID,
@@ -114,6 +124,7 @@ func flattenLBBackendConfig(lbConfigs *edge_services.ScalewayLBBackendConfig) in
 		}
 		lbConfigsI = append(lbConfigsI, secretMap)
 	}
+
 	return lbConfigsI
 }
 

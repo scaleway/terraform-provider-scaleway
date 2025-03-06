@@ -5,10 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -46,12 +45,6 @@ func ResourcePipeline() *schema.Resource {
 				Computed:    true,
 				Description: "The pipeline description",
 			},
-			"dns_stage_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The pipeline description",
-			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -74,7 +67,6 @@ func ResourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m inter
 		Description: d.Get("description").(string),
 		ProjectID:   d.Get("project_id").(string),
 		Name:        d.Get("name").(string),
-		DNSStageID:  types.ExpandStringPtr(locality.ExpandID(d.Get("dns_stage_id").(string))),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -94,14 +86,15 @@ func ResourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", pipeline.Name)
 	_ = d.Set("description", pipeline.Description)
-	_ = d.Set("dns_stage_id", types.FlattenStringPtr(pipeline.DNSStageID))
 	_ = d.Set("created_at", types.FlattenTime(pipeline.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(pipeline.UpdatedAt))
 	_ = d.Set("status", pipeline.Status.String())
@@ -126,11 +119,6 @@ func ResourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if d.HasChange("description") {
 		updateRequest.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
-		hasChanged = true
-	}
-
-	if d.HasChange("dns_stage_id") {
-		updateRequest.DNSStageID = types.ExpandUpdatedStringPtr(d.Get("dns_stage_id"))
 		hasChanged = true
 	}
 

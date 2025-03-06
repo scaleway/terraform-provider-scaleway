@@ -18,14 +18,20 @@ func TestAccEdgeServicesBackend_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "my-edge_services-pipeline"
+					  description = "pipeline description"
+					}
+
 					resource "scaleway_object_bucket" "main" {
-						name = "test-acc-scaleway-object-bucket-basic-es"
-						tags = {
-							foo = "bar"
-						}
+					  name = "test-acc-scaleway-object-bucket-basic-es"
+					  tags = {
+						foo = "bar"
+					  }
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
+                      pipeline_id = scaleway_edge_services_pipeline.main.id
 					  s3_backend_config {
 						bucket_name   = scaleway_object_bucket.main.name
 						bucket_region = "fr-par"
@@ -34,6 +40,9 @@ func TestAccEdgeServicesBackend_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					edgeservicestestfuncs.CheckEdgeServicesBackendExists(tt, "scaleway_edge_services_backend_stage.main"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_pipeline.main", "id",
+						"scaleway_edge_services_backend_stage.main", "pipeline_id"),
 					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "s3_backend_config.0.is_website", "false"),
 					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "s3_backend_config.0.bucket_region", "fr-par"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "s3_backend_config.0.bucket_name"),

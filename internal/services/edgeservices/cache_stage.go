@@ -4,9 +4,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -24,6 +23,11 @@ func ResourceCacheStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
+			"pipeline_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the pipeline",
+			},
 			"backend_stage_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -67,11 +71,6 @@ func ResourceCacheStage() *schema.Resource {
 				Optional:    true,
 				Description: "Trigger a refresh of the cache by changing this field's value",
 			},
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The pipeline description",
-			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -90,8 +89,8 @@ func ResourceCacheStage() *schema.Resource {
 func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	cacheStage, err := api.CreateCacheStage(&edge_services.CreateCacheStageRequest{
-		ProjectID:      d.Get("project_id").(string),
+	cacheStage, err := api.CreateCacheStage(&edgeservices.CreateCacheStageRequest{
+		PipelineID:     d.Get("pipeline_id").(string),
 		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 		FallbackTTL:    &scw.Duration{Seconds: int64(d.Get("fallback_ttl").(int))},
 	}, scw.WithContext(ctx))
@@ -107,19 +106,20 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m int
 func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	cacheStage, err := api.GetCacheStage(&edge_services.GetCacheStageRequest{
+	cacheStage, err := api.GetCacheStage(&edgeservices.GetCacheStageRequest{
 		CacheStageID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("pipeline_id", types.FlattenStringPtr(cacheStage.PipelineID))
-	_ = d.Set("project_id", cacheStage.ProjectID)
+	_ = d.Set("pipeline_id", cacheStage.PipelineID)
 	_ = d.Set("created_at", types.FlattenTime(cacheStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(cacheStage.UpdatedAt))
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(cacheStage.BackendStageID))
@@ -133,7 +133,7 @@ func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	hasChanged := false
 
-	updateRequest := &edge_services.UpdateCacheStageRequest{
+	updateRequest := &edgeservices.UpdateCacheStageRequest{
 		CacheStageID: d.Id(),
 	}
 
@@ -156,7 +156,7 @@ func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	if d.HasChanges("purge_requests", "refresh_cache") {
 		for _, pr := range expandPurge(d.Get("purge_requests")) {
-			res, err := api.CreatePurgeRequest(&edge_services.CreatePurgeRequestRequest{
+			res, err := api.CreatePurgeRequest(&edgeservices.CreatePurgeRequestRequest{
 				PipelineID: pr.PipelineID,
 				Assets:     pr.Assets,
 				All:        pr.All,
@@ -178,19 +178,10 @@ func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m int
 func ResourceCacheStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := retry.RetryContext(ctx, defaultEdgeServicesTimeout, func() *retry.RetryError {
-		err := api.DeleteCacheStage(&edge_services.DeleteCacheStageRequest{
-			CacheStageID: d.Id(),
-		}, scw.WithContext(ctx))
-		if err != nil && !httperrors.Is403(err) {
-			if isStageUsedInPipelineError(err) {
-				return retry.RetryableError(err)
-			}
-			return retry.NonRetryableError(err)
-		}
-		return nil
-	})
-	if err != nil {
+	err := api.DeleteCacheStage(&edgeservices.DeleteCacheStageRequest{
+		CacheStageID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

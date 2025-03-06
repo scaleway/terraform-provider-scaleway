@@ -4,9 +4,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -25,6 +24,11 @@ func ResourceTLSStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
+			"pipeline_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the pipeline",
+			},
 			"backend_stage_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -46,22 +50,19 @@ func ResourceTLSStage() *schema.Resource {
 			"secrets": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "The TLS secrets",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"secret_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The ID of the Secret",
 						},
 						"region": regional.Schema(),
 					},
 				},
-			},
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The pipeline ID the TLS stage belongs to",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -90,7 +91,7 @@ func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	tlsStage, err := api.CreateTLSStage(&edgeservices.CreateTLSStageRequest{
-		ProjectID:          d.Get("project_id").(string),
+		PipelineID:         d.Get("pipeline_id").(string),
 		BackendStageID:     types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 		CacheStageID:       types.ExpandStringPtr(d.Get("cache_stage_id").(string)),
 		ManagedCertificate: types.ExpandBoolPtr(d.Get("managed_certificate").(bool)),
@@ -114,20 +115,21 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(tlsStage.BackendStageID))
 	_ = d.Set("cache_stage_id", types.FlattenStringPtr(tlsStage.CacheStageID))
-	_ = d.Set("pipeline_id", types.FlattenStringPtr(tlsStage.PipelineID))
+	_ = d.Set("pipeline_id", tlsStage.PipelineID)
 	_ = d.Set("managed_certificate", tlsStage.ManagedCertificate)
 	_ = d.Set("secrets", flattenTLSSecrets(tlsStage.Secrets))
 	_ = d.Set("certificate_expires_at", types.FlattenTime(tlsStage.CertificateExpiresAt))
 	_ = d.Set("created_at", types.FlattenTime(tlsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(tlsStage.UpdatedAt))
-	_ = d.Set("project_id", tlsStage.ProjectID)
 
 	return nil
 }
@@ -137,6 +139,7 @@ func ResourceTLSStageUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	hasChanged := false
 
 	updateRequest := &edgeservices.UpdateTLSStageRequest{
@@ -176,19 +179,10 @@ func ResourceTLSStageUpdate(ctx context.Context, d *schema.ResourceData, m inter
 func ResourceTLSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := retry.RetryContext(ctx, defaultEdgeServicesTimeout, func() *retry.RetryError {
-		err := api.DeleteTLSStage(&edgeservices.DeleteTLSStageRequest{
-			TLSStageID: d.Id(),
-		}, scw.WithContext(ctx))
-		if err != nil && !httperrors.Is403(err) {
-			if isStageUsedInPipelineError(err) {
-				return retry.RetryableError(err)
-			}
-			return retry.NonRetryableError(err)
-		}
-		return nil
-	})
-	if err != nil {
+	err := api.DeleteTLSStage(&edgeservices.DeleteTLSStageRequest{
+		TLSStageID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 

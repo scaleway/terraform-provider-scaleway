@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	edge "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1alpha1"
+	edge "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
@@ -31,6 +31,10 @@ func AddTestSweepers() {
 		Name: "scaleway_edge_services_cache_stage",
 		F:    testSweepCache,
 	})
+	resource.AddTestSweepers("scaleway_edge_services_plan", &resource.Sweeper{
+		Name: "scaleway_edge_services_plan",
+		F:    testSweepPlan,
+	})
 }
 
 func testSweepPipeline(_ string) error {
@@ -41,6 +45,7 @@ func testSweepPipeline(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list pipelines: %w", err)
 		}
+
 		for _, pipeline := range listPipelines.Pipelines {
 			err = edgeAPI.DeletePipeline(&edge.DeletePipelineRequest{
 				PipelineID: pipeline.ID,
@@ -49,6 +54,7 @@ func testSweepPipeline(_ string) error {
 				return fmt.Errorf("failed to delete pipeline: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -61,6 +67,7 @@ func testSweepDNS(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list DNS stages: %w", err)
 		}
+
 		for _, stage := range listDNS.Stages {
 			err = edgeAPI.DeleteDNSStage(&edge.DeleteDNSStageRequest{
 				DNSStageID: stage.ID,
@@ -69,6 +76,7 @@ func testSweepDNS(_ string) error {
 				return fmt.Errorf("failed to delete DNS stage: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -81,6 +89,7 @@ func testSweepTLS(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list TLS stages: %w", err)
 		}
+
 		for _, stage := range listTLS.Stages {
 			err = edgeAPI.DeleteTLSStage(&edge.DeleteTLSStageRequest{
 				TLSStageID: stage.ID,
@@ -89,6 +98,7 @@ func testSweepTLS(_ string) error {
 				return fmt.Errorf("failed to delete TLS stage: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -101,6 +111,7 @@ func testSweepCache(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list cache stages: %w", err)
 		}
+
 		for _, stage := range listCaches.Stages {
 			err = edgeAPI.DeleteCacheStage(&edge.DeleteCacheStageRequest{
 				CacheStageID: stage.ID,
@@ -109,6 +120,7 @@ func testSweepCache(_ string) error {
 				return fmt.Errorf("failed to delete cache stage: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -121,6 +133,7 @@ func testSweepBackend(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list backend stage: %w", err)
 		}
+
 		for _, stage := range listBackends.Stages {
 			err = edgeAPI.DeleteBackendStage(&edge.DeleteBackendStageRequest{
 				BackendStageID: stage.ID,
@@ -129,6 +142,29 @@ func testSweepBackend(_ string) error {
 				return fmt.Errorf("failed to delete backend stage: %w", err)
 			}
 		}
+
+		return nil
+	})
+}
+
+func testSweepPlan(_ string) error {
+	return acctest.Sweep(func(scwClient *scw.Client) error {
+		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+
+		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
+		if err != nil {
+			return fmt.Errorf("failed to list pipelines when deleting plan: %w", err)
+		}
+
+		for _, pipeline := range listPipelines.Pipelines {
+			err = edgeAPI.DeleteCurrentPlan(&edge.DeleteCurrentPlanRequest{
+				ProjectID: pipeline.ProjectID,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to delete current plan: %w", err)
+			}
+		}
+
 		return nil
 	})
 }
