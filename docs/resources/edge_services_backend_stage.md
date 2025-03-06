@@ -19,7 +19,12 @@ resource "scaleway_object_bucket" "main" {
     }
 }
 
+resource "scaleway_edge_services_pipeline" "main" {
+  name = "my-pipeline"
+}
+
 resource "scaleway_edge_services_backend_stage" "main" {
+  pipeline_id     = scaleway_edge_services_pipeline.main.id
   s3_backend_config {
     bucket_name   = scaleway_object_bucket.main.name
     bucket_region = "fr-par"
@@ -34,6 +39,7 @@ resource "scaleway_edge_services_backend_stage" "main" {
 
 ## Argument Reference
 
+- `pipeline_id` - (Required) The ID of the pipeline.
 - `s3_backend_config` - (Required) The Scaleway Object Storage origin bucket (S3) linked to the backend stage.
     - `bucket_name` - The name of the Bucket.
     - `bucket_region` - The region of the Bucket.
@@ -47,7 +53,6 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the backend stage (UUID format).
 - `created_at` - The date and time of the creation of the backend stage.
 - `updated_at` - The date and time of the last update of the backend stage.
-- `pipeline_id` - The pipeline ID the backend stage belongs to.
 
 ## Import
 

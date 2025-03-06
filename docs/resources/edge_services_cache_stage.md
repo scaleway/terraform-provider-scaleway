@@ -13,6 +13,7 @@ Creates and manages Scaleway Edge Services Cache Stages.
 
 ```terraform
 resource "scaleway_edge_services_cache_stage" "main" {
+  pipeline_id      = scaleway_edge_services_pipeline.main.id
   backend_stage_id = scaleway_edge_services_backend_stage.main.id
 }
 ```
@@ -21,6 +22,7 @@ resource "scaleway_edge_services_cache_stage" "main" {
 
 ```terraform
 resource "scaleway_edge_services_cache_stage" "main" {
+  pipeline_id      = scaleway_edge_services_pipeline.main.id
   backend_stage_id = scaleway_edge_services_backend_stage.main.id
 
   purge {
@@ -32,6 +34,7 @@ resource "scaleway_edge_services_cache_stage" "main" {
 
 ## Argument Reference
 
+- `pipeline_id` - (Required) The ID of the pipeline.
 - `backend_stage_id` - (Optional) The backend stage ID the cache stage will be linked to.
 - `fallback_ttl` - (Optional) The Time To Live (TTL) in seconds. Defines how long content is cached.
 - `refresh_cache` - (Optional) Trigger a refresh of the cache by changing this field's value.
@@ -48,7 +51,6 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the cache stage (UUID format).
 - `created_at` - The date and time of the creation of the cache stage.
 - `updated_at` - The date and time of the last update of the cache stage.
-- `pipeline_id` - The pipeline ID the cache stage belongs to.
 
 ## Import
 

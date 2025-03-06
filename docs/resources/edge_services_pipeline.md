@@ -21,7 +21,13 @@ resource "scaleway_edge_services_pipeline" "main" {
 ### Complete pipeline
 
 ```terraform
+resource "scaleway_edge_services_pipeline" "main" {
+  name        = "pipeline-name"
+  description = "pipeline description"
+}
+
 resource "scaleway_edge_services_backend_stage" "main" {
+  pipeline_id = scaleway_edge_services_pipeline.main.id
   s3_backend_config {
     bucket_name   = "my-bucket-name"
     bucket_region = "fr-par"
@@ -29,21 +35,24 @@ resource "scaleway_edge_services_backend_stage" "main" {
 }
 
 resource "scaleway_edge_services_tls_stage" "main" {
+  pipeline_id         = scaleway_edge_services_pipeline.main.id
   cache_stage_id      = scaleway_edge_services_cache_stage.main.id
   managed_certificate = true
 }
 
 resource "scaleway_edge_services_dns_stage" "main" {
+  pipeline_id  = scaleway_edge_services_pipeline.main.id
   tls_stage_id = scaleway_edge_services_tls_stage.main.id
   fqdns        = ["subdomain.example.com"]
 }
 
-resource "scaleway_edge_services_pipeline" "main" {
-  name         = "my-edge_services-pipeline"
-  dns_stage_id = scaleway_edge_services_dns_stage.main.id
+resource "scaleway_edge_services_head_stage" "main" {
+  pipeline_id   = scaleway_edge_services_pipeline.main.id
+  head_stage_id = scaleway_edge_services_dns_stage.main.id
 }
 
 resource "scaleway_edge_services_cache_stage" "main" {
+  pipeline_id      = scaleway_edge_services_pipeline.main.id
   backend_stage_id = scaleway_edge_services_backend_stage.main.id
 }
 ```
@@ -52,7 +61,6 @@ resource "scaleway_edge_services_cache_stage" "main" {
 
 - `name` - (Optional) The name of the pipeline.
 - `description` - (Optional) The description of the pipeline.
-- `dns_stage_id` - (Optional) The DNS stage ID the pipeline will be attached to.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the pipeline is associated with.
 
 ## Attributes Reference
