@@ -71,7 +71,6 @@ func ResourceHeadStageUpdate(ctx context.Context, d *schema.ResourceData, m inte
 				NewStageID:     after.(string),
 			},
 		}, scw.WithContext(ctx))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}

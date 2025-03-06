@@ -9,7 +9,7 @@ Creates and manages Scaleway Edge Services Backend Stages.
 
 ## Example Usage
 
-### Basic
+### With object backend
 
 ```terraform
 resource "scaleway_object_bucket" "main" {
@@ -32,18 +32,55 @@ resource "scaleway_edge_services_backend_stage" "main" {
 }
 ```
 
-### Custom Certificate
+### With LB backend
 
 ```terraform
+resource "scaleway_lb_ip" "main" {
+  zone = "fr-par-1"
+}
+
+resource "scaleway_lb" "main" {
+  ip_ids = [scaleway_lb_ip.main.id]
+  zone   = scaleway_lb_ip.main.zone
+  type   = "LB-S"
+}
+
+resource "scaleway_lb_frontend" "main" {
+  lb_id        = scaleway_lb.main.id
+  backend_id   = scaleway_lb_backend.main.id
+  name         = "frontend01"
+  inbound_port = "80"
+}
+
+resource "scaleway_edge_services_pipeline" "main" {
+  name = "my-pipeline"
+}
+
+resource "scaleway_edge_services_backend_stage" "main" {
+  pipeline_id     = scaleway_edge_services_pipeline.main.id
+  lb_backend_config {
+    lb_config {
+      id          = scaleway_lb.main.id
+      frontend_id = scaleway_lb_frontend.id
+    }
+  }
+}
 ```
 
 ## Argument Reference
 
 - `pipeline_id` - (Required) The ID of the pipeline.
-- `s3_backend_config` - (Required) The Scaleway Object Storage origin bucket (S3) linked to the backend stage.
+- `s3_backend_config` - (Optional) The Scaleway Object Storage origin bucket (S3) linked to the backend stage.
     - `bucket_name` - The name of the Bucket.
     - `bucket_region` - The region of the Bucket.
     - `is_website` - Defines whether the bucket website feature is enabled.
+- `lb_backend_config` - (Optional) The Scaleway Load Balancer linked to the backend stage.
+  - `lb_config` - The Load Balancer config.
+    - `id` - The ID of the Load Balancer.
+    - `frontend_id` - The ID of the frontend.
+    - `is_ssl` - Defines whether the Load Balancer's frontend handles SSL connections.
+    - `domain_name` - The Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer.
+    - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Load Balancer.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the backend stage is associated with.
 
 ## Attributes Reference
