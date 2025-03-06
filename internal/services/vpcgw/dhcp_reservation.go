@@ -95,6 +95,7 @@ func ResourceVPCPublicGatewayDHCPCReservationCreate(ctx context.Context, d *sche
 	}
 
 	gatewayNetworkID := locality.ExpandID(d.Get("gateway_network_id"))
+
 	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -133,8 +134,10 @@ func ResourceVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -163,6 +166,7 @@ func ResourceVPCPublicGatewayDHCPReservationUpdate(ctx context.Context, d *schem
 		}
 
 		gatewayNetworkID := locality.ExpandID(d.Get("gateway_network_id"))
+
 		_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -195,6 +199,7 @@ func ResourceVPCPublicGatewayDHCPReservationDelete(ctx context.Context, d *schem
 	}
 
 	gatewayNetworkID := locality.ExpandID(d.Get("gateway_network_id"))
+
 	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)

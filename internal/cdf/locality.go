@@ -57,6 +57,7 @@ func getLocality(diff *schema.ResourceDiff, m interface{}) string {
 		region, _ := meta.ExtractRegion(diff, m)
 		loc = region.String()
 	}
+
 	return loc
 }
 
@@ -91,6 +92,7 @@ func LocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 				}
 			}
 		}
+
 		return nil
 	}
 }

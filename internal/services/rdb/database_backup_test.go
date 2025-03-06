@@ -25,12 +25,14 @@ func init() {
 func testSweepDatabaseBackup(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		rdbAPI := rdbSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the rdb database backups in (%s)", region)
+
 		listBackups, err := rdbAPI.ListDatabaseBackups(&rdbSDK.ListDatabaseBackupsRequest{
 			Region: region,
 		})
 		if err != nil {
-			return fmt.Errorf("error listing rdb database backups in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing rdb database backups in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, backup := range listBackups.DatabaseBackups {
@@ -39,7 +41,7 @@ func testSweepDatabaseBackup(_ string) error {
 				DatabaseBackupID: backup.ID,
 			})
 			if err != nil && !httperrors.Is404(err) {
-				return fmt.Errorf("error deleting rdb database backup in sweeper: %s", err)
+				return fmt.Errorf("error deleting rdb database backup in sweeper: %w", err)
 			}
 		}
 

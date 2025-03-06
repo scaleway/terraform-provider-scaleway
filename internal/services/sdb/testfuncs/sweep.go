@@ -20,13 +20,15 @@ func AddTestSweepers() {
 func testSweepServerlessSQLDBDatabase(_ string) error {
 	return acctest.SweepRegions((&sdbSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		sdbAPI := sdbSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the serverless sql database in (%s)", region)
+
 		listServerlessSQLDBDatabases, err := sdbAPI.ListDatabases(
 			&sdbSDK.ListDatabasesRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing database in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing database in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, database := range listServerlessSQLDBDatabases.Databases {
@@ -37,7 +39,7 @@ func testSweepServerlessSQLDBDatabase(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting database in sweeper: %s", err)
+				return fmt.Errorf("error deleting database in sweeper: %w", err)
 			}
 		}
 

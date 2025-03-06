@@ -24,15 +24,18 @@ func testSweepAccountProject(_ string) error {
 		logging.L.Debugf("sweeper: destroying the project")
 
 		req := &accountSDK.ProjectAPIListProjectsRequest{}
+
 		listProjects, err := accountAPI.ListProjects(req, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}
+
 		for _, project := range listProjects.Projects {
 			// Do not delete default project
 			if project.ID == req.OrganizationID || !acctest.IsTestResource(project.Name) {
 				continue
 			}
+
 			err = accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
 				ProjectID: project.ID,
 			})
@@ -40,6 +43,7 @@ func testSweepAccountProject(_ string) error {
 				return fmt.Errorf("failed to delete project: %w", err)
 			}
 		}
+
 		return nil
 	})
 }

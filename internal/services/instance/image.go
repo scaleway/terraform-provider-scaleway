@@ -10,8 +10,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -176,7 +178,7 @@ func ResourceImage() *schema.Resource {
 }
 
 func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := newAPIWithZone(d, m)
+	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,28 +194,26 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	extraVolumesIDs, volumesExist := d.GetOk("additional_volume_ids")
 	if volumesExist {
-		snapResponses, err := getSnapshotsFromIDs(ctx, extraVolumesIDs.([]interface{}), instanceAPI)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.ExtraVolumes = expandImageExtraVolumesTemplates(snapResponses)
+		req.ExtraVolumes = expandImageExtraVolumesTemplates(locality.ExpandIDs(extraVolumesIDs))
 	}
+
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
 		req.Tags = types.ExpandStrings(tags)
 	}
+
 	if _, exist := d.GetOk("public"); exist {
 		req.Public = types.ExpandBoolPtr(types.GetBool(d, "public"))
 	}
 
-	res, err := instanceAPI.CreateImage(req, scw.WithContext(ctx))
+	res, err := api.CreateImage(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(zonal.NewIDString(zone, res.Image.ID))
 
-	_, err = instanceAPI.WaitForImage(&instanceSDK.WaitForImageRequest{
+	_, err = api.WaitForImage(&instanceSDK.WaitForImageRequest{
 		ImageID:       res.Image.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
@@ -239,8 +239,10 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -262,7 +264,7 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -275,15 +277,18 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
+
 	if d.HasChange("architecture") {
 		req.Arch = instanceSDK.Arch(d.Get("architecture").(string))
 	}
+
 	if d.HasChange("public") {
 		req.Public = types.ExpandBoolPtr(types.GetBool(d, "public"))
 	}
+
 	req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 
-	image, err := instanceAPI.GetImage(&instanceSDK.GetImageRequest{
+	image, err := api.GetImage(&instanceSDK.GetImageRequest{
 		Zone:    zone,
 		ImageID: id,
 	}, scw.WithContext(ctx))
@@ -292,11 +297,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("additional_volume_ids") {
-		snapResponses, err := getSnapshotsFromIDs(ctx, d.Get("additional_volume_ids").([]interface{}), instanceAPI)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.ExtraVolumes = expandImageExtraVolumesUpdateTemplates(snapResponses)
+		req.ExtraVolumes = expandImageExtraVolumesUpdateTemplates(locality.ExpandIDs(d.Get("additional_volume_ids")))
 	} else {
 		volTemplate := map[string]*instanceSDK.VolumeImageUpdateTemplate{}
 		for key, vol := range image.Image.ExtraVolumes {
@@ -304,6 +305,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 				ID: vol.ID,
 			}
 		}
+
 		req.ExtraVolumes = volTemplate
 	}
 
@@ -311,21 +313,22 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	if req.Name == nil {
 		req.Name = &image.Image.Name
 	}
+
 	if req.Arch == "" {
 		req.Arch = image.Image.Arch
 	}
 
-	_, err = waitForImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForImage(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = instanceAPI.UpdateImage(req, scw.WithContext(ctx))
+	_, err = api.UpdateImage(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't update image: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't update image: %w", err))
 	}
 
-	_, err = waitForImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForImage(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}

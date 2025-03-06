@@ -17,55 +17,71 @@ import (
 
 func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
 	}
+
 	if len(versions.Versions) > 1 {
 		latestK8SVersion := versions.Versions[0].Name
+
 		return latestK8SVersion
 	}
+
 	return ""
 }
 
 func testAccK8SClusterGetLatestK8SVersionMinor(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
 	}
+
 	if len(versions.Versions) > 1 {
 		latestK8SVersion := versions.Versions[0].Name
 		latestK8SVersionMinor, _ := k8s.GetMinorVersionFromFull(latestK8SVersion)
+
 		return latestK8SVersionMinor
 	}
+
 	return ""
 }
 
 func testAccK8SClusterGetPreviousK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
 	}
+
 	if len(versions.Versions) > 1 {
 		previousK8SVersion := versions.Versions[1].Name
+
 		return previousK8SVersion
 	}
+
 	return ""
 }
 
 func testAccK8SClusterGetPreviousK8SVersionMinor(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
 	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
 	}
+
 	if len(versions.Versions) > 1 {
 		previousK8SVersion := versions.Versions[1].Name
 		previousK8SVersionMinor, _ := k8s.GetMinorVersionFromFull(previousK8SVersion)
+
 		return previousK8SVersionMinor
 	}
+
 	return ""
 }
 
@@ -87,7 +103,19 @@ func TestAccCluster_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckK8SClusterConfigMinimal(previousK8SVersion),
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "minimal" {
+  name       = "test-minimal"
+}
+resource "scaleway_k8s_cluster" "minimal" {
+	cni = "calico"
+	version = "%s"
+	name = "test-minimal"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+	delete_additional_resources = false
+	private_network_id = scaleway_vpc_private_network.minimal.id
+	description = "terraform basic test cluster"
+}`, previousK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "version", previousK8SVersion),
@@ -102,10 +130,22 @@ func TestAccCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "description", "terraform basic test cluster"),
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterConfigMinimal(latestK8SVersion),
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "minimal" {
+  name       = "test-minimal"
+}
+resource "scaleway_k8s_cluster" "minimal" {
+	cni = "calico"
+	version = "%s"
+	name = "test-minimal"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+	delete_additional_resources = false
+	private_network_id = scaleway_vpc_private_network.minimal.id
+}`, latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "version", latestK8SVersion),
@@ -120,6 +160,7 @@ func TestAccCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "description", ""),
 				),
 			},
 		},
@@ -514,7 +555,7 @@ func testAccCheckK8SClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = k8sAPI.GetCluster(&k8sSDK.GetClusterRequest{
+			_, err = k8sAPI.WaitForCluster(&k8sSDK.WaitForClusterRequest{
 				Region:    region,
 				ClusterID: clusterID,
 			})
@@ -529,6 +570,7 @@ func testAccCheckK8SClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				return err
 			}
 		}
+
 		return nil
 	}
 }
@@ -592,27 +634,13 @@ func testAccCheckK8sClusterPrivateNetworkID(tt *acctest.TestTools, clusterName, 
 		if clusterPNID == nil {
 			return fmt.Errorf("expected %s private_network_id to be %s, got nil", clusterName, pnID)
 		}
+
 		if *clusterPNID != pnID {
 			return fmt.Errorf("expected %s private_network_id to be %s, got %s", clusterName, pnID, *clusterPNID)
 		}
 
 		return nil
 	}
-}
-
-func testAccCheckK8SClusterConfigMinimal(version string) string {
-	return fmt.Sprintf(`
-resource "scaleway_vpc_private_network" "minimal" {
-  name       = "test-minimal"
-}
-resource "scaleway_k8s_cluster" "minimal" {
-	cni = "calico"
-	version = "%s"
-	name = "test-minimal"
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
-	delete_additional_resources = false
-	private_network_id = scaleway_vpc_private_network.minimal.id
-}`, version)
 }
 
 func testAccCheckK8SClusterConfigAutoscaler(version string) string {
@@ -794,6 +822,7 @@ resource "scaleway_k8s_pool" "multicloud" {
 func testAccCheckK8SClusterTypeChange(clusterType, cni, version string) string {
 	config := ""
 	isKapsule := strings.HasPrefix(clusterType, "kapsule")
+
 	if isKapsule {
 		config = `
 resource "scaleway_vpc_private_network" "type-change" {

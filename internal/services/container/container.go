@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -129,6 +130,7 @@ func ResourceContainer() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
+				Deprecated:   "Use scaling_option.concurrent_requests_threshold instead. This attribute will be removed.",
 				Description:  "The maximum the number of simultaneous requests your container can handle at the same time.",
 				ValidateFunc: validation.IntAtMost(containerMaxConcurrencyLimit),
 			},
@@ -169,6 +171,69 @@ func ResourceContainer() *schema.Resource {
 				Computed:         true,
 				Description:      "Execution environment of the container.",
 				ValidateDiagFunc: verify.ValidateEnum[container.ContainerSandbox](),
+			},
+			"health_check": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Description: "Health check configuration of the container.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// TCP has not been implemented yet in the API SDK, that's why the parameter is not in the schema.
+						// See container.ContainerHealthCheckSpecTCPProbe.
+						"http": {
+							Type:        schema.TypeSet,
+							Description: "HTTP health check configuration.",
+							Required:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"path": {
+										Type:        schema.TypeString,
+										Description: "Path to use for the HTTP health check.",
+										Required:    true,
+									},
+								},
+							},
+						},
+						"failure_threshold": {
+							Type:        schema.TypeInt,
+							Description: "Number of consecutive health check failures before considering the container unhealthy.",
+							Required:    true,
+						},
+						"interval": {
+							Type:             schema.TypeString,
+							Description:      "Period between health checks.",
+							DiffSuppressFunc: dsf.Duration,
+							ValidateDiagFunc: verify.IsDuration(),
+							Required:         true,
+						},
+					},
+				},
+			},
+			"scaling_option": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Description: "Configuration used to decide when to scale up or down.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"concurrent_requests_threshold": {
+							Type:        schema.TypeInt,
+							Description: "Scale depending on the number of concurrent requests being processed per container instance.",
+							Optional:    true,
+						},
+						"cpu_usage_threshold": {
+							Type:        schema.TypeInt,
+							Description: "Scale depending on the CPU usage of a container instance.",
+							Optional:    true,
+						},
+						"memory_usage_threshold": {
+							Type:        schema.TypeInt,
+							Description: "Scale depending on the memory usage of a container instance.",
+							Optional:    true,
+						},
+					},
+				},
 			},
 			// computed
 			"status": {
@@ -228,6 +293,7 @@ func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m inte
 			ContainerID: res.ID,
 			Redeploy:    types.ExpandBoolPtr(shouldDeploy),
 		}
+
 		_, err = api.UpdateContainer(reqUpdate, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -254,8 +320,10 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 
@@ -280,6 +348,8 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("deploy", scw.BoolPtr(*types.ExpandBoolPtr(d.Get("deploy"))))
 	_ = d.Set("http_option", co.HTTPOption)
 	_ = d.Set("sandbox", co.Sandbox)
+	_ = d.Set("health_check", flattenHealthCheck(co.HealthCheck))
+	_ = d.Set("scaling_option", flattenScalingOption(co.ScalingOption))
 	_ = d.Set("region", co.Region.String())
 
 	return nil
@@ -352,7 +422,7 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if d.HasChanges("max_concurrency") {
-		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int)))
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int))) //nolint:staticcheck
 	}
 
 	if d.HasChanges("protocol") {
@@ -373,6 +443,28 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 
 	if d.HasChanges("sandbox") {
 		req.Sandbox = container.ContainerSandbox(d.Get("sandbox").(string))
+	}
+
+	if d.HasChanges("health_check") {
+		healthCheck := d.Get("health_check")
+
+		healthCheckReq, errExpandHealthCheck := expandHealthCheck(healthCheck)
+		if errExpandHealthCheck != nil {
+			return diag.FromErr(errExpandHealthCheck)
+		}
+
+		req.HealthCheck = healthCheckReq
+	}
+
+	if d.HasChanges("scaling_option") {
+		scalingOption := d.Get("scaling_option")
+
+		scalingOptionReq, err := expandScalingOptions(scalingOption)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.ScalingOption = scalingOptionReq
 	}
 
 	imageHasChanged := d.HasChanges("registry_sha256")

@@ -6,16 +6,18 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	instancetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
 func TestAccDataSourceVolume_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	volumeName := "tf-volume"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isVolumeDestroyed(tt),
+		CheckDestroy:      instancetestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -42,7 +44,7 @@ func TestAccDataSourceVolume_Basic(t *testing.T) {
 					}
 				`, volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					isVolumePresent(tt, "data.scaleway_instance_volume.test"),
+					instancetestfuncs.IsVolumePresent(tt, "data.scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "size_in_gb", "2"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "type", "l_ssd"),
 				),

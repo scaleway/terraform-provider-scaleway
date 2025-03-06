@@ -42,6 +42,7 @@ func DataSourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceDat
 	namespaceID, ok := d.GetOk("namespace_id")
 	if !ok {
 		namespaceName := d.Get("name").(string)
+
 		res, err := api.ListNamespaces(&container.ListNamespacesRequest{
 			Region:    region,
 			Name:      types.ExpandStringPtr(namespaceName),

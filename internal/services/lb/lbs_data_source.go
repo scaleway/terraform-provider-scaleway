@@ -167,6 +167,7 @@ func DataSourceLbsRead(ctx context.Context, d *schema.ResourceData, m interface{
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	res, err := lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
 		Zone:      zone,
 		Name:      types.ExpandStringPtr(d.Get("name")),
@@ -178,6 +179,7 @@ func DataSourceLbsRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	lbs := []interface{}(nil)
+
 	for _, loadbalancer := range res.LBs {
 		rawLb := make(map[string]interface{})
 		rawLb["id"] = zonal.NewID(loadbalancer.Zone, loadbalancer.ID).String()

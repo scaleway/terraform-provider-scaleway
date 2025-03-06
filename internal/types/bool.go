@@ -9,6 +9,7 @@ func FlattenBoolPtr(b *bool) interface{} {
 	if b == nil {
 		return nil
 	}
+
 	return *b
 }
 
@@ -16,6 +17,7 @@ func ExpandBoolPtr(data interface{}) *bool {
 	if data == nil {
 		return nil
 	}
+
 	return scw.BoolPtr(data.(bool))
 }
 
@@ -24,5 +26,6 @@ func GetBool(d *schema.ResourceData, key string) interface{} {
 	if !ok {
 		return nil
 	}
+
 	return val
 }

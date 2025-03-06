@@ -127,8 +127,10 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -144,6 +146,7 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("destination", destination)
 
 	if len(res.Tags) > 0 {

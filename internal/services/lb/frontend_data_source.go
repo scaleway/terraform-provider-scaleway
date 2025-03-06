@@ -44,6 +44,7 @@ func DataSourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m int
 	frontID, ok := d.GetOk("frontend_id")
 	if !ok { // Get LB by name.
 		frontName := d.Get("name").(string)
+
 		res, err := api.ListFrontends(&lbSDK.ZonedAPIListFrontendsRequest{
 			Zone: zone,
 			Name: types.ExpandStringPtr(frontName),
@@ -64,11 +65,14 @@ func DataSourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m int
 
 		frontID = foundFront.ID
 	}
+
 	zonedID := datasource.NewZonedID(frontID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("frontend_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return resourceLbFrontendRead(ctx, d, m)
 }

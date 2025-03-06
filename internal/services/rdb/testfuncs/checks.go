@@ -45,19 +45,23 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 func GetLatestEngineVersion(tt *acctest.TestTools, engineName string) string {
 	api := rdbSDK.NewAPI(tt.Meta.ScwClient())
+
 	engines, err := api.ListDatabaseEngines(&rdbSDK.ListDatabaseEnginesRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latest engine version: %s", err)
 	}
 
 	latestEngineVersion := ""
+
 	for _, engine := range engines.Engines {
 		if engine.Name == engineName {
 			if len(engine.Versions) > 0 {
 				latestEngineVersion = engine.Versions[0].Name
+
 				break
 			}
 		}
 	}
+
 	return latestEngineVersion
 }

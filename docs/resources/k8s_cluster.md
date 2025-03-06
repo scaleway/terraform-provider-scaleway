@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_k8s_cluster"
 
 # Resource: scaleway_k8s_cluster
 
-Creates and manages Scaleway Kubernetes clusters. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
+Creates and manages Scaleway Kubernetes clusters. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
 
 ## Example Usage
 
@@ -127,7 +127,7 @@ provider "kubernetes" {
 }
 ```
 
-The `null_resource` is needed because when the cluster is created, it's status is `pool_required`, but the kubeconfig can already be downloaded.
+The `null_resource` is needed because when the cluster is created, its status is `pool_required`, but the kubeconfig can already be downloaded.
 It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
 
 ### With the Helm provider

@@ -88,6 +88,7 @@ func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	res, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{
 		Zone:      zone,
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
@@ -99,6 +100,7 @@ func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	var filteredList []*lb.IP
+
 	if cidrRange, ok := d.GetOk("ip_cidr_range"); ok {
 		for i := range res.IPs {
 			if ipv4Match(cidrRange.(string), res.IPs[i].IPAddress) {
@@ -110,6 +112,7 @@ func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	ips := []interface{}(nil)
+
 	for _, ip := range filteredList {
 		rawIP := make(map[string]interface{})
 		rawIP["id"] = zonal.NewID(ip.Zone, ip.ID).String()
@@ -119,6 +122,7 @@ func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interfac
 		rawIP["zone"] = string(zone)
 		rawIP["organization_id"] = ip.OrganizationID
 		rawIP["project_id"] = ip.ProjectID
+
 		if len(ip.Tags) > 0 {
 			rawIP["tags"] = ip.Tags
 		}

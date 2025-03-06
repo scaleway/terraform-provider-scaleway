@@ -149,6 +149,7 @@ func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	routes := []interface{}(nil)
+
 	for _, route := range res.Routes {
 		rawRoute := make(map[string]interface{})
 		if route.Route != nil {
@@ -164,12 +165,14 @@ func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m interfa
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			rawRoute["destination"] = destination
 
 			if len(route.Route.Tags) > 0 {
 				rawRoute["tags"] = route.Route.Tags
 			}
 		}
+
 		rawRoute["nexthop_ip"] = types.FlattenIPPtr(route.NexthopIP)
 		rawRoute["nexthop_name"] = types.FlattenStringPtr(route.NexthopName)
 		rawRoute["nexthop_resource_type"] = route.NexthopResourceType.String()

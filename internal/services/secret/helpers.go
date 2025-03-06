@@ -29,6 +29,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.R
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, region, nil
 }
 
@@ -42,6 +43,7 @@ func newAPIWithRegionOptionalProjectIDAndDefault(d *schema.ResourceData, m inter
 	}
 
 	var projectIDPtr *string
+
 	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err == nil {
 		projectIDPtr = &projectID
@@ -60,6 +62,7 @@ func newAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*secre
 	}
 
 	var projectIDPtr *string
+
 	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err == nil {
 		projectIDPtr = &projectID
@@ -76,6 +79,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, s
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, region, id, nil
 }
 
@@ -85,12 +89,15 @@ func NewVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Re
 	if err != nil {
 		return nil, "", "", "", err
 	}
+
 	api := secret.NewAPI(meta.ExtractScwClient(m))
+
 	return api, scw.Region(region), id, revision, nil
 }
 
 func isBase64Encoded(data []byte) bool {
 	_, err := base64.StdEncoding.DecodeString(string(data))
+
 	return err == nil
 }
 
@@ -98,6 +105,7 @@ func Base64Encoded(data []byte) string {
 	if isBase64Encoded(data) {
 		return string(data)
 	}
+
 	return base64.StdEncoding.EncodeToString(data)
 }
 
@@ -141,11 +149,12 @@ func expandEphemeralPolicy(rawSchemaPolicy any) (*secret.EphemeralPolicy, error)
 	if len(rawList) != 1 {
 		return nil, fmt.Errorf("expected 1 policy, found %d", len(rawList))
 	}
+
 	rawPolicy := rawList[0].(map[string]interface{})
 
 	ttl, err := types.ExpandDuration(rawPolicy["ttl"])
 	if err != nil {
-		return nil, fmt.Errorf("error parsing ttl: %s", err)
+		return nil, fmt.Errorf("error parsing ttl: %w", err)
 	}
 
 	policy := &secret.EphemeralPolicy{
@@ -164,13 +173,16 @@ func flattenEphemeralPolicy(policy *secret.EphemeralPolicy) []map[string]interfa
 	if policy == nil {
 		return nil
 	}
+
 	policyElem := map[string]interface{}{}
 	if policy.TimeToLive != nil {
 		policyElem["ttl"] = types.FlattenDuration(policy.TimeToLive.ToTimeDuration())
 	}
+
 	if policy.ExpiresOnceAccessed != nil {
 		policyElem["expires_once_accessed"] = types.FlattenBoolPtr(policy.ExpiresOnceAccessed)
 	}
+
 	policyElem["action"] = policy.Action
 
 	return []map[string]interface{}{policyElem}

@@ -35,6 +35,7 @@ func GetStringListsFromState(key string, d *schema.ResourceData) ([]string, []st
 	for i, v := range oldList.([]interface{}) {
 		oldListStr[i] = fmt.Sprint(v)
 	}
+
 	for i, v := range newList.([]interface{}) {
 		newListStr[i] = fmt.Sprint(v)
 	}

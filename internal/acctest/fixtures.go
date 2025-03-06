@@ -64,6 +64,7 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
 
 	projectAPI := account.NewProjectAPI(tt.Meta.ScwClient())
+
 	project, err := projectAPI.CreateProject(&account.ProjectAPICreateProjectRequest{
 		Name: projectName,
 	})
@@ -74,6 +75,7 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 
 		return nil, nil, nil, err
 	}
+
 	terminateFunctions = append(terminateFunctions, func() error {
 		return projectAPI.DeleteProject(&account.ProjectAPIDeleteProjectRequest{
 			ProjectID: project.ID,
@@ -81,6 +83,7 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 	})
 
 	iamAPI := iam.NewAPI(tt.Meta.ScwClient())
+
 	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
 		Name: iamApplicationName,
 	})
@@ -91,6 +94,7 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 
 		return nil, nil, nil, err
 	}
+
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
 			ApplicationID: iamApplication.ID,
@@ -114,6 +118,7 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 
 		return nil, nil, nil, err
 	}
+
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
 			PolicyID: iamPolicy.ID,
@@ -131,6 +136,7 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 
 		return nil, nil, nil, err
 	}
+
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
 			AccessKey: iamAPIKey.AccessKey,
@@ -163,6 +169,7 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
 
 	projectAPI := account.NewProjectAPI(tt.Meta.ScwClient())
+
 	project, err := projectAPI.CreateProject(&account.ProjectAPICreateProjectRequest{
 		Name: projectName,
 	})
@@ -173,6 +180,7 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 
 		return nil, nil, nil, err
 	}
+
 	terminateFunctions = append(terminateFunctions, func() error {
 		return projectAPI.DeleteProject(&account.ProjectAPIDeleteProjectRequest{
 			ProjectID: project.ID,
@@ -180,6 +188,7 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 	})
 
 	iamAPI := iam.NewAPI(tt.Meta.ScwClient())
+
 	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
 		Name: iamApplicationName,
 	})
@@ -190,6 +199,7 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 
 		return nil, nil, nil, err
 	}
+
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
 			ApplicationID: iamApplication.ID,
@@ -213,6 +223,7 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 
 		return nil, nil, nil, err
 	}
+
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
 			PolicyID: iamPolicy.ID,
@@ -230,6 +241,7 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 
 		return nil, nil, nil, err
 	}
+
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
 			AccessKey: iamAPIKey.AccessKey,

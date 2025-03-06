@@ -33,6 +33,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*redis.API, scw.Zone
 	if err != nil {
 		return nil, "", err
 	}
+
 	return newAPI(m), zone, nil
 }
 
@@ -42,6 +43,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return newAPI(m), zone, ID, nil
 }
 

@@ -20,11 +20,13 @@ func AddTestSweepers() {
 func testSweepNamespace(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		registryAPI := registrySDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the registry namespaces in (%s)", region)
+
 		listNamespaces, err := registryAPI.ListNamespaces(
 			&registrySDK.ListNamespacesRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, ns := range listNamespaces.Namespaces {
@@ -35,7 +37,7 @@ func testSweepNamespace(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
+				return fmt.Errorf("error deleting namespace in sweeper: %w", err)
 			}
 		}
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -29,7 +29,7 @@ func DataSourceBucketPolicy() *schema.Resource {
 }
 
 func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -37,32 +37,36 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
+
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(d, m, bucketRegion.String())
+		s3Client, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
+
 	_ = d.Set("region", region)
 
 	tflog.Debug(ctx, "[DEBUG] SCW bucket policy, read for bucket: "+d.Id())
-	policy, err := s3Client.GetBucketPolicyWithContext(ctx, &s3.GetBucketPolicyInput{
+
+	policy, err := s3Client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		if tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, s3.ErrCodeNoSuchBucket) {
+		if tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, ErrCodeNoSuchBucket) {
 			return diag.FromErr(fmt.Errorf("bucket %s doesn't exist or has no policy", bucket))
 		}
 
-		return diag.FromErr(fmt.Errorf("couldn't read bucket %s policy: %s", bucket, err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket %s policy: %w", bucket, err))
 	}
 
 	policyString := "{}"
 	if err == nil && policy.Policy != nil {
-		policyString = aws.StringValue(policy.Policy)
+		policyString = aws.ToString(policy.Policy)
 	}
 
 	policyJSON, err := structure.NormalizeJsonString(policyString)
@@ -72,14 +76,16 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("policy", policyJSON)
 
-	acl, err := s3Client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
 	}
+
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	d.SetId(regional.NewIDString(region, bucket))
+
 	return nil
 }

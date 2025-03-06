@@ -31,15 +31,17 @@ func DataSourceCockpitPlanRead(ctx context.Context, d *schema.ResourceData, m in
 
 	name := d.Get("name").(string)
 
-	res, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+	res, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var plan *cockpit.Plan
+
 	for _, p := range res.Plans {
 		if p.Name.String() == name {
 			plan = p
+
 			break
 		}
 	}

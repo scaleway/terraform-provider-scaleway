@@ -103,15 +103,17 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 	if targetPlanI, ok := d.GetOk("plan"); ok {
 		targetPlan := targetPlanI.(string)
 
-		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		var planName string
+
 		for _, plan := range plans.Plans {
 			if plan.Name.String() == targetPlan {
 				planName = plan.Name.String()
+
 				break
 			}
 		}
@@ -120,7 +122,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 			return diag.Errorf("plan %s not found", targetPlan)
 		}
 
-		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{
+		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{ //nolint:staticcheck
 			ProjectID: projectID,
 			PlanName:  cockpit.PlanName(planName),
 		}, scw.WithContext(ctx))
@@ -151,12 +153,13 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 		}
 	}
 
-	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{
+	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{ //nolint:staticcheck
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("plan", res.Name.String())
 	_ = d.Set("plan_id", res.Name.String())
 
@@ -168,6 +171,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("project_id", projectID)
 	d.SetId(projectID)
 
@@ -177,6 +181,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if grafana.GrafanaURL == "" {
 		grafana.GrafanaURL = createGrafanaURL(projectID, region)
 	}
@@ -187,6 +192,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	alertManagerURL := ""
 	if alertManager.AlertManagerURL != nil {
 		alertManagerURL = *alertManager.AlertManagerURL
@@ -214,15 +220,17 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			targetPlan = targetPlanI.(string)
 		}
 
-		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		var planName string
+
 		for _, plan := range plans.Plans {
 			if plan.Name.String() == targetPlan {
 				planName = plan.Name.String()
+
 				break
 			}
 		}
@@ -231,7 +239,7 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			return diag.Errorf("plan %s not found", targetPlan)
 		}
 
-		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{
+		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{ //nolint:staticcheck
 			ProjectID: projectID,
 			PlanName:  cockpit.PlanName(planName),
 		}, scw.WithContext(ctx))

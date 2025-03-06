@@ -695,6 +695,7 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 	})
 }
 
+// TODO: Refactor this test when rdb is ipam-compatible
 func TestAccInstance_PrivateNetwork_DHCP(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -708,63 +709,77 @@ func TestAccInstance_PrivateNetwork_DHCP(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network"
-						region= "nl-ams"
+					resource "scaleway_vpc" "vpc01" {
+					  name   = "my vpc"
+					  region = "nl-ams"
 					}
-
-					resource scaleway_vpc_public_gateway_dhcp main {
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  name   = "my_private_network"
+					  vpc_id = scaleway_vpc.vpc01.id
+					  ipv4_subnet {
 						subnet = "192.168.1.0/24"
-						zone = "nl-ams-1"
+					  }
+					  region = "nl-ams"
 					}
-
-					resource scaleway_vpc_public_gateway_ip main {
-						zone = "nl-ams-1"
+					
+					data "scaleway_ipam_ip" "ip01" {
+					  resource {
+						id   = scaleway_vpc_gateway_network.main.id
+						type = "vpc_gateway_network"
+					  }
+					  type = "ipv4"
+					  region = "nl-ams"
 					}
-
-					resource scaleway_vpc_public_gateway main {
-						name = "foobar"
-						type = "VPC-GW-S"
-						zone = "nl-ams-1"
-						ip_id = scaleway_vpc_public_gateway_ip.main.id
+					
+					resource "scaleway_vpc_public_gateway_ip" "main" {
+					  zone = "nl-ams-1"
 					}
-
-					resource scaleway_vpc_public_gateway_pat_rule main {
-						gateway_id = scaleway_vpc_public_gateway.main.id
-						private_ip = scaleway_vpc_public_gateway_dhcp.main.address
-						private_port = scaleway_rdb_instance.main.private_network.0.port
-						public_port = 42
-						protocol = "both"
-						zone = "nl-ams-1"
-						depends_on = [scaleway_vpc_gateway_network.main, scaleway_vpc_private_network.pn02]
+					
+					resource "scaleway_vpc_public_gateway" "main" {
+					  name  = "foobar"
+					  type  = "VPC-GW-S"
+					  zone  = "nl-ams-1"
+					  ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
-
-					resource scaleway_vpc_gateway_network main {
-						gateway_id = scaleway_vpc_public_gateway.main.id
-						private_network_id = scaleway_vpc_private_network.pn02.id
-						dhcp_id = scaleway_vpc_public_gateway_dhcp.main.id
-						cleanup_dhcp = true
-						enable_masquerade = true
-						zone = "nl-ams-1"
-						depends_on = [scaleway_vpc_public_gateway_ip.main, scaleway_vpc_private_network.pn02]
+					
+					resource "scaleway_vpc_public_gateway_pat_rule" "main" {
+					  gateway_id   = scaleway_vpc_public_gateway.main.id
+					  private_ip   = data.scaleway_ipam_ip.ip01.address
+					  private_port = scaleway_rdb_instance.main.private_network.0.port
+					  public_port  = 42
+					  protocol     = "both"
+					  zone         = "nl-ams-1"
+					  depends_on   = [scaleway_vpc_gateway_network.main, scaleway_vpc_private_network.pn01]
 					}
-
-					resource scaleway_rdb_instance main {
-						name = "test-rdb-private-network-dhcp"
-						node_type = "db-dev-s"
-						engine = %q
-						is_ha_cluster = false
-						disable_backup = true
-						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
-						region= "nl-ams"
-						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
-						volume_size_in_gb = 10
-						private_network {
-							ip_net = "192.168.1.254/24" #pool high
-							pn_id = "${scaleway_vpc_private_network.pn02.id}"
-						}
+					
+					resource "scaleway_vpc_gateway_network" "main" {
+					  gateway_id         = scaleway_vpc_public_gateway.main.id
+					  private_network_id = scaleway_vpc_private_network.pn01.id
+					  ipam_config {
+						push_default_route = true
+					  }
+					  enable_masquerade = true
+					  zone              = "nl-ams-1"
+					  depends_on        = [scaleway_vpc_public_gateway_ip.main, scaleway_vpc_private_network.pn01]
+					}
+					
+					resource "scaleway_rdb_instance" "main" {
+					  name              = "test-rdb-private-network-dhcp"
+					  node_type         = "db-dev-s"
+					  engine            = %q
+					  is_ha_cluster     = false
+					  disable_backup    = true
+					  user_name         = "my_initial_user"
+					  password          = "thiZ_is_v&ry_s3cret"
+					  region            = "nl-ams"
+					  tags              = ["terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn"]
+					  volume_type       = "bssd"
+					  volume_size_in_gb = 10
+					  private_network {
+						ip_net = "192.168.1.254/24" #pool high
+						pn_id  = scaleway_vpc_private_network.pn01.id
+					  }
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
@@ -774,23 +789,32 @@ func TestAccInstance_PrivateNetwork_DHCP(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network"
-						region= "nl-ams"
+					resource "scaleway_vpc" "vpc01" {
+					  name   = "my vpc"
+					  region = "nl-ams"
 					}
-
-					resource scaleway_rdb_instance main {
-						name = "test-rdb-private-network-dhcp"
-						node_type = "db-dev-s"
-						engine = %q
-						is_ha_cluster = false
-						disable_backup = true
-						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
-						region= "nl-ams"
-						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
-						volume_size_in_gb = 10
+					
+					resource "scaleway_vpc_private_network" "pn01" {
+					  name   = "my_private_network"
+					  vpc_id = scaleway_vpc.vpc01.id
+					  ipv4_subnet {
+						subnet = "192.168.1.0/24"
+					  }
+					  region = "nl-ams"
+					}
+					
+					resource "scaleway_rdb_instance" "main" {
+					  name              = "test-rdb-private-network-dhcp"
+					  node_type         = "db-dev-s"
+					  engine            = %q
+					  is_ha_cluster     = false
+					  disable_backup    = true
+					  user_name         = "my_initial_user"
+					  password          = "thiZ_is_v&ry_s3cret"
+					  region            = "nl-ams"
+					  tags              = ["terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn"]
+					  volume_type       = "bssd"
+					  volume_size_in_gb = 10
 					}
 				`, latestEngineVersion),
 			},
@@ -1298,6 +1322,158 @@ func TestAccInstance_EncryptionAtRestFalse(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "no_encryption"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_UpdateEncryptionAtRest(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Step 1: Create without encryption
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name               = "test-rdb-update-encryption"
+						node_type          = "db-dev-s"
+						engine             = %q
+						is_ha_cluster      = false
+						disable_backup     = true
+						user_name          = "user_no_enc"
+						password           = "thiZ_is_v&ry_s3cret"
+						encryption_at_rest = false
+						tags               = [ "terraform-test", "no-encryption" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "encryption_at_rest", "false"),
+				),
+			},
+			// Step 2: Update encryption to true
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name               = "test-rdb-update-encryption"
+						node_type          = "db-dev-s"
+						engine             = %q
+						is_ha_cluster      = false
+						disable_backup     = true
+						user_name          = "user_enc"
+						password           = "thiZ_is_v&ry_s3cret"
+						encryption_at_rest = true
+						tags               = [ "terraform-test", "with-encryption" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "encryption_at_rest", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_CompleteWorkflow(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Step 1: Create an instance and a snapshot
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-instance"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "scaleway_rdb_instance"]
+						volume_type    = "bssd"
+						volume_size_in_gb = 10
+					}
+
+					resource "scaleway_rdb_snapshot" "test" {
+						name        = "test-snapshot"
+						instance_id = scaleway_rdb_instance.main.id
+						depends_on  = [scaleway_rdb_instance.main]
+					}
+
+					resource "scaleway_rdb_instance" "from_snapshot" {
+						name           = "test-instance-from-snapshot"
+						node_type      = "db-dev-s"
+						is_ha_cluster  = false
+						disable_backup = true
+						snapshot_id    = scaleway_rdb_snapshot.test.id
+						volume_type    = "bssd"
+						tags           = ["terraform-test", "restored_instance"]
+						depends_on     = [scaleway_rdb_snapshot.test]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "name", "test-instance-from-snapshot"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "tags.1", "restored_instance"),
+				),
+			},
+			// Step 2: Update the instance created from the snapshot
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-instance"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "scaleway_rdb_instance"]
+						volume_type    = "bssd"
+						volume_size_in_gb = 10
+					}
+
+					resource "scaleway_rdb_snapshot" "test" {
+						name        = "test-snapshot"
+						instance_id = scaleway_rdb_instance.main.id
+						depends_on  = [scaleway_rdb_instance.main]
+					}
+
+					resource "scaleway_rdb_instance" "from_snapshot" {
+						name           = "test-instance-from-snapshot-updated"
+						node_type      = "db-dev-s"
+						is_ha_cluster  = false
+						disable_backup = true
+						snapshot_id    = scaleway_rdb_snapshot.test.id
+						volume_type    = "bssd"
+						user_name      = "updated_user"
+						password       = "thiZ_is_v&ry_s3cret2"
+						tags           = ["terraform-test", "updated_instance"]
+						depends_on     = [scaleway_rdb_snapshot.test]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "name", "test-instance-from-snapshot-updated"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "user_name", "updated_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "tags.1", "updated_instance"),
 				),
 			},
 		},

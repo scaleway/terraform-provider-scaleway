@@ -60,12 +60,15 @@ func DataSourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if res.TotalCount == 0 {
 			return diag.FromErr(errors.New("no gateway network found with the filters"))
 		}
+
 		if res.TotalCount > 1 {
 			return diag.FromErr(fmt.Errorf("%d gateway networks found with filters", res.TotalCount))
 		}
+
 		gatewayNetworkID = res.GatewayNetworks[0].ID
 	}
 

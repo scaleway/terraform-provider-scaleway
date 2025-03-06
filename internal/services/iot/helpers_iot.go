@@ -33,6 +33,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, stri
 	iotAPI := iot.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)
+
 	return iotAPI, region, ID, err
 }
 
@@ -60,6 +61,7 @@ func extractRestHeaders(d *schema.ResourceData, key string) map[string]string {
 	for k, v := range data {
 		stringMap[k] = v.(string)
 	}
+
 	return stringMap
 }
 
@@ -67,6 +69,7 @@ func computeIotHubCaURL(productPlan iot.HubProductPlan, region scw.Region) strin
 	if productPlan == "plan_shared" || productPlan == "plan_unknown" {
 		return ""
 	}
+
 	return mqttCaURLDownload + string(region) + "/" + mqttCaFileName
 }
 
@@ -74,13 +77,18 @@ func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m interface{}) (
 	if mqttCaURL == "" {
 		return "", nil
 	}
+
 	var mqttCa *http.Response
+
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, mqttCaURL, nil)
+
 	mqttCa, err := meta.ExtractHTTPClient(m).Do(req)
 	if err != nil {
 		return "", err
 	}
+
 	defer mqttCa.Body.Close()
 	resp, _ := io.ReadAll(mqttCa.Body)
+
 	return string(resp), nil
 }

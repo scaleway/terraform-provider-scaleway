@@ -181,8 +181,10 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -244,6 +246,7 @@ func ResourceSecretUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		hasChanged = true
 	}
 

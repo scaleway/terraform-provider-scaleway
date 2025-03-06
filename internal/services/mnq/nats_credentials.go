@@ -42,6 +42,7 @@ func ResourceNatsCredentials() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The credentials file",
+				Sensitive:   true,
 			},
 			"region": regional.Schema(),
 		},
@@ -83,8 +84,10 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

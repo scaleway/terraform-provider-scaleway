@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	sdkValidation "github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -63,6 +65,7 @@ func ResourceServer() *schema.Resource {
 					}
 					// if the offer was provided by name
 					offerName, ok := d.GetOk("offer_name")
+
 					return ok && newValue == offerName
 				},
 			},
@@ -220,6 +223,16 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 								return locality.ExpandID(i.(string))
 							},
 						},
+						"ipam_ip_ids": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type:             schema.TypeString,
+								ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+							},
+							Description: "List of IPAM IP IDs to attach to the server",
+						},
 						// computed
 						"vlan": {
 							Type:        schema.TypeInt,
@@ -244,7 +257,13 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					},
 				},
 			},
+			"partitioning": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The partitioning schema in json format",
+			},
 		},
+
 		CustomizeDiff: customdiff.Sequence(
 			cdf.LocalityCheck("private_network.#.id"),
 			customDiffPrivateNetworkOption(),
@@ -299,54 +318,60 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		offerID = zonal.NewID(zone, o.ID)
 	}
 
-	if !d.Get("install_config_afterward").(bool) {
-		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
-			return diags
-		}
-	}
-
-	server, err := api.CreateServer(&baremetal.CreateServerRequest{
+	req := &baremetal.CreateServerRequest{
 		Zone:        zone,
 		Name:        types.ExpandOrGenerateString(d.Get("name"), "bm"),
 		ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
 		Description: d.Get("description").(string),
 		OfferID:     offerID.ID,
 		Tags:        types.ExpandStrings(d.Get("tags")),
-	}, scw.WithContext(ctx))
+	}
+
+	partitioningSchema := baremetal.Schema{}
+
+	if file, ok := d.GetOk("partitioning"); ok || !d.Get("install_config_afterward").(bool) {
+		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
+			return diags
+		}
+
+		if file != "" {
+			todecode, _ := file.(string)
+
+			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		req.Install = &baremetal.CreateServerRequestInstall{
+			OsID:               zonal.ExpandID(d.Get("os")).ID,
+			Hostname:           d.Get("hostname").(string),
+			SSHKeyIDs:          types.ExpandStrings(d.Get("ssh_key_ids")),
+			User:               types.ExpandStringPtr(d.Get("user")),
+			Password:           types.ExpandStringPtr(d.Get("password")),
+			PartitioningSchema: &partitioningSchema,
+		}
+	}
+
+	server, err := api.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(zonal.NewID(server.Zone, server.ID).String())
 
-	_, err = waitForServer(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
+	if d.Get("install_config_afterward").(bool) {
+		_, err = waitForServer(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
+	} else {
+		_, err = waitForServerInstall(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
 	}
 
-	if !d.Get("install_config_afterward").(bool) {
-		_, err = api.InstallServer(&baremetal.InstallServerRequest{
-			Zone:            server.Zone,
-			ServerID:        server.ID,
-			OsID:            zonal.ExpandID(d.Get("os")).ID,
-			Hostname:        types.ExpandStringWithDefault(d.Get("hostname"), server.Name),
-			SSHKeyIDs:       types.ExpandStrings(d.Get("ssh_key_ids")),
-			User:            types.ExpandStringPtr(d.Get("user")),
-			Password:        types.ExpandStringPtr(d.Get("password")),
-			ServiceUser:     types.ExpandStringPtr(d.Get("service_user")),
-			ServicePassword: types.ExpandStringPtr(d.Get("service_password")),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForServerInstall(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	options, optionsExist := d.GetOk("options")
@@ -355,6 +380,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		for i := range opSpecs {
 			_, err = api.AddOptionServer(&baremetal.AddOptionServerRequest{
 				Zone:      server.Zone,
@@ -370,10 +396,10 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	privateNetworkIDs, pnExist := d.GetOk("private_network")
 	if pnExist {
-		createBaremetalPrivateNetworkRequest := &baremetal.PrivateNetworkAPISetServerPrivateNetworksRequest{
-			Zone:              zone,
-			ServerID:          server.ID,
-			PrivateNetworkIDs: expandPrivateNetworks(privateNetworkIDs),
+		createBaremetalPrivateNetworkRequest := &baremetalV3.PrivateNetworkAPISetServerPrivateNetworksRequest{
+			Zone:                       zone,
+			ServerID:                   server.ID,
+			PerPrivateNetworkIpamIPIDs: expandPrivateNetworks(privateNetworkIDs),
 		}
 
 		baremetalPrivateNetwork, err := privateNetworkAPI.SetServerPrivateNetworks(
@@ -411,8 +437,10 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -447,6 +475,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("ips", flattenIPs(server.IPs))
 	_ = d.Set("ipv4", flattenIPv4s(server.IPs))
 	_ = d.Set("ipv6", flattenIPv6s(server.IPs))
+
 	if server.Install != nil {
 		_ = d.Set("os", zonal.NewIDString(server.Zone, os.ID))
 		_ = d.Set("os_name", os.Name)
@@ -454,20 +483,23 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 		_ = d.Set("user", server.Install.User)
 		_ = d.Set("service_user", server.Install.ServiceUser)
 	}
+
 	_ = d.Set("description", server.Description)
 	_ = d.Set("options", flattenOptions(server.Zone, server.Options))
 
-	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&baremetal.PrivateNetworkAPIListServerPrivateNetworksRequest{
+	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&baremetalV3.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     server.Zone,
 		ServerID: &server.ID,
 	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to list server's private networks: %w", err))
 	}
+
 	pnRegion, err := server.Zone.Region()
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("private_network", flattenPrivateNetworks(pnRegion, listPrivateNetworks.ServerPrivateNetworks))
 
 	return nil
@@ -501,6 +533,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		optionsToDelete := compareOptions(options, serverGetOptionIDs)
 		for i := range optionsToDelete {
 			_, err = api.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
@@ -533,12 +566,12 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if d.HasChange("private_network") {
-		privateNetworkIDs := d.Get("private_network")
+		privateNetworks := d.Get("private_network")
 
-		updateBaremetalPrivateNetworkRequest := &baremetal.PrivateNetworkAPISetServerPrivateNetworksRequest{
-			Zone:              zone,
-			ServerID:          server.ID,
-			PrivateNetworkIDs: expandPrivateNetworks(privateNetworkIDs),
+		updateBaremetalPrivateNetworkRequest := &baremetalV3.PrivateNetworkAPISetServerPrivateNetworksRequest{
+			Zone:                       zone,
+			ServerID:                   server.ID,
+			PerPrivateNetworkIpamIPIDs: expandPrivateNetworks(privateNetworks),
 		}
 
 		baremetalPrivateNetwork, err := privateNetworkAPI.SetServerPrivateNetworks(
@@ -599,6 +632,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 			return diags
 		}
+
 		err = installServer(ctx, d, api, installReq)
 		if err != nil {
 			return diag.FromErr(err)
@@ -624,6 +658,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 				return diags
 			}
+
 			err = installServer(ctx, d, api, installReq)
 			if err != nil {
 				return diag.FromErr(err)
@@ -658,6 +693,7 @@ func ResourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -675,6 +711,7 @@ func installAttributeMissing(field *baremetal.OSOSField, d *schema.ResourceData,
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -694,6 +731,7 @@ func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	diags := diag.Diagnostics(nil)
+
 	installAttributes := []struct {
 		Attribute string
 		Field     *baremetal.OSOSField
@@ -725,5 +763,6 @@ func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interf
 			})
 		}
 	}
+
 	return diags
 }

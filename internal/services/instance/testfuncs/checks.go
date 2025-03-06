@@ -6,10 +6,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 )
 
 func CheckIPExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
@@ -68,6 +72,47 @@ func IsServerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	}
 }
 
+func IsServerRootVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_server" {
+				continue
+			}
+
+			localizedRootVolumeID, exists := rs.Primary.Attributes["root_volume.0.volume_id"]
+			if !exists {
+				return fmt.Errorf("root_volume ID not found in resource %s", rs.Primary.ID)
+			}
+
+			zone, _, err := locality.ParseLocalizedID(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			rootVolumeID := locality.ExpandID(localizedRootVolumeID)
+
+			api := instancehelpers.NewBlockAndInstanceAPI(meta.ExtractScwClient(tt.Meta))
+
+			_, err = api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
+				VolumeID: rootVolumeID,
+				Zone:     scw.Zone(zone),
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("server's root volume (%s) still exists", rootVolumeID)
+			}
+
+			// Unexpected api error we return it
+			if !httperrors.Is404(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
 func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
@@ -107,11 +152,14 @@ func DoesImageExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
+
 		zone, ID, err := zonal.ParseID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
+
 		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
 		_, err = instanceAPI.GetImage(&instanceSDK.GetImageRequest{
 			ImageID: ID,
 			Zone:    zone,
@@ -119,6 +167,68 @@ func DoesImageExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
+
+		return nil
+	}
+}
+
+func IsVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		zone, id, err := zonal.ParseID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
+		_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
+			VolumeID: id,
+			Zone:     zone,
+		})
+		if err != nil {
+			return fmt.Errorf("volume (%s) not found: %w", id, err)
+		}
+
+		return nil
+	}
+}
+
+func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_volume" {
+				continue
+			}
+
+			zone, id, err := zonal.ParseID(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
+				Zone:     zone,
+				VolumeID: id,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("volume (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !httperrors.Is404(err) {
+				return err
+			}
+		}
+
 		return nil
 	}
 }

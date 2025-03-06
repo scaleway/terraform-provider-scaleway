@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_iam_policy"
 
 Creates and manages Scaleway IAM Policies. For more information refer to the [IAM API documentation](https://www.scaleway.com/en/developers/api/iam/#path-policies-create-a-new-policy).
 
--> You can find a detailed list of all permission sets available at Scaleway in the permission sets [reference page](https://www.scaleway.com/en/docs/identity-and-access-management/iam/reference-content/permission-sets/).
+-> You can find a detailed list of all permission sets available at Scaleway in the permission sets [reference page](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/).
 
 ## Example Usage
 
@@ -117,7 +117,6 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the IAM policy.
 - `description` - (Optional) The description of the IAM policy.
-- `condition` - (Optional) The condition of the IAM policy.
 - `tags` - (Optional) The tags associated with the IAM policy.
 - `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the policy is associated with.
 - `user_id` - ID of the user the policy will be linked to
@@ -135,11 +134,12 @@ The following arguments are supported:
     ~> **Important** One `organization_id` or `project_ids` must be set per rule.
 
     - `permission_set_names` - Names of permission sets bind to the rule.
+    - `condition` - (Optional) The condition of the rule.
 
   **_TIP:_** You can use the Scaleway CLI to list the permissions details. e.g:
 
 ```shell
-   scw IAM permission-set list
+   scw iam permission-set list
 ```
 
 ## Attributes Reference

@@ -4,15 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	awstype "github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	smithylogging "github.com/aws/smithy-go/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -33,7 +35,15 @@ const (
 	DefaultQueueVisibilityTimeout             = 30
 )
 
-func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.Region, error) {
+type httpDebugLogger struct{}
+
+func (h *httpDebugLogger) Logf(classification smithylogging.Classification, format string, v ...interface{}) {
+	if classification == smithylogging.Debug {
+		log.Printf("[HTTP DEBUG] %s", fmt.Sprintf(format, v...))
+	}
+}
+
+func SQSClientWithRegion(ctx context.Context, d *schema.ResourceData, m interface{}) (*sqs.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -43,7 +53,7 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
 
-	sqsClient, err := NewSQSClient(meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
+	sqsClient, err := NewSQSClient(ctx, meta.ExtractHTTPClient(m), region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -51,24 +61,30 @@ func SQSClientWithRegion(d *schema.ResourceData, m interface{}) (*sqs.SQS, scw.R
 	return sqsClient, region, err
 }
 
-func NewSQSClient(httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sqs.SQS, error) {
-	config := &aws.Config{}
-	config.WithRegion(region)
-	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
-	config.WithEndpoint(strings.ReplaceAll(endpoint, "{region}", region))
-	config.WithHTTPClient(httpClient)
+func NewSQSClient(ctx context.Context, httpClient *http.Client, region string, endpoint string, accessKey string, secretKey string) (*sqs.Client, error) {
+	customEndpoint := strings.ReplaceAll(endpoint, "{region}", region)
+	customConfig, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion(region),
+		config.WithBaseEndpoint(customEndpoint),
+		config.WithHTTPClient(httpClient),
+		config.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(accessKey, secretKey, ""),
+		),
+	)
+
 	if logging.IsDebugOrHigher() {
-		config.WithLogLevel(aws.LogDebugWithHTTPBody)
+		customConfig.Logger = &httpDebugLogger{}
 	}
 
-	s, err := session.NewSession(config)
 	if err != nil {
 		return nil, err
 	}
-	return sqs.New(s), nil
+
+	return sqs.NewFromConfig(customConfig), nil
 }
 
-func NATSClientWithRegion( //nolint:ireturn
+func NATSClientWithRegion( //nolint:ireturn,nolintlint
 	d *schema.ResourceData,
 	m interface{},
 ) (nats.JetStreamContext, scw.Region, error) {
@@ -79,6 +95,7 @@ func NATSClientWithRegion( //nolint:ireturn
 
 	endpoint := d.Get("endpoint").(string)
 	creds := d.Get("credentials").(string)
+
 	js, err := newNATSJetStreamClient(region.String(), endpoint, creds)
 	if err != nil {
 		return nil, "", err
@@ -132,20 +149,20 @@ func splitNATSJWTAndSeed(credentials string) (string, string, error) {
 const SQSFIFOQueueNameSuffix = ".fifo"
 
 var SQSAttributesToResourceMap = map[string]string{
-	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
-	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
-	sqs.QueueAttributeNameFifoQueue:                     "fifo_queue",
-	sqs.QueueAttributeNameContentBasedDeduplication:     "content_based_deduplication",
-	sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds: "receive_wait_time_seconds",
-	sqs.QueueAttributeNameVisibilityTimeout:             "visibility_timeout_seconds",
+	string(awstype.QueueAttributeNameMaximumMessageSize):            "message_max_size",
+	string(awstype.QueueAttributeNameMessageRetentionPeriod):        "message_max_age",
+	string(awstype.QueueAttributeNameFifoQueue):                     "fifo_queue",
+	string(awstype.QueueAttributeNameContentBasedDeduplication):     "content_based_deduplication",
+	string(awstype.QueueAttributeNameReceiveMessageWaitTimeSeconds): "receive_wait_time_seconds",
+	string(awstype.QueueAttributeNameVisibilityTimeout):             "visibility_timeout_seconds",
 }
 
 // Returns all managed SQS attribute names
-func getSQSAttributeNames() []*string {
-	attributeNames := make([]*string, 0, len(SQSAttributesToResourceMap))
+func getSQSAttributeNames() []awstype.QueueAttributeName {
+	attributeNames := make([]awstype.QueueAttributeName, 0, len(SQSAttributesToResourceMap))
 
 	for attribute := range SQSAttributesToResourceMap {
-		attributeNames = append(attributeNames, aws.String(attribute))
+		attributeNames = append(attributeNames, awstype.QueueAttributeName(attribute))
 	}
 
 	return attributeNames
@@ -162,6 +179,7 @@ func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isSQ
 	} else {
 		output = types.NewRandomName("queue")
 	}
+
 	if isSQS && isSQSFifo {
 		return output + SQSFIFOQueueNameSuffix
 	}

@@ -67,6 +67,7 @@ func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(regional.NewIDString(region, res.ID))
+
 	if hostname, ok := d.GetOk("hostname"); ok {
 		reverse := &ipam.Reverse{
 			Hostname: hostname.(string),
@@ -101,17 +102,21 @@ func ResourceIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	managedHostname := d.Get("hostname").(string)
 	managedAddress := d.Get("address").(string)
+
 	for _, reverse := range res.Reverses {
 		if reverse.Hostname == managedHostname && reverse.Address.String() == managedAddress {
 			_ = d.Set("hostname", reverse.Hostname)
 			_ = d.Set("address", types.FlattenIPPtr(reverse.Address))
+
 			break
 		}
 	}
@@ -166,5 +171,6 @@ func ResourceIPAMIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId("")
+
 	return nil
 }

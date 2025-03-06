@@ -68,6 +68,26 @@ func ResourceIP() *schema.Resource {
 					},
 				},
 			},
+			"custom_resource": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The custom resource in which to book the IP",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"mac_address": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "MAC address of the custom resource",
+							ValidateFunc: validation.IsMACAddress,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "When the resource is in a Private Network, a DNS record is available to resolve the resource name",
+						},
+					},
+				},
+			},
 			"is_ipv6": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -165,18 +185,24 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	address, addressOk := d.GetOk("address")
 	if addressOk {
 		addressStr := address.(string)
+
 		parsedIP, _, err := net.ParseCIDR(addressStr)
 		if err != nil {
 			parsedIP = net.ParseIP(addressStr)
 			if parsedIP == nil {
-				return diag.FromErr(fmt.Errorf("error parsing IP address: %s", err))
+				return diag.FromErr(fmt.Errorf("error parsing IP address: %w", err))
 			}
 		}
+
 		req.Address = scw.IPPtr(parsedIP)
 	}
 
 	if source, ok := d.GetOk("source"); ok {
 		req.Source = expandIPSource(source)
+	}
+
+	if customResource, ok := d.GetOk("custom_resource"); ok {
+		req.Resource = expandCustomResource(customResource)
 	}
 
 	res, err := ipamAPI.BookIP(req, scw.WithContext(ctx))
@@ -194,6 +220,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	vpcAPI, err := vpc.NewAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -206,12 +233,15 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	privateNetworkID := ""
+
 	if source, ok := d.GetOk("source"); ok {
 		sourceData := expandIPSource(source)
 		if sourceData.PrivateNetworkID != nil {
@@ -224,6 +254,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 			}
 
 			ipv4Subnets, ipv6Subnets := vpc.FlattenAndSortSubnets(pn.Subnets)
+
 			var found bool
 
 			if d.Get("is_ipv6").(bool) {
@@ -242,6 +273,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("address", address)
 	_ = d.Set("source", flattenIPSource(res.Source, privateNetworkID))
 	_ = d.Set("resource", flattenIPResource(res.Resource))
@@ -250,12 +282,15 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_ipv6", res.IsIPv6)
 	_ = d.Set("region", region)
+
 	if res.Zone != nil {
 		_ = d.Set("zone", res.Zone.String())
 	}
+
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
 	}
+
 	_ = d.Set("reverses", flattenIPReverses(res.Reverses))
 
 	return nil
@@ -267,13 +302,31 @@ func ResourceIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	_, err = ipamAPI.UpdateIP(&ipam.UpdateIPRequest{
-		IPID:   ID,
-		Region: region,
-		Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if d.HasChange("custom_resource") {
+		oldCustomResourceRaw, newCustomResourceRaw := d.GetChange("custom_resource")
+		oldCustomResource := expandCustomResource(oldCustomResourceRaw)
+		newCustomResource := expandCustomResource(newCustomResourceRaw)
+
+		_, err = ipamAPI.MoveIP(&ipam.MoveIPRequest{
+			Region:       region,
+			IPID:         ID,
+			FromResource: oldCustomResource,
+			ToResource:   newCustomResource,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("tags") {
+		_, err = ipamAPI.UpdateIP(&ipam.UpdateIPRequest{
+			IPID:   ID,
+			Region: region,
+			Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceIPAMIPRead(ctx, d, m)
@@ -283,6 +336,17 @@ func ResourceIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	ipamAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if customResource, ok := d.GetOk("custom_resource"); ok {
+		_, err = ipamAPI.DetachIP(&ipam.DetachIPRequest{
+			Region:   region,
+			IPID:     ID,
+			Resource: expandCustomResource(customResource),
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	err = ipamAPI.ReleaseIP(&ipam.ReleaseIPRequest{

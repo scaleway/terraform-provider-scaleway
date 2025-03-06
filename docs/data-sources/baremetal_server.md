@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_baremetal_server"
 # scaleway_baremetal_server
 
 Gets information about a baremetal server.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
+For more information, see the [API documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
 ## Example Usage
 

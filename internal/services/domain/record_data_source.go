@@ -51,24 +51,31 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(res.Records) == 0 {
 			return diag.FromErr(fmt.Errorf("no record found with the type %s", d.Get("type")))
 		}
+
 		var record *domain.Record
+
 		for i := range res.Records {
 			if res.Records[i].Data == d.Get("data").(string) {
 				if record != nil {
 					return diag.FromErr(fmt.Errorf("more than one record found with this name: %s, type: %s and data: %s", d.Get("name"), d.Get("type"), d.Get("data")))
 				}
+
 				record = res.Records[i]
 			}
 		}
+
 		if record == nil {
 			return diag.FromErr(fmt.Errorf("no record found with the type this name: %s, type: %s and data: %s", d.Get("name"), d.Get("type"), d.Get("data")))
 		}
+
 		recordID = record.ID
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", d.Get("dns_zone"), recordID.(string)))
+
 	return resourceDomainRecordRead(ctx, d, m)
 }

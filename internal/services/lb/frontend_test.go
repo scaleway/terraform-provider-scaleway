@@ -540,6 +540,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if testAcl.Name == "" {
 				testAcl.Name = apiAcl.Name
 			}
+
 			return lb.ACLEquals(&testAcl, &apiAcl)
 		}
 
@@ -563,7 +564,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			FrontendID: ID,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error on getting acl list [%s]", err)
+			return fmt.Errorf("error on getting acl list [%w]", err)
 		}
 
 		// verify that the count of api acl is the same as we are expecting it to be
@@ -581,6 +582,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if _, found := aclMap[int32(i)]; !found {
 				return fmt.Errorf("cannot find an index set [%d]", i)
 			}
+
 			if !testCompareAcls(*expectedAcls[i-1], *aclMap[int32(i)]) {
 				return fmt.Errorf("two acls are not equal on stage %d", i)
 			}

@@ -58,16 +58,19 @@ func DataSourceVersion() *schema.Resource {
 
 func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	secretID, existSecretID := d.GetOk("secret_id")
+
 	api, region, projectID, err := newAPIWithRegionOptionalProjectIDAndDefault(d, m, regional.ExpandID(secretID).Region)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var secretVersionIDStr string
+
 	var payloadSecretRaw []byte
 
 	if !existSecretID {
 		secretName := d.Get("secret_name").(string)
+
 		secrets, err := api.ListSecrets(&secret.ListSecretsRequest{
 			Region:         region,
 			Name:           &secretName,
@@ -115,6 +118,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	}
 
 	d.SetId(secretVersionIDStr)
+
 	err = d.Set("data", base64.StdEncoding.EncodeToString(payloadSecretRaw))
 	if err != nil {
 		return diag.FromErr(err)

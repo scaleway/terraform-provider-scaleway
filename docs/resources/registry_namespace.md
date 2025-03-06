@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_registry_namespace"
 # Resource: scaleway_registry_namespace
 
 Creates and manages Scaleway Container Registry.
-For more information refer to [the API documentation](https://www.scaleway.com/en/developers/api/registry).
+For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/registry).
 
 ## Example Usage
 

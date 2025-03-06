@@ -32,6 +32,7 @@ func AddTestSweepers() {
 func testSweepVPCPublicGateway(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := vpcgwSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the public gateways in (%+v)", zone)
 
 		listGatewayResponse, err := api.ListGateways(&vpcgwSDK.ListGatewaysRequest{
@@ -50,6 +51,7 @@ func testSweepVPCPublicGateway(_ string) error {
 				return fmt.Errorf("error deleting public gateway in sweeper: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -57,13 +59,14 @@ func testSweepVPCPublicGateway(_ string) error {
 func testSweepVPCGatewayNetwork(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := vpcgwSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the gateway network in (%s)", zone)
 
 		listPNResponse, err := api.ListGatewayNetworks(&vpcgwSDK.ListGatewayNetworksRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing gateway network in sweeper: %s", err)
+			return fmt.Errorf("error listing gateway network in sweeper: %w", err)
 		}
 
 		for _, gn := range listPNResponse.GatewayNetworks {
@@ -74,9 +77,10 @@ func testSweepVPCGatewayNetwork(_ string) error {
 				CleanupDHCP: true,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting gateway network in sweeper: %s", err)
+				return fmt.Errorf("error deleting gateway network in sweeper: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -84,13 +88,14 @@ func testSweepVPCGatewayNetwork(_ string) error {
 func testSweepVPCPublicGatewayIP(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := vpcgwSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the public gateways ip in (%s)", zone)
 
 		listIPResponse, err := api.ListIPs(&vpcgwSDK.ListIPsRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing public gateway ip in sweeper: %s", err)
+			return fmt.Errorf("error listing public gateway ip in sweeper: %w", err)
 		}
 
 		for _, ip := range listIPResponse.IPs {
@@ -99,9 +104,10 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 				IPID: ip.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting public gateway ip in sweeper: %s", err)
+				return fmt.Errorf("error deleting public gateway ip in sweeper: %w", err)
 			}
 		}
+
 		return nil
 	})
 }
@@ -109,6 +115,7 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 func testSweepVPCPublicGatewayDHCP(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := vpcgwSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying public gateway dhcps in (%+v)", zone)
 
 		listDHCPsResponse, err := api.ListDHCPs(&vpcgwSDK.ListDHCPsRequest{

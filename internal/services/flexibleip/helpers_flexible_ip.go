@@ -25,6 +25,7 @@ func fipAPIWithZone(d *schema.ResourceData, m interface{}) (*flexibleip.API, scw
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, zone, nil
 }
 
@@ -36,6 +37,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*flexibleip.API, scw.Zone, s
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return fipAPI, zone, ID, nil
 }
 

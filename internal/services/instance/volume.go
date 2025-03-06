@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -75,6 +76,12 @@ func ResourceVolume() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the volume",
 			},
+			"migrate_to_sbs": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If true, consider that this volume may have been migrated and no longer exists.",
+			},
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
 			"zone":            zonal.Schema(),
@@ -96,6 +103,7 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		Project:    types.ExpandStringPtr(d.Get("project_id")),
 	}
 	tags := types.ExpandStrings(d.Get("tags"))
+
 	if len(tags) > 0 {
 		createVolumeRequest.Tags = tags
 	}
@@ -111,7 +119,7 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 
 	res, err := instanceAPI.CreateVolume(createVolumeRequest, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't create volume: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't create volume: %w", err))
 	}
 
 	d.SetId(zonal.NewIDString(zone, res.Volume.ID))
@@ -135,6 +143,10 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
+	if d.Get("migrate_to_sbs").(bool) {
+		return nil
+	}
+
 	res, err := instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
 		VolumeID: id,
 		Zone:     zone,
@@ -142,9 +154,11 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("couldn't read volume: %v", err))
+
+		return diag.FromErr(fmt.Errorf("couldn't read volume: %w", err))
 	}
 
 	_ = d.Set("name", res.Volume.Name)
@@ -194,25 +208,28 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 		if d.Get("type") != instanceSDK.VolumeVolumeTypeBSSD.String() {
 			return diag.FromErr(errors.New("only block volume can be resized"))
 		}
+
 		if oldSize, newSize := d.GetChange("size_in_gb"); oldSize.(int) > newSize.(int) {
 			return diag.FromErr(errors.New("block volumes cannot be resized down"))
 		}
 
-		_, err = waitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+		_, err = instancehelpers.WaitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
+
 		_, err = instanceAPI.UpdateVolume(&instanceSDK.UpdateVolumeRequest{
 			VolumeID: id,
 			Zone:     zone,
 			Size:     &volumeSizeInBytes,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("couldn't resize volume: %s", err))
+			return diag.FromErr(fmt.Errorf("couldn't resize volume: %w", err))
 		}
-		_, err = waitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+
+		_, err = instancehelpers.WaitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -220,7 +237,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	_, err = instanceAPI.UpdateVolume(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't update volume: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't update volume: %w", err))
 	}
 
 	return ResourceInstanceVolumeRead(ctx, d, m)
@@ -242,6 +259,7 @@ func ResourceInstanceVolumeDelete(ctx context.Context, d *schema.ResourceData, m
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

@@ -44,6 +44,7 @@ func DataSourceClusterRead(ctx context.Context, d *schema.ResourceData, m interf
 	clusterID, ok := d.GetOk("cluster_id")
 	if !ok {
 		clusterName := d.Get("name").(string)
+
 		res, err := api.ListClusters(&redis.ListClustersRequest{
 			Zone:      zone,
 			Name:      types.ExpandStringPtr(clusterName),
@@ -67,6 +68,7 @@ func DataSourceClusterRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	zonedID := datasource.NewZonedID(clusterID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("cluster_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -78,6 +80,7 @@ func DataSourceClusterRead(ctx context.Context, d *schema.ResourceData, m interf
 		Zone:      zone,
 		ClusterID: locality.ExpandID(clusterID.(string)),
 	}
+
 	_, err = api.GetCluster(getReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("no clusters found with the id %s", clusterID))

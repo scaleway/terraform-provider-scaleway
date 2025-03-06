@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_object"
 
 # Resource: scaleway_object
 
-The `scaleway_object` resource allows you to create and manage objects for [Scaleway Object storage](https://www.scaleway.com/en/docs/storage/object/).
+The `scaleway_object` resource allows you to create and manage objects for [Scaleway Object storage](https://www.scaleway.com/en/docs/object-storage/).
 
-Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/how-to/upload-files-into-a-bucket/) for more information on Object Storage objects.
+Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/how-to/upload-files-into-a-bucket/) for more information on Object Storage objects.
 
 ## Example Usage
 
@@ -43,13 +43,15 @@ The following arguments are supported:
 
 * `hash` - (Optional) Hash of the file, used to trigger the upload on file change.
 
-* `storage_class` - (Optional) Specifies the Scaleway [storage class](https://www.scaleway.com/en/docs/storage/object/concepts/#storage-class) (`STANDARD`, `GLACIER`, or `ONEZONE_IA`) used to store the object.
+* `storage_class` - (Optional) Specifies the Scaleway [storage class](https://www.scaleway.com/en/docs/object-storage/concepts/#storage-class) (`STANDARD`, `GLACIER`, or `ONEZONE_IA`) used to store the object.
 
 * `visibility` - (Optional) Visibility of the object, `public-read` or `private`.
 
 * `metadata` - (Optional) Map of metadata used for the object (keys must be lowercase).
 
 * `tags` - (Optional) Map of tags.
+
+* `sse_customer_key` - (Optional) Customer's encryption keys to encrypt data (SSE-C)
 
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 

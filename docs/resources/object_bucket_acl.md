@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_object_bucket_acl"
 
 # Resource: scaleway_object_bucket_acl
 
-The `scaleway_object_bucket_acl` resource allows you to create and manage Access Control Lists (ACLs) for [Scaleway Object storage](https://www.scaleway.com/en/docs/storage/object/).
+The `scaleway_object_bucket_acl` resource allows you to create and manage Access Control Lists (ACLs) for [Scaleway Object storage](https://www.scaleway.com/en/docs/object-storage/).
 
-Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-operations/#putbucketacl) for more information on ACLs.
+Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-operations/#putbucketacl) for more information on ACLs.
 
 -> **Note:** `terraform destroy` does not delete the ACL but does remove the resource from the Terraform state.
 
@@ -26,7 +26,7 @@ resource "scaleway_object_bucket_acl" "main" {
 }
 ```
 
-For more information, refer to the [PutBucketAcl API call documentation](https://www.scaleway.com/en/docs/storage/object/api-cli/bucket-operations/#putbucketacl).
+For more information, refer to the [PutBucketAcl API call documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-operations/#putbucketacl).
 
 ## Example Usage with Grants
 

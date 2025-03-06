@@ -45,13 +45,14 @@ func AddTestSweepers() {
 func testSweepVolume(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instanceSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the volumes in (%s)", zone)
 
 		listVolumesResponse, err := instanceAPI.ListVolumes(&instanceSDK.ListVolumesRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing volumes in sweeper: %s", err)
+			return fmt.Errorf("error listing volumes in sweeper: %w", err)
 		}
 
 		for _, volume := range listVolumesResponse.Volumes {
@@ -61,10 +62,11 @@ func testSweepVolume(_ string) error {
 					VolumeID: volume.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting volume in sweeper: %s", err)
+					return fmt.Errorf("error deleting volume in sweeper: %w", err)
 				}
 			}
 		}
+
 		return nil
 	})
 }
@@ -72,6 +74,7 @@ func testSweepVolume(_ string) error {
 func testSweepSnapshot(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := instanceSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying instance snapshots in (%+v)", zone)
 
 		listSnapshotsResponse, err := api.ListSnapshots(&instanceSDK.ListSnapshotsRequest{
@@ -98,10 +101,13 @@ func testSweepSnapshot(_ string) error {
 func testSweepServer(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instanceSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the instanceSDK server in (%s)", zone)
+
 		listServers, err := instanceAPI.ListServers(&instanceSDK.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
+
 			return nil
 		}
 
@@ -112,7 +118,7 @@ func testSweepServer(_ string) error {
 					ServerID: srv.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting server in sweeper: %s", err)
+					return fmt.Errorf("error deleting server in sweeper: %w", err)
 				}
 			} else if srv.State == instanceSDK.ServerStateRunning {
 				_, err := instanceAPI.ServerAction(&instanceSDK.ServerActionRequest{
@@ -121,7 +127,7 @@ func testSweepServer(_ string) error {
 					Action:   instanceSDK.ServerActionTerminate,
 				})
 				if err != nil {
-					return fmt.Errorf("error terminating server in sweeper: %s", err)
+					return fmt.Errorf("error terminating server in sweeper: %w", err)
 				}
 			}
 		}
@@ -133,6 +139,7 @@ func testSweepServer(_ string) error {
 func testSweepSecurityGroup(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instanceSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the security groups in (%s)", zone)
 
 		listResp, err := instanceAPI.ListSecurityGroups(&instanceSDK.ListSecurityGroupsRequest{
@@ -140,6 +147,7 @@ func testSweepSecurityGroup(_ string) error {
 		}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing security groups in sweeper: %s", err)
+
 			return nil
 		}
 
@@ -148,12 +156,13 @@ func testSweepSecurityGroup(_ string) error {
 			if securityGroup.ProjectDefault {
 				continue
 			}
+
 			err = instanceAPI.DeleteSecurityGroup(&instanceSDK.DeleteSecurityGroupRequest{
 				Zone:            zone,
 				SecurityGroupID: securityGroup.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting security groups in sweeper: %s", err)
+				return fmt.Errorf("error deleting security groups in sweeper: %w", err)
 			}
 		}
 
@@ -164,12 +173,15 @@ func testSweepSecurityGroup(_ string) error {
 func testSweepPlacementGroup(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instanceSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
+
 		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instanceSDK.ListPlacementGroupsRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing placement groups in (%s) in sweeper: %s", zone, err)
+
 			return nil
 		}
 
@@ -179,7 +191,7 @@ func testSweepPlacementGroup(_ string) error {
 				PlacementGroupID: pg.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting placement group in sweeper: %s", err)
+				return fmt.Errorf("error deleting placement group in sweeper: %w", err)
 			}
 		}
 
@@ -194,6 +206,7 @@ func testSweepIP(_ string) error {
 		listIPs, err := instanceAPI.ListIPs(&instanceSDK.ListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
+
 			return nil
 		}
 
@@ -203,7 +216,7 @@ func testSweepIP(_ string) error {
 				Zone: zone,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting ip in sweeper: %s", err)
+				return fmt.Errorf("error deleting ip in sweeper: %w", err)
 			}
 		}
 
@@ -214,6 +227,7 @@ func testSweepIP(_ string) error {
 func testSweepImage(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := instanceSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying instance images in (%+v)", zone)
 
 		listImagesResponse, err := api.ListImages(&instanceSDK.ListImagesRequest{

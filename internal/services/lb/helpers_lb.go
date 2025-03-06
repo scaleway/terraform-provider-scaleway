@@ -35,6 +35,7 @@ func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.
 	if err != nil {
 		return nil, "", err
 	}
+
 	return lbAPI, zone, nil
 }
 
@@ -46,6 +47,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*lbSDK.ZonedAPI, scw.Zone, s
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return lbAPI, zone, ID, nil
 }
 
@@ -53,12 +55,15 @@ func IsPrivateNetworkEqual(a, b *lbSDK.PrivateNetwork) bool {
 	if a == nil || b == nil {
 		return a == b
 	}
+
 	if a.PrivateNetworkID != b.PrivateNetworkID {
 		return false
 	}
+
 	if !reflect.DeepEqual(a.DHCPConfig, b.DHCPConfig) { //nolint:staticcheck
 		return false
 	}
+
 	if !reflect.DeepEqual(a.StaticConfig, b.StaticConfig) { //nolint:staticcheck
 		return false
 	}
@@ -112,6 +117,7 @@ func UpgradeStateV1Func(_ context.Context, rawState map[string]interface{}, _ in
 	if !exist {
 		return nil, errors.New("upgrade: id not exist")
 	}
+
 	rawState["id"], err = lbUpgradeV1RegionalToZonedID(ID.(string))
 	if err != nil {
 		return nil, err
@@ -185,6 +191,7 @@ func normalizeIPSubnet(ip string) string {
 	if strings.HasSuffix(ip, "/32") {
 		return strings.TrimSuffix(ip, "/32")
 	}
+
 	return ip
 }
 
@@ -216,5 +223,6 @@ func customizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDif
 	if oldValue.(bool) && !newValue.(bool) {
 		return diff.ForceNew("assign_flexible_ipv6")
 	}
+
 	return nil
 }

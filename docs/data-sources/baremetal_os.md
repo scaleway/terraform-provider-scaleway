@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_baremetal_os"
 # scaleway_baremetal_os
 
 Gets information about a baremetal operating system.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/elastic-metal/#path-os-list-available-oses).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/elastic-metal/#path-os-list-available-oses).
 
 You can also use the [scaleway-cli](https://github.com/scaleway/scaleway-cli) with `scw baremetal os list` to list all available operating systems.
 

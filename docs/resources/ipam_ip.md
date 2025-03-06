@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_ipam_ip"
 
 Books and manages IPAM IPs.
 
-For more information about IPAM, see the main [documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/#ipam).
+For more information about IPAM, see the main [documentation](https://www.scaleway.com/en/docs/vpc/concepts/#ipam).
 
 ## Example Usage
 
@@ -76,6 +76,31 @@ resource "scaleway_ipam_ip" "ip01" {
 }
 ```
 
+### Book an IP for a custom resource
+
+```terraform
+resource "scaleway_vpc" "vpc01" {
+  name = "my vpc"
+}
+
+resource "scaleway_vpc_private_network" "pn01" {
+  vpc_id = scaleway_vpc.vpc01.id
+  ipv4_subnet {
+    subnet = "172.16.32.0/22"
+  }
+}
+
+resource "scaleway_ipam_ip" "ip01" {
+  address = "172.16.32.7"
+  source {
+    private_network_id = scaleway_vpc_private_network.pn01.id
+  }
+  custom_resource {
+    mac_address = "bc:24:11:74:d0:6a"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -90,6 +115,9 @@ The following arguments are supported:
     - `private_network_id` - The Private Network of the IP (if the IP is a private IP).
     - `subnet_id` - The Private Network subnet of the IP (if the IP is a private IP).
 - `is_ipv6` - (Optional) Defines whether to request an IPv6 address instead of IPv4.
+- `custome_resource` - (Optional) The custom resource to attach to the IP being reserved. An example of a custom resource is a virtual machine hosted on an Elastic Metal server.
+    - `mac_address` - The MAC address of the custom resource.
+    - `name` - When the resource is in a Private Network, a DNS record is available to resolve the resource name.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the IP is associated with.
 

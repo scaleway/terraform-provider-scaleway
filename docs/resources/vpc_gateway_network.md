@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_vpc_gateway_network"
 Creates and manages GatewayNetworks (connections between a Public Gateway and a Private Network).
 
 It allows the attachment of Private Networks to Public Gateways and DHCP configurations.
-For more information, see [the API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#step-3-attach-private-networks-to-the-vpc-public-gateway).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#step-3-attach-private-networks-to-the-vpc-public-gateway).
 
 ## Example Usage
 
@@ -139,7 +139,7 @@ The following arguments are supported:
 - `private_network_id` - (Required) The ID of the Private Network.
 - `dhcp_id` - (Required) The ID of the Public Gateway DHCP configuration. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
 - `enable_masquerade` - (Defaults to true) Whether masquerade (dynamic NAT) should be enabled on this GatewayNetwork
-- `enable_dhcp` - (Defaults to true) WWhether a DHCP configuration should be enabled on this GatewayNetwork. Requires a DHCP ID.
+- `enable_dhcp` - (Defaults to true) Whether a DHCP configuration should be enabled on this GatewayNetwork. Requires a DHCP ID.
 - `cleanup_dhcp` - (Defaults to false) Whether to remove DHCP configuration on this GatewayNetwork upon destroy. Requires DHCP ID.
 - `static_address` - Enable DHCP configration on this GatewayNetwork. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
 - `ipam_config` - Auto-configure the GatewayNetwork using Scaleway's IPAM (IP address management service). Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
@@ -167,4 +167,3 @@ GatewayNetwork can be imported using `{zone}/{id}`, e.g.
 ```bash
 terraform import scaleway_vpc_gateway_network.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```
-

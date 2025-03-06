@@ -27,6 +27,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		}
 
 		meta := tt.Meta
+
 		var errorMessage registry.ErrorRegistryMessage
 
 		accessKey, _ := meta.ScwClient().GetAccessKey()
@@ -40,12 +41,12 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 
 		cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 		if err != nil {
-			return fmt.Errorf("could not connect to Docker: %v", err)
+			return fmt.Errorf("could not connect to Docker: %w", err)
 		}
 
 		encodedJSON, err := json.Marshal(authConfig)
 		if err != nil {
-			return fmt.Errorf("could not marshal auth config: %v", err)
+			return fmt.Errorf("could not marshal auth config: %w", err)
 		}
 
 		ctx := context.Background()
@@ -53,19 +54,21 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 
 		out, err := cli.ImagePull(ctx, testDockerIMG, image.PullOptions{})
 		if err != nil {
-			return fmt.Errorf("could not pull image: %v", err)
+			return fmt.Errorf("could not pull image: %w", err)
 		}
 		defer out.Close()
 
 		buffIOReader := bufio.NewReader(out)
+
 		for {
 			streamBytes, errPull := buffIOReader.ReadBytes('\n')
 			if errPull == io.EOF {
 				break
 			}
+
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
-				return fmt.Errorf("could not unmarshal: %v", err)
+				return fmt.Errorf("could not unmarshal: %w", err)
 			}
 
 			if errorMessage.Error != "" {
@@ -74,26 +77,29 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		}
 
 		scwTag := registryEndpoint + "/alpine:" + tagName
+
 		err = cli.ImageTag(ctx, testDockerIMG, scwTag)
 		if err != nil {
-			return fmt.Errorf("could not tag image: %v", err)
+			return fmt.Errorf("could not tag image: %w", err)
 		}
 
 		pusher, err := cli.ImagePush(ctx, scwTag, image.PushOptions{RegistryAuth: authStr})
 		if err != nil {
-			return fmt.Errorf("could not push image: %v", err)
+			return fmt.Errorf("could not push image: %w", err)
 		}
 		defer pusher.Close()
 
 		buffIOReader = bufio.NewReader(pusher)
+
 		for {
 			streamBytes, errPush := buffIOReader.ReadBytes('\n')
 			if errPush == io.EOF {
 				break
 			}
+
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
-				return fmt.Errorf("could not unmarshal: %v", err)
+				return fmt.Errorf("could not unmarshal: %w", err)
 			}
 
 			if errorMessage.Error != "" {

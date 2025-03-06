@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
@@ -34,12 +34,15 @@ func exceptionsCassettesCases() map[string]struct{} {
 func getTestFiles() (map[string]struct{}, error) {
 	filesMap := make(map[string]struct{})
 	exceptions := exceptionsCassettesCases()
+
 	err := filepath.WalkDir("../services", func(path string, _ fs.DirEntry, _ error) error {
 		isCassette := strings.Contains(path, "cassette")
 		_, isException := exceptions[path]
+
 		if isCassette && !isException {
 			filesMap[fileNameWithoutExtSuffix(path)] = struct{}{}
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -73,13 +76,13 @@ func checkErrorCode(c *cassette.Cassette) error {
 
 func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...int) bool {
 	exceptions := exceptionsCassettesCases()
+
 	_, isException := exceptions[c.File]
 	if isException {
 		return isException
 	}
-
 	// SQS returns 400 when the queue does not exist
-	if strings.Contains(i.Response.Body, sqs.ErrCodeQueueDoesNotExist) && i.Response.Code == 400 {
+	if strings.Contains(i.Response.Body, mnq.AWSErrNonExistentQueue) && i.Response.Code == 400 {
 		return true
 	}
 
@@ -89,6 +92,7 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 				return true
 			}
 		}
+
 		return false
 	}
 

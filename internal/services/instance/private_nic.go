@@ -132,6 +132,7 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	zone, privateNICID, serverID, err := zonal.ParseNestedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,8 +142,10 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -197,6 +200,7 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	zone, privateNICID, serverID, err := zonal.ParseNestedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -207,6 +211,7 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -219,6 +224,7 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -227,6 +233,7 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

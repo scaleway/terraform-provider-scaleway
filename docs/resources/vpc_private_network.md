@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_vpc_private_network"
 # Resource: scaleway_vpc_private_network
 
 Creates and manages Scaleway VPC Private Networks.
-For more information, see [the API documentation](https://www.scaleway.com/en/developers/api/vpc/#private-networks-ac2df4).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/vpc/#private-networks-ac2df4).
 
 ## Example Usage
 
@@ -25,7 +25,7 @@ resource "scaleway_vpc_private_network" "pn_priv" {
 resource "scaleway_vpc_private_network" "pn_priv" {
     name = "subnet_demo"
     tags = ["demo", "terraform"]
-    
+
     ipv4_subnet {
       subnet = "192.168.0.0/24"
     }
