@@ -93,7 +93,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `sandbox` - Execution environment of the container.
 
-- `heath_check` - Health check configuration block of the container.
+- `health_check` - Health check configuration block of the container.
     - `http` - HTTP health check configuration.
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
