@@ -37,7 +37,7 @@ resource "scaleway_edge_services_head_stage" "main" {
 
 ## Attributes Reference
 
-This resource does not export any attributes.
+No additional attributes are exported.
 
 ## Import
 
