@@ -64,6 +64,7 @@ func ResourceHeadStageUpdate(ctx context.Context, d *schema.ResourceData, m inte
 
 	if d.HasChange("head_stage_id") {
 		before, after := d.GetChange("head_stage_id")
+
 		_, err := api.SetHeadStage(&edgeservices.SetHeadStageRequest{
 			PipelineID: d.Get("pipeline_id").(string),
 			SwapHeadStage: &edgeservices.SetHeadStageRequestSwapHeadStage{

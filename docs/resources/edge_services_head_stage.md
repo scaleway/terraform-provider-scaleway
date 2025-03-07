@@ -35,6 +35,10 @@ resource "scaleway_edge_services_head_stage" "main" {
 - `pipeline_id` - (Required) The ID of the pipeline.
 - `head_stage_id` - (Required) The ID of head stage of the pipeline.
 
+## Attributes Reference
+
+This resource does not export any attributes.
+
 ## Import
 
 Head stages can be imported using the `{id}`, e.g.
