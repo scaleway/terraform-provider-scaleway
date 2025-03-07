@@ -155,8 +155,14 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("pipeline_id", backendStage.PipelineID)
 	_ = d.Set("created_at", types.FlattenTime(backendStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(backendStage.UpdatedAt))
-	_ = d.Set("s3_backend_config", flattenS3BackendConfig(backendStage.ScalewayS3))
-	_ = d.Set("lb_backend_config", flattenLBBackendConfig(backendStage.ScalewayLB))
+
+	if backendStage.ScalewayS3 != nil {
+		_ = d.Set("s3_backend_config", flattenS3BackendConfig(backendStage.ScalewayS3))
+	}
+
+	if backendStage.ScalewayLB != nil {
+		_ = d.Set("lb_backend_config", flattenLBBackendConfig(backendStage.ScalewayLB))
+	}
 
 	return nil
 }

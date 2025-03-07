@@ -91,13 +91,20 @@ func expandLBBackendConfig(raw interface{}) *edge_services.ScalewayLBBackendConf
 	rawLbConfigs := raw.([]interface{})
 
 	for _, rawLbConfig := range rawLbConfigs {
-		mapLbConfig := rawLbConfig.(map[string]interface{})
+		outerMap := rawLbConfig.(map[string]interface{})
+
+		lbConfigList, ok := outerMap["lb_config"].([]interface{})
+		if !ok || len(lbConfigList) == 0 {
+			continue
+		}
+
+		innerMap := lbConfigList[0].(map[string]interface{})
 		lbConfig := &edge_services.ScalewayLB{
-			ID:         locality.ExpandID(mapLbConfig["id"]),
-			Zone:       scw.Zone(mapLbConfig["zone"].(string)),
-			FrontendID: locality.ExpandID(mapLbConfig["frontend_id"]),
-			IsSsl:      types.ExpandBoolPtr(mapLbConfig["is_ssl"]),
-			DomainName: types.ExpandStringPtr(mapLbConfig["domain_name"]),
+			ID:         locality.ExpandID(innerMap["id"]),
+			Zone:       scw.Zone(innerMap["zone"].(string)),
+			FrontendID: locality.ExpandID(innerMap["frontend_id"]),
+			IsSsl:      types.ExpandBoolPtr(innerMap["is_ssl"]),
+			DomainName: types.ExpandStringPtr(innerMap["domain_name"]),
 		}
 		lbConfigs = append(lbConfigs, lbConfig)
 	}

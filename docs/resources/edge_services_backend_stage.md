@@ -35,21 +35,20 @@ resource "scaleway_edge_services_backend_stage" "main" {
 ### With LB backend
 
 ```terraform
-resource "scaleway_lb_ip" "main" {
-  zone = "fr-par-1"
-}
-
 resource "scaleway_lb" "main" {
   ip_ids = [scaleway_lb_ip.main.id]
-  zone   = scaleway_lb_ip.main.zone
+  zone   = "fr-par-1"
   type   = "LB-S"
 }
 
 resource "scaleway_lb_frontend" "main" {
-  lb_id        = scaleway_lb.main.id
-  backend_id   = scaleway_lb_backend.main.id
-  name         = "frontend01"
-  inbound_port = "80"
+  lb_id           = scaleway_lb.main.id
+  backend_id      = scaleway_lb_backend.main.id
+  name            = "frontend01"
+  inbound_port    = "443"
+  certificate_ids = [
+    scaleway_lb_certificate.cert01.id,
+  ]
 }
 
 resource "scaleway_edge_services_pipeline" "main" {
@@ -62,6 +61,8 @@ resource "scaleway_edge_services_backend_stage" "main" {
     lb_config {
       id          = scaleway_lb.main.id
       frontend_id = scaleway_lb_frontend.id
+      is_ssl      = true
+      zone        = "fr-par-1"
     }
   }
 }
