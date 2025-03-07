@@ -110,7 +110,7 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "List of private network to expose your database instance",
+				Description: "Private network to expose your mongodb instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"pn_id": {
@@ -122,8 +122,9 @@ func ResourceInstance() *schema.Resource {
 						},
 						// Computed
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private network ID",
 						},
 						"port": {
 							Type:        schema.TypeInt,
@@ -160,8 +161,9 @@ func ResourceInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the public network",
 						},
 						"port": {
 							Type:        schema.TypeInt,
