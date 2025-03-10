@@ -101,12 +101,15 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 			return diag.FromErr(err)
 		}
 	}
+
 	d.SetId(projectID)
+
 	return ResourceCockpitRead(ctx, d, m)
 }
 
 func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+
 	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -175,12 +178,10 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("push_url", createCockpitPushURLList(endpoints))
 
 	return diags
-
 }
 
 func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-
 	if d.HasChange("plan") {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
@@ -190,10 +191,12 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	diags = append(diags, ResourceCockpitRead(ctx, d, m)...)
+
 	return diags
 }
 
 func ResourceCockpitDelete(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	d.SetId("")
+
 	return nil
 }
