@@ -50,7 +50,9 @@ func ResourceHeadStageCreate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 
-	d.SetId(*dnsStage.HeadStage.DNSStageID)
+	if dnsStage.HeadStage.DNSStageID != nil {
+		d.SetId(*dnsStage.HeadStage.DNSStageID)
+	}
 
 	return ResourceHeadStageRead(ctx, d, m)
 }
