@@ -46,6 +46,7 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "max_scale"),
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "min_scale"),
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "privacy"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "local_storage_limit"),
 				),
 			},
 			{
@@ -63,6 +64,7 @@ func TestAccContainer_Basic(t *testing.T) {
 						max_scale = 20
 						timeout = 300
 						deploy = false
+						local_storage_limit = 1000
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -79,6 +81,7 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "deploy", "false"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "privacy", containerSDK.ContainerPrivacyPublic.String()),
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", containerSDK.ContainerProtocolHTTP1.String()),
+					resource.TestCheckResourceAttr("scaleway_container.main", "local_storage_limit", "1000"),
 				),
 			},
 			{
@@ -96,6 +99,7 @@ func TestAccContainer_Basic(t *testing.T) {
 						memory_limit 	= 1120
 						cpu_limit		= 280
 						deploy       	= false
+						local_storage_limit = 1500
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -111,6 +115,7 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "max_concurrency", "80"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "deploy", "false"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", containerSDK.ContainerProtocolHTTP1.String()),
+					resource.TestCheckResourceAttr("scaleway_container.main", "local_storage_limit", "1500"),
 				),
 			},
 		},
