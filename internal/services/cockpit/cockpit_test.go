@@ -25,7 +25,6 @@ func TestAccCockpit_Simple(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan_id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "free"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.grafana_url"),
 				),
@@ -57,7 +56,6 @@ func TestAccCockpit_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("scaleway_cockpit.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan_id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "free"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.grafana_url"),
 					checkGrafanaURL("scaleway_cockpit.main", "scaleway_account_project.project"),
@@ -127,7 +125,6 @@ func TestAccCockpit_WithSourceEndpoints(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "premium"),
-					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan_id", "premium"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.metrics_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.logs_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.alertmanager_url"),
