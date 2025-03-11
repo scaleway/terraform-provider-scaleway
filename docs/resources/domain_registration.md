@@ -1,11 +1,11 @@
 ---
 subcategory: "Domains and DNS"  
-page_title: "Scaleway: scaleway_domain_domains_registration"
+page_title: "Scaleway: scaleway_domain_registration"
 ---
 
-# Resource: scaleway_domain_domains_registration
+# Resource: scaleway_domain_registration
 
-The `scaleway_domain_domains_registration` resource allows you to purchase and manage domain registrations with Scaleway. Using this resource you can register one or more domains for a specified duration, configure auto-renewal and DNSSEC options, and set contact information. You can supply an owner contact either by providing an existing contact ID or by specifying the complete contact details. The resource automatically returns additional contact information (administrative and technical) as provided by the Scaleway API.
+The `scaleway_domain_registration` resource allows you to purchase and manage domain registrations with Scaleway. Using this resource you can register one or more domains for a specified duration, configure auto-renewal and DNSSEC options, and set contact information. You can supply an owner contact either by providing an existing contact ID or by specifying the complete contact details. The resource automatically returns additional contact information (administrative and technical) as provided by the Scaleway API.
 
 Refer to the [Domains and DNS documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/) and the [API documentation](https://developers.scaleway.com/) for more details.
 
@@ -16,7 +16,7 @@ Refer to the [Domains and DNS documentation](https://www.scaleway.com/en/docs/ne
 The following example purchases a domain with a one-year registration period and specifies the owner contact details. Administrative and technical contacts are returned by the API.
 
 ```terraform
-resource "scaleway_domain_domains_registration" "test" {
+resource "scaleway_domain_registration" "test" {
   domain_names      = ["example.com"]
   duration_in_years = 1
 
@@ -41,7 +41,7 @@ resource "scaleway_domain_domains_registration" "test" {
 You can update the resource to enable auto-renewal and DNSSEC:
 
 ```terraform
-resource "scaleway_domain_domains_registration" "test" {
+resource "scaleway_domain_registration" "test" {
   domain_names      = ["example.com"]
   duration_in_years = 1
 
@@ -69,7 +69,7 @@ resource "scaleway_domain_domains_registration" "test" {
 The following example registers several domains in one go:
 
 ```terraform
-resource "scaleway_domain_domains_registration" "multi" {
+resource "scaleway_domain_registration" "multi" {
   domain_names      = ["domain1.com", "domain2.com", "domain3.com"]
   duration_in_years = 1
 
@@ -102,8 +102,6 @@ The following arguments are supported:
 - `technical_contact` (Computed, List): Technical contact information.
 - `auto_renew` (Optional, Boolean, Default: false): Enables or disables auto-renewal.
 - `dnssec` (Optional, Boolean, Default: false): Enables or disables DNSSEC.
-- `ds_record` (Optional, List): DNSSEC DS record configuration.
-- `is_external` (Optional, Boolean, Computed): Indicates whether Scaleway is the registrar.
 
 ## Attributes Reference
 
@@ -116,6 +114,10 @@ In addition to all arguments above, the following attributes are exported:
 - `registrar`: Name of the registrar.
 - `status`: Status of the domain registration.
 - `dns_zones`: List of DNS zones associated with the domain.
+- `ds_record`: DNSSEC DS record configuration.
+- `task_id`: ID of the task that created the domain.
+
+
 
 ## Contact Blocks
 
@@ -139,7 +141,7 @@ Each contact block supports the following attributes:
 To import an existing domain registration, use:
 
 ```bash
-terraform import scaleway_domain_domains_registration.test <project_id>/<task_id>
+terraform import scaleway_domain_registration.test <project_id>/<task_id>
 ```
 
 

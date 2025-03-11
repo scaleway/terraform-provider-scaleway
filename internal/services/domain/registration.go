@@ -3,9 +3,11 @@ package domain
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -13,12 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
-func ResourceDomainsRegistration() *schema.Resource {
+func ResourceRegistration() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceDomainsRegistrationCreate,
-		ReadContext:   resourceDomainsRegistrationsRead,
-		UpdateContext: resourceDomainsRegistrationUpdate,
-		DeleteContext: resourceDomainsRegistrationDelete,
+		CreateContext: resourceRegistrationCreate,
+		ReadContext:   resourceRegistrationsRead,
+		UpdateContext: resourceRegistrationUpdate,
+		DeleteContext: resourceRegistrationDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultDomainRegistrationTimeout),
 			Read:    schema.DefaultTimeout(defaultDomainRegistrationTimeout),
@@ -42,8 +44,6 @@ func ResourceDomainsRegistration() *schema.Resource {
 				Optional: true,
 				Default:  1,
 			},
-			"project_id": account.ProjectIDSchema(),
-
 			"owner_contact_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -52,7 +52,8 @@ func ResourceDomainsRegistration() *schema.Resource {
 					"owner_contact_id",
 					"owner_contact",
 				},
-				Description: "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+				ValidateFunc: validation.IsUUID,
+				Description:  "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
 			},
 			"owner_contact": {
 				Type:     schema.TypeList,
@@ -98,41 +99,37 @@ func ResourceDomainsRegistration() *schema.Resource {
 			},
 			"ds_record": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key_id": {
 							Type:        schema.TypeInt,
-							Required:    true,
+							Computed:    true,
 							Description: "The identifier for the dnssec key.",
 						},
 						"algorithm": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The algorithm used for dnssec (e.g., rsasha256, ecdsap256sha256).",
 						},
 						"digest": {
 							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": {
 										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The type of digest (e.g., sha_1, sha_256).",
+										Computed:    true,
+										Description: "The digest type for the DS record (e.g., sha_1, sha_256, gost_r_34_11_94, sha_384).",
 									},
 									"digest": {
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "The digest value.",
 									},
 									"public_key": {
 										Type:     schema.TypeList,
-										Optional: true,
-										MaxItems: 1,
+										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"key": {
@@ -150,8 +147,7 @@ func ResourceDomainsRegistration() *schema.Resource {
 						},
 						"public_key": {
 							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"key": {
@@ -167,11 +163,12 @@ func ResourceDomainsRegistration() *schema.Resource {
 				},
 				Description: "dnssec DS record configuration.",
 			},
-			"is_external": {
-				Type:        schema.TypeBool,
-				Optional:    true,
+			"project_id": account.ProjectIDSchema(),
+
+			"task_id": {
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Indicates whether Scaleway is the domain's registrar.",
+				Description: "ID of the task that created the domain.",
 			},
 		},
 	}
@@ -413,7 +410,7 @@ func contactSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceDomainsRegistrationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 
 	projectID := d.Get("project_id").(string)
@@ -459,12 +456,30 @@ func resourceDomainsRegistrationCreate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	newDnssec := d.Get("dnssec").(bool)
+
+	if newDnssec {
+		for _, domainName := range domainNames {
+			_, err = registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
+				Domain: domainName,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForDNSSECStatus(ctx, registrarAPI, domainName, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	d.SetId(projectID + "/" + resp.TaskID)
 
-	return resourceDomainsRegistrationsRead(ctx, d, m)
+	return resourceRegistrationsRead(ctx, d, m)
 }
 
-func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -520,8 +535,6 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 		computedDSRecord = []interface{}{}
 	}
 
-	computedIsExternal := firstResp.IsExternal
-
 	_ = d.Set("domain_names", domainNames)
 	_ = d.Set("owner_contact_id", computedOwnerContactID)
 	_ = d.Set("owner_contact", computedOwnerContact)
@@ -530,12 +543,18 @@ func resourceDomainsRegistrationsRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("auto_renew", computedAutoRenew)
 	_ = d.Set("dnssec", computedDnssec)
 	_ = d.Set("ds_record", computedDSRecord)
-	_ = d.Set("is_external", computedIsExternal)
+	parts := strings.Split(id, "/")
+
+	if len(parts) != 2 {
+		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/domainName', got: %s", id))
+	}
+
+	_ = d.Set("task_id", parts[1])
 
 	return nil
 }
 
-func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -558,7 +577,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 				Domain: domainName,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %w", domainName, err))
+				return diag.FromErr(err)
 			}
 
 			if newAutoRenew {
@@ -568,7 +587,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 						Domain: domainName,
 					}, scw.WithContext(ctx))
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("failed to enable auto-renew for %s: %w", domainName, err))
+						return diag.FromErr(err)
 					}
 				}
 			} else {
@@ -578,7 +597,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 						Domain: domainName,
 					}, scw.WithContext(ctx))
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("failed to disable auto-renew for %s: %w", domainName, err))
+						return diag.FromErr(err)
 					}
 				}
 			}
@@ -598,25 +617,15 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 				Domain: domainName,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %w", domainName, err))
+				return diag.FromErr(err)
 			}
 
 			if newDnssec {
-				var dsRecord *domain.DSRecord
-
-				if v, ok := d.GetOk("ds_record"); ok {
-					dsRecordList := v.([]interface{})
-					if len(dsRecordList) > 0 && dsRecordList[0] != nil {
-						dsRecord = ExpandDSRecord(dsRecordList)
-					}
-				}
-
 				_, err = registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
-					Domain:   domainName,
-					DsRecord: dsRecord,
+					Domain: domainName,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("failed to enable dnssec for %s: %w", domainName, err))
+					return diag.FromErr(err)
 				}
 			} else if domainResp.Dnssec != nil &&
 				domainResp.Dnssec.Status == domain.DomainFeatureStatusEnabled {
@@ -624,7 +633,7 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 					Domain: domainName,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("failed to disable dnssec for %s: %w", domainName, err))
+					return diag.FromErr(err)
 				}
 			}
 
@@ -635,10 +644,10 @@ func resourceDomainsRegistrationUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return resourceDomainsRegistrationsRead(ctx, d, m)
+	return resourceRegistrationsRead(ctx, d, m)
 }
 
-func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -656,7 +665,7 @@ func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceDa
 				continue
 			}
 
-			return diag.FromErr(fmt.Errorf("failed to get domain details for %s: %w", domainName, err))
+			return diag.FromErr(err)
 		}
 
 		if domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled ||
@@ -665,7 +674,7 @@ func resourceDomainsRegistrationDelete(ctx context.Context, d *schema.ResourceDa
 				Domain: domainName,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to disable auto-renew for %s: %w", domainName, err))
+				return diag.FromErr(err)
 			}
 		}
 	}

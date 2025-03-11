@@ -580,42 +580,6 @@ func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAP
 	})
 }
 
-func ExpandDSRecord(dsRecordList []interface{}) *domain.DSRecord {
-	if len(dsRecordList) == 0 || dsRecordList[0] == nil {
-		return nil
-	}
-
-	dsRecordMap := dsRecordList[0].(map[string]interface{})
-	dsRecord := &domain.DSRecord{
-		KeyID:     uint32(dsRecordMap["key_id"].(int)),
-		Algorithm: domain.DSRecordAlgorithm(dsRecordMap["algorithm"].(string)),
-	}
-
-	if digestList, ok := dsRecordMap["digest"].([]interface{}); ok && len(digestList) > 0 {
-		digestMap := digestList[0].(map[string]interface{})
-		dsRecord.Digest = &domain.DSRecordDigest{
-			Type:   domain.DSRecordDigestType(digestMap["type"].(string)),
-			Digest: digestMap["digest"].(string),
-		}
-
-		if publicKeyList, ok := digestMap["public_key"].([]interface{}); ok && len(publicKeyList) > 0 {
-			publicKeyMap := publicKeyList[0].(map[string]interface{})
-			dsRecord.Digest.PublicKey = &domain.DSRecordPublicKey{
-				Key: publicKeyMap["key"].(string),
-			}
-		}
-	}
-
-	if publicKeyList, ok := dsRecordMap["public_key"].([]interface{}); ok && len(publicKeyList) > 0 {
-		publicKeyMap := publicKeyList[0].(map[string]interface{})
-		dsRecord.PublicKey = &domain.DSRecordPublicKey{
-			Key: publicKeyMap["key"].(string),
-		}
-	}
-
-	return dsRecord
-}
-
 func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 	if len(dsRecords) == 0 {
 		return []interface{}{}
