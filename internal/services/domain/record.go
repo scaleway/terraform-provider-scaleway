@@ -413,9 +413,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
 
 	// retrieve data from record
-	if len(currentData.(string)) == 0 {
-		currentData = flattenDomainData(record.Data, record.Type).(string)
-	}
+	currentData = flattenDomainData(record.Data, record.Type).(string)
 
 	d.SetId(record.ID)
 	_ = d.Set("dns_zone", dnsZone)
