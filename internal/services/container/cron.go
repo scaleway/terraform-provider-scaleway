@@ -133,6 +133,7 @@ func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m in
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
 	_ = d.Set("name", cron.Name)
+	_ = d.Set("region", region)
 
 	return nil
 }

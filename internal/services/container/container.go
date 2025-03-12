@@ -235,6 +235,12 @@ func ResourceContainer() *schema.Resource {
 					},
 				},
 			},
+			"local_storage_limit": {
+				Type:        schema.TypeInt,
+				Description: "Local storage limit of the container (in MB)",
+				Optional:    true,
+				Computed:    true,
+			},
 			// computed
 			"status": {
 				Type:        schema.TypeString,
@@ -351,6 +357,7 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("health_check", flattenHealthCheck(co.HealthCheck))
 	_ = d.Set("scaling_option", flattenScalingOption(co.ScalingOption))
 	_ = d.Set("region", co.Region.String())
+	_ = d.Set("local_storage_limit", int(co.LocalStorageLimit))
 
 	return nil
 }
@@ -470,6 +477,10 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	imageHasChanged := d.HasChanges("registry_sha256")
 	if imageHasChanged {
 		req.Redeploy = &imageHasChanged
+	}
+
+	if d.HasChanges("local_storage_limit") {
+		req.LocalStorageLimit = scw.Uint32Ptr(uint32(d.Get("local_storage_limit").(int)))
 	}
 
 	con, err := api.UpdateContainer(req, scw.WithContext(ctx))

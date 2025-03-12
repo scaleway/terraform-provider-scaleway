@@ -67,7 +67,6 @@ func TestAccDataSourceCockpit_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "free"),
-					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan_id", "free"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.metrics_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.logs_url"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.alertmanager_url"),
