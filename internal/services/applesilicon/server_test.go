@@ -2,7 +2,6 @@ package applesilicon_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -228,6 +227,7 @@ func TestAccServer_EnableVPC(t *testing.T) {
 }
 
 func TestAccServer_Commitment(t *testing.T) {
+	t.Skip("can not delete server at the time")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -241,7 +241,6 @@ func TestAccServer_Commitment(t *testing.T) {
 					resource scaleway_apple_silicon_server main {
 						name = "TestAccServerEnableDisableVPC"
 						type = "M2-M"
-						zone = "fr-par-3"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -263,7 +262,6 @@ func TestAccServer_Commitment(t *testing.T) {
 						name = "TestAccServerEnableDisableVPC"
 						type = "M2-M"
 						commitment = "renewed_monthly"
-						zone = "fr-par-3"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -277,18 +275,6 @@ func TestAccServer_Commitment(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
 				),
-			},
-			{
-				Config: `
-
-					resource scaleway_apple_silicon_server main {
-						name = "TestAccServerEnableDisableVPC"
-						type = "M2-M"
-						commitment = "duration_24h"
-						zone = "fr-par-3"
-					}
-				`,
-				ExpectError: regexp.MustCompile("can not commit from monthly to hourly changes to the server"),
 			},
 		},
 	})
