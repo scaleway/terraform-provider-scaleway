@@ -107,6 +107,8 @@ The following arguments are supported:
 
 ## Attributes Reference
 
+In addition to all arguments above, the following attributes are exported:
+
 - `id`: The ID of the domain registration.
 - `updated_at`: Timestamp of the last update.
 - `expired_at`: Expiration date/time of the domain registration.

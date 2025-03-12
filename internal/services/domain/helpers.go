@@ -23,6 +23,7 @@ func NewDomainAPI(m interface{}) *domain.API {
 	return domain.NewAPI(meta.ExtractScwClient(m))
 }
 
+// NewRegistrarDomainAPI returns a new registrar API.
 func NewRegistrarDomainAPI(m interface{}) *domain.RegistrarAPI {
 	return domain.NewRegistrarAPI(meta.ExtractScwClient(m))
 }
@@ -82,30 +83,39 @@ func ExpandContact(contactMap map[string]interface{}) *domain.Contact {
 	if v, ok := contactMap["company_name"].(string); ok && v != "" {
 		contact.CompanyName = v
 	}
+
 	if v, ok := contactMap["email_alt"].(string); ok && v != "" {
 		contact.EmailAlt = v
 	}
+
 	if v, ok := contactMap["fax_number"].(string); ok && v != "" {
 		contact.FaxNumber = v
 	}
+
 	if v, ok := contactMap["address_line_2"].(string); ok && v != "" {
 		contact.AddressLine2 = v
 	}
+
 	if v, ok := contactMap["vat_identification_code"].(string); ok && v != "" {
 		contact.VatIDentificationCode = v
 	}
+
 	if v, ok := contactMap["company_identification_code"].(string); ok && v != "" {
 		contact.CompanyIDentificationCode = v
 	}
+
 	if v, ok := contactMap["lang"].(string); ok && v != "" {
 		contact.Lang = std.LanguageCode(v)
 	}
+
 	if v, ok := contactMap["resale"].(bool); ok {
 		contact.Resale = v
 	}
+
 	if v, ok := contactMap["state"].(string); ok && v != "" {
 		contact.State = v
 	}
+
 	if v, ok := contactMap["whois_opt_in"].(bool); ok {
 		contact.WhoisOptIn = v
 	}
@@ -116,6 +126,7 @@ func ExpandContact(contactMap map[string]interface{}) *domain.Contact {
 			contact.ExtensionFr = extension.(*domain.ContactExtensionFR)
 		}
 	}
+
 	if extEu, ok := contactMap["extension_eu"].(map[string]interface{}); ok && len(extEu) > 0 {
 		extension := expandContactExtension(extEu, "eu")
 		if extension != nil {
@@ -148,10 +159,14 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 			TrademarkInfo:     parseStruct[domain.ContactExtensionFRTrademarkInfo](extensionMap, "trademark_info"),
 			CodeAuthAfnicInfo: parseStruct[domain.ContactExtensionFRCodeAuthAfnicInfo](extensionMap, "code_auth_afnic_info"),
 		}
+
 	case "nl":
 		legalFormRegistrationNumber := ""
-		if value, ok := extensionMap["legal_form_registration_number"]; ok {
-			if str, isString := value.(string); isString {
+		value, ok := extensionMap["legal_form_registration_number"]
+
+		if ok {
+			str, isString := value.(string)
+			if isString {
 				legalFormRegistrationNumber = str
 			}
 		}
@@ -160,8 +175,10 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 			LegalForm:                   domain.ContactExtensionNLLegalForm(parseEnum(extensionMap, "legal_form", domain.ContactExtensionNLLegalFormLegalFormUnknown.String())),
 			LegalFormRegistrationNumber: legalFormRegistrationNumber,
 		}
+
 	case "eu":
 		europeanCitizenship := ""
+
 		if value, ok := extensionMap["european_citizenship"]; ok {
 			if str, isString := value.(string); isString {
 				europeanCitizenship = str
@@ -171,6 +188,7 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 		return &domain.ContactExtensionEU{
 			EuropeanCitizenship: europeanCitizenship,
 		}
+
 	default:
 		return nil
 	}
@@ -208,21 +226,27 @@ func ExpandNewContact(contactMap map[string]interface{}) *domain.NewContact {
 	if v, ok := contactMap["company_name"].(string); ok {
 		contact.CompanyName = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["email_alt"].(string); ok {
 		contact.EmailAlt = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["fax_number"].(string); ok {
 		contact.FaxNumber = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["address_line_2"].(string); ok {
 		contact.AddressLine2 = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["vat_identification_code"].(string); ok {
 		contact.VatIDentificationCode = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["company_identification_code"].(string); ok {
 		contact.CompanyIDentificationCode = scw.StringPtr(v)
 	}
+
 	if v, ok := contactMap["state"].(string); ok {
 		contact.State = scw.StringPtr(v)
 	}
@@ -233,6 +257,7 @@ func ExpandNewContact(contactMap map[string]interface{}) *domain.NewContact {
 			contact.ExtensionFr = extension.(*domain.ContactExtensionFR)
 		}
 	}
+
 	if extEu, ok := contactMap["extension_eu"].(map[string]interface{}); ok && len(extEu) > 0 {
 		extension := expandContactExtension(extEu, "eu")
 		if extension != nil {
@@ -261,10 +286,12 @@ func parseEnum(data map[string]interface{}, key string, defaultValue string) str
 func parseStruct[T any](data map[string]interface{}, key string) *T {
 	if nested, ok := data[key].(map[string]interface{}); ok {
 		var result T
+
 		mapToStruct(nested, &result)
 
 		return &result
 	}
+
 	return nil
 }
 
@@ -274,26 +301,32 @@ func mapToStruct(data map[string]interface{}, target interface{}) {
 		if v, ok := data["whois_opt_in"].(bool); ok {
 			t.WhoisOptIn = v
 		}
+
 	case *domain.ContactExtensionFRDunsInfo:
 		if v, ok := data["duns_id"].(string); ok {
 			t.DunsID = v
 		}
+
 		if v, ok := data["local_id"].(string); ok {
 			t.LocalID = v
 		}
+
 	case *domain.ContactExtensionFRAssociationInfo:
 		if v, ok := data["publication_jo"].(string); ok {
 			if parsedTime, err := time.Parse(time.RFC3339, v); err == nil {
 				t.PublicationJo = &parsedTime
 			}
 		}
+
 		if v, ok := data["publication_jo_page"].(float64); ok {
 			t.PublicationJoPage = uint32(v)
 		}
+
 	case *domain.ContactExtensionFRTrademarkInfo:
 		if v, ok := data["trademark_inpi"].(string); ok {
 			t.TrademarkInpi = v
 		}
+
 	case *domain.ContactExtensionFRCodeAuthAfnicInfo:
 		if v, ok := data["code_auth_afnic"].(string); ok {
 			t.CodeAuthAfnic = v
@@ -303,7 +336,9 @@ func mapToStruct(data map[string]interface{}, target interface{}) {
 
 func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string) (domain.TaskStatus, error) {
 	var page int32 = 1
+
 	var pageSize uint32 = 1000
+
 	for {
 		listTasksResponse, err := api.ListTasks(&domain.RegistrarAPIListTasksRequest{
 			Page:     &page,
@@ -335,6 +370,7 @@ func SplitDomains(input *string) []string {
 	}
 
 	domains := strings.Split(*input, ",")
+
 	var result []string
 
 	for _, domain := range domains {
@@ -356,6 +392,7 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid ID format, expected 'projectID/domainName', got: %s", id)
 	}
+
 	taskID := parts[1]
 
 	listTasksResponse, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{}, scw.WithContext(ctx), scw.WithAllPages())
@@ -402,9 +439,11 @@ func flattenContact(contact *domain.Contact) []map[string]interface{} {
 	if contact.ExtensionFr != nil {
 		flattened["extension_fr"] = flattenContactExtensionFR(contact.ExtensionFr)
 	}
+
 	if contact.ExtensionEu != nil {
 		flattened["extension_eu"] = flattenContactExtensionEU(contact.ExtensionEu)
 	}
+
 	if contact.ExtensionNl != nil {
 		flattened["extension_nl"] = flattenContactExtensionNL(contact.ExtensionNl)
 	}
@@ -516,52 +555,9 @@ func flattenContactExtensionNL(ext *domain.ContactExtensionNL) []map[string]inte
 	}
 }
 
-// func flattenTLD(tld *domain.Tld) []map[string]interface{} {
-//	if tld == nil {
-//		return []map[string]interface{}{}
-//	}
-//	tldMap := map[string]interface{}{
-//		"name":                  tld.Name,
-//		"dnssec_support":        tld.DnssecSupport,
-//		"duration_in_years_min": tld.DurationInYearsMin,
-//		"duration_in_years_max": tld.DurationInYearsMax,
-//		"idn_support":           tld.IDnSupport,
-//	}
-//
-//	tldMap["offers"] = flattenTldOffers(tld.Offers)
-//
-//	if tld.Specifications != nil {
-//		tldMap["specifications"] = tld.Specifications
-//	} else {
-//		tldMap["specifications"] = map[string]interface{}{}
-//	}
-//
-//	return []map[string]interface{}{tldMap}
-// }
-
-// func flattenTldOffers(offers map[string]*domain.TldOffer) []map[string]interface{} {
-//	if offers == nil {
-//		return nil
-//	}
-//
-//	flattenedOffers := []map[string]interface{}{}
-//	for _, offer := range offers {
-//		flattenedOffers = append(flattenedOffers, map[string]interface{}{
-//			"action":         offer.Action,
-//			"operation_path": offer.OperationPath,
-//			"price": map[string]interface{}{
-//				"currency_code": offer.Price.CurrencyCode,
-//				"units":         strconv.Itoa(int(offer.Price.Units)),
-//				"nanos":         strconv.Itoa(int(offer.Price.Nanos)),
-//			},
-//		})
-//	}
-//
-//	return flattenedOffers
-// }
-
 func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, taskID string, duration int) error {
 	timeout := time.Duration(duration) * time.Second
+
 	return retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		status, err := getStatusTasks(ctx, registrarAPI, taskID)
 		if err != nil {
@@ -577,7 +573,7 @@ func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAP
 		}
 
 		if status == domain.TaskStatusError {
-			return retry.NonRetryableError(fmt.Errorf("task failed for domain: %s", taskID)) // Échec
+			return retry.NonRetryableError(fmt.Errorf("task failed for domain: %s", taskID))
 		}
 
 		return retry.NonRetryableError(fmt.Errorf("unexpected task status: %v", status))
@@ -626,6 +622,7 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 	}
 
 	results := make([]interface{}, 0, len(dsRecords))
+
 	for _, dsRecord := range dsRecords {
 		item := map[string]interface{}{
 			"key_id":    dsRecord.KeyID,
@@ -637,6 +634,7 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 				"type":   string(dsRecord.Digest.Type),
 				"digest": dsRecord.Digest.Digest,
 			}
+
 			if dsRecord.Digest.PublicKey != nil {
 				digest["public_key"] = []interface{}{
 					map[string]interface{}{
@@ -644,6 +642,7 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 					},
 				}
 			}
+
 			item["digest"] = []interface{}{digest}
 		}
 
@@ -660,121 +659,3 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 
 	return results
 }
-
-// func flattenDNSZones(dnsZones []*domain.DNSZone) []map[string]interface{} {
-//	if dnsZones == nil {
-//		return nil
-//	}
-//
-//	var zones []map[string]interface{}
-//	for _, zone := range dnsZones {
-//		zones = append(zones, map[string]interface{}{
-//			"domain":     zone.Domain,
-//			"subdomain":  zone.Subdomain,
-//			"ns":         zone.Ns,
-//			"ns_default": zone.NsDefault,
-//			"ns_master":  zone.NsMaster,
-//			"status":     zone.Status,
-//			"message":    zone.Message,
-//			"updated_at": zone.UpdatedAt.Format(time.RFC3339),
-//			"project_id": zone.ProjectID,
-//		})
-//	}
-//
-//	return zones
-// }
-
-// func flattenExternalDomainRegistrationStatus(status *domain.DomainRegistrationStatusExternalDomain) []string {
-//	if status == nil {
-//		return []string{}
-//	}
-//	return []string{status.ValidationToken}
-// }
-
-// func flattenDomainRegistrationStatusTransfer(transferStatus *domain.DomainRegistrationStatusTransfer) []string {
-//	if transferStatus == nil {
-//		return []string{}
-//	}
-//
-//	return []string{
-//		string(transferStatus.Status),
-//		fmt.Sprintf("%t", transferStatus.VoteCurrentOwner),
-//		fmt.Sprintf("%t", transferStatus.VoteNewOwner),
-//	}
-// }
-
-// func waitForUpdateDomainTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, duration int) ([]*domain.Task, error) {
-//	timeout := time.Duration(duration) * time.Second
-//	var completedTasks []*domain.Task
-//
-//	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-//		tasks, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
-//			Domain: &domainName,
-//		}, scw.WithContext(ctx), scw.WithAllPages())
-//		if err != nil {
-//			return retry.NonRetryableError(fmt.Errorf("failed to list tasks: %w", err))
-//		}
-//
-//		allSuccess := true
-//		completedTasks = tasks.Tasks
-//		for _, task := range tasks.Tasks {
-//			if task.Type == domain.TaskTypeUpdateDomain {
-//				if task.Status != domain.TaskStatusSuccess {
-//					allSuccess = false
-//					if task.Status == domain.TaskStatusPending {
-//						return retry.RetryableError(errors.New("update_domain task is still pending, retrying"))
-//					}
-//				}
-//			}
-//		}
-//
-//		if allSuccess {
-//			return nil
-//		}
-//
-//		return retry.RetryableError(errors.New("not all update_domain tasks are successful, retrying"))
-//	})
-//
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return completedTasks, nil
-// }
-
-// func ExpandDSRecord(dsRecordList []interface{}) *domain.DSRecord {
-//	if len(dsRecordList) == 0 || dsRecordList[0] == nil {
-//		return nil
-//	}
-//
-//	dsRecordMap := dsRecordList[0].(map[string]interface{})
-//	dsRecord := &domain.DSRecord{
-//		KeyID:     uint32(dsRecordMap["key_id"].(int)),
-//		Algorithm: domain.DSRecordAlgorithm(dsRecordMap["algorithm"].(string)),
-//	}
-//
-//	if digestList, ok := dsRecordMap["digest"].([]interface{}); ok && len(digestList) > 0 {
-//		digestMap := digestList[0].(map[string]interface{})
-//		dsRecord.Digest = &domain.DSRecordDigest{
-//			Type:   domain.DSRecordDigestType(digestMap["type"].(string)),
-//			Digest: digestMap["digest"].(string),
-//		}
-//
-//		if publicKeyList, ok := digestMap["public_key"].([]interface{}); ok && len(publicKeyList) > 0 {
-//			publicKeyMap := publicKeyList[0].(map[string]interface{})
-//			dsRecord.Digest.PublicKey = &domain.DSRecordPublicKey{
-//				Key: publicKeyMap["key"].(string),
-//			}
-//		}
-//	}
-//
-//	if publicKeyList, ok := dsRecordMap["public_key"].([]interface{}); ok && len(publicKeyList) > 0 {
-//		publicKeyMap := publicKeyList[0].(map[string]interface{})
-//		dsRecord.PublicKey = &domain.DSRecordPublicKey{
-//			Key: publicKeyMap["key"].(string),
-//		}
-//	}
-//
-//	return dsRecord
-// }
-//
