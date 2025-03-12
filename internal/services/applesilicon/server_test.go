@@ -228,6 +228,7 @@ func TestAccServer_EnableVPC(t *testing.T) {
 
 func TestAccServer_Commitment(t *testing.T) {
 	t.Skip("can not delete server at the time")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
