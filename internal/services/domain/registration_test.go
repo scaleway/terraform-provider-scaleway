@@ -272,5 +272,6 @@ func shouldBeSkipped() bool {
 	if os.Getenv("TF_UPDATE_CASSETTES") == "false" {
 		return false
 	}
+
 	return os.Getenv("TF_ACC_DOMAIN_REGISTRATION") != "true"
 }
