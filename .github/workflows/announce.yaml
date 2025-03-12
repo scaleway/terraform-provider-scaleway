@@ -10,15 +10,15 @@ jobs:
     steps:
       - name: Get tag
         id: get_tag
-        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+        run: echo "{TAG}=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       - name: Get version
         id: get_version
-        run: echo ::set-output name=VERSION::${TAG##v}
+        run: echo "{VERSION}=${TAG##v}" >> $GITHUB_OUTPUT
         env:
           TAG: ${{ steps.get_tag.outputs.TAG }}
       - name: Prepare message
         id: get_message
-        run: echo ::set-output name=MSG::"${{ secrets.SLACK_MESSAGE }}"
+        run: echo "{MSG}=${{ secrets.SLACK_MESSAGE }}" >> $GITHUB_OUTPUT
         env:
           VERSION: ${{ steps.get_version.outputs.VERSION }}
           TAG: ${{ steps.get_tag.outputs.TAG }}
@@ -27,7 +27,7 @@ jobs:
         id: announce_slack
         run: |
           readarray -td' ' URL_LIST <<<$SLACK_WEBHOOKS; 
-          for WEBHOOK_URL in ${URL_LIST[@]};
+          for WEBHOOK_URL in "${URL_LIST[@]}";
           do curl -X POST -H 'Content-type: application/json' \
           --data '{
           	"blocks": [

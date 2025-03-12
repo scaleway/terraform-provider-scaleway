@@ -99,6 +99,8 @@ The following arguments are supported:
 
 - `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
 
+- `local_storage_limit` - Local storage limit of the container (in MB)
+
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
 ## Attributes Reference

@@ -135,6 +135,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.ScalingOption = scalingOptionReq
 	}
 
+	if localStorageLimit, ok := d.GetOk("local_storage_limit"); ok {
+		req.LocalStorageLimit = scw.Uint32Ptr(uint32(localStorageLimit.(int)))
+	}
+
 	return req, nil
 }
 

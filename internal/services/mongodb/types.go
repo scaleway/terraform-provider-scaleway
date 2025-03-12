@@ -23,3 +23,25 @@ func flattenPublicNetwork(endpoints []*mongodb.Endpoint) (interface{}, bool) {
 
 	return publicFlat, len(publicFlat) != 0
 }
+
+func flattenPrivateNetwork(endpoints []*mongodb.Endpoint) (interface{}, bool) {
+	privateFlat := []map[string]interface{}(nil)
+
+	for _, endpoint := range endpoints {
+		if endpoint.PrivateNetwork == nil {
+			continue
+		}
+
+		privateFlat = append(privateFlat, map[string]interface{}{
+			"pn_id":       endpoint.PrivateNetwork.PrivateNetworkID,
+			"id":          endpoint.ID,
+			"port":        endpoint.Port,
+			"dns_records": endpoint.DNSRecords,
+			"ips":         endpoint.IPs,
+		})
+
+		break
+	}
+
+	return privateFlat, len(privateFlat) != 0
+}

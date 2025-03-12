@@ -5,17 +5,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func DataSourceCockpit() *schema.Resource {
-	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpit().Schema)
-
 	dsSchema["project_id"] = &schema.Schema{
 		Type:             schema.TypeString,
 		Description:      "The project_id you want to attach the resource to",
@@ -25,7 +20,8 @@ func DataSourceCockpit() *schema.Resource {
 	dsSchema["plan"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
-		Description: "The current plan of the cockpit project",
+		Description: "[DEPRECATED] The current plan of the cockpit project.",
+		Deprecated:  "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
 	}
 
 	return &schema.Resource{
@@ -36,78 +32,25 @@ func DataSourceCockpit() *schema.Resource {
 }
 
 func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewGlobalAPI(m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	regionalAPI, region, err := cockpitAPIWithRegion(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	projectID := d.Get("project_id").(string)
 	if projectID == "" {
-		projectID, err = getDefaultProjectID(ctx, m)
+		_, err := getDefaultProjectID(ctx, m)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{ //nolint:staticcheck
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
+	diags := diag.Diagnostics{}
 
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	_ = d.Set("project_id", d.Get("project_id").(string))
-	_ = d.Set("plan", res.Name)
-	_ = d.Set("plan_id", res.Name)
-
-	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
-		Region:    region,
-		ProjectID: projectID,
-		Origin:    "external",
-	}, scw.WithContext(ctx), scw.WithAllPages())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if grafana.GrafanaURL == "" {
-		grafana.GrafanaURL = createGrafanaURL(projectID, region)
-	}
-
-	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-		ProjectID: projectID,
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Deprecated attribute: 'plan'",
+		Detail:   "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
 	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	alertManagerURL := ""
-	if alertManager.AlertManagerURL != nil {
-		alertManagerURL = *alertManager.AlertManagerURL
-	}
-
-	endpoints := flattenCockpitEndpoints(dataSourcesRes.DataSources, grafana.GrafanaURL, alertManagerURL)
-
-	_ = d.Set("endpoints", endpoints)
-	_ = d.Set("push_url", createCockpitPushURLList(endpoints))
+	_ = d.Set("plan", d.Get("plan"))
+	_ = d.Set("project_id", projectID)
 	d.SetId(projectID)
 
-	return nil
+	return diags
 }
