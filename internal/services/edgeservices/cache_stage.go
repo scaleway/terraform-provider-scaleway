@@ -74,12 +74,12 @@ func ResourceCacheStage() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The pipeline description",
+				Description: "The date and time of the creation of the cache stage",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The pipeline description",
+				Description: "The date and time of the last update of the cache stage",
 			},
 			"project_id": account.ProjectIDSchema(),
 		},
