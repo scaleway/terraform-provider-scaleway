@@ -36,6 +36,8 @@ The following arguments are supported:
   associated with.
 - `enable_vpc` - (Optional, Default: false): Enables the VPC option when set to true.
 
+- `commitment_type` (Optional, Default: duration_24h): Activate commitment for this server
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
