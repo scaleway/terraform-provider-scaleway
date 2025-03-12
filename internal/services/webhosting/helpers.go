@@ -40,6 +40,17 @@ func newHostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting
 	return api, region, nil
 }
 
+func newDNSAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.DnsAPI, scw.Region, error) {
+	api := webhosting.NewDnsAPI(meta.ExtractScwClient(m))
+
+	region, err := meta.ExtractRegion(d, m)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return api, region, nil
+}
+
 // NewAPIWithRegionAndID returns a Hosting API with region and ID extracted from the state.
 func NewAPIWithRegionAndID(m interface{}, id string) (*webhosting.HostingAPI, scw.Region, string, error) {
 	api := webhosting.NewHostingAPI(meta.ExtractScwClient(m))
@@ -64,4 +75,33 @@ func waitForHosting(ctx context.Context, api *webhosting.HostingAPI, region scw.
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+}
+
+func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]interface{} {
+	result := []map[string]interface{}{}
+	for _, r := range records {
+		result = append(result, map[string]interface{}{
+			"name":     r.Name,
+			"type":     r.Type.String(),
+			"ttl":      r.TTL,
+			"value":    r.Value,
+			"priority": r.Priority,
+			"status":   r.Status.String(),
+		})
+	}
+
+	return result
+}
+
+func flattenNameServers(servers []*webhosting.Nameserver) []map[string]interface{} {
+	result := []map[string]interface{}{}
+	for _, s := range servers {
+		result = append(result, map[string]interface{}{
+			"hostname":   s.Hostname,
+			"status":     s.Status.String(),
+			"is_default": s.IsDefault,
+		})
+	}
+
+	return result
 }

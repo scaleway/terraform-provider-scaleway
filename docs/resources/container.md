@@ -68,7 +68,7 @@ The following arguments are supported:
 
 - `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container.
 
-- `timeout` - (Optional) The maximum amount of time your container can spend processing a request before being stopped.
+- `timeout` - (Optional) The maximum amount of time in seconds your container can spend processing a request before being stopped. Default to `300` seconds.
 
 - `privacy` - (Optional) The privacy type defines the way to authenticate to your container. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8).
 
@@ -76,7 +76,7 @@ The following arguments are supported:
 
 - `registry_sha256` - (Optional) The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string.
 
-- `max_concurrency` - (Optional) The maximum number of simultaneous requests your container can handle at the same time.
+- `max_concurrency` - (Deprecated) The maximum number of simultaneous requests your container can handle at the same time. Use `scaling_option.concurrent_requests_threshold` instead.
 
 - `protocol` - (Optional) The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) `http1` or `h2c`. Defaults to `http1`.
 
@@ -84,7 +84,7 @@ The following arguments are supported:
 
 - `sandbox` - (Optional) Execution environment of the container.
 
-- `heath_check` - (Optional) Health check configuration block of the container.
+- `health_check` - (Optional) Health check configuration block of the container.
     - `http` - HTTP health check configuration.
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
@@ -98,6 +98,8 @@ The following arguments are supported:
 - `port` - (Optional) The port to expose the container.
 
 - `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
+
+- `local_storage_limit` - Local storage limit of the container (in MB)
 
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/#configuration-restrictions) section.
 

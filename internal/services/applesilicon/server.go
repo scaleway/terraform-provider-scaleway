@@ -142,6 +142,17 @@ func ResourceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The VPC status of the server",
 			},
+			"password": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Sensitive:   true,
+				Description: "The password of the server",
+			},
+			"username": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The username of the server",
+			},
 
 			// Common
 			"zone":            zonal.Schema(),
@@ -233,6 +244,8 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("zone", res.Zone.String())
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
+	_ = d.Set("password", res.SudoPassword)
+	_ = d.Set("username", res.SSHUsername)
 
 	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     res.Zone,
