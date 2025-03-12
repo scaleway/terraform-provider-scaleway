@@ -327,7 +327,6 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 
 	var err error
 
-	currentData := d.Get("data")
 	// check if this is an inline import. Like: "terraform import scaleway_domain_record.www subdomain.domain.tld/11111111-1111-1111-1111-111111111111"
 	if strings.Contains(d.Id(), "/") {
 		tab := strings.Split(d.Id(), "/")
@@ -410,16 +409,13 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 
 	// get the default first record
 	projectID = dnsZones.DNSZones[0].ProjectID
+
 	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
-
-	// retrieve data from record
-	currentData = flattenDomainData(record.Data, record.Type).(string)
-
 	d.SetId(record.ID)
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
-	_ = d.Set("data", currentData.(string))
+	_ = d.Set("data", flattenDomainData(record.Data, record.Type).(string))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))
 	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))

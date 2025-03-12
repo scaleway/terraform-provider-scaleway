@@ -141,7 +141,7 @@ func TestAccDomainRecord_Basic(t *testing.T) {
 					dns_zone = %[1]q
 					name     = "record_mx"
 					type     = "MX"
-					data     = "ASPMX.L.GOOGLE.COM."
+					data     = "aspmx.l.google.com."
 					ttl      = 600
 					priority = 1
 				}
@@ -151,7 +151,7 @@ func TestAccDomainRecord_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "dns_zone", testDNSZone),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "name", "record_mx"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "type", "MX"),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "data", "ASPMX.L.GOOGLE.COM."),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "data", "aspmx.l.google.com."),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "ttl", "600"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "priority", "1"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "fqdn", "record_mx."+testDNSZone),
@@ -194,7 +194,8 @@ func TestAccDomainRecord_Basic2(t *testing.T) {
 					  dns_zone = %[1]q
 					  name     = ""
 					  type     = "MX"
-					  data     = "10 feedback-smtp.eu-west-1.amazonses.com."
+					  data     = "feedback-smtp.eu-west-1.amazonses.com."
+					  priority = 10
 					  ttl      = 300
 					}
 					
@@ -202,7 +203,7 @@ func TestAccDomainRecord_Basic2(t *testing.T) {
 					  dns_zone = %[1]q
 					  name     = ""
 					  type     = "MX"
-					  data     = "0 mail.scaleway.com."
+					  data     = "mail.scaleway.com."
 					  ttl      = 300
 					}
 					
@@ -229,7 +230,7 @@ func TestAccDomainRecord_Basic2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "dns_zone", testDNSZone),
 					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "name", ""),
 					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "type", "MX"),
-					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "data", "10 feedback-smtp.eu-west-1.amazonses.com."),
+					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "data", "feedback-smtp.eu-west-1.amazonses.com."),
 					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "ttl", "300"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "priority", "10"),
 					acctest.CheckResourceAttrUUID("scaleway_domain_record.aws_mx", "id"),
@@ -728,8 +729,8 @@ func TestAccDomainRecord_CNAME(t *testing.T) {
 
 	name := "tf"
 	recordType := "CNAME"
-	data := "xxx.scw.cloud"
-	dataUpdated := "yyy.scw.cloud"
+	data := "xxx.scw.cloud."
+	dataUpdated := "yyy.scw.cloud."
 	ttl := 3600
 	ttlUpdated := 43200
 	priority := 0
