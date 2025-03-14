@@ -140,6 +140,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_container_token":                     container.ResourceToken(),
 				"scaleway_container_trigger":                   container.ResourceTrigger(),
 				"scaleway_domain_record":                       domain.ResourceRecord(),
+				"scaleway_domain_registration":                 domain.ResourceRegistration(),
 				"scaleway_domain_zone":                         domain.ResourceZone(),
 				"scaleway_edge_services_backend_stage":         edgeservices.ResourceBackendStage(),
 				"scaleway_edge_services_cache_stage":           edgeservices.ResourceCacheStage(),
