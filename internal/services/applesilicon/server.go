@@ -50,6 +50,13 @@ func ResourceServer() *schema.Resource {
 				Default:     false,
 				Description: "Whether or not to enable VPC access",
 			},
+			"commitment": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "duration_24h",
+				Description:      "The commitment period of the server",
+				ValidateDiagFunc: verify.ValidateEnum[applesilicon.CommitmentType](),
+			},
 			"private_network": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -162,10 +169,11 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	createReq := &applesilicon.CreateServerRequest{
-		Name:      types.ExpandOrGenerateString(d.Get("name"), "m1"),
-		Type:      d.Get("type").(string),
-		ProjectID: d.Get("project_id").(string),
-		EnableVpc: d.Get("enable_vpc").(bool),
+		Name:           types.ExpandOrGenerateString(d.Get("name"), "m1"),
+		Type:           d.Get("type").(string),
+		ProjectID:      d.Get("project_id").(string),
+		EnableVpc:      d.Get("enable_vpc").(bool),
+		CommitmentType: applesilicon.CommitmentType(d.Get("commitment").(string)),
 	}
 
 	res, err := asAPI.CreateServer(createReq, scw.WithContext(ctx))
@@ -275,6 +283,10 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name"))
+	}
+
+	if d.HasChange("commitment") {
+		req.CommitmentType = &applesilicon.CommitmentTypeValue{CommitmentType: applesilicon.CommitmentType(d.Get("commitment").(string))}
 	}
 
 	if d.HasChange("enable_vpc") {

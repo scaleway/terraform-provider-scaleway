@@ -270,7 +270,7 @@ $ export TF_APPEND_USER_AGENT="CI/CD System XYZ Job #1234"
 
 In case you want to [debug a deployment](https://www.terraform.io/internals/debugging), you can use the following command to increase the level of verbosity.
 
-`SCW_DEBUG=1 TF_LOG=WARN TF_LOG_PROVIDER=DEBUG terraform apply`
+`SCW_DEBUG=1 TF_LOG=DEBUG TF_LOG_PROVIDER=DEBUG terraform apply`
 
 - `SCW_DEBUG`: set the debug level of the scaleway SDK.
 - `TF_LOG`: set the level of the Terraform logging.

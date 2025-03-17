@@ -128,6 +128,7 @@ func TestAccServer_EnableVPC(t *testing.T) {
 					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerEnableVPC"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "commitment", "duration_24h"),
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
@@ -219,6 +220,61 @@ func TestAccServer_EnableVPC(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "vpc_status", "vpc_disabled"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_Commitment(t *testing.T) {
+	t.Skip("can not delete server at the time")
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+
+					resource scaleway_apple_silicon_server main {
+						name = "TestAccServerEnableDisableVPC"
+						type = "M2-M"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerEnableDisableVPC"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "commitment", "duration_24h"),
+					// Computed
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
+				),
+			},
+			{
+				Config: `
+
+					resource scaleway_apple_silicon_server main {
+						name = "TestAccServerEnableDisableVPC"
+						type = "M2-M"
+						commitment = "renewed_monthly"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerEnableDisableVPC"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "commitment", "renewed_monthly"),
+					// Computed
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
 				),
 			},
 		},
