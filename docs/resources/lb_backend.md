@@ -32,7 +32,7 @@ resource "scaleway_lb_backend" "backend01" {
   forward_port     = "80"
 
   health_check_http {
-    uri = "www.test.com/health"
+    uri = "/health"
   }
 }
 ```
@@ -79,12 +79,12 @@ You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (
 - `health_check_max_retries`      - (Default: `2`) Number of allowed failed health check requests before the backend server is marked as down.
 - `health_check_tcp`              - (Optional) This block enables TCP health checks. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
 - `health_check_http`             - (Optional) This block enables HTTP health checks. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
-    - `uri`                         - (Required) The HTTP endpoint URL to call for health check requests.
+    - `uri`                         - (Required) The path for health check requests.
     - `method`                      - (Default: `GET`) The HTTP method to use for health check requests.
     - `code`                        - (Default: `200`) The expected HTTP status code.
     - `host_header`                 - (Optional) The HTTP host header to use for health check requests.
 - `health_check_https`            - (Optional) This block enable HTTPS health checks. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
-    - `uri`                         - (Required) The HTTPS endpoint URL to call for health check requests.
+    - `uri`                         - (Required) The path for health check requests.
     - `method`                      - (Default: `GET`) The HTTP method to use for health check requests.
     - `code`                        - (Default: `200`) The expected HTTP status code.
     - `host_header`                 - (Optional) The HTTP host header to use for health check requests.
