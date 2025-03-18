@@ -218,6 +218,11 @@ func ResourceFrontend() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"connection_rate_limit": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second",
+			},
 		},
 	}
 }
@@ -265,13 +270,14 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	createFrontendRequest := &lbSDK.ZonedAPICreateFrontendRequest{
-		Zone:          zone,
-		LBID:          lbID,
-		Name:          types.ExpandOrGenerateString(d.Get("name"), "lb-frt"),
-		InboundPort:   int32(d.Get("inbound_port").(int)),
-		BackendID:     locality.ExpandID(d.Get("backend_id")),
-		TimeoutClient: timeoutClient,
-		EnableHTTP3:   d.Get("enable_http3").(bool),
+		Zone:                zone,
+		LBID:                lbID,
+		Name:                types.ExpandOrGenerateString(d.Get("name"), "lb-frt"),
+		InboundPort:         int32(d.Get("inbound_port").(int)),
+		BackendID:           locality.ExpandID(d.Get("backend_id")),
+		TimeoutClient:       timeoutClient,
+		EnableHTTP3:         d.Get("enable_http3").(bool),
+		ConnectionRateLimit: types.ExpandUint32Ptr(d.Get("connection_rate_limit")),
 	}
 
 	certificatesRaw, certificatesExist := d.GetOk("certificate_ids")
@@ -319,6 +325,7 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("inbound_port", int(frontend.InboundPort))
 	_ = d.Set("timeout_client", types.FlattenDuration(frontend.TimeoutClient))
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
+	_ = d.Set("connection_rate_limit", types.FlattenUint32Ptr(frontend.ConnectionRateLimit))
 
 	if frontend.Certificate != nil { //nolint:staticcheck
 		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
@@ -474,14 +481,15 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	req := &lbSDK.ZonedAPIUpdateFrontendRequest{
-		Zone:           zone,
-		FrontendID:     ID,
-		Name:           types.ExpandOrGenerateString(d.Get("name"), "lb-frt"),
-		InboundPort:    int32(d.Get("inbound_port").(int)),
-		BackendID:      locality.ExpandID(d.Get("backend_id")),
-		TimeoutClient:  timeoutClient,
-		CertificateIDs: types.ExpandSliceIDsPtr(d.Get("certificate_ids")),
-		EnableHTTP3:    d.Get("enable_http3").(bool),
+		Zone:                zone,
+		FrontendID:          ID,
+		Name:                types.ExpandOrGenerateString(d.Get("name"), "lb-frt"),
+		InboundPort:         int32(d.Get("inbound_port").(int)),
+		BackendID:           locality.ExpandID(d.Get("backend_id")),
+		TimeoutClient:       timeoutClient,
+		CertificateIDs:      types.ExpandSliceIDsPtr(d.Get("certificate_ids")),
+		EnableHTTP3:         d.Get("enable_http3").(bool),
+		ConnectionRateLimit: types.ExpandUint32Ptr(d.Get("connection_rate_limit")),
 	}
 
 	_, err = lbAPI.UpdateFrontend(req, scw.WithContext(ctx))
