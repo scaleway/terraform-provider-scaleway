@@ -171,6 +171,8 @@ The following arguments are supported:
 
 - `enable_http3` - (Default: `false`) Activates HTTP/3 protocol.
 
+- `connection_rate_limit` - (Optional) The rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
+
 - `acl` - (Optional) A list of ACL rules to apply to the Load Balancer frontend.  Defined below.
 
 ## acl

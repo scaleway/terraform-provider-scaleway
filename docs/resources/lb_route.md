@@ -79,6 +79,7 @@ The following arguments are supported:
 
 - `backend_id` - (Required) The ID of the backend the route is associated with.
 - `frontend_id` - (Required) The ID of the frontend the route is associated with.
+- `match_subdomains` - (Default: `false`) If true, all subdomains will match.
 - `match_sni` - The Server Name Indication (SNI) value to match. Value to match in the Server Name Indication TLS extension (SNI) field from an incoming connection made via an SSL/TLS transport layer.
   Only one of `match_sni` and `match_host_header` should be specified.
 
