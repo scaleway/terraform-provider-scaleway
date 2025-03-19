@@ -18,12 +18,11 @@ func TestAccDataSourceOfferSubscription_Basic(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_tem_offer_subscription" "test" {
-						project_id = "your_project_id"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "project_id"),
-					resource.TestCheckResourceAttr("data.scaleway_tem_offer_subscription.test", "name", "scale"),
+					resource.TestCheckResourceAttr("data.scaleway_tem_offer_subscription.test", "offer_name", "scale"),
 				),
 			},
 		},
