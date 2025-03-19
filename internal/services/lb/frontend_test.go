@@ -50,6 +50,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "inbound_port", "80"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", ""),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_http3", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "connection_rate_limit", "0"),
 				),
 			},
 			{
@@ -73,6 +74,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 						inbound_port = 443
 						timeout_client = "30s"
 						enable_http3 = true
+						connection_rate_limit = 100
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -81,6 +83,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "inbound_port", "443"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", "30s"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_http3", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "connection_rate_limit", "100"),
 				),
 			},
 		},

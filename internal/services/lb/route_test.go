@@ -48,6 +48,41 @@ func TestAccRoute_WithSNI(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isRoutePresent(tt, "scaleway_lb_route.rt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_sni", "sni.scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_subdomains", "false"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "updated_at"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb"
+						type = "lb-s"
+					}
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						forward_protocol = "tcp"
+						forward_port = 80
+						proxy_protocol = "none"
+					}
+					resource scaleway_lb_frontend frt01 {
+						lb_id = scaleway_lb.lb01.id
+						backend_id = scaleway_lb_backend.bkd01.id
+						inbound_port = 80
+					}
+					resource scaleway_lb_route rt01 {
+						frontend_id = scaleway_lb_frontend.frt01.id
+						backend_id = scaleway_lb_backend.bkd01.id
+						match_sni = "sni.scaleway.com"
+						match_subdomains = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isRoutePresent(tt, "scaleway_lb_route.rt01"),
+					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_sni", "sni.scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_subdomains", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "updated_at"),
 				),

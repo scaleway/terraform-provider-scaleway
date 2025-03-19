@@ -38,5 +38,6 @@ In addition to all arguments above, the following attributes are exported:
     - `backend_id` - The backend ID to redirect to
     - `created_at` - The date on which the route was created (RFC 3339 format).
     - `update_at` - The date on which the route was last updated (RFC 3339 format).
+    - `match_subdomains` - If true, all subdomains will match.
     - `match_sni` - Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer.
     - `match_host_header` - Specifies the host of the server to which the request is being sent.
