@@ -8,6 +8,9 @@ page_title: "Scaleway: scaleway_flexible_ip"
 Creates and manages Scaleway flexible IPs.
 For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/elastic-metal-flexible-ip).
 
+-> **Note:**
+Flexible IPs are exclusively available for Elastic Metal (bare metal) servers. They are not compatible with other Scaleway products.
+
 ## Example Usage
 
 ### Basic
@@ -74,6 +77,8 @@ The following arguments are supported:
 - `tags` - (Optional) A list of tags to apply to the flexible IP.
 - `reverse` - (Optional) The reverse domain associated with this flexible IP.
 - `is_ipv6` - (Optional) Defines whether the flexible IP has an IPv6 address.
+- `zone` -(Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Flexible IP.
+
 
 ## Attributes Reference
 
@@ -88,7 +93,6 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the flexible IP.
 - `created_at` - The date and time of the creation of the Flexible IP (Format ISO 8601).
 - `updated_at` - The date and time of the last update of the Flexible IP (Format ISO 8601).
-- `zone` - The zone of the Flexible IP.
 - `organization_id` - The organization of the Flexible IP.
 - `project_id` - The project of the Flexible IP.
 
