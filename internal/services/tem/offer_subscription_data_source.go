@@ -19,6 +19,11 @@ func DataSourceOfferSubscription() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
+			"offer_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the offer",
+			},
 			"subscribed_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -64,11 +69,11 @@ func DataSourceOfferSubscription() *schema.Resource {
 }
 
 func DataSourceOfferSubscriptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, projectID, err := NewAPIWithRegionAndID(m, d.Get("project_id").(string))
+	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	projectID := d.Get("project_id").(string)
 	offer, err := api.ListOfferSubscriptions(&tem.ListOfferSubscriptionsRequest{
 		Region:    region,
 		ProjectID: projectID,
@@ -93,6 +98,7 @@ func DataSourceOfferSubscriptionRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(regional.NewIDString(region, offerSubscription.ProjectID))
 	_ = d.Set("project_id", offerSubscription.ProjectID)
 	_ = d.Set("region", region)
+	_ = d.Set("offer_name", offerSubscription.OfferName)
 	_ = d.Set("subscribed_at", offerSubscription.SubscribedAt.Format(time.RFC3339))
 	_ = d.Set("cancellation_available_at", offerSubscription.CancellationAvailableAt.Format(time.RFC3339))
 	_ = d.Set("sla", offerSubscription.SLA)
