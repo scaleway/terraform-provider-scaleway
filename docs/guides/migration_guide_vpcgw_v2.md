@@ -36,49 +36,49 @@ A typical legacy configuration might look like this:
 
 ```hcl
 resource "scaleway_vpc" "main" {
-   name = "foo"
+  name = "foo"
 }
 
 resource "scaleway_vpc_private_network" "main" {
-   name   = "bar"
-   vpc_id = scaleway_vpc.main.id
+  name   = "bar"
+  vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_vpc_public_gateway_ip" "main" {
 }
 
 resource "scaleway_vpc_public_gateway" "main" {
-   name  = "foobar"
-   type  = "VPC-GW-S"
-   ip_id = scaleway_vpc_public_gateway_ip.main.id
+  name  = "foobar"
+  type  = "VPC-GW-S"
+  ip_id = scaleway_vpc_public_gateway_ip.main.id
 }
 
 resource "scaleway_vpc_public_gateway_dhcp" "main" {
-   subnet = "192.168.1.0/24"
+  subnet = "192.168.1.0/24"
 }
 
 resource "scaleway_instance_server" "main" {
-   image = "ubuntu_focal"
-   type  = "DEV1-S"
+  image = "ubuntu_focal"
+  type  = "DEV1-S"
 }
 
 resource "scaleway_instance_private_nic" "main" {
-   server_id          = scaleway_instance_server.main.id
-   private_network_id = scaleway_vpc_private_network.main.id
+  server_id          = scaleway_instance_server.main.id
+  private_network_id = scaleway_vpc_private_network.main.id
 }
 
 resource "scaleway_vpc_gateway_network" "main" {
-   gateway_id         = scaleway_vpc_public_gateway.main.id
-   private_network_id = scaleway_vpc_private_network.main.id
-   dhcp_id            = scaleway_vpc_public_gateway_dhcp.main.id
-   cleanup_dhcp       = true
-   enable_masquerade  = true
+  gateway_id         = scaleway_vpc_public_gateway.main.id
+  private_network_id = scaleway_vpc_private_network.main.id
+  dhcp_id            = scaleway_vpc_public_gateway_dhcp.main.id
+  cleanup_dhcp       = true
+  enable_masquerade  = true
 }
 
 resource "scaleway_vpc_public_gateway_dhcp_reservation" "main" {
-   gateway_network_id = scaleway_vpc_gateway_network.main.id
-   mac_address        = scaleway_instance_private_nic.main.mac_address
-   ip_address         = "192.168.1.1"
+  gateway_network_id = scaleway_vpc_gateway_network.main.id
+  mac_address        = scaleway_instance_private_nic.main.mac_address
+  ip_address         = "192.168.1.1"
 }
 ```
 
