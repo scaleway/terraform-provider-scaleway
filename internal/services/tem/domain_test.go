@@ -3,7 +3,6 @@ package tem_test
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -46,30 +45,6 @@ func TestAccDomain_Basic(t *testing.T) {
 	})
 }
 
-func TestAccDomain_Tos(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	domainName := "terraform-rs.test.local"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isDomainDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource scaleway_tem_domain cr01 {
-						name       = "%s"
-						accept_tos = false
-					}
-				`, domainName),
-				ExpectError: regexp.MustCompile("you must accept"),
-			},
-		},
-	})
-}
-
 func TestAccDomain_Autoconfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -91,7 +66,6 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 
 					resource scaleway_tem_domain cr01 {
 						name       = scaleway_domain_zone.test.id
-						accept_tos = true
 						autoconfig = true
 					}
 

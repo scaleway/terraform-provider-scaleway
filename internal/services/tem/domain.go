@@ -38,9 +38,9 @@ func ResourceDomain() *schema.Resource {
 			},
 			"accept_tos": {
 				Type:        schema.TypeBool,
-				Required:    true,
-				ForceNew:    true,
+				Optional:    true,
 				Description: "Accept the Scaleway Terms of Service",
+				Deprecated:  "This field is deprecated and will be removed, the field is always set to null",
 				ValidateFunc: func(i interface{}, _ string) (warnings []string, errs []error) {
 					v := i.(bool)
 					if !v {
@@ -199,7 +199,6 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		Region:     region,
 		ProjectID:  d.Get("project_id").(string),
 		DomainName: d.Get("name").(string),
-		AcceptTos:  d.Get("accept_tos").(bool),
 		Autoconfig: d.Get("autoconfig").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -232,9 +231,12 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	_ = d.Set("name", domain.Name)
-	_ = d.Set("accept_tos", true)
+	_ = d.Set("accept_tos", nil)
 	_ = d.Set("autoconfig", domain.Autoconfig)
 	_ = d.Set("status", domain.Status)
+	if acceptTos, ok := d.GetOk("accept_tos"); ok {
+		_ = d.Set("accept_tos", acceptTos)
+	}
 	_ = d.Set("created_at", types.FlattenTime(domain.CreatedAt))
 	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
 	_ = d.Set("last_valid_at", types.FlattenTime(domain.LastValidAt))
