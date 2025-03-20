@@ -30,6 +30,8 @@ terraform {
 }
 ```
 
+## Migration steps
+
 ### Legacy Configuration
 
 A typical legacy configuration might look like this:
