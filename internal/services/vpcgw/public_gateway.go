@@ -2,11 +2,11 @@ package vpcgw
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	v1 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -47,7 +47,7 @@ func ResourcePublicGateway() *schema.Resource {
 			},
 			"upstream_dns_servers": {
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Description: "override the gateway's default recursive DNS servers, if DNS features are enabled",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -91,6 +91,15 @@ func ResourcePublicGateway() *schema.Resource {
 				Optional:    true,
 				Description: "Trigger a refresh of the SSH keys for a given Public Gateway by changing this field's value",
 			},
+			"allowed_ip_ranges": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Description: "Set a definitive list of IP ranges (in CIDR notation) allowed to connect to the SSH bastion",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"project_id": account.ProjectIDSchema(),
 			"zone":       zonal.Schema(),
 			// Computed elements
@@ -110,25 +119,34 @@ func ResourcePublicGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the public gateway",
 			},
+			"bandwidth": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The bandwidth available of the gateway",
+			},
+			"migrate_to_v2": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Put a Public Gateway in IPAM mode, so that it can be used with the Public Gateways API v2",
+			},
 		},
 	}
 }
 
 func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := newAPIWithZone(d, m)
+	api, zone, err := newAPIWithZoneV2(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &vpcgw.CreateGatewayRequest{
-		Name:               types.ExpandOrGenerateString(d.Get("name"), "pn"),
-		Type:               d.Get("type").(string),
-		Tags:               types.ExpandStrings(d.Get("tags")),
-		UpstreamDNSServers: types.ExpandStrings(d.Get("upstream_dns_servers")),
-		ProjectID:          d.Get("project_id").(string),
-		EnableBastion:      d.Get("bastion_enabled").(bool),
-		Zone:               zone,
-		EnableSMTP:         d.Get("enable_smtp").(bool),
+		Name:          types.ExpandOrGenerateString(d.Get("name"), "pn"),
+		Type:          d.Get("type").(string),
+		Tags:          types.ExpandStrings(d.Get("tags")),
+		ProjectID:     d.Get("project_id").(string),
+		EnableBastion: d.Get("bastion_enabled").(bool),
+		Zone:          zone,
+		EnableSMTP:    d.Get("enable_smtp").(bool),
 	}
 
 	if bastionPort, ok := d.GetOk("bastion_port"); ok {
@@ -144,146 +162,122 @@ func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, gateway.ID))
-
-	// check err waiting process
-	_, err = waitForVPCPublicGateway(ctx, api, zone, gateway.ID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, gateway.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	d.SetId(zonal.NewIDString(zone, gateway.ID))
+
+	if allowedIps, ok := d.GetOk("allowed_ip_ranges"); ok {
+		listIPs := allowedIps.(*schema.Set).List()
+		_, err = api.SetBastionAllowedIPs(&vpcgw.SetBastionAllowedIPsRequest{
+			GatewayID: gateway.ID,
+			Zone:      zone,
+			IPRanges:  types.ExpandStrings(listIPs),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceVPCPublicGatewayRead(ctx, d, m)
 }
 
 func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	apiV1, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	gateway, err := waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
+	gatewayV2, err := waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if httperrors.Is404(err) {
+		if httperrors.Is412(err) {
+			// Fallback to v1 API.
+			gatewayV1, err := waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			return readVPCGWResourceDataV1(d, gatewayV1)
+		} else if httperrors.Is404(err) {
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", gateway.Name)
-	_ = d.Set("type", gateway.Type.Name)
-	_ = d.Set("status", gateway.Status.String())
-	_ = d.Set("organization_id", gateway.OrganizationID)
-	_ = d.Set("project_id", gateway.ProjectID)
-	_ = d.Set("created_at", gateway.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", gateway.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("zone", gateway.Zone)
-	_ = d.Set("tags", gateway.Tags)
-	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
-	_ = d.Set("ip_id", zonal.NewID(gateway.Zone, gateway.IP.ID).String())
-	_ = d.Set("bastion_enabled", gateway.BastionEnabled)
-	_ = d.Set("bastion_port", int(gateway.BastionPort))
-	_ = d.Set("enable_smtp", gateway.SMTPEnabled)
-
-	return nil
+	return readVPCGWResourceDataV2(d, gatewayV2)
 }
 
 func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	apiV1, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	gateway, err := waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	updateRequest := &vpcgw.UpdateGatewayRequest{
-		GatewayID: gateway.ID,
-		Zone:      gateway.Zone,
-	}
-
-	if d.HasChanges("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
-	}
-
-	if d.HasChange("tags") {
-		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-	}
-
-	if d.HasChange("bastion_port") {
-		updateRequest.BastionPort = scw.Uint32Ptr(uint32(d.Get("bastion_port").(int)))
-	}
-
-	if d.HasChange("bastion_enabled") {
-		updateRequest.EnableBastion = scw.BoolPtr(d.Get("bastion_enabled").(bool))
-	}
-
-	if d.HasChange("enable_smtp") {
-		updateRequest.EnableSMTP = scw.BoolPtr(d.Get("enable_smtp").(bool))
-	}
-
-	if d.HasChange("upstream_dns_servers") {
-		updateRequest.UpstreamDNSServers = types.ExpandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
-	}
-
-	_, err = api.UpdateGateway(updateRequest, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if d.HasChange("refresh_ssh_keys") {
-		_, err := api.RefreshSSHKeys(&vpcgw.RefreshSSHKeysRequest{
-			Zone:      gateway.Zone,
-			GatewayID: gateway.ID,
+	if d.HasChange("migrate_to_v2") {
+		err = apiV1.MigrateToV2(&v1.MigrateToV2Request{
+			Zone:      zone,
+			GatewayID: id,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
-
-	_, err = waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("type") {
-		_, err := api.UpgradeGateway(&vpcgw.UpgradeGatewayRequest{
-			Zone:      gateway.Zone,
-			GatewayID: gateway.ID,
-			Type:      types.ExpandUpdatedStringPtr(d.Get("type")),
-		}, scw.WithContext(ctx))
-		if err != nil {
+	if err := updateGateway(ctx, d, api, apiV1, zone, id); err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		if httperrors.Is412(err) {
+			_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
 			return diag.FromErr(err)
 		}
-	}
-
-	_, err = waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
 	}
 
 	return ResourceVPCPublicGatewayRead(ctx, d, m)
 }
 
 func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	apiV1, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
+		if httperrors.Is412(err) {
+			_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteGateway(&vpcgw.DeleteGatewayRequest{
+	_, err = api.DeleteGateway(&vpcgw.DeleteGatewayRequest{
 		GatewayID: id,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -291,9 +285,18 @@ func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGateway(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
+	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		} else if httperrors.Is412(err) {
+			_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutDelete))
+			if err != nil && !httperrors.Is404(err) {
+				return diag.FromErr(err)
+			}
+		} else {
+			return diag.FromErr(err)
+		}
 	}
 
 	return nil

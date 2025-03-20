@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -35,7 +35,7 @@ func DataSourceVPCPublicGateway() *schema.Resource {
 }
 
 func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := newAPIWithZone(d, m)
+	api, zone, err := newAPIWithZoneV2(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -49,9 +49,10 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 		gwName := d.Get("name").(string)
 		res, err := api.ListGateways(
 			&vpcgw.ListGatewaysRequest{
-				Name:      types.ExpandStringPtr(gwName),
-				Zone:      zone,
-				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+				Name:          types.ExpandStringPtr(gwName),
+				Zone:          zone,
+				ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
+				IncludeLegacy: scw.BoolPtr(true),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
