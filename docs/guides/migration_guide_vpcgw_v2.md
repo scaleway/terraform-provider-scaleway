@@ -137,7 +137,7 @@ Instead, you remove the legacy DHCP reservation resource and switch to using IPA
      type        = "ipv4"
    }
    ```
-   
+
    You can now use data.scaleway_ipam_ip.existing.id in your configuration to reference the reserved IP.
 
 2. **Book New IPs Using the IPAM IP Resource**
@@ -155,7 +155,7 @@ Instead, you remove the legacy DHCP reservation resource and switch to using IPA
 3. **Attach the Reserved IP to Your Resources**
 
    Once you have your IP—whether retrieved via the datasource or booked as a new resource—you can attach it to your server’s private NIC:
-   
+
    ```hcl
    resource "scaleway_instance_private_nic" "pnic01" {
      private_network_id = scaleway_vpc_private_network.main.id
