@@ -28,7 +28,6 @@ variable "domain_name" {
 
 resource "scaleway_tem_domain" "main" {
   name       = var.domain_name
-  accept_tos = true
 }
 
 resource "scaleway_domain_record" "spf" {
@@ -67,7 +66,6 @@ variable "domain_name" {
 
 resource "scaleway_tem_domain" "main" {
   name       = var.domain_name
-  accept_tos = true
   autoconfig = true
 }
 
@@ -109,8 +107,8 @@ The following arguments are supported:
 - `name` - (Required) The domain name, must not be used in another Transactional Email Domain.
   ~> **Important:** Updates to `name` will recreate the domain.
 
-- `accept_tos` - (Required) Acceptation of the [Term of Service](https://tem.s3.fr-par.scw.cloud/antispam_policy.pdf).
-  ~> **Important:** This attribute must be set to `true`.
+- `accept_tos` - (Deprecated) Acceptation of the [Term of Service](https://tem.s3.fr-par.scw.cloud/antispam_policy.pdf).
+  ~> **Important:** This attribute must be set to `true`. Note that its value is no longer taken into account.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the domain should be created.
 
