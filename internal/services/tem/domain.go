@@ -234,6 +234,9 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("accept_tos", nil)
 	_ = d.Set("autoconfig", domain.Autoconfig)
 	_ = d.Set("status", domain.Status)
+	if acceptTos, ok := d.GetOk("accept_tos"); ok {
+		_ = d.Set("accept_tos", acceptTos)
+	}
 	_ = d.Set("created_at", types.FlattenTime(domain.CreatedAt))
 	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
 	_ = d.Set("last_valid_at", types.FlattenTime(domain.LastValidAt))
