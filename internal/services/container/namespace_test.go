@@ -172,6 +172,91 @@ func TestAccNamespace_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNamespace_SecretManagement(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isNamespaceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+						name = "test-secret-ns"
+						secret_environment_variables = {
+							"SECRET_1" = "value1"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNamespacePresent(tt, "scaleway_container_namespace.main"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1", "value1"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+						name = "test-secret-ns"
+						secret_environment_variables = {}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNamespacePresent(tt, "scaleway_container_namespace.main"),
+					resource.TestCheckNoResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+						name = "test-secret-ns"
+						secret_environment_variables = {
+							"SECRET_1" = "value1"
+							"SECRET_2" = "value2"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNamespacePresent(tt, "scaleway_container_namespace.main"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1", "value1"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2", "value2"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+						name = "test-secret-ns"
+						secret_environment_variables = {
+							"SECRET_2" = "value2"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNamespacePresent(tt, "scaleway_container_namespace.main"),
+					resource.TestCheckNoResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2", "value2"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+						name = "test-secret-ns"
+						secret_environment_variables = {
+							"SECRET_3" = "value3"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isNamespacePresent(tt, "scaleway_container_namespace.main"),
+					resource.TestCheckNoResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_3", "value3"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNamespace_DestroyRegistry(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
