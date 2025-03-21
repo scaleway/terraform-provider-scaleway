@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -43,19 +43,18 @@ func DataSourceNetwork() *schema.Resource {
 }
 
 func DataSourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	vpcAPI, zone, err := newAPIWithZone(d, m)
+	vpcgwAPI, zone, err := newAPIWithZoneV2(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	gatewayNetworkID, ok := d.GetOk("gateway_network_id")
 	if !ok {
-		res, err := vpcAPI.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
-			GatewayID:        types.ExpandStringPtr(locality.ExpandID(d.Get("gateway_id"))),
-			PrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("private_network_id"))),
-			EnableMasquerade: types.ExpandBoolPtr(types.GetBool(d, "enable_masquerade")),
-			DHCPID:           types.ExpandStringPtr(locality.ExpandID(d.Get("dhcp_id").(string))),
-			Zone:             zone,
+		res, err := vpcgwAPI.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
+			GatewayIDs:        []string{locality.ExpandID(d.Get("gateway_id").(string))},
+			PrivateNetworkIDs: []string{locality.ExpandID(d.Get("private_network_id"))},
+			MasqueradeEnabled: types.ExpandBoolPtr(types.GetBool(d, "enable_masquerade")),
+			Zone:              zone,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

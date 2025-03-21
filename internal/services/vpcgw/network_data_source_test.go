@@ -24,11 +24,6 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 					resource "scaleway_vpc_public_gateway_ip" "gw01" {
 					}
 					
-					resource "scaleway_vpc_public_gateway_dhcp" "dhcp01" {
-					  subnet = "192.168.1.0/24"
-					  push_default_route = true
-					}
-					
 					resource "scaleway_vpc_public_gateway" "pg01" {
 					  type = "VPC-GW-S"
 					  ip_id = scaleway_vpc_public_gateway_ip.gw01.id
@@ -37,8 +32,9 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 					resource "scaleway_vpc_gateway_network" "main" {
 					  gateway_id = scaleway_vpc_public_gateway.pg01.id
 					  private_network_id = scaleway_vpc_private_network.pn01.id
-					  dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
-					  cleanup_dhcp       = true
+					  ipam_config {
+						push_default_route = false
+					  }
 					  enable_masquerade  = true
 					}`,
 			},
@@ -49,12 +45,7 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 					
 					resource "scaleway_vpc_public_gateway_ip" "gw01" {
 					}
-					
-					resource "scaleway_vpc_public_gateway_dhcp" "dhcp01" {
-					  subnet = "192.168.1.0/24"
-					  push_default_route = true
-					}
-					
+
 					resource "scaleway_vpc_public_gateway" "pg01" {
 					  type = "VPC-GW-S"
 					  ip_id = scaleway_vpc_public_gateway_ip.gw01.id
@@ -63,8 +54,9 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 					resource "scaleway_vpc_gateway_network" "main" {
 					  gateway_id = scaleway_vpc_public_gateway.pg01.id
 					  private_network_id = scaleway_vpc_private_network.pn01.id
-					  dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
-					  cleanup_dhcp       = true
+					  ipam_config {
+						push_default_route = false
+					  }
 					  enable_masquerade  = true
 					}
 

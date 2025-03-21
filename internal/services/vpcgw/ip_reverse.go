@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -47,7 +47,7 @@ func ResourceIPReverseDNS() *schema.Resource {
 }
 
 func ResourceVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := newAPIWithZone(d, m)
+	api, zone, err := newAPIWithZoneV2(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -85,7 +85,7 @@ func ResourceVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *schema.R
 }
 
 func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,7 +111,7 @@ func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.Res
 }
 
 func ResourceVPCPublicGatewayIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,7 +139,7 @@ func ResourceVPCPublicGatewayIPReverseDNSUpdate(ctx context.Context, d *schema.R
 }
 
 func ResourceVPCPublicGatewayIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

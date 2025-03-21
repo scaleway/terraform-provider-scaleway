@@ -6,146 +6,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	ipamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	vpcgwchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw/testfuncs"
 )
-
-func TestAccVPCGatewayNetwork_Basic(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      vpcgwchecks.IsGatewayNetworkDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_vpc_private_network pn01 {
-						name = "pn_test_network"
-					}
-
-					resource scaleway_vpc_public_gateway_ip gw01 {
-					}
-
-					resource scaleway_vpc_public_gateway_dhcp dhcp01 {
-						subnet = "192.168.1.0/24"
-					}
-				`,
-			},
-			{
-				Config: `
-					resource scaleway_vpc_private_network pn01 {
-						name = "pn_test_network"
-					}
-
-					resource scaleway_vpc_public_gateway_ip gw01 {
-					}
-
-					resource scaleway_vpc_public_gateway_dhcp dhcp01 {
-						subnet = "192.168.1.0/24"
-					}
-
-					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
-						type = "VPC-GW-S"
-						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
-					}
-
-					resource scaleway_vpc_gateway_network main {
-						gateway_id = scaleway_vpc_public_gateway.pg01.id
-						private_network_id = scaleway_vpc_private_network.pn01.id
-						dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
-						cleanup_dhcp = true
-						enable_masquerade = true
-						depends_on = [scaleway_vpc_public_gateway_ip.gw01, scaleway_vpc_private_network.pn01]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
-					resource.TestCheckResourceAttrPair("scaleway_vpc_gateway_network.main",
-						"private_network_id", "scaleway_vpc_private_network.pn01", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "gateway_id"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "private_network_id"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "dhcp_id"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "created_at"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "updated_at"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "zone"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_dhcp", "true"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "cleanup_dhcp", "true"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc_private_network pn01 {
-						name = "pn_test_network"
-					}
-
-					resource scaleway_vpc_public_gateway_ip gw01 {
-					}
-
-					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
-						type = "VPC-GW-S"
-						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pn01", "name"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      vpcgwchecks.IsGatewayNetworkDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_vpc_private_network pn01 {
-						name = "pn_test_network"
-					}
-
-					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
-						type = "VPC-GW-S"
-					}
-
-					resource scaleway_vpc_gateway_network main {
-						gateway_id = scaleway_vpc_public_gateway.pg01.id
-						private_network_id = scaleway_vpc_private_network.pn01.id
-						enable_dhcp = false
-						enable_masquerade = true
-						static_address = "192.168.1.42/24"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "gateway_id"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "private_network_id"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "created_at"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "updated_at"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "zone"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "static_address", "192.168.1.42/24"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_dhcp", "false"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "cleanup_dhcp", "false"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
-				),
-			},
-		},
-	})
-}
 
 func TestAccVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -195,10 +61,8 @@ func TestAccVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "status"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "zone"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "static_address"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "ipam_config.0.push_default_route", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_dhcp", "true"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
 				),
 			},
@@ -256,7 +120,7 @@ func testAccCheckVPCGatewayNetworkExists(tt *acctest.TestTools, n string) resour
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
