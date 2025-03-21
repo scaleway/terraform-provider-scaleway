@@ -2,7 +2,7 @@
 page_title: "Moving a Public Gateway from Legacy mode to IPAM mode, for v2 compatibility"
 ---
 
-# Migrating from Legacy VPC Gateway to v2
+# Moving a Public Gateway from Legacy mode to IPAM mode.
 
 This guide explains how to migrate from the legacy VPC gateway configuration (v1) to the new v2 API.
 In the legacy setup, DHCP and DHCP reservations are managed with dedicated resources and referenced in the gateway network.
