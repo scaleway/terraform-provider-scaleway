@@ -127,7 +127,7 @@ After triggering the move, update your Terraform configuration as follows:
 
 ### Using the IPAM Datasource and Resource for Reservations
 
-After migrating your public gateway to v2, you no longer manage DHCP reservations with dedicated resources.
+After putting your Public Gateway in IPAM mode, you no longer manage DHCP reservations with dedicated resources.
 Instead, you remove the legacy DHCP reservation resource and switch to using IPAM to manage your IPs.
 
 1. **Retrieve an Existing IP with the IPAM Datasource**  
