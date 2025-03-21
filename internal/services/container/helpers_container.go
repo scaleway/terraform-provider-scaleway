@@ -3,6 +3,7 @@ package container
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -300,6 +301,30 @@ func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
 	}
 
 	return secrets
+}
+
+func convertToMapStringInterface(raw interface{}) map[string]interface{} {
+	out := make(map[string]interface{})
+	if raw == nil {
+		return out
+	}
+
+	m, ok := raw.(map[interface{}]interface{})
+	if ok {
+		for k, v := range m {
+			stringKey := fmt.Sprintf("%v", k)
+			out[stringKey] = v
+		}
+
+		return out
+	}
+
+	m2, ok := raw.(map[string]interface{})
+	if ok {
+		return m2
+	}
+
+	return out
 }
 
 func isContainerDNSResolveError(err error) bool {
