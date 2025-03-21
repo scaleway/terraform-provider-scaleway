@@ -86,7 +86,7 @@ resource "scaleway_vpc_public_gateway_dhcp_reservation" "main" {
 
 ### Triggering the move to IPAM-mode
 
-Before updating your configuration, you must trigger the migration on the public gateway resource. For example, add the `migrate_to_v2` flag:
+Before updating your configuration, you must trigger the move to IPAM-mode on the Public Gateway resource. For example, add the `migrate_to_v2` flag:
 
 ```hcl
 resource "scaleway_vpc_public_gateway" "main" {
