@@ -101,7 +101,7 @@ This call updates the gateway on the API side from v1 to v2. The DHCP configurat
 
 ### Updated Configuration
 
-After triggering the migration, update your Terraform configuration as follows:
+After triggering the move, update your Terraform configuration as follows:
 
 1. **Remove the DHCP and DHCP Reservation Resources**
 
