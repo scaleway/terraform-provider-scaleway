@@ -17,7 +17,7 @@ You can do this via the Terraform configuration or by using the Scaleway CLI/Con
 
 ### Ensure the Latest Provider Version
 
-Ensure your Scaleway provider is updated to at least version `2.52.0`.
+Ensure your Scaleway Terraform provider is updated to at least version `2.52.0`.
 
 ```hcl
 terraform {
