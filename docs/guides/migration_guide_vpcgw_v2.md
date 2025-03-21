@@ -10,7 +10,7 @@ In IPAM mode, these functionalities are managed by Scaleway IPAM.
 In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.
 
 Note:
-During migration, you need to trigger the migration call by setting the `migrate_to_v2` flag on your public gateway resource.
+Trigger the move from Legacy mode to IPAM mide by setting the `migrate_to_v2` flag on your Public Gateway resource.
 You can do this via the Terraform configuration or by using the Scaleway CLI/Console.
 
 ## Prerequisites
