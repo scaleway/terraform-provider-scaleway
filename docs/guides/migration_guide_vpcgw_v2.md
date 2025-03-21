@@ -1,5 +1,5 @@
 ---
-page_title: "Migrating from Legacy VPC Gateway to v2"
+page_title: "Moving a Public Gateway from Legacy mode to IPAM mode, for v2 compatibility"
 ---
 
 # Migrating from Legacy VPC Gateway to v2
