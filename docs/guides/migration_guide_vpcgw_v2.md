@@ -97,7 +97,7 @@ resource "scaleway_vpc_public_gateway" "main" {
 }
 ```
 
-This call updates the gateway on the API side from v1 to v2. The DHCP configuration and reservations remain intact, but the underlying resource is now managed using v2.
+This call puts the gateway into IPAM mode and means it will now be managed by v2 of the API instead of v1. The DHCP configuration and reservations remain intact, but the underlying resource is now managed using v2.
 
 ### Updated Configuration
 
