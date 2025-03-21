@@ -193,7 +193,28 @@ func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("secret_environment_variables") {
-		req.SecretEnvironmentVariables = expandContainerSecrets(d.Get("secret_environment_variables"))
+		oldSecretsRaw, newSecretsRaw := d.GetChange("secret_environment_variables")
+
+		oldSecretsMap := convertToMapStringInterface(oldSecretsRaw)
+		newSecretsMap := convertToMapStringInterface(newSecretsRaw)
+
+		oldSecrets := expandContainerSecrets(oldSecretsMap)
+		newSecrets := expandContainerSecrets(newSecretsMap)
+
+		deletedSecrets := make([]*container.Secret, 0)
+
+		for _, oldSecret := range oldSecrets {
+			if _, exists := newSecretsMap[oldSecret.Key]; !exists {
+				deletedSecrets = append(deletedSecrets, &container.Secret{
+					Key:   oldSecret.Key,
+					Value: nil,
+				})
+			}
+		}
+
+		deletedSecrets = append(deletedSecrets, newSecrets...)
+
+		req.SecretEnvironmentVariables = deletedSecrets
 	}
 
 	if _, err := api.UpdateNamespace(req, scw.WithContext(ctx)); err != nil {
