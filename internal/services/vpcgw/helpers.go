@@ -195,6 +195,7 @@ func readVPCGWResourceDataV2(d *schema.ResourceData, gw *v2.Gateway) diag.Diagno
 	_ = d.Set("bastion_port", int(gw.BastionPort))
 	_ = d.Set("enable_smtp", gw.SMTPEnabled)
 	_ = d.Set("bandwidth", gw.Bandwidth)
+	_ = d.Set("upstream_dns_servers", nil)
 	ips, err := FlattenIPNetList(gw.BastionAllowedIPs)
 	if err != nil {
 		return diag.FromErr(err)

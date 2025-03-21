@@ -124,7 +124,7 @@ func ResourcePublicGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The bandwidth available of the gateway",
 			},
-			"migrate_to_v2": {
+			"move_to_ipam": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Put a Public Gateway in IPAM mode, so that it can be used with the Public Gateways API v2",
@@ -225,7 +225,7 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("migrate_to_v2") {
+	if d.HasChange("move_to_ipam") {
 		err = apiV1.MigrateToV2(&v1.MigrateToV2Request{
 			Zone:      zone,
 			GatewayID: id,
