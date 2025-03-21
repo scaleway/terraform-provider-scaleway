@@ -20,7 +20,7 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -195,6 +195,7 @@ func isSNSTopicDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 				if errors.As(err, &apiErr) && apiErr.Code == "AccessDeniedException" {
 					return nil
 				}
+
 				return err
 			}
 

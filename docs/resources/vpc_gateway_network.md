@@ -8,7 +8,7 @@ page_title: "Scaleway: scaleway_vpc_gateway_network"
 Creates and manages GatewayNetworks (connections between a Public Gateway and a Private Network).
 
 It allows the attachment of Private Networks to Public Gateways and DHCP configurations.
-For more information, see [the API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#step-3-attach-private-networks-to-the-vpc-public-gateway).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#step-3-attach-private-networks-to-the-vpc-public-gateway).
 
 ## Example Usage
 
@@ -167,4 +167,3 @@ GatewayNetwork can be imported using `{zone}/{id}`, e.g.
 ```bash
 terraform import scaleway_vpc_gateway_network.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```
-

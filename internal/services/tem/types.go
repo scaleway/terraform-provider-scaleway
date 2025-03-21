@@ -9,6 +9,7 @@ func flattenDomainReputation(reputation *tem.DomainReputation) interface{} {
 	if reputation == nil {
 		return nil
 	}
+
 	return []map[string]interface{}{
 		{
 			"status":             reputation.Status.String(),
@@ -25,5 +26,6 @@ func expandWebhookEventTypes(eventTypesInterface []interface{}) []tem.WebhookEve
 	for i, v := range eventTypesInterface {
 		eventTypes[i] = tem.WebhookEventType(v.(string))
 	}
+
 	return eventTypes
 }

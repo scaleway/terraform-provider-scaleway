@@ -205,8 +205,10 @@ func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m
 			return readVPCGWResourceDataV1(d, gatewayV1)
 		} else if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

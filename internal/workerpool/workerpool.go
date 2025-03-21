@@ -47,6 +47,7 @@ func (p *WorkerPool) dispatcher() {
 				}
 
 				close(p.tasksToRun)
+
 				return
 			}
 

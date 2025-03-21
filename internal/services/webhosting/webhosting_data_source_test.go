@@ -19,6 +19,7 @@ func TestAccDataSourceWebhosting_Basic(t *testing.T) {
 				Config: `
 				data "scaleway_webhosting_offer" "by_name" {
 				  name = "lite"
+				  control_panel = "Cpanel"
 				}
 
 				resource "scaleway_webhosting" "main" {
@@ -31,6 +32,7 @@ func TestAccDataSourceWebhosting_Basic(t *testing.T) {
 				Config: `
 				data "scaleway_webhosting_offer" "by_name" {
 				  name = "lite"
+				  control_panel = "Cpanel"
 				}
 
 				resource "scaleway_webhosting" "main" {

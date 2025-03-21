@@ -65,16 +65,16 @@ resource "scaleway_instance_ip" "public_ip_backup" {
   project_id = var.project_id
 }
 
-resource "scaleway_instance_volume" "data" {
+resource "scaleway_block_volume" "data" {
   project_id = var.project_id
   size_in_gb = 30
-  type       = "l_ssd"
+  iops = 5000
 }
 
-resource "scaleway_instance_volume" "data_backup" {
+resource "scaleway_block_volume" "data_backup" {
   project_id = var.project_id
   size_in_gb = 10
-  type       = "l_ssd"
+  iops = 5000
 }
 
 resource "scaleway_instance_security_group" "www" {
@@ -108,10 +108,9 @@ resource "scaleway_instance_server" "web" {
 
   ip_id = scaleway_instance_ip.public_ip.id
 
-  additional_volume_ids = [scaleway_instance_volume.data.id]
+  additional_volume_ids = [scaleway_block_volume.data.id]
 
   root_volume {
-    # The local storage of a DEV1-L instance is 80 GB, subtract 30 GB from the additional l_ssd volume, then the root volume needs to be 50 GB.
     size_in_gb = 50
   }
 
@@ -271,7 +270,7 @@ $ export TF_APPEND_USER_AGENT="CI/CD System XYZ Job #1234"
 
 In case you want to [debug a deployment](https://www.terraform.io/internals/debugging), you can use the following command to increase the level of verbosity.
 
-`SCW_DEBUG=1 TF_LOG=WARN TF_LOG_PROVIDER=DEBUG terraform apply`
+`SCW_DEBUG=1 TF_LOG=DEBUG TF_LOG_PROVIDER=DEBUG terraform apply`
 
 - `SCW_DEBUG`: set the debug level of the scaleway SDK.
 - `TF_LOG`: set the level of the Terraform logging.

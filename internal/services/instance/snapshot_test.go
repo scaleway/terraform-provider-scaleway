@@ -19,7 +19,7 @@ func TestAccSnapshot_BlockVolume(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isVolumeDestroyed(tt),
+		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -45,7 +45,7 @@ func TestAccSnapshot_Unified(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isVolumeDestroyed(tt),
+		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -87,13 +87,16 @@ func TestAccSnapshot_Server(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isVolumeDestroyed(tt),
+		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_focal"
 						type = "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}
 
 					resource "scaleway_instance_snapshot" "main" {
@@ -114,7 +117,7 @@ func TestAccSnapshot_ServerWithBlockVolume(t *testing.T) {
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isVolumeDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
 			isSnapshotDestroyed(tt),
 		),
@@ -155,7 +158,7 @@ func TestAccSnapshot_RenameSnapshot(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isVolumeDestroyed(tt),
+		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -200,7 +203,7 @@ func TestAccSnapshot_FromObject(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isVolumeDestroyed(tt),
+		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

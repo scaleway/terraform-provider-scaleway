@@ -130,6 +130,7 @@ func isSQSDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if httperrors.Is404(err) { // Project may have been deleted
 					return nil
 				}
+
 				return err
 			}
 

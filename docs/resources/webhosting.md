@@ -6,13 +6,14 @@ page_title: "Scaleway: scaleway_webhosting"
 # Resource: scaleway_webhosting
 
 Creates and manages Scaleway Web Hostings.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/webhosting/).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/webhosting/).
 
 ## Example Usage
 
 ```terraform
 data "scaleway_webhosting_offer" "by_name" {
   name = "lite"
+  control_panel = "Cpanel"
 }
 
 resource "scaleway_webhosting" "main" {
@@ -57,7 +58,7 @@ In addition to all arguments above, the following attributes are exported:
     - `dashboard` - The URL of the Dashboard.
     - `webmail` - The URL of the Webmail interface.
 - `username` - The main hosting cPanel username.
-- `organization_id` - The organization ID the hosting is associated with.
+- `organization_id` - (Deprecated) The organization ID the hosting is associated with.
 
 ## Import
 

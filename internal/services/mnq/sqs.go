@@ -88,6 +88,7 @@ func ResourceMNQSQSDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if sqs.Status == mnq.SqsInfoStatusDisabled {
 		d.SetId("")
+
 		return nil
 	}
 

@@ -19,10 +19,12 @@ import (
 func CheckBucketExists(tt *acctest.TestTools, n string, shouldBeAllowed bool) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		rs := state.RootModule().Resources[n]
 		if rs == nil {
 			return errors.New("resource not found")
 		}
+
 		bucketName := rs.Primary.Attributes["name"]
 		bucketRegion := rs.Primary.Attributes["region"]
 
@@ -42,11 +44,14 @@ func CheckBucketExists(tt *acctest.TestTools, n string, shouldBeAllowed bool) re
 			if !shouldBeAllowed && object.IsS3Err(err, object.ErrCodeForbidden, object.ErrCodeForbidden) {
 				return nil
 			}
+
 			if errors.As(err, new(*types.NoSuchBucket)) {
 				return errors.New("s3 bucket not found")
 			}
+
 			return err
 		}
+
 		return nil
 	}
 }
@@ -54,6 +59,7 @@ func CheckBucketExists(tt *acctest.TestTools, n string, shouldBeAllowed bool) re
 func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway" {
 				continue
@@ -76,11 +82,13 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					// Bucket doesn't exist
 					continue
 				}
-				return fmt.Errorf("couldn't get bucket to verify if it still exists: %s", err)
+
+				return fmt.Errorf("couldn't get bucket to verify if it still exists: %w", err)
 			}
 
 			return errors.New("bucket should be deleted")
 		}
+
 		return nil
 	}
 }
@@ -88,6 +96,7 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway" {
 				continue
@@ -111,11 +120,13 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "The specified bucket does not exist") {
 					continue
 				}
-				return fmt.Errorf("couldn't get object to verify if it still exists: %s", err)
+
+				return fmt.Errorf("couldn't get object to verify if it still exists: %w", err)
 			}
 
 			return errors.New("object should be deleted")
 		}
+
 		return nil
 	}
 }
@@ -123,6 +134,7 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func IsWebsiteConfigurationDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
+
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_object_bucket_website_configuration" {
 				continue

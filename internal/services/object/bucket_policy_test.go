@@ -249,12 +249,14 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicyText string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
+
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]
+
 		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
@@ -265,14 +267,16 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 		}
 
 		bucketName := rs.Primary.Attributes["name"]
+
 		policy, err := s3Client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{
 			Bucket: types.ExpandStringPtr(bucketName),
 		})
 		if err != nil {
-			return fmt.Errorf("GetBucketPolicy error: %v", err)
+			return fmt.Errorf("GetBucketPolicy error: %w", err)
 		}
 
 		actualPolicyText := *policy.Policy
+
 		actualPolicyText, err = removePolicyStatementResources(actualPolicyText)
 		if err != nil {
 			return err
@@ -280,8 +284,9 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 
 		equivalent, err := awspolicy.PoliciesAreEquivalent(actualPolicyText, expectedPolicyText)
 		if err != nil {
-			return fmt.Errorf("error testing policy equivalence: %s", err)
+			return fmt.Errorf("error testing policy equivalence: %w", err)
 		}
+
 		if !equivalent {
 			return fmt.Errorf("non equivalent policy error:\n\nexpected: %s\n\n     got: %s",
 				expectedPolicyText, actualPolicyText)
@@ -296,9 +301,10 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 //	policy["Statement"][i]["Resource"]
 func removePolicyStatementResources(policy string) (string, error) {
 	actualPolicyJSON := make(map[string]interface{})
+
 	err := json.Unmarshal([]byte(policy), &actualPolicyJSON)
 	if err != nil {
-		return "", fmt.Errorf("json.Unmarshal error: %v", err)
+		return "", fmt.Errorf("json.Unmarshal error: %w", err)
 	}
 
 	if statement, ok := actualPolicyJSON["Statement"].([]interface{}); ok && len(statement) > 0 {
@@ -311,7 +317,7 @@ func removePolicyStatementResources(policy string) (string, error) {
 
 	actualPolicyTextBytes, err := json.Marshal(actualPolicyJSON)
 	if err != nil {
-		return "", fmt.Errorf("json.Marshal error: %v", err)
+		return "", fmt.Errorf("json.Marshal error: %w", err)
 	}
 
 	return string(actualPolicyTextBytes), nil

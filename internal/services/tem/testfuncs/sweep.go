@@ -20,18 +20,21 @@ func AddTestSweepers() {
 func testSweepDomain(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		temAPI := temSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: revoking the tem domains in (%s)", region)
 
 		listDomains, err := temAPI.ListDomains(&temSDK.ListDomainsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing domains in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing domains in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, ns := range listDomains.Domains {
 			if ns.Name == "test.scaleway-terraform.com" {
 				logging.L.Debugf("sweeper: skipping deletion of domain %s", ns.Name)
+
 				continue
 			}
+
 			_, err := temAPI.RevokeDomain(&temSDK.RevokeDomainRequest{
 				DomainID: ns.ID,
 				Region:   region,
@@ -39,7 +42,7 @@ func testSweepDomain(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error revoking domain in sweeper: %s", err)
+				return fmt.Errorf("error revoking domain in sweeper: %w", err)
 			}
 		}
 

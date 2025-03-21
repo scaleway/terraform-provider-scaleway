@@ -135,8 +135,10 @@ func ResourceFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -163,8 +165,10 @@ func ResourceFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

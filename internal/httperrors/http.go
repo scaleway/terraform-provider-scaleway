@@ -17,23 +17,27 @@ func IsHTTPCodeError(err error, statusCode int) bool {
 	if errors.As(err, &responseError) && responseError.StatusCode == statusCode {
 		return true
 	}
+
 	return false
 }
 
 // Is404 returns true if err is an HTTP 404 error
 func Is404(err error) bool {
 	notFoundError := &scw.ResourceNotFoundError{}
+
 	return IsHTTPCodeError(err, http.StatusNotFound) || errors.As(err, &notFoundError)
 }
 
 func Is412(err error) bool {
 	preConditionFailedError := &scw.PreconditionFailedError{}
+
 	return IsHTTPCodeError(err, http.StatusPreconditionFailed) || errors.As(err, &preConditionFailedError)
 }
 
 // Is403 returns true if err is an HTTP 403 error
 func Is403(err error) bool {
 	permissionsDeniedError := &scw.PermissionsDeniedError{}
+
 	return IsHTTPCodeError(err, http.StatusForbidden) || errors.As(err, &permissionsDeniedError)
 }
 
@@ -41,6 +45,7 @@ func Is403(err error) bool {
 func Is409(err error) bool {
 	// check transient error
 	transientStateError := &scw.TransientStateError{}
+
 	return IsHTTPCodeError(err, http.StatusConflict) || errors.As(err, &transientStateError)
 }
 

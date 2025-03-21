@@ -37,6 +37,7 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
+
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
@@ -44,11 +45,14 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
+
 	_ = d.Set("region", region)
 
 	tflog.Debug(ctx, "[DEBUG] SCW bucket policy, read for bucket: "+d.Id())
+
 	policy, err := s3Client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{
 		Bucket: aws.String(bucket),
 	})
@@ -57,7 +61,7 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("bucket %s doesn't exist or has no policy", bucket))
 		}
 
-		return diag.FromErr(fmt.Errorf("couldn't read bucket %s policy: %s", bucket, err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket %s policy: %w", bucket, err))
 	}
 
 	policyString := "{}"
@@ -76,10 +80,12 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
 	}
+
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	d.SetId(regional.NewIDString(region, bucket))
+
 	return nil
 }

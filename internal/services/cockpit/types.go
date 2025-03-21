@@ -68,6 +68,7 @@ func createCockpitPushURLList(endpoints []map[string]interface{}) []map[string]i
 			result = append(result, newEndpoint)
 		}
 	}
+
 	return result
 }
 
@@ -116,6 +117,7 @@ func flattenCockpitTokenScopes(scopes []cockpit.TokenScope) []interface{} {
 		for key, mappedScope := range scopeMapping {
 			if scope == mappedScope {
 				result[key] = true
+
 				break
 			}
 		}

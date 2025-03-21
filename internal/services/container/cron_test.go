@@ -43,6 +43,7 @@ func TestAccCron_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "schedule", "5 4 * * *"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "args", "{\"test\":\"scw\"}"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "name", "tf-tests-container-cron-basic"),
+					resource.TestCheckResourceAttr("scaleway_container_cron.main", "region", "fr-par"),
 				),
 			},
 			{
@@ -67,6 +68,7 @@ func TestAccCron_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "schedule", "5 4 * * *"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "args", "{\"test\":\"scw\"}"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "name", "tf-tests-container-cron-basic-changed"),
+					resource.TestCheckResourceAttr("scaleway_container_cron.main", "region", "fr-par"),
 				),
 			},
 		},

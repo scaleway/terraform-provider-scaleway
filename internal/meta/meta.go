@@ -2,6 +2,7 @@ package meta
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -92,23 +93,29 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if config.ForceZone != "" {
 		region, err := config.ForceZone.Region()
 		if err != nil {
 			return nil, err
 		}
+
 		profile.DefaultRegion = scw.StringPtr(region.String())
 		profile.DefaultZone = scw.StringPtr(config.ForceZone.String())
 	}
+
 	if config.ForceProjectID != "" {
 		profile.DefaultProjectID = scw.StringPtr(config.ForceProjectID)
 	}
+
 	if config.ForceOrganizationID != "" {
 		profile.DefaultOrganizationID = scw.StringPtr(config.ForceOrganizationID)
 	}
+
 	if config.ForceAccessKey != "" {
 		profile.AccessKey = scw.StringPtr(config.ForceAccessKey)
 	}
+
 	if config.ForceSecretKey != "" {
 		profile.SecretKey = scw.StringPtr(config.ForceSecretKey)
 	}
@@ -127,6 +134,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	if config.HTTPClient != nil {
 		httpClient = config.HTTPClient
 	}
+
 	opts = append(opts, scw.WithHTTPClient(httpClient))
 
 	scwClient, err := scw.NewClient(opts...)
@@ -155,7 +163,8 @@ func customizeUserAgent(providerVersion string, terraformVersion string) string 
 func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *CredentialsSource, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
-	if _, isNotFoundError := err.(*scw.ConfigFileNotFoundError); isNotFoundError {
+	var configFileNotFoundError *scw.ConfigFileNotFoundError
+	if errors.As(err, &configFileNotFoundError) {
 		config = &scw.Config{}
 	} else if err != nil {
 		return nil, nil, err
@@ -171,9 +180,11 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 	if err != nil {
 		return nil, nil, err
 	}
+
 	envProfile := scw.LoadEnvProfile()
 
 	providerProfile := &scw.Profile{}
+
 	if d != nil {
 		if profileName, exist := d.GetOk("profile"); exist {
 			profileFromConfig, err := config.GetProfile(profileName.(string))
@@ -181,24 +192,31 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 				providerProfile = profileFromConfig
 			}
 		}
+
 		if accessKey, exist := d.GetOk("access_key"); exist {
 			providerProfile.AccessKey = scw.StringPtr(accessKey.(string))
 		}
+
 		if secretKey, exist := d.GetOk("secret_key"); exist {
 			providerProfile.SecretKey = scw.StringPtr(secretKey.(string))
 		}
+
 		if projectID, exist := d.GetOk("project_id"); exist {
 			providerProfile.DefaultProjectID = scw.StringPtr(projectID.(string))
 		}
+
 		if orgID, exist := d.GetOk("organization_id"); exist {
 			providerProfile.DefaultOrganizationID = scw.StringPtr(orgID.(string))
 		}
+
 		if region, exist := d.GetOk("region"); exist {
 			providerProfile.DefaultRegion = scw.StringPtr(region.(string))
 		}
+
 		if zone, exist := d.GetOk("zone"); exist {
 			providerProfile.DefaultZone = scw.StringPtr(zone.(string))
 		}
+
 		if apiURL, exist := d.GetOk("api_url"); exist {
 			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
 		}
@@ -213,6 +231,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 		(profile.DefaultRegion == nil || *profile.DefaultRegion == "") {
 		zone := scw.Zone(*profile.DefaultZone)
 		tflog.Debug(ctx, fmt.Sprintf("guess region from %s zone", zone))
+
 		region, err := zone.Region()
 		if err == nil {
 			profile.DefaultRegion = scw.StringPtr(region.String())
@@ -221,6 +240,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 			tflog.Debug(ctx, "cannot guess region: "+err.Error())
 		}
 	}
+
 	return profile, credentialsSource, nil
 }
 
@@ -258,15 +278,19 @@ func GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, en
 		if profile.AccessKey != nil {
 			credentialsSource.AccessKey = source
 		}
+
 		if profile.SecretKey != nil {
 			credentialsSource.SecretKey = source
 		}
+
 		if profile.DefaultProjectID != nil {
 			credentialsSource.ProjectID = source
 		}
+
 		if profile.DefaultRegion != nil {
 			credentialsSource.DefaultRegion = source
 		}
+
 		if profile.DefaultZone != nil {
 			credentialsSource.DefaultZone = source
 		}

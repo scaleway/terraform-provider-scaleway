@@ -117,6 +117,7 @@ func ResourceFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return ResourceFlexibleIPRead(ctx, d, m)
 }
 
@@ -140,8 +141,10 @@ func ResourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m inter
 		// We check for 403 because flexible API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -174,6 +177,7 @@ func ResourceFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	updateRequest := &flexibleip.UpdateFlexibleIPRequest{
 		Zone:  zone,
 		FipID: flexibleIP.ID,

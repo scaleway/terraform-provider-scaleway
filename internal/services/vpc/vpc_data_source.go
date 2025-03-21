@@ -48,6 +48,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	var vpcID interface{}
+
 	var ok bool
 
 	if d.Get("is_default").(bool) {
@@ -94,6 +95,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{
 
 	regionalID := datasource.NewRegionalID(vpcID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("vpc_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)

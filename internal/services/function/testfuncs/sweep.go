@@ -33,13 +33,15 @@ func AddTestSweepers() {
 func testSweepFunctionTrigger(_ string) error {
 	return acctest.SweepRegions((&functionSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := functionSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the function triggers in (%s)", region)
+
 		listTriggers, err := functionAPI.ListTriggers(
 			&functionSDK.ListTriggersRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing trigger in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing trigger in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, trigger := range listTriggers.Triggers {
@@ -50,7 +52,7 @@ func testSweepFunctionTrigger(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting trigger in sweeper: %s", err)
+				return fmt.Errorf("error deleting trigger in sweeper: %w", err)
 			}
 		}
 
@@ -61,13 +63,15 @@ func testSweepFunctionTrigger(_ string) error {
 func testSweepFunctionNamespace(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := functionSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the function namespaces in (%s)", region)
+
 		listNamespaces, err := functionAPI.ListNamespaces(
 			&functionSDK.ListNamespacesRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, ns := range listNamespaces.Namespaces {
@@ -78,7 +82,7 @@ func testSweepFunctionNamespace(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
+				return fmt.Errorf("error deleting namespace in sweeper: %w", err)
 			}
 		}
 
@@ -89,13 +93,15 @@ func testSweepFunctionNamespace(_ string) error {
 func testSweepFunction(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := functionSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the function in (%s)", region)
+
 		listFunctions, err := functionAPI.ListFunctions(
 			&functionSDK.ListFunctionsRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing functions in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing functions in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, f := range listFunctions.Functions {
@@ -106,7 +112,7 @@ func testSweepFunction(_ string) error {
 			if err != nil && !httperrors.Is404(err) {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting functions in sweeper: %s", err)
+				return fmt.Errorf("error deleting functions in sweeper: %w", err)
 			}
 		}
 
@@ -117,13 +123,15 @@ func testSweepFunction(_ string) error {
 func testSweepFunctionCron(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
 		functionAPI := functionSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the function cron in (%s)", region)
+
 		listCron, err := functionAPI.ListCrons(
 			&functionSDK.ListCronsRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing cron in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing cron in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, cron := range listCron.Crons {
@@ -134,7 +142,7 @@ func testSweepFunctionCron(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting cron in sweeper: %s", err)
+				return fmt.Errorf("error deleting cron in sweeper: %w", err)
 			}
 		}
 

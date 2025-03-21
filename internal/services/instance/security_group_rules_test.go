@@ -138,6 +138,7 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 func TestAccSecurityGroupRules_IPRanges(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	config := `
 			resource scaleway_instance_security_group sg01 {
 				external_rules = true
@@ -209,6 +210,7 @@ func TestAccSecurityGroupRules_IPRanges(t *testing.T) {
 func TestAccSecurityGroupRules_Basic2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	config := `
 			resource scaleway_instance_security_group sg01 {
 				external_rules = true

@@ -32,6 +32,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.Zo
 	if err != nil {
 		return nil, "", err
 	}
+
 	return newAPI(m), zone, nil
 }
 
@@ -40,10 +41,12 @@ func newAPIWithZoneAndRegion(d *schema.ResourceData, m interface{}) (*mongodb.AP
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return newAPI(m), zone, region, nil
 }
 
@@ -52,6 +55,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.
 	if err != nil {
 		return nil, "", err
 	}
+
 	return newAPI(m), region, nil
 }
 
@@ -61,6 +65,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*mongodb.API, scw.Zone, stri
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return newAPI(m), zone, ID, nil
 }
 
@@ -69,10 +74,12 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*mongodb.API, scw.Region, 
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	region, err := zone.Region()
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return newAPI(m), region, ID, nil
 }
 
@@ -81,6 +88,7 @@ func waitForInstance(ctx context.Context, api *mongodb.API, region scw.Region, i
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
+
 	return api.WaitForInstance(&mongodb.WaitForInstanceRequest{
 		Timeout:       scw.TimeDurationPtr(timeout),
 		InstanceID:    id,

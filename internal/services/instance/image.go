@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -177,7 +178,7 @@ func ResourceImage() *schema.Resource {
 }
 
 func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, err := instanceAndBlockAPIWithZone(d, m)
+	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -195,10 +196,12 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 	if volumesExist {
 		req.ExtraVolumes = expandImageExtraVolumesTemplates(locality.ExpandIDs(extraVolumesIDs))
 	}
+
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
 		req.Tags = types.ExpandStrings(tags)
 	}
+
 	if _, exist := d.GetOk("public"); exist {
 		req.Public = types.ExpandBoolPtr(types.GetBool(d, "public"))
 	}
@@ -236,8 +239,10 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -259,7 +264,7 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, zone, id, err := instanceAndBlockAPIWithZoneAndID(m, d.Id())
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -272,12 +277,15 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	if d.HasChange("name") {
 		req.Name = types.ExpandStringPtr(d.Get("name"))
 	}
+
 	if d.HasChange("architecture") {
 		req.Arch = instanceSDK.Arch(d.Get("architecture").(string))
 	}
+
 	if d.HasChange("public") {
 		req.Public = types.ExpandBoolPtr(types.GetBool(d, "public"))
 	}
+
 	req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 
 	image, err := api.GetImage(&instanceSDK.GetImageRequest{
@@ -297,6 +305,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 				ID: vol.ID,
 			}
 		}
+
 		req.ExtraVolumes = volTemplate
 	}
 
@@ -304,6 +313,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	if req.Name == nil {
 		req.Name = &image.Image.Name
 	}
+
 	if req.Arch == "" {
 		req.Arch = image.Image.Arch
 	}
@@ -315,7 +325,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	_, err = api.UpdateImage(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't update image: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't update image: %w", err))
 	}
 
 	_, err = waitForImage(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))

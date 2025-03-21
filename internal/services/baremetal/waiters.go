@@ -63,6 +63,7 @@ func waitForServerPrivateNetwork(ctx context.Context, api *baremetalV3.PrivateNe
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
+
 	serverPrivateNetwork, err := api.WaitForServerPrivateNetworks(&baremetalV3.WaitForServerPrivateNetworksRequest{
 		Zone:          zone,
 		ServerID:      serverID,

@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp_reservation"
 # scaleway_vpc_public_gateway_dhcp_reservation
 
 Gets information about a DHCP entry. For further information, please see the
-API [documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-dhcp-entries-list-dhcp-entries)/
+[API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-dhcp-entries-list-dhcp-entries).
 
 ## Example Dynamic
 

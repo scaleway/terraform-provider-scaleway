@@ -46,6 +46,10 @@ func DataSourceRoutes() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
+						"match_subdomains": {
+							Computed: true,
+							Type:     schema.TypeBool,
+						},
 						"created_at": {
 							Computed: true,
 							Type:     schema.TypeString,
@@ -84,6 +88,7 @@ func DataSourceLbRoutesRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	routes := []interface{}(nil)
+
 	for _, route := range res.Routes {
 		rawRoute := make(map[string]interface{})
 		rawRoute["id"] = zonal.NewID(zone, route.ID).String()
@@ -93,6 +98,7 @@ func DataSourceLbRoutesRead(ctx context.Context, d *schema.ResourceData, m inter
 		rawRoute["update_at"] = types.FlattenTime(route.UpdatedAt)
 		rawRoute["match_sni"] = types.FlattenStringPtr(route.Match.Sni)
 		rawRoute["match_host_header"] = types.FlattenStringPtr(route.Match.HostHeader)
+		rawRoute["match_subdomains"] = route.Match.MatchSubdomains
 
 		routes = append(routes, rawRoute)
 	}

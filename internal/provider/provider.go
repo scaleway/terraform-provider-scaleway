@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -65,11 +66,14 @@ func addBetaResources(provider *schema.Provider) {
 	if !terraformBetaEnabled {
 		return
 	}
+
 	betaResources := map[string]*schema.Resource{}
 	betaDataSources := map[string]*schema.Resource{}
+
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
 	}
+
 	for resourceName, resource := range betaDataSources {
 		provider.DataSourcesMap[resourceName] = resource
 	}
@@ -136,7 +140,15 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_container_token":                     container.ResourceToken(),
 				"scaleway_container_trigger":                   container.ResourceTrigger(),
 				"scaleway_domain_record":                       domain.ResourceRecord(),
+				"scaleway_domain_registration":                 domain.ResourceRegistration(),
 				"scaleway_domain_zone":                         domain.ResourceZone(),
+				"scaleway_edge_services_backend_stage":         edgeservices.ResourceBackendStage(),
+				"scaleway_edge_services_cache_stage":           edgeservices.ResourceCacheStage(),
+				"scaleway_edge_services_dns_stage":             edgeservices.ResourceDNSStage(),
+				"scaleway_edge_services_head_stage":            edgeservices.ResourceHeadStage(),
+				"scaleway_edge_services_pipeline":              edgeservices.ResourcePipeline(),
+				"scaleway_edge_services_plan":                  edgeservices.ResourcePlan(),
+				"scaleway_edge_services_tls_stage":             edgeservices.ResourceTLSStage(),
 				"scaleway_flexible_ip":                         flexibleip.ResourceIP(),
 				"scaleway_flexible_ip_mac_address":             flexibleip.ResourceMACAddress(),
 				"scaleway_function":                            function.ResourceFunction(),
@@ -204,6 +216,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_rdb_privilege":                       rdb.ResourcePrivilege(),
 				"scaleway_rdb_read_replica":                    rdb.ResourceReadReplica(),
 				"scaleway_rdb_user":                            rdb.ResourceUser(),
+				"scaleway_rdb_snapshot":                        rdb.ResourceSnapshot(),
 				"scaleway_redis_cluster":                       redis.ResourceCluster(),
 				"scaleway_registry_namespace":                  registry.ResourceNamespace(),
 				"scaleway_sdb_sql_database":                    sdb.ResourceDatabase(),
@@ -332,6 +345,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
+
 			return m, nil
 		}
 

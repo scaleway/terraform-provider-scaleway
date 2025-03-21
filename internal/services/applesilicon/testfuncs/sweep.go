@@ -20,10 +20,12 @@ func AddTestSweepers() {
 func testSweepAppleSiliconServer(_ string) error {
 	return acctest.SweepZones([]scw.Zone{scw.ZoneFrPar1}, func(scwClient *scw.Client, zone scw.Zone) error {
 		asAPI := applesiliconSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the apple silicon instance in (%s)", zone)
+
 		listServers, err := asAPI.ListServers(&applesiliconSDK.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing apple silicon servers in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing apple silicon servers in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, server := range listServers.Servers {
@@ -32,7 +34,7 @@ func testSweepAppleSiliconServer(_ string) error {
 				Zone:     zone,
 			})
 			if errDelete != nil {
-				return fmt.Errorf("error deleting apple silicon server in sweeper: %s", err)
+				return fmt.Errorf("error deleting apple silicon server in sweeper: %w", err)
 			}
 		}
 

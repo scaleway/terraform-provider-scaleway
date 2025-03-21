@@ -105,6 +105,7 @@ func DataSourceLbFrontendsRead(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	frontends := []interface{}(nil)
+
 	for _, frontend := range res.Frontends {
 		rawFrontend := make(map[string]interface{})
 		rawFrontend["id"] = zonal.NewIDString(zone, frontend.ID)
@@ -116,6 +117,7 @@ func DataSourceLbFrontendsRead(ctx context.Context, d *schema.ResourceData, m in
 		rawFrontend["backend_id"] = frontend.Backend.ID
 		rawFrontend["timeout_client"] = types.FlattenDuration(frontend.TimeoutClient)
 		rawFrontend["enable_http3"] = frontend.EnableHTTP3
+
 		if len(frontend.CertificateIDs) > 0 {
 			rawFrontend["certificate_ids"] = frontend.CertificateIDs
 		}

@@ -12,10 +12,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceInstance() *schema.Resource {
@@ -104,6 +106,51 @@ func ResourceInstance() *schema.Resource {
 					"version",
 				},
 			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Private network to expose your mongodb instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"pn_id": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: dsf.Locality,
+							Description:      "The private network ID",
+						},
+						// Computed
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private network ID",
+						},
+						"port": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "TCP port of the endpoint",
+						},
+						"dns_records": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of DNS records for your endpoint",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+
+						"ips": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of IP addresses for your endpoint",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			// Computed
 			"public_network": {
 				Type:        schema.TypeList,
@@ -114,8 +161,9 @@ func ResourceInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the public network",
 						},
 						"port": {
 							Type:        schema.TypeInt,
@@ -172,7 +220,9 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	nodeNumber := scw.Uint32Ptr(uint32(d.Get("node_number").(int)))
 
 	snapshotID, exist := d.GetOk("snapshot_id")
+
 	var res *mongodb.Instance
+
 	if exist {
 		volume := &mongodb.RestoreSnapshotRequestVolumeDetails{
 			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
@@ -185,6 +235,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			NodeType:     d.Get("node_type").(string),
 			Volume:       volume,
 		}
+
 		res, err = mongodbAPI.RestoreSnapshot(restoreSnapshotRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -204,11 +255,13 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
 		}
 		volumeSize, volumeSizeExist := d.GetOk("volume_size_in_gb")
+
 		if volumeSizeExist {
 			volumeRequestDetails.VolumeSize = scw.Size(uint64(volumeSize.(int)) * uint64(scw.GB))
 		} else {
 			volumeRequestDetails.VolumeSize = scw.Size(defaultVolumeSize * uint64(scw.GB))
 		}
+
 		createReq.Volume = volumeRequestDetails
 
 		tags, tagsExist := d.GetOk("tags")
@@ -216,17 +269,41 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			createReq.Tags = types.ExpandStrings(tags)
 		}
 
-		epSpecs := make([]*mongodb.EndpointSpec, 0, 1)
-		spec := &mongodb.EndpointSpecPublicDetails{}
-		epSpecs = append(epSpecs, &mongodb.EndpointSpec{Public: spec})
-		createReq.Endpoints = epSpecs
+		var eps []*mongodb.EndpointSpec
+
+		if privateNetworkList, ok := d.GetOk("private_network"); ok {
+			privateNetworks := privateNetworkList.([]interface{})
+
+			if len(privateNetworks) > 0 {
+				pn := privateNetworks[0].(map[string]interface{})
+				privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
+
+				if privateNetworkID != "" {
+					eps = append(eps, &mongodb.EndpointSpec{
+						PrivateNetwork: &mongodb.EndpointSpecPrivateNetworkDetails{
+							PrivateNetworkID: privateNetworkID,
+						},
+					})
+				}
+			}
+		}
+
+		if len(eps) == 0 {
+			eps = append(eps, &mongodb.EndpointSpec{
+				Public: &mongodb.EndpointSpecPublicDetails{},
+			})
+		}
+
+		createReq.Endpoints = eps
 
 		res, err = mongodbAPI.CreateInstance(createReq, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
+
 	d.SetId(zonal.NewIDString(zone, res.ID))
+
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -250,8 +327,10 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -274,11 +353,18 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		_ = d.Set("public_network", publicNetworkEndpoint)
 	}
 
+	privateNetworkEndpoint, privateNetworkExists := flattenPrivateNetwork(instance.Endpoints)
+
+	if privateNetworkExists {
+		_ = d.Set("private_network", privateNetworkEndpoint)
+	}
+
 	if len(instance.Settings) > 0 {
 		settingsMap := make(map[string]string)
 		for _, setting := range instance.Settings {
 			settingsMap[setting.Name] = setting.Value
 		}
+
 		_ = d.Set("settings", settingsMap)
 	}
 
@@ -299,6 +385,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
 		oldSize := uint64(oldSizeInterface.(int))
 		newSize := uint64(newSizeInterface.(int))
+
 		if newSize < oldSize {
 			return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
 		}
@@ -306,6 +393,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if newSize%5 != 0 {
 			return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
 		}
+
 		size := scw.Size(newSize * uint64(scw.GB))
 
 		upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
@@ -318,6 +406,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -389,10 +478,69 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
+	////////////////////
+	// Endpoints
+	////////////////////
+
+	if d.HasChange("private_network") {
+		res, err := waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for _, e := range res.Endpoints {
+			if e.PrivateNetwork != nil {
+				err := mongodbAPI.DeleteEndpoint(
+					&mongodb.DeleteEndpointRequest{
+						EndpointID: e.ID, Region: region,
+					},
+					scw.WithContext(ctx))
+				if err != nil {
+					diag.FromErr(err)
+				}
+			}
+		}
+
+		_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		var eps []*mongodb.EndpointSpec
+
+		if privateNetworkList, ok := d.GetOk("private_network"); ok {
+			privateNetworks := privateNetworkList.([]interface{})
+			if len(privateNetworks) > 0 {
+				pn := privateNetworks[0].(map[string]interface{})
+				privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
+
+				if privateNetworkID != "" {
+					eps = append(eps, &mongodb.EndpointSpec{
+						PrivateNetwork: &mongodb.EndpointSpecPrivateNetworkDetails{
+							PrivateNetworkID: privateNetworkID,
+						},
+					})
+				}
+			}
+
+			if len(eps) != 0 {
+				_, err = mongodbAPI.CreateEndpoint(&mongodb.CreateEndpointRequest{
+					InstanceID: ID,
+					Endpoint:   eps[0],
+					Region:     region,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
 	_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return append(diags, ResourceInstanceRead(ctx, d, m)...)
 }
 
@@ -421,5 +569,6 @@ func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId("")
+
 	return nil
 }

@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_lb_backends"
 
 Gets information about multiple Load Balancer Backends.
 
-For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/reference-content/configuring-backends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-backends).
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/load-balancer/reference-content/configuring-backends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-backends).
 
 ## Example Usage
 
@@ -58,12 +58,12 @@ In addition to all arguments above, the following attributes are exported:
     - `health_check_max_retries` - Number of allowed failed health check requests before the backend server is marked as down.
     - `health_check_tcp` - This block enables TCP health checks.
     - `health_check_http` - This block enables HTTP health checks.
-        - `uri` - The HTTP endpoint URL to call for health check requests.
+        - `uri` - The path of health check requests.
         - `method` - The HTTP method to use for health check requests.
         - `code` - The expected HTTP status code.
         - `host_header` -  The HTTP host header to use for health check requests.
     - `health_check_https` - This block enables HTTPS health checks.
-        - `uri` - The HTTPS endpoint URL to call for health check requests.
+        - `uri` - The path of health check requests.
         - `method` - The HTTP method to use for health check requests.
         - `code` - The expected HTTP status code.
         - `host_header` - The HTTP host header to use for health check requests.

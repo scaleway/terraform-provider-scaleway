@@ -25,45 +25,46 @@ func ResourceCockpit() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "free",
-				Description: "Name or ID of the plan",
+				Description: "[DEPRECATED] The plan field is deprecated. Any modification or selection will have no effect.",
+				Deprecated:  "The 'plan' attribute is deprecated and no longer has any effect. Future updates will remove this attribute entirely.",
 			},
 			"plan_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The plan ID of the cockpit",
-				Deprecated:  "Please use Name only",
+				Description: "[DEPRECATED] The plan ID of the cockpit. This field is no longer relevant.",
+				Deprecated:  "The 'plan_id' attribute is deprecated and will be removed in a future release.",
 			},
 			"endpoints": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Endpoints",
-				Deprecated:  "Please use `scaleway_cockpit_source` instead",
+				Description: "[DEPRECATED] Endpoints list. Please use 'scaleway_cockpit_source' instead.",
+				Deprecated:  "Use 'scaleway_cockpit_source' instead of 'endpoints'. This field will be removed in future releases.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"metrics_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The metrics URL",
+							Description: "The metrics URL.",
 						},
 						"logs_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The logs URL",
+							Description: "The logs URL.",
 						},
 						"alertmanager_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The alertmanager URL",
+							Description: "The alertmanager URL.",
 						},
 						"grafana_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The grafana URL",
+							Description: "The grafana URL.",
 						},
 						"traces_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The traces URL",
+							Description: "The traces URL.",
 						},
 					},
 				},
@@ -71,7 +72,7 @@ func ResourceCockpit() *schema.Resource {
 			"push_url": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Push_url",
+				Description: "[DEPRECATED] Push_url",
 				Deprecated:  "Please use `scaleway_cockpit_source` instead",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -93,46 +94,22 @@ func ResourceCockpit() *schema.Resource {
 }
 
 func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewGlobalAPI(m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	projectID := d.Get("project_id").(string)
-
-	if targetPlanI, ok := d.GetOk("plan"); ok {
-		targetPlan := targetPlanI.(string)
-
-		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		var planName string
-		for _, plan := range plans.Plans {
-			if plan.Name.String() == targetPlan {
-				planName = plan.Name.String()
-				break
-			}
-		}
-
-		if planName == "" {
-			return diag.Errorf("plan %s not found", targetPlan)
-		}
-
-		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{ //nolint:staticcheck
-			ProjectID: projectID,
-			PlanName:  cockpit.PlanName(planName),
-		}, scw.WithContext(ctx))
+	if projectID == "" {
+		_, err := getDefaultProjectID(ctx, m)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
+
+	d.SetId(projectID)
 
 	return ResourceCockpitRead(ctx, d, m)
 }
 
 func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -150,14 +127,15 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 			return diag.FromErr(err)
 		}
 	}
-	res, err := api.GetCurrentPlan(&cockpit.GlobalAPIGetCurrentPlanRequest{ //nolint:staticcheck
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	_ = d.Set("plan", res.Name.String())
-	_ = d.Set("plan_id", res.Name.String())
+
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Deprecated attribute: 'plan'",
+		Detail:   "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
+	})
+
+	_ = d.Set("plan", d.Get("plan"))
+	_ = d.Set("plan_id", "")
 
 	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
@@ -167,6 +145,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("project_id", projectID)
 	d.SetId(projectID)
 
@@ -176,6 +155,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if grafana.GrafanaURL == "" {
 		grafana.GrafanaURL = createGrafanaURL(projectID, region)
 	}
@@ -186,6 +166,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	alertManagerURL := ""
 	if alertManager.AlertManagerURL != nil {
 		alertManagerURL = *alertManager.AlertManagerURL
@@ -196,52 +177,26 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("endpoints", endpoints)
 	_ = d.Set("push_url", createCockpitPushURLList(endpoints))
 
-	return nil
+	return diags
 }
 
 func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewGlobalAPI(m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	projectID := d.Id()
-
+	diags := diag.Diagnostics{}
 	if d.HasChange("plan") {
-		targetPlan := cockpit.PlanNameFree.String()
-		if targetPlanI, ok := d.GetOk("plan"); ok {
-			targetPlan = targetPlanI.(string)
-		}
-
-		plans, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		var planName string
-		for _, plan := range plans.Plans {
-			if plan.Name.String() == targetPlan {
-				planName = plan.Name.String()
-				break
-			}
-		}
-
-		if planName == "" {
-			return diag.Errorf("plan %s not found", targetPlan)
-		}
-
-		_, err = api.SelectPlan(&cockpit.GlobalAPISelectPlanRequest{ //nolint:staticcheck
-			ProjectID: projectID,
-			PlanName:  cockpit.PlanName(planName),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Deprecated attribute update: 'plan'",
+			Detail:   "Updating 'plan' has no effect as it is deprecated and will be removed in a future version.",
+		})
 	}
 
-	return ResourceCockpitRead(ctx, d, m)
+	diags = append(diags, ResourceCockpitRead(ctx, d, m)...)
+
+	return diags
 }
 
-func ResourceCockpitDelete(_ context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func ResourceCockpitDelete(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
+	d.SetId("")
+
 	return nil
 }

@@ -70,6 +70,7 @@ func TestAccDevice_Minimal(t *testing.T) {
 
 func TestAccDevice_MessageFilters(t *testing.T) {
 	t.Skip("Some checks seem to be flaky.")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

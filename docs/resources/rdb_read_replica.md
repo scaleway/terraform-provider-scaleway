@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_rdb_read_replica"
 # Resource: scaleway_rdb_read_replica
 
 Creates and manages Read Replicas.
-For more information refer to [the API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
 
 ## Example Usage
 

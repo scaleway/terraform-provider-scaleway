@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_instance_server"
 
 # Resource: scaleway_instance_server
 
-Creates and manages Scaleway compute Instances. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/instance/#path-instances-list-all-instances).
+Creates and manages Scaleway compute Instances. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/instance/#path-instances-list-all-instances).
 
 Please check our [FAQ - Instances](https://www.scaleway.com/en/docs/faq/instances).
 
@@ -26,9 +26,9 @@ resource "scaleway_instance_server" "web" {
 ### With additional volumes and tags
 
 ```terraform
-resource "scaleway_instance_volume" "data" {
+resource "scaleway_block_volume" "data" {
   size_in_gb = 100
-  type = "b_ssd"
+  iops = 5000
 }
 
 resource "scaleway_instance_server" "web" {
@@ -41,7 +41,7 @@ resource "scaleway_instance_server" "web" {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ scaleway_instance_volume.data.id ]
+  additional_volume_ids = [ scaleway_block_volume.data.id ]
 }
 ```
 
@@ -137,7 +137,6 @@ resource "scaleway_instance_server" "image" {
   type = "PRO2-XXS"
   image = "ubuntu_jammy"
   root_volume {
-    volume_type = "b_ssd"
     size_in_gb = 100
   }
 }
@@ -146,19 +145,20 @@ resource "scaleway_instance_server" "image" {
 #### From snapshot
 
 ```terraform
-data "scaleway_instance_snapshot" "snapshot" {
+data "scaleway_block_snapshot" "snapshot" {
   name = "my_snapshot"
 }
 
-resource "scaleway_instance_volume" "from_snapshot" {
-  from_snapshot_id = data.scaleway_instance_snapshot.snapshot.id
-  type = "b_ssd"
+resource "scaleway_block_volume" "from_snapshot" {
+  snapshot_id = data.scaleway_block_snapshot.snapshot.id
+  iops = 5000
 }
 
 resource "scaleway_instance_server" "from_snapshot" {
   type = "PRO2-XXS"
   root_volume {
-    volume_id = scaleway_instance_volume.from_snapshot.id
+    volume_id = scaleway_block_volume.from_snapshot.id
+    volume_type = "sbs_volume"
   }
 }
 ```
@@ -283,7 +283,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Instance servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `placement_group_policy_respected` - True when the placement group policy is respected.
+- `placement_group_policy_respected` - (Deprecated) Always false, use [instance_placement_group ressource](instance_placement_group.md) to known when the placement group policy is respected.
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.
 - `private_ip` - The Scaleway internal IP address of the server (Deprecated use [ipam_ip datasource](../data-sources/ipam_ip.md#instance-private-network-ip) instead).

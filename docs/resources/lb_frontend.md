@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_lb_frontend"
 
 Creates and manages Scaleway Load Balancer frontends.
 
-For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/reference-content/configuring-frontends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/load-balancer/reference-content/configuring-frontends/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
 
 ## Example Usage
 
@@ -170,6 +170,8 @@ The following arguments are supported:
 ~> **Important:** Certificates are not allowed on port 80.
 
 - `enable_http3` - (Default: `false`) Activates HTTP/3 protocol.
+
+- `connection_rate_limit` - (Optional) The rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
 
 - `acl` - (Optional) A list of ACL rules to apply to the Load Balancer frontend.  Defined below.
 

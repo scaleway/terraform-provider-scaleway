@@ -12,5 +12,6 @@ func IsOfferAvailable(offerID string, zone scw.Zone, tt *acctest.TestTools) bool
 		Zone:    zone,
 		OfferID: offerID,
 	})
+
 	return offer.Stock == baremetal.OfferStockAvailable
 }

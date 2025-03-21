@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_k8s_pool"
 
 # Resource: scaleway_k8s_pool
 
-Creates and manages Scaleway Kubernetes cluster pools. For more information, see [the documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
+Creates and manages Scaleway Kubernetes cluster pools. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
 
 ## Example Usage
 
@@ -39,6 +39,7 @@ The following arguments are supported:
 - `cluster_id` - (Required) The ID of the Kubernetes cluster on which this pool will be created.
 
 - `name` - (Required) The name for the pool.
+
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `node_type` - (Required) The commercial type of the pool instances. Instances with insufficient memory are not eligible (DEV1-S, PLAY2-PICO, STARDUST). `external` is a special node type used to provision from other Cloud providers.
@@ -46,6 +47,7 @@ The following arguments are supported:
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `size` - (Required) The size of the pool.
+
 ~> **Important:** This field will only be used at creation if autoscaling is enabled.
 
 - `min_size` - (Defaults to `1`) The minimum size of the pool, used by the autoscaling feature.
@@ -53,17 +55,21 @@ The following arguments are supported:
 - `max_size` - (Defaults to `size`) The maximum size of the pool, used by the autoscaling feature.
 
 - `tags` - (Optional) The tags associated with the pool.
-  > Note: As mentionned in [this document](https://github.com/scaleway/scaleway-cloud-controller-manager/blob/master/docs/tags.md#taints), taints of a pool's nodes are applied using tags. (Example: "taint=taintName=taineValue:Effect")
+
+-> Note: As mentionned in [this document](https://github.com/scaleway/scaleway-cloud-controller-manager/blob/master/docs/tags.md#taints), taints of a pool's nodes are applied using tags. (e.g.: `"taint=taintName=taintValue:Effect"`)
 
 - `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#path-placement-groups-create-a-placement-group) the nodes of the pool will be attached to.
+
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `autoscaling` - (Defaults to `false`) Enables the autoscaling feature for this pool.
+
 ~> **Important:** When enabled, an update of the `size` will not be taken into account.
 
 - `autohealing` - (Defaults to `false`) Enables the autohealing feature for this pool.
 
 - `container_runtime` - (Defaults to `containerd`) The container runtime of the pool.
+
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `kubelet_args` - (Optional) The Kubelet arguments to be used by this pool
@@ -79,6 +85,7 @@ The following arguments are supported:
 - `root_volume_size_in_gb` - (Optional) The size of the system volume of the nodes in gigabyte
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
+
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
@@ -86,6 +93,7 @@ The following arguments are supported:
 - `wait_for_pool_ready` - (Defaults to `false`) Whether to wait for the pool to be ready.
 
 - `public_ip_disabled` - (Defaults to `false`) Defines if the public IP should be removed from Nodes. To use this feature, your Cluster must have an attached [Private Network](vpc_private_network.md) set up with a [Public Gateway](vpc_public_gateway.md).
+
 ~> **Important:** Updates to this field will recreate a new resource.
 
 ## Attributes Reference
@@ -118,7 +126,7 @@ Please note that a pool belongs to only one cluster, in the same region.`region`
 If you are working with cluster type `multicloud` please set the `zone` where your placement group is e.g:
 
 ```terraform
-resource "scaleway_instance_placement_group" "placement_group" { 
+resource "scaleway_instance_placement_group" "placement_group" {
   name        = "pool-placement-group"
   policy_type = "max_availability"
   policy_mode = "optional"

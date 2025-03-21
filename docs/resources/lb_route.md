@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_lb_route"
 
 Creates and manages Scaleway Load Balancer routes.
 
-For more information, see the [main documentation](https://www.scaleway.com/en/docs/network/load-balancer/how-to/create-manage-routes/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-route).
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/load-balancer/how-to/create-manage-routes/) or [API documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-route).
 
 ## Example Usage
 
@@ -79,6 +79,7 @@ The following arguments are supported:
 
 - `backend_id` - (Required) The ID of the backend the route is associated with.
 - `frontend_id` - (Required) The ID of the frontend the route is associated with.
+- `match_subdomains` - (Default: `false`) If true, all subdomains will match.
 - `match_sni` - The Server Name Indication (SNI) value to match. Value to match in the Server Name Indication TLS extension (SNI) field from an incoming connection made via an SSL/TLS transport layer.
   Only one of `match_sni` and `match_host_header` should be specified.
 

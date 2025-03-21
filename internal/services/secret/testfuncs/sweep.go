@@ -25,7 +25,7 @@ func testSweepSecret(_ string) error {
 
 		listSecrets, err := secretAPI.ListSecrets(&secretSDK.ListSecretsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing secrets in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing secrets in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, se := range listSecrets.Secrets {
@@ -36,7 +36,7 @@ func testSweepSecret(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting secret in sweeper: %s", err)
+				return fmt.Errorf("error deleting secret in sweeper: %w", err)
 			}
 		}
 

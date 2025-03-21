@@ -21,13 +21,15 @@ func AddTestSweepers() {
 func testSweepDeployment(_ string) error {
 	return acctest.SweepRegions((&inference.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		inferenceAPI := inference.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the inference deployments in (%s)", region)
+
 		listDeployments, err := inferenceAPI.ListDeployments(
 			&inference.ListDeploymentsRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing deployment in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing deployment in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, deployment := range listDeployments.Deployments {
@@ -38,7 +40,7 @@ func testSweepDeployment(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting deployment in sweeper: %s", err)
+				return fmt.Errorf("error deleting deployment in sweeper: %w", err)
 			}
 		}
 

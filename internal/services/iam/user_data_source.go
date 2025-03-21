@@ -53,16 +53,20 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 	iamAPI := NewAPI(m)
 
 	var email, organizationID string
+
 	var tags []string
+
 	userID, ok := d.GetOk("user_id")
 	if ok {
 		userID = d.Get("user_id")
+
 		res, err := iamAPI.GetUser(&iam.GetUserRequest{
 			UserID: userID.(string),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		email = res.Email
 		organizationID = res.OrganizationID
 		tags = res.Tags
@@ -73,23 +77,28 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interf
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(res.Users) == 0 {
 			return diag.FromErr(fmt.Errorf("no user found with the email address %s", d.Get("email")))
 		}
+
 		for _, user := range res.Users {
 			if user.Email == d.Get("email").(string) {
 				if userID != "" {
 					return diag.Errorf("more than 1 user found with the same email %s", d.Get("email"))
 				}
+
 				userID, email, tags = user.ID, user.Email, user.Tags
 			}
 		}
+
 		if userID == "" {
 			return diag.Errorf("no user found with the email %s", d.Get("email"))
 		}
 	}
 
 	d.SetId(userID.(string))
+
 	err := d.Set("user_id", userID)
 	if err != nil {
 		return diag.FromErr(err)

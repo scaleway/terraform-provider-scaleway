@@ -59,6 +59,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
+
 	tflog.Debug(ctx, "bucket name: "+bucket)
 
 	if bucketRegion != "" && bucketRegion != region {
@@ -66,6 +67,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
 
@@ -86,9 +88,11 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		if tfawserr.ErrCodeEquals(err, "MalformedPolicy") {
 			return retry.RetryableError(err)
 		}
+
 		if err != nil {
 			return retry.NonRetryableError(err)
 		}
+
 		return nil
 	})
 	if TimedOut(err) {
@@ -96,7 +100,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %s", err))
+		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %w", err))
 	}
 
 	d.SetId(regional.NewIDString(region, bucket))
@@ -124,6 +128,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 	if !d.IsNewResource() && tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, ErrCodeNoSuchBucket) {
 		tflog.Warn(ctx, fmt.Sprintf("[WARN] SCW Bucket Policy (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -151,6 +156,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var diags diag.Diagnostics
+
 	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	})
@@ -181,7 +187,7 @@ func resourceObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting SCW Object policy: %s", err))
+		return diag.FromErr(fmt.Errorf("error deleting SCW Object policy: %w", err))
 	}
 
 	return nil

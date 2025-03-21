@@ -22,9 +22,10 @@ func testSweepK8SCluster(_ string) error {
 		k8sAPI := k8sSDK.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
+
 		listClusters, err := k8sAPI.ListClusters(&k8sSDK.ListClustersRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing clusters in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing clusters in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, cluster := range listClusters.Clusters {
@@ -34,7 +35,7 @@ func testSweepK8SCluster(_ string) error {
 				ClusterID: cluster.ID,
 			}, scw.WithAllPages())
 			if err != nil {
-				return fmt.Errorf("error listing pool in (%s) in sweeper: %s", region, err)
+				return fmt.Errorf("error listing pool in (%s) in sweeper: %w", region, err)
 			}
 
 			for _, pool := range listPools.Pools {
@@ -43,15 +44,16 @@ func testSweepK8SCluster(_ string) error {
 					PoolID: pool.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting pool in sweeper: %s", err)
+					return fmt.Errorf("error deleting pool in sweeper: %w", err)
 				}
 			}
+
 			_, err = k8sAPI.DeleteCluster(&k8sSDK.DeleteClusterRequest{
 				Region:    region,
 				ClusterID: cluster.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting cluster in sweeper: %s", err)
+				return fmt.Errorf("error deleting cluster in sweeper: %w", err)
 			}
 		}
 

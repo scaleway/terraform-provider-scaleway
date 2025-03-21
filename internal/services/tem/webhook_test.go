@@ -197,6 +197,7 @@ func isWebhookDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}, scw.WithContext(context.Background()))
 			errorCode := httperrors.Is404(err)
 			_ = errorCode
+
 			if err != nil && !httperrors.Is404(err) {
 				return err
 			}

@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_flexible_ip_mac_address"
 # Resource: scaleway_flexible_ip_mac_address
 
 Creates and manages Scaleway Flexible IP Mac Addresses.
-For more information, see [the documentation](https://www.scaleway.com/en/developers/api/elastic-metal-flexible-ip/).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/elastic-metal-flexible-ip/).
 
 ## Example Usage
 

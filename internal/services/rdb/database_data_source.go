@@ -18,6 +18,7 @@ func DataSourceDatabase() *schema.Resource {
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
+
 	return &schema.Resource{
 		ReadContext: DataSourceDatabaseRead,
 		Schema:      dsSchema,
@@ -29,6 +30,7 @@ func DataSourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	instanceID, _ := d.GetOk("instance_id")
 	dbName, _ := d.GetOk("name")
 
@@ -38,9 +40,11 @@ func DataSourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", instanceID, dbName.(string)))
+
 	err = d.Set("instance_id", instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return ResourceRdbDatabaseRead(ctx, d, m)
 }

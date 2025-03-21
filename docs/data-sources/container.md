@@ -8,7 +8,7 @@ The `scaleway_container` data source is used to retrieve information about a Ser
 
 Refer to the Serverless Containers [product documentation](https://www.scaleway.com/en/docs/serverless/containers/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/) for more information.
 
-For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/).
+For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
 
 ## Retrieve a Serverless Container
 
@@ -63,7 +63,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `description` The description of the container.
 
-- `environment_variables` - The [environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) variables of the container.
+- `environment_variables` - The [environment](https://www.scaleway.com/en/docs/serverless-containers/concepts/#environment-variables) variables of the container.
 
 - `min_scale` - The minimum number of container instances running continuously.
 
@@ -91,7 +91,18 @@ In addition to all arguments above, the following attributes are exported:
 
 - `deploy` - Boolean indicating whether the container is on a production environment.
 
+- `sandbox` - Execution environment of the container.
+
+- `health_check` - Health check configuration block of the container.
+    - `http` - HTTP health check configuration.
+        - `path` - Path to use for the HTTP health check.
+    - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
+    - `interval`- Period between health checks (in seconds).
 - `sandbox` - (Optional) Execution environment of the container.
+- `scaling_option` - Configuration block used to decide when to scale up or down. Possible values:
+    - `concurrent_requests_threshold` - Scale depending on the number of concurrent requests being processed per container instance.
+    - `cpu_usage_threshold` - Scale depending on the CPU usage of a container instance.
+    - `memory_usage_threshold`- Scale depending on the memory usage of a container instance.
 
 - `status` - The container status.
 

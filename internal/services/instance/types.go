@@ -10,15 +10,18 @@ import (
 
 func (ph *privateNICsHandler) flatPrivateNICs() error {
 	privateNICsMap := make(map[string]*instance.PrivateNIC)
+
 	res, err := ph.instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{Zone: ph.zone, ServerID: ph.serverID})
 	if err != nil {
 		return err
 	}
+
 	for _, p := range res.PrivateNics {
 		privateNICsMap[p.PrivateNetworkID] = p
 	}
 
 	ph.privateNICsMap = privateNICsMap
+
 	return nil
 }
 
@@ -27,12 +30,14 @@ func expandImageExtraVolumesTemplates(snapshotIDs []string) map[string]*instance
 	if len(snapshotIDs) == 0 {
 		return volTemplates
 	}
+
 	for i, snapID := range snapshotIDs {
 		volTemplate := &instance.VolumeTemplate{
 			ID: snapID,
 		}
 		volTemplates[strconv.Itoa(i+1)] = volTemplate
 	}
+
 	return volTemplates
 }
 
@@ -41,23 +46,27 @@ func expandImageExtraVolumesUpdateTemplates(snapshotIDs []string) map[string]*in
 	if len(snapshotIDs) == 0 {
 		return volTemplates
 	}
+
 	for i, snapID := range snapshotIDs {
 		volTemplate := &instance.VolumeImageUpdateTemplate{
 			ID: snapID,
 		}
 		volTemplates[strconv.Itoa(i+1)] = volTemplate
 	}
+
 	return volTemplates
 }
 
 func flattenImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone) interface{} {
 	volumesFlat := []map[string]interface{}(nil)
+
 	for _, volume := range volumes {
 		server := map[string]interface{}{}
 		if volume.Server != nil {
 			server["id"] = volume.Server.ID
 			server["name"] = volume.Server.Name
 		}
+
 		volumeFlat := map[string]interface{}{
 			"id":                zonal.NewIDString(zone, volume.ID),
 			"name":              volume.Name,
@@ -75,6 +84,7 @@ func flattenImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone
 		}
 		volumesFlat = append(volumesFlat, volumeFlat)
 	}
+
 	return volumesFlat
 }
 

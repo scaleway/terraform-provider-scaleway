@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -40,7 +41,6 @@ const (
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
 	defaultInstanceIPReverseDNSTimeout      = 10 * time.Minute
-	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 
@@ -55,6 +55,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, scw.Z
 	if err != nil {
 		return nil, "", err
 	}
+
 	return instanceAPI, zone, nil
 }
 
@@ -66,6 +67,7 @@ func NewAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw.Zone
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return instanceAPI, zone, ID, nil
 }
 
@@ -77,6 +79,7 @@ func NewAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*instance.A
 	if err != nil {
 		return nil, "", "", "", err
 	}
+
 	return instanceAPI, zone, innerID, outerID, nil
 }
 
@@ -86,12 +89,14 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 	for index := range v {
 		indexes = append(indexes, index)
 	}
+
 	sort.Strings(indexes)
 
 	orderedVolumes := make([]*instance.Volume, 0, len(indexes))
 	for _, index := range indexes {
 		orderedVolumes = append(orderedVolumes, v[index])
 	}
+
 	return orderedVolumes
 }
 
@@ -101,12 +106,14 @@ func sortVolumeServer(v map[string]*instance.VolumeServer) []*instance.VolumeSer
 	for index := range v {
 		indexes = append(indexes, index)
 	}
+
 	sort.Strings(indexes)
 
 	sortedVolumes := make([]*instance.VolumeServer, 0, len(indexes))
 	for _, index := range indexes {
 		sortedVolumes = append(sortedVolumes, v[index])
 	}
+
 	return sortedVolumes
 }
 
@@ -122,6 +129,7 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	case instance.ServerStateLocked:
 		return "", errors.New("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
 	}
+
 	return "", errors.New("server is in an invalid state, someone else might be executing action at the same time")
 }
 
@@ -140,7 +148,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	return apiState, nil
 }
 
-func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, serverID string, toState instance.ServerState) error {
+func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, serverID string, toState instance.ServerState) error {
 	response, err := api.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: serverID,
@@ -148,6 +156,7 @@ func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, se
 	if err != nil {
 		return err
 	}
+
 	fromState := response.Server.State
 
 	if response.Server.State == toState {
@@ -171,7 +180,7 @@ func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, se
 	// We need to check that all volumes are ready
 	for _, volume := range response.Server.Volumes {
 		if volume.VolumeType == block.BlockVolumeType {
-			_, err := api.blockAPI.WaitForVolumeAndReferences(&blockSDK.WaitForVolumeAndReferencesRequest{
+			_, err := api.BlockAPI.WaitForVolumeAndReferences(&blockSDK.WaitForVolumeAndReferencesRequest{
 				VolumeID:      volume.ID,
 				Zone:          zone,
 				RetryInterval: transport.DefaultWaitRetryInterval,
@@ -203,6 +212,7 @@ func reachState(ctx context.Context, api *BlockAndInstanceAPI, zone scw.Zone, se
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -218,6 +228,7 @@ func getServerType(ctx context.Context, apiInstance *instance.API, zone scw.Zone
 		if serverType == nil {
 			tflog.Warn(ctx, "unrecognized server type: "+commercialType)
 		}
+
 		return serverType
 	}
 
@@ -228,6 +239,7 @@ func getServerType(ctx context.Context, apiInstance *instance.API, zone scw.Zone
 func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate, serverType *instance.ServerType, commercialType string) error {
 	// Calculate local volume total size.
 	var localVolumeTotalSize scw.Size
+
 	for _, volume := range volumes {
 		if volume.VolumeType == instance.VolumeVolumeTypeLSSD && volume.Size != nil {
 			localVolumeTotalSize += *volume.Size
@@ -248,6 +260,7 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 		}
 
 		maxSize := humanize.Bytes(uint64(volumeConstraint.MaxSize))
+
 		return fmt.Errorf("%s total local volume size must be between %s and %s", commercialType, minSize, maxSize)
 	}
 
@@ -268,11 +281,13 @@ func preparePrivateNIC(
 		r := pn.(map[string]interface{})
 		zonedID, pnExist := r["pn_id"]
 		privateNetworkID := locality.ExpandID(zonedID.(string))
+
 		if pnExist {
 			region, err := server.Zone.Region()
 			if err != nil {
 				return nil, err
 			}
+
 			currentPN, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
 				PrivateNetworkID: locality.ExpandID(privateNetworkID),
 				Region:           region,
@@ -280,6 +295,7 @@ func preparePrivateNIC(
 			if err != nil {
 				return nil, err
 			}
+
 			query := &instance.CreatePrivateNICRequest{
 				Zone:             server.Zone,
 				ServerID:         server.ID,
@@ -305,6 +321,7 @@ func newPrivateNICHandler(api *instance.API, server string, zone scw.Zone) (*pri
 		serverID:    server,
 		zone:        zone,
 	}
+
 	return handler, handler.flatPrivateNICs()
 }
 
@@ -334,7 +351,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 				PrivateNicID:  p.ID,
 				Zone:          ph.zone,
 				Timeout:       &timeout,
-				RetryInterval: scw.TimeDurationPtr(defaultInstanceRetryInterval),
+				RetryInterval: scw.TimeDurationPtr(instancehelpers.DefaultInstanceRetryInterval),
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err
@@ -377,15 +394,19 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout
 func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 	raw := d.Get("private_network")
 	privateNetworks := []map[string]interface{}(nil)
+
 	for index := range raw.([]interface{}) {
 		pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
 		keyValue := d.Get(pnKey)
+
 		keyRaw, err := ph.get(keyValue.(string))
 		if err != nil {
 			continue
 		}
+
 		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
 	}
+
 	return d.Set("private_network", privateNetworks)
 }
 
@@ -394,10 +415,12 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	pn, ok := ph.privateNICsMap[id]
 	if !ok {
 		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, loc)
 	}
+
 	return map[string]interface{}{
 		"pn_id":       key,
 		"mac_address": pn.MacAddress,
@@ -432,14 +455,16 @@ func retryUpdateReverseDNS(ctx context.Context, instanceAPI *instance.API, req *
 
 	for {
 		select {
-		case <-time.After(defaultInstanceRetryInterval):
+		case <-time.After(instancehelpers.DefaultInstanceRetryInterval):
 			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
 			if err != nil && IsIPReverseDNSResolveError(err) {
 				continue
 			}
+
 			return err
 		case <-timeoutChannel:
 			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+
 			return err
 		}
 	}
@@ -470,33 +495,23 @@ func instanceIPHasMigrated(d *schema.ResourceData) bool {
 	return false
 }
 
-func instanceServerAdditionalVolumeTemplate(api *BlockAndInstanceAPI, zone scw.Zone, volumeID string) (*instance.VolumeServerTemplate, error) {
-	vol, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+func instanceServerAdditionalVolumeTemplate(api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumeID string) (*instance.VolumeServerTemplate, error) {
+	vol, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
 		VolumeID: locality.ExpandID(volumeID),
 		Zone:     zone,
 	})
 	if err != nil {
 		return nil, err
 	}
+
 	return vol.VolumeTemplate(), nil
 }
 
-func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerType, image string) *UnknownVolume {
-	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
-
+func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerType, image string) *instancehelpers.UnknownVolume {
 	rootVolumeIsBootVolume := types.ExpandBoolPtr(types.GetMapValue[bool](rootVolumeI, "boot"))
 	rootVolumeType := types.GetMapValue[string](rootVolumeI, "volume_type")
 	sizeInput := types.GetMapValue[int](rootVolumeI, "size_in_gb")
 	rootVolumeID := zonal.ExpandID(types.GetMapValue[string](rootVolumeI, "volume_id")).ID
-
-	// If the rootVolumeType is not defined, define it depending on the offer
-	if rootVolumeType == "" {
-		if serverTypeCanBootOnBlock {
-			rootVolumeType = instance.VolumeVolumeTypeSbsVolume.String()
-		} else {
-			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
-		}
-	}
 
 	rootVolumeName := ""
 	if image == "" { // When creating an instance from an image, volume should not have a name
@@ -513,7 +528,7 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
 	}
 
-	return &UnknownVolume{
+	return &instancehelpers.UnknownVolume{
 		Name:               rootVolumeName,
 		ID:                 rootVolumeID,
 		InstanceVolumeType: instance.VolumeVolumeType(rootVolumeType),

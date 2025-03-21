@@ -50,6 +50,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "inbound_port", "80"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", ""),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_http3", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "connection_rate_limit", "0"),
 				),
 			},
 			{
@@ -73,6 +74,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 						inbound_port = 443
 						timeout_client = "30s"
 						enable_http3 = true
+						connection_rate_limit = 100
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -81,6 +83,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "inbound_port", "443"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", "30s"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_http3", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "connection_rate_limit", "100"),
 				),
 			},
 		},
@@ -540,6 +543,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if testAcl.Name == "" {
 				testAcl.Name = apiAcl.Name
 			}
+
 			return lb.ACLEquals(&testAcl, &apiAcl)
 		}
 
@@ -563,7 +567,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			FrontendID: ID,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error on getting acl list [%s]", err)
+			return fmt.Errorf("error on getting acl list [%w]", err)
 		}
 
 		// verify that the count of api acl is the same as we are expecting it to be
@@ -581,6 +585,7 @@ func isACLCorrect(tt *acctest.TestTools, frontendName string, expectedAcls []*lb
 			if _, found := aclMap[int32(i)]; !found {
 				return fmt.Errorf("cannot find an index set [%d]", i)
 			}
+
 			if !testCompareAcls(*expectedAcls[i-1], *aclMap[int32(i)]) {
 				return fmt.Errorf("two acls are not equal on stage %d", i)
 			}

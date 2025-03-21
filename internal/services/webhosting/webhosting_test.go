@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	webhostingSDK "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1alpha1"
+	webhostingSDK "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
@@ -25,6 +25,7 @@ func TestAccWebhosting_Basic(t *testing.T) {
 				Config: `
 				data "scaleway_webhosting_offer" "by_name" {
 				  name = "lite"
+				  control_panel = "Cpanel"
 				}
 
 				resource "scaleway_webhosting" "main" {
@@ -46,6 +47,15 @@ func TestAccWebhosting_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "created_at"),
 					acctest.CheckResourceAttrUUID("scaleway_webhosting.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "records.0.name"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "records.0.type"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "records.0.ttl"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "records.0.value"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "records.0.priority"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "records.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "name_servers.0.hostname"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "name_servers.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "name_servers.0.is_default"),
 				),
 			},
 		},
@@ -64,7 +74,7 @@ func testAccCheckWebhostingExists(tt *acctest.TestTools, n string) resource.Test
 			return err
 		}
 
-		_, err = api.GetHosting(&webhostingSDK.GetHostingRequest{
+		_, err = api.GetHosting(&webhostingSDK.HostingAPIGetHostingRequest{
 			HostingID: id,
 			Region:    region,
 		})
@@ -88,7 +98,7 @@ func testAccCheckWebhostingDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			res, err := api.GetHosting(&webhostingSDK.GetHostingRequest{
+			res, err := api.GetHosting(&webhostingSDK.HostingAPIGetHostingRequest{
 				HostingID: id,
 				Region:    region,
 			})

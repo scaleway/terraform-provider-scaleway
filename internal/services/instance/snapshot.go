@@ -173,8 +173,10 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -206,7 +208,7 @@ func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData,
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't update snapshot: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't update snapshot: %w", err))
 	}
 
 	return ResourceInstanceSnapshotRead(ctx, d, m)

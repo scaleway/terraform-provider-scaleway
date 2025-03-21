@@ -226,6 +226,7 @@ func ResourceBucket() *schema.Resource {
 
 func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
+
 	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -248,6 +249,7 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m i
 	if TimedOut(err) {
 		_, err = s3Client.CreateBucket(ctx, req)
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -286,7 +288,8 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Couldn't update bucket ACL: %s", err))
-			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
+
+			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %w", err))
 		}
 	}
 
@@ -313,6 +316,7 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 				Bucket: scw.StringPtr(bucketName),
 			})
 		}
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -348,6 +352,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		if err != nil {
 			return fmt.Errorf("error removing S3 lifecycle for bucket %s: %w", bucket, err)
 		}
+
 		return nil
 	}
 
@@ -368,10 +373,12 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 			lifecycleRuleAndOp := &s3Types.LifecycleRuleAndOperator{
 				Tags: tags,
 			}
+
 			if ruleHasPrefix {
 				prefix := r["prefix"].(string)
 				lifecycleRuleAndOp.Prefix = &prefix
 			}
+
 			filter.And = lifecycleRuleAndOp
 		}
 
@@ -411,10 +418,12 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		if len(expiration) > 0 && expiration[0] != nil {
 			e := expiration[0].(map[string]interface{})
 			i := &s3Types.LifecycleExpiration{}
+
 			if val, ok := e["days"].(int); ok && val > 0 {
 				days := int32(val)
 				i.Days = aws.Int32(days)
 			}
+
 			rule.Expiration = i
 		}
 
@@ -422,13 +431,16 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		transitions := d.Get(fmt.Sprintf("lifecycle_rule.%d.transition", i)).(*schema.Set).List()
 		if len(transitions) > 0 {
 			rule.Transitions = []s3Types.Transition{}
+
 			for _, transition := range transitions {
 				transition := transition.(map[string]interface{})
 				i := s3Types.Transition{}
+
 				if val, ok := transition["days"].(int); ok && val >= 0 {
 					days := int32(val)
 					i.Days = aws.Int32(days)
 				}
+
 				if val, ok := transition["storage_class"].(string); ok && val != "" {
 					i.StorageClass = s3Types.TransitionStorageClass(val)
 				}
@@ -485,8 +497,10 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 		bucketFound, objectLockFound := addReadBucketErrorDiagnostic(&diags, err, "object lock configuration", ErrCodeObjectLockConfigurationNotFoundError)
 		if !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
+
 		if !objectLockFound {
 			_ = d.Set("object_lock_enabled", false)
 		}
@@ -509,6 +523,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 	}
@@ -521,6 +536,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "tags", ErrCodeNoSuchTagSet); !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 	} else {
@@ -550,9 +566,11 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "versioning", ""); !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 	}
+
 	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
 
 	// Read the lifecycle configuration
@@ -562,6 +580,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "lifecycle configuration", ErrCodeNoSuchLifecycleConfiguration); !bucketFound {
 			d.SetId("")
+
 			return diags
 		}
 	}
@@ -572,12 +591,14 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 
 		for _, lifecycleRule := range lifecycle.Rules {
 			log.Printf("[DEBUG] SCW bucket: %s, read lifecycle rule: %v", d.Id(), lifecycleRule)
+
 			rule := make(map[string]interface{})
 
 			// ID
 			if lifecycleRule.ID != nil && aws.ToString(lifecycleRule.ID) != "" {
 				rule["id"] = aws.ToString(lifecycleRule.ID)
 			}
+
 			filter := lifecycleRule.Filter
 			if filter != nil {
 				if filter.And != nil {
@@ -625,27 +646,33 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 				if lifecycleRule.Expiration.Days != nil {
 					e["days"] = int(aws.ToInt32(lifecycleRule.Expiration.Days))
 				}
+
 				rule["expiration"] = []interface{}{e}
 			}
 			//// transition
 			if len(lifecycleRule.Transitions) > 0 {
 				transitions := make([]interface{}, 0, len(lifecycleRule.Transitions))
+
 				for _, v := range lifecycleRule.Transitions {
 					t := make(map[string]interface{})
 					if v.Days != nil {
 						t["days"] = int(aws.ToInt32(v.Days))
 					}
+
 					if v.StorageClass != "" {
 						t["storage_class"] = string(v.StorageClass)
 					}
+
 					transitions = append(transitions, t)
 				}
+
 				rule["transition"] = schema.NewSet(transitionHash, transitions)
 			}
 
 			lifecycleRules = append(lifecycleRules, rule)
 		}
 	}
+
 	if err := d.Set("lifecycle_rule", lifecycleRules); err != nil {
 		return append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -658,7 +685,9 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 
 func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
+
 	var nObjectDeleted int64
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -676,8 +705,9 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m i
 			if d.Get("force_destroy").(bool) {
 				nObjectDeleted, err = emptyBucket(ctx, s3Client, bucketName, true)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
+					return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %w", err))
 				}
+
 				log.Printf("[DEBUG] Deleted %d S3 objects", nObjectDeleted)
 
 				return resourceObjectBucketDelete(ctx, d, m)
@@ -705,7 +735,7 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client
 
 	_, err := s3conn.PutBucketVersioning(ctx, i)
 	if err != nil {
-		return fmt.Errorf("error putting S3 versioning: %s", err)
+		return fmt.Errorf("error putting S3 versioning: %w", err)
 	}
 
 	return nil
@@ -723,7 +753,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			return fmt.Errorf("error deleting S3 CORS: %s", err)
+			return fmt.Errorf("error deleting S3 CORS: %w", err)
 		}
 	} else {
 		// Put CORS
@@ -738,7 +768,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 
 		_, err := s3conn.PutBucketCors(ctx, corsInput)
 		if err != nil {
-			return fmt.Errorf("error putting S3 CORS: %s", err)
+			return fmt.Errorf("error putting S3 CORS: %w", err)
 		}
 	}
 

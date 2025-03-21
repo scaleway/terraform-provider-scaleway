@@ -55,6 +55,12 @@ func ResourceRoute() *schema.Resource {
 				Description:   "Specifies the host of the server to which the request is being sent",
 				ConflictsWith: []string{"match_sni"},
 			},
+			"match_subdomains": {
+				Type:        schema.TypeBool,
+				Description: "If true, all subdomains will match",
+				Optional:    true,
+				Default:     false,
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -94,8 +100,9 @@ func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m interf
 		FrontendID: frontID,
 		BackendID:  backID,
 		Match: &lbSDK.RouteMatch{
-			Sni:        types.ExpandStringPtr(d.Get("match_sni")),
-			HostHeader: types.ExpandStringPtr(d.Get("match_host_header")),
+			Sni:             types.ExpandStringPtr(d.Get("match_sni")),
+			HostHeader:      types.ExpandStringPtr(d.Get("match_host_header")),
+			MatchSubdomains: d.Get("match_subdomains").(bool),
 		},
 	}
 
@@ -122,8 +129,10 @@ func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -131,6 +140,7 @@ func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("backend_id", zonal.NewIDString(zone, route.BackendID))
 	_ = d.Set("match_sni", types.FlattenStringPtr(route.Match.Sni))
 	_ = d.Set("match_host_header", types.FlattenStringPtr(route.Match.HostHeader))
+	_ = d.Set("match_subdomains", route.Match.MatchSubdomains)
 	_ = d.Set("created_at", types.FlattenTime(route.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(route.UpdatedAt))
 
@@ -157,8 +167,9 @@ func resourceLbRouteUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		RouteID:   ID,
 		BackendID: backID,
 		Match: &lbSDK.RouteMatch{
-			Sni:        types.ExpandStringPtr(d.Get("match_sni")),
-			HostHeader: types.ExpandStringPtr(d.Get("match_host_header")),
+			Sni:             types.ExpandStringPtr(d.Get("match_sni")),
+			HostHeader:      types.ExpandStringPtr(d.Get("match_host_header")),
+			MatchSubdomains: d.Get("match_subdomains").(bool),
 		},
 	}
 

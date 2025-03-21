@@ -96,6 +96,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		region = bucketRegion
 	}
 
@@ -111,7 +112,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		Bucket: scw.StringPtr(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket: %w", err))
 	}
 
 	input := &s3.PutBucketWebsiteInput{
@@ -148,15 +149,18 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		if IsS3Err(err, ErrCodeNoSuchBucket, "") {
 			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
 			d.SetId("")
+
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+
+		return diag.FromErr(fmt.Errorf("couldn't read bucket: %w", err))
 	}
 
 	output, err := conn.GetBucketWebsite(ctx, input)
 	if !d.IsNewResource() && ErrCodeEquals(err, ErrCodeNoSuchBucket, ErrCodeNoSuchWebsiteConfiguration) {
 		tflog.Debug(ctx, fmt.Sprintf("[WARN] Object Bucket Website Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -164,8 +168,10 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		if d.IsNewResource() {
 			return diag.FromErr(fmt.Errorf("error reading object bucket website configuration (%s): empty output", d.Id()))
 		}
+
 		tflog.Info(ctx, fmt.Sprintf("[WARN] object Bucket Website Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -187,8 +193,9 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
 	}
+
 	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	return nil

@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_instance_private_nic"
 # Resource: scaleway_instance_private_nic
 
 Creates and manages Scaleway Instance Private NICs. For more information, see
-[the documentation](https://www.scaleway.com/en/developers/api/instance/#path-private-nics-list-all-private-nics).
+the [API documentation](https://www.scaleway.com/en/developers/api/instance/#path-private-nics-list-all-private-nics).
 
 ## Example Usage
 
@@ -71,7 +71,7 @@ resource "scaleway_instance_private_nic" "pnic01" {
   private_network_id = scaleway_vpc_private_network.pn01.id
   server_id          = scaleway_instance_server.server01.id
   ipam_ip_ids        = [scaleway_ipam_ip.ip01.id]
-}     
+}
 ```
 
 ## Argument Reference

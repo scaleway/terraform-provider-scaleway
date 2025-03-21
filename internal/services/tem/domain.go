@@ -45,6 +45,7 @@ func ResourceDomain() *schema.Resource {
 					v := i.(bool)
 					if !v {
 						errs = append(errs, errors.New("you must accept the Scaleway Terms of Service to use this service"))
+
 						return warnings, errs
 					}
 
@@ -223,8 +224,10 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -239,8 +242,15 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("last_error", domain.LastError) //nolint:staticcheck
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)
-	_ = d.Set("dmarc_name", domain.Records.Dmarc.Name)
-	_ = d.Set("dmarc_config", domain.Records.Dmarc.Value)
+
+	if domain.Records != nil && domain.Records.Dmarc != nil {
+		_ = d.Set("dmarc_name", domain.Records.Dmarc.Name)
+		_ = d.Set("dmarc_config", domain.Records.Dmarc.Value)
+	} else {
+		_ = d.Set("dmarc_name", "")
+		_ = d.Set("dmarc_config", "")
+	}
+
 	_ = d.Set("smtp_host", tem.SMTPHost)
 	_ = d.Set("smtp_port_unsecure", tem.SMTPPortUnsecure)
 	_ = d.Set("smtp_port", tem.SMTPPort)
@@ -252,6 +262,7 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
 	_ = d.Set("smtps_auth_user", domain.ProjectID)
+
 	return nil
 }
 
@@ -287,6 +298,7 @@ func ResourceDomainDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
 

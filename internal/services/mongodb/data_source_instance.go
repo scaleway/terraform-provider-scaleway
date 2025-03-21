@@ -43,6 +43,7 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 	instanceID, ok := d.GetOk("instance_id")
 	if !ok {
 		instanceName := d.Get("name").(string)
+
 		res, err := mongodbAPI.ListInstances(&mongodb.ListInstancesRequest{
 			Region:    region,
 			Name:      types.ExpandStringPtr(instanceName),
@@ -66,6 +67,7 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	zonedID := datasource.NewZonedID(instanceID, zone)
 	d.SetId(zonedID)
+
 	err = d.Set("instance_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -75,6 +77,7 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 		Region:     region,
 		InstanceID: locality.ExpandID(instanceID.(string)),
 	}
+
 	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -104,6 +107,7 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 		for _, setting := range instance.Settings {
 			settingsMap[setting.Name] = setting.Value
 		}
+
 		_ = d.Set("settings", settingsMap)
 	}
 

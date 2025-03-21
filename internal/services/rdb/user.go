@@ -72,6 +72,7 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	rdbAPI := newAPI(m)
 	// resource depends on the instance locality
 	regionalID := d.Get("instance_id").(string)
+
 	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
 		diag.FromErr(err)
@@ -100,12 +101,15 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errCreateUser)
 			}
+
 			return retry.NonRetryableError(errCreateUser)
 		}
 		// set database information
 		user = currentUser
+
 		return nil
 	})
 	if err != nil {
@@ -119,6 +123,7 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 
 func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI := newAPI(m)
+
 	region, instanceID, userName, err := ResourceUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -128,8 +133,10 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -141,13 +148,17 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
+
 	if len(res.Users) == 0 {
 		tflog.Warn(ctx, fmt.Sprintf("couldn'd find user with name: [%s]", userName))
 		d.SetId("")
+
 		return nil
 	}
 
@@ -184,6 +195,7 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	if d.HasChange("password") {
 		req.Password = types.ExpandStringPtr(d.Get("password"))
 	}
+
 	if d.HasChange("is_admin") {
 		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
 	}
@@ -221,8 +233,10 @@ func ResourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 				if errWait != nil {
 					return retry.NonRetryableError(errWait)
 				}
+
 				return retry.RetryableError(errDeleteUser)
 			}
+
 			return retry.NonRetryableError(errDeleteUser)
 		}
 		// set database information
@@ -249,5 +263,6 @@ func ResourceUserParseID(resourceID string) (region scw.Region, instanceID strin
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
 	}
+
 	return scw.Region(idParts[0]), idParts[1], idParts[2], nil
 }

@@ -254,8 +254,10 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -272,7 +274,9 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("tags", types.ExpandUpdatedStringsPtr(deployment.Tags))
 	_ = d.Set("created_at", types.FlattenTime(deployment.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(deployment.UpdatedAt))
+
 	var privateEndpoints []map[string]interface{}
+
 	var publicEndpoints []map[string]interface{}
 
 	for _, endpoint := range deployment.Endpoints {
@@ -285,6 +289,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 			}
 			privateEndpoints = append(privateEndpoints, privateEndpointSpec)
 		}
+
 		if endpoint.PublicAccess != nil {
 			publicEndpointSpec := map[string]interface{}{
 				"id":           endpoint.ID,
@@ -299,9 +304,11 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	if privateEndpoints != nil {
 		_ = d.Set("private_endpoint", privateEndpoints)
 	}
+
 	if publicEndpoints != nil {
 		_ = d.Set("public_endpoint", publicEndpoints)
 	}
+
 	return nil
 }
 
@@ -315,8 +322,10 @@ func ResourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -358,6 +367,7 @@ func ResourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_, err = api.DeleteDeployment(&inference.DeleteDeploymentRequest{
 		Region:       region,
 		DeploymentID: id,
@@ -365,6 +375,7 @@ func ResourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)

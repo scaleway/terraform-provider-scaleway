@@ -141,8 +141,10 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -185,6 +187,7 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	hasChange := false
+
 	if d.HasChange("private_ip") {
 		req.PrivateIP = scw.IPPtr(net.ParseIP(d.Get("private_ip").(string)))
 		hasChange = true
@@ -215,8 +218,10 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 		if err != nil {
 			if httperrors.Is404(err) {
 				d.SetId("")
+
 				return nil
 			}
+
 			return diag.FromErr(err)
 		}
 	}
@@ -242,8 +247,10 @@ func ResourceVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schema.Resour
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

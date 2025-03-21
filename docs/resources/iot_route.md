@@ -10,7 +10,7 @@ page_title: "Scaleway: scaleway_iot_route"
 Creates and manages Scaleway IoT Routes. For more information, see the following:
 
 - [API documentation](https://www.scaleway.com/en/developers/api/iot/).
-- [Product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-route/)
+- [Product documentation](https://www.scaleway.com/en/docs/iot-hub/how-to/create-route/)
 
 ## Example Usage
 
@@ -119,7 +119,7 @@ The following arguments are supported:
 
 - `topic` - (Required) The topic the Route subscribes to, wildcards allowed (e.g. `thelab/+/temperature/#`).
 
-- `database` - (Optional) Configuration block for the database routes. See  [product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-route/#-Database-Route) for a better understanding of the parameters.
+- `database` - (Optional) Configuration block for the database routes. See  [product documentation](https://www.scaleway.com/en/docs/iot-hub/how-to/create-route/) for a better understanding of the parameters.
     - `query` - (Required) The SQL query that will be executed when receiving a message ($TOPIC and $PAYLOAD variables are available, see documentation, e.g. `INSERT INTO mytable(date, topic, value) VALUES (NOW(), $TOPIC, $PAYLOAD)`).
     - `host` - (Required) The database hostname. Can be an IP or a FQDN.
     - `port` - (Required) The database port (e.g. `5432`)
@@ -127,16 +127,16 @@ The following arguments are supported:
     - `username` - (Required) The database username.
     - `password` - (Required) The database password.
 
-- `rest` (Optional) - Configuration block for the rest routes. See [product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-route/#-REST-Route) for a better understanding of the parameters.
+- `rest` (Optional) - Configuration block for the rest routes. See [product documentation](https://www.scaleway.com/en/docs/iot-hub/how-to/create-route/) for a better understanding of the parameters.
     - `verb` - (Required) The HTTP Verb used to call Rest URI (e.g. `post`).
     - `uri` - (Required) The URI of the Rest endpoint (e.g. `https://internal.mycompany.com/ingest/mqttdata`).
     - `headers` - (Required) a map of the extra headers to send with the HTTP call (e.g. `X-Header = Value`).
 
-- `s3` (Optional) - Configuration block for the S3 routes. See [product documentation](https://www.scaleway.com/en/docs/scaleway-iothub-route/#-Scaleway-Object-Storage-Route) for a better understanding of the parameters.
+- `s3` (Optional) - Configuration block for the S3 routes. See [product documentation](https://www.scaleway.com/en/docs/iot-hub/how-to/create-route/) for a better understanding of the parameters.
     - `bucket_region` (Required) - The region of the S3 route's destination bucket (e.g. `fr-par`).
     - `bucket_name` (Required) - The name of the S3 route's destination bucket (e.g. `my-object-storage`).
     - `object_prefix` (Required) - The string to prefix object names with (e.g. `mykeyprefix-`).
-    - `strategy` (Required) - How the S3 route's objects will be created (e.g. `per_topic`). See [documentation](https://www.scaleway.com/en/docs/scaleway-iothub-route/#-Messages-Store-Strategies) for behaviour details.
+    - `strategy` (Required) - How the S3 route's objects will be created (e.g. `per_topic`). See [documentation](https://www.scaleway.com/en/docs/iot-hub/how-to/create-route/) for behaviour details.
 
 ## Attributes Reference
 

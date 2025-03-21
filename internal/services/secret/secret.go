@@ -3,6 +3,7 @@ package secret
 import (
 	"context"
 	"path/filepath"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -115,6 +116,49 @@ func ResourceSecret() *schema.Resource {
 					},
 				},
 			},
+			"versions": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"revision": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The revision of secret version",
+						},
+						"secret_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The secret ID associated with this version",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Status of the secret version",
+						},
+						"created_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Date and time of secret version's creation (RFC 3339 format)",
+						},
+						"updated_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Date and time of secret version's creation (RFC 3339 format)",
+						},
+						"description": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Description of the secret version",
+						},
+						"latest": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Returns true if the version is the latest.",
+						},
+					},
+				},
+			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
@@ -181,8 +225,10 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -190,18 +236,47 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface
 		_ = d.Set("tags", types.FlattenSliceString(secretResponse.Tags))
 	}
 
+	versions, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
+		Region:   region,
+		SecretID: id,
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", secretResponse.Name)
 	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
 	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("version_count", int(secretResponse.VersionCount))
+	_ = d.Set("version_count", int(versions.TotalCount))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", secretResponse.ProjectID)
 	_ = d.Set("path", secretResponse.Path)
 	_ = d.Set("protected", secretResponse.Protected)
 	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secretResponse.EphemeralPolicy))
 	_ = d.Set("type", secretResponse.Type)
+
+	versionsList := make([]map[string]interface{}, 0, len(versions.Versions))
+	for _, version := range versions.Versions {
+		versionsList = append(versionsList, map[string]interface{}{
+			"revision":    strconv.Itoa(int(version.Revision)),
+			"secret_id":   version.SecretID,
+			"status":      version.Status.String(),
+			"created_at":  types.FlattenTime(version.CreatedAt),
+			"updated_at":  types.FlattenTime(version.UpdatedAt),
+			"description": types.FlattenStringPtr(version.Description),
+			"latest":      types.FlattenBoolPtr(&version.Latest),
+		})
+	}
+
+	_ = d.Set("versions", versionsList)
 
 	return nil
 }
@@ -244,6 +319,7 @@ func ResourceSecretUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		hasChanged = true
 	}
 

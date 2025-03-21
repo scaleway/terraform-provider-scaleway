@@ -18,7 +18,8 @@ import (
 func TestAccSNSTopicSubscription_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-	ctx := context.Background()
+
+	ctx := t.Context()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -139,6 +140,7 @@ func isSNSTopicSubscriptionDestroyed(ctx context.Context, tt *acctest.TestTools)
 						return nil
 					}
 				}
+
 				return err
 			}
 

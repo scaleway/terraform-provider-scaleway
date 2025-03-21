@@ -195,6 +195,7 @@ func ResourceIotRouteCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	hubID := zonal.ExpandID(d.Get("hub_id")).ID
+
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -264,8 +265,10 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -314,6 +317,7 @@ func ResourceIotRouteDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	hubID := zonal.ExpandID(d.Get("hub_id")).ID
+
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -327,6 +331,7 @@ func ResourceIotRouteDelete(ctx context.Context, d *schema.ResourceData, m inter
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 

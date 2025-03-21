@@ -24,13 +24,15 @@ func AddTestSweepers() {
 func testSweepBlockVolume(_ string) error {
 	return acctest.SweepZones((&blockSDK.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
 		blockAPI := blockSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the block volumes in (%s)", zone)
+
 		listVolumes, err := blockAPI.ListVolumes(
 			&blockSDK.ListVolumesRequest{
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing volume in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing volume in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, volume := range listVolumes.Volumes {
@@ -41,7 +43,7 @@ func testSweepBlockVolume(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting volume in sweeper: %s", err)
+				return fmt.Errorf("error deleting volume in sweeper: %w", err)
 			}
 		}
 
@@ -52,13 +54,15 @@ func testSweepBlockVolume(_ string) error {
 func testSweepSnapshot(_ string) error {
 	return acctest.SweepZones((&blockSDK.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
 		blockAPI := blockSDK.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the block snapshots in (%s)", zone)
+
 		listSnapshots, err := blockAPI.ListSnapshots(
 			&blockSDK.ListSnapshotsRequest{
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing snapshot in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing snapshot in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, snapshot := range listSnapshots.Snapshots {
@@ -69,7 +73,7 @@ func testSweepSnapshot(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting snapshot in sweeper: %s", err)
+				return fmt.Errorf("error deleting snapshot in sweeper: %w", err)
 			}
 		}
 

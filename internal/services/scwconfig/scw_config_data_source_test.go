@@ -1,7 +1,6 @@
 package scwconfig_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -20,21 +19,23 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == ciAccessKey {
 		t.Skip("Skipping TestAccDataSourceConfig_ActiveProfile")
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
-			_ = os.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
+			t.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
 			metaDefault, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
 				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
+
 			return map[string]func() (*schema.Provider, error){
 				"default": func() (*schema.Provider, error) {
 					return provider.Provider(&provider.Config{Meta: metaDefault})(), nil
@@ -70,22 +71,24 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == ciAccessKey {
 		t.Skip("Skipping TestAccDataSourceConfig_OtherProfile")
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
-			_ = os.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
-			_ = os.Setenv("SCW_PROFILE", "other")
+			t.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
+			t.Setenv("SCW_PROFILE", "other")
 			metaOther, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
 				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
+
 			return map[string]func() (*schema.Provider, error){
 				"other": func() (*schema.Provider, error) {
 					return provider.Provider(&provider.Config{Meta: metaOther})(), nil
@@ -121,23 +124,25 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == ciAccessKey {
 		t.Skip("Skipping TestAccDataSourceConfig_MixedProfile")
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
-			_ = os.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
-			_ = os.Setenv("SCW_PROFILE", "incomplete")
-			_ = os.Setenv("SCW_DEFAULT_PROJECT_ID", "77777777-7777-7777-7777-777777777777")
+			t.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
+			t.Setenv("SCW_PROFILE", "incomplete")
+			t.Setenv("SCW_DEFAULT_PROJECT_ID", "77777777-7777-7777-7777-777777777777")
 			metaMixed, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
 				HTTPClient:       tt.Meta.HTTPClient(),
 			})
 			require.NoError(t, err)
+
 			return map[string]func() (*schema.Provider, error){
 				"mixed": func() (*schema.Provider, error) {
 					return provider.Provider(&provider.Config{Meta: metaMixed})(), nil

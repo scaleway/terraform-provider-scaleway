@@ -38,13 +38,15 @@ func AddTestSweepers() {
 func testSweepSQSCredentials(_ string) error {
 	return acctest.SweepRegions((&mnqSDK.SqsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		mnqAPI := mnqSDK.NewSqsAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the mnq sqs credentials in (%s)", region)
+
 		listSqsCredentials, err := mnqAPI.ListSqsCredentials(
 			&mnqSDK.SqsAPIListSqsCredentialsRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing sqs credentials in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing sqs credentials in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, credentials := range listSqsCredentials.SqsCredentials {
@@ -55,7 +57,7 @@ func testSweepSQSCredentials(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting sqs credentials in sweeper: %s", err)
+				return fmt.Errorf("error deleting sqs credentials in sweeper: %w", err)
 			}
 		}
 
@@ -74,6 +76,7 @@ func testSweepSQS(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}
+
 		for _, project := range listProjects.Projects {
 			if !strings.HasPrefix(project.Name, "tf_tests") {
 				continue
@@ -85,6 +88,7 @@ func testSweepSQS(_ string) error {
 			})
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
+
 				return err
 			}
 		}
@@ -96,13 +100,15 @@ func testSweepSQS(_ string) error {
 func testSweepSNSCredentials(_ string) error {
 	return acctest.SweepRegions((&mnqSDK.SnsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		mnqAPI := mnqSDK.NewSnsAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the mnq sns credentials in (%s)", region)
+
 		listSnsCredentials, err := mnqAPI.ListSnsCredentials(
 			&mnqSDK.SnsAPIListSnsCredentialsRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing sns credentials in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing sns credentials in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, credentials := range listSnsCredentials.SnsCredentials {
@@ -113,7 +119,7 @@ func testSweepSNSCredentials(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting sns credentials in sweeper: %s", err)
+				return fmt.Errorf("error deleting sns credentials in sweeper: %w", err)
 			}
 		}
 
@@ -132,6 +138,7 @@ func testSweepSNS(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}
+
 		for _, project := range listProjects.Projects {
 			if !strings.HasPrefix(project.Name, "tf_tests") {
 				continue
@@ -143,6 +150,7 @@ func testSweepSNS(_ string) error {
 			})
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
+
 				return err
 			}
 		}
@@ -154,13 +162,15 @@ func testSweepSNS(_ string) error {
 func testSweepNatsAccount(_ string) error {
 	return acctest.SweepRegions((&mnqSDK.NatsAPI{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		mnqAPI := mnqSDK.NewNatsAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the mnq nats accounts in (%s)", region)
+
 		listNatsAccounts, err := mnqAPI.ListNatsAccounts(
 			&mnqSDK.NatsAPIListNatsAccountsRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing nats account in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing nats account in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, account := range listNatsAccounts.NatsAccounts {
@@ -171,7 +181,7 @@ func testSweepNatsAccount(_ string) error {
 			if err != nil {
 				logging.L.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting nats account in sweeper: %s", err)
+				return fmt.Errorf("error deleting nats account in sweeper: %w", err)
 			}
 		}
 

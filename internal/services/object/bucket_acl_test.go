@@ -26,6 +26,7 @@ const (
 func TestAccObjectBucketACL_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-basic")
 
 	resource.Test(t, resource.TestCase{
@@ -76,6 +77,7 @@ func TestAccObjectBucketACL_Basic(t *testing.T) {
 func TestAccObjectBucketACL_Grantee(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-grantee")
 
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
@@ -179,6 +181,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 func TestAccObjectBucketACL_GranteeWithOwner(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-owner")
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	resource.Test(t, resource.TestCase{
@@ -231,6 +234,7 @@ func TestAccObjectBucketACL_GranteeWithOwner(t *testing.T) {
 func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-name")
 
 	resource.Test(t, resource.TestCase{
@@ -279,6 +283,7 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 func TestAccObjectBucketACL_Remove(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-remove")
 
 	resource.Test(t, resource.TestCase{
@@ -355,32 +360,37 @@ func TestAccObjectBucketACL_Remove(t *testing.T) {
 func testAccObjectBucketACLCheck(tt *acctest.TestTools, name string, expectedACL string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
+
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", name)
 		}
 
 		bucketRegion := rs.Primary.Attributes["region"]
+
 		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 		if err != nil {
 			return err
 		}
+
 		if rs.Primary.ID == "" {
 			return errors.New("no ID is set")
 		}
 
 		bucketName := rs.Primary.Attributes["name"]
+
 		actualACL, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 			Bucket: types.ExpandStringPtr(bucketName),
 		})
 		if err != nil {
-			return fmt.Errorf("could not get ACL for bucket %s: %v", bucketName, err)
+			return fmt.Errorf("could not get ACL for bucket %s: %w", bucketName, err)
 		}
 
 		errs := s3ACLAreEqual(expectedACL, actualACL)
 		if len(errs) > 0 {
 			return fmt.Errorf("unexpected result: %w", errors.Join(errs...))
 		}
+
 		return nil
 	}
 }
@@ -388,10 +398,12 @@ func testAccObjectBucketACLCheck(tt *acctest.TestTools, name string, expectedACL
 func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error) {
 	ownerID := *object.NormalizeOwnerID(actual.Owner.ID)
 	grantsMap := make(map[string]string)
+
 	for _, actualACL := range actual.Grants {
 		if actualACL.Permission == "" {
 			return append(errs, errors.New("grant has no permission"))
 		}
+
 		if actualACL.Grantee.ID != nil {
 			grantsMap[string(actualACL.Permission)] = *object.NormalizeOwnerID(actualACL.Grantee.ID)
 		} else {
@@ -404,8 +416,10 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	case "private":
 		if len(grantsMap) != 1 {
 			errs = append(errs, fmt.Errorf("expected 1 grant, but got %d", len(grantsMap)))
+
 			return errs
 		}
+
 		if grantsMap["FULL_CONTROL"] != ownerID {
 			errs = append(errs, fmt.Errorf("expected FULL_CONTROL to be granted to owner (%s), instead got %q", ownerID, grantsMap["FULL_CONTROL"]))
 		}
@@ -413,11 +427,14 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	case "public-read":
 		if len(grantsMap) != 2 {
 			errs = append(errs, fmt.Errorf("expected 2 grants, but got %d", len(grantsMap)))
+
 			return errs
 		}
+
 		if grantsMap["FULL_CONTROL"] != ownerID {
 			errs = append(errs, fmt.Errorf("expected FULL_CONTROL to be granted to owner (%s), instead got %q", ownerID, grantsMap["FULL_CONTROL"]))
 		}
+
 		if grantsMap["READ"] != s3ACLGranteeAllUsers {
 			errs = append(errs, fmt.Errorf("expected READ to be granted to %q, instead got %q", s3ACLGranteeAllUsers, grantsMap["READ"]))
 		}
@@ -425,14 +442,18 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	case "public-read-write":
 		if len(grantsMap) != 3 {
 			errs = append(errs, fmt.Errorf("expected 3 grants, but got %d", len(grantsMap)))
+
 			return errs
 		}
+
 		if grantsMap["FULL_CONTROL"] != ownerID {
 			errs = append(errs, fmt.Errorf("expected FULL_CONTROL to be granted to owner (%s), instead got %q", ownerID, grantsMap["FULL_CONTROL"]))
 		}
+
 		if grantsMap["READ"] != s3ACLGranteeAllUsers {
 			errs = append(errs, fmt.Errorf("expected READ to be granted to %q, instead got %q", s3ACLGranteeAllUsers, grantsMap["READ"]))
 		}
+
 		if grantsMap["WRITE"] != s3ACLGranteeAllUsers {
 			errs = append(errs, fmt.Errorf("expected WRITE to be granted to %q, instead got %q", s3ACLGranteeAllUsers, grantsMap["WRITE"]))
 		}
@@ -440,14 +461,18 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	case "authenticated-read":
 		if len(grantsMap) != 2 {
 			errs = append(errs, fmt.Errorf("expected 2 grants, but got %d", len(grantsMap)))
+
 			return errs
 		}
+
 		if grantsMap["FULL_CONTROL"] != ownerID {
 			errs = append(errs, fmt.Errorf("expected FULL_CONTROL to be granted to owner (%s), instead got %q", ownerID, grantsMap["FULL_CONTROL"]))
 		}
+
 		if grantsMap["READ"] != s3ACLGranteeAuthenticatedUsers {
 			errs = append(errs, fmt.Errorf("expected READ to be granted to %q, instead got %q", s3ACLGranteeAuthenticatedUsers, grantsMap["READ"]))
 		}
 	}
+
 	return errs
 }
