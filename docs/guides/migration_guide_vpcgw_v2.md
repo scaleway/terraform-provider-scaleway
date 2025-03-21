@@ -10,7 +10,7 @@ In IPAM mode, these functionalities are managed by Scaleway IPAM.
 In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.
 
 Note:
-Trigger the move from Legacy mode to IPAM mide by setting the `migrate_to_v2` flag on your Public Gateway resource.
+Trigger the move from Legacy mode to IPAM mode by setting the `move_to_ipam` flag on your Public Gateway resource.
 You can do this via the Terraform configuration or by using the Scaleway CLI/Console.
 
 ## Prerequisites
@@ -30,7 +30,7 @@ terraform {
 }
 ```
 
-## Migration steps
+## Steps to Move to IPAM Mode
 
 ### Legacy Configuration
 
@@ -86,14 +86,14 @@ resource "scaleway_vpc_public_gateway_dhcp_reservation" "main" {
 
 ### Triggering the move to IPAM-mode
 
-Before updating your configuration, you must trigger the move to IPAM-mode on the Public Gateway resource. For example, add the `migrate_to_v2` flag:
+Before updating your configuration, you must trigger the move to IPAM-mode on the Public Gateway resource. For example, add the `move_to_ipam` flag:
 
 ```hcl
 resource "scaleway_vpc_public_gateway" "main" {
   name          = "foobar"
   type          = "VPC-GW-S"
   ip_id         = scaleway_vpc_public_gateway_ip.main.id
-  migrate_to_v2 = true
+  move_to_ipam  = true
 }
 ```
 
@@ -118,10 +118,10 @@ After triggering the move, update your Terraform configuration as follows:
     resource "scaleway_vpc_gateway_network" "main" {
       gateway_id         = scaleway_vpc_public_gateway.main.id
       private_network_id = scaleway_vpc_private_network.main.id
+      enable_masquerade  = true
       ipam_config {
         push_default_route = false
       }
-      enable_masquerade = true
     }
     ```
 
@@ -131,7 +131,7 @@ After putting your Public Gateway in IPAM mode, you no longer manage DHCP reserv
 Instead, you remove the legacy DHCP reservation resource and switch to using IPAM to manage your IPs.
 
 1. **Retrieve an Existing IP with the IPAM Datasource**  
-   If you have already reserved an IP (for example, via your legacy configuration), even after deleting the DHCP reservation resource the IP is still available. You can reference it using the `scaleway_ipam_ip` datasource. For instance:
+   If you have already reserved an IP (for example, via your legacy configuration), even after deleting the DHCP reservation resource the IP is still available. You can retrieve it using the `scaleway_ipam_ip` datasource. For instance:
 
    ```hcl
    data "scaleway_ipam_ip" "existing" {
@@ -147,9 +147,9 @@ Instead, you remove the legacy DHCP reservation resource and switch to using IPA
 
    ```hcl
    resource "scaleway_ipam_ip" "new_ip" {
-     address = "172.16.64.7"
+     address = "192.168.1.1"
      source {
-       private_network_id = scaleway_vpc_private_network.pn01.id
+       private_network_id = scaleway_vpc_private_network.main.id
      }
    }
    ```
