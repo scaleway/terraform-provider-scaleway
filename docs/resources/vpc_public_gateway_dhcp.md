@@ -5,6 +5,8 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp"
 
 # Resource: scaleway_vpc_public_gateway_dhcp
 
+~> **Important:**  The resource `scaleway_vpc_public_gateway_dhcp` has been deprecated and will no longer be supported. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.
+
 Creates and manages Scaleway VPC Public Gateway DHCP configurations.
 For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/public-gateway/#dhcp-c05544).
 
