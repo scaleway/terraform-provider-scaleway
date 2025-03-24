@@ -20,8 +20,12 @@ func TestAccDataSourceUser_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_iam_user" "main" {
+					  email = "foo@scaleway.com"
+					}
+
 					data "scaleway_iam_user" "by_id" {
-					  user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+					  user_id = scaleway_iam_user.main.id
 					}
 
 					data "scaleway_iam_user" "by_email" {
