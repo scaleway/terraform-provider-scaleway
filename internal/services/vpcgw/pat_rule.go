@@ -94,6 +94,7 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 	}
 
 	gatewayID := zonal.ExpandID(d.Get("gateway_id").(string)).ID
+
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)

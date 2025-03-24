@@ -42,6 +42,7 @@ func newAPIWithZoneV2(d *schema.ResourceData, m interface{}) (*v2.API, scw.Zone,
 	if err != nil {
 		return nil, "", err
 	}
+
 	return api, zone, nil
 }
 
@@ -63,6 +64,7 @@ func NewAPIWithZoneAndIDv2(m interface{}, id string) (*v2.API, scw.Zone, string,
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	return api, zone, ID, nil
 }
 
@@ -112,7 +114,9 @@ func expandIpamConfigV2(raw interface{}) (bool, *string) {
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	pushDefaultRoute := rawMap["push_default_route"].(bool)
+
 	var ipamIPID *string
+
 	if IPID, ok := rawMap["ipam_ip_id"].(string); ok && IPID != "" {
 		ipamIPID = scw.StringPtr(regional.ExpandID(IPID).ID)
 	}
@@ -136,40 +140,48 @@ func flattenIpamConfig(config *vpcgw.IpamConfig, region scw.Region) interface{} 
 // FlattenIPNetList turns a slice of scw.IPNet into a slice of string CIDRs.
 func FlattenIPNetList(ipNets []scw.IPNet) ([]string, error) {
 	res := make([]string, 0, len(ipNets))
+
 	for _, ipNet := range ipNets {
 		flattened, err := types.FlattenIPNet(ipNet)
 		if err != nil {
 			return nil, err
 		}
+
 		res = append(res, flattened)
 	}
+
 	return res, nil
 }
 
 // readVPCGWResourceDataV1 sets the resource data using a v1 gateway
 func readVPCGWResourceDataV1(d *schema.ResourceData, gw *vpcgw.Gateway) diag.Diagnostics {
 	_ = d.Set("name", gw.Name)
-	if gw.Type != nil {
-		_ = d.Set("type", gw.Type.Name)
-	}
 	_ = d.Set("status", string(gw.Status))
 	_ = d.Set("organization_id", gw.OrganizationID)
 	_ = d.Set("project_id", gw.ProjectID)
-	if gw.CreatedAt != nil {
-		_ = d.Set("created_at", gw.CreatedAt.Format(time.RFC3339))
-	}
-	if gw.UpdatedAt != nil {
-		_ = d.Set("updated_at", gw.UpdatedAt.Format(time.RFC3339))
-	}
 	_ = d.Set("zone", gw.Zone)
 	_ = d.Set("tags", gw.Tags)
 	_ = d.Set("upstream_dns_servers", gw.UpstreamDNSServers)
-	if gw.IP != nil {
-		_ = d.Set("ip_id", zonal.NewID(gw.IP.Zone, gw.IP.ID).String())
-	}
 	_ = d.Set("bastion_enabled", gw.BastionEnabled)
 	_ = d.Set("bastion_port", int(gw.BastionPort))
 	_ = d.Set("enable_smtp", gw.SMTPEnabled)
+
+	if gw.Type != nil {
+		_ = d.Set("type", gw.Type.Name)
+	}
+
+	if gw.IP != nil {
+		_ = d.Set("ip_id", zonal.NewID(gw.IP.Zone, gw.IP.ID).String())
+	}
+
+	if gw.CreatedAt != nil {
+		_ = d.Set("created_at", gw.CreatedAt.Format(time.RFC3339))
+	}
+
+	if gw.UpdatedAt != nil {
+		_ = d.Set("updated_at", gw.UpdatedAt.Format(time.RFC3339))
+	}
+
 	return nil
 }
 
@@ -180,97 +192,112 @@ func readVPCGWResourceDataV2(d *schema.ResourceData, gw *v2.Gateway) diag.Diagno
 	_ = d.Set("status", gw.Status.String())
 	_ = d.Set("organization_id", gw.OrganizationID)
 	_ = d.Set("project_id", gw.ProjectID)
-	if gw.CreatedAt != nil {
-		_ = d.Set("created_at", gw.CreatedAt.Format(time.RFC3339))
-	}
-	if gw.UpdatedAt != nil {
-		_ = d.Set("updated_at", gw.UpdatedAt.Format(time.RFC3339))
-	}
 	_ = d.Set("zone", gw.Zone)
 	_ = d.Set("tags", gw.Tags)
-	if gw.IPv4 != nil {
-		_ = d.Set("ip_id", zonal.NewID(gw.IPv4.Zone, gw.IPv4.ID).String())
-	}
 	_ = d.Set("bastion_enabled", gw.BastionEnabled)
 	_ = d.Set("bastion_port", int(gw.BastionPort))
 	_ = d.Set("enable_smtp", gw.SMTPEnabled)
 	_ = d.Set("bandwidth", gw.Bandwidth)
 	_ = d.Set("upstream_dns_servers", nil)
+
 	ips, err := FlattenIPNetList(gw.BastionAllowedIPs)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("allowed_ip_ranges", ips)
+
+	if gw.IPv4 != nil {
+		_ = d.Set("ip_id", zonal.NewID(gw.IPv4.Zone, gw.IPv4.ID).String())
+	}
+
+	if gw.CreatedAt != nil {
+		_ = d.Set("created_at", gw.CreatedAt.Format(time.RFC3339))
+	}
+
+	if gw.UpdatedAt != nil {
+		_ = d.Set("updated_at", gw.UpdatedAt.Format(time.RFC3339))
+	}
 
 	return nil
 }
 
 // readVPCGWNetworkResourceDataV1 sets the resource data using a v1 gateway network
 func readVPCGWNetworkResourceDataV1(d *schema.ResourceData, gatewayNetwork *vpcgw.GatewayNetwork) diag.Diagnostics {
-	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
-		_ = d.Set("mac_address", types.FlattenStringPtr(macAddress).(string))
-	}
 	fetchRegion, err := gatewayNetwork.Zone.Region()
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
 	_ = d.Set("gateway_id", zonal.NewIDString(gatewayNetwork.Zone, gatewayNetwork.GatewayID))
 	_ = d.Set("enable_masquerade", gatewayNetwork.EnableMasquerade)
 	_ = d.Set("status", string(gatewayNetwork.Status))
+	_ = d.Set("zone", gatewayNetwork.Zone)
+
+	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
+		_ = d.Set("mac_address", types.FlattenStringPtr(macAddress).(string))
+	}
+
 	if gatewayNetwork.CreatedAt != nil {
 		_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))
 	}
+
 	if gatewayNetwork.UpdatedAt != nil {
 		_ = d.Set("updated_at", gatewayNetwork.UpdatedAt.Format(time.RFC3339))
 	}
-	_ = d.Set("zone", gatewayNetwork.Zone)
+
 	var cleanUpDHCPValue bool
+
 	cleanUpDHCP, cleanUpDHCPExist := d.GetOk("cleanup_dhcp")
+
 	if cleanUpDHCPExist {
 		cleanUpDHCPValue = *types.ExpandBoolPtr(cleanUpDHCP)
 	}
+
 	_ = d.Set("cleanup_dhcp", cleanUpDHCPValue)
+
 	if ipamConfig := gatewayNetwork.IpamConfig; ipamConfig != nil {
 		_ = d.Set("ipam_config", flattenIpamConfig(ipamConfig, fetchRegion))
 	}
+
 	return nil
 }
 
 // readVPCGWNetworkResourceDataV2 sets the resource data using a v1 gateway network
 func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.GatewayNetwork) diag.Diagnostics {
-	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
-		_ = d.Set("mac_address", types.FlattenStringPtr(macAddress).(string))
-	}
 	fetchRegion, err := gatewayNetwork.Zone.Region()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
 
+	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
 	_ = d.Set("gateway_id", zonal.NewIDString(gatewayNetwork.Zone, gatewayNetwork.GatewayID))
 	_ = d.Set("enable_masquerade", gatewayNetwork.MasqueradeEnabled)
 	_ = d.Set("status", string(gatewayNetwork.Status))
+	_ = d.Set("zone", gatewayNetwork.Zone)
+
+	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
+		_ = d.Set("mac_address", types.FlattenStringPtr(macAddress).(string))
+	}
+
 	if gatewayNetwork.CreatedAt != nil {
 		_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))
 	}
+
 	if gatewayNetwork.UpdatedAt != nil {
 		_ = d.Set("updated_at", gatewayNetwork.UpdatedAt.Format(time.RFC3339))
 	}
-	_ = d.Set("zone", gatewayNetwork.Zone)
-	var cleanUpDHCPValue bool
-	cleanUpDHCP, cleanUpDHCPExist := d.GetOk("cleanup_dhcp")
-	if cleanUpDHCPExist {
-		cleanUpDHCPValue = *types.ExpandBoolPtr(cleanUpDHCP)
-	}
-	_ = d.Set("cleanup_dhcp", cleanUpDHCPValue)
+
 	ipamConfig := []map[string]interface{}{
 		{
 			"push_default_route": gatewayNetwork.PushDefaultRoute,
 			"ipam_ip_id":         gatewayNetwork.IpamIPID,
 		},
 	}
+
 	_ = d.Set("ipam_config", ipamConfig)
+
 	return nil
 }
 
@@ -280,18 +307,23 @@ func updateGatewayV1(ctx context.Context, d *schema.ResourceData, apiV1 *vpcgw.A
 		GatewayID: id,
 		Zone:      zone,
 	}
+
 	if d.HasChange("name") {
 		v1UpdateRequest.Name = scw.StringPtr(d.Get("name").(string))
 	}
+
 	if d.HasChange("tags") {
 		v1UpdateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
+
 	if d.HasChange("bastion_port") {
 		v1UpdateRequest.BastionPort = scw.Uint32Ptr(uint32(d.Get("bastion_port").(int)))
 	}
+
 	if d.HasChange("bastion_enabled") {
 		v1UpdateRequest.EnableBastion = scw.BoolPtr(d.Get("bastion_enabled").(bool))
 	}
+
 	if d.HasChange("enable_smtp") {
 		v1UpdateRequest.EnableSMTP = scw.BoolPtr(d.Get("enable_smtp").(bool))
 	}
@@ -343,18 +375,23 @@ func updateGatewayV2(ctx context.Context, d *schema.ResourceData, api *v2.API, z
 		GatewayID: id,
 		Zone:      zone,
 	}
+
 	if d.HasChange("name") {
 		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
 	}
+
 	if d.HasChange("tags") {
 		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
+
 	if d.HasChange("bastion_port") {
 		updateRequest.BastionPort = scw.Uint32Ptr(uint32(d.Get("bastion_port").(int)))
 	}
+
 	if d.HasChange("bastion_enabled") {
 		updateRequest.EnableBastion = scw.BoolPtr(d.Get("bastion_enabled").(bool))
 	}
+
 	if d.HasChange("enable_smtp") {
 		updateRequest.EnableSMTP = scw.BoolPtr(d.Get("enable_smtp").(bool))
 	}
@@ -399,6 +436,7 @@ func updateGatewayV2(ctx context.Context, d *schema.ResourceData, api *v2.API, z
 
 	if d.HasChange("allowed_ip_ranges") {
 		listIPs := d.Get("allowed_ip_ranges").(*schema.Set).List()
+
 		_, err := api.SetBastionAllowedIPs(&v2.SetBastionAllowedIPsRequest{
 			GatewayID: id,
 			Zone:      zone,
@@ -424,8 +462,10 @@ func updateGateway(ctx context.Context, d *schema.ResourceData, api *v2.API, api
 		if httperrors.Is412(err) {
 			return updateGatewayV1(ctx, d, apiV1, zone, id)
 		}
+
 		return err
 	}
+
 	return nil
 }
 
@@ -435,15 +475,18 @@ func updateGWNetworkV2(ctx context.Context, d *schema.ResourceData, api *v2.API,
 		GatewayNetworkID: id,
 		Zone:             zone,
 	}
+
 	if d.HasChange("enable_masquerade") {
 		updateRequest.EnableMasquerade = types.ExpandBoolPtr(d.Get("enable_masquerade"))
 	}
+
 	if d.HasChange("ipam_config") {
 		pushDefaultRoute, ipamIPID := expandIpamConfigV2(d.Get("ipam_config"))
 
 		updateRequest.PushDefaultRoute = scw.BoolPtr(pushDefaultRoute)
 		updateRequest.IpamIPID = ipamIPID
 	}
+
 	if _, err := api.UpdateGatewayNetwork(updateRequest, scw.WithContext(ctx)); err != nil {
 		return err
 	}
@@ -462,25 +505,31 @@ func updateGWNetworkV1(ctx context.Context, d *schema.ResourceData, apiV1 *vpcgw
 		GatewayNetworkID: id,
 		Zone:             zone,
 	}
+
 	if d.HasChange("enable_masquerade") {
 		v1UpdateRequest.EnableMasquerade = types.ExpandBoolPtr(d.Get("enable_masquerade"))
 	}
+
 	if d.HasChange("enable_dhcp") {
 		v1UpdateRequest.EnableDHCP = types.ExpandBoolPtr(d.Get("enable_dhcp"))
 	}
+
 	if d.HasChange("dhcp_id") {
 		dhcpID := zonal.ExpandID(d.Get("dhcp_id").(string)).ID
 		v1UpdateRequest.DHCPID = &dhcpID
 	}
+
 	if d.HasChange("ipam_config") {
 		v1UpdateRequest.IpamConfig = expandUpdateIpamConfig(d.Get("ipam_config"))
 	}
+
 	if d.HasChange("static_address") {
 		if staticAddress, ok := d.GetOk("static_address"); ok {
 			address, err := types.ExpandIPNet(staticAddress.(string))
 			if err != nil {
 				return err
 			}
+
 			v1UpdateRequest.Address = &address
 		}
 	}
@@ -504,7 +553,9 @@ func updateGWNetwork(ctx context.Context, d *schema.ResourceData, api *v2.API, a
 		if httperrors.Is412(err) {
 			return updateGWNetworkV1(ctx, d, apiV1, zone, id)
 		}
+
 		return err
 	}
+
 	return nil
 }

@@ -171,6 +171,7 @@ func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData,
 
 	if allowedIps, ok := d.GetOk("allowed_ip_ranges"); ok {
 		listIPs := allowedIps.(*schema.Set).List()
+
 		_, err = api.SetBastionAllowedIPs(&vpcgw.SetBastionAllowedIPsRequest{
 			GatewayID: gateway.ID,
 			Zone:      zone,
@@ -189,7 +190,8 @@ func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	apiV1, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+
+	apiV1, _, _, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -202,6 +204,7 @@ func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			return readVPCGWResourceDataV1(d, gatewayV1)
 		} else if httperrors.Is404(err) {
 			d.SetId("")
@@ -220,7 +223,8 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	apiV1, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+
+	apiV1, _, _, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -234,6 +238,7 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 	}
+
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -263,7 +268,8 @@ func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	apiV1, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+
+	apiV1, _, _, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -276,6 +282,7 @@ func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData,
 				return diag.FromErr(err)
 			}
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -288,17 +295,18 @@ func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		if httperrors.Is404(err) {
-			return nil
-		} else if httperrors.Is412(err) {
-			_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutDelete))
-			if err != nil && !httperrors.Is404(err) {
-				return diag.FromErr(err)
-			}
-		} else {
+
+	switch {
+	case err == nil:
+	case httperrors.Is404(err):
+		return nil
+	case httperrors.Is412(err):
+		_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutDelete))
+		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
+	default:
+		return diag.FromErr(err)
 	}
 
 	return nil

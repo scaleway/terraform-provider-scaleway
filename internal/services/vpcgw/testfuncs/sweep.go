@@ -33,6 +33,7 @@ func AddTestSweepers() {
 func testSweepVPCPublicGateway(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := v2.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the public gateways in (%+v)", zone)
 
 		listGatewayResponse, err := api.ListGateways(&v2.ListGatewaysRequest{
@@ -59,6 +60,7 @@ func testSweepVPCPublicGateway(_ string) error {
 func testSweepVPCGatewayNetwork(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := v2.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the gateway network in (%s)", zone)
 
 		listPNResponse, err := api.ListGatewayNetworks(&v2.ListGatewayNetworksRequest{
@@ -85,6 +87,7 @@ func testSweepVPCGatewayNetwork(_ string) error {
 func testSweepVPCPublicGatewayIP(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		api := v2.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the public gateways ip in (%s)", zone)
 
 		listIPResponse, err := api.ListIPs(&v2.ListIPsRequest{

@@ -127,6 +127,7 @@ func ResourceDHCP() *schema.Resource {
 				Description: "The date and time of the last update of the public gateway.",
 			},
 		},
+		DeprecationMessage: "The 'dhcp' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.",
 	}
 }
 
