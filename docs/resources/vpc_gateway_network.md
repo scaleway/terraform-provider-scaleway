@@ -87,8 +87,8 @@ The following arguments are supported:
 - `gateway_id` - (Required) The ID of the Public Gateway.
 - `private_network_id` - (Required) The ID of the Private Network.
 - `ipam_config` - Auto-configure the GatewayNetwork using Scaleway's IPAM (IP address management service). Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
-  - `push_default_route` - Defines whether to enable the default route on the GatewayNetwork.
-  - `ipam_ip_id` - Use this IPAM-booked IP ID as the Gateway's IP in this Private Network.
+    - `push_default_route` - Defines whether to enable the default route on the GatewayNetwork.
+    - `ipam_ip_id` - Use this IPAM-booked IP ID as the Gateway's IP in this Private Network.
 - `enable_masquerade` - (Defaults to true) Whether masquerade (dynamic NAT) should be enabled on this GatewayNetwork
 - `dhcp_id` - (Deprecated) Please use `ipam_config`. The ID of the Public Gateway DHCP configuration. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
 - `enable_dhcp` - (Deprecated) Please use `ipam_config`. Whether a DHCP configuration should be enabled on this GatewayNetwork. Requires a DHCP ID.
