@@ -2,7 +2,6 @@ package tem
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -37,20 +36,9 @@ func ResourceDomain() *schema.Resource {
 				Description: "The domain name used when sending emails",
 			},
 			"accept_tos": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Accept the Scaleway Terms of Service",
-				Deprecated:  "This field is deprecated and will be removed, the field is always set to null",
-				ValidateFunc: func(i interface{}, _ string) (warnings []string, errs []error) {
-					v := i.(bool)
-					if !v {
-						errs = append(errs, errors.New("you must accept the Scaleway Terms of Service to use this service"))
-
-						return warnings, errs
-					}
-
-					return warnings, errs
-				},
+				Type:       schema.TypeBool,
+				Optional:   true,
+				Deprecated: "This attribute is deprecated and ignored, and will be removed in the next major version. You can safely remove it from your configuration.",
 			},
 			"autoconfig": {
 				Type:        schema.TypeBool,
@@ -231,12 +219,8 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	_ = d.Set("name", domain.Name)
-	_ = d.Set("accept_tos", nil)
 	_ = d.Set("autoconfig", domain.Autoconfig)
 	_ = d.Set("status", domain.Status)
-	if acceptTos, ok := d.GetOk("accept_tos"); ok {
-		_ = d.Set("accept_tos", acceptTos)
-	}
 	_ = d.Set("created_at", types.FlattenTime(domain.CreatedAt))
 	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
 	_ = d.Set("last_valid_at", types.FlattenTime(domain.LastValidAt))
