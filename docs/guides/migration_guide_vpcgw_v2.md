@@ -143,7 +143,7 @@ Instead, you remove the legacy DHCP reservation resource and switch to using IPA
    You can now use `data.scaleway_ipam_ip.existing.id` in your configuration to reference the reserved IP.
 
 2. **Book New IPs Using the IPAM IP Resource**
-   If you need to reserve new IPs, use the scaleway_ipam_ip resource. This resource allows you to explicitly book an IP from your private network. For example:
+   If you need to reserve new IPs, use the `scaleway_ipam_ip` resource. This resource allows you to explicitly book an IP from your private network. For example:
 
    ```hcl
    resource "scaleway_ipam_ip" "new_ip" {
