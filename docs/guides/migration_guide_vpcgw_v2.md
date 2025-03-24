@@ -15,6 +15,14 @@ Note:
 Trigger the move from Legacy mode to IPAM mode by setting the `move_to_ipam` flag on your Public Gateway resource.
 You can do this via the Terraform configuration or by using the Scaleway CLI/Console.
 
+Using the CLI:
+Ensure you have at least version v2.38.0 of the Scaleway CLI installed. Then run:
+
+```bash
+scw vpc-gw gateway move-to-ipam 'id-of-the-public-gateway'
+```
+
+
 ## Prerequisites
 
 ### Ensure the Latest Provider Version
