@@ -7,7 +7,9 @@ page_title: "Moving a Public Gateway from Legacy mode to IPAM mode, for v2 compa
 This guide explains how to move a Public Gateway from [Legacy mode](https://www.scaleway.com/en/docs/public-gateways/concepts/#ipam) to IPAM mode. Only gateways in IPAM mode will be compatible with the new v2 of the Public Gateways API. v1 of the API is deprecated, and will be removed before the end of 2025.
 In the legacy setup, DHCP and DHCP reservations are managed with dedicated resources and referenced in the gateway network.
 In IPAM mode, these functionalities are managed by Scaleway IPAM.
-In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.
+In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed on the Public Gateway itself.
+
+You can find out more about the deprecation of v1 of the Public Gateways API, and the obligatory move to IPAM mode, in the [main Public Gateways documentation](https://www.scaleway.com/en/docs/public-gateways/).
 
 Note:
 Trigger the move from Legacy mode to IPAM mode by setting the `move_to_ipam` flag on your Public Gateway resource.
