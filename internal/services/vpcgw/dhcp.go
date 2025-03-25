@@ -127,7 +127,7 @@ func ResourceDHCP() *schema.Resource {
 				Description: "The date and time of the last update of the public gateway.",
 			},
 		},
-		DeprecationMessage: "The 'dhcp' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.",
+		DeprecationMessage: "The 'dhcp' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
 	}
 }
 

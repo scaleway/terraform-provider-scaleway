@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp_reservation"
 
 ~> **Important:**  The resource `scaleway_vpc_public_gateway_dhcp_reservation` has been deprecated and will no longer be supported.
 In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.
-You can use IPAM to manage your IPs.
+You can use IPAM to manage your IPs. For more information, please refer to the [dedicated guide](../guides/migration_guide_vpcgw_v2.md).
 
 Creates and manages [Scaleway DHCP Reservations](https://www.scaleway.com/en/docs/vpc/concepts/#dhcp).
 

@@ -3,6 +3,7 @@ package vpcgw
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	v1 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
@@ -200,6 +201,7 @@ func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is412(err) {
 			// Fallback to v1 API.
+			tflog.Warn(ctx, "v2 API returned 412, falling back to v1 API to wait for public gateway stabilization")
 			gatewayV1, err := waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -237,20 +239,23 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		tflog.Info(ctx, "Public Gateway successfully moved to IPAM mode")
 	}
 
-	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := updateGateway(ctx, d, api, apiV1, zone, id); err != nil {
+	if err = updateGateway(ctx, d, api, apiV1, zone, id); err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if httperrors.Is412(err) {
+			tflog.Warn(ctx, "v2 API returned 412, falling back to v1 API to wait for public gateway stabilization")
 			_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -277,6 +282,7 @@ func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData,
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, id, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if httperrors.Is412(err) {
+			tflog.Warn(ctx, "v2 API returned 412, falling back to v1 API to wait for public gateway stabilization")
 			_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -301,6 +307,7 @@ func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData,
 	case httperrors.Is404(err):
 		return nil
 	case httperrors.Is412(err):
+		tflog.Warn(ctx, "v2 API returned 412, falling back to v1 API to wait for public gateway stabilization")
 		_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutDelete))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)

@@ -75,7 +75,7 @@ func ResourceDHCPReservation() *schema.Resource {
 			"zone": zonal.Schema(),
 		},
 		CustomizeDiff:      cdf.LocalityCheck("gateway_network_id"),
-		DeprecationMessage: "The 'dhcp_reservation' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed. You can use IPAM to manage your IPs",
+		DeprecationMessage: "The 'dhcp_reservation' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed. You can use IPAM to manage your IPs. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
 	}
 }
 
