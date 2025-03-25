@@ -37,7 +37,7 @@ data scaleway_vpc_gateway_network by_gateway_and_pn {
 * `gateway_id` - (Optional) ID of the Public Gateway the GatewayNetwork is linked to
 * `private_network_id` - (Optional) ID of the Private Network the GatewayNetwork is linked to
 * `enable_masquerade` - (Optional) Whether masquerade (dynamic NAT) is enabled on requested GatewayNetwork
-* `dhcp_id` - (Optional) ID of the Public Gateway's DHCP configuration
+* `dhcp_id` - (Deprecated) ID of the Public Gateway's DHCP configuration
 
 ## Attributes Reference
 

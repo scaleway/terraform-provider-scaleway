@@ -59,10 +59,11 @@ The following arguments are supported:
 - `tags` - (Optional) The tags to associate with the Public Gateway.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the public gateway is associated with.
-- `upstream_dns_servers` - (Optional) Override the gateway's default recursive DNS servers, if DNS features are enabled.
+- `upstream_dns_servers` - (Deprecated) Override the gateway's default recursive DNS servers, if DNS features are enabled.
 - `ip_id` - (Optional) Attach an existing flexible IP to the gateway.
 - `bastion_enabled` - (Optional) Enable SSH bastion on the gateway.
 - `bastion_port` - (Optional) The port on which the SSH bastion will listen.
+- `allowed_ip_ranges` - (Optional) Set a definitive list of IP ranges (in CIDR notation) allowed to connect to the SSH bastion.
 - `enable_smtp` - (Optional) Enable SMTP on the gateway.
 - `refresh_ssh_keys` - (Optional) Trigger a refresh of the SSH keys on the Public Gateway by changing this field's value.
 
