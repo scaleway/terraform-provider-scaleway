@@ -95,6 +95,7 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 	})
 	if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
 		d.SetId("")
+		
 		return diag.Errorf("domain validation did not complete in %d seconds", duration)
 	}
 
