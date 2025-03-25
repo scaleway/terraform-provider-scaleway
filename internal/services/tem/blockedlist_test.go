@@ -69,7 +69,6 @@ func TestAccBlockedList_Basic(t *testing.T) {
 	})
 }
 
-// Checks if the blocked email is present in Scaleway TEM API
 func isBlockedEmailPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
@@ -85,11 +84,10 @@ func isBlockedEmailPresent(tt *acctest.TestTools, n string) resource.TestCheckFu
 		blockedEmail := rs.Primary.Attributes["email"]
 
 		blocklists, err := api.ListBlocklists(&temSDK.ListBlocklistsRequest{
-			Region:   scw.Region(region),
+			Region:   region,
 			DomainID: domainID,
 			Email:    scw.StringPtr(blockedEmail),
 		}, scw.WithContext(context.Background()))
-
 		if err != nil {
 			return err
 		}
@@ -102,7 +100,6 @@ func isBlockedEmailPresent(tt *acctest.TestTools, n string) resource.TestCheckFu
 	}
 }
 
-// Checks if the blocked email is properly destroyed
 func isBlockedEmailDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
@@ -118,11 +115,10 @@ func isBlockedEmailDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			blockedEmail := rs.Primary.Attributes["email"]
 
 			blocklists, err := api.ListBlocklists(&temSDK.ListBlocklistsRequest{
-				Region:   scw.Region(region),
+				Region:   region,
 				DomainID: domainID,
 				Email:    scw.StringPtr(blockedEmail),
 			}, scw.WithContext(context.Background()))
-
 			if err != nil {
 				return err
 			}

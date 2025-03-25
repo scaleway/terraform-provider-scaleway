@@ -61,7 +61,7 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	region, domainID, err := regional.ParseID(d.Get("domain_id").(string))
+	_, domainID, err := regional.ParseID(d.Get("domain_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -70,7 +70,7 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m in
 	reason := d.Get("reason").(string)
 	typeBlockedList := d.Get("type").(string)
 
-	_, err = api.BulkCreateBlocklists(&tem.BulkCreateBlocklistsRequest{
+	resp, err := api.BulkCreateBlocklists(&tem.BulkCreateBlocklistsRequest{
 		Emails:   emails,
 		Region:   region,
 		DomainID: domainID,
@@ -81,13 +81,13 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s-%s", region, domainID))
+	d.SetId(fmt.Sprintf("%s/%s", region, resp.Blocklists[0].ID))
 
 	return ResourceBlockedListRead(ctx, d, m)
 }
 
 func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, _, err := NewAPIWithRegionAndID(m, d.Id())
+	api, region, domainID, err := NewAPIWithRegionAndID(m, d.Get("domain_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,25 +95,29 @@ func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m inte
 	blocklists, err := api.ListBlocklists(&tem.ListBlocklistsRequest{
 		Region:   region,
 		Email:    scw.StringPtr(d.Get("email").(string)),
-		DomainID: d.Get("domain_id").(string),
+		DomainID: domainID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	if len(blocklists.Blocklists) == 0 {
 		d.SetId("")
+
 		return nil
 	}
 
 	_ = d.Set("email", blocklists.Blocklists[0].Email)
 	_ = d.Set("reason", blocklists.Blocklists[0].Reason)
-	_ = d.Set("domain_id", blocklists.Blocklists[0].DomainID)
+	_ = d.Set("domain_id", fmt.Sprintf("%s/%s", region, blocklists.Blocklists[0].DomainID))
 	_ = d.Set("type", blocklists.Blocklists[0].Type)
+
 	return nil
 }
 
@@ -130,6 +134,8 @@ func ResourceBlockedListDelete(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
+
 	d.SetId("")
+
 	return nil
 }
