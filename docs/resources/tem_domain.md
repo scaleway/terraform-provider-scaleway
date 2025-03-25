@@ -113,6 +113,7 @@ The following arguments are supported:
   ~> **Important:** This attribute must be set to `true`.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the domain should be created.
+  ~> **Important:** Currently, only fr-par is supported. Specifying any other region will cause an error.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the domain is associated with.
 
