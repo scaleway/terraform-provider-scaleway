@@ -89,6 +89,15 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 		return nil
 	})
 
+	domainCheck, _ := api.CheckDomain(&tem.CheckDomainRequest{
+		Region:   region,
+		DomainID: domain.ID,
+	})
+	if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
+		d.SetId("")
+		return diag.Errorf("domain validation did not complete in %d seconds", duration)
+	}
+
 	return ResourceDomainValidationRead(ctx, d, meta)
 }
 
