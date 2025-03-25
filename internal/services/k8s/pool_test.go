@@ -476,18 +476,18 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 				resource "scaleway_vpc_private_network" "public_ip" {
 				  name       = "test-k8s-public-ip"
 				}
+
 				resource "scaleway_vpc_public_gateway" "public_ip" {
    				  name = "test-k8s-public-ip"
     			  type = "VPC-GW-S"
 				}
-				resource "scaleway_vpc_public_gateway_dhcp" "public_ip" {
-				  subnet = "192.168.0.0/22"
-				  push_default_route = true
-				}
+
 				resource "scaleway_vpc_gateway_network" "public_ip" {
 				  gateway_id = scaleway_vpc_public_gateway.public_ip.id
 				  private_network_id = scaleway_vpc_private_network.public_ip.id
-				  dhcp_id = scaleway_vpc_public_gateway_dhcp.public_ip.id
+				  ipam_config {
+					push_default_route = true
+				  }
 				}
 
 				resource "scaleway_k8s_cluster" "public_ip" {

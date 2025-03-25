@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	vpcgwchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw/testfuncs"
@@ -104,7 +104,7 @@ func testAccCheckVPCPublicGatewayIPExists(tt *acctest.TestTools, n string) resou
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

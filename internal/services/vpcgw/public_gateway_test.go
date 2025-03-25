@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	vpcgwchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw/testfuncs"
@@ -42,7 +42,6 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 						name = "%s-new"
 						type = "VPC-GW-S"
 						tags = ["tag0", "tag1"]
-						upstream_dns_servers = [ "1.2.3.4", "4.3.2.1" ]
 					}
 				`, publicGatewayName),
 				Check: resource.ComposeTestCheckFunc(
@@ -52,8 +51,6 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "status", vpcgwSDK.GatewayStatusRunning.String()),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "tags.0", "tag0"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "tags.1", "tag1"),
-					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "upstream_dns_servers.0", "1.2.3.4"),
-					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "upstream_dns_servers.1", "4.3.2.1"),
 				),
 			},
 			{
@@ -221,7 +218,7 @@ func testAccCheckVPCPublicGatewayExists(tt *acctest.TestTools, n string) resourc
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

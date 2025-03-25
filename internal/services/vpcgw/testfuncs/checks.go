@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	v2 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
@@ -18,12 +19,12 @@ func IsGatewayNetworkDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			vpcgwNetworkAPI, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			vpcgwNetworkAPI, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = vpcgwNetworkAPI.GetGatewayNetwork(&vpcgwSDK.GetGatewayNetworkRequest{
+			_, err = vpcgwNetworkAPI.GetGatewayNetwork(&v2.GetGatewayNetworkRequest{
 				GatewayNetworkID: ID,
 				Zone:             zone,
 			})
@@ -52,12 +53,12 @@ func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			vpcgwAPI, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			vpcgwAPI, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = vpcgwAPI.GetGateway(&vpcgwSDK.GetGatewayRequest{
+			_, err = vpcgwAPI.GetGateway(&v2.GetGatewayRequest{
 				GatewayID: ID,
 				Zone:      zone,
 			})
@@ -120,12 +121,12 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			vpcgwAPI, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			vpcgwAPI, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = vpcgwAPI.GetIP(&vpcgwSDK.GetIPRequest{
+			_, err = vpcgwAPI.GetIP(&v2.GetIPRequest{
 				IPID: ID,
 				Zone: zone,
 			})
