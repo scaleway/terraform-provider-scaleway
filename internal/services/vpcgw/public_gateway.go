@@ -202,6 +202,7 @@ func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m
 		if httperrors.Is412(err) {
 			// Fallback to v1 API.
 			tflog.Warn(ctx, "v2 API returned 412, falling back to v1 API to wait for public gateway stabilization")
+
 			gatewayV1, err := waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -256,6 +257,7 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is412(err) {
 			tflog.Warn(ctx, "v2 API returned 412, falling back to v1 API to wait for public gateway stabilization")
+
 			_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -283,6 +285,7 @@ func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		if httperrors.Is412(err) {
 			tflog.Warn(ctx, "v2 API returned 412, falling back to v1 API to wait for public gateway stabilization")
+
 			_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -308,6 +311,7 @@ func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData,
 		return nil
 	case httperrors.Is412(err):
 		tflog.Warn(ctx, "v2 API returned 412, falling back to v1 API to wait for public gateway stabilization")
+
 		_, err = waitForVPCPublicGateway(ctx, apiV1, zone, id, d.Timeout(schema.TimeoutDelete))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
