@@ -35,6 +35,14 @@ func AddTestSweepers() {
 		Name: "scaleway_edge_services_plan",
 		F:    testSweepPlan,
 	})
+	resource.AddTestSweepers("scaleway_edge_services_waf_stage", &resource.Sweeper{
+		Name: "scaleway_edge_services_waf_stage",
+		F:    testSweepWAF,
+	})
+	resource.AddTestSweepers("scaleway_edge_services_route_stage", &resource.Sweeper{
+		Name: "scaleway_edge_services_route_stage",
+		F:    testSweepRoute,
+	})
 }
 
 func testSweepPipeline(_ string) error {
@@ -162,6 +170,50 @@ func testSweepPlan(_ string) error {
 			})
 			if err != nil {
 				return fmt.Errorf("failed to delete current plan: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepWAF(_ string) error {
+	return acctest.Sweep(func(scwClient *scw.Client) error {
+		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+
+		listWAF, err := edgeAPI.ListWafStages(&edge.ListWafStagesRequest{})
+		if err != nil {
+			return fmt.Errorf("failed to list WAF stage: %w", err)
+		}
+
+		for _, stage := range listWAF.Stages {
+			err = edgeAPI.DeleteWafStage(&edge.DeleteWafStageRequest{
+				WafStageID: stage.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to delete WAF stage: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepRoute(_ string) error {
+	return acctest.Sweep(func(scwClient *scw.Client) error {
+		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+
+		listRoutes, err := edgeAPI.ListRouteStages(&edge.ListRouteStagesRequest{})
+		if err != nil {
+			return fmt.Errorf("failed to list route stage: %w", err)
+		}
+
+		for _, stage := range listRoutes.Stages {
+			err = edgeAPI.DeleteRouteStage(&edge.DeleteRouteStageRequest{
+				RouteStageID: stage.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to delete route stage: %w", err)
 			}
 		}
 
