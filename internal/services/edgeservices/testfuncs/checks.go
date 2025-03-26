@@ -151,6 +151,62 @@ func CheckEdgeServicesCacheDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 	}
 }
 
+func CheckEdgeServicesWAFDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_edge_services_waf_stage" {
+				continue
+			}
+
+			edgeAPI := edgeservices.NewEdgeServicesAPI(tt.Meta)
+
+			err := edgeAPI.DeleteWafStage(&edge.DeleteWafStageRequest{
+				WafStageID: rs.Primary.ID,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("WAF stage (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !httperrors.Is404(err) && !httperrors.Is403(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func CheckEdgeServicesRouteDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_edge_services_route_stage" {
+				continue
+			}
+
+			edgeAPI := edgeservices.NewEdgeServicesAPI(tt.Meta)
+
+			err := edgeAPI.DeleteRouteStage(&edge.DeleteRouteStageRequest{
+				RouteStageID: rs.Primary.ID,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("route stage (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !httperrors.Is404(err) && !httperrors.Is403(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
 func CheckEdgeServicesPipelineExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -242,6 +298,46 @@ func CheckEdgeServicesTLSExists(tt *acctest.TestTools, n string) resource.TestCh
 
 		_, err := edgeAPI.GetTLSStage(&edge.GetTLSStageRequest{
 			TLSStageID: rs.Primary.ID,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func CheckEdgeServicesWAFExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		edgeAPI := edgeservices.NewEdgeServicesAPI(tt.Meta)
+
+		_, err := edgeAPI.GetWafStage(&edge.GetWafStageRequest{
+			WafStageID: rs.Primary.ID,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func CheckEdgeServicesRouteExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		edgeAPI := edgeservices.NewEdgeServicesAPI(tt.Meta)
+
+		_, err := edgeAPI.GetRouteStage(&edge.GetRouteStageRequest{
+			RouteStageID: rs.Primary.ID,
 		})
 		if err != nil {
 			return err
