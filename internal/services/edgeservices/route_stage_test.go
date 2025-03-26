@@ -47,14 +47,11 @@ func TestAccEdgeServicesRoute_Basic(t *testing.T) {
 				resource "scaleway_edge_services_route_stage" "main" {
 				  pipeline_id   = scaleway_edge_services_pipeline.main.id
 				  waf_stage_id  = scaleway_edge_services_waf_stage.waf.id
-				  after_position = 0
 				
-				  rules {
+				  rule {
 					backend_stage_id = scaleway_edge_services_backend_stage.backend.id
-				
 					rule_http_match {
 					  method_filters = ["get", "post"]
-				
 					  path_filter {
 						path_filter_type = "regex"
 						value           = ".*"
@@ -67,17 +64,17 @@ func TestAccEdgeServicesRoute_Basic(t *testing.T) {
 					edgeservicestestfuncs.CheckEdgeServicesRouteExists(tt, "scaleway_edge_services_route_stage.main"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_edge_services_backend_stage.backend", "id",
-						"scaleway_edge_services_route_stage.main", "rules.0.backend_stage_id"),
+						"scaleway_edge_services_route_stage.main", "rule.0.backend_stage_id"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_edge_services_waf_stage.waf", "id",
 						"scaleway_edge_services_route_stage.main", "waf_stage_id"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_edge_services_waf_stage.waf", "id",
 						"scaleway_edge_services_route_stage.main", "waf_stage_id"),
-					resource.TestCheckResourceAttr("scaleway_edge_services_route_stage.main", "rules.0.rule_http_match.0.method_filters.0", "get"),
-					resource.TestCheckResourceAttr("scaleway_edge_services_route_stage.main", "rules.0.rule_http_match.0.method_filters.1", "post"),
-					resource.TestCheckResourceAttr("scaleway_edge_services_route_stage.main", "rules.0.rule_http_match.0.path_filter.0.path_filter_type", "regex"),
-					resource.TestCheckResourceAttr("scaleway_edge_services_route_stage.main", "rules.0.rule_http_match.0.path_filter.0.value", ".*"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_route_stage.main", "rule.0.rule_http_match.0.method_filters.0", "get"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_route_stage.main", "rule.0.rule_http_match.0.method_filters.1", "post"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_route_stage.main", "rule.0.rule_http_match.0.path_filter.0.path_filter_type", "regex"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_route_stage.main", "rule.0.rule_http_match.0.path_filter.0.value", ".*"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_route_stage.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_route_stage.main", "updated_at"),
 				),

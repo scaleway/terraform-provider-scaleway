@@ -34,19 +34,7 @@ func ResourceRouteStage() *schema.Resource {
 				Optional:    true,
 				Description: "The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched",
 			},
-			"after_position": {
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Description:   "Add rules after the given position",
-				ConflictsWith: []string{"before_position"},
-			},
-			"before_position": {
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Description:   "Add rules before the given position",
-				ConflictsWith: []string{"after_position"},
-			},
-			"rules": {
+			"rule": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "List of rules to be checked against every HTTP request. The first matching rule will forward the request to its specified backend stage. If no rules are matched, the request is forwarded to the WAF stage defined by `waf_stage_id`",
@@ -127,25 +115,9 @@ func ResourceRouteStageCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	var afterPosition *uint64
-	if v, ok := d.GetOk("after_position"); ok {
-		afterPosition = types.ExpandUint64Ptr(v)
-	} else {
-		afterPosition = nil
-	}
-
-	var beforePosition *uint64
-	if v, ok := d.GetOk("before_position"); ok {
-		beforePosition = types.ExpandUint64Ptr(v)
-	} else {
-		beforePosition = nil
-	}
-
-	_, err = api.AddRouteRules(&edgeservices.AddRouteRulesRequest{
-		RouteStageID:   routeStage.ID,
-		AfterPosition:  afterPosition,
-		BeforePosition: beforePosition,
-		RouteRules:     expandRouteRules(d.Get("rules")),
+	_, err = api.SetRouteRules(&edgeservices.SetRouteRulesRequest{
+		RouteStageID: routeStage.ID,
+		RouteRules:   expandRouteRules(d.Get("rule")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -184,7 +156,7 @@ func ResourceRouteStageRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("rules", flattenRouteRules(routeRules.RouteRules))
+	_ = d.Set("rule", flattenRouteRules(routeRules.RouteRules))
 
 	return nil
 }
@@ -210,10 +182,10 @@ func ResourceRouteStageUpdate(ctx context.Context, d *schema.ResourceData, m int
 		}
 	}
 
-	if d.HasChange("rules") {
+	if d.HasChange("rule") {
 		_, err := api.SetRouteRules(&edgeservices.SetRouteRulesRequest{
 			RouteStageID: d.Id(),
-			RouteRules:   expandRouteRules(d.Get("rules")),
+			RouteRules:   expandRouteRules(d.Get("rule")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
