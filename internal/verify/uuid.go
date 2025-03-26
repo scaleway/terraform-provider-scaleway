@@ -1,6 +1,7 @@
 package verify
 
 import (
+	"fmt"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -64,5 +65,31 @@ func IsUUIDWithLocality() schema.SchemaValidateDiagFunc {
 		}
 
 		return IsUUID()(subUUID, path)
+	}
+}
+
+func IsUUIDOrNameOffer() schema.SchemaValidateDiagFunc {
+	return func(value interface{}, path cty.Path) diag.Diagnostics {
+		uuid, _ := value.(string)
+		if !validation.IsUUID(uuid) {
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       "Using a datasource for better consistency and reliability is recommended instead of directly using offer names.",
+				AttributePath: path,
+				Detail: fmt.Sprintf(
+					`The offer name should be retrieved using a datasource to ensure reliable and consistent configuration.
+
+Example:
+data "scaleway_baremetal_offer" "my_offer_monthly" {
+  zone                = "fr-par-2"
+  name                = "EM-B112X-SSD"
+  subscription_period = "monthly"
+}
+
+Then, you can reference the datasource's attributes in your resources.`,
+				),
+			}}
+		}
+		return nil
 	}
 }
