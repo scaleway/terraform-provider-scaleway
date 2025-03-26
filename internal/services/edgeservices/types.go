@@ -231,11 +231,12 @@ func flattenRuleHTTPMatch(match *edge_services.RuleHTTPMatch) []interface{} {
 
 	m := map[string]interface{}{}
 
-	if match.MethodFilters != nil && len(match.MethodFilters) > 0 {
+	if len(match.MethodFilters) > 0 {
 		filters := make([]interface{}, len(match.MethodFilters))
 		for i, v := range match.MethodFilters {
 			filters[i] = string(v)
 		}
+
 		m["method_filters"] = filters
 	} else {
 		m["method_filters"] = []interface{}{}
