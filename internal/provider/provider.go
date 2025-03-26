@@ -228,6 +228,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_tem_domain_validation":               tem.ResourceDomainValidation(),
 				"scaleway_tem_webhook":                         tem.ResourceWebhook(),
 				"scaleway_vpc":                                 vpc.ResourceVPC(),
+				"scaleway_vpc_acl":                             vpc.ResourceACL(),
 				"scaleway_vpc_gateway_network":                 vpcgw.ResourceNetwork(),
 				"scaleway_vpc_private_network":                 vpc.ResourcePrivateNetwork(),
 				"scaleway_vpc_public_gateway":                  vpcgw.ResourcePublicGateway(),

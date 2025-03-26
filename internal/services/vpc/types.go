@@ -138,12 +138,84 @@ func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (interface{}, interface{}) {
 	return flatIpv4Subnets, flatIpv6Subnets
 }
 
+func expandACLRules(data interface{}) ([]*vpc.ACLRule, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	rules := []*vpc.ACLRule(nil)
+
+	for _, rule := range data.([]interface{}) {
+		rawRule := rule.(map[string]interface{})
+		ACLRule := &vpc.ACLRule{}
+
+		source, err := types.ExpandIPNet(rawRule["source"].(string))
+		if err != nil {
+			return nil, err
+		}
+
+		destination, err := types.ExpandIPNet(rawRule["destination"].(string))
+		if err != nil {
+			return nil, err
+		}
+
+		ACLRule.Protocol = vpc.ACLRuleProtocol(rawRule["protocol"].(string))
+		ACLRule.Source = source
+		ACLRule.SrcPortLow = uint32(rawRule["src_port_low"].(int))
+		ACLRule.SrcPortHigh = uint32(rawRule["src_port_high"].(int))
+		ACLRule.Destination = destination
+		ACLRule.DstPortLow = uint32(rawRule["dst_port_low"].(int))
+		ACLRule.DstPortHigh = uint32(rawRule["dst_port_high"].(int))
+		ACLRule.Action = vpc.Action(rawRule["action"].(string))
+		ACLRule.Description = types.ExpandStringPtr(rawRule["description"].(string))
+
+		rules = append(rules, ACLRule)
+	}
+
+	return rules, nil
+}
+
+func flattenACLRules(rules []*vpc.ACLRule) interface{} {
+	if rules == nil {
+		return nil
+	}
+
+	flattenedRules := []map[string]interface{}(nil)
+
+	for _, rule := range rules {
+		flattenedSource, err := types.FlattenIPNet(rule.Source)
+		if err != nil {
+			return nil
+		}
+
+		flattenedDestination, err := types.FlattenIPNet(rule.Destination)
+		if err != nil {
+			return nil
+		}
+
+		flattenedRules = append(flattenedRules, map[string]interface{}{
+			"protocol":      rule.Protocol.String(),
+			"source":        flattenedSource,
+			"src_port_low":  int(rule.SrcPortLow),
+			"src_port_high": int(rule.SrcPortHigh),
+			"destination":   flattenedDestination,
+			"dst_port_low":  int(rule.DstPortLow),
+			"dst_port_high": int(rule.DstPortHigh),
+			"action":        rule.Action.String(),
+			"description":   types.FlattenStringPtr(rule.Description),
+		})
+	}
+
+	return flattenedRules
+}
+
 func maskHexToDottedDecimal(mask net.IPMask) string {
 	if len(mask) != net.IPv4len && len(mask) != net.IPv6len {
 		return ""
 	}
 
 	parts := make([]string, len(mask))
+
 	for i, part := range mask {
 		parts[i] = strconv.Itoa(int(part))
 	}
