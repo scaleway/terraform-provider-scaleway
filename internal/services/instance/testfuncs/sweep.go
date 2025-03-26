@@ -112,7 +112,8 @@ func testSweepServer(_ string) error {
 		}
 
 		for _, srv := range listServers.Servers {
-			if srv.State == instanceSDK.ServerStateStopped || srv.State == instanceSDK.ServerStateStoppedInPlace {
+			switch srv.State {
+			case instanceSDK.ServerStateStopped, instanceSDK.ServerStateStoppedInPlace:
 				err := instanceAPI.DeleteServer(&instanceSDK.DeleteServerRequest{
 					Zone:     zone,
 					ServerID: srv.ID,
@@ -120,7 +121,7 @@ func testSweepServer(_ string) error {
 				if err != nil {
 					return fmt.Errorf("error deleting server in sweeper: %w", err)
 				}
-			} else if srv.State == instanceSDK.ServerStateRunning {
+			case instanceSDK.ServerStateRunning:
 				_, err := instanceAPI.ServerAction(&instanceSDK.ServerActionRequest{
 					Zone:     zone,
 					ServerID: srv.ID,

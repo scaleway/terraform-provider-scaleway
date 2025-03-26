@@ -56,7 +56,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		if err != nil {
 			return fmt.Errorf("could not pull image: %w", err)
 		}
-		defer out.Close()
+		defer out.Close() //nolint: errcheck
 
 		buffIOReader := bufio.NewReader(out)
 
@@ -87,7 +87,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 		if err != nil {
 			return fmt.Errorf("could not push image: %w", err)
 		}
-		defer pusher.Close()
+		defer pusher.Close() //nolint: errcheck
 
 		buffIOReader = bufio.NewReader(pusher)
 

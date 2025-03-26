@@ -518,15 +518,9 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m in
 	computedAdministrativeContact := flattenContact(firstResp.AdministrativeContact)
 	computedTechnicalContact := flattenContact(firstResp.TechnicalContact)
 
-	computedAutoRenew := false
-	if firstResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled {
-		computedAutoRenew = true
-	}
+	computedAutoRenew := firstResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled
 
-	computedDnssec := false
-	if firstResp.Dnssec.Status == domain.DomainFeatureStatusEnabled {
-		computedDnssec = true
-	}
+	computedDnssec := firstResp.Dnssec.Status == domain.DomainFeatureStatusEnabled
 
 	var computedDSRecord []interface{}
 	if firstResp.Dnssec != nil {

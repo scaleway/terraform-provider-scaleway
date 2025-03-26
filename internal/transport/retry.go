@@ -108,10 +108,10 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 		return io.NopCloser(bytes.NewReader(b)), err
 	}
 
-	return c.Client.Do(req)
+	return c.Do(req)
 }
 
-func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) { //nolint:ireturn
+func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) { //nolint
 	t, err := action()
 
 	var transientStateError *scw.TransientStateError
