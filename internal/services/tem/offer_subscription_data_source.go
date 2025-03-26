@@ -74,7 +74,16 @@ func DataSourceOfferSubscriptionRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	var projectID string
+
+	if _, ok := d.GetOk("project_id"); !ok {
+		projectID, err = getDefaultProjectID(ctx, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		projectID = d.Get("project_id").(string)
+	}
 
 	offer, err := api.ListOfferSubscriptions(&tem.ListOfferSubscriptionsRequest{
 		Region:    region,
