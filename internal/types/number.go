@@ -33,3 +33,11 @@ func ExpandUint32Ptr(data interface{}) *uint32 {
 
 	return scw.Uint32Ptr(uint32(data.(int)))
 }
+
+func ExpandUint64Ptr(data interface{}) *uint64 {
+	if data == nil || data == "" {
+		return nil
+	}
+
+	return scw.Uint64Ptr(uint64(data.(int)))
+}
