@@ -90,7 +90,7 @@ The following arguments are supported:
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
-- `wait_for_pool_ready` - (Defaults to `false`) Whether to wait for the pool to be ready.
+- `wait_for_pool_ready` - (Defaults to `true`) Whether to wait for the pool to be ready.
 
 - `public_ip_disabled` - (Defaults to `false`) Defines if the public IP should be removed from Nodes. To use this feature, your Cluster must have an attached [Private Network](vpc_private_network.md) set up with a [Public Gateway](vpc_public_gateway.md).
 
