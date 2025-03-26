@@ -315,6 +315,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_secret":                              secret.DataSourceSecret(),
 				"scaleway_secret_version":                      secret.DataSourceVersion(),
 				"scaleway_tem_domain":                          tem.DataSourceDomain(),
+				"scaleway_tem_offer_subscription":              tem.DataSourceOfferSubscription(),
 				"scaleway_vpc":                                 vpc.DataSourceVPC(),
 				"scaleway_vpc_gateway_network":                 vpcgw.DataSourceNetwork(),
 				"scaleway_vpc_private_network":                 vpc.DataSourcePrivateNetwork(),
