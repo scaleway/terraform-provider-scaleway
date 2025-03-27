@@ -1,7 +1,6 @@
 package verify
 
 import (
-	"fmt"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -76,8 +75,7 @@ func IsUUIDOrNameOffer() schema.SchemaValidateDiagFunc {
 				Severity:      diag.Warning,
 				Summary:       "Using a datasource for better consistency and reliability is recommended instead of directly using offer names.",
 				AttributePath: path,
-				Detail: fmt.Sprintf(
-					`The offer name should be retrieved using a datasource to ensure reliable and consistent configuration.
+				Detail: `The offer name should be retrieved using a datasource to ensure reliable and consistent configuration.
 
 Example:
 data "scaleway_baremetal_offer" "my_offer_monthly" {
@@ -87,9 +85,9 @@ data "scaleway_baremetal_offer" "my_offer_monthly" {
 }
 
 Then, you can reference the datasource's attributes in your resources.`,
-				),
 			}}
 		}
+
 		return nil
 	}
 }
