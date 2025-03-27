@@ -125,7 +125,7 @@ type UnknownSnapshot struct {
 }
 
 func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, opts ...scw.RequestOption) (*UnknownVolume, error) {
-	getVolumeResponse, err := api.API.GetVolume(&instance.GetVolumeRequest{
+	getVolumeResponse, err := api.GetVolume(&instance.GetVolumeRequest{
 		Zone:     req.Zone,
 		VolumeID: req.VolumeID,
 	}, opts...)
@@ -194,7 +194,7 @@ func (api *BlockAndInstanceAPI) ResizeUnknownVolume(req *ResizeUnknownVolumeRequ
 			Size:     req.Size,
 		}, opts...)
 	} else {
-		_, err = api.API.UpdateVolume(&instance.UpdateVolumeRequest{
+		_, err = api.UpdateVolume(&instance.UpdateVolumeRequest{
 			Zone:     req.Zone,
 			VolumeID: req.VolumeID,
 			Size:     req.Size,
@@ -219,7 +219,7 @@ func (api *BlockAndInstanceAPI) DeleteUnknownVolume(req *DeleteUnknownVolumeRequ
 			VolumeID: req.VolumeID,
 		}, opts...)
 	} else {
-		err = api.API.DeleteVolume(&instance.DeleteVolumeRequest{
+		err = api.DeleteVolume(&instance.DeleteVolumeRequest{
 			Zone:     req.Zone,
 			VolumeID: req.VolumeID,
 		}, opts...)

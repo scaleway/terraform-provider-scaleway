@@ -83,7 +83,7 @@ func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) 
 			flatIpv6Subnets = append(flatIpv6Subnets, map[string]interface{}{
 				"subnet":        sub,
 				"address":       s.IP.String(),
-				"subnet_mask":   maskHexToDottedDecimal(s.IPNet.Mask),
+				"subnet_mask":   maskHexToDottedDecimal(s.Mask),
 				"prefix_length": getPrefixLength(s.Mask),
 			})
 		}

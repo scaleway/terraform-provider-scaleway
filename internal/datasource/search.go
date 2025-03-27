@@ -9,7 +9,7 @@ import (
 
 // FindExact finds the first element in 'slice' matching the condition defined by 'finder'.
 // It returns the first matching element and an error if either no match is found or multiple matches are found.
-func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, error) { //nolint:ireturn
+func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, error) { //nolint
 	var found T
 
 	var foundFlag bool

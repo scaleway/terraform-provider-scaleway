@@ -77,7 +77,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 			return fmt.Errorf("could not pull image: %w", err)
 		}
 
-		defer out.Close()
+		defer out.Close() //nolint: errcheck
 
 		buffIOReader := bufio.NewReader(out)
 
@@ -110,7 +110,7 @@ func TestConfigContainerNamespace(tt *acctest.TestTools, n string) resource.Test
 			return fmt.Errorf("could not push image: %w", err)
 		}
 
-		defer pusher.Close()
+		defer pusher.Close() //nolint: errcheck
 
 		buffIOReader = bufio.NewReader(pusher)
 

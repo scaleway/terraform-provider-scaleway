@@ -66,11 +66,11 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 		return fmt.Errorf("failed to fetch upload url: %w", err)
 	}
 
-	zip, err := os.Open(zipFile)
+	zip, err := os.Open(zipFile) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("failed to read zip file: %w", err)
 	}
-	defer zip.Close()
+	defer zip.Close() //nolint: errcheck
 
 	req, err := http.NewRequest(http.MethodPut, uploadURL.URL, zip)
 	if err != nil {
@@ -92,7 +92,7 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint: errcheck
 
 	respDump, err := httputil.DumpResponse(resp, true)
 	if err != nil {
