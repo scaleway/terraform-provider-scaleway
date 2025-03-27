@@ -68,6 +68,7 @@ func ResourceServer() *schema.Resource {
 
 					return ok && newValue == offerName
 				},
+				ValidateDiagFunc: verify.IsUUIDOrNameOffer(),
 			},
 			"offer_id": {
 				Type:        schema.TypeString,
