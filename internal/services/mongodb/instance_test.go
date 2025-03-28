@@ -172,7 +172,7 @@ func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main_snapshot" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "test-snapshot"
-						expires_at  = "2024-12-31T23:59:59Z"
+						expires_at  = "2026-03-20T23:59:59Z"
  						depends_on = [
     						scaleway_mongodb_instance.main
   						]
