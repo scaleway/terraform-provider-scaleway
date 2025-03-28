@@ -28,13 +28,13 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 
@@ -45,25 +45,25 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "main" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						description = "test a description"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, SSHKeyName, SSHKeyBaremetal, name, Zone),
 			},
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 
@@ -74,7 +74,7 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "main" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						description = "test a description"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
@@ -84,14 +84,14 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 
 					data "scaleway_baremetal_server" "by_name" {
 						name = "${scaleway_baremetal_server.main.name}"
-						zone = "fr-par-1"
+						zone = "%s"
 					}
 					
 					data "scaleway_baremetal_server" "by_id" {
 						server_id = "${scaleway_baremetal_server.main.id}"
-						zone = "fr-par-1"
+						zone = "%s"
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, SSHKeyName, SSHKeyBaremetal, name, Zone, Zone, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "data.scaleway_baremetal_server.by_id"),
 					testAccCheckBaremetalServerExists(tt, "data.scaleway_baremetal_server.by_name"),
