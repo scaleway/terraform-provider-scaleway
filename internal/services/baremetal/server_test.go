@@ -40,7 +40,7 @@ func TestAccServer_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-1"
+					  zone    = "%s"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
@@ -52,7 +52,7 @@ func TestAccServer_Basic(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						description = "test a description"
 						offer       = "%s"
 						os    = data.scaleway_baremetal_os.my_os.os_id
@@ -60,7 +60,7 @@ func TestAccServer_Basic(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name, OfferName),
+				`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
@@ -77,7 +77,7 @@ func TestAccServer_Basic(t *testing.T) {
 				// Trigger a reinstall and update tags
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-1"
+					  zone    = "%s"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
@@ -89,7 +89,7 @@ func TestAccServer_Basic(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						description = "test a description"
 						offer       = "%s"
 						os          = data.scaleway_baremetal_os.my_os.os_id
@@ -97,7 +97,7 @@ func TestAccServer_Basic(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name, OfferName),
+				`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
@@ -133,12 +133,12 @@ func TestAccServer_RequiredInstallConfig(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_baremetal_server" "base" {
 						name        = "TestAccServer_RequiredInstallConfig"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						offer       = "%s"
 						os          = "7e865c16-1a63-4dc7-8181-dabc020fc21b" // Proxmox
 
 						ssh_key_ids = []
-					}`, OfferName),
+					}`, Zone, OfferName),
 				ExpectError: regexp.MustCompile("attribute is required"),
 			},
 		},
@@ -157,16 +157,16 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-1"
+					  zone = "%s"
 					  name = "%s"
 					}
 
 					resource "scaleway_baremetal_server" "base" {
 					  name 			             = "TestAccScalewayBaremetalServer_WithoutInstallConfig"
-                      zone     			         = "fr-par-1"
+                      zone     			         = "%s"
 					  offer     				 = data.scaleway_baremetal_offer.my_offer.offer_id
 					  install_config_afterward   = true
-					}`, OfferName),
+					}`, Zone, OfferName, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", "TestAccScalewayBaremetalServer_WithoutInstallConfig"),
@@ -197,7 +197,7 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-1"
+					  zone    = "%s"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
@@ -209,7 +209,7 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						description = "test a description"
 						offer       = "%s"
 						os    = data.scaleway_baremetal_os.my_os.os_id
@@ -218,7 +218,7 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKeyBaremetal, name, OfferName, strings.ReplaceAll(jsonConfigPartitioning, "\"", "\\\"")),
+				`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferName, strings.ReplaceAll(jsonConfigPartitioning, "\"", "\\\"")),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
@@ -255,18 +255,18 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				data "scaleway_baremetal_os" "my_os" {
-				  zone    = "fr-par-1"
+				  zone    = "%s"
 				  name    = "Ubuntu"
 				  version = "22.04 LTS (Jammy Jellyfish)"
 				}
 				
 				data "scaleway_baremetal_offer" "my_offer" {
-				  zone = "fr-par-1"
+				  zone = "%s"
 				  name = "%s"
 				}
 				
 				data "scaleway_baremetal_option" "private_network" {
-				  zone = "fr-par-1"
+				  zone = "%s"
 				  name = "Private Network"
 				}
 				
@@ -277,7 +277,7 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 				
 				resource "scaleway_baremetal_server" "base" {
 				  name  = "%s"
-				  zone  = "fr-par-1"
+				  zone  = "%s"
 				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 				  os    = data.scaleway_baremetal_os.my_os.os_id
 				
@@ -286,7 +286,7 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 					id = data.scaleway_baremetal_option.private_network.option_id
 				  }
 				}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
@@ -321,13 +321,13 @@ func TestAccServer_AddOption(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "by_id" {
-					  zone    = "fr-par-1"
+					  zone    = "%s"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
 					
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-1"
+					  zone = "%s"
 					  name = "%s"
 					}
 					
@@ -338,13 +338,13 @@ func TestAccServer_AddOption(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 					  name  = "%s"
-					  zone  = "fr-par-1"
+					  zone  = "%s"
 					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os    = data.scaleway_baremetal_os.by_id.os_id
 					
 					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
@@ -352,18 +352,18 @@ func TestAccServer_AddOption(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				data "scaleway_baremetal_os" "my_os" {
-				  zone    = "fr-par-1"
+				  zone    = "%s"
 				  name    = "Ubuntu"
 				  version = "22.04 LTS (Jammy Jellyfish)"
 				}
 				
 				data "scaleway_baremetal_offer" "my_offer" {
-				  zone = "fr-par-1"
+				  zone = "%s"
 				  name = "%s"
 				}
 				
 				data "scaleway_baremetal_option" "private_network" {
-				  zone = "fr-par-1"
+				  zone = "%s"
 				  name = "Private Network"
 				}
 				
@@ -374,7 +374,7 @@ func TestAccServer_AddOption(t *testing.T) {
 				
 				resource "scaleway_baremetal_server" "base" {
 				  name  = "%s"
-				  zone  = "fr-par-1"
+				  zone  = "%s"
 				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 				  os    = data.scaleway_baremetal_os.my_os.os_id
 				
@@ -383,7 +383,7 @@ func TestAccServer_AddOption(t *testing.T) {
 					id = data.scaleway_baremetal_option.private_network.option_id
 				  }
 				}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
@@ -413,13 +413,13 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "by_id" {
-					  zone    = "fr-par-1"
+					  zone    = "%s"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
 					
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-1"
+					  zone = "%s"
 					  name = "%s"
 					}
 					
@@ -430,13 +430,13 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 					  name  = "%s"
-					  zone  = "fr-par-1"
+					  zone  = "%s"
 					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os    = data.scaleway_baremetal_os.by_id.os_id
 					
 					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
@@ -444,23 +444,23 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-1"
+					  zone    = "%s"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
 					
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-1"
+					  zone = "%s"
 					  name = "%s"
 					}
 					
 					data "scaleway_baremetal_option" "remote_access" {
-					  zone = "fr-par-1"
+					  zone = "%s"
 					  name = "Remote Access"
 					}
 					
 					data "scaleway_baremetal_option" "private_network" {
-					  zone = "fr-par-1"
+					  zone = "%s"
 					  name = "Private Network"
 					}
 					
@@ -471,7 +471,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 					  name        = "%s"
-					  zone        = "fr-par-1"
+					  zone        = "%s"
 					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os          = data.scaleway_baremetal_os.my_os.os_id
 					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
@@ -484,7 +484,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						expires_at = "2025-07-06T09:00:00Z"
 					  }
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
@@ -502,18 +502,18 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-					  zone    = "fr-par-1"
+					  zone    = "%s"
 					  name    = "Ubuntu"
 					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
 					
 					data "scaleway_baremetal_offer" "my_offer" {
-					  zone = "fr-par-1"
+					  zone = "%s"
 					  name = "%s"
 					}
 					
 					data "scaleway_baremetal_option" "remote_access" {
-					  zone = "fr-par-1"
+					  zone = "%s"
 					  name = "Remote Access"
 					}
 					
@@ -524,7 +524,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 					  name        = "%s"
-					  zone        = "fr-par-1"
+					  zone        = "%s"
 					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os          = data.scaleway_baremetal_os.my_os.os_id
 					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
@@ -534,7 +534,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						expires_at = "2025-07-06T09:00:00Z"
 					  }
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
@@ -570,18 +570,18 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Private Network"
 					}
 
@@ -596,7 +596,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -608,7 +608,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 						  id = scaleway_vpc_private_network.pn.id
 						}
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -640,18 +640,18 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Private Network"
 					}
 
@@ -666,7 +666,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -675,7 +675,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 						  id = data.scaleway_baremetal_option.private_network.option_id
 						}
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
@@ -683,18 +683,18 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Private Network"
 					}
 
@@ -709,7 +709,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -721,7 +721,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 						  id = scaleway_vpc_private_network.pn.id
 						}
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -753,18 +753,18 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Private Network"
 					}
 
@@ -779,7 +779,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -791,7 +791,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 						  id = scaleway_vpc_private_network.pn.id
 						}
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -801,18 +801,18 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Private Network"
 					}
 
@@ -831,7 +831,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -846,7 +846,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 						  id = scaleway_vpc_private_network.pn2.id
 						}
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -905,18 +905,18 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 					}
 
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Ubuntu"
 						version = "22.04 LTS (Jammy Jellyfish)"						
 					}
 
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "Private Network"
 					}
 
@@ -927,7 +927,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
-						zone        = "fr-par-1"
+						zone        = "%s"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
@@ -948,7 +948,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 					  }
 					  type = "ipv4"
 					}
-				`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
@@ -984,18 +984,18 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 						}
 			
 						data "scaleway_baremetal_os" "my_os" {
-							zone = "fr-par-1"
+							zone = "%s"
 							name = "Ubuntu"
 							version = "22.04 LTS (Jammy Jellyfish)"
 						}
 			
 						data "scaleway_baremetal_offer" "my_offer" {
-							zone = "fr-par-1"
+							zone = "%s"
 							name = "%s"
 						}
 			
 						data "scaleway_baremetal_option" "private_network" {
-							zone = "fr-par-1"
+							zone = "%s"
 							name = "Private Network"
 						}
 			
@@ -1006,7 +1006,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 			
 						resource "scaleway_baremetal_server" "base" {
 							name        = "%s"
-							zone        = "fr-par-1"
+							zone        = "%s"
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.my_os.os_id
 			
@@ -1027,7 +1027,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 						  }
 						  type = "ipv4"
 						}
-					`, OfferName, SSHKeyName, SSHKeyBaremetal, name),
+					`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
