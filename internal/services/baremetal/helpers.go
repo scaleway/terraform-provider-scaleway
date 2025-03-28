@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"sort"
 	"time"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -231,6 +231,7 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 		if diff.Get("offer") == "" || !diff.HasChange("offer") || diff.Id() == "" {
 			return nil
 		}
+
 		api, zone, err := NewAPIWithZoneAndID(i, diff.Id())
 		if err != nil {
 			return err
@@ -239,6 +240,7 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 		oldOffer, newOffer := diff.GetChange("offer")
 		newOfferID := regional.ExpandID(newOffer.(string))
 		oldOfferID := regional.ExpandID(oldOffer.(string))
+
 		oldOfferDetails, err := FindOfferByID(ctx, api, zone.Zone, oldOfferID.ID)
 		if err != nil {
 			return errors.New("can not find the offer by id" + err.Error())
@@ -248,13 +250,17 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 		if err != nil {
 			return errors.New("can not find the offer by id" + err.Error())
 		}
+
 		if oldOfferDetails.Name != newOfferDetails.Name {
 			return diff.ForceNew("offer")
 		}
+
 		if oldOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodMonthly && newOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodHourly {
 			return errors.New("invalid plan transition: you cannot transition from a monthly plan to an hourly plan. Only the reverse (hourly to monthly) is supported. Please update your configuration accordingly")
 		}
+
 		ServerID := regional.ExpandID(diff.Id())
+
 		_, err = api.MigrateServerToMonthlyOffer(&baremetal.MigrateServerToMonthlyOfferRequest{
 			Zone:     zone.Zone,
 			ServerID: ServerID.ID,
@@ -262,6 +268,7 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 		if err != nil {
 			return errors.New("migration to monthly plan failed: " + err.Error())
 		}
+
 		return nil
 	}
 }
