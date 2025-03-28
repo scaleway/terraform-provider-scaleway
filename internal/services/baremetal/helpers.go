@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"sort"
 	"time"
 
@@ -229,13 +228,10 @@ func privateNetworkSetHash(v interface{}) int {
 
 func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-		logging.L.Debugf("customDiffOffer() function")
-
 		if diff.Get("offer") == "" || !diff.HasChange("offer") || diff.Id() == "" {
 			return nil
 		}
 		api, zone, err := NewAPIWithZoneAndID(i, diff.Id())
-		logging.L.Debugf("value of api is %v and zone is %v", api, zone)
 		if err != nil {
 			return err
 		}
