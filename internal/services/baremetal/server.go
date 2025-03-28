@@ -69,6 +69,13 @@ func ResourceServer() *schema.Resource {
 					return ok && newValue == offerName
 				},
 				ValidateDiagFunc: verify.IsUUIDOrNameOffer(),
+=======
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "ID or name of the server offer",
+				ValidateDiagFunc: verify.IsUUIDOrNameOffer(),
+>>>>>>> Stashed changes
 			},
 			"offer_id": {
 				Type:        schema.TypeString,
@@ -267,6 +274,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 
 		CustomizeDiff: customdiff.Sequence(
 			cdf.LocalityCheck("private_network.#.id"),
+			customDiffOffer(),
 			customDiffPrivateNetworkOption(),
 		),
 	}

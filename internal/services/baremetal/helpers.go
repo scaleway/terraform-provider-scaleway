@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"sort"
 	"time"
 
@@ -223,4 +225,47 @@ func privateNetworkSetHash(v interface{}) int {
 	}
 
 	return schema.HashString(buf.String())
+}
+
+func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+		logging.L.Debugf("customDiffOffer() function")
+
+		if diff.Get("offer") == "" || !diff.HasChange("offer") || diff.Id() == "" {
+			return nil
+		}
+		api, zone, err := NewAPIWithZoneAndID(i, diff.Id())
+		logging.L.Debugf("value of api is %v and zone is %v", api, zone)
+		if err != nil {
+			return err
+		}
+
+		oldOffer, newOffer := diff.GetChange("offer")
+		newOfferID := regional.ExpandID(newOffer.(string))
+		oldOfferID := regional.ExpandID(oldOffer.(string))
+		oldOfferDetails, err := FindOfferByID(ctx, api, zone.Zone, oldOfferID.ID)
+		if err != nil {
+			return errors.New("can not find the offer by id" + err.Error())
+		}
+
+		newOfferDetails, err := FindOfferByID(ctx, api, zone.Zone, newOfferID.ID)
+		if err != nil {
+			return errors.New("can not find the offer by id" + err.Error())
+		}
+		if oldOfferDetails.Name != newOfferDetails.Name {
+			return diff.ForceNew("offer")
+		}
+		if oldOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodMonthly && newOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodHourly {
+			return errors.New("invalid plan transition: you cannot transition from a monthly plan to an hourly plan. Only the reverse (hourly to monthly) is supported. Please update your configuration accordingly")
+		}
+		ServerID := regional.ExpandID(diff.Id())
+		_, err = api.MigrateServerToMonthlyOffer(&baremetal.MigrateServerToMonthlyOfferRequest{
+			Zone:     zone.Zone,
+			ServerID: ServerID.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return errors.New("migration to monthly plan failed: " + err.Error())
+		}
+		return nil
+	}
 }
