@@ -5,8 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func DataSourcePlan() *schema.Resource {
@@ -15,43 +13,24 @@ func DataSourcePlan() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of the plan",
 				Required:    true,
+				Description: "[DEPRECATED] The plan field is deprecated.",
+				Deprecated:  "The 'plan' attribute is deprecated and no longer has any effect. Future updates will remove this attribute entirely.",
 			},
 		},
-		DeprecationMessage: "The 'Plan' data source is deprecated because it duplicates the functionality of the 'scaleway_cockpit' resource. Please use the 'scaleway_cockpit' resource instead.",
+		DeprecationMessage: "This data source is deprecated and will be removed in the next major version. Use `my_new_data_source` instead.",
 	}
 }
 
-func DataSourceCockpitPlanRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, err := NewGlobalAPI(m)
-	if err != nil {
-		return diag.FromErr(err)
+func DataSourceCockpitPlanRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
+	d.SetId("free")
+	_ = d.Set("name", "free")
+
+	return diag.Diagnostics{
+		diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Data source 'cockpit_plan' has been removed",
+			Detail:   "The 'cockpit_plan' data source has been deprecated and is no longer available.",
+		},
 	}
-
-	name := d.Get("name").(string)
-
-	res, err := api.ListPlans(&cockpit.GlobalAPIListPlansRequest{}, scw.WithContext(ctx), scw.WithAllPages()) //nolint:staticcheck
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	var plan *cockpit.Plan
-
-	for _, p := range res.Plans {
-		if p.Name.String() == name {
-			plan = p
-
-			break
-		}
-	}
-
-	if plan == nil {
-		return diag.Errorf("could not find plan with name %s", name)
-	}
-
-	d.SetId(plan.Name.String())
-	_ = d.Set("name", plan.Name.String())
-
-	return nil
 }
