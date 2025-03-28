@@ -1102,7 +1102,7 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 					}`,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "subscription_period", "hourly"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "subscription_period", "monthly"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-2"),
 				),
 			},

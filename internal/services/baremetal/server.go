@@ -257,6 +257,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 
 		CustomizeDiff: customdiff.Sequence(
 			cdf.LocalityCheck("private_network.#.id"),
+			customDiffOffer(),
 			customDiffPrivateNetworkOption(),
 		),
 	}
