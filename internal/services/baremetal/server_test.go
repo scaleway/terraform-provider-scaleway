@@ -1039,6 +1039,123 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 	})
 }
 
+func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	if !IsOfferAvailable(OfferID, Zone, tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			baremetalchecks.CheckServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "%s"
+						name			 	= "EM-B112X-SSD"
+						subscription_period = "hourly"
+					
+					}
+					
+					resource "scaleway_baremetal_server" "server01" {
+						name		= "TestAccServer_UpdateSubscriptionPeriod"
+						offer 		= data.scaleway_baremetal_offer.my_offer.offer_id
+						zone        = "%s"
+						install_config_afterward   = true
+					
+					}`, Zone, Zone,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "subscription_period", "hourly"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "%s"
+						name			 	= "EM-B112X-SSD"
+						subscription_period = "hourly"
+					
+					}
+					
+					data "scaleway_baremetal_offer" "my_offer_monthly" {
+						zone = "%s"
+						name			 	= "EM-B112X-SSD"
+						subscription_period = "monthly"
+					
+					}
+					
+					resource "scaleway_baremetal_server" "server01" {
+						name		= "TestAccServer_UpdateSubscriptionPeriod"
+						offer 		= data.scaleway_baremetal_offer.my_offer_monthly.offer_id
+						zone        = "%s"
+						install_config_afterward   = true
+					
+					}`,
+					Zone, Zone, Zone),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "%s"
+						name 	= "EM-B112X-SSD"
+						subscription_period = "hourly"
+					
+					}
+					data "scaleway_baremetal_offer" "my_offer_monthly" {
+						zone = "%s"
+						name			 	= "EM-B112X-SSD"
+						subscription_period = "monthly"
+					
+					}
+					
+					resource "scaleway_baremetal_server" "server01" {
+						name 		= "Test_UpdateSubscriptionPeriod"
+						offer 		= data.scaleway_baremetal_offer.my_offer.offer_id
+						zone        = "%s"
+						install_config_afterward   = true
+					
+					}`, Zone, Zone, Zone,
+				),
+				ExpectError: regexp.MustCompile("invalid plan transition: you cannot transition from a monthly plan to an hourly plan. Only the reverse (hourly to monthly) is supported. Please update your configuration accordingly"),
+			},
+			{
+				Config: fmt.Sprintf(`
+					
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "%s"
+						name 	= "EM-B111X-SATA"
+						subscription_period = "hourly"
+					
+					}
+					
+					resource "scaleway_baremetal_server" "server01" {
+						name 		= "Test_UpdateSubscriptionPeriod"
+						offer 		= data.scaleway_baremetal_offer.my_offer.offer_id
+						zone        = "%s"
+						install_config_afterward   = true
+					
+					}`, Zone, Zone,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckBaremetalServerExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
