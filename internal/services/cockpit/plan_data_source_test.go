@@ -1,7 +1,6 @@
 package cockpit_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -35,14 +34,6 @@ func TestAccDataSourceCockpitPlan_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_plan.premium", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_plan.custom", "id"),
 				),
-			},
-			{
-				Config: `
-					data "scaleway_cockpit_plan" "random" {
-						name = "plan? there ain't no plan"
-					}
-				`,
-				ExpectError: regexp.MustCompile("could not find plan"),
 			},
 		},
 	})

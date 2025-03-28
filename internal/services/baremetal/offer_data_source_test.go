@@ -23,10 +23,6 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
-		t.Skip("Offer is out of stock")
-	}
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -34,14 +30,14 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_offer" "test1" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 					}
 					
 					data "scaleway_baremetal_offer" "test2" {
 						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
-				`, OfferName),
+				`, Zone, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test1"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", OfferName),
@@ -75,10 +71,6 @@ func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
-		t.Skip("Offer is out of stock")
-	}
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -86,7 +78,7 @@ func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_offer" "test1" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 
 						subscription_period = "hourly"
@@ -95,7 +87,7 @@ func TestAccDataSourceOffer_SubscriptionPeriodHourly(t *testing.T) {
 					data "scaleway_baremetal_offer" "test2" {
 						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
-				`, OfferName),
+				`, Zone, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test1"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", OfferName),
@@ -131,10 +123,6 @@ func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
-		t.Skip("Offer is out of stock")
-	}
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -142,7 +130,7 @@ func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_offer" "test1" {
-						zone = "fr-par-1"
+						zone = "%s"
 						name = "%s"
 
 						subscription_period = "monthly"
@@ -151,7 +139,7 @@ func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 					data "scaleway_baremetal_offer" "test2" {
 						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
-				`, OfferName),
+				`, Zone, OfferName),
 				Check: resource.ComposeTestCheckFunc(
 					isOfferPresent(tt, "data.scaleway_baremetal_offer.test1"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", OfferName),
