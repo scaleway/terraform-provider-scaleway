@@ -227,64 +227,40 @@ func privateNetworkSetHash(v interface{}) int {
 	return schema.HashString(buf.String())
 }
 
+func getOfferInformations(ctx context.Context, offer interface{}, id string, i interface{}) (*baremetal.Offer, error) {
+	api, zone, err := NewAPIWithZoneAndID(i, id)
+	if err != nil {
+		return nil, err
+	}
+	if validation.IsUUID(offer.(string)) {
+		return api.GetOfferByName(&baremetal.GetOfferByNameRequest{
+			OfferName: offer.(string),
+			Zone:      zone.Zone,
+		})
+	} else {
+		offerID := regional.ExpandID(offer.(string))
+		return FindOfferByID(ctx, api, zone.Zone, offerID.ID)
+	}
+}
+
 func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 		if diff.Get("offer") == "" || !diff.HasChange("offer") || diff.Id() == "" {
 			return nil
 		}
 
-		api, zone, err := NewAPIWithZoneAndID(i, diff.Id())
-		if err != nil {
-			return err
-		}
-
 		oldOffer, newOffer := diff.GetChange("offer")
-		if oldOffer == newOffer {
-			return nil
-		}
-
-		newOfferID := regional.ExpandID(newOffer.(string))
-		oldOfferID := regional.ExpandID(oldOffer.(string))
-
-		if validation.IsUUID(oldOffer.(string)) {
-			oldOfferInfo, err := api.GetOfferByName(&baremetal.GetOfferByNameRequest{
-				OfferName: oldOffer.(string),
-				Zone:      zone.Zone,
-			})
-			if err != nil {
-				return errors.New("can not find offer" + err.Error())
-			}
-
-			oldOfferID = regional.ExpandID(oldOfferInfo.ID)
-		}
-
-		if validation.IsUUID(newOffer.(string)) {
-			newOfferInfo, err := api.GetOfferByName(&baremetal.GetOfferByNameRequest{
-				OfferName: newOffer.(string),
-				Zone:      zone.Zone,
-			})
-			if err != nil {
-				return errors.New("can not find offer" + err.Error())
-			}
-
-			oldOfferID = regional.ExpandID(newOfferInfo.ID)
-		}
-
-		oldOfferDetails, err := FindOfferByID(ctx, api, zone.Zone, oldOfferID.ID)
+		oldOfferInfo, err := getOfferInformations(ctx, oldOffer, diff.Id(), i)
+		newOfferInfo, err := getOfferInformations(ctx, newOffer, diff.Id(), i)
 		if err != nil {
-			return errors.New("can not find the offer by id" + err.Error())
+			return errors.New("can not find offer" + err.Error())
 		}
 
-		newOfferDetails, err := FindOfferByID(ctx, api, zone.Zone, newOfferID.ID)
-		if err != nil {
-			return errors.New("can not find the offer by id" + err.Error())
-		}
-
-		if oldOfferDetails.Name != newOfferDetails.Name {
+		if oldOfferInfo.Name != newOfferInfo.Name {
 			return diff.ForceNew("offer")
 		}
 
-		if oldOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodMonthly && newOfferDetails.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodHourly {
+		if oldOfferInfo.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodMonthly && newOfferInfo.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodHourly {
 			return errors.New("invalid plan transition: you cannot transition from a monthly plan to an hourly plan. Only the reverse (hourly to monthly) is supported. Please update your configuration accordingly")
 		}
 
