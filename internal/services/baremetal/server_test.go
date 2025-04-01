@@ -1056,100 +1056,75 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "%s"
-						name			 	= "EM-B112X-SSD"
+						name = "%s"
 						subscription_period = "hourly"
-					
 					}
-					
+
 					resource "scaleway_baremetal_server" "server01" {
-						name		= "TestAccServer_UpdateSubscriptionPeriod"
-						offer 		= data.scaleway_baremetal_offer.my_offer.offer_id
-						zone        = "%s"
-						install_config_afterward   = true
-					
-					}`, Zone, Zone,
-				),
+						name = "TestAccServer_UpdateSubscriptionPeriod"
+						offer = data.scaleway_baremetal_offer.my_offer.offer_id
+						zone = "%s"
+						install_config_afterward = true
+					}`, Zone, OfferName, Zone),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "subscription_period", "hourly"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", Zone),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.server01", "offer_id", "data.scaleway_baremetal_offer.my_offer", "offer_id"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "%s"
-						name			 	= "EM-B112X-SSD"
-						subscription_period = "hourly"
-					
-					}
-					
-					data "scaleway_baremetal_offer" "my_offer_monthly" {
-						zone = "%s"
-						name			 	= "EM-B112X-SSD"
+						name = "%s"
 						subscription_period = "monthly"
-					
 					}
-					
+
 					resource "scaleway_baremetal_server" "server01" {
-						name		= "TestAccServer_UpdateSubscriptionPeriod"
-						offer 		= data.scaleway_baremetal_offer.my_offer_monthly.offer_id
-						zone        = "%s"
-						install_config_afterward   = true
-					
-					}`,
-					Zone, Zone, Zone),
+						name = "TestAccServer_UpdateSubscriptionPeriod"
+						offer = data.scaleway_baremetal_offer.my_offer.offer_id
+						zone = "%s"
+						install_config_afterward = true
+					}`, Zone, OfferName, Zone),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", Zone),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.server01", "offer_id", "data.scaleway_baremetal_offer.my_offer", "offer_id"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "%s"
-						name 	= "EM-B112X-SSD"
+						name = "%s"
 						subscription_period = "hourly"
-					
 					}
-					data "scaleway_baremetal_offer" "my_offer_monthly" {
-						zone = "%s"
-						name			 	= "EM-B112X-SSD"
-						subscription_period = "monthly"
-					
-					}
-					
+
 					resource "scaleway_baremetal_server" "server01" {
-						name 		= "Test_UpdateSubscriptionPeriod"
-						offer 		= data.scaleway_baremetal_offer.my_offer.offer_id
-						zone        = "%s"
-						install_config_afterward   = true
-					
-					}`, Zone, Zone, Zone,
-				),
-				ExpectError: regexp.MustCompile("invalid plan transition: you cannot transition from a monthly plan to an hourly plan. Only the reverse (hourly to monthly) is supported. Please update your configuration accordingly"),
+						name = "TestAccServer_UpdateSubscriptionPeriod"
+						offer = data.scaleway_baremetal_offer.my_offer.offer_id
+						zone = "%s"
+						install_config_afterward = true
+					}`, Zone, OfferName, Zone),
+				ExpectError: regexp.MustCompile(`invalid plan transition: you cannot transition from a monthly plan to an hourly plan. Only the reverse \(hourly to monthly\) is supported. Please update your configuration accordingly`),
 			},
 			{
 				Config: fmt.Sprintf(`
-					
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "%s"
-						name 	= "EM-B111X-SATA"
+						name = "EM-B320E-NVME"
 						subscription_period = "hourly"
-					
 					}
-					
+
 					resource "scaleway_baremetal_server" "server01" {
-						name 		= "Test_UpdateSubscriptionPeriod"
-						offer 		= data.scaleway_baremetal_offer.my_offer.offer_id
-						zone        = "%s"
-						install_config_afterward   = true
-					
-					}`, Zone, Zone,
-				),
+						name = "Test_UpdateSubscriptionPeriod"
+						offer = data.scaleway_baremetal_offer.my_offer.offer_id
+						zone = "%s"
+						install_config_afterward = true
+					}`, Zone, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.server01", "offer_id", "data.scaleway_baremetal_offer.my_offer", "offer_id"),
 				),
 			},
 		},

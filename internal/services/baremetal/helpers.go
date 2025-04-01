@@ -259,16 +259,6 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 			return errors.New("invalid plan transition: you cannot transition from a monthly plan to an hourly plan. Only the reverse (hourly to monthly) is supported. Please update your configuration accordingly")
 		}
 
-		ServerID := regional.ExpandID(diff.Id())
-
-		_, err = api.MigrateServerToMonthlyOffer(&baremetal.MigrateServerToMonthlyOfferRequest{
-			Zone:     zone.Zone,
-			ServerID: ServerID.ID,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return errors.New("migration to monthly plan failed: " + err.Error())
-		}
-
 		return nil
 	}
 }

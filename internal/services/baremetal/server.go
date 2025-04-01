@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -517,6 +518,26 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	var serverGetOptionIDs []*baremetal.ServerOption
 	serverGetOptionIDs = append(serverGetOptionIDs, server.Options...)
+
+	if d.HasChange("offer") {
+		ServerID := regional.ExpandID(server.ID)
+
+		_, err = api.MigrateServerToMonthlyOffer(&baremetal.MigrateServerToMonthlyOfferRequest{
+			Zone:     zonedID.Zone,
+			ServerID: ServerID.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err := api.WaitForServer(&baremetal.WaitForServerRequest{
+			Zone:     zonedID.Zone,
+			ServerID: ServerID.ID,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	if d.HasChange("options") {
 		options, err := expandOptions(d.Get("options"))
