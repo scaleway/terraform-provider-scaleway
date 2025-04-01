@@ -233,13 +233,13 @@ func getOfferInformations(ctx context.Context, offer interface{}, id string, i i
 		return nil, err
 	}
 	if validation.IsUUID(offer.(string)) {
+		offerID := regional.ExpandID(offer.(string))
+		return FindOfferByID(ctx, api, zone.Zone, offerID.ID)
+	} else {
 		return api.GetOfferByName(&baremetal.GetOfferByNameRequest{
 			OfferName: offer.(string),
 			Zone:      zone.Zone,
 		})
-	} else {
-		offerID := regional.ExpandID(offer.(string))
-		return FindOfferByID(ctx, api, zone.Zone, offerID.ID)
 	}
 }
 
@@ -250,10 +250,15 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 		}
 
 		oldOffer, newOffer := diff.GetChange("offer")
+
 		oldOfferInfo, err := getOfferInformations(ctx, oldOffer, diff.Id(), i)
+		if err != nil {
+			return errors.New(err.Error())
+		}
+
 		newOfferInfo, err := getOfferInformations(ctx, newOffer, diff.Id(), i)
 		if err != nil {
-			return errors.New("can not find offer" + err.Error())
+			return errors.New(err.Error())
 		}
 
 		if oldOfferInfo.Name != newOfferInfo.Name {
