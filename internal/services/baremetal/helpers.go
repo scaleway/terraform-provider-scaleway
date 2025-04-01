@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/scaleway/scaleway-sdk-go/validation"
 	"sort"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -245,6 +245,7 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 
 		newOfferID := regional.ExpandID(newOffer.(string))
 		oldOfferID := regional.ExpandID(oldOffer.(string))
+
 		if validation.IsUUID(oldOffer.(string)) {
 			oldOfferInfo, err := api.GetOfferByName(&baremetal.GetOfferByNameRequest{
 				OfferName: oldOffer.(string),
@@ -253,6 +254,7 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 			if err != nil {
 				return errors.New("can not find offer" + err.Error())
 			}
+
 			oldOfferID = regional.ExpandID(oldOfferInfo.ID)
 		}
 
@@ -264,6 +266,7 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 			if err != nil {
 				return errors.New("can not find offer" + err.Error())
 			}
+
 			oldOfferID = regional.ExpandID(newOfferInfo.ID)
 		}
 
