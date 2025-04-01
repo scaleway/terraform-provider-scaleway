@@ -417,7 +417,7 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	// deploy only in some conditions
 	shouldDeploy := deploy
-	shouldDeploy = shouldDeploy || (zipHasChanged && shouldDeploy)
+	shouldDeploy = shouldDeploy || (zipHasChanged && deploy)
 	shouldDeploy = shouldDeploy || d.HasChange("runtime")
 
 	if shouldDeploy {
