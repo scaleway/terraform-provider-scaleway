@@ -389,6 +389,11 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		updated = true
 	}
 
+	if d.HasChange("runtime") {
+		req.Runtime = function.FunctionRuntime(d.Get("runtime").(string))
+		updated = true
+	}
+
 	if updated {
 		_, err = api.UpdateFunction(req, scw.WithContext(ctx))
 		if err != nil {
@@ -401,7 +406,7 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	zipHasChanged := d.HasChanges("zip_hash", "zip_file")
-	shouldDeploy := d.Get("deploy").(bool)
+	deploy := d.Get("deploy").(bool)
 
 	if zipHasChanged {
 		err = functionUpload(ctx, m, api, region, f.ID, d.Get("zip_file").(string))
@@ -410,7 +415,12 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
-	if d.HasChange("deploy") && shouldDeploy || zipHasChanged && shouldDeploy {
+	// deploy only in some conditions
+	shouldDeploy := deploy
+	shouldDeploy = shouldDeploy || (zipHasChanged && shouldDeploy)
+	shouldDeploy = shouldDeploy || d.HasChange("runtime")
+
+	if shouldDeploy {
 		_, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return nil
