@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 	"sort"
 	"time"
 
@@ -238,8 +239,33 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 		}
 
 		oldOffer, newOffer := diff.GetChange("offer")
+		if oldOffer == newOffer {
+			return nil
+		}
+
 		newOfferID := regional.ExpandID(newOffer.(string))
 		oldOfferID := regional.ExpandID(oldOffer.(string))
+		if validation.IsUUID(oldOffer.(string)) {
+			oldOfferInfo, err := api.GetOfferByName(&baremetal.GetOfferByNameRequest{
+				OfferName: oldOffer.(string),
+				Zone:      zone.Zone,
+			})
+			if err != nil {
+				return errors.New("can not find offer" + err.Error())
+			}
+			oldOfferID = regional.ExpandID(oldOfferInfo.ID)
+		}
+
+		if validation.IsUUID(newOffer.(string)) {
+			newOfferInfo, err := api.GetOfferByName(&baremetal.GetOfferByNameRequest{
+				OfferName: newOffer.(string),
+				Zone:      zone.Zone,
+			})
+			if err != nil {
+				return errors.New("can not find offer" + err.Error())
+			}
+			oldOfferID = regional.ExpandID(newOfferInfo.ID)
+		}
 
 		oldOfferDetails, err := FindOfferByID(ctx, api, zone.Zone, oldOfferID.ID)
 		if err != nil {
