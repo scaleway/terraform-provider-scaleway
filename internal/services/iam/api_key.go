@@ -131,6 +131,7 @@ func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("expires_at", types.FlattenTime(res.ExpiresAt))
 	_ = d.Set("access_key", res.AccessKey)
+	_ = d.Set("secret_key", res.SecretKey)
 
 	if res.ApplicationID != nil {
 		_ = d.Set("application_id", res.ApplicationID)
