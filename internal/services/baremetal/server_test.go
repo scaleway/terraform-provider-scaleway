@@ -1043,6 +1043,8 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	newOffer := "EM-B320E-NVME"
+
 	if !IsOfferAvailable(OfferID, Zone, tt) {
 		t.Skip("Offer is out of stock")
 	}
@@ -1112,7 +1114,7 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "%s"
-						name = "EM-B320E-NVME"
+						name = "%s"
 						subscription_period = "hourly"
 					}
 
@@ -1121,7 +1123,7 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 						offer = data.scaleway_baremetal_offer.my_offer.offer_id
 						zone = "%s"
 						install_config_afterward = true
-					}`, Zone, Zone),
+					}`, Zone, newOffer, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.server01", "offer_id", "data.scaleway_baremetal_offer.my_offer", "offer_id"),
