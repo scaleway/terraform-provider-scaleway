@@ -20,7 +20,7 @@ func DataEasyPartitioning() *schema.Resource {
 				Required:    true,
 				Description: "ID of the server offer",
 			},
-			"os": {
+			"os_id": {
 				Type:             schema.TypeString,
 				Required:         true,
 				Description:      "The base image of the server",
@@ -60,7 +60,7 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	osID := d.Get("os").(string)
+	osID := d.Get("os_id").(string)
 
 	os, err := api.GetOS(&baremetal.GetOSRequest{
 		Zone: fallBackZone,
@@ -97,6 +97,7 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
+	print(defaultPartitioningSchema)
 	//TODO checker si offer custom partitoning
 	//TODO checker si offer et os compatible
 	//TODO get default partitioning
@@ -104,6 +105,5 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	//TODO replacer les valeurs
 	//TODO marshal
 
-	var diags diag.Diagnostics
-	return diags
+	return nil
 }
