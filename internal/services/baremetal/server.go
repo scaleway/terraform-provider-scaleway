@@ -59,6 +59,16 @@ func ResourceServer() *schema.Resource {
 				Required:         true,
 				Description:      "ID or name of the server offer",
 				ValidateDiagFunc: verify.IsUUIDOrNameOffer(),
+				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
+					// remove the locality from the IDs when checking diff
+					if locality.ExpandID(newValue) == locality.ExpandID(oldValue) {
+						return true
+					}
+					// if the offer was provided by name
+					offerName, ok := d.GetOk("offer_name")
+
+					return ok && newValue == offerName
+				},
 			},
 			"offer_id": {
 				Type:        schema.TypeString,
