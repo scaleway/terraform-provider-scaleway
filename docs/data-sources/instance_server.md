@@ -63,8 +63,6 @@ attached to the server.
 
 - `enable_dynamic_ip` - True if dynamic IP in enable on the server.
 
-- `routed_ip_enabled` - True if the server support routed ip only.
-
 - `state` - The state of the server. Possible values are: `started`, `stopped` or `standby`.
 
 - `cloud_init` - The cloud init script associated with this server.

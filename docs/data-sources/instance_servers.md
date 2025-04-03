@@ -60,7 +60,6 @@ In addition to all above arguments, the following attributes are exported:
     - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
     - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
     - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
-    - `routed_ip_enabled` - True if the server support routed ip only.
     - `enable_dynamic_ip` - If true a dynamic IP will be attached to the server.
     - `image` - The UUID or the label of the base image used by the server.
     - `placement_group_id` - The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the server is attached to.

@@ -188,15 +188,6 @@ func ResourceServer() *schema.Resource {
 				Default:     false,
 				Description: "Determines if IPv6 is enabled for the server",
 				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
-				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
-					// routed_ip enabled servers already support enable_ipv6. Let's ignore this argument if it is.
-					routedIPEnabled := types.GetBool(d, "routed_ip_enabled")
-					if routedIPEnabled == nil || routedIPEnabled.(bool) {
-						return true
-					}
-
-					return false
-				},
 			},
 			"private_ip": {
 				Type:        schema.TypeString,
