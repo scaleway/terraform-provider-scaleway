@@ -74,9 +74,9 @@ func ResourceServer() *schema.Resource {
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"protected": {
-				Type:     	  schema.TypeBool,
-				Optional: 	  true,
-				Default:  	  false,
+				Type:     	  		schema.TypeBool,
+				Optional: 	  		true,
+				Default:  	  		false,
 				Description:      "If true, the instance is protected against accidental deletion via the Scaleway API.",
 			},
 			"replace_on_type_change": {
@@ -399,7 +399,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              types.ExpandStrings(d.Get("tags")),
-		Protected: 	   scw.BoolPtr(d.Get("protected").(bool)),
+		Protected: 	   		 scw.BoolPtr(d.Get("protected").(bool)),
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
