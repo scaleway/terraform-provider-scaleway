@@ -129,10 +129,6 @@ func DataSourceServers() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeInt,
 						},
-						"routed_ip_enabled": {
-							Computed: true,
-							Type:     schema.TypeBool,
-						},
 						"zone":            zonal.Schema(),
 						"organization_id": account.OrganizationIDSchema(),
 						"project_id":      account.ProjectIDSchema(),
@@ -205,7 +201,6 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		rawServer["enable_dynamic_ip"] = server.DynamicIPRequired
-		rawServer["routed_ip_enabled"] = server.RoutedIPEnabled //nolint:staticcheck
 		rawServer["organization_id"] = server.Organization
 		rawServer["project_id"] = server.Project
 
