@@ -235,6 +235,7 @@ func getOfferInformations(ctx context.Context, offer interface{}, id string, i i
 
 	if validation.IsUUID(regional.ExpandID(offer.(string)).ID) {
 		offerID := regional.ExpandID(offer.(string))
+
 		return FindOfferByID(ctx, api, zone.Zone, offerID.ID)
 	} else {
 		return api.GetOfferByName(&baremetal.GetOfferByNameRequest{
