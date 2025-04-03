@@ -224,3 +224,13 @@ func privateNetworkSetHash(v interface{}) int {
 
 	return schema.HashString(buf.String())
 }
+
+func isOSCompatible(offer *baremetal.Offer, os *baremetal.OS) bool {
+	for _, incompatible := range offer.IncompatibleOsIDs {
+		if os.ID == incompatible {
+			return false
+		}
+	}
+
+	return true
+}
