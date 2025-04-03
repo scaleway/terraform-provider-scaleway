@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_webhosting"
 # Resource: scaleway_webhosting
 
 Creates and manages Scaleway Web Hostings.
-For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/webhosting/).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/webhosting/hosting-api/).
 
 ## Example Usage
 
