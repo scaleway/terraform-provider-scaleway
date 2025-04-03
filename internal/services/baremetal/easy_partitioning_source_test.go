@@ -25,7 +25,7 @@ func TestAccDataSourceEasyParitioning_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(
 					`
-data "scaleway_easy_partitioning" "test" {
+data "scaleway_baremetal_easy_partitioning" "test" {
 	offer_id = "%s"
 	os_id = "%s"
 }

@@ -278,9 +278,9 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i in
 func isOSCompatible(offer *baremetal.Offer, os *baremetal.OS) bool {
 	for _, incompatible := range offer.IncompatibleOsIDs {
 		if os.ID == incompatible {
-			return true
+			return false
 		}
 	}
 
-	return false
+	return true
 }
