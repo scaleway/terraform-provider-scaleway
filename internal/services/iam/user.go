@@ -23,6 +23,8 @@ func ResourceUser() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
+			"organization_id": account.OrganizationIDOptionalSchema(),
+			// User input data
 			"email": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -30,13 +32,53 @@ func ResourceUser() *schema.Resource {
 				Description: "The description of the iam user",
 			},
 			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "The tags associated with the user",
 			},
+			"send_password_email": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether or not to send an email containing the member's password",
+			},
+			"send_welcome_email": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether or not to send a welcome email that includes onboarding information",
+			},
+			"username": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The member's username",
+			},
+			"password": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The member's password for first access",
+			},
+			"first_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The member's first name",
+			},
+			"last_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The member's last name",
+			},
+			"phone_number": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The member's phone number",
+			},
+			"locale": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The member's locale",
+			},
+
+			// Computed data
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -77,7 +119,6 @@ func ResourceUser() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the account root user associated with the iam user",
 			},
-			"organization_id": account.OrganizationIDOptionalSchema(),
 		},
 	}
 }
