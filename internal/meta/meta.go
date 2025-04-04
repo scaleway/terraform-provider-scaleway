@@ -75,13 +75,13 @@ func (m Meta) ZoneSource() string {
 
 type Config struct {
 	ProviderSchema      *schema.ResourceData
+	HTTPClient          *http.Client
 	TerraformVersion    string
 	ForceZone           scw.Zone
 	ForceProjectID      string
 	ForceOrganizationID string
 	ForceAccessKey      string
 	ForceSecretKey      string
-	HTTPClient          *http.Client
 }
 
 // NewMeta creates the Meta object containing the SDK client.
@@ -247,26 +247,26 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 // GetCredentialsSource infers the source of the credentials based on the priority order of the different profiles
 func GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, envProfile *scw.Profile) *CredentialsSource {
 	type SourceProfilePair struct {
-		Source  string
 		Profile *scw.Profile
+		Source  string
 	}
 
 	profilesInOrder := []SourceProfilePair{
 		{
-			CredentialsSourceDefault,
-			defaultZoneProfile,
+			Source:  CredentialsSourceDefault,
+			Profile: defaultZoneProfile,
 		},
 		{
-			CredentialsSourceActiveProfile,
-			activeProfile,
+			Source:  CredentialsSourceActiveProfile,
+			Profile: activeProfile,
 		},
 		{
-			CredentialsSourceProviderProfile,
-			providerProfile,
+			Source:  CredentialsSourceProviderProfile,
+			Profile: providerProfile,
 		},
 		{
-			CredentialsSourceEnvironment,
-			envProfile,
+			Source:  CredentialsSourceEnvironment,
+			Profile: envProfile,
 		},
 	}
 	credentialsSource := &CredentialsSource{}
