@@ -77,7 +77,6 @@ func ResourceUser() *schema.Resource {
 				Optional:    true,
 				Description: "The member's locale",
 			},
-
 			// Computed data
 			"created_at": {
 				Type:        schema.TypeString,
@@ -118,6 +117,11 @@ func ResourceUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the account root user associated with the iam user",
+			},
+			"locked": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Defines whether the user is locked",
 			},
 		},
 	}
@@ -178,6 +182,7 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interfac
 	user, err := api.GetUser(&iam.GetUserRequest{
 		UserID: d.Id(),
 	}, scw.WithContext(ctx))
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -188,16 +193,25 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("organization_id", user.OrganizationID)
+	// User input data
 	_ = d.Set("email", user.Email)
+	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
+	_ = d.Set("username", user.Username)
+	_ = d.Set("first_name", user.FirstName)
+	_ = d.Set("last_name", user.LastName)
+	_ = d.Set("phone_number", user.PhoneNumber)
+	_ = d.Set("locale", user.Locale)
+	// Computed data
 	_ = d.Set("created_at", types.FlattenTime(user.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
-	_ = d.Set("organization_id", user.OrganizationID)
 	_ = d.Set("deletable", user.Deletable)
-	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
 	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
 	_ = d.Set("type", user.Type)
 	_ = d.Set("status", user.Status)
 	_ = d.Set("mfa", user.Mfa)
+	_ = d.Set("account_root_user_id", user.AccountRootUserID)
+	_ = d.Set("locked", user.Locked)
 
 	return nil
 }
