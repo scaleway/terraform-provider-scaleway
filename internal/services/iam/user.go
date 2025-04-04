@@ -65,7 +65,7 @@ func ResourceUser() *schema.Resource {
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of user invitation.",
+				Description: "The status of user invitation",
 			},
 			"mfa": {
 				Type:        schema.TypeBool,
@@ -75,22 +75,45 @@ func ResourceUser() *schema.Resource {
 			"account_root_user_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The ID of the account root user associated with the iam user.",
+				Description: "The ID of the account root user associated with the iam user",
 			},
 			"organization_id": account.OrganizationIDOptionalSchema(),
 		},
 	}
 }
 
+func createUserRequestBody(d *schema.ResourceData, isMember bool) *iam.CreateUserRequest {
+	if isMember {
+		return &iam.CreateUserRequest{
+			OrganizationID: d.Get("organization_id").(string),
+			Tags:           types.ExpandStrings(d.Get("tags")),
+			Member: &iam.CreateUserRequestMember{
+				Email: d.Get("email").(string),
+			},
+		}
+	} else {
+		return &iam.CreateUserRequest{
+			OrganizationID: d.Get("organization_id").(string),
+			Email:          scw.StringPtr(d.Get("email").(string)),
+			Tags:           types.ExpandStrings(d.Get("tags")),
+		}
+	}
+}
+
 func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
-	email := d.Get("email").(string)
 
-	user, err := api.CreateUser(&iam.CreateUserRequest{
-		OrganizationID: d.Get("organization_id").(string),
-		Email:          &email,
-		Tags:           types.ExpandStrings(d.Get("tags")),
-	}, scw.WithContext(ctx))
+	var user *iam.User
+	var err error
+
+	if d.Get("username").(string) != "" {
+		// 'Member' user
+		user, err = api.CreateUser(createUserRequestBody(d, true), scw.WithContext(ctx))
+	} else {
+		// 'Guest' user
+		user, err = api.CreateUser(createUserRequestBody(d, false), scw.WithContext(ctx))
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
