@@ -12,8 +12,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -223,4 +225,52 @@ func privateNetworkSetHash(v interface{}) int {
 	}
 
 	return schema.HashString(buf.String())
+}
+
+func getOfferInformations(ctx context.Context, offer interface{}, id string, i interface{}) (*baremetal.Offer, error) {
+	api, zone, err := NewAPIWithZoneAndID(i, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if validation.IsUUID(regional.ExpandID(offer.(string)).ID) {
+		offerID := regional.ExpandID(offer.(string))
+
+		return FindOfferByID(ctx, api, zone.Zone, offerID.ID)
+	} else {
+		return api.GetOfferByName(&baremetal.GetOfferByNameRequest{
+			OfferName: offer.(string),
+			Zone:      zone.Zone,
+		})
+	}
+}
+
+func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+		if diff.Get("offer") == "" || !diff.HasChange("offer") || diff.Id() == "" {
+			return nil
+		}
+
+		oldOffer, newOffer := diff.GetChange("offer")
+
+		oldOfferInfo, err := getOfferInformations(ctx, oldOffer, diff.Id(), i)
+		if err != nil {
+			return errors.New(err.Error())
+		}
+
+		newOfferInfo, err := getOfferInformations(ctx, newOffer, diff.Id(), i)
+		if err != nil {
+			return errors.New(err.Error())
+		}
+
+		if oldOfferInfo.Name != newOfferInfo.Name {
+			return diff.ForceNew("offer")
+		}
+
+		if oldOfferInfo.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodMonthly && newOfferInfo.SubscriptionPeriod == baremetal.OfferSubscriptionPeriodHourly {
+			return errors.New("invalid plan transition: you cannot transition from a monthly plan to an hourly plan. Only the reverse (hourly to monthly) is supported. Please update your configuration accordingly")
+		}
+
+		return nil
+	}
 }

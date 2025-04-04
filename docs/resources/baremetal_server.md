@@ -226,6 +226,47 @@ resource "scaleway_baremetal_server" "base" {
 
 ```
 
+### Migrate from hourly to monthly plan
+
+To migrate from an hourly to a monthly subscription for a Scaleway Baremetal server, it is important to understand that the migration can only be done by using the data source.
+You cannot directly modify the subscription_period of an existing scaleway_baremetal_offer resource. Instead, you must define the monthly offer using the data source and then update the server configuration accordingly.
+
+#### Hourly Plan Example
+
+```terraform
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-1"
+  name = "EM-B220E-NVME"
+  subscription_period = "hourly"
+}
+
+resource "scaleway_baremetal_server" "server01" {
+  name = "UpdateSubscriptionPeriod"
+  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+  zone = "%s"
+  install_config_afterward = true
+}
+```
+
+#### Monthly Plan Example
+
+```terraform
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-1"
+  name = "EM-B220E-NVME"
+  subscription_period = "monthly"
+}
+
+resource "scaleway_baremetal_server" "server01" {
+  name = "UpdateSubscriptionPeriod"
+  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+  zone = "fr-par-1"
+  install_config_afterward = true
+}
+```
+
+**Important**  Once you migrate to a monthly subscription, you cannot downgrade back to an hourly plan. Ensure that the monthly plan meets your needs before making the switch.
+
 ## Argument Reference
 
 The following arguments are supported:
