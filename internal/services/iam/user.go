@@ -50,6 +50,7 @@ func ResourceUser() *schema.Resource {
 			"username": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true, // For Guest users, it is set as equal to the email
 				Description: "The member's username",
 			},
 			"password": {
@@ -75,6 +76,7 @@ func ResourceUser() *schema.Resource {
 			"locale": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true, // It gets automatically set by the API
 				Description: "The member's locale",
 			},
 			// Computed data
