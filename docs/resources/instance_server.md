@@ -227,7 +227,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 ~> **Important:** If this field contains local volumes, you have to first detach them, in one apply, and then delete the volume in another apply.
 
-- `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server. Useful only with `routed_ip_enabled` as false, otherwise ipv6 is always supported.
+- `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
   Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 
 - `ip_id` - (Optional) The ID of the reserved IP that is attached to the server.
@@ -237,10 +237,6 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 ~> `ip_id` to `ip_ids` migration: if moving the ip from the old `ip_id` field to the new `ip_ids`, it should not detach the ip.
 
 - `enable_dynamic_ip` - (Defaults to `false`) If true a dynamic IP will be attached to the server.
-
-- `routed_ip_enabled` - (Defaults to `true`) If true, the server will support routed ips only. Changing it to true will migrate the server and its IP to routed type.
-
-~> **Important:** Enabling routed ip will restart the server
 
 - `state` - (Defaults to `started`) The state of the server. Possible values are: `started`, `stopped` or `standby`.
 
