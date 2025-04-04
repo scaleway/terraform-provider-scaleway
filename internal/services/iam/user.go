@@ -50,7 +50,7 @@ func ResourceUser() *schema.Resource {
 			"username": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true, // For Guest users, it is set as equal to the email
+				Computed:    true, // For Guest users, it is equal to the email
 				Description: "The member's username",
 			},
 			"password": {
