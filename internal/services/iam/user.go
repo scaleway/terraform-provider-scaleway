@@ -129,7 +129,15 @@ func createUserRequestBody(d *schema.ResourceData, isMember bool) *iam.CreateUse
 			OrganizationID: d.Get("organization_id").(string),
 			Tags:           types.ExpandStrings(d.Get("tags")),
 			Member: &iam.CreateUserRequestMember{
-				Email: d.Get("email").(string),
+				Email:             d.Get("email").(string),
+				SendPasswordEmail: d.Get("send_password_email").(bool),
+				SendWelcomeEmail:  d.Get("send_welcome_email").(bool),
+				Username:          d.Get("username").(string),
+				Password:          d.Get("password").(string),
+				FirstName:         d.Get("first_name").(string),
+				LastName:          d.Get("last_name").(string),
+				PhoneNumber:       d.Get("phone_number").(string),
+				Locale:            d.Get("locale").(string),
 			},
 		}
 	} else {
