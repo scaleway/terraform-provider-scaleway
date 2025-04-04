@@ -11,9 +11,9 @@ import (
 
 func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 	tests := []struct {
-		name   string
 		volume *instancehelpers.UnknownVolume
 		want   *instance.VolumeServerTemplate
+		name   string
 	}{
 		{
 			name: "Root Volume",

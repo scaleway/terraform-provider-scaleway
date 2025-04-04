@@ -11,9 +11,9 @@ import (
 
 func TestExpandContact(t *testing.T) {
 	tests := []struct {
-		name        string
 		contactMap  map[string]interface{}
 		expected    *domainSDK.Contact
+		name        string
 		expectError bool
 	}{
 		{
@@ -94,9 +94,9 @@ func TestExpandContact(t *testing.T) {
 
 func TestExpandNewContact(t *testing.T) {
 	tests := []struct {
-		name        string
 		contactMap  map[string]interface{}
 		expected    *domainSDK.NewContact
+		name        string
 		expectError bool
 	}{
 		{
