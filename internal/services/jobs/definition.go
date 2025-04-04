@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -90,6 +91,43 @@ func ResourceDefinition() *schema.Resource {
 			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
+			"secret_reference": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "A reference to a Secret Manager secret.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"secret_id": {
+							Type:         schema.TypeString,
+							Description:  "The secret UUID.",
+							Required:     true,
+							ValidateFunc: validation.IsUUID,
+						},
+						"secret_reference_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The secret reference UUID",
+						},
+						"secret_version": {
+							Type:        schema.TypeString,
+							Description: "The secret version, default to Latest.",
+							Required:    true,
+						},
+						"file": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "The absolute file path where the secret will be mounted.",
+							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(/[^/]+)+$`), "must be an absolute path to the file"),
+						},
+						"environment": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "An environment variable containing the secret value.",
+							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Z]+(_[A-Z]+)*$`), "environment variable must be composed of uppercase letters separated by an underscore"),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -132,6 +170,12 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	if rawSecretReference, ok := d.GetOk("secret_reference"); ok {
+		if err := CreateJobDefinitionSecret(rawSecretReference, api, region, definition.ID); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId(regional.NewIDString(region, definition.ID))
 
 	return ResourceJobDefinitionRead(ctx, d, m)
@@ -157,6 +201,33 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
+	rawSecretRefs, err := api.ListJobDefinitionSecrets(&jobs.ListJobDefinitionSecretsRequest{
+		Region:          region,
+		JobDefinitionID: id,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	secretRefs := make([]interface{}, len(rawSecretRefs.Secrets))
+
+	for i, secret := range rawSecretRefs.Secrets {
+		secretRef := make(map[string]interface{})
+		secretRef["secret_id"] = secret.SecretManagerID
+		secretRef["secret_reference_id"] = secret.SecretID
+		secretRef["secret_version"] = secret.SecretManagerVersion
+
+		if secret.File != nil {
+			secretRef["file"] = secret.File.Path
+		}
+
+		if secret.EnvVar != nil {
+			secretRef["environment"] = secret.EnvVar.Name
+		}
+
+		secretRefs[i] = secretRef
+	}
+
 	_ = d.Set("name", definition.Name)
 	_ = d.Set("cpu_limit", int(definition.CPULimit))
 	_ = d.Set("memory_limit", int(definition.MemoryLimit))
@@ -168,6 +239,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m in
 	_ = d.Set("cron", flattenJobDefinitionCron(definition.CronSchedule))
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
+	_ = d.Set("secret_reference", secretRefs)
 
 	return nil
 }
@@ -229,6 +301,27 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("cron") {
 		req.CronSchedule = expandJobDefinitionCron(d.Get("cron")).ToUpdateRequest()
+	}
+
+	if d.HasChange("secret_reference") {
+		oldRawSecretRefs, _ := d.GetChange("secret_reference")
+		oldSecretRefs := expandJobDefinitionSecret(oldRawSecretRefs)
+
+		for _, oldSecretRef := range oldSecretRefs {
+			if err := api.DeleteJobDefinitionSecret(&jobs.DeleteJobDefinitionSecretRequest{
+				Region:          region,
+				JobDefinitionID: id,
+				SecretID:        oldSecretRef.SecretReferenceID,
+			}); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if rawSecretReference, ok := d.GetOk("secret_reference"); ok {
+			if err := CreateJobDefinitionSecret(rawSecretReference, api, region, id); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if _, err := api.UpdateJobDefinition(req, scw.WithContext(ctx)); err != nil {

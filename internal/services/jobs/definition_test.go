@@ -2,6 +2,7 @@ package jobs_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -155,6 +156,169 @@ func TestAccJobDefinition_Cron(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-cron"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cron.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccJobDefinition_SecretReference(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckJobDefinitionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+					  name = "job-secret"
+					  path = "/one"
+					}
+					resource "scaleway_secret_version" "main" {
+  					  secret_id   = scaleway_secret.main.id
+					  data        = "your_secret"
+					}
+					locals {
+						parts = split("/", scaleway_secret.main.id)
+						secret_uuid = local.parts[1]
+					}
+
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-secret"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						secret_reference {
+							secret_id = local.secret_uuid
+							secret_version = "latest"
+							file = "/home/dev/env"
+						}
+						secret_reference {
+							secret_id = local.secret_uuid
+							secret_version = "latest"
+							environment = "SOME_ENV"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-secret"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.file", "/home/dev/env"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.1.environment", "SOME_ENV"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+					  name = "job-secret"
+					  path = "/one"
+					}
+					resource "scaleway_secret_version" "main" {
+  					  secret_id   = scaleway_secret.main.id
+					  data        = "your_secret"
+					}
+					locals {
+						parts = split("/", scaleway_secret.main.id)
+						secret_uuid = local.parts[1]
+					}
+
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-secret"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						secret_reference {
+							secret_id = local.secret_uuid
+							secret_version = "latest"
+							file = "/home/dev/new_env"
+						}
+						secret_reference {
+							secret_id = local.secret_uuid
+							secret_version = "latest"
+							environment = "SOME_ENV"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-secret"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.file", "/home/dev/new_env"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.1.environment", "SOME_ENV"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckJobDefinitionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+					  name    = "job-secret"
+					}
+					resource "scaleway_secret_version" "main" {
+  					  secret_id   = scaleway_secret.main.id
+					  data        = "your_secret"
+					}
+					locals {
+						parts = split("/", scaleway_secret.main.id)
+						secret_uuid = local.parts[1]
+					}
+
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-secret"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						secret_reference {
+							secret_id = local.secret_uuid
+							secret_version = "1"
+						}
+					}
+				`,
+				ExpectError: regexp.MustCompile(`the secret .+ is missing a mount point.+`),
+			},
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+					  name    = "job-secret"
+					}
+					resource "scaleway_secret_version" "main" {
+		  			  secret_id   = scaleway_secret.main.id
+					  data        = "your_secret"
+					}
+					locals {
+						parts = split("/", scaleway_secret.main.id)
+						secret_uuid = local.parts[1]
+					}
+		
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-secret"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						secret_reference {
+							secret_id = local.secret_uuid
+							secret_version = "1"
+							environment = "SOME_ENV"
+							file = "/home/dev/env"
+						}
+					}
+				`,
+				ExpectError: regexp.MustCompile(`the secret .+ must have exactly one mount point.+`),
 			},
 		},
 	})
