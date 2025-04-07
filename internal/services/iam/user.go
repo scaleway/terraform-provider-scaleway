@@ -131,6 +131,7 @@ func ResourceUser() *schema.Resource {
 
 func createUserRequestBody(d *schema.ResourceData, isMember bool) *iam.CreateUserRequest {
 	if isMember {
+		// Create and return a Member user.
 		return &iam.CreateUserRequest{
 			OrganizationID: d.Get("organization_id").(string),
 			Tags:           types.ExpandStrings(d.Get("tags")),
@@ -140,13 +141,20 @@ func createUserRequestBody(d *schema.ResourceData, isMember bool) *iam.CreateUse
 				SendWelcomeEmail:  d.Get("send_welcome_email").(bool),
 				Username:          d.Get("username").(string),
 				Password:          d.Get("password").(string),
-				FirstName:         d.Get("first_name").(string),
-				LastName:          d.Get("last_name").(string),
-				PhoneNumber:       d.Get("phone_number").(string),
-				Locale:            d.Get("locale").(string),
+				/* N.B.: As of April 2025, these last four parameters are ignored by the API,
+				 * meaning that even if you set them when creating the user, the resulting user
+				 * will have empty strings as values for these fields (with the exception of
+				 * 'locale' for Member users, which is always set to 'en_US'). Trying to update
+				 * these fields is also useless, as the API ignores changes as well.
+				 */
+				FirstName:   d.Get("first_name").(string),
+				LastName:    d.Get("last_name").(string),
+				PhoneNumber: d.Get("phone_number").(string),
+				Locale:      d.Get("locale").(string),
 			},
 		}
 	} else {
+		// Create and return a Guest user.
 		return &iam.CreateUserRequest{
 			OrganizationID: d.Get("organization_id").(string),
 			Email:          scw.StringPtr(d.Get("email").(string)),
@@ -228,6 +236,18 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
+	/*
+	 * The API endpoint for updating a user allows changes to the 'tags' and 'email' fields
+	 * for both the Guest and Member user types, plus changes to 'first_name', 'last_name',
+	 * 'phone_number', and 'locale' when the user is of type Member.
+	 * However, for some reason the API ignores all changes to the Member-specific fields
+	 * when updating. This leaves only 'email' and 'tags' as fields that potentially support
+	 * changes.
+	 * The field 'email' is designed as 'ForceNew' for this resource, which means that a
+	 * change in its value requires the replacement (destroy and create) of the managed
+	 * resource instance.
+	 * All in all, as of April 2025, the only field that actually supports changes is 'tags'.
+	 */
 	if d.HasChanges("tags") {
 		_, err = api.UpdateUser(&iam.UpdateUserRequest{
 			UserID: user.ID,
