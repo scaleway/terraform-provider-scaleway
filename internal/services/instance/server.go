@@ -73,6 +73,12 @@ func ResourceServer() *schema.Resource {
 				Description:      "The instanceSDK type of the server", // TODO: link to scaleway pricing in the doc
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
+			"protected": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If true, the instance is protected against accidental deletion via the Scaleway API.",
+			},
 			"replace_on_type_change": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -384,6 +390,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              types.ExpandStrings(d.Get("tags")),
+		Protected:         d.Get("protected").(bool),
 	}
 
 	enableIPv6, ok := d.GetOk("enable_ipv6")
@@ -619,6 +626,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 		_ = d.Set("organization_id", server.Organization)
 		_ = d.Set("project_id", server.Project)
+		_ = d.Set("protected", server.Protected)
 
 		// Image could be empty in an import context.
 		image := regional.ExpandID(d.Get("image").(string))
@@ -822,6 +830,11 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	if d.HasChange("enable_dynamic_ip") {
 		serverShouldUpdate = true
 		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
+	}
+
+	if d.HasChange("protected") {
+		serverShouldUpdate = true
+		updateRequest.Protected = types.ExpandBoolPtr(d.Get("protected").(bool))
 	}
 
 	if d.HasChanges("additional_volume_ids", "root_volume") {
