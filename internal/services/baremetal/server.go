@@ -754,24 +754,24 @@ func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interf
 	diags := diag.Diagnostics(nil)
 
 	installAttributes := []struct {
-		Attribute string
 		Field     *baremetal.OSOSField
+		Attribute string
 	}{
 		{
-			"user",
-			os.User,
+			Attribute: "user",
+			Field:     os.User,
 		},
 		{
-			"password",
-			os.Password,
+			Attribute: "password",
+			Field:     os.Password,
 		},
 		{
-			"service_user",
-			os.ServiceUser,
+			Attribute: "service_user",
+			Field:     os.ServiceUser,
 		},
 		{
-			"service_password",
-			os.ServicePassword,
+			Attribute: "service_password",
+			Field:     os.ServicePassword,
 		},
 	}
 	for _, installAttr := range installAttributes {
