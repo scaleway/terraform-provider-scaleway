@@ -834,7 +834,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("protected") {
 		serverShouldUpdate = true
-		updateRequest.Protected = scw.BoolPtr(d.Get("protected").(bool))
+		updateRequest.Protected = types.ExpandBoolPtr(d.Get("protected").(bool))
 	}
 
 	if d.HasChanges("additional_volume_ids", "root_volume") {

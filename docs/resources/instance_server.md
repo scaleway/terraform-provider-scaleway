@@ -254,6 +254,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `replace_on_type_change` - (Defaults to false) If true, the server will be replaced if `type` is changed. Otherwise, the server will migrate.
 
+- `protected` - (Optional) Set to true to activate server protection option.
+
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
