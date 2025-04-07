@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -54,10 +55,10 @@ func ResourceServer() *schema.Resource {
 				Description: "Hostname of the server",
 			},
 			"offer": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "ID or name of the server offer",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "ID or name of the server offer",
+				ValidateDiagFunc: verify.IsUUIDOrNameOffer(),
 				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
 					// remove the locality from the IDs when checking diff
 					if locality.ExpandID(newValue) == locality.ExpandID(oldValue) {
@@ -68,7 +69,6 @@ func ResourceServer() *schema.Resource {
 
 					return ok && newValue == offerName
 				},
-				ValidateDiagFunc: verify.IsUUIDOrNameOffer(),
 			},
 			"offer_id": {
 				Type:        schema.TypeString,
@@ -264,8 +264,8 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Description: "The partitioning schema in json format",
 			},
 		},
-
 		CustomizeDiff: customdiff.Sequence(
+			customDiffOffer(),
 			cdf.LocalityCheck("private_network.#.id"),
 			customDiffPrivateNetworkOption(),
 		),
@@ -528,6 +528,26 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	var serverGetOptionIDs []*baremetal.ServerOption
 	serverGetOptionIDs = append(serverGetOptionIDs, server.Options...)
+
+	if d.HasChange("offer") {
+		ServerID := regional.ExpandID(server.ID)
+
+		_, err = api.MigrateServerToMonthlyOffer(&baremetal.MigrateServerToMonthlyOfferRequest{
+			Zone:     zonedID.Zone,
+			ServerID: ServerID.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err := api.WaitForServer(&baremetal.WaitForServerRequest{
+			Zone:     zonedID.Zone,
+			ServerID: ServerID.ID,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	if d.HasChange("options") {
 		options, err := expandOptions(d.Get("options"))
