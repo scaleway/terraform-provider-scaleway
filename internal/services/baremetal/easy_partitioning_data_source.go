@@ -98,7 +98,8 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	print(defaultPartitioningSchema)
-	//TODO checker si offer custom partitoning
+	append(defaultPartitioningSchema.Disks)
+	//TODO checker si offer custom partitoning2l;
 	//TODO checker si offer et os compatible
 	//TODO get default partitioning
 	//TODO unmarshall
