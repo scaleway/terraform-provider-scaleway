@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
+	"strings"
 )
 
 func DataEasyPartitioning() *schema.Resource {
@@ -37,9 +38,9 @@ func DataEasyPartitioning() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "set ext_4 partition",
+				Description: "set extra ext_4 partition",
 			},
-			"ext_4_name": {
+			"ext_4_name": { //TODO change to mount point
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "/data",
@@ -51,6 +52,67 @@ func DataEasyPartitioning() *schema.Resource {
 				Description: "The partitioning schema in json format",
 			},
 		},
+	}
+}
+
+func removeSwap(defaultDisks []*baremetal.SchemaDisk, extraPartition bool) []*baremetal.SchemaDisk {
+	var swapSize scw.Size
+	var newPartition []*baremetal.SchemaPartition
+	var newDisks []*baremetal.SchemaDisk
+	var disk *baremetal.SchemaDisk
+
+	for _, oldDisk := range defaultDisks {
+		for _, partition := range oldDisk.Partitions {
+			if partition.Label == "swap" {
+				swapSize = partition.Size
+				continue
+			}
+			if partition.Label == "boot" && !extraPartition {
+				partition.Size += swapSize
+			} else if partition.Label == "boot" && extraPartition {
+				partition.Size = 20000000000
+			}
+			newPartition = append(newPartition, partition)
+		}
+		disk.Device = oldDisk.Device
+		disk.Partitions = newPartition
+		newDisks = append(newDisks, oldDisk)
+	}
+	return newDisks
+}
+
+"raids": [
+{
+"name": "/dev/md2",
+"level": "raid_level_1",
+"devices": [
+"/dev/nvme0n1p5",
+"/dev/nvme1n1p4"
+]
+}
+],
+"filesystems": [
+{
+"device": "/dev/md2",
+"format": "ext4",
+"mountpoint": "/home"
+}
+],
+
+{
+"label": "data",
+"number": 4,
+"size": 0,
+"use_all_available_space": true
+}
+
+func addExtraPartition(name string, extraPartition []*baremetal.SchemaDisk, defaultPartitionSchema *baremetal.Schema) *baremetal.Schema {
+	_, label, _ := strings.Cut(name, "/")
+	data := &baremetal.SchemaPartition{
+		Label:                "",
+		Number:               0,
+		Size:                 0,
+		UseAllAvailableSpace: false,
 	}
 }
 
@@ -93,15 +155,30 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 		OfferID: offerID,
 		OsID:    osID,
 	}, scw.WithContext(ctx))
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	print(defaultPartitioningSchema)
-	append(defaultPartitioningSchema.Disks)
+	extraPart := d.Get("extra_partition").(bool)
+
+	var newDiskSchema []*baremetal.SchemaDisk
+	if swap := d.Get("swap"); !swap.(bool) {
+		newDiskSchema = removeSwap(defaultPartitioningSchema.Disks, extraPart)
+	}
+
+	var newCustomPartition []*baremetal.Schema
+	if extraPart {
+		name := d.Get("ext_4_name").(string)
+		newCustomPartition = addExtraPartition(name, newDiskSchema, defaultPartitioningSchema)
+	}
+
+	defaultPartitioningSchema.Disks = append(defaultPartitioningSchema.Disks)
 	//TODO checker si offer custom partitoning2l;
 	//TODO checker si offer et os compatible
 	//TODO get default partitioning
+	//TODO remove swap and increase boot size
+	//TODO
 	//TODO unmarshall
 	//TODO replacer les valeurs
 	//TODO marshal
