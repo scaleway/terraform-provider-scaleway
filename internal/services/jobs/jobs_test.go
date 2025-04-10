@@ -8,9 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	jobsSDK "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccJobDefinition_Basic(t *testing.T) {
@@ -179,10 +183,6 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
   					  secret_id   = scaleway_secret.main.id
 					  data        = "your_secret"
 					}
-					locals {
-						parts = split("/", scaleway_secret.main.id)
-						secret_uuid = local.parts[1]
-					}
 
 					resource scaleway_job_definition main {
 						name = "test-jobs-job-definition-secret"
@@ -190,13 +190,11 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 						memory_limit = 256
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
-							secret_id = local.secret_uuid
-							secret_version = "latest"
+							secret_id = scaleway_secret.main.id
 							file = "/home/dev/env"
 						}
 						secret_reference {
-							secret_id = local.secret_uuid
-							secret_version = "latest"
+							secret_id = scaleway_secret.main.id
 							environment = "SOME_ENV"
 						}
 					}
@@ -205,6 +203,8 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
 					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-secret"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.secret_version", "latest"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.1.secret_version", "latest"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.file", "/home/dev/env"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.1.environment", "SOME_ENV"),
@@ -220,10 +220,6 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
   					  secret_id   = scaleway_secret.main.id
 					  data        = "your_secret"
 					}
-					locals {
-						parts = split("/", scaleway_secret.main.id)
-						secret_uuid = local.parts[1]
-					}
 
 					resource scaleway_job_definition main {
 						name = "test-jobs-job-definition-secret"
@@ -231,14 +227,13 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 						memory_limit = 256
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
-							secret_id = local.secret_uuid
-							secret_version = "latest"
-							file = "/home/dev/new_env"
+							secret_id = split("/", scaleway_secret.main.id)[1]
+							file = "/home/dev/secret_file"
 						}
 						secret_reference {
-							secret_id = local.secret_uuid
-							secret_version = "latest"
-							environment = "SOME_ENV"
+							secret_id = scaleway_secret.main.id
+							environment = "ANOTHER_ENV"
+							secret_version = "1"
 						}
 					}
 				`,
@@ -247,8 +242,41 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-secret"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.file", "/home/dev/new_env"),
-					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.1.environment", "SOME_ENV"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.secret_version", "latest"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.1.secret_version", "1"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.file", "/home/dev/secret_file"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.1.environment", "ANOTHER_ENV"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+					  name = "job-secret"
+					  path = "/one"
+					}
+					resource "scaleway_secret_version" "main" {
+  					  secret_id   = scaleway_secret.main.id
+					  data        = "your_secret"
+					}
+
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-secret"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						secret_reference {
+							secret_id = scaleway_secret.main.id
+							file = "/home/dev/secret_file"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-secret"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.secret_version", "latest"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "secret_reference.0.file", "/home/dev/secret_file"),
 				),
 			},
 		},
@@ -267,15 +295,11 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_secret" "main" {
-					  name    = "job-secret"
+					  name    = "wrong-job-secret"
 					}
 					resource "scaleway_secret_version" "main" {
   					  secret_id   = scaleway_secret.main.id
 					  data        = "your_secret"
-					}
-					locals {
-						parts = split("/", scaleway_secret.main.id)
-						secret_uuid = local.parts[1]
 					}
 
 					resource scaleway_job_definition main {
@@ -284,8 +308,7 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 						memory_limit = 256
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
-							secret_id = local.secret_uuid
-							secret_version = "1"
+							secret_id = scaleway_secret.main.id
 						}
 					}
 				`,
@@ -294,15 +317,11 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_secret" "main" {
-					  name    = "job-secret"
+					  name    = "wrong-job-secret"
 					}
 					resource "scaleway_secret_version" "main" {
 		  			  secret_id   = scaleway_secret.main.id
 					  data        = "your_secret"
-					}
-					locals {
-						parts = split("/", scaleway_secret.main.id)
-						secret_uuid = local.parts[1]
 					}
 		
 					resource scaleway_job_definition main {
@@ -311,8 +330,7 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 						memory_limit = 256
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
-							secret_id = local.secret_uuid
-							secret_version = "1"
+							secret_id = scaleway_secret.main.id
 							environment = "SOME_ENV"
 							file = "/home/dev/env"
 						}
@@ -375,5 +393,137 @@ func testAccCheckJobDefinitionDestroy(tt *acctest.TestTools) resource.TestCheckF
 		}
 
 		return nil
+	}
+}
+
+func TestCreateJobDefinitionSecret(t *testing.T) {
+	jobSecrets := []jobs.JobDefinitionSecret{
+		{
+			SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+			SecretVersion: "1",
+			Environment:   "SOME_ENV",
+		},
+		{
+			SecretID:      regional.NewID("nl-ams", "11111111-1111-1111-1111-111111111111"),
+			SecretVersion: "1",
+			File:          "/home/dev/env",
+		},
+	}
+
+	api := jobsSDK.NewAPI(&scw.Client{})
+	region := scw.RegionFrPar
+	jobID := "22222222-2222-2222-2222-222222222222"
+
+	err := jobs.CreateJobDefinitionSecret(t.Context(), api, jobSecrets, region, jobID)
+	assert.ErrorContains(t, err, fmt.Sprintf("the secret id %s is in the region %s, expected %s", jobSecrets[1].SecretID, jobSecrets[1].SecretID.Region, region))
+}
+
+func TestDiffJobDefinitionSecrets(t *testing.T) {
+	testCases := []struct {
+		name             string
+		oldSecretRefs    []jobs.JobDefinitionSecret
+		newSecretRefs    []jobs.JobDefinitionSecret
+		expectedToCreate []jobs.JobDefinitionSecret
+		expectedToDelete []jobs.JobDefinitionSecret
+	}{
+		{
+			name: "no changes",
+			oldSecretRefs: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "SOME_ENV",
+				},
+			},
+			newSecretRefs: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "SOME_ENV",
+				},
+			},
+			expectedToCreate: []jobs.JobDefinitionSecret{},
+			expectedToDelete: []jobs.JobDefinitionSecret{},
+		},
+		{
+			name: "create secret",
+			oldSecretRefs: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "SOME_ENV",
+				},
+			},
+			newSecretRefs: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "SOME_ENV",
+				},
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "ANOTHER_ENV",
+				},
+			},
+			expectedToCreate: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "ANOTHER_ENV",
+				},
+			},
+			expectedToDelete: []jobs.JobDefinitionSecret{},
+		},
+		{
+			name: "delete and create secret",
+			oldSecretRefs: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "SOME_ENV",
+				},
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "ANOTHER_ENV",
+				},
+			},
+			newSecretRefs: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					File:          "/home/dev/env",
+				},
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "ANOTHER_ENV",
+				},
+			},
+			expectedToCreate: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					File:          "/home/dev/env",
+				},
+			},
+			expectedToDelete: []jobs.JobDefinitionSecret{
+				{
+					SecretID:      regional.NewID("fr-par", "11111111-1111-1111-1111-111111111111"),
+					SecretVersion: "1",
+					Environment:   "SOME_ENV",
+				},
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			toCreate, toDelete, err := jobs.DiffJobDefinitionSecrets(testCase.oldSecretRefs, testCase.newSecretRefs)
+			require.NoError(t, err)
+			assert.Equal(t, testCase.expectedToCreate, toCreate)
+			assert.Equal(t, testCase.expectedToDelete, toDelete)
+		})
 	}
 }
