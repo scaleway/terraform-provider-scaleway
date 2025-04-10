@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -95,13 +96,24 @@ func ResourceDefinition() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A reference to a Secret Manager secret.",
+				Set: func(v interface{}) int {
+					secret := v.(map[string]interface{})
+					if secret["environment"] != "" {
+						return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["environment"].(string))
+					}
+
+					return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["file"].(string))
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"secret_id": {
-							Type:         schema.TypeString,
-							Description:  "The secret UUID.",
-							Required:     true,
-							ValidateFunc: validation.IsUUID,
+							Type:                  schema.TypeString,
+							Description:           "The secret unique identifier, it could be formatted as region/UUID or UUID. In case the region is passed, it must be the same as the job definition.",
+							Required:              true,
+							DiffSuppressOnRefresh: true,
+							DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+								return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
+							},
 						},
 						"secret_reference_id": {
 							Type:        schema.TypeString,
@@ -110,8 +122,9 @@ func ResourceDefinition() *schema.Resource {
 						},
 						"secret_version": {
 							Type:        schema.TypeString,
-							Description: "The secret version, default to Latest.",
-							Required:    true,
+							Description: "The secret version.",
+							Default:     "latest",
+							Optional:    true,
 						},
 						"file": {
 							Type:         schema.TypeString,
@@ -123,7 +136,7 @@ func ResourceDefinition() *schema.Resource {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Description:  "An environment variable containing the secret value.",
-							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Z]+(_[A-Z]+)*$`), "environment variable must be composed of uppercase letters separated by an underscore"),
+							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Z|0-9]+(_[A-Z|0-9]+)*$`), "environment variable must be composed of uppercase letters separated by an underscore"),
 						},
 					},
 				},
@@ -171,7 +184,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if rawSecretReference, ok := d.GetOk("secret_reference"); ok {
-		if err := CreateJobDefinitionSecret(rawSecretReference, api, region, definition.ID); err != nil {
+		if err := CreateJobDefinitionSecret(ctx, api, expandJobDefinitionSecret(rawSecretReference), region, definition.ID); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -304,21 +317,29 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("secret_reference") {
-		oldRawSecretRefs, _ := d.GetChange("secret_reference")
-		oldSecretRefs := expandJobDefinitionSecret(oldRawSecretRefs)
+		oldRawSecretRefs, newRawSecretRefs := d.GetChange("secret_reference")
 
-		for _, oldSecretRef := range oldSecretRefs {
-			if err := api.DeleteJobDefinitionSecret(&jobs.DeleteJobDefinitionSecretRequest{
+		oldSecretRefs := expandJobDefinitionSecret(oldRawSecretRefs)
+		newSecretRefs := expandJobDefinitionSecret(newRawSecretRefs)
+
+		toCreate, toDelete, err := DiffJobDefinitionSecrets(oldSecretRefs, newSecretRefs)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for _, secret := range toDelete {
+			deleteReq := &jobs.DeleteJobDefinitionSecretRequest{
 				Region:          region,
 				JobDefinitionID: id,
-				SecretID:        oldSecretRef.SecretReferenceID,
-			}); err != nil {
+				SecretID:        secret.SecretReferenceID,
+			}
+			if err := api.DeleteJobDefinitionSecret(deleteReq, scw.WithContext(ctx)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		if rawSecretReference, ok := d.GetOk("secret_reference"); ok {
-			if err := CreateJobDefinitionSecret(rawSecretReference, api, region, id); err != nil {
+		if len(toCreate) > 0 {
+			if err := CreateJobDefinitionSecret(ctx, api, toCreate, region, id); err != nil {
 				return diag.FromErr(err)
 			}
 		}
