@@ -2,12 +2,13 @@ package k8s_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	k8sSDK "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/k8s"
-	"testing"
 )
 
 func TestAccACL_Basic(t *testing.T) {
@@ -164,13 +165,13 @@ func testAccCheckK8SClusterAllIPsAllowed(tt *acctest.TestTools, n string) resour
 		if err != nil {
 			return err
 		}
-		if acls.TotalCount > 1 {
+
+		switch {
+		case acls.TotalCount > 1:
 			return fmt.Errorf("unexpected number of ACL rules: %d (expected: 1)", acls.TotalCount)
-		}
-		if acls.Rules[0].IP == nil {
-			return fmt.Errorf("unexpected CL rule: %+v", acls.Rules[0])
-		}
-		if acls.Rules[0].IP.String() != "0.0.0.0/0" {
+		case acls.Rules[0].IP == nil:
+			return fmt.Errorf("unexpected ACL rule: %+v", acls.Rules[0])
+		case acls.Rules[0].IP.String() != "0.0.0.0/0":
 			return fmt.Errorf("unexpected IP in ACL rule: %q (expected \"0.0.0.0/0\")", acls.Rules[0].IP.String())
 		}
 

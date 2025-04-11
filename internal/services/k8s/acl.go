@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -53,13 +54,11 @@ func ResourceACL() *schema.Resource {
 							Optional:     true,
 							Description:  "The IP subnet to be allowed",
 							ValidateFunc: validation.IsCIDR,
-							//ExactlyOneOf: []string{"acl_rules.0.scaleway_ranges"},
 						},
 						"scaleway_ranges": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "Allow access to cluster from all Scaleway ranges as defined in https://www.scaleway.com/en/docs/console/account/reference-content/scaleway-network-information/#ip-ranges-used-by-scaleway. Only one rule with this field set to true can be added",
-							//ExactlyOneOf: []string{"acl_rules.0.ip"},
 						},
 						"description": {
 							Type:        schema.TypeString,
@@ -172,6 +171,7 @@ func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 			ClusterID: clusterID,
 			ACLs:      acls,
 		}
+
 		_, err = api.SetClusterACLRules(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -206,6 +206,7 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{
 			},
 		},
 	}
+
 	_, err = api.SetClusterACLRules(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -231,11 +232,14 @@ func expandACL(data []interface{}) ([]*k8s.ACLRuleRequest, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			expandedRule.IP = &ip
 		}
-		if scwRangesRaw, scwRangesSet := r["scaleway_ranges"]; scwRangesSet && scwRangesRaw.(bool) == true {
+
+		if scwRangesRaw, scwRangesSet := r["scaleway_ranges"]; scwRangesSet && scwRangesRaw.(bool) {
 			expandedRule.ScalewayRanges = scw.BoolPtr(true)
 		}
+
 		if descriptionRaw, descriptionSet := r["description"]; descriptionSet && descriptionRaw.(string) != "" {
 			expandedRule.Description = descriptionRaw.(string)
 		}
@@ -252,6 +256,7 @@ func flattenACL(rules []*k8s.ACLRule) interface{} {
 	}
 
 	flattenedACLs := []map[string]interface{}(nil)
+
 	for _, rule := range rules {
 		flattenedRule := map[string]interface{}{
 			"id":              rule.ID,
@@ -261,6 +266,7 @@ func flattenACL(rules []*k8s.ACLRule) interface{} {
 		if rule.IP != nil {
 			flattenedRule["ip"] = rule.IP.String()
 		}
+
 		flattenedACLs = append(flattenedACLs, flattenedRule)
 	}
 
