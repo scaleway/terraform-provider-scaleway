@@ -185,6 +185,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_ipam_ip":                             ipam.ResourceIP(),
 				"scaleway_ipam_ip_reverse_dns":                 ipam.ResourceIPReverseDNS(),
 				"scaleway_job_definition":                      jobs.ResourceDefinition(),
+				"scaleway_k8s_acl":                             k8s.ResourceACL(),
 				"scaleway_k8s_cluster":                         k8s.ResourceCluster(),
 				"scaleway_k8s_pool":                            k8s.ResourcePool(),
 				"scaleway_lb":                                  lb.ResourceLb(),
