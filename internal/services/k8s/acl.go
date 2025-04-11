@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -37,28 +39,37 @@ func ResourceACL() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: dsf.Locality,
 				Description:      "Cluster on which the ACL is applied",
 			},
-			"acls": {
+			"acl_rules": {
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "The list of network rules that manage inbound traffic",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The IP subnet to be allowed",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "The IP subnet to be allowed",
+							ValidateFunc: validation.IsCIDR,
+							//ExactlyOneOf: []string{"acl_rules.0.scaleway_ranges"},
 						},
 						"scaleway_ranges": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "Allow access to cluster from all Scaleway ranges as defined in https://www.scaleway.com/en/docs/console/account/reference-content/scaleway-network-information/#ip-ranges-used-by-scaleway. Only one rule with this field set to true can be added",
+							//ExactlyOneOf: []string{"acl_rules.0.ip"},
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The description of the ACL rule",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the ACL rule",
 						},
 					},
 				},
@@ -71,19 +82,22 @@ func ResourceACL() *schema.Resource {
 }
 
 func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := newAPIWithRegion(d, m)
+	api, _, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	clusterID := d.Get("cluster_id").(string)
+	region, clusterID, err := regional.ParseID(d.Get("cluster_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitCluster(ctx, api, region, locality.ExpandID(clusterID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	acls, err := expandACL(d.Get("acls").([]interface{}))
+	acls, err := expandACL(d.Get("acl_rules").([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -99,7 +113,8 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	d.SetId(clusterID)
+	regionalID := regional.NewID(region, clusterID).String()
+	d.SetId(regionalID)
 
 	return ResourceACLRead(ctx, d, m)
 }
@@ -129,11 +144,8 @@ func ResourceACLRead(ctx context.Context, d *schema.ResourceData, m interface{})
 		return diag.FromErr(err)
 	}
 
-	id := regional.NewID(region, clusterID).String()
-	d.SetId(id)
-
 	_ = d.Set("cluster_id", clusterID)
-	_ = d.Set("acls", flattenACL(acls.Rules))
+	_ = d.Set("acl_rules", flattenACL(acls.Rules))
 
 	return nil
 }
@@ -149,8 +161,8 @@ func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("acls") {
-		acls, err := expandACL(d.Get("acls").([]interface{}))
+	if d.HasChange("acl_rules") {
+		acls, err := expandACL(d.Get("acl_rules").([]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -180,10 +192,19 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
+	allIPRange, err := types.ExpandIPNet("0.0.0.0/0")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &k8s.SetClusterACLRulesRequest{
 		Region:    region,
 		ClusterID: clusterID,
-		ACLs:      nil,
+		ACLs: []*k8s.ACLRuleRequest{
+			{
+				IP: &allIPRange,
+			},
+		},
 	}
 	_, err = api.SetClusterACLRules(req, scw.WithContext(ctx))
 	if err != nil {
@@ -205,17 +226,17 @@ func expandACL(data []interface{}) ([]*k8s.ACLRuleRequest, error) {
 		r := rule.(map[string]interface{})
 		expandedRule := &k8s.ACLRuleRequest{}
 
-		if ipRaw, ok := r["ip"]; ok {
+		if ipRaw, ipSet := r["ip"]; ipSet && ipRaw != "" {
 			ip, err := types.ExpandIPNet(ipRaw.(string))
 			if err != nil {
 				return nil, err
 			}
 			expandedRule.IP = &ip
 		}
-		if scwRangesRaw, ok := r["scaleway_ranges"]; ok {
-			expandedRule.ScalewayRanges = scw.BoolPtr(scwRangesRaw.(bool))
+		if scwRangesRaw, scwRangesSet := r["scaleway_ranges"]; scwRangesSet && scwRangesRaw.(bool) == true {
+			expandedRule.ScalewayRanges = scw.BoolPtr(true)
 		}
-		if descriptionRaw, ok := r["description"]; ok {
+		if descriptionRaw, descriptionSet := r["description"]; descriptionSet && descriptionRaw.(string) != "" {
 			expandedRule.Description = descriptionRaw.(string)
 		}
 
@@ -232,12 +253,15 @@ func flattenACL(rules []*k8s.ACLRule) interface{} {
 
 	flattenedACLs := []map[string]interface{}(nil)
 	for _, rule := range rules {
-		flattenedACLs = append(flattenedACLs, map[string]interface{}{
-			//"id": rule.ID,
-			"ip":              rule.IP,
+		flattenedRule := map[string]interface{}{
+			"id":              rule.ID,
 			"scaleway_ranges": rule.ScalewayRanges,
 			"description":     rule.Description,
-		})
+		}
+		if rule.IP != nil {
+			flattenedRule["ip"] = rule.IP.String()
+		}
+		flattenedACLs = append(flattenedACLs, flattenedRule)
 	}
 
 	return flattenedACLs
