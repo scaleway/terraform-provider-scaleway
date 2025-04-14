@@ -21,9 +21,9 @@ resource "scaleway_edge_services_dns_stage" "main" {
 ## Argument Reference
 
 - `pipeline_id` - (Required) The ID of the pipeline.
-- `backend_stage_id` - (Optional) The backend stage ID the DNS stage will be linked to.
-- `tls_stage_id` - (Optional) The TLS stage ID the DNS stage will be linked to.
-- `cache_stage_id` - (Optional) The cache stage ID the DNS stage will be linked to.
+- `backend_stage_id` - (Optional) The backend stage ID the DNS stage will be linked to. Only one of `backend_stage_id`, `cache_stage_id` and `tls_stage_id` should be specified.
+- `tls_stage_id` - (Optional) The TLS stage ID the DNS stage will be linked to. Only one of `backend_stage_id`, `cache_stage_id` and `tls_stage_id` should be specified.
+- `cache_stage_id` - (Optional) The cache stage ID the DNS stage will be linked to. Only one of `backend_stage_id`, `cache_stage_id` and `tls_stage_id` should be specified.
 - `fqdns` - (Optional) Fully Qualified Domain Name (in the format subdomain.example.com) to attach to the stage.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the DNS stage is associated with.
 
