@@ -343,7 +343,7 @@ func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func isRegistryDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_container_namespace" {
+			if rs.Type != namespaceResourceType {
 				continue
 			}
 

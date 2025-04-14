@@ -13,6 +13,8 @@ import (
 	containerchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container/testfuncs"
 )
 
+const namespaceResourceType = "scaleway_container_namespace"
+
 func TestAccContainer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -575,7 +577,7 @@ func isContainerPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc 
 func isContainerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_container_namespace" { //nolint:goconst
+			if rs.Type != namespaceResourceType {
 				continue
 			}
 
