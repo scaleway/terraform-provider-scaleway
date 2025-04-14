@@ -10,15 +10,15 @@ jobs:
     steps:
       - name: Get tag
         id: get_tag
-        run: echo "{TAG}=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       - name: Get version
         id: get_version
-        run: echo "{VERSION}=${TAG##v}" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${TAG##v}" >> $GITHUB_OUTPUT
         env:
           TAG: ${{ steps.get_tag.outputs.TAG }}
       - name: Prepare message
         id: get_message
-        run: echo "{MSG}=${{ secrets.SLACK_MESSAGE }}" >> $GITHUB_OUTPUT
+        run: echo "MSG=${{ secrets.SLACK_MESSAGE }}" >> $GITHUB_OUTPUT
         env:
           VERSION: ${{ steps.get_version.outputs.VERSION }}
           TAG: ${{ steps.get_tag.outputs.TAG }}

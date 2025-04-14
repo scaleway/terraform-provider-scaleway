@@ -52,9 +52,9 @@ type GetUnknownVolumeRequest struct {
 }
 
 type ResizeUnknownVolumeRequest struct {
+	Size     *scw.Size
 	VolumeID string
 	Zone     scw.Zone
-	Size     *scw.Size
 }
 
 type DeleteUnknownVolumeRequest struct {
