@@ -35,6 +35,8 @@ resource "scaleway_edge_services_tls_stage" "main" {
 - `pipeline_id` - (Required) The ID of the pipeline.
 - `backend_stage_id` - (Optional) The backend stage ID the TLS stage will be linked to.
 - `cache_stage_id` - (Optional) The cache stage ID the TLS stage will be linked to.
+- `route_stage_id` - (Optional) The route stage ID the TLS stage will be linked to.
+- `waf_stage_id` - (Optional) The WAF stage ID the TLS stage will be linked to.
 - `managed_certificate` - (Optional) Set to true when Scaleway generates and manages a Let's Encrypt certificate for the TLS stage/custom endpoint.
 - `secrets` - (Optional) The TLS secrets.
     - `bucket_name` - The ID of the secret.
