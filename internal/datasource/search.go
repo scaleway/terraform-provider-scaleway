@@ -60,8 +60,8 @@ func notFound(err error) bool {
 }
 
 type TooManyResultsError struct {
-	Count       int
 	LastRequest interface{}
+	Count       int
 }
 
 func (e *TooManyResultsError) Error() string {

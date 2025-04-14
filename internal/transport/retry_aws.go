@@ -56,9 +56,9 @@ func retryWhen[T any](ctx context.Context, config *RetryWhenConfig[T], shouldRet
 }
 
 type RetryWhenConfig[T any] struct {
+	Function func() (T, error)
 	Timeout  time.Duration
 	Interval time.Duration
-	Function func() (T, error)
 }
 
 var ErrRetryWhenTimeout = errors.New("timeout reached")

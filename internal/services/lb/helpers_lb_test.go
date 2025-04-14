@@ -11,9 +11,9 @@ import (
 
 func TestIsEqualPrivateNetwork(t *testing.T) {
 	tests := []struct {
-		name     string
 		A        *lbSDK.PrivateNetwork
 		B        *lbSDK.PrivateNetwork
+		name     string
 		expected bool
 	}{
 		{
