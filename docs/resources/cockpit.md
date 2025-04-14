@@ -73,7 +73,8 @@ resource "grafana_folder" "test_folder" {
 ## Argument Reference
 
 - `project_id` - (Defaults to the Project specified in the [provider's configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
-- `plan` - (Optional) Name of the plan to use. Available plans are: free, premium, and custom.
+- `plan` - (Deprecated) Name of the plan to use. Available plans are: free, premium, and custom.
+~> **Important:** The plan field is deprecated. Any modification or selection will have no effect.
 
 ## Attributes Reference
 
