@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
+	"strings"
 )
 
 func DataEasyPartitioning() *schema.Resource {
@@ -50,83 +51,6 @@ func DataEasyPartitioning() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The partitioning schema in json format",
-			},
-			"disks": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"device": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"partitions": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"label": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"number": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"size": {
-										Type:     schema.TypeString, // scw.Size implements String()
-										Computed: true,
-									},
-									"use_all_available_space": {
-										Type:     schema.TypeBool,
-										Computed: true,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			"raids": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"level": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"devices": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-					},
-				},
-			},
-			"filesystems": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"device": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"format": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"mountpoint": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
 			},
 		},
 	}
@@ -180,6 +104,7 @@ func addExtraPartition(mountpoint string, newDisksSchema []*baremetal.SchemaDisk
 		raidDevices = append(raidDevices, device)
 		deviceIndex--
 	}
+	defaultPartitionSchema.Disks = newDisksSchema
 
 	filesystem := &baremetal.SchemaFilesystem{
 		Device:     "/dev/md2",
@@ -188,13 +113,12 @@ func addExtraPartition(mountpoint string, newDisksSchema []*baremetal.SchemaDisk
 	}
 	defaultPartitionSchema.Filesystems = append(defaultPartitionSchema.Filesystems, filesystem)
 
-	raid := &baremetal.SchemaRAID{
-		Name:    "/dev/md2",
-		Level:   baremetal.SchemaRAIDLevelRaidLevel1,
-		Devices: raidDevices,
-	}
-	defaultPartitionSchema.Raids = append(defaultPartitionSchema.Raids, raid)
-	defaultPartitionSchema.Disks = newDisksSchema
+	//raid := &baremetal.SchemaRAID{
+	//	Name:    "/dev/md2",
+	//	Level:   baremetal.SchemaRAIDLevelRaidLevel1,
+	//	Devices: raidDevices,
+	//}
+	//defaultPartitionSchema.Raids = append(defaultPartitionSchema.Raids, raid)
 
 	return defaultPartitionSchema
 }
@@ -213,64 +137,6 @@ func manageRootSize(originalDisks []*baremetal.SchemaDisk, withSwap bool, withEx
 			}
 		}
 	}
-}
-
-func flattenDisksSchema(disks []*baremetal.SchemaDisk) []map[string]interface{} {
-	var out []map[string]interface{}
-	for _, d := range disks {
-		if d == nil {
-			continue
-		}
-
-		parts := make([]map[string]interface{}, 0, len(d.Partitions))
-		for _, p := range d.Partitions {
-			if p == nil {
-				continue
-			}
-			parts = append(parts, map[string]interface{}{
-				"label":                   string(p.Label),
-				"number":                  int(p.Number),
-				"size":                    p.Size.String(),
-				"use_all_available_space": p.UseAllAvailableSpace,
-			})
-		}
-
-		out = append(out, map[string]interface{}{
-			"device":     d.Device,
-			"partitions": parts,
-		})
-	}
-	return out
-}
-
-func flattenRaids(raids []*baremetal.SchemaRAID) []map[string]interface{} {
-	var out []map[string]interface{}
-	for _, r := range raids {
-		if r == nil {
-			continue
-		}
-		out = append(out, map[string]interface{}{
-			"name":    r.Name,
-			"level":   string(r.Level),
-			"devices": r.Devices,
-		})
-	}
-	return out
-}
-
-func flattenFilesystems(fsList []*baremetal.SchemaFilesystem) []map[string]interface{} {
-	var out []map[string]interface{}
-	for _, fs := range fsList {
-		if fs == nil {
-			continue
-		}
-		out = append(out, map[string]interface{}{
-			"device":     fs.Device,
-			"format":     string(fs.Format),
-			"mountpoint": fs.Mountpoint,
-		})
-	}
-	return out
 }
 
 func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -324,9 +190,9 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 		jsonSchema, _ := json.Marshal(defaultPartitioningSchema)
 		d.SetId(fmt.Sprintf("%s-%s", offerID, osID))
 		_ = d.Set("json_partition", string(jsonSchema))
-		_ = d.Set("disks", flattenDisksSchema(defaultPartitioningSchema.Disks))
-		_ = d.Set("raids", flattenRaids(defaultPartitioningSchema.Raids))
-		_ = d.Set("filesystems", flattenFilesystems(defaultPartitioningSchema.Filesystems))
+		//_ = d.Set("disks", flattenDisksSchema(defaultPartitioningSchema.Disks))
+		//_ = d.Set("raids", flattenRaids(defaultPartitioningSchema.Raids))
+		//_ = d.Set("filesystems", flattenFilesystems(defaultPartitioningSchema.Filesystems))
 
 		return nil
 	}
@@ -336,9 +202,7 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	var newDiskSchema []*baremetal.SchemaDisk
 	if !swap {
 		newDiskSchema = removeSwap(defaultPartitioningSchema.Disks, extraPart)
-	}
-
-	if newDiskSchema == nil {
+	} else {
 		newDiskSchema = defaultPartitioningSchema.Disks
 	}
 
@@ -346,6 +210,8 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	if extraPart {
 		mountpoint := d.Get("ext_4_mountpoint").(string)
 		newCustomPartition = addExtraPartition(mountpoint, newDiskSchema, defaultPartitioningSchema)
+	} else {
+		newCustomPartition = defaultPartitioningSchema
 	}
 
 	err = api.ValidatePartitioningSchema(&baremetal.ValidatePartitioningSchemaRequest{
@@ -365,10 +231,12 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	d.SetId(fmt.Sprintf("%s-%s", offerID, osID))
-	_ = d.Set("json_partition", string(jsonSchema))
-	_ = d.Set("disks", flattenDisksSchema(newCustomPartition.Disks))
-	_ = d.Set("raids", flattenRaids(newCustomPartition.Raids))
-	_ = d.Set("filesystems", flattenFilesystems(newCustomPartition.Filesystems))
+	jsonSchemaStr := string(jsonSchema)
+	strings.ReplaceAll(jsonSchemaStr, "\"", "\\\"")
+	_ = d.Set("json_partition", jsonSchemaStr)
+	//_ = d.Set("disks", flattenDisksSchema(newCustomPartition.Disks))
+	//_ = d.Set("raids", flattenRaids(newCustomPartition.Raids))
+	//_ = d.Set("filesystems", flattenFilesystems(newCustomPartition.Filesystems))
 
 	return nil
 }
