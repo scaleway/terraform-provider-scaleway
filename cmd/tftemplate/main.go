@@ -6,9 +6,8 @@ import (
 	"log"
 	"text/template"
 
-	"tftemplate/models"
-
 	"github.com/AlecAivazis/survey/v2"
+	"tftemplate/models"
 )
 
 var (
