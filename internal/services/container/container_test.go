@@ -575,7 +575,7 @@ func isContainerPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc 
 func isContainerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_container_namespace" { //nolint:goconst
+			if rs.Type != containerNamespaceResource {
 				continue
 			}
 
