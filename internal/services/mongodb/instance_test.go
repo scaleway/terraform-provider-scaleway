@@ -151,6 +151,7 @@ func TestAccMongoDBInstance_UpdateNameTagsUser(t *testing.T) {
 
 func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 	t.Skip("TestAccMongoDBInstance_FromSnapshot skipped: waiting for stability fix from database team.")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
