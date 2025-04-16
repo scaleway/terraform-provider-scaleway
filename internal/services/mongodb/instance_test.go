@@ -234,7 +234,6 @@ func TestAccMongoDBInstance_WithPrivateNetwork(t *testing.T) {
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
-  						depends_on = [scaleway_vpc_private_network.pn01]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -300,8 +299,6 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
-  						depends_on = [scaleway_vpc_private_network.pn01, scaleway_vpc_private_network.pn02]
-
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -334,7 +331,6 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.pn02.id}"
 						}
-  						depends_on = [scaleway_vpc_private_network.pn01, scaleway_vpc_private_network.pn02]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -364,7 +360,6 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 						node_number = 1
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-  						depends_on = [scaleway_vpc_private_network.pn01, scaleway_vpc_private_network.pn02]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

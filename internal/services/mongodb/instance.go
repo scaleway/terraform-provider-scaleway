@@ -550,6 +550,26 @@ func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
+	instance, err := waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for _, endpoint := range instance.Endpoints {
+		if endpoint.PrivateNetwork != nil {
+			err := mongodbAPI.DeleteEndpoint(
+				&mongodb.DeleteEndpointRequest{
+					EndpointID: endpoint.ID,
+					Region:     region,
+				},
+				scw.WithContext(ctx),
+			)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
@@ -569,6 +589,5 @@ func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId("")
-
 	return nil
 }
