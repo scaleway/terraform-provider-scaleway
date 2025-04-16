@@ -15,6 +15,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+const (
+	partitionSize = 20000000000
+)
+
 func DataEasyPartitioning() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataEasyPartitioningRead,
@@ -43,7 +47,7 @@ func DataEasyPartitioning() *schema.Resource {
 				Default:     true,
 				Description: "set extra ext_4 partition",
 			},
-			"ext_4_mountpoint": { // TODO change to mount point
+			"ext_4_mountpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "/hello",
@@ -51,7 +55,7 @@ func DataEasyPartitioning() *schema.Resource {
 			},
 			"json_partition": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The partitioning schema in json format",
 			},
 		},
@@ -180,7 +184,7 @@ func removeSwap(originalDisks []*baremetal.SchemaDisk, withExtraPartition bool) 
 					p.Size = 0
 					p.UseAllAvailableSpace = true
 				} else {
-					p.Size = 20000000000
+					p.Size = partitionSize
 				}
 			}
 
@@ -232,7 +236,7 @@ func manageRootSize(originalDisks []*baremetal.SchemaDisk, withSwap bool, withEx
 				}
 
 				if withExtraPartition {
-					partition.Size = 20000000000
+					partition.Size = partitionSize
 				}
 			}
 		}

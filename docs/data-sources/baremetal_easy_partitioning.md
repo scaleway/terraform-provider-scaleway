@@ -1,9 +1,9 @@
 ---
 subcategory: "Elastic Metal"
-page_title: "Scaleway: scaleway_easy_partitioningr"
+page_title: "Scaleway: scaleway_baremetal_easy_partitioning"
 ---
 
-# scaleway_easy_partitioning
+# scaleway_baremetal_easy_partitioning
 
 The scaleway_easy_partitioning data source allows you to retrieve a ready-to-use partitioning schema for a BareMetal server. This schema can be used for custom installations with optional swap and extra partitions.
 
