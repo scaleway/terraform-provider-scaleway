@@ -120,23 +120,11 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	}
 
-	manageRootSize(defaultPartitioningSchema.Disks, swap, extraPart)
+	resizeRootPartition(defaultPartitioningSchema.Disks, swap, extraPart)
+	defaultPartitioningSchema.Disks = handleSwapPartitions(defaultPartitioningSchema.Disks, extraPart, swap)
 
-	var newDiskSchema []*baremetal.SchemaDisk
-	if !swap {
-		newDiskSchema = removeSwap(defaultPartitioningSchema.Disks, extraPart)
-	} else {
-		newDiskSchema = defaultPartitioningSchema.Disks
-	}
-
-	var newCustomPartition *baremetal.Schema
-
-	if extraPart {
-		mountpoint := d.Get("ext_4_mountpoint").(string)
-		newCustomPartition = addExtraPartition(mountpoint, newDiskSchema, defaultPartitioningSchema)
-	} else {
-		newCustomPartition = defaultPartitioningSchema
-	}
+	mountpoint := d.Get("ext_4_mountpoint").(string)
+	addExtraExt4Partition(mountpoint, defaultPartitioningSchema, extraPart)
 
 	err = api.ValidatePartitioningSchema(&baremetal.ValidatePartitioningSchemaRequest{
 		Zone:               fallBackZone,
@@ -148,7 +136,7 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	jsonSchema, err := json.Marshal(newCustomPartition)
+	jsonSchema, err := json.Marshal(defaultPartitioningSchema)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -162,13 +150,11 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func removeSwap(originalDisks []*baremetal.SchemaDisk, withExtraPartition bool) []*baremetal.SchemaDisk {
-	lenOfDisks := len(originalDisks)
-	if !withExtraPartition {
-		lenOfDisks = len(originalDisks) - 1
+func handleSwapPartitions(originalDisks []*baremetal.SchemaDisk, withExtraPartition bool, swap bool) []*baremetal.SchemaDisk {
+	if swap {
+		return originalDisks
 	}
-
-	result := make([]*baremetal.SchemaDisk, 0, lenOfDisks)
+	result := make([]*baremetal.SchemaDisk, 0)
 
 	for _, disk := range originalDisks {
 		i := 1
@@ -203,8 +189,9 @@ func removeSwap(originalDisks []*baremetal.SchemaDisk, withExtraPartition bool) 
 	return result
 }
 
-func addExtraPartition(mountpoint string, newDisksSchema []*baremetal.SchemaDisk, defaultPartitionSchema *baremetal.Schema) *baremetal.Schema {
-	for _, disk := range newDisksSchema {
+func addExtraExt4Partition(mountpoint string, defaultPartitionSchema *baremetal.Schema, extraPart bool) {
+
+	for _, disk := range defaultPartitionSchema.Disks {
 		partIndex := uint32(len(disk.Partitions)) + 1
 		data := &baremetal.SchemaPartition{
 			Label:                baremetal.SchemaPartitionLabel("data"),
@@ -215,18 +202,15 @@ func addExtraPartition(mountpoint string, newDisksSchema []*baremetal.SchemaDisk
 		disk.Partitions = append(disk.Partitions, data)
 	}
 
-	defaultPartitionSchema.Disks = newDisksSchema
 	filesystem := &baremetal.SchemaFilesystem{
 		Device:     "/dev/md2",
 		Format:     "ext4",
 		Mountpoint: mountpoint,
 	}
 	defaultPartitionSchema.Filesystems = append(defaultPartitionSchema.Filesystems, filesystem)
-
-	return defaultPartitionSchema
 }
 
-func manageRootSize(originalDisks []*baremetal.SchemaDisk, withSwap bool, withExtraPartition bool) {
+func resizeRootPartition(originalDisks []*baremetal.SchemaDisk, withSwap bool, withExtraPartition bool) {
 	for _, disk := range originalDisks {
 		for _, partition := range disk.Partitions {
 			if partition.Label == "root" {
