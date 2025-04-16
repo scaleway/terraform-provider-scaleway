@@ -161,8 +161,8 @@ func TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	sshKeyName := "TestAccEasyPartitioningDataSource_Basic"
-	serverName := "TestAccEasyPartitioningDataSource_Basic"
+	sshKeyName := "TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart"
+	serverName := "TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
