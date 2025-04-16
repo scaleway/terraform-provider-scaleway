@@ -13,7 +13,6 @@ import (
 	containerchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container/testfuncs"
 )
 
-const namespaceResourceType = "scaleway_container_namespace"
 
 func TestAccContainer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
