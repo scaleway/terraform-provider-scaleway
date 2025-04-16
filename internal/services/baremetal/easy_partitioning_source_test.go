@@ -57,7 +57,7 @@ func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
 					data "scaleway_baremetal_easy_partitioning" "test" {
 						offer_id          = data.scaleway_baremetal_offer.my_offer.offer_id
 						os_id             = data.scaleway_baremetal_os.my_os.os_id
-						swap              = false
+						swap              = true
 						ext_4_mountpoint  = "%s"
 					}
 
@@ -78,6 +78,140 @@ func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
 					sshKeyName,
 					SSHKeyBaremetal,
 					mountpoint,
+					serverName,
+					Zone,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_easy_partitioning.test"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccEasyPartitioningDataSource_WithoutExtraPart(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	sshKeyName := "TestAccEasyPartitioningDataSource_WithoutExtraPart"
+	serverName := "TestAccEasyPartitioningDataSource_WithoutExtraPart"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			baremetalchecks.CheckServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "%s"
+						name = "%s"
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+						zone    = "%s"
+						name    = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					data "scaleway_baremetal_easy_partitioning" "test" {
+						offer_id          = data.scaleway_baremetal_offer.my_offer.offer_id
+						os_id             = data.scaleway_baremetal_os.my_os.os_id
+						swap              = true
+						extra_partition  = false
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+						name         = "%s"
+						zone         = "%s"
+						description  = "test a description"
+						offer        = data.scaleway_baremetal_offer.my_offer.offer_id
+						os           = data.scaleway_baremetal_os.my_os.os_id
+						partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+						tags         = ["terraform-test", "scaleway_baremetal_server", "minimal", "edited"]
+						ssh_key_ids  = [scaleway_iam_ssh_key.main.id]
+					}
+				`,
+					Zone,
+					offerNameEasyPartitioning,
+					Zone,
+					sshKeyName,
+					SSHKeyBaremetal,
+					serverName,
+					Zone,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_easy_partitioning.test"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	sshKeyName := "TestAccEasyPartitioningDataSource_Basic"
+	serverName := "TestAccEasyPartitioningDataSource_Basic"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			baremetalchecks.CheckServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "%s"
+						name = "%s"
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+						zone    = "%s"
+						name    = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					data "scaleway_baremetal_easy_partitioning" "test" {
+						offer_id          = data.scaleway_baremetal_offer.my_offer.offer_id
+						os_id             = data.scaleway_baremetal_os.my_os.os_id
+						swap              = false
+						extra_partition  = false
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+						name         = "%s"
+						zone         = "%s"
+						description  = "test a description"
+						offer        = data.scaleway_baremetal_offer.my_offer.offer_id
+						os           = data.scaleway_baremetal_os.my_os.os_id
+						partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+						tags         = ["terraform-test", "scaleway_baremetal_server", "minimal", "edited"]
+						ssh_key_ids  = [scaleway_iam_ssh_key.main.id]
+					}
+				`,
+					Zone,
+					offerNameEasyPartitioning,
+					Zone,
+					sshKeyName,
+					SSHKeyBaremetal,
 					serverName,
 					Zone,
 				),
@@ -271,7 +405,15 @@ func TestAccEasyPartitioningDataSource_IncompatibleOffer(t *testing.T) {
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
-					}`, Zone, incompatibleOfferName, Zone, SSHKeyName, SSHKeyBaremetal, mountpoint, name, Zone),
+					}`, Zone,
+					incompatibleOfferName,
+					Zone,
+					SSHKeyName,
+					SSHKeyBaremetal,
+					mountpoint,
+					name,
+					Zone,
+				),
 				ExpectError: regexp.MustCompile("Custom Partitioning not supported"),
 			},
 		},

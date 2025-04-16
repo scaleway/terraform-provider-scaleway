@@ -50,7 +50,7 @@ func DataEasyPartitioning() *schema.Resource {
 			"ext_4_mountpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "/hello",
+				Default:     "/data",
 				Description: "Mount point must be an absolute path with alphanumeric characters and underscores",
 			},
 			"json_partition": {
@@ -126,6 +126,11 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	mountpoint := d.Get("ext_4_mountpoint").(string)
 	addExtraExt4Partition(mountpoint, defaultPartitioningSchema, extraPart)
 
+	if !extraPart && !swap {
+		defaultPartitioningSchema.Filesystems = defaultPartitioningSchema.Filesystems[:len(defaultPartitioningSchema.Filesystems)-1]
+		defaultPartitioningSchema.Raids = defaultPartitioningSchema.Raids[:len(defaultPartitioningSchema.Raids)-1]
+	}
+
 	err = api.ValidatePartitioningSchema(&baremetal.ValidatePartitioningSchemaRequest{
 		Zone:               fallBackZone,
 		OfferID:            offerID.ID,
@@ -154,6 +159,7 @@ func handleSwapPartitions(originalDisks []*baremetal.SchemaDisk, withExtraPartit
 	if swap {
 		return originalDisks
 	}
+
 	result := make([]*baremetal.SchemaDisk, 0)
 
 	for _, disk := range originalDisks {
@@ -190,6 +196,9 @@ func handleSwapPartitions(originalDisks []*baremetal.SchemaDisk, withExtraPartit
 }
 
 func addExtraExt4Partition(mountpoint string, defaultPartitionSchema *baremetal.Schema, extraPart bool) {
+	if !extraPart {
+		return
+	}
 
 	for _, disk := range defaultPartitionSchema.Disks {
 		partIndex := uint32(len(disk.Partitions)) + 1
