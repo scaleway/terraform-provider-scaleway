@@ -29,10 +29,25 @@ func ResourceCacheStage() *schema.Resource {
 				Description: "The ID of the pipeline",
 			},
 			"backend_stage_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The backend stage ID the cache stage will be linked to",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The backend stage ID the cache stage will be linked to",
+				ConflictsWith: []string{"waf_stage_id", "route_stage_id"},
+			},
+			"waf_stage_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The WAF stage ID the cache stage will be linked to",
+				ConflictsWith: []string{"backend_stage_id", "route_stage_id"},
+			},
+			"route_stage_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The route stage ID the cache stage will be linked to",
+				ConflictsWith: []string{"backend_stage_id", "waf_stage_id"},
 			},
 			"fallback_ttl": {
 				Type:        schema.TypeInt,
@@ -92,6 +107,8 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m int
 	cacheStage, err := api.CreateCacheStage(&edgeservices.CreateCacheStageRequest{
 		PipelineID:     d.Get("pipeline_id").(string),
 		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
+		RouteStageID:   types.ExpandStringPtr(d.Get("route_stage_id").(string)),
+		WafStageID:     types.ExpandStringPtr(d.Get("waf_stage_id").(string)),
 		FallbackTTL:    &scw.Duration{Seconds: int64(d.Get("fallback_ttl").(int))},
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -123,6 +140,8 @@ func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("created_at", types.FlattenTime(cacheStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(cacheStage.UpdatedAt))
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(cacheStage.BackendStageID))
+	_ = d.Set("route_stage_id", types.FlattenStringPtr(cacheStage.RouteStageID))
+	_ = d.Set("waf_stage_id", types.FlattenStringPtr(cacheStage.WafStageID))
 	_ = d.Set("fallback_ttl", cacheStage.FallbackTTL.Seconds)
 
 	return nil
@@ -139,6 +158,16 @@ func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	if d.HasChange("backend_stage_id") {
 		updateRequest.BackendStageID = types.ExpandUpdatedStringPtr(d.Get("backend_stage_id"))
+		hasChanged = true
+	}
+
+	if d.HasChange("route_stage_id") {
+		updateRequest.RouteStageID = types.ExpandUpdatedStringPtr(d.Get("route_stage_id"))
+		hasChanged = true
+	}
+
+	if d.HasChange("waf_stage_id") {
+		updateRequest.WafStageID = types.ExpandUpdatedStringPtr(d.Get("waf_stage_id"))
 		hasChanged = true
 	}
 

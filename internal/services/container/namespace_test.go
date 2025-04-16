@@ -14,6 +14,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
 )
 
+const containerNamespaceResource = "scaleway_container_namespace"
+
 func TestAccNamespace_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -313,7 +315,7 @@ func isNamespacePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc 
 func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_container_namespace" {
+			if rs.Type != containerNamespaceResource {
 				continue
 			}
 
@@ -343,7 +345,7 @@ func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func isRegistryDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != namespaceResourceType {
+			if rs.Type != containerNamespaceResource {
 				continue
 			}
 

@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -12,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -90,6 +92,53 @@ func ResourceDefinition() *schema.Resource {
 			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
+			"secret_reference": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "A reference to a Secret Manager secret.",
+				Set: func(v interface{}) int {
+					secret := v.(map[string]interface{})
+					if secret["environment"] != "" {
+						return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["environment"].(string))
+					}
+
+					return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["file"].(string))
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"secret_id": {
+							Type:                  schema.TypeString,
+							Description:           "The secret unique identifier, it could be formatted as region/UUID or UUID. In case the region is passed, it must be the same as the job definition.",
+							Required:              true,
+							DiffSuppressOnRefresh: true,
+							DiffSuppressFunc:      dsf.Locality,
+						},
+						"secret_reference_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The secret reference UUID",
+						},
+						"secret_version": {
+							Type:        schema.TypeString,
+							Description: "The secret version.",
+							Default:     "latest",
+							Optional:    true,
+						},
+						"file": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "The absolute file path where the secret will be mounted.",
+							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(/[^/]+)+$`), "must be an absolute path to the file"),
+						},
+						"environment": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "An environment variable containing the secret value.",
+							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Z|0-9]+(_[A-Z|0-9]+)*$`), "environment variable must be composed of uppercase letters separated by an underscore"),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -132,6 +181,12 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	if rawSecretReference, ok := d.GetOk("secret_reference"); ok {
+		if err := CreateJobDefinitionSecret(ctx, api, expandJobDefinitionSecret(rawSecretReference), region, definition.ID); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId(regional.NewIDString(region, definition.ID))
 
 	return ResourceJobDefinitionRead(ctx, d, m)
@@ -157,6 +212,14 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
+	rawSecretRefs, err := api.ListJobDefinitionSecrets(&jobs.ListJobDefinitionSecretsRequest{
+		Region:          region,
+		JobDefinitionID: id,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", definition.Name)
 	_ = d.Set("cpu_limit", int(definition.CPULimit))
 	_ = d.Set("memory_limit", int(definition.MemoryLimit))
@@ -168,6 +231,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m in
 	_ = d.Set("cron", flattenJobDefinitionCron(definition.CronSchedule))
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
+	_ = d.Set("secret_reference", flattenJobDefinitionSecret(rawSecretRefs.Secrets))
 
 	return nil
 }
@@ -229,6 +293,35 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("cron") {
 		req.CronSchedule = expandJobDefinitionCron(d.Get("cron")).ToUpdateRequest()
+	}
+
+	if d.HasChange("secret_reference") {
+		oldRawSecretRefs, newRawSecretRefs := d.GetChange("secret_reference")
+
+		oldSecretRefs := expandJobDefinitionSecret(oldRawSecretRefs)
+		newSecretRefs := expandJobDefinitionSecret(newRawSecretRefs)
+
+		toCreate, toDelete, err := DiffJobDefinitionSecrets(oldSecretRefs, newSecretRefs)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for _, secret := range toDelete {
+			deleteReq := &jobs.DeleteJobDefinitionSecretRequest{
+				Region:          region,
+				JobDefinitionID: id,
+				SecretID:        secret.SecretReferenceID,
+			}
+			if err := api.DeleteJobDefinitionSecret(deleteReq, scw.WithContext(ctx)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if len(toCreate) > 0 {
+			if err := CreateJobDefinitionSecret(ctx, api, toCreate, region, id); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if _, err := api.UpdateJobDefinition(req, scw.WithContext(ctx)); err != nil {

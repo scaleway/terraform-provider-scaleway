@@ -30,16 +30,32 @@ func ResourceTLSStage() *schema.Resource {
 				Description: "The ID of the pipeline",
 			},
 			"backend_stage_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The backend stage ID the TLS stage will be linked to",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The backend stage ID the TLS stage will be linked to",
+				ConflictsWith: []string{"cache_stage_id", "route_stage_id", "waf_stage_id"},
 			},
 			"cache_stage_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The cache stage ID the TLS stage will be linked to",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The cache stage ID the TLS stage will be linked to",
+				ConflictsWith: []string{"backend_stage_id", "route_stage_id", "waf_stage_id"},
+			},
+			"waf_stage_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The WAF stage ID the TLS stage will be linked to",
+				ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "route_stage_id"},
+			},
+			"route_stage_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The route stage ID the TLS stage will be linked to",
+				ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "waf_stage_id"},
 			},
 			"managed_certificate": {
 				Type:        schema.TypeBool,
@@ -94,6 +110,8 @@ func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m inter
 		PipelineID:         d.Get("pipeline_id").(string),
 		BackendStageID:     types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 		CacheStageID:       types.ExpandStringPtr(d.Get("cache_stage_id").(string)),
+		RouteStageID:       types.ExpandStringPtr(d.Get("route_stage_id").(string)),
+		WafStageID:         types.ExpandStringPtr(d.Get("waf_stage_id").(string)),
 		ManagedCertificate: types.ExpandBoolPtr(d.Get("managed_certificate").(bool)),
 		Secrets:            expandTLSSecrets(d.Get("secrets"), region),
 	}, scw.WithContext(ctx))
@@ -124,6 +142,8 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(tlsStage.BackendStageID))
 	_ = d.Set("cache_stage_id", types.FlattenStringPtr(tlsStage.CacheStageID))
+	_ = d.Set("route_stage_id", types.FlattenStringPtr(tlsStage.RouteStageID))
+	_ = d.Set("waf_stage_id", types.FlattenStringPtr(tlsStage.WafStageID))
 	_ = d.Set("pipeline_id", tlsStage.PipelineID)
 	_ = d.Set("managed_certificate", tlsStage.ManagedCertificate)
 	_ = d.Set("secrets", flattenTLSSecrets(tlsStage.Secrets))
@@ -153,6 +173,16 @@ func ResourceTLSStageUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if d.HasChange("cache_stage_id") {
 		updateRequest.CacheStageID = types.ExpandUpdatedStringPtr(d.Get("cache_stage_id"))
+		hasChanged = true
+	}
+
+	if d.HasChange("route_stage_id") {
+		updateRequest.RouteStageID = types.ExpandUpdatedStringPtr(d.Get("route_stage_id"))
+		hasChanged = true
+	}
+
+	if d.HasChange("waf_stage_id") {
+		updateRequest.WafStageID = types.ExpandUpdatedStringPtr(d.Get("waf_stage_id"))
 		hasChanged = true
 	}
 
