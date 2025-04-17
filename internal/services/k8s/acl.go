@@ -47,7 +47,7 @@ func ResourceACL() *schema.Resource {
 				Type:         schema.TypeBool,
 				Optional:     true,
 				Default:      false,
-				Description:  "If true, no IP will be allowed",
+				Description:  "If true, no IP will be allowed and the cluster will be fully isolated",
 				ExactlyOneOf: []string{"acl_rules"},
 			},
 			"acl_rules": {
@@ -237,7 +237,7 @@ func expandACL(data []interface{}) ([]*k8s.ACLRuleRequest, error) {
 		r := rule.(map[string]interface{})
 		expandedRule := &k8s.ACLRuleRequest{}
 
-		if ipRaw, ipSet := r["ip"]; ipSet && ipRaw != "" {
+		if ipRaw, ok := r["ip"]; ok && ipRaw != "" {
 			ip, err := types.ExpandIPNet(ipRaw.(string))
 			if err != nil {
 				return nil, err
@@ -246,11 +246,11 @@ func expandACL(data []interface{}) ([]*k8s.ACLRuleRequest, error) {
 			expandedRule.IP = &ip
 		}
 
-		if scwRangesRaw, scwRangesSet := r["scaleway_ranges"]; scwRangesSet && scwRangesRaw.(bool) {
+		if scwRangesRaw, ok := r["scaleway_ranges"]; ok && scwRangesRaw.(bool) {
 			expandedRule.ScalewayRanges = scw.BoolPtr(true)
 		}
 
-		if descriptionRaw, descriptionSet := r["description"]; descriptionSet && descriptionRaw.(string) != "" {
+		if descriptionRaw, ok := r["description"]; ok && descriptionRaw.(string) != "" {
 			expandedRule.Description = descriptionRaw.(string)
 		}
 

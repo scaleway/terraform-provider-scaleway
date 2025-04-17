@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_k8s_acl"
 # Resource: scaleway_k8s_acl
 
 Creates and manages Scaleway Kubernetes Cluster authorized IPs.
-For more information, please refer to the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/#path-access-control-list-add-new-acls)
+For more information, please refer to the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/#path-access-control-list-add-new-acls).
 
 ~> **Important:** When creating a Cluster, it comes with a default ACL rule allowing all ranges `0.0.0.0/0`.
 Defining custom ACLs with Terraform will overwrite this rule, but it will be recreated automatically when deleting the ACL resource.
@@ -62,7 +62,7 @@ resource "scaleway_k8s_acl" "acl_basic" {
 
 The following arguments are supported:
 
-- `cluster_id` - (Required) UUID of the Cluster. The ID of the cluster is also the ID of the ACL resource as there can only be one per cluster.
+- `cluster_id` - (Required) UUID of the cluster. The ID of the cluster is also the ID of the ACL resource, as there can only be one per cluster.
 
 ~> **Important:** Updates to `cluster_id` will recreate the ACL.
 
@@ -82,7 +82,7 @@ The `acl_rules` block supports:
 
 ~> **Important:** If the `ip` field is set, `scaleway_ranges` cannot be set to true in the same rule.
 
-- `scaleway_ranges` - (Optional) Allow access to cluster from all Scaleway ranges as defined in https://www.scaleway.com/en/docs/console/account/reference-content/scaleway-network-information/#ip-ranges-used-by-scaleway.
+- `scaleway_ranges` - (Optional) Allow access to cluster from all Scaleway ranges as defined in [Scaleway Network Information - IP ranges used by Scaleway](https://www.scaleway.com/en/docs/console/account/reference-content/scaleway-network-information/#ip-ranges-used-by-scaleway).
 Only one rule with this field set to true can be added.
 
 ~> **Important:** If the `scaleway_ranges` field is set to true, the `ip` field cannot be set on the same rule.
