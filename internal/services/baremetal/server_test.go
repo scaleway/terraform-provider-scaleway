@@ -228,7 +228,7 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),
-					testAccChechPartitioning(tt, "scaleway_baremetal_server.base", jsonConfigPartitioning),
+					testAccCheckPartitioning(tt, "scaleway_baremetal_server.base", jsonConfigPartitioning),
 					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
 				),
 			},
@@ -1157,7 +1157,7 @@ func testAccCheckBaremetalServerExists(tt *acctest.TestTools, n string) resource
 	}
 }
 
-func testAccChechPartitioning(tt *acctest.TestTools, n string, source string) resource.TestCheckFunc {
+func testAccCheckPartitioning(tt *acctest.TestTools, n string, source string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
