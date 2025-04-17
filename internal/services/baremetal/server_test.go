@@ -1031,8 +1031,9 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address", "data.scaleway_ipam_ips.base", "ips.0.address"),
-					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip02", "address", "data.scaleway_ipam_ips.base", "ips.1.address"),
+					testIPAMIPs(tt, "scaleway_ipam_ip", "data.scaleway_ipam_ips.base"),
+					//resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address", "data.scaleway_ipam_ips.base", "ips.0.address"),
+					//resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip02", "address", "data.scaleway_ipam_ips.base", "ips.1.address"),
 				),
 			},
 		},
@@ -1251,6 +1252,41 @@ func testAccCheckBaremetalServerHasPrivateNetwork(tt *acctest.TestTools, n strin
 
 		if len(listPrivateNetworks.ServerPrivateNetworks) == 0 {
 			return fmt.Errorf("server (%s) has no private networks attached to it", rs.Primary.ID)
+		}
+
+		return nil
+	}
+}
+
+func testIPAMIPs(_ *acctest.TestTools, ipamResourcePrefix, ipamDataSource string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ipamData, ok := s.RootModule().Resources[ipamDataSource]
+		if !ok {
+			return fmt.Errorf("not found: %s", ipamDataSource)
+		}
+
+		ips := ipamData.Primary.Attributes
+		expectedIPs := make(map[string]bool)
+
+		for i := 0; ; i++ {
+			key := fmt.Sprintf("ips.%d.address", i)
+			ip, ok := ips[key]
+			if !ok {
+				break
+			}
+			expectedIPs[ip] = true
+		}
+
+		for y := 1; ; y++ {
+			resourceName := fmt.Sprintf("%s.ip0%d", ipamResourcePrefix, y)
+			rs, ok := s.RootModule().Resources[resourceName]
+			if !ok {
+				break
+			}
+			ip := rs.Primary.Attributes["address"]
+			if !expectedIPs[ip] {
+				return fmt.Errorf("IP %q from resource %s not found in data source %s", ip, resourceName, ipamDataSource)
+			}
 		}
 
 		return nil
