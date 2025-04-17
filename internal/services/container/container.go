@@ -75,7 +75,9 @@ func ResourceContainer() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
 				},
-				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+				ValidateDiagFunc:      validation.MapKeyLenBetween(0, 100),
+				DiffSuppressFunc:      dsf.CompareArgon2idPasswordAndHash,
+				DiffSuppressOnRefresh: true,
 			},
 			"min_scale": {
 				Type:        schema.TypeInt,
@@ -358,6 +360,7 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("scaling_option", flattenScalingOption(co.ScalingOption))
 	_ = d.Set("region", co.Region.String())
 	_ = d.Set("local_storage_limit", int(co.LocalStorageLimit))
+	_ = d.Set("secret_environment_variables", flattenContainerSecrets(co.SecretEnvironmentVariables))
 
 	return nil
 }
@@ -393,7 +396,8 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if d.HasChanges("secret_environment_variables") {
-		req.SecretEnvironmentVariables = expandContainerSecrets(d.Get("secret_environment_variables"))
+		oldEnv, newEnv := d.GetChange("secret_environment_variables")
+		req.SecretEnvironmentVariables = FilterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
 	}
 
 	if d.HasChanges("min_scale") {

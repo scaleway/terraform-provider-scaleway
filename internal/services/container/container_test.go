@@ -1,9 +1,11 @@
 package container_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
+	"github.com/alexedwards/argon2id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
@@ -11,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	containerchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container/testfuncs"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccContainer_Basic(t *testing.T) {
@@ -142,6 +145,7 @@ func TestAccContainer_Env(t *testing.T) {
 						}
 						secret_environment_variables = {
 							"test_secret" = "test_secret"
+							"first_secret" = "first_secret"
 						}
 					}
 				`,
@@ -150,7 +154,8 @@ func TestAccContainer_Env(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 					acctest.CheckResourceAttrUUID("scaleway_container.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.test", "test"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.first_secret", "first_secret"),
 				),
 			},
 			{
@@ -165,6 +170,7 @@ func TestAccContainer_Env(t *testing.T) {
 						}
 						secret_environment_variables = {
 							"foo_secret" = "bar_secret"
+							"test_secret" = "updated_secret"
 						}
 					}
 				`,
@@ -173,7 +179,9 @@ func TestAccContainer_Env(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 					acctest.CheckResourceAttrUUID("scaleway_container.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.foo", "bar"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "secret_environment_variables.foo_secret", "bar_secret"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.foo_secret", "bar_secret"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.test_secret", "updated_secret"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "secret_environment_variables.first_secret"),
 				),
 			},
 			{
@@ -600,4 +608,47 @@ func isContainerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func passwordMatchHash(parent string, key string, password string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[parent]
+		if !ok {
+			return fmt.Errorf("resource container not found: %s", parent)
+		}
+
+		match, err := argon2id.ComparePasswordAndHash(password, rs.Primary.Attributes[key])
+		if err != nil {
+			return err
+		}
+
+		if !match {
+			return errors.New("password and hash do not match")
+		}
+
+		return nil
+	}
+}
+
+func TestFilterSecretEnvsToPatch(t *testing.T) {
+	testSecret := "test_secret"
+	secretToDelete := "secret_to_delete"
+	updatedSecret := "updated_secret"
+	newSecret := "new_secret"
+
+	oldEnv := []*containerSDK.Secret{
+		{Key: testSecret, Value: &testSecret},
+		{Key: secretToDelete, Value: &secretToDelete},
+	}
+	newEnv := []*containerSDK.Secret{
+		{Key: testSecret, Value: &updatedSecret},
+		{Key: newSecret, Value: &newSecret},
+	}
+
+	toPatch := container.FilterSecretEnvsToPatch(oldEnv, newEnv)
+	assert.Equal(t, []*containerSDK.Secret{
+		{Key: testSecret, Value: &updatedSecret},
+		{Key: newSecret, Value: &newSecret},
+		{Key: secretToDelete, Value: nil},
+	}, toPatch)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -289,6 +290,19 @@ func flattenScalingOption(scalingOption *container.ContainerScalingOption) inter
 	return flattenedScalingOption
 }
 
+func flattenContainerSecrets(secrets []*container.SecretHashedValue) interface{} {
+	if len(secrets) == 0 {
+		return nil
+	}
+
+	flattenedSecrets := make(map[string]interface{})
+	for _, secret := range secrets {
+		flattenedSecrets[secret.Key] = secret.HashedValue
+	}
+
+	return flattenedSecrets
+}
+
 func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
 	secretsMap := secretsRawMap.(map[string]interface{})
 	secrets := make([]*container.Secret, 0, len(secretsMap))
@@ -357,4 +371,27 @@ func retryCreateContainerDomain(ctx context.Context, containerAPI *container.API
 			return containerAPI.CreateDomain(req, scw.WithContext(ctx))
 		}
 	}
+}
+
+func FilterSecretEnvsToPatch(oldEnv []*container.Secret, newEnv []*container.Secret) []*container.Secret {
+	toPatch := []*container.Secret{}
+	// create and update - ignore hashed values
+	for _, env := range newEnv {
+		if env.Value != nil && strings.HasPrefix(*env.Value, "$argon2id") {
+			continue
+		}
+
+		toPatch = append(toPatch, env)
+	}
+
+	// delete
+	for _, env := range oldEnv {
+		if !slices.ContainsFunc(newEnv, func(s *container.Secret) bool {
+			return s.Key == env.Key
+		}) {
+			toPatch = append(toPatch, &container.Secret{Key: env.Key, Value: nil})
+		}
+	}
+
+	return toPatch
 }

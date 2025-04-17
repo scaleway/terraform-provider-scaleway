@@ -3,6 +3,7 @@ module github.com/scaleway/terraform-provider-scaleway/v2
 go 1.24.0
 
 require (
+	github.com/alexedwards/argon2id v1.0.0
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.62
