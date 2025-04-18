@@ -171,6 +171,8 @@ interruption.
 
 - `encryption_at_rest` - (Optional) Enable or disable encryption at rest for the Database Instance.
 
+- `snapshot_id` - (Optional) The ID of an existing snapshot to restore or create the Database Instance from. Conflicts with the `engine` parameter and backup settings.
+
 ### Backups
 
 - `disable_backup` - (Optional) Disable automated backup for the Database Instance.
