@@ -67,7 +67,6 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the snapshot.
 - `instance_id` - (Required) The UUID of the database instance for which the snapshot is created.
-- `snapshot_id` - (Optional, ForceNew) The ID of an existing snapshot. This allows creating an instance from a specific snapshot ID. Conflicts with `engine`.
 - `expires_at` - (Optional) Expiration date of the snapshot in ISO 8601 format (e.g., `2025-01-31T00:00:00Z`). If not set, the snapshot will not expire automatically.
 
 ## Attributes Reference
