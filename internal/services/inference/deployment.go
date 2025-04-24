@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -47,12 +47,12 @@ func ResourceDeployment() *schema.Resource {
 			},
 			"model_name": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 				Description: "The model name to use for the deployment",
 			},
 			"model_id": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "The model id used for the deployment",
 			},
 			"accept_eula": {
@@ -70,16 +70,21 @@ func ResourceDeployment() *schema.Resource {
 			"min_size": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Computed:     true,
 				Description:  "The minimum size of the pool",
 				ValidateFunc: validation.IntAtLeast(1),
+				Default:      1,
 			},
 			"max_size": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Computed:     true,
 				Description:  "The maximum size of the pool",
 				ValidateFunc: validation.IntAtLeast(1),
+				Default:      1,
+			},
+			"quantization": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The number of bits each model parameter should be quantized to",
 			},
 			"size": {
 				Type:        schema.TypeInt,
@@ -178,13 +183,13 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	req := &inference.CreateDeploymentRequest{
-		Region:    region,
-		ProjectID: d.Get("project_id").(string),
-		Name:      d.Get("name").(string),
-		NodeType:  d.Get("node_type").(string),
-		ModelName: d.Get("model_name").(string),
-		Tags:      types.ExpandStrings(d.Get("tags")),
-		Endpoints: buildEndpoints(d),
+		Region:       region,
+		ProjectID:    d.Get("project_id").(string),
+		Name:         d.Get("name").(string),
+		NodeTypeName: d.Get("node_type").(string),
+		ModelID:      d.Get("model_id").(string),
+		Tags:         types.ExpandStrings(d.Get("tags")),
+		Endpoints:    buildEndpoints(d),
 	}
 
 	if isAcceptingEula, ok := d.GetOk("accept_eula"); ok {
@@ -197,6 +202,12 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	if maxSize, ok := d.GetOk("max_size"); ok {
 		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+	}
+
+	if quantization, ok := d.GetOk("quantization"); ok {
+		req.Quantization = &inference.DeploymentQuantization{
+			Bits: uint32(quantization.(int)),
+		}
 	}
 
 	deployment, err := api.CreateDeployment(req, scw.WithContext(ctx))
@@ -221,8 +232,8 @@ func buildEndpoints(d *schema.ResourceData) []*inference.EndpointSpec {
 		publicEndpointMap := publicEndpoint.([]interface{})[0].(map[string]interface{})
 		if publicEndpointMap["is_enabled"].(bool) {
 			publicEp := inference.EndpointSpec{
-				Public:      &inference.EndpointSpecPublic{},
-				DisableAuth: publicEndpointMap["disable_auth"].(bool),
+				PublicNetwork: &inference.EndpointPublicNetworkDetails{},
+				DisableAuth:   publicEndpointMap["disable_auth"].(bool),
 			}
 			endpoints = append(endpoints, &publicEp)
 		}
@@ -232,7 +243,7 @@ func buildEndpoints(d *schema.ResourceData) []*inference.EndpointSpec {
 		privateEndpointMap := privateEndpoint.([]interface{})[0].(map[string]interface{})
 		if privateID, exists := privateEndpointMap["private_network_id"]; exists {
 			privateEp := inference.EndpointSpec{
-				PrivateNetwork: &inference.EndpointSpecPrivateNetwork{
+				PrivateNetwork: &inference.EndpointPrivateNetworkDetails{
 					PrivateNetworkID: regional.ExpandID(privateID.(string)).ID,
 				},
 				DisableAuth: privateEndpointMap["disable_auth"].(bool),
@@ -264,7 +275,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("region", deployment.Region)
 	_ = d.Set("project_id", deployment.ProjectID)
-	_ = d.Set("node_type", deployment.NodeType)
+	_ = d.Set("node_type", deployment.NodeTypeName)
 	_ = d.Set("model_name", deployment.ModelName)
 	_ = d.Set("min_size", int(deployment.MinSize))
 	_ = d.Set("max_size", int(deployment.MaxSize))
@@ -290,7 +301,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 			privateEndpoints = append(privateEndpoints, privateEndpointSpec)
 		}
 
-		if endpoint.PublicAccess != nil {
+		if endpoint.PublicNetwork != nil {
 			publicEndpointSpec := map[string]interface{}{
 				"id":           endpoint.ID,
 				"is_enabled":   true,
