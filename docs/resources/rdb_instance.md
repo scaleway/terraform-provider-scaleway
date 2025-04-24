@@ -143,7 +143,7 @@ interruption.
 
 ~> **Important** Updates to `engine` will recreate the Database Instance.
 
-- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd`, `lssd`, `sbs_5k` or `sbs_15k`).
+- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 
 - `volume_size_in_gb` - (Optional) Volume size (in GB). Cannot be used when `volume_type` is set to `lssd`.
 

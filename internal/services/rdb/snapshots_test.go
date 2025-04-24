@@ -35,7 +35,7 @@ func TestAccRdbSnapshot_Basic(t *testing.T) {
 						user_name      = "my_initial_user"
 						password       = "thiZ_is_v&ry_s3cret"
 						tags           = ["terraform-test", "scaleway_rdb_instance", "minimal"]
-						volume_type    = "bssd"
+						volume_type    = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 
@@ -77,7 +77,7 @@ func TestAccRdbSnapshot_Update(t *testing.T) {
 						user_name      = "my_initial_user"
 						password       = "thiZ_is_v&ry_s3cret"
 						tags           = ["terraform-test", "scaleway_rdb_instance", "minimal"]
-						volume_type    = "bssd"
+						volume_type    = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 
@@ -102,7 +102,7 @@ func TestAccRdbSnapshot_Update(t *testing.T) {
 						user_name      = "my_initial_user"
 						password       = "thiZ_is_v&ry_s3cret"
 						tags           = ["terraform-test", "scaleway_rdb_instance", "minimal"]
-						volume_type    = "bssd"
+						volume_type    = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 
