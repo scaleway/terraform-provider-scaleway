@@ -343,7 +343,7 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.pn01.id}"
@@ -378,7 +378,7 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.pn02.id}"
@@ -419,7 +419,7 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10`, latestEngineVersion) + `
 						private_network {
 							ip_net = format("%s/%s", local.ip_address, local.cidr_prefix)
@@ -458,7 +458,7 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10`, latestEngineVersion) + `
 						private_network {
 							ip_net = format("%s/%s", local.ip_address, local.cidr_prefix)
@@ -490,7 +490,7 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10`, latestEngineVersion) + `
 						private_network {
 							pn_id  = scaleway_vpc_private_network.pn01.id
@@ -588,7 +588,7 @@ func TestAccInstance_PrivateNetwork(t *testing.T) {
 					  password          = "thiZ_is_v&ry_s3cret"
 					  region            = "nl-ams"
 					  tags              = ["terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn"]
-					  volume_type       = "bssd"
+					  volume_type       = "sbs_5k"
 					  volume_size_in_gb = 10
 					  private_network {
 						ip_net = "192.168.1.254/24" #pool high
@@ -627,7 +627,7 @@ func TestAccInstance_PrivateNetwork(t *testing.T) {
 					  password          = "thiZ_is_v&ry_s3cret"
 					  region            = "nl-ams"
 					  tags              = ["terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn"]
-					  volume_type       = "bssd"
+					  volume_type       = "sbs_5k"
 					  volume_size_in_gb = 10
 					}
 				`, latestEngineVersion),
@@ -718,13 +718,13 @@ func TestAccInstance_Volume(t *testing.T) {
 						password = "thiZ_is_v&ry_s3cret"
 						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					isInstancePresent(tt, "scaleway_rdb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "bssd"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_5k"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
 				),
 			},
@@ -855,13 +855,13 @@ func TestAccInstance_ChangeVolumeType(t *testing.T) {
 						password = "thiZ_is_v&ry_s3cret"
 						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "sdb-volume" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					isInstancePresent(tt, "scaleway_rdb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "bssd"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "sbs_5k"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
 				),
 			},
@@ -915,7 +915,7 @@ func TestAccInstance_ChangeNodeType(t *testing.T) {
 						password = "thiZ_is_v&ry_s3cret"
 						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 				`, latestEngineVersion),
@@ -936,7 +936,7 @@ func TestAccInstance_ChangeNodeType(t *testing.T) {
 						password = "thiZ_is_v&ry_s3cret"
 						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance"]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 				`, latestEngineVersion),
@@ -1220,7 +1220,7 @@ func TestAccInstance_CompleteWorkflow(t *testing.T) {
 						user_name      = "my_initial_user"
 						password       = "thiZ_is_v&ry_s3cret"
 						tags           = ["terraform-test", "scaleway_rdb_instance"]
-						volume_type    = "bssd"
+						volume_type    = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 
@@ -1236,7 +1236,7 @@ func TestAccInstance_CompleteWorkflow(t *testing.T) {
 						is_ha_cluster  = false
 						disable_backup = true
 						snapshot_id    = scaleway_rdb_snapshot.test.id
-						volume_type    = "bssd"
+						volume_type    = "sbs_5k"
 						tags           = ["terraform-test", "restored_instance"]
 						depends_on     = [scaleway_rdb_snapshot.test]
 					}
@@ -1260,7 +1260,7 @@ func TestAccInstance_CompleteWorkflow(t *testing.T) {
 						user_name      = "my_initial_user"
 						password       = "thiZ_is_v&ry_s3cret"
 						tags           = ["terraform-test", "scaleway_rdb_instance"]
-						volume_type    = "bssd"
+						volume_type    = "sbs_5k"
 						volume_size_in_gb = 10
 					}
 
@@ -1276,7 +1276,7 @@ func TestAccInstance_CompleteWorkflow(t *testing.T) {
 						is_ha_cluster  = false
 						disable_backup = true
 						snapshot_id    = scaleway_rdb_snapshot.test.id
-						volume_type    = "bssd"
+						volume_type    = "sbs_5k"
 						user_name      = "updated_user"
 						password       = "thiZ_is_v&ry_s3cret2"
 						tags           = ["terraform-test", "updated_instance"]

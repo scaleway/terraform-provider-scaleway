@@ -677,7 +677,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	// Volume type and size
 	if d.HasChanges("volume_type", "volume_size_in_gb") {
 		switch volType {
-		case rdb.VolumeTypeBssd, rdb.VolumeTypeSbs5k, rdb.VolumeTypeSbs15k:
+		case rdb.VolumeTypeSbs5k, rdb.VolumeTypeSbs15k:
 			if d.HasChange("volume_type") {
 				upgradeInstanceRequests = append(upgradeInstanceRequests,
 					rdb.UpgradeInstanceRequest{
@@ -710,7 +710,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 		case rdb.VolumeTypeLssd:
 			_, ok := d.GetOk("volume_size_in_gb")
 			if d.HasChange("volume_size_in_gb") && ok {
-				return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
+				return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s or %s only", rdb.VolumeTypeSbs5k.String(), rdb.VolumeTypeSbs15k.String()))
 			}
 
 			if d.HasChange("volume_type") {
@@ -730,7 +730,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	if d.HasChange("node_type") {
 		// Upgrading the node_type with block storage is not allowed when the disk is full, so if we are in this case,
 		// we can only allow this action if an increase of the size of the volume is also scheduled before it.
-		if !diskIsFull || volType == rdb.VolumeTypeLssd || len(upgradeInstanceRequests) > 0 {
+		if !diskIsFull || len(upgradeInstanceRequests) > 0 {
 			upgradeInstanceRequests = append(upgradeInstanceRequests,
 				rdb.UpgradeInstanceRequest{
 					Region:     region,
@@ -738,13 +738,11 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 					NodeType:   types.ExpandStringPtr(d.Get("node_type")),
 				})
 		} else {
-			return diag.Diagnostics{
-				{
-					Severity: diag.Error,
-					Summary:  "Node type upgrade forbidden when disk is full",
-					Detail:   "You cannot upgrade the node_type of an instance that is using bssd storage once it is in disk_full state. Please increase the volume_size_in_gb first.",
-				},
-			}
+			return diag.Diagnostics{{
+				Severity: diag.Error,
+				Summary:  "Node type upgrade forbidden when disk is full",
+				Detail:   "You cannot upgrade the node_type of an instance when it is in disk_full state. Please increase the volume_size_in_gb first.",
+			}}
 		}
 	}
 
