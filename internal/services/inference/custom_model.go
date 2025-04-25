@@ -65,11 +65,6 @@ func ResourceCustomModel() *schema.Resource {
 				Computed:    true,
 				Description: "The description of the model",
 			},
-			"error_message": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Displays information if your model is in error state",
-			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -207,7 +202,6 @@ func ResourceCustomModelRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("updated_at", types.FlattenTime(model.UpdatedAt))
 	_ = d.Set("has_eula", model.HasEula)
 	_ = d.Set("nodes_support", flattenNodeSupport(model.NodesSupport))
-	_ = d.Set("error_message", model.ErrorMessage)
 
 	return nil
 }
