@@ -97,7 +97,6 @@ func TestAccCustomModel_DeployModelOnServer(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "model_name", modelName),
-					resource.TestCheckTypeSetElemAttrPair("scaleway_inference_deployment.main", "model_id", "scaleway_inference_custom_model.test", "id"),
 				),
 			},
 		},

@@ -142,6 +142,7 @@ func ResourceCustomModelCreate(ctx context.Context, d *schema.ResourceData, m in
 	modelSource := &inference.ModelSource{
 		URL: d.Get("url").(string),
 	}
+
 	if secret, ok := d.GetOk("secret"); ok {
 		secretStr := secret.(string)
 		modelSource.Secret = &secretStr
