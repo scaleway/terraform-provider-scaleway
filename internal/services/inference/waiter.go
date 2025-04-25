@@ -24,3 +24,19 @@ func waitForDeployment(ctx context.Context, inferenceAPI *inference.API, region 
 
 	return deployment, err
 }
+
+func waitForModel(ctx context.Context, inferenceAPI *inference.API, region scw.Region, id string, timeout time.Duration) (*inference.Model, error) {
+	retryInterval := defaultCustomModelRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	model, err := inferenceAPI.WaitForCustomModel(inference.WaitForCustomModelRequest{ //TODO add pointer
+		ModelID:       id,
+		Region:        region,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
+
+	return model, err
+}
