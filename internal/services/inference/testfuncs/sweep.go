@@ -4,17 +4,22 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func AddTestSweepers() {
-	resource.AddTestSweepers("scaleway_instance_deployment", &resource.Sweeper{
-		Name:         "scaleway_instance_deployment",
+	resource.AddTestSweepers("scaleway_inference_deployment", &resource.Sweeper{
+		Name:         "scaleway_inference_deployment",
 		Dependencies: nil,
 		F:            testSweepDeployment,
+	})
+	resource.AddTestSweepers("scaleway_inference_custom_model", &resource.Sweeper{
+		Name:         "scaleway_inference_custom_model",
+		Dependencies: nil,
+		F:            testSweepCustomModel,
 	})
 }
 
@@ -44,6 +49,33 @@ func testSweepDeployment(_ string) error {
 			}
 		}
 
+		return nil
+	})
+}
+
+func testSweepCustomModel(_ string) error {
+	return acctest.SweepRegions((&inference.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
+		inferenceAPI := inference.NewAPI(scwClient)
+
+		logging.L.Debugf("sweeper: destroying the inference models in (%s)", region)
+		listModels, err := inferenceAPI.ListModels(&inference.ListModelsRequest{
+			Region: region,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing models in (%s) in sweeper: %w", region, err)
+		}
+
+		for _, model := range listModels.Models {
+			err := inferenceAPI.DeleteModel(&inference.DeleteModelRequest{
+				Region:  model.Region,
+				ModelID: model.ID,
+			})
+			if err != nil {
+				logging.L.Debugf("sweeper: error (%s)", err)
+
+				return fmt.Errorf("error deleting model in sweeper: %w", err)
+			}
+		}
 		return nil
 	})
 }
