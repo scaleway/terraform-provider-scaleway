@@ -58,6 +58,7 @@ func testSweepCustomModel(_ string) error {
 		inferenceAPI := inference.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the inference models in (%s)", region)
+
 		listModels, err := inferenceAPI.ListModels(&inference.ListModelsRequest{
 			Region: region,
 		}, scw.WithAllPages())
