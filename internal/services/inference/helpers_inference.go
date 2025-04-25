@@ -13,6 +13,8 @@ import (
 const (
 	defaultInferenceDeploymentTimeout = 80 * time.Minute
 	defaultDeploymentRetryInterval    = 1 * time.Minute
+	defaultCustomModelTimeout         = 40 * time.Minute
+	defaultCustomModelRetryInterval   = 1 * time.Minute
 )
 
 // NewAPIWithRegion returns a new inference API and the region for a Create request

@@ -167,6 +167,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_ssh_key":                         iam.ResourceSSKKey(),
 				"scaleway_iam_user":                            iam.ResourceUser(),
 				"scaleway_inference_deployment":                inference.ResourceDeployment(),
+				"scaleway_inference_custom_model":              inference.ResourceCustomModel(),
 				"scaleway_instance_image":                      instance.ResourceImage(),
 				"scaleway_instance_ip":                         instance.ResourceIP(),
 				"scaleway_instance_ip_reverse_dns":             instance.ResourceIPReverseDNS(),
