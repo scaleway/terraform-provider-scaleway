@@ -40,3 +40,33 @@ func IsDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		return nil
 	}
 }
+
+func IsCustomModelDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "scaleway_inference_custom_model" {
+				continue
+			}
+
+			inferenceAPI, region, id, err := inference.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			model, err := inferenceAPI.GetModel(&inferenceSDK.GetModelRequest{
+				Region:  region,
+				ModelID: id,
+			})
+
+			if err == nil {
+				return fmt.Errorf("model %s (%s) still exists", model.Name, model.ID)
+			}
+
+			if !httperrors.Is404(err) {
+				return err
+			}
+		}
+		
+		return nil
+	}
+}
