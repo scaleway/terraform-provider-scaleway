@@ -15,6 +15,7 @@ import (
 const (
 	modelURLCompatible    = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
 	modelURLNotCompatible = "https://huggingface.co/google/gemma-3-4b-it"
+	nodeTypeH100          = "H100"
 )
 
 func TestAccCustomModel_Basic(t *testing.T) {
@@ -61,6 +62,43 @@ func TestAccCustomModel_NotCompatible(t *testing.T) {
 						url = "%s"
 					}`, modelName, modelURLNotCompatible),
 				ExpectError: regexp.MustCompile("scaleway-sdk-go: precondition failed: , the model with ID 'google/gemma-3-4b-it' is not supported. access to model google/gemma-3-4b-it is restricted. Check your permissions to access the repository at https://huggingface.co/google/gemma-3-4b-it and ensure your credentials are valid Please visit https://www.scaleway.com/en/docs/ai-data/managed-inference/reference-content/supported-models for more details about the supported models."),
+			},
+		},
+	})
+}
+
+func TestAccCustomModel_DeployModelOnServer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	modelName := "TestAccCustomModel_DeployModelOnServer"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      inferencetestfuncs.IsCustomModelDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_inference_custom_model" "test" {
+						name = "%s"
+						url = "%s"
+					}
+					resource "scaleway_inference_deployment" "main" {
+						name = "%s"
+						node_type = "%s"
+						model_id = scaleway_inference_custom_model.test.id
+  						public_endpoint {
+    						is_enabled = true
+ 		 				}
+						accept_eula = true
+					}
+				`, modelName, modelURLCompatible, modelName, nodeTypeH100),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "model_name", modelName),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_inference_deployment.main", "model_id", "scaleway_inference_custom_model.test", "id"),
+				),
 			},
 		},
 	})

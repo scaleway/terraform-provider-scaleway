@@ -16,7 +16,7 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 resource "scaleway_inference_deployment" "deployment" {
   name = "tf-inference-deployment"
   node_type = "L4"
-  model_name = "meta/llama-3.1-8b-instruct:fp8"
+  model_id = "d33fb5fd-75ca-4dfb-8952-8af8b8b28be5"
   public_endpoint {
     is_enabled = true
   }
@@ -26,7 +26,7 @@ resource "scaleway_inference_deployment" "deployment" {
 
 ## Argument Reference
 
-- `model_name` - (Required) The model name to use for the deployment. Model names can be found in Console or using Scaleway's CLI (`scw inference model list`)
+- `model_id` - The model id used for the deployment.
 - `node_type` - (Required) The node type to use for the deployment. Node types can be found using Scaleway's CLI (`scw inference node-type list`)
 - `name` - (Optional) The deployment name.
 - `accept_eula` - (Optional) Some models (e.g Meta Llama) require end-user license agreements. Set `true` to accept.
@@ -48,7 +48,7 @@ resource "scaleway_inference_deployment" "deployment" {
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the deployment.
-- `model_id` - The model id used for the deployment.
+- `model_name` - (Required) The model name to use for the deployment. Model names can be found in Console or using Scaleway's CLI (`scw inference model list`)
 - `size` - The size of the pool.
 - `status` - The status of the deployment.
 - `created_at` - The date and time of the creation of the deployment.
