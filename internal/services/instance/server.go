@@ -600,10 +600,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 
 		return diag.FromErr(err)
 	}
+
 	////
 	// Read Server
 	////
-
 	state, err := serverStateFlatten(server.State)
 	if err != nil {
 		return diag.FromErr(err)
@@ -737,6 +737,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 	if len(additionalVolumesIDs) > 0 {
 		_ = d.Set("additional_volume_ids", additionalVolumesIDs)
 	}
+
 	////
 	// Read server user data
 	////
@@ -770,6 +771,27 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 	err = ph.set(d)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	////
+	// Display warning if server will soon reach End of Service
+	////
+	if server.EndOfService {
+		compatibleTypes, err := api.GetServerCompatibleTypes(&instanceSDK.GetServerCompatibleTypesRequest{
+			Zone:     zone,
+			ServerID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		return diag.Diagnostics{diag.Diagnostic{
+			Severity: diag.Warning,
+			Detail:   fmt.Sprintf("Instance type %q will soon reach End of Service", server.CommercialType),
+			Summary: fmt.Sprintf(`Your Instance will soon reach End of Service. You can check the exact date on the Scaleway console. We recommend that you migrate your Instance before that.
+Here are the best options for %q, ordered by relevance: [%s]`, server.CommercialType, strings.Join(compatibleTypes.CompatibleTypes, ", ")),
+			AttributePath: cty.GetAttrPath("type"),
+		}}
 	}
 
 	return nil
