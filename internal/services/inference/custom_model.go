@@ -124,7 +124,7 @@ func ResourceCustomModel() *schema.Resource {
 				Computed:    true,
 				Description: "Size, in bits, of the model parameters",
 			},
-			"size_bits": {
+			"size_bytes": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Total size, in bytes, of the model files",
@@ -195,7 +195,7 @@ func ResourceCustomModelRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	_ = d.Set("parameter_size_bits", int32(model.ParameterSizeBits))
-	_ = d.Set("size_bits", int64(model.SizeBytes))
+	_ = d.Set("size_bytes", int64(model.SizeBytes))
 	_ = d.Set("name", model.Name)
 	_ = d.Set("status", model.Status)
 	_ = d.Set("description", model.Description)
@@ -219,13 +219,8 @@ func ResourceCustomModelDelete(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteModel(&inference.DeleteModelRequest{
+	return diag.FromErr(api.DeleteModel(&inference.DeleteModelRequest{
 		Region:  region,
-		ModelID: id,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
+		ModelID: d.Id(),
+	}, scw.WithContext(ctx)))
 }

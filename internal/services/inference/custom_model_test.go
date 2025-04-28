@@ -13,9 +13,8 @@ import (
 )
 
 const (
-	modelURLCompatible    = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
-	modelURLNotCompatible = "https://huggingface.co/google/gemma-3-4b-it"
-	nodeTypeH100          = "H100"
+	modelURLCompatible = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
+	nodeTypeH100       = "H100"
 )
 
 func TestAccCustomModel_Basic(t *testing.T) {
