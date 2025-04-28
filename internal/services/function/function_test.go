@@ -1,9 +1,11 @@
 package function_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
+	"github.com/alexedwards/argon2id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	functionSDK "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
@@ -142,7 +144,7 @@ func TestAccFunction_EnvironmentVariables(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionExists(tt, "scaleway_function.main"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "environment_variables.test", "test"),
-					resource.TestCheckResourceAttr("scaleway_function.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_function.main", "secret_environment_variables.test_secret", "test_secret"),
 				),
 			},
 			{
@@ -167,7 +169,7 @@ func TestAccFunction_EnvironmentVariables(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionExists(tt, "scaleway_function.main"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "environment_variables.foo", "bar"),
-					resource.TestCheckResourceAttr("scaleway_function.main", "secret_environment_variables.foo_secret", "bar_secret"),
+					passwordMatchHash("scaleway_function.main", "secret_environment_variables.foo_secret", "bar_secret"),
 				),
 			},
 		},
@@ -452,6 +454,26 @@ func testAccCheckFunctionDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 			if !httperrors.Is404(err) {
 				return err
 			}
+		}
+
+		return nil
+	}
+}
+
+func passwordMatchHash(parent string, key string, password string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[parent]
+		if !ok {
+			return fmt.Errorf("resource container not found: %s", parent)
+		}
+
+		match, err := argon2id.ComparePasswordAndHash(password, rs.Primary.Attributes[key])
+		if err != nil {
+			return err
+		}
+
+		if !match {
+			return errors.New("password and hash do not match")
 		}
 
 		return nil

@@ -77,7 +77,9 @@ func ResourceFunction() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
 				},
-				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+				ValidateDiagFunc:      validation.MapKeyLenBetween(0, 100),
+				DiffSuppressFunc:      dsf.CompareArgon2idPasswordAndHash,
+				DiffSuppressOnRefresh: true,
 			},
 			"privacy": {
 				Type:             schema.TypeString,
@@ -307,6 +309,7 @@ func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interfa
 	_ = d.Set("http_option", f.HTTPOption)
 	_ = d.Set("namespace_id", f.NamespaceID)
 	_ = d.Set("sandbox", f.Sandbox)
+	_ = d.Set("secret_environment_variables", flattenFunctionSecrets(f.SecretEnvironmentVariables))
 
 	return diags
 }
@@ -340,7 +343,8 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	if d.HasChanges("secret_environment_variables") {
-		req.SecretEnvironmentVariables = expandFunctionsSecrets(d.Get("secret_environment_variables"))
+		oldEnv, newEnv := d.GetChange("secret_environment_variables")
+		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandFunctionsSecrets(oldEnv), expandFunctionsSecrets(newEnv))
 		updated = true
 	}
 
