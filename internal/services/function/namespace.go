@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -71,7 +72,9 @@ func ResourceNamespace() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
 				},
-				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+				ValidateDiagFunc:      validation.MapKeyLenBetween(0, 100),
+				DiffSuppressFunc:      dsf.CompareArgon2idPasswordAndHash,
+				DiffSuppressOnRefresh: true,
 			},
 			"registry_endpoint": {
 				Type:        schema.TypeString,
@@ -151,6 +154,7 @@ func ResourceFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("region", ns.Region)
 	_ = d.Set("registry_endpoint", ns.RegistryEndpoint)
 	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
+	_ = d.Set("secret_environment_variables", flattenFunctionSecrets(ns.SecretEnvironmentVariables))
 
 	return nil
 }
@@ -190,7 +194,8 @@ func ResourceFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("secret_environment_variables") {
-		req.SecretEnvironmentVariables = expandFunctionsSecrets(d.Get("secret_environment_variables"))
+		oldEnv, newEnv := d.GetChange("secret_environment_variables")
+		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandFunctionsSecrets(oldEnv), expandFunctionsSecrets(newEnv))
 	}
 
 	if _, err := api.UpdateNamespace(req, scw.WithContext(ctx)); err != nil {

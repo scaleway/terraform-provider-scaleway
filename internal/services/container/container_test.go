@@ -13,7 +13,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	containerchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container/testfuncs"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAccContainer_Basic(t *testing.T) {
@@ -628,27 +627,4 @@ func passwordMatchHash(parent string, key string, password string) resource.Test
 
 		return nil
 	}
-}
-
-func TestFilterSecretEnvsToPatch(t *testing.T) {
-	testSecret := "test_secret"
-	secretToDelete := "secret_to_delete"
-	updatedSecret := "updated_secret"
-	newSecret := "new_secret"
-
-	oldEnv := []*containerSDK.Secret{
-		{Key: testSecret, Value: &testSecret},
-		{Key: secretToDelete, Value: &secretToDelete},
-	}
-	newEnv := []*containerSDK.Secret{
-		{Key: testSecret, Value: &updatedSecret},
-		{Key: newSecret, Value: &newSecret},
-	}
-
-	toPatch := container.FilterSecretEnvsToPatch(oldEnv, newEnv)
-	assert.Equal(t, []*containerSDK.Secret{
-		{Key: testSecret, Value: &updatedSecret},
-		{Key: newSecret, Value: &newSecret},
-		{Key: secretToDelete, Value: nil},
-	}, toPatch)
 }

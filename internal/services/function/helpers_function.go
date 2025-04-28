@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -173,4 +174,40 @@ func retryCreateFunctionDomain(ctx context.Context, functionAPI *function.API, r
 			return functionAPI.CreateDomain(req, scw.WithContext(ctx))
 		}
 	}
+}
+
+func flattenFunctionSecrets(secrets []*function.SecretHashedValue) interface{} {
+	if len(secrets) == 0 {
+		return nil
+	}
+
+	flattenedSecrets := make(map[string]interface{})
+	for _, secret := range secrets {
+		flattenedSecrets[secret.Key] = secret.HashedValue
+	}
+
+	return flattenedSecrets
+}
+
+func filterSecretEnvsToPatch(oldEnv []*function.Secret, newEnv []*function.Secret) []*function.Secret {
+	toPatch := []*function.Secret{}
+	// create and update - ignore hashed values
+	for _, env := range newEnv {
+		if env.Value != nil && strings.HasPrefix(*env.Value, "$argon2id") {
+			continue
+		}
+
+		toPatch = append(toPatch, env)
+	}
+
+	// delete
+	for _, env := range oldEnv {
+		if !slices.ContainsFunc(newEnv, func(s *function.Secret) bool {
+			return s.Key == env.Key
+		}) {
+			toPatch = append(toPatch, &function.Secret{Key: env.Key, Value: nil})
+		}
+	}
+
+	return toPatch
 }
