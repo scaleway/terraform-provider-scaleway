@@ -40,6 +40,7 @@ resource "scaleway_inference_deployment" "main" {
   accept_eula = true
 }
 ```
+
 ## Argument Reference
 
 - `name` - (Required) The name of the custom model. This must be unique within the project.
@@ -58,8 +59,8 @@ resource "scaleway_inference_deployment" "main" {
 - `parameter_size_bits` - Size, in bits, of the model parameters.
 - `size_bits` - Total size, in bytes, of the model archive.
 - `nodes_support` - List of supported node types and their quantization options. Each entry contains:
-      - `node_type_name` - The type of node supported. 
-      - `quantization` - A list of supported quantization options, including:
-        - `quantization_bits` -  Number of bits used for quantization (e.g., 8, 16). 
-        - `allowed` - Whether this quantization is allowed. 
-        - `max_context_size` - Maximum context length supported by this quantization.
+        - `node_type_name` - The type of node supported.
+        - `quantization` - A list of supported quantization options, including:
+            - `quantization_bits` -  Number of bits used for quantization (e.g., 8, 16).
+            - `allowed` - Whether this quantization is allowed.
+            - `max_context_size` - Maximum context length supported by this quantization.
