@@ -9,6 +9,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	registrySDK "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -73,7 +74,9 @@ func ResourceNamespace() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
 				},
-				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+				ValidateDiagFunc:      validation.MapKeyLenBetween(0, 100),
+				DiffSuppressFunc:      dsf.CompareArgon2idPasswordAndHash,
+				DiffSuppressOnRefresh: true,
 			},
 			"registry_endpoint": {
 				Type:        schema.TypeString,
@@ -160,6 +163,7 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("region", ns.Region)
 	_ = d.Set("registry_endpoint", ns.RegistryEndpoint)
 	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
+	_ = d.Set("secret_environment_variables", flattenContainerSecrets(ns.SecretEnvironmentVariables))
 
 	return nil
 }
@@ -192,29 +196,9 @@ func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceDat
 		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("environment_variables"))
 	}
 
-	if d.HasChange("secret_environment_variables") {
-		oldSecretsRaw, newSecretsRaw := d.GetChange("secret_environment_variables")
-
-		oldSecretsMap := convertToMapStringInterface(oldSecretsRaw)
-		newSecretsMap := convertToMapStringInterface(newSecretsRaw)
-
-		oldSecrets := expandContainerSecrets(oldSecretsMap)
-		newSecrets := expandContainerSecrets(newSecretsMap)
-
-		deletedSecrets := make([]*container.Secret, 0)
-
-		for _, oldSecret := range oldSecrets {
-			if _, exists := newSecretsMap[oldSecret.Key]; !exists {
-				deletedSecrets = append(deletedSecrets, &container.Secret{
-					Key:   oldSecret.Key,
-					Value: nil,
-				})
-			}
-		}
-
-		deletedSecrets = append(deletedSecrets, newSecrets...)
-
-		req.SecretEnvironmentVariables = deletedSecrets
+	if d.HasChanges("secret_environment_variables") {
+		oldEnv, newEnv := d.GetChange("secret_environment_variables")
+		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
 	}
 
 	if _, err := api.UpdateNamespace(req, scw.WithContext(ctx)); err != nil {
