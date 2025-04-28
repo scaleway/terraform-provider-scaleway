@@ -104,7 +104,7 @@ func NATSClientWithRegion( //nolint:ireturn,nolintlint
 	return js, region, err
 }
 
-func newNATSJetStreamClient( //nolint:ireturn
+func newNATSJetStreamClient( //nolint:ireturn,nolintlint
 	region string,
 	endpoint string,
 	credentials string,
