@@ -59,7 +59,7 @@ In addition to all arguments above, the following attributes are exported:
 - `description` - A textual description of the model (if available).
 - `has_eula` - Whether the model requires end-user license agreement acceptance before use.
 - `parameter_size_bits` - Size, in bits, of the model parameters.
-- `size_bits` - Total size, in bytes, of the model archive.
+- `size_bytes` - Total size, in bytes, of the model archive.
 - `nodes_support` - List of supported node types and their quantization options. Each entry contains:
         - `node_type_name` - The type of node supported.
         - `quantization` - A list of supported quantization options, including:
