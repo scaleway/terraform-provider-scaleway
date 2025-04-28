@@ -3,6 +3,7 @@ package inference
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
@@ -169,6 +170,7 @@ func ResourceCustomModelCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	if model.Status == inference.ModelStatusError {
 		errMsg := *model.ErrorMessage
+
 		return diag.FromErr(fmt.Errorf("model '%s' is in status '%s'", model.ID, errMsg))
 	}
 
@@ -177,7 +179,6 @@ func ResourceCustomModelCreate(ctx context.Context, d *schema.ResourceData, m in
 
 func ResourceCustomModelRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -193,8 +194,8 @@ func ResourceCustomModelRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("parameter_size_bits", model.ParameterSizeBits)
-	_ = d.Set("size_bits", model.SizeBytes)
+	_ = d.Set("parameter_size_bits", int32(model.ParameterSizeBits))
+	_ = d.Set("size_bits", int64(model.SizeBytes))
 	_ = d.Set("name", model.Name)
 	_ = d.Set("status", model.Status)
 	_ = d.Set("description", model.Description)

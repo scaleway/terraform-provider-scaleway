@@ -31,7 +31,7 @@ func waitForModel(ctx context.Context, inferenceAPI *inference.API, region scw.R
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	model, err := inferenceAPI.WaitForCustomModel(inference.WaitForCustomModelRequest{ //TODO add pointer
+	model, err := inferenceAPI.WaitForCustomModel(inference.WaitForCustomModelRequest{
 		ModelID:       id,
 		Region:        region,
 		RetryInterval: &retryInterval,
