@@ -68,7 +68,7 @@ func TestAccFunctionNamespace_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "test-cr-ns-01"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.test", "test"),
-					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.#", "0"),
 
 					acctest.CheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
@@ -92,7 +92,7 @@ func TestAccFunctionNamespace_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "test-cr-ns-01"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.test", "test"),
-					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.1", "tag2"),
@@ -142,13 +142,16 @@ func TestAccFunctionNamespace_EnvironmentVariables(t *testing.T) {
 						environment_variables = {
 							"test" = "test"
 						}
+						secret_environment_variables = {
+							"test_secret" = "test_secret"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "tf-env-test"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.test", "test"),
-
+					passwordMatchHash("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 					acctest.CheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
 				),
 			},
@@ -159,13 +162,16 @@ func TestAccFunctionNamespace_EnvironmentVariables(t *testing.T) {
 						environment_variables = {
 							"foo" = "bar"
 						}
+						secret_environment_variables = {
+							"test_secret" = "updated_secret"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "tf-env-test"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.foo", "bar"),
-
+					passwordMatchHash("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "updated_secret"),
 					acctest.CheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
 				),
 			},
