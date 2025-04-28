@@ -35,5 +35,6 @@ func flattenNodeSupport(nodesSupportInfo []*inference.ModelSupportInfo) []interf
 			})
 		}
 	}
+
 	return result
 }

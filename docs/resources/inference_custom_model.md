@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_inference_deployment"
 
 The scaleway_inference_custom_model resource allows you to upload and manage custom inference models in the Scaleway Inference ecosystem. Once registered, a custom model can be used in an scaleway_inference_deployment resource.
 
-## Exemple Usage
+## Example Usage
 
 ### Basic
 
@@ -58,8 +58,8 @@ resource "scaleway_inference_deployment" "main" {
 - `parameter_size_bits` - Size, in bits, of the model parameters.
 - `size_bits` - Total size, in bytes, of the model archive.
 - `nodes_support` - List of supported node types and their quantization options. Each entry contains:
-  - `node_type_name` - The type of node supported. 
-  - `quantization` - A list of supported quantization options, including:
-    - `quantization_bits` -  Number of bits used for quantization (e.g., 8, 16). 
-    - `allowed` - Whether this quantization is allowed. 
-    - `max_context_size` - Maximum context length supported by this quantization.
+      - `node_type_name` - The type of node supported. 
+      - `quantization` - A list of supported quantization options, including:
+        - `quantization_bits` -  Number of bits used for quantization (e.g., 8, 16). 
+        - `allowed` - Whether this quantization is allowed. 
+        - `max_context_size` - Maximum context length supported by this quantization.

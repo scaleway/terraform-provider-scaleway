@@ -77,6 +77,7 @@ func testSweepCustomModel(_ string) error {
 				return fmt.Errorf("error deleting model in sweeper: %w", err)
 			}
 		}
+
 		return nil
 	})
 }

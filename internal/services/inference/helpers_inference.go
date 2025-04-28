@@ -13,7 +13,7 @@ import (
 const (
 	defaultInferenceDeploymentTimeout = 80 * time.Minute
 	defaultDeploymentRetryInterval    = 1 * time.Minute
-	defaultCustomModelTimeout         = 40 * time.Minute
+	defaultCustomModelTimeout         = 180 * time.Minute
 	defaultCustomModelRetryInterval   = 1 * time.Minute
 )
 
