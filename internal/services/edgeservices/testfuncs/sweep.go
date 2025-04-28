@@ -7,7 +7,6 @@ import (
 	edge "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
 )
 
 func AddTestSweepers() {
@@ -47,7 +46,7 @@ func AddTestSweepers() {
 
 func testSweepPipeline(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
-		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+		edgeAPI := edge.NewAPI(scwClient)
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
@@ -69,7 +68,7 @@ func testSweepPipeline(_ string) error {
 
 func testSweepDNS(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
-		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+		edgeAPI := edge.NewAPI(scwClient)
 
 		listDNS, err := edgeAPI.ListDNSStages(&edge.ListDNSStagesRequest{})
 		if err != nil {
@@ -91,7 +90,7 @@ func testSweepDNS(_ string) error {
 
 func testSweepTLS(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
-		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+		edgeAPI := edge.NewAPI(scwClient)
 
 		listTLS, err := edgeAPI.ListTLSStages(&edge.ListTLSStagesRequest{})
 		if err != nil {
@@ -113,7 +112,7 @@ func testSweepTLS(_ string) error {
 
 func testSweepCache(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
-		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+		edgeAPI := edge.NewAPI(scwClient)
 
 		listCaches, err := edgeAPI.ListCacheStages(&edge.ListCacheStagesRequest{})
 		if err != nil {
@@ -135,7 +134,7 @@ func testSweepCache(_ string) error {
 
 func testSweepBackend(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
-		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+		edgeAPI := edge.NewAPI(scwClient)
 
 		listBackends, err := edgeAPI.ListBackendStages(&edge.ListBackendStagesRequest{})
 		if err != nil {
@@ -157,7 +156,7 @@ func testSweepBackend(_ string) error {
 
 func testSweepPlan(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
-		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+		edgeAPI := edge.NewAPI(scwClient)
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
@@ -179,7 +178,7 @@ func testSweepPlan(_ string) error {
 
 func testSweepWAF(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
-		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+		edgeAPI := edge.NewAPI(scwClient)
 
 		listWAF, err := edgeAPI.ListWafStages(&edge.ListWafStagesRequest{})
 		if err != nil {
@@ -201,7 +200,7 @@ func testSweepWAF(_ string) error {
 
 func testSweepRoute(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
-		edgeAPI := edgeservices.NewEdgeServicesAPI(scwClient)
+		edgeAPI := edge.NewAPI(scwClient)
 
 		listRoutes, err := edgeAPI.ListRouteStages(&edge.ListRouteStagesRequest{})
 		if err != nil {
