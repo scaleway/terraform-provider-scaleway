@@ -56,17 +56,17 @@ func ResourceDeployment() *schema.Resource {
 				Required:    true,
 				Description: "The model id used for the deployment",
 				ForceNew:    true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if old == "" || new == "" {
+				DiffSuppressFunc: func(k, old, newValue string, d *schema.ResourceData) bool {
+					if old == "" || newValue == "" {
 						return false
 					}
-					if !scwvalidation.IsUUID(new) {
-						newID := regional.ExpandID(new).ID
+					if !scwvalidation.IsUUID(newValue) {
+						newID := regional.ExpandID(newValue).ID
 
 						return old == newID
 					}
 
-					return old == new
+					return old == newValue
 				},
 			},
 			"accept_eula": {
