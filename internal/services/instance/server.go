@@ -604,176 +604,172 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 	// Read Server
 	////
 
-	if err == nil {
-		state, err := serverStateFlatten(server.State)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	state, err := serverStateFlatten(server.State)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-		_ = d.Set("state", state)
-		_ = d.Set("zone", string(zone))
-		_ = d.Set("name", server.Name)
-		_ = d.Set("boot_type", server.BootType)
+	_ = d.Set("state", state)
+	_ = d.Set("zone", string(zone))
+	_ = d.Set("name", server.Name)
+	_ = d.Set("boot_type", server.BootType)
 
-		_ = d.Set("type", server.CommercialType)
-		if len(server.Tags) > 0 {
-			_ = d.Set("tags", server.Tags)
-		}
+	_ = d.Set("type", server.CommercialType)
+	if len(server.Tags) > 0 {
+		_ = d.Set("tags", server.Tags)
+	}
 
-		_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
-		// EnableIPv6 is deprecated
-		_ = d.Set("enable_ipv6", server.EnableIPv6) //nolint:staticcheck
-		_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
-		_ = d.Set("organization_id", server.Organization)
-		_ = d.Set("project_id", server.Project)
-		_ = d.Set("protected", server.Protected)
+	_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
+	// EnableIPv6 is deprecated
+	_ = d.Set("enable_ipv6", server.EnableIPv6) //nolint:staticcheck
+	_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
+	_ = d.Set("organization_id", server.Organization)
+	_ = d.Set("project_id", server.Project)
+	_ = d.Set("protected", server.Protected)
 
-		// Image could be empty in an import context.
-		image := regional.ExpandID(d.Get("image").(string))
-		if server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
-			_ = d.Set("image", zonal.NewID(zone, server.Image.ID).String())
-		}
+	// Image could be empty in an import context.
+	image := regional.ExpandID(d.Get("image").(string))
+	if server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
+		_ = d.Set("image", zonal.NewID(zone, server.Image.ID).String())
+	}
 
-		if server.PlacementGroup != nil {
-			_ = d.Set("placement_group_id", zonal.NewID(zone, server.PlacementGroup.ID).String())
-			_ = d.Set("placement_group_policy_respected", server.PlacementGroup.PolicyRespected)
-		}
+	if server.PlacementGroup != nil {
+		_ = d.Set("placement_group_id", zonal.NewID(zone, server.PlacementGroup.ID).String())
+		_ = d.Set("placement_group_policy_respected", server.PlacementGroup.PolicyRespected)
+	}
 
-		if server.PrivateIP != nil {
-			_ = d.Set("private_ip", types.FlattenStringPtr(server.PrivateIP))
-		}
+	if server.PrivateIP != nil {
+		_ = d.Set("private_ip", types.FlattenStringPtr(server.PrivateIP))
+	}
 
-		if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID { //nolint:staticcheck
-			if !server.PublicIP.Dynamic { //nolint:staticcheck
-				_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String()) //nolint:staticcheck
-			} else {
-				_ = d.Set("ip_id", "")
-			}
+	if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID { //nolint:staticcheck
+		if !server.PublicIP.Dynamic { //nolint:staticcheck
+			_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String()) //nolint:staticcheck
 		} else {
 			_ = d.Set("ip_id", "")
 		}
+	} else {
+		_ = d.Set("ip_id", "")
+	}
 
-		if server.PublicIP != nil { //nolint:staticcheck
-			_ = d.Set("public_ip", server.PublicIP.Address.String()) //nolint:staticcheck
-			d.SetConnInfo(map[string]string{
-				"type": "ssh",
-				"host": server.PublicIP.Address.String(), //nolint:staticcheck
+	if server.PublicIP != nil { //nolint:staticcheck
+		_ = d.Set("public_ip", server.PublicIP.Address.String()) //nolint:staticcheck
+		d.SetConnInfo(map[string]string{
+			"type": "ssh",
+			"host": server.PublicIP.Address.String(), //nolint:staticcheck
+		})
+	} else {
+		_ = d.Set("public_ip", "")
+		d.SetConnInfo(nil)
+	}
+
+	if len(server.PublicIPs) > 0 {
+		_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
+	} else {
+		_ = d.Set("public_ips", []interface{}{})
+	}
+
+	if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
+		_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
+	} else {
+		_ = d.Set("ip_ids", []interface{}{})
+	}
+
+	if server.IPv6 != nil { //nolint:staticcheck
+		_ = d.Set("ipv6_address", server.IPv6.Address.String()) //nolint:staticcheck
+		_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String()) //nolint:staticcheck
+
+		prefixLength, err := strconv.Atoi(server.IPv6.Netmask) //nolint:staticcheck
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_ = d.Set("ipv6_prefix_length", prefixLength)
+	} else {
+		_ = d.Set("ipv6_address", nil)
+		_ = d.Set("ipv6_gateway", nil)
+		_ = d.Set("ipv6_prefix_length", nil)
+	}
+
+	var additionalVolumesIDs []string
+
+	for i, serverVolume := range sortVolumeServer(server.Volumes) {
+		if i == 0 {
+			rootVolume := map[string]interface{}{}
+
+			vs, ok := d.Get("root_volume").([]map[string]interface{})
+			if ok && len(vs) > 0 {
+				rootVolume = vs[0]
+			}
+
+			vol, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
+				VolumeID: serverVolume.ID,
+				Zone:     server.Zone,
 			})
-		} else {
-			_ = d.Set("public_ip", "")
-			d.SetConnInfo(nil)
-		}
-
-		if len(server.PublicIPs) > 0 {
-			_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
-		} else {
-			_ = d.Set("public_ips", []interface{}{})
-		}
-
-		if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
-			_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
-		} else {
-			_ = d.Set("ip_ids", []interface{}{})
-		}
-
-		if server.IPv6 != nil { //nolint:staticcheck
-			_ = d.Set("ipv6_address", server.IPv6.Address.String()) //nolint:staticcheck
-			_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String()) //nolint:staticcheck
-
-			prefixLength, err := strconv.Atoi(server.IPv6.Netmask) //nolint:staticcheck
 			if err != nil {
-				return diag.FromErr(err)
+				return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", serverVolume.ID, err))
 			}
 
-			_ = d.Set("ipv6_prefix_length", prefixLength)
+			rootVolume["volume_id"] = zonal.NewID(zone, vol.ID).String()
+			if vol.Size != nil {
+				rootVolume["size_in_gb"] = int(uint64(*vol.Size) / gb)
+			} else if serverVolume.Size != nil {
+				rootVolume["size_in_gb"] = int(uint64(*serverVolume.Size) / gb)
+			}
+
+			if vol.IsBlockVolume() {
+				rootVolume["sbs_iops"] = types.FlattenUint32Ptr(vol.Iops)
+			}
+
+			_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
+			rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
+			rootVolume["volume_type"] = serverVolume.VolumeType
+			rootVolume["boot"] = serverVolume.Boot
+			rootVolume["name"] = serverVolume.Name
+
+			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {
-			_ = d.Set("ipv6_address", nil)
-			_ = d.Set("ipv6_gateway", nil)
-			_ = d.Set("ipv6_prefix_length", nil)
+			additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
 		}
+	}
 
-		var additionalVolumesIDs []string
-
-		for i, serverVolume := range sortVolumeServer(server.Volumes) {
-			if i == 0 {
-				rootVolume := map[string]interface{}{}
-
-				vs, ok := d.Get("root_volume").([]map[string]interface{})
-				if ok && len(vs) > 0 {
-					rootVolume = vs[0]
-				}
-
-				vol, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
-					VolumeID: serverVolume.ID,
-					Zone:     server.Zone,
-				})
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", serverVolume.ID, err))
-				}
-
-				rootVolume["volume_id"] = zonal.NewID(zone, vol.ID).String()
-				if vol.Size != nil {
-					rootVolume["size_in_gb"] = int(uint64(*vol.Size) / gb)
-				} else if serverVolume.Size != nil {
-					rootVolume["size_in_gb"] = int(uint64(*serverVolume.Size) / gb)
-				}
-
-				if vol.IsBlockVolume() {
-					rootVolume["sbs_iops"] = types.FlattenUint32Ptr(vol.Iops)
-				}
-
-				_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
-				rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
-				rootVolume["volume_type"] = serverVolume.VolumeType
-				rootVolume["boot"] = serverVolume.Boot
-				rootVolume["name"] = serverVolume.Name
-
-				_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
-			} else {
-				additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
-			}
-		}
-
+	_ = d.Set("additional_volume_ids", additionalVolumesIDs)
+	if len(additionalVolumesIDs) > 0 {
 		_ = d.Set("additional_volume_ids", additionalVolumesIDs)
-		if len(additionalVolumesIDs) > 0 {
-			_ = d.Set("additional_volume_ids", additionalVolumesIDs)
-		}
-		////
-		// Read server user data
-		////
-		allUserData, _ := api.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
-			Zone:     zone,
-			ServerID: id,
-		}, scw.WithContext(ctx))
+	}
+	////
+	// Read server user data
+	////
+	allUserData, _ := api.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
 
-		userData := make(map[string]interface{})
+	userData := make(map[string]interface{})
 
-		for key, value := range allUserData.UserData {
-			userDataValue, err := io.ReadAll(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			userData[key] = string(userDataValue)
-		}
-
-		_ = d.Set("user_data", userData)
-
-		////
-		// Read server private networks
-		////
-		ph, err := newPrivateNICHandler(api.API, id, zone)
+	for key, value := range allUserData.UserData {
+		userDataValue, err := io.ReadAll(value)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		// set private networks
-		err = ph.set(d)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		userData[key] = string(userDataValue)
+	}
 
-		return nil
+	_ = d.Set("user_data", userData)
+
+	////
+	// Read server private networks
+	////
+	ph, err := newPrivateNICHandler(api.API, id, zone)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// set private networks
+	err = ph.set(d)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
