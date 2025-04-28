@@ -55,6 +55,19 @@ func ResourceDeployment() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The model id used for the deployment",
+				ForceNew:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if old == "" || new == "" {
+						return false
+					}
+					if !scwvalidation.IsUUID(new) {
+						newID := regional.ExpandID(new).ID
+
+						return old == newID
+					}
+
+					return old == new
+				},
 			},
 			"accept_eula": {
 				Type:        schema.TypeBool,
