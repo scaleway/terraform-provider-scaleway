@@ -219,8 +219,12 @@ func ResourceCustomModelDelete(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(api.DeleteModel(&inference.DeleteModelRequest{
+	if err := api.DeleteModel(&inference.DeleteModelRequest{
 		Region:  region,
-		ModelID: d.Id(),
-	}, scw.WithContext(ctx)))
+		ModelID: id,
+	}, scw.WithContext(ctx)); err != nil && && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
