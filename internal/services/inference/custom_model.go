@@ -145,8 +145,7 @@ func ResourceCustomModelCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	if secret, ok := d.GetOk("secret"); ok {
-		secretStr := secret.(string)
-		modelSource.Secret = &secretStr
+		modelSource.Secret = types.ExpandStringPtr(secret)
 	}
 
 	reqCreateModel := &inference.CreateModelRequest{
@@ -197,9 +196,9 @@ func ResourceCustomModelRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("parameter_size_bits", int32(model.ParameterSizeBits))
 	_ = d.Set("size_bytes", int64(model.SizeBytes))
 	_ = d.Set("name", model.Name)
-	_ = d.Set("status", model.Status)
+	_ = d.Set("status", model.Status.String())
 	_ = d.Set("description", model.Description)
-	_ = d.Set("tags", types.ExpandUpdatedStringsPtr(model.Tags))
+	_ = d.Set("tags", model.Tags)
 	_ = d.Set("created_at", types.FlattenTime(model.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(model.UpdatedAt))
 	_ = d.Set("has_eula", model.HasEula)

@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -186,17 +186,12 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	modelID := d.Get("model_id")
-	if !scwvalidation.IsUUID(modelID.(string)) {
-		modelID = regional.ExpandID(modelID).ID
-	}
-
 	req := &inference.CreateDeploymentRequest{
 		Region:       region,
 		ProjectID:    d.Get("project_id").(string),
 		Name:         d.Get("name").(string),
 		NodeTypeName: d.Get("node_type").(string),
-		ModelID:      modelID.(string),
+		ModelID:      locality.ExpandID(d.Get("model_id").(string)),
 		Tags:         types.ExpandStrings(d.Get("tags")),
 		Endpoints:    buildEndpoints(d),
 	}
