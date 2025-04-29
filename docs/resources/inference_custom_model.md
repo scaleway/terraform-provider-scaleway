@@ -69,7 +69,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Functions can be imported using, `{region}/{id}`, as shown below:
+Custom models can be imported using, `{region}/{id}`, as shown below:
 
 ```bash
 terraform import scaleway_inference_custom_model.my_model fr-par/11111111-1111-1111-1111-111111111111
