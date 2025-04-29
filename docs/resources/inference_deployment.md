@@ -26,7 +26,7 @@ resource "scaleway_inference_deployment" "deployment" {
 
 ## Argument Reference
 
-- `model_id` - The model id used for the deployment.
+- `model_id` - (Required) The model id used for the deployment.
 - `node_type` - (Required) The node type to use for the deployment. Node types can be found using Scaleway's CLI (`scw inference node-type list`)
 - `name` - (Optional) The deployment name.
 - `accept_eula` - (Optional) Some models (e.g Meta Llama) require end-user license agreements. Set `true` to accept.
@@ -48,7 +48,7 @@ resource "scaleway_inference_deployment" "deployment" {
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the deployment.
-- `model_name` - (Required) The model name to use for the deployment. Model names can be found in Console or using Scaleway's CLI (`scw inference model list`)
+- `model_name` - The model name used for the deployment. Model names can be found in Console or using Scaleway's CLI (`scw inference model list`)
 - `size` - The size of the pool.
 - `status` - The status of the deployment.
 - `created_at` - The date and time of the creation of the deployment.
