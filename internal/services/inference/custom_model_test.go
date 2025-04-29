@@ -95,10 +95,7 @@ func testAccCheckCustomModelExists(tt *acctest.TestTools, n string) resource.Tes
 			Region:  region,
 			ModelID: id,
 		})
-		if err != nil {
-			return err
-		}
 
-		return nil
+		return err
 	}
 }
