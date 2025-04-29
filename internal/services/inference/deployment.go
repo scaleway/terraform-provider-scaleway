@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -52,22 +53,11 @@ func ResourceDeployment() *schema.Resource {
 				Description: "The model name to use for the deployment",
 			},
 			"model_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The model id used for the deployment",
-				ForceNew:    true,
-				DiffSuppressFunc: func(k, old, newValue string, d *schema.ResourceData) bool {
-					if old == "" || newValue == "" {
-						return false
-					}
-					if !scwvalidation.IsUUID(newValue) {
-						newID := regional.ExpandID(newValue).ID
-
-						return old == newID
-					}
-
-					return old == newValue
-				},
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The model id used for the deployment",
+				ForceNew:         true,
+				DiffSuppressFunc: dsf.Locality,
 			},
 			"accept_eula": {
 				Type:        schema.TypeBool,
@@ -197,7 +187,6 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	modelID := d.Get("model_id")
-
 	if !scwvalidation.IsUUID(modelID.(string)) {
 		modelID = regional.ExpandID(modelID).ID
 	}
