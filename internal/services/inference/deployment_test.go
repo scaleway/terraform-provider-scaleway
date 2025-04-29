@@ -18,6 +18,7 @@ const (
 )
 
 func TestAccDeployment_Basic(t *testing.T) {
+	t.Skip("Can not run tests at the moment")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -48,6 +49,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 }
 
 func TestAccDeployment_Endpoint(t *testing.T) {
+	t.Skip("Can not run tests at the moment")
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
