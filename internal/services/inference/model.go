@@ -37,17 +37,18 @@ func ResourceModel() *schema.Resource {
 				Description: "The name of the model",
 			},
 			"url": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The URL of the model",
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				Description: "The HTTPS URL to the model archive or repository. Typically, this is a Hugging Face repository URL (e.g., " +
+					"`https://huggingface.co/your-org/your-model`). The URL must be publicly accessible or require a valid secret for authentication.",
 			},
 			"secret": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
 				ForceNew:    true,
-				Description: "The secret to pull a model",
+				Description: "A token or credential used to authenticate when pulling the model from a private or gated source. For example, a Hugging Face access token with read permissions.",
 			},
 			"tags": {
 				Type:        schema.TypeList,
