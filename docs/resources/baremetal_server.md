@@ -316,6 +316,7 @@ In addition to all arguments above, the following attributes are exported:
 - `os_name` - The name of the os.
 - `private_network` - The private networks attached to the server.
     - `id` - The ID of the private network.
+    - `mapping_id` - The ID of the Server-to-Private Network mapping.
     - `vlan` - The VLAN ID associated to the private network.
     - `status` - The private network status.
     - `created_at` - The date and time of the creation of the private network.
