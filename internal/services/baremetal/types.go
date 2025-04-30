@@ -195,6 +195,7 @@ func flattenPrivateNetworks(region scw.Region, privateNetworks []*baremetalV3.Se
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
 			"id":          regional.NewIDString(region, privateNetwork.PrivateNetworkID),
+			"mapping_id":  regional.NewIDString(region, privateNetwork.ID),
 			"ipam_ip_ids": regional.NewRegionalIDs(region, privateNetwork.IpamIPIDs),
 			"vlan":        types.FlattenUint32Ptr(privateNetwork.Vlan),
 			"status":      privateNetwork.Status,

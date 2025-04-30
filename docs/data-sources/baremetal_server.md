@@ -35,4 +35,6 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
 
+The `scaleway_baremetal_server` data source exports certain attributes once the baremetal server information is retrieved. These attributes can be referenced in other parts of your Terraform configuration. The exported attributes are those that come from the `scaleway_baremetal_server` [resource](../resources/baremetal_server.md)
+
 ~> **Important:** Baremetal servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
