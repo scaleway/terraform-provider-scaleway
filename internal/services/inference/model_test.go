@@ -26,7 +26,7 @@ func TestAccModel_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      inferencetestfuncs.IsCustomModelDestroyed(tt),
+		CheckDestroy:      inferencetestfuncs.IsModelDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -52,7 +52,7 @@ func TestAccModel_DeployModelOnServer(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      inferencetestfuncs.IsCustomModelDestroyed(tt),
+		CheckDestroy:      inferencetestfuncs.IsModelDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
