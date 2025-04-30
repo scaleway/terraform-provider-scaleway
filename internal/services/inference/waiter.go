@@ -26,7 +26,7 @@ func waitForDeployment(ctx context.Context, inferenceAPI *inference.API, region 
 }
 
 func waitForModel(ctx context.Context, inferenceAPI *inference.API, region scw.Region, id string, timeout time.Duration) (*inference.Model, error) {
-	retryInterval := defaultCustomModelRetryInterval
+	retryInterval := defaultModelRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}

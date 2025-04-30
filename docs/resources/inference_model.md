@@ -1,18 +1,18 @@
 ---
 subcategory: "Inference"
-page_title: "Scaleway: scaleway_inference_custom_model"
+page_title: "Scaleway: scaleway_inference_model"
 ---
 
-# Resource: scaleway_inference_custom_model
+# Resource: scaleway_inference_model
 
-The scaleway_inference_custom_model resource allows you to upload and manage custom inference models in the Scaleway Inference ecosystem. Once registered, a custom model can be used in any scaleway_inference_deployment resource.
+The scaleway_inference_model resource allows you to upload and manage custom inference models in the Scaleway Inference ecosystem. Once registered, a custom model can be used in any scaleway_inference_deployment resource.
 
 ## Example Usage
 
 ### Basic
 
 ```terraform
-resource "scaleway_inference_custom_model" "test" {
+resource "scaleway_inference_model" "test" {
   name = "my-awesome-model"
   url = "https://huggingface.co/my-awsome-model"
   secret = "my-secret-token"
@@ -22,7 +22,7 @@ resource "scaleway_inference_custom_model" "test" {
 ### Deploy your own model on your managed inference
 
 ```terraform
-resource "scaleway_inference_custom_model" "my_model" {
+resource "scaleway_inference_model" "my_model" {
   name = "my-awesome-model"
   url = "https://huggingface.co/my-awsome-model"
   secret = "my-secret-token"
@@ -31,7 +31,7 @@ resource "scaleway_inference_custom_model" "my_model" {
 resource "scaleway_inference_deployment" "my_deployment" {
   name      = "test-inference-deployment-basic"
   node_type = "A100-80GB" # replace with your node type
-  model_id  = scaleway_inference_custom_model.my_model.id
+  model_id  = scaleway_inference_model.my_model.id
 
   public_endpoint {
     is_enabled = true
@@ -72,5 +72,5 @@ In addition to all arguments above, the following attributes are exported:
 Custom models can be imported using, `{region}/{id}`, as shown below:
 
 ```bash
-terraform import scaleway_inference_custom_model.my_model fr-par/11111111-1111-1111-1111-111111111111
+terraform import scaleway_inference_model.my_model fr-par/11111111-1111-1111-1111-111111111111
 ```

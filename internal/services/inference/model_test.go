@@ -17,11 +17,11 @@ const (
 	nodeTypeH100       = "H100"
 )
 
-func TestAccCustomModel_Basic(t *testing.T) {
+func TestAccModel_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	modelName := "TestAccCustomModel_Basic"
+	modelName := "TestAccModel_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -30,24 +30,24 @@ func TestAccCustomModel_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_inference_custom_model" "test" {
+					resource "scaleway_inference_model" "test" {
 						name = "%s"
 						url = "%s"
 					}`, modelName, modelURLCompatible),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomModelExists(tt, "scaleway_inference_custom_model.test"),
-					resource.TestCheckResourceAttr("scaleway_inference_custom_model.test", "name", modelName),
+					testAccCheckModelExists(tt, "scaleway_inference_model.test"),
+					resource.TestCheckResourceAttr("scaleway_inference_model.test", "name", modelName),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCustomModel_DeployModelOnServer(t *testing.T) {
+func TestAccModel_DeployModelOnServer(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	modelName := "TestAccCustomModel_DeployModelOnServer"
+	modelName := "TestAccModel_DeployModelOnServer"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -56,14 +56,14 @@ func TestAccCustomModel_DeployModelOnServer(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_inference_custom_model" "test" {
+					resource "scaleway_inference_model" "test" {
 						name = "%s"
 						url = "%s"
 					}
 					resource "scaleway_inference_deployment" "main" {
 						name = "%s"
 						node_type = "%s"
-						model_id = scaleway_inference_custom_model.test.id
+						model_id = scaleway_inference_model.test.id
   						public_endpoint {
     						is_enabled = true
  		 				}
@@ -79,11 +79,11 @@ func TestAccCustomModel_DeployModelOnServer(t *testing.T) {
 	})
 }
 
-func testAccCheckCustomModelExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func testAccCheckModelExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("can't find custom model resource name: %s", n)
+			return fmt.Errorf("can't find model resource name: %s", n)
 		}
 
 		api, region, id, err := inference.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
