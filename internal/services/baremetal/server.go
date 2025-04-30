@@ -217,12 +217,17 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:             schema.TypeString,
-							Description:      "The private network ID",
+							Description:      "The ID of the private network to associate with the server",
 							Required:         true,
 							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							StateFunc: func(i interface{}) string {
 								return locality.ExpandID(i.(string))
 							},
+						},
+						"mapping_id": {
+							Type:        schema.TypeString,
+							Description: "The ID of the Server-to-Private Network mapping",
+							Computed:    true,
 						},
 						"ipam_ip_ids": {
 							Type:     schema.TypeList,
