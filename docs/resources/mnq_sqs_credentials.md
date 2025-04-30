@@ -34,7 +34,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The unique name of the SQS credentials.
 
-- `permissions` - (Optional). List of permissions associated with these credentials. Only one of the following permissions may be set:
+- `permissions` - (Optional). List of permissions associated with these credentials.
     - `can_publish` - (Optional). Defines whether the user can publish messages to the service.
     - `can_receive` - (Optional). Defines whether the user can receive messages from the service.
     - `can_manage` - (Optional). Defines whether the user can manage the associated resource(s).
