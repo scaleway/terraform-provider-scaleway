@@ -14,7 +14,7 @@ The scaleway_inference_model resource allows you to upload and manage custom inf
 ```terraform
 resource "scaleway_inference_model" "test" {
   name = "my-awesome-model"
-  url = "https://huggingface.co/my-awsome-model"
+  url = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
   secret = "my-secret-token"
 }
 ```
@@ -24,13 +24,13 @@ resource "scaleway_inference_model" "test" {
 ```terraform
 resource "scaleway_inference_model" "my_model" {
   name = "my-awesome-model"
-  url = "https://huggingface.co/my-awsome-model"
+  url = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
   secret = "my-secret-token"
 }
 
 resource "scaleway_inference_deployment" "my_deployment" {
   name      = "test-inference-deployment-basic"
-  node_type = "A100-80GB" # replace with your node type
+  node_type = "H100" # replace with your node type
   model_id  = scaleway_inference_model.my_model.id
 
   public_endpoint {
@@ -44,8 +44,8 @@ resource "scaleway_inference_deployment" "my_deployment" {
 ## Argument Reference
 
 - `name` - (Required) The name of the custom model. This must be unique within the project.
-- `url` - (Required) The HTTPS URL pointing to your model
-- `secret` - (Optional, Sensitive) Secret used to authenticate when pulling the model from a private URL.
+- `url` - (Required) The HTTPS source URL from which the model will be downloaded. This is typically a Hugging Face repository URL (e.g., https://huggingface.co/agentica-org/DeepCoder-14B-Preview). The URL must be publicly accessible or require valid credentials via `secret`
+- `secret` - (Optional, Sensitive) Authentication token used to pull the model from a private or gated URL (e.g., a Hugging Face access token with read permission).
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
 
