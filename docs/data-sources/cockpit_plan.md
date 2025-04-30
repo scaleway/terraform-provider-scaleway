@@ -4,7 +4,9 @@ page_title: "Scaleway: scaleway_cockpit_plan"
 ---
 # scaleway_cockpit_plan
 
-The `scaleway_cockpit_plan` data source is used to fetch details about a specific Scaleway Cockpit pricing plan. This information can then be used to configure resources like `scaleway_cockpit`.
+**Note:** As of January 1st, 2025, Cockpit pricing plans have been deprecated. While this data source remains available temporarily for backward compatibility, Scaleway no longer supports configuring Cockpit resources using fixed pricing plans. Instead, you should now independently configure retention periods for your data sources (metrics, logs, and traces). Refer to [Scaleway Cockpit Documentation](https://www.scaleway.com/en/docs/cockpit/concepts/#retention) for updated guidelines and [pricing information](https://www.scaleway.com/en/docs/cockpit/faq/#how-am-i-billed-for-increasing-data-retention-period).
+
+The `scaleway_cockpit_plan` data source retrieves details about a specific Scaleway Cockpit pricing plan. You can use this data source to manage existing Terraform configurations that reference Cockpit plans.
 
 Find out more about [pricing plans](https://console.scaleway.com/cockpit/plans) in the Scaleway console.
 
