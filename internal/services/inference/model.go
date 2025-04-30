@@ -14,19 +14,19 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func ResourceCustomModel() *schema.Resource {
+func ResourceModel() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCustomModelCreate,
-		ReadContext:   ResourceCustomModelRead,
-		DeleteContext: ResourceCustomModelDelete,
+		CreateContext: ResourceModelCreate,
+		ReadContext:   ResourceModelRead,
+		DeleteContext: ResourceModelDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultCustomModelTimeout),
-			Create:  schema.DefaultTimeout(defaultCustomModelTimeout),
-			Update:  schema.DefaultTimeout(defaultCustomModelTimeout),
-			Delete:  schema.DefaultTimeout(defaultCustomModelTimeout),
+			Default: schema.DefaultTimeout(defaultModelTimeout),
+			Create:  schema.DefaultTimeout(defaultModelTimeout),
+			Update:  schema.DefaultTimeout(defaultModelTimeout),
+			Delete:  schema.DefaultTimeout(defaultModelTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -134,7 +134,7 @@ func ResourceCustomModel() *schema.Resource {
 	}
 }
 
-func ResourceCustomModelCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceModelCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, err := NewAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -173,10 +173,10 @@ func ResourceCustomModelCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(fmt.Errorf("model '%s' is in status '%s'", model.ID, errMsg))
 	}
 
-	return ResourceCustomModelRead(ctx, d, m)
+	return ResourceModelRead(ctx, d, m)
 }
 
-func ResourceCustomModelRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceModelRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -207,7 +207,7 @@ func ResourceCustomModelRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func ResourceCustomModelDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceModelDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

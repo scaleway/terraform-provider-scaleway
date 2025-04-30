@@ -16,10 +16,10 @@ func AddTestSweepers() {
 		Dependencies: nil,
 		F:            testSweepDeployment,
 	})
-	resource.AddTestSweepers("scaleway_inference_custom_model", &resource.Sweeper{
-		Name:         "scaleway_inference_custom_model",
+	resource.AddTestSweepers("scaleway_inference_model", &resource.Sweeper{
+		Name:         "scaleway_inference_model",
 		Dependencies: nil,
-		F:            testSweepCustomModel,
+		F:            testSweepModel,
 	})
 }
 
@@ -53,7 +53,7 @@ func testSweepDeployment(_ string) error {
 	})
 }
 
-func testSweepCustomModel(_ string) error {
+func testSweepModel(_ string) error {
 	return acctest.SweepRegions((&inference.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		inferenceAPI := inference.NewAPI(scwClient)
 

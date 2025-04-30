@@ -44,7 +44,7 @@ func IsDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func IsCustomModelDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "scaleway_inference_custom_model" {
+			if rs.Type != "scaleway_inference_model" {
 				continue
 			}
 
