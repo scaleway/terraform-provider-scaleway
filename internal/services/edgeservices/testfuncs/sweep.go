@@ -221,17 +221,19 @@ func testSweepWAF(_ string) error {
 			return fmt.Errorf("failed to list pipelines: %w", err)
 		}
 
-		listWAF, err := edgeAPI.ListWafStages(&edge.ListWafStagesRequest{})
-		if err != nil {
-			return fmt.Errorf("failed to list WAF stage: %w", err)
-		}
-
-		for _, stage := range listWAF.Stages {
-			err = edgeAPI.DeleteWafStage(&edge.DeleteWafStageRequest{
-				WafStageID: stage.ID,
-			})
+		for _, pipeline := range listPipelines.Pipelines {
+			listWAF, err := edgeAPI.ListWafStages(&edge.ListWafStagesRequest{})
 			if err != nil {
-				return fmt.Errorf("failed to delete WAF stage: %w", err)
+				return fmt.Errorf("failed to list WAF stage: %w", err)
+			}
+
+			for _, stage := range listWAF.Stages {
+				err = edgeAPI.DeleteWafStage(&edge.DeleteWafStageRequest{
+					WafStageID: stage.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to delete WAF stage: %w", err)
+				}
 			}
 		}
 
