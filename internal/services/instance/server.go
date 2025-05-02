@@ -785,11 +785,23 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			return diag.FromErr(err)
 		}
 
+		mostRelevantTypes := compatibleTypes.CompatibleTypes[:5]
+
 		return diag.Diagnostics{diag.Diagnostic{
 			Severity: diag.Warning,
 			Detail:   fmt.Sprintf("Instance type %q will soon reach End of Service", server.CommercialType),
 			Summary: fmt.Sprintf(`Your Instance will soon reach End of Service. You can check the exact date on the Scaleway console. We recommend that you migrate your Instance before that.
-Here are the best options for %q, ordered by relevance: [%s]`, server.CommercialType, strings.Join(compatibleTypes.CompatibleTypes, ", ")),
+Here are the %d best options for %q, ordered by relevance: [%s]
+
+You can check the full list of compatible server types:
+	- on the Scaleway console
+	- using the CLI command 'scw instance server get-compatible-types %s zone=%s'`,
+				len(mostRelevantTypes),
+				server.CommercialType,
+				strings.Join(mostRelevantTypes, ", "),
+				server.ID,
+				server.Zone,
+			),
 			AttributePath: cty.GetAttrPath("type"),
 		}}
 	}
