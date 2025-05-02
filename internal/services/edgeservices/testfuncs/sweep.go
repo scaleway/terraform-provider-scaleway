@@ -222,7 +222,9 @@ func testSweepWAF(_ string) error {
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
-			listWAF, err := edgeAPI.ListWafStages(&edge.ListWafStagesRequest{})
+			listWAF, err := edgeAPI.ListWafStages(&edge.ListWafStagesRequest{
+				PipelineID: pipeline.ID,
+			})
 			if err != nil {
 				return fmt.Errorf("failed to list WAF stage: %w", err)
 			}
