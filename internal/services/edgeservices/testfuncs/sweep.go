@@ -70,17 +70,26 @@ func testSweepDNS(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		edgeAPI := edge.NewAPI(scwClient)
 
-		listDNS, err := edgeAPI.ListDNSStages(&edge.ListDNSStagesRequest{})
+		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list DNS stages: %w", err)
+			return fmt.Errorf("failed to list pipelines: %w", err)
 		}
 
-		for _, stage := range listDNS.Stages {
-			err = edgeAPI.DeleteDNSStage(&edge.DeleteDNSStageRequest{
-				DNSStageID: stage.ID,
+		for _, pipeline := range listPipelines.Pipelines {
+			listDNS, err := edgeAPI.ListDNSStages(&edge.ListDNSStagesRequest{
+				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete DNS stage: %w", err)
+				return fmt.Errorf("failed to list DNS stages: %w", err)
+			}
+
+			for _, stage := range listDNS.Stages {
+				err = edgeAPI.DeleteDNSStage(&edge.DeleteDNSStageRequest{
+					DNSStageID: stage.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to delete DNS stage: %w", err)
+				}
 			}
 		}
 
@@ -92,17 +101,26 @@ func testSweepTLS(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		edgeAPI := edge.NewAPI(scwClient)
 
-		listTLS, err := edgeAPI.ListTLSStages(&edge.ListTLSStagesRequest{})
+		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list TLS stages: %w", err)
+			return fmt.Errorf("failed to list pipelines: %w", err)
 		}
 
-		for _, stage := range listTLS.Stages {
-			err = edgeAPI.DeleteTLSStage(&edge.DeleteTLSStageRequest{
-				TLSStageID: stage.ID,
+		for _, pipeline := range listPipelines.Pipelines {
+			listTLS, err := edgeAPI.ListTLSStages(&edge.ListTLSStagesRequest{
+				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete TLS stage: %w", err)
+				return fmt.Errorf("failed to list TLS stages: %w", err)
+			}
+
+			for _, stage := range listTLS.Stages {
+				err = edgeAPI.DeleteTLSStage(&edge.DeleteTLSStageRequest{
+					TLSStageID: stage.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to delete TLS stage: %w", err)
+				}
 			}
 		}
 
@@ -114,17 +132,26 @@ func testSweepCache(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		edgeAPI := edge.NewAPI(scwClient)
 
-		listCaches, err := edgeAPI.ListCacheStages(&edge.ListCacheStagesRequest{})
+		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list cache stages: %w", err)
+			return fmt.Errorf("failed to list pipelines: %w", err)
 		}
 
-		for _, stage := range listCaches.Stages {
-			err = edgeAPI.DeleteCacheStage(&edge.DeleteCacheStageRequest{
-				CacheStageID: stage.ID,
+		for _, pipeline := range listPipelines.Pipelines {
+			listCaches, err := edgeAPI.ListCacheStages(&edge.ListCacheStagesRequest{
+				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete cache stage: %w", err)
+				return fmt.Errorf("failed to list cache stages: %w", err)
+			}
+
+			for _, stage := range listCaches.Stages {
+				err = edgeAPI.DeleteCacheStage(&edge.DeleteCacheStageRequest{
+					CacheStageID: stage.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to delete cache stage: %w", err)
+				}
 			}
 		}
 
@@ -136,17 +163,26 @@ func testSweepBackend(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		edgeAPI := edge.NewAPI(scwClient)
 
-		listBackends, err := edgeAPI.ListBackendStages(&edge.ListBackendStagesRequest{})
+		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list backend stage: %w", err)
+			return fmt.Errorf("failed to list pipelines: %w", err)
 		}
 
-		for _, stage := range listBackends.Stages {
-			err = edgeAPI.DeleteBackendStage(&edge.DeleteBackendStageRequest{
-				BackendStageID: stage.ID,
+		for _, pipeline := range listPipelines.Pipelines {
+			listBackends, err := edgeAPI.ListBackendStages(&edge.ListBackendStagesRequest{
+				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete backend stage: %w", err)
+				return fmt.Errorf("failed to list backend stage: %w", err)
+			}
+
+			for _, stage := range listBackends.Stages {
+				err = edgeAPI.DeleteBackendStage(&edge.DeleteBackendStageRequest{
+					BackendStageID: stage.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to delete backend stage: %w", err)
+				}
 			}
 		}
 
@@ -180,6 +216,11 @@ func testSweepWAF(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		edgeAPI := edge.NewAPI(scwClient)
 
+		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
+		if err != nil {
+			return fmt.Errorf("failed to list pipelines: %w", err)
+		}
+
 		listWAF, err := edgeAPI.ListWafStages(&edge.ListWafStagesRequest{})
 		if err != nil {
 			return fmt.Errorf("failed to list WAF stage: %w", err)
@@ -202,17 +243,26 @@ func testSweepRoute(_ string) error {
 	return acctest.Sweep(func(scwClient *scw.Client) error {
 		edgeAPI := edge.NewAPI(scwClient)
 
-		listRoutes, err := edgeAPI.ListRouteStages(&edge.ListRouteStagesRequest{})
+		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list route stage: %w", err)
+			return fmt.Errorf("failed to list pipelines: %w", err)
 		}
 
-		for _, stage := range listRoutes.Stages {
-			err = edgeAPI.DeleteRouteStage(&edge.DeleteRouteStageRequest{
-				RouteStageID: stage.ID,
+		for _, pipeline := range listPipelines.Pipelines {
+			listRoutes, err := edgeAPI.ListRouteStages(&edge.ListRouteStagesRequest{
+				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete route stage: %w", err)
+				return fmt.Errorf("failed to list route stage: %w", err)
+			}
+
+			for _, stage := range listRoutes.Stages {
+				err = edgeAPI.DeleteRouteStage(&edge.DeleteRouteStageRequest{
+					RouteStageID: stage.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to delete route stage: %w", err)
+				}
 			}
 		}
 
