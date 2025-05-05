@@ -4,8 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -14,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -223,10 +226,10 @@ func readVPCGWResourceDataV2(d *schema.ResourceData, gw *v2.Gateway) diag.Diagno
 }
 
 // readVPCGWNetworkResourceDataV1 sets the resource data using a v1 gateway network
-func readVPCGWNetworkResourceDataV1(d *schema.ResourceData, gatewayNetwork *vpcgw.GatewayNetwork) diag.Diagnostics {
+func readVPCGWNetworkResourceDataV1(d *schema.ResourceData, gatewayNetwork *vpcgw.GatewayNetwork, diags diag.Diagnostics) diag.Diagnostics {
 	fetchRegion, err := gatewayNetwork.Zone.Region()
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.FromErr(err)...)
 	}
 
 	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
@@ -265,10 +268,10 @@ func readVPCGWNetworkResourceDataV1(d *schema.ResourceData, gatewayNetwork *vpcg
 }
 
 // readVPCGWNetworkResourceDataV2 sets the resource data using a v1 gateway network
-func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.GatewayNetwork) diag.Diagnostics {
+func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.GatewayNetwork, diags diag.Diagnostics) diag.Diagnostics {
 	fetchRegion, err := gatewayNetwork.Zone.Region()
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.FromErr(err)...)
 	}
 
 	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
@@ -299,6 +302,74 @@ func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.G
 	_ = d.Set("ipam_config", ipamConfig)
 
 	return nil
+}
+
+func getPrivateIPsV1(ctx context.Context, gn *vpcgw.GatewayNetwork, m interface{}) (interface{}, diag.Diagnostics) {
+	var privateIPs []map[string]interface{}
+
+	resourceID := gn.ID
+
+	region, err := gn.Zone.Region()
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	resourceType := ipamAPI.ResourceTypeVpcGatewayNetwork
+	opts := &ipam.GetResourcePrivateIPsOptions{
+		ResourceID:       &resourceID,
+		ResourceType:     &resourceType,
+		PrivateNetworkID: &gn.PrivateNetworkID,
+	}
+
+	privateIPs, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+	if err != nil {
+		if !httperrors.Is403(err) {
+			return nil, diag.FromErr(err)
+		}
+
+		return nil, diag.Diagnostics{diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       err.Error(),
+			Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
+			AttributePath: cty.GetAttrPath("private_ips"),
+		}}
+	}
+
+	return privateIPs, nil
+}
+
+func getPrivateIPsV2(ctx context.Context, gn *v2.GatewayNetwork, m interface{}) (interface{}, diag.Diagnostics) {
+	var privateIPs []map[string]interface{}
+
+	resourceID := gn.ID
+
+	region, err := gn.Zone.Region()
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	resourceType := ipamAPI.ResourceTypeVpcGatewayNetwork
+	opts := &ipam.GetResourcePrivateIPsOptions{
+		ResourceID:       &resourceID,
+		ResourceType:     &resourceType,
+		PrivateNetworkID: &gn.PrivateNetworkID,
+	}
+
+	privateIPs, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+	if err != nil {
+		if !httperrors.Is403(err) {
+			return nil, diag.FromErr(err)
+		}
+
+		return nil, diag.Diagnostics{diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       err.Error(),
+			Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
+			AttributePath: cty.GetAttrPath("private_ips"),
+		}}
+	}
+
+	return privateIPs, nil
 }
 
 // updateGatewayV1 performs the update of the public gateway using the v1 API
