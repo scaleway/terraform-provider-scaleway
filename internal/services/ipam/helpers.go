@@ -74,6 +74,7 @@ type GetResourcePrivateIPsOptions struct {
 	ResourceID       *string
 	ResourceName     *string
 	PrivateNetworkID *string
+	ProjectID        *string
 }
 
 // GetResourcePrivateIPs fetches the private IP addresses of a resource in a private network.
@@ -99,6 +100,11 @@ func GetResourcePrivateIPs(ctx context.Context, m interface{}, region scw.Region
 
 		if opts.ResourceType != nil {
 			req.ResourceType = *opts.ResourceType
+		}
+
+		// Project ID needs to be specified in order to force the IPAM API to check IAM permissions and send a 403 response code if not authorized
+		if opts.ProjectID != nil {
+			req.ProjectID = opts.ProjectID
 		}
 	}
 

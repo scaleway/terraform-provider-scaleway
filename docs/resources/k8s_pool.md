@@ -107,6 +107,9 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the pool.
 - `nodes` - (List of) The nodes in the default pool.
     - `name` - The name of the node.
+    - `private_ips` - The list of private IPv4 and IPv6 addresses associated with the node.
+        - `id` - The ID of the IP address resource.
+        - `address` - The private IP address.
     - `public_ip` - The public IPv4. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `public_ip_v6` - The public IPv6. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `status` - The status of the node.
