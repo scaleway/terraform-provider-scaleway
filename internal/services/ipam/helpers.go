@@ -87,12 +87,15 @@ func GetResourcePrivateIPs(ctx context.Context, m interface{}, region scw.Region
 		if opts.PrivateNetworkID != nil {
 			req.PrivateNetworkID = opts.PrivateNetworkID
 		}
+
 		if opts.ResourceID != nil {
 			req.ResourceID = opts.ResourceID
 		}
+
 		if opts.ResourceName != nil {
 			req.ResourceName = opts.ResourceName
 		}
+
 		if opts.ResourceType != nil {
 			req.ResourceType = *opts.ResourceType
 		}
@@ -108,11 +111,13 @@ func GetResourcePrivateIPs(ctx context.Context, m interface{}, region scw.Region
 	}
 
 	ipList := make([]map[string]interface{}, 0, len(resp.IPs))
+
 	for _, ip := range resp.IPs {
 		ipNet := ip.Address
 		if ipNet.IP == nil {
 			continue
 		}
+
 		ipMap := map[string]interface{}{
 			"id":      regional.NewIDString(region, ip.ID),
 			"address": ipNet.IP.String(),
