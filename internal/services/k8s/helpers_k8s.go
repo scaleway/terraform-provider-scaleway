@@ -86,6 +86,7 @@ func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
 
 	for _, node := range res.Nodes {
 		n := make(map[string]interface{})
+		n["id"] = node.ID
 		n["name"] = node.Name
 		n["status"] = node.Status.String()
 

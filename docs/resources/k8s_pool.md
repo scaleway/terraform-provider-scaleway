@@ -114,6 +114,9 @@ In addition to all arguments above, the following attributes are exported:
 - `updated_at` - The last update date of the pool.
 - `version` - The version of the pool.
 - `current_size` - The size of the pool at the time the terraform state was updated.
+- `private_ips` - The list of private IPv4 addresses associated with the resource.
+    - `id` - The ID of the IPv4 address resource.
+    - `address` - The private IPv4 address.
 
 ## Zone
 
