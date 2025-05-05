@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -14,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -299,6 +301,56 @@ func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.G
 	_ = d.Set("ipam_config", ipamConfig)
 
 	return nil
+}
+
+func getPrivateIPsV1(ctx context.Context, gn *vpcgw.GatewayNetwork, m interface{}) interface{} {
+	var privateIPs []map[string]interface{}
+
+	resourceID := gn.ID
+
+	region, err := gn.Zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	resourceType := ipamAPI.ResourceTypeVpcGatewayNetwork
+	opts := &ipam.GetResourcePrivateIPsOptions{
+		ResourceID:       &resourceID,
+		ResourceType:     &resourceType,
+		PrivateNetworkID: &gn.PrivateNetworkID,
+	}
+
+	privateIPs, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return privateIPs
+}
+
+func getPrivateIPsV2(ctx context.Context, gn *v2.GatewayNetwork, m interface{}) interface{} {
+	var privateIPs []map[string]interface{}
+
+	resourceID := gn.ID
+
+	region, err := gn.Zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	resourceType := ipamAPI.ResourceTypeVpcGatewayNetwork
+	opts := &ipam.GetResourcePrivateIPsOptions{
+		ResourceID:       &resourceID,
+		ResourceType:     &resourceType,
+		PrivateNetworkID: &gn.PrivateNetworkID,
+	}
+
+	privateIPs, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return privateIPs
 }
 
 // updateGatewayV1 performs the update of the public gateway using the v1 API
