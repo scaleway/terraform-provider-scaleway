@@ -3,9 +3,11 @@ package instance
 import (
 	"context"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -13,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -67,6 +70,25 @@ func ResourcePrivateNIC() *schema.Resource {
 				Optional:    true,
 				Description: "IPAM ip list, should be for internal use only",
 				ForceNew:    true,
+			},
+			"private_ips": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IP address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IP address",
+						},
+					},
+				},
 			},
 			"ipam_ip_ids": {
 				Type: schema.TypeList,
@@ -163,7 +185,36 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 		_ = d.Set("tags", privateNIC.Tags)
 	}
 
-	return nil
+	region, err := zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	diags := diag.Diagnostics{}
+	resourceType := ipamAPI.ResourceTypeInstancePrivateNic
+	opts := &ipam.GetResourcePrivateIPsOptions{
+		ResourceID:       &privateNIC.ID,
+		ResourceType:     &resourceType,
+		PrivateNetworkID: &privateNIC.PrivateNetworkID,
+	}
+
+	privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+	if err != nil {
+		if !httperrors.Is403(err) {
+			return diag.FromErr(err)
+		}
+
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       err.Error(),
+			Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
+			AttributePath: cty.GetAttrPath("private_ips"),
+		})
+	}
+
+	_ = d.Set("private_ips", privateIPs)
+
+	return diags
 }
 
 func ResourceInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
