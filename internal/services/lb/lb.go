@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -20,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -199,6 +201,25 @@ func ResourceLb() *schema.Resource {
 				DiffSuppressFunc: dsf.OrderDiff,
 				ConflictsWith:    []string{"assign_flexible_ip", "assign_flexible_ipv6"},
 			},
+			"private_ips": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of private IPv4 addresses associated with the resource",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv4 address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IPv4 address",
+						},
+					},
+				},
+			},
 			"region":          regional.ComputedSchema(),
 			"zone":            zonal.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
@@ -333,6 +354,32 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	}
 
 	_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
+
+	privateNetworkIDs := make([]string, 0, len(privateNetworks))
+	for _, pn := range privateNetworks {
+		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
+	}
+
+	allPrivateIPs := []map[string]interface{}(nil)
+	resourceType := ipamAPI.ResourceTypeLBServer
+
+	for _, privateNetworkID := range privateNetworkIDs {
+		opts := &ipam.GetResourcePrivateIPsOptions{
+			ResourceType:     &resourceType,
+			PrivateNetworkID: &privateNetworkID,
+		}
+
+		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if privateIPs != nil {
+			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		}
+	}
+
+	_ = d.Set("private_ips", allPrivateIPs)
 
 	return nil
 }
