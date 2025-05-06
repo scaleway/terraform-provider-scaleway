@@ -204,18 +204,18 @@ func ResourceLb() *schema.Resource {
 			"private_ips": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of private IPv4 addresses associated with the resource",
+				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
+							Description: "The ID of the IP address resource",
 						},
 						"address": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The private IPv4 address",
+							Description: "The private IP address",
 						},
 					},
 				},

@@ -129,9 +129,9 @@ In addition to all arguments above, the following attributes are exported:
 - `private_network` - List of private networks connected to your load balancer.
     - `status` - The status of the private network connection.
     - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
-- `private_ip` - The list of private IPv4 addresses associated with the resource.
-    - `id` - The ID of the IPv4 address resource.
-    - `address` - The private IPv4 address.
+- `private_ips` - The list of private IPv4 and IPv6 addresses associated with the resource.
+    - `id` - The ID of the IP address resource.
+    - `address` - The private IP address.
 - `organization_id` - The ID of the Organization ID the Load Balancer is associated with.
 
 ~> **Important:** `release_ip` will not be supported. This prevents the destruction of the IP from releasing a Load Balancer.
