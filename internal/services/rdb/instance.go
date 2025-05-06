@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -324,10 +325,10 @@ func ResourceInstance() *schema.Resource {
 				Optional:    true,
 				Description: "Enable or disable encryption at rest for the database instance",
 			},
-			"private_ips": {
+			"private_ip": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of private IPv4 addresses associated with the resource",
+				Description: "The private IPv4 addresses associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -661,7 +662,8 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("logs_policy", flattenInstanceLogsPolicy(res.LogsPolicy))
 
 	// set endpoints
-	var privateIPs []map[string]interface{}
+	privateIPs := make([]map[string]interface{}, 0, 1)
+	diags := diag.Diagnostics{}
 
 	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
 		_ = d.Set("private_network", pnI)
@@ -681,7 +683,16 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 
 				endpointPrivateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
 				if err != nil {
-					return diag.FromErr(err)
+					if !httperrors.Is403(err) {
+						return diag.FromErr(err)
+					}
+
+					diags = append(diags, diag.Diagnostic{
+						Severity:      diag.Warning,
+						Summary:       err.Error(),
+						Detail:        "Got 403 while reading private IP from IPAM API, please check your IAM permissions",
+						AttributePath: cty.GetAttrPath("private_ip"),
+					})
 				}
 
 				privateIPs = append(privateIPs, endpointPrivateIPs...)
@@ -689,13 +700,13 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 		}
 	}
 
-	_ = d.Set("private_ips", privateIPs)
+	_ = d.Set("private_ip", privateIPs)
 
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
 
-	return nil
+	return diags
 }
 
 //gocyclo:ignore

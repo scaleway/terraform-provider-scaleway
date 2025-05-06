@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
@@ -103,6 +104,10 @@ func GetResourcePrivateIPs(ctx context.Context, m interface{}, region scw.Region
 
 	resp, err := ipamAPI.ListIPs(req, scw.WithContext(ctx))
 	if err != nil {
+		if httperrors.Is403(err) {
+			return nil, err
+		}
+
 		return nil, fmt.Errorf("error fetching IPs from IPAM: %w", err)
 	}
 
