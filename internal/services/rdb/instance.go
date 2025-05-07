@@ -678,7 +678,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 				opts := &ipam.GetResourcePrivateIPsOptions{
 					ResourceID:       &res.ID,
 					ResourceType:     &resourceType,
-					PrivateNetworkID: &res.Endpoints[0].PrivateNetwork.PrivateNetworkID,
+					PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
 				}
 
 				endpointPrivateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
