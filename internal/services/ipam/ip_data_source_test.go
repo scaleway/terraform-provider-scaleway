@@ -151,8 +151,6 @@ func TestAccDataSourceIPAMIP_RDB(t *testing.T) {
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
-						volume_size_in_gb = 10
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.main.id}"
 							enable_ipam = true
