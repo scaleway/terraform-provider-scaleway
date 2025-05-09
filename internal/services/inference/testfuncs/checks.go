@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
+	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
@@ -30,6 +30,36 @@ func IsDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			if err == nil {
 				return fmt.Errorf("deployment %s (%s) still exists", deployment.Name, deployment.ID)
+			}
+
+			if !httperrors.Is404(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func IsModelDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "scaleway_inference_model" {
+				continue
+			}
+
+			inferenceAPI, region, id, err := inference.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			model, err := inferenceAPI.GetModel(&inferenceSDK.GetModelRequest{
+				Region:  region,
+				ModelID: id,
+			})
+
+			if err == nil {
+				return fmt.Errorf("model %s (%s) still exists", model.Name, model.ID)
 			}
 
 			if !httperrors.Is404(err) {

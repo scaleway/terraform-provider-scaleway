@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -13,6 +13,8 @@ import (
 const (
 	defaultInferenceDeploymentTimeout = 80 * time.Minute
 	defaultDeploymentRetryInterval    = 1 * time.Minute
+	defaultModelTimeout               = 180 * time.Minute
+	defaultModelRetryInterval         = 1 * time.Minute
 )
 
 // NewAPIWithRegion returns a new inference API and the region for a Create request
