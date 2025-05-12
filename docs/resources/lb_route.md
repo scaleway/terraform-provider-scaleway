@@ -73,7 +73,7 @@ resource "scaleway_lb_route" "rt01" {
 }
 ```
 
-# With path-begin matching for HTTP backends
+### With path-begin matching for HTTP backends
 
 ```terraform
 resource "scaleway_lb_ip" "ip" {}
