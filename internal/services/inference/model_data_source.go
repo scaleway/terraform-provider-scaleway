@@ -1,0 +1,82 @@
+package inference
+
+import (
+	"context"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
+)
+
+func DataSourceModel() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceModel().Schema)
+
+	//datasource.FixDatasourceSchemaFlags(dsSchema, true, "name")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "url", "name")
+	dsSchema["name"].ConflictsWith = []string{"model_id"}
+	dsSchema["model_id"] = &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The ID of the model",
+		ValidateDiagFunc: verify.IsUUIDWithLocality(),
+		ConflictsWith:    []string{"name"},
+	}
+
+	return &schema.Resource{
+		ReadContext: DataSourceModelRead,
+		Schema:      dsSchema,
+	}
+}
+
+func DataSourceModelRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := NewAPIWithRegion(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	modelID, ok := d.GetOk("model_id")
+	if !ok {
+		modelName := d.Get("name").(string)
+		modelList, err := api.ListModels(&inference.ListModelsRequest{
+			Region:    region,
+			Name:      scw.StringPtr(modelName),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		foundModel, err := datasource.FindExact(
+			modelList.Models,
+			func(model *inference.Model) bool {
+				return model.Name == modelName
+			},
+			modelName,
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		modelID = foundModel.ID
+	}
+
+	err = d.Set("model_id", modelID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	diags := ResourceModelRead(ctx, d, m)
+	if diags != nil {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diag.FromErr(fmt.Errorf("model_id is empty"))
+	}
+
+	return nil
+}

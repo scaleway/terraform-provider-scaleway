@@ -45,6 +45,7 @@ func ResourceDeployment() *schema.Resource {
 			"node_type": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The node type to use for the deployment",
 			},
 			"model_name": {
