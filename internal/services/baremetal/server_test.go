@@ -613,6 +613,8 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.base", "private_ips.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.base", "private_ips.0.address"),
 				),
 			},
 		},
