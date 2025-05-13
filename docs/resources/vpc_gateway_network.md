@@ -113,6 +113,9 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the GatewayNetwork.
 - `updated_at` - The date and time of the last update of the GatewayNetwork.
 - `status` - The status of the Public Gateway's connection to the Private Network.
+- `private_ip` - The private IPv4 address associated with the resource.
+    - `id` - The ID of the IPv4 address resource.
+    - `address` - The private IPv4 address.
 
 ## Import
 
