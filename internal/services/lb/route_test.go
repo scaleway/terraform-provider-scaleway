@@ -135,6 +135,50 @@ func TestAccRoute_WithHostHeader(t *testing.T) {
 	})
 }
 
+func TestAccRoute_WithPathBegin(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isRouteDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name  = "test-lb"
+						type  = "lb-s"
+					}
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						forward_protocol = "http"
+						forward_port     = 80
+						proxy_protocol   = "none"
+					}
+					resource scaleway_lb_frontend frt01 {
+						lb_id        = scaleway_lb.lb01.id
+						backend_id   = scaleway_lb_backend.bkd01.id
+						inbound_port = 80
+					}
+					resource scaleway_lb_route rt01 {
+						frontend_id      = scaleway_lb_frontend.frt01.id
+						backend_id       = scaleway_lb_backend.bkd01.id
+                        match_path_begin = "/api"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isRoutePresent(tt, "scaleway_lb_route.rt01"),
+					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_path_begin", "/api"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "updated_at"),
+				),
+			},
+		},
+	})
+}
+
 func isRoutePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

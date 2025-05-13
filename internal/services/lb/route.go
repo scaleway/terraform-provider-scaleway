@@ -47,13 +47,19 @@ func ResourceRoute() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer",
-				ConflictsWith: []string{"match_host_header"},
+				ConflictsWith: []string{"match_host_header", "match_path_begin"},
 			},
 			"match_host_header": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "Specifies the host of the server to which the request is being sent",
-				ConflictsWith: []string{"match_sni"},
+				ConflictsWith: []string{"match_sni", "match_path_begin"},
+			},
+			"match_path_begin": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Value to match in the URL beginning path from an incoming request",
+				ConflictsWith: []string{"match_sni", "match_host_header"},
 			},
 			"match_subdomains": {
 				Type:        schema.TypeBool,
@@ -102,6 +108,7 @@ func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m interf
 		Match: &lbSDK.RouteMatch{
 			Sni:             types.ExpandStringPtr(d.Get("match_sni")),
 			HostHeader:      types.ExpandStringPtr(d.Get("match_host_header")),
+			PathBegin:       types.ExpandStringPtr(d.Get("match_path_begin")),
 			MatchSubdomains: d.Get("match_subdomains").(bool),
 		},
 	}
@@ -140,6 +147,7 @@ func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("backend_id", zonal.NewIDString(zone, route.BackendID))
 	_ = d.Set("match_sni", types.FlattenStringPtr(route.Match.Sni))
 	_ = d.Set("match_host_header", types.FlattenStringPtr(route.Match.HostHeader))
+	_ = d.Set("match_path_begin", types.FlattenStringPtr(route.Match.PathBegin))
 	_ = d.Set("match_subdomains", route.Match.MatchSubdomains)
 	_ = d.Set("created_at", types.FlattenTime(route.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(route.UpdatedAt))
@@ -169,6 +177,7 @@ func resourceLbRouteUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		Match: &lbSDK.RouteMatch{
 			Sni:             types.ExpandStringPtr(d.Get("match_sni")),
 			HostHeader:      types.ExpandStringPtr(d.Get("match_host_header")),
+			PathBegin:       types.ExpandStringPtr(d.Get("match_path_begin")),
 			MatchSubdomains: d.Get("match_subdomains").(bool),
 		},
 	}
