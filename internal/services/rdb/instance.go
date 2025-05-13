@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -18,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -321,6 +324,25 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Enable or disable encryption at rest for the database instance",
+			},
+			"private_ip": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The private IPv4 address associated with the resource",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv4 address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IPv4 address",
+						},
+					},
+				},
 			},
 			// Common
 			"region":          regional.Schema(),
@@ -640,15 +662,51 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("logs_policy", flattenInstanceLogsPolicy(res.LogsPolicy))
 
 	// set endpoints
+	privateIPs := make([]map[string]interface{}, 0, 1)
+	diags := diag.Diagnostics{}
+
 	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
 		_ = d.Set("private_network", pnI)
+
+		for _, endpoint := range res.Endpoints {
+			if endpoint.PrivateNetwork == nil {
+				continue
+			}
+
+			if endpoint.PrivateNetwork.ProvisioningMode == rdb.EndpointPrivateNetworkDetailsProvisioningModeIpam {
+				resourceType := ipamAPI.ResourceTypeRdbInstance
+				opts := &ipam.GetResourcePrivateIPsOptions{
+					ResourceID:       &res.ID,
+					ResourceType:     &resourceType,
+					PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
+				}
+
+				endpointPrivateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+				if err != nil {
+					if !httperrors.Is403(err) {
+						return diag.FromErr(err)
+					}
+
+					diags = append(diags, diag.Diagnostic{
+						Severity:      diag.Warning,
+						Summary:       err.Error(),
+						Detail:        "Got 403 while reading private IP from IPAM API, please check your IAM permissions",
+						AttributePath: cty.GetAttrPath("private_ip"),
+					})
+				}
+
+				privateIPs = append(privateIPs, endpointPrivateIPs...)
+			}
+		}
 	}
+
+	_ = d.Set("private_ip", privateIPs)
 
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
 	}
 
-	return nil
+	return diags
 }
 
 //gocyclo:ignore
