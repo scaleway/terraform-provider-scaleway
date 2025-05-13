@@ -41,3 +41,4 @@ In addition to all arguments above, the following attributes are exported:
     - `match_subdomains` - If true, all subdomains will match.
     - `match_sni` - Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer.
     - `match_host_header` - Specifies the host of the server to which the request is being sent.
+    - `match_path_begin` - The value to match in the URL beginning path from an incoming request.
