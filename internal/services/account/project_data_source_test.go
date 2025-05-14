@@ -8,13 +8,15 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
+const dummyOrgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
 func TestAccDataSourceProject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
-		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+		orgID = dummyOrgID
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -55,7 +57,7 @@ func TestAccDataSourceProject_Default(t *testing.T) {
 
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
-		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+		orgID = dummyOrgID
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -111,6 +113,39 @@ func TestAccDataSourceProject_Extract(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.scaleway_account_project.project", "id", projectID),
 					resource.TestCheckResourceAttrSet("data.scaleway_account_project.project", "name"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceProject_List(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		orgID = dummyOrgID
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isProjectDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data scaleway_account_projects "projects" {
+						organization_id = "%s"
+					}`, orgID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.#", "8"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.0.id", "6867048b-fe12-4e96-835e-41c79a39604b"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.1.id", "8cc8dd4d-a094-407a-89a3-9d004674e936"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.0.name", "default"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.1.name", "tf_tests_container_trigger_sqs"),
 				),
 			},
 		},
