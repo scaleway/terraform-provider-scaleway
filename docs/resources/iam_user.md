@@ -65,7 +65,7 @@ resource "scaleway_iam_user" "user" {
 
 - `first_name` - The user's first name.
 
-- `first_name` - The user's last name.
+- `last_name` - The user's last name.
 
 - `phone_number` - The user's phone number.
 
