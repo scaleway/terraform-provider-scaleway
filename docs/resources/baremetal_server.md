@@ -197,9 +197,8 @@ resource "scaleway_baremetal_server" "my_server" {
 
 ```terraform
 variable "configCustomPartitioning" {
-  default = "{\"partitioning_schema\":{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912,\"use_all_available_space\":false},{\"label\":\"boot\",\"number\":2,\"size\":536870912,\"use_all_available_space\":false},{\"label\":\"root\",\"number\":3,\"size\":1018839433216,\"use_all_available_space\":false}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"boot\",\"number\":1,\"size\":536870912,\"use_all_available_space\":false},{\"label\":\"root\",\"number\":2,\"size\":1018839433216,\"use_all_available_space\":false}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/nvme0n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/nvme0n1p3\",\"format\":\"ext4\",\"mountpoint\":\"/\"},{\"device\":\"/dev/nvme1n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/data\"}],\"raids\":[]},\"zfs\":null}"
+  default ="{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"boot\",\"number\":2,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"root\",\"number\":3,\"size\":1018839433216,\"useAllAvailableSpace\":false}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"boot\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"data\",\"number\":2,\"size\":1018839433216,\"useAllAvailableSpace\":false}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/nvme0n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/nvme0n1p3\",\"format\":\"ext4\",\"mountpoint\":\"/\"},{\"device\":\"/dev/nvme1n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/data\"}],\"raids\":[]}"
 }
-
 
 data "scaleway_baremetal_os" "my_os" {
   zone    = "fr-par-1"
@@ -219,7 +218,7 @@ data "scaleway_baremetal_offer" "my_offer" {
 }
 
 resource "scaleway_baremetal_server" "my_server" {
-  name        = "%s"
+  name        = "my_super_server"
   zone        = "fr-par-1"
   description = "test a description"
   offer       = data.scaleway_baremetal_offer.my_offer.offer_id
