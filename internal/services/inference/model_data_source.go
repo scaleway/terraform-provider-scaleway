@@ -63,8 +63,9 @@ func DataSourceModelRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 		modelID = foundModel.ID
 	}
-
-	err = d.Set("model_id", modelID)
+	regionalID := datasource.NewRegionalID(modelID, region)
+	d.SetId(regionalID)
+	err = d.Set("model_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

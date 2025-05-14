@@ -24,6 +24,7 @@ func TestAccDataSourceModel_Basic(t *testing.T) {
 
 `, modelName),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckModelExists(tt, "data.scaleway_inference_model.my-model"),
 					resource.TestCheckResourceAttr("data.scaleway_inference_model.my-model", "name", modelName),
 				),
 			},
