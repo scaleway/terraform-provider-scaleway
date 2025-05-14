@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
@@ -31,6 +32,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -346,6 +348,25 @@ func ResourceServer() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "IP Address",
+						},
+					},
+				},
+			},
+			"private_ips": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of private IPv4 addresses associated with the resource",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv4 address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IPv4 address",
 						},
 					},
 				},
@@ -773,6 +794,47 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
+	privateNICIDs := []string(nil)
+	for _, nic := range ph.privateNICsMap {
+		privateNICIDs = append(privateNICIDs, nic.ID)
+	}
+
+	allPrivateIPs := []map[string]interface{}(nil)
+	diags := diag.Diagnostics{}
+	resourceType := ipamAPI.ResourceTypeInstancePrivateNic
+
+	region, err := zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for _, nicID := range privateNICIDs {
+		opts := &ipam.GetResourcePrivateIPsOptions{
+			ResourceType: &resourceType,
+			ResourceID:   &nicID,
+		}
+
+		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+		if err != nil {
+			if !httperrors.Is403(err) {
+				return diag.FromErr(err)
+			}
+
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       err.Error(),
+				Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
+		}
+
+		if privateIPs != nil {
+			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		}
+	}
+
+	_ = d.Set("private_ips", allPrivateIPs)
+
 	////
 	// Display warning if server will soon reach End of Service
 	////
@@ -787,7 +849,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 
 		mostRelevantTypes := compatibleTypes.CompatibleTypes[:5]
 
-		return diag.Diagnostics{diag.Diagnostic{
+		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Detail:   fmt.Sprintf("Instance type %q will soon reach End of Service", server.CommercialType),
 			Summary: fmt.Sprintf(`Your Instance will soon reach End of Service. You can check the exact date on the Scaleway console. We recommend that you migrate your Instance before that.
@@ -803,10 +865,10 @@ You can check the full list of compatible server types:
 				server.Zone,
 			),
 			AttributePath: cty.GetAttrPath("type"),
-		}}
+		})
 	}
 
-	return nil
+	return diags
 }
 
 //gocyclo:ignore
