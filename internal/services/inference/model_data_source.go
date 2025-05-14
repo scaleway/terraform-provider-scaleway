@@ -15,7 +15,6 @@ import (
 func DataSourceModel() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceModel().Schema)
 
-	//datasource.FixDatasourceSchemaFlags(dsSchema, true, "name")
 	datasource.AddOptionalFieldsToSchema(dsSchema, "url", "name")
 	dsSchema["name"].ConflictsWith = []string{"model_id"}
 	dsSchema["model_id"] = &schema.Schema{
@@ -39,12 +38,13 @@ func DataSourceModelRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	modelID, ok := d.GetOk("model_id")
+	pageSize := uint32(1000)
 	if !ok {
 		modelName := d.Get("name").(string)
 		modelList, err := api.ListModels(&inference.ListModelsRequest{
 			Region:    region,
-			Name:      scw.StringPtr(modelName),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			PageSize:  &pageSize,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
