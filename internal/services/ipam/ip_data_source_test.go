@@ -1,6 +1,7 @@
 package ipam_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -123,13 +124,16 @@ func TestAccDataSourceIPAMIP_InstanceLB(t *testing.T) {
 func TestAccDataSourceIPAMIP_RDB(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, "PostgreSQL")
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_vpc" "main" {
 						name = "tf-tests-ipam-ip-datasource-rdb"
 					}
@@ -145,13 +149,13 @@ func TestAccDataSourceIPAMIP_RDB(t *testing.T) {
 					resource scaleway_rdb_instance main {
 						name = "test-ipam-ip-rdb"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
+						volume_type = "sbs_5k"
 						volume_size_in_gb = 10
 						private_network {
 							pn_id = "${scaleway_vpc_private_network.main.id}"
@@ -166,7 +170,7 @@ func TestAccDataSourceIPAMIP_RDB(t *testing.T) {
 						}
 						type = "ipv4"
 					}
-				`,
+				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.main", "address"),
 				),

@@ -125,6 +125,25 @@ func ResourceNetwork() *schema.Resource {
 				Computed:    true,
 				Description: "The mac address on this network",
 			},
+			"private_ip": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The private IPv4 address associated with the resource.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv4 address resource.",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IPv4 address.",
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -207,6 +226,8 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	var diags diag.Diagnostics
+
 	gatewayNetwork, err := waitForVPCGatewayNetworkV2(ctx, api, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is412(err) {
@@ -218,7 +239,16 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 				return diag.FromErr(err)
 			}
 
-			return readVPCGWNetworkResourceDataV1(d, gatewayV1)
+			if gatewayNetwork.PrivateNetworkID != "" {
+				privateIPs, diags := getPrivateIPsV1(ctx, gatewayV1, m)
+				if diags != nil && len(diags) > 0 && diags[0].Severity == diag.Error {
+					return diags
+				}
+
+				_ = d.Set("private_ip", privateIPs)
+			}
+
+			return readVPCGWNetworkResourceDataV1(d, gatewayV1, diags)
 		} else if httperrors.Is404(err) {
 			d.SetId("")
 
@@ -228,7 +258,16 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	return readVPCGWNetworkResourceDataV2(d, gatewayNetwork)
+	if gatewayNetwork.PrivateNetworkID != "" {
+		privateIPs, diags := getPrivateIPsV2(ctx, gatewayNetwork, m)
+		if diags != nil && len(diags) > 0 && diags[0].Severity == diag.Error {
+			return diags
+		}
+
+		_ = d.Set("private_ip", privateIPs)
+	}
+
+	return readVPCGWNetworkResourceDataV2(d, gatewayNetwork, diags)
 }
 
 func ResourceVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
