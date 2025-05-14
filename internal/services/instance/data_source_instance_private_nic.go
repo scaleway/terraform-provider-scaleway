@@ -84,7 +84,7 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	diags := ResourceInstancePrivateNICRead(ctx, d, m)
-	if diags != nil {
+	if len(diags) > 0 {
 		return append(diags, diag.Errorf("failed to read private nic state")...)
 	}
 
