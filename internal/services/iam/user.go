@@ -50,7 +50,7 @@ func ResourceUser() *schema.Resource {
 			"username": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true, // For Guest users, it is equal to the email
+				Computed:    true,
 				Description: "The member's username",
 			},
 			"password": {
@@ -76,7 +76,7 @@ func ResourceUser() *schema.Resource {
 			"locale": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true, // It gets automatically set by the API
+				Computed:    true,
 				Description: "The member's locale",
 			},
 			// Computed data
@@ -141,16 +141,10 @@ func createUserRequestBody(d *schema.ResourceData, isMember bool) *iam.CreateUse
 				SendWelcomeEmail:  d.Get("send_welcome_email").(bool),
 				Username:          d.Get("username").(string),
 				Password:          d.Get("password").(string),
-				/* N.B.: As of April 2025, these last four parameters are ignored by the API,
-				 * meaning that even if you set them when creating the user, the resulting user
-				 * will have empty strings as values for these fields (with the exception of
-				 * 'locale' for Member users, which is always set to 'en_US'). Trying to update
-				 * these fields is also useless, as the API ignores changes as well.
-				 */
-				FirstName:   d.Get("first_name").(string),
-				LastName:    d.Get("last_name").(string),
-				PhoneNumber: d.Get("phone_number").(string),
-				Locale:      d.Get("locale").(string),
+				FirstName:         d.Get("first_name").(string),
+				LastName:          d.Get("last_name").(string),
+				PhoneNumber:       d.Get("phone_number").(string),
+				Locale:            d.Get("locale").(string),
 			},
 		}
 	} else {
@@ -236,28 +230,33 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	/*
-	 * The API endpoint for updating a user allows changes to the 'tags' and 'email' fields
-	 * for both the Guest and Member user types, plus changes to 'first_name', 'last_name',
-	 * 'phone_number', and 'locale' when the user is of type Member.
-	 * However, for some reason the API ignores all changes to the Member-specific fields
-	 * when updating. This leaves only 'email' and 'tags' as fields that potentially support
-	 * changes.
-	 * The field 'email' is designed as 'ForceNew' for this resource, which means that a
-	 * change in its value requires the replacement (destroy and create) of the managed
-	 * resource instance.
-	 * All in all, as of April 2025, the only field that actually supports changes is 'tags'.
-	 */
-	if d.HasChanges("tags") {
-		_, err = api.UpdateUser(&iam.UpdateUserRequest{
-			UserID: user.ID,
-			Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
+	if user.Type == "Guest" {
+		// Users of type 'Guest' only support the update of tags.
+		if d.HasChanges("tags") {
+			_, err = api.UpdateUser(&iam.UpdateUserRequest{
+				UserID: user.ID,
+				Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else {
+		if d.HasChanges("tags", "email", "first_name", "last_name", "phone_number", "locale") {
+			_, err = api.UpdateUser(&iam.UpdateUserRequest{
+				UserID:      user.ID,
+				Tags:        types.ExpandUpdatedStringsPtr(d.Get("tags")),
+				Email:       scw.StringPtr(d.Get("email").(string)),
+				FirstName:   scw.StringPtr(d.Get("first_name").(string)),
+				LastName:    scw.StringPtr(d.Get("last_name").(string)),
+				PhoneNumber: scw.StringPtr(d.Get("phone_number").(string)),
+				Locale:      scw.StringPtr(d.Get("locale").(string)),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
-
 	return resourceIamUserRead(ctx, d, m)
 }
 
