@@ -49,9 +49,9 @@ resource "scaleway_account_ssh_key" "main" {
 The `scaleway_account_projects` data source exports the following attributes:
 
 - `projects` - (Computed) A list of projects. Each project has the following attributes:
-  - `id` - (Computed) The unique identifier of the project.
-  - `name` - (Computed) The name of the project.
-  - `organization_id` - (Computed) The unique identifier of the organization with which the project is associated.
-  - `created_at` - (Computed) The date and time when the project was created.
-  - `updated_at` - (Computed) The date and time when the project was updated.
-  - `description` - (Computed) The description of the project.
+    - `id` - (Computed) The unique identifier of the project.
+    - `name` - (Computed) The name of the project.
+    - `organization_id` - (Computed) The unique identifier of the organization with which the project is associated.
+    - `created_at` - (Computed) The date and time when the project was created.
+    - `updated_at` - (Computed) The date and time when the project was updated.
+    - `description` - (Computed) The description of the project.
