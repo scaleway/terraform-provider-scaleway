@@ -17,8 +17,8 @@ resource "scaleway_vpc" "vpc01" {
 }
 
 resource "scaleway_vpc_acl" "acl01" {
-  vpc_id   = scaleway_vpc.vpc01.id
-  is_ipv6  = false
+  vpc_id  = scaleway_vpc.vpc01.id
+  is_ipv6 = false
   rules {
     protocol      = "TCP"
     src_port_low  = 0

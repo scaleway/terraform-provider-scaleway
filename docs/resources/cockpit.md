@@ -51,9 +51,9 @@ resource "scaleway_cockpit" "main" {
 // Use the Grafana Terraform provider to create a Grafana user and a Grafana folder in the default Project's Cockpit
 
 resource "scaleway_cockpit_grafana_user" "main" {
-    project_id = scaleway_cockpit.main.project_id
-    login      = "example"
-    role       = "editor"
+  project_id = scaleway_cockpit.main.project_id
+  login      = "example"
+  role       = "editor"
 }
 
 resource "scaleway_cockpit" "main" {}

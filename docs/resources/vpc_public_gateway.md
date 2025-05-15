@@ -14,9 +14,9 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 ```terraform
 resource "scaleway_vpc_public_gateway" "main" {
-    name = "public_gateway_demo"
-    type = "VPC-GW-S"
-    tags = ["demo", "terraform"]
+  name = "public_gateway_demo"
+  type = "VPC-GW-S"
+  tags = ["demo", "terraform"]
 }
 ```
 
@@ -30,7 +30,8 @@ resource "scaleway_iam_ssh_key" "key1" {
 
 resource "scaleway_iam_ssh_key" "key2" {
   name       = "key2"
-  public_key = file("~/.ssh/another_key.pub")}
+  public_key = file("~/.ssh/another_key.pub")
+}
 
 # Use a local variable to compute a hash of the SSH keys
 locals {
@@ -41,12 +42,12 @@ locals {
 }
 
 resource "scaleway_vpc_public_gateway" "main" {
-    name             = "public_gateway_demo"
-    type             = "VPC-GW-S"
-    tags             = ["demo", "terraform"]
-    bastion_enabled  = true
-    bastion_port     = 61000
-    refresh_ssh_keys = local.ssh_keys_hash
+  name             = "public_gateway_demo"
+  type             = "VPC-GW-S"
+  tags             = ["demo", "terraform"]
+  bastion_enabled  = true
+  bastion_port     = 61000
+  refresh_ssh_keys = local.ssh_keys_hash
 }
 ```
 

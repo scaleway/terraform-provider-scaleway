@@ -12,7 +12,7 @@ Gets information about a Security Group.
 ```hcl
 # Get info by security group name
 data "scaleway_instance_security_group" "my_key" {
-  name  = "my-security-group-name"
+  name = "my-security-group-name"
 }
 
 # Get info by security group id

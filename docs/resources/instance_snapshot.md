@@ -13,8 +13,8 @@ see the [API documentation](https://www.scaleway.com/en/developers/api/instance/
 
 ```terraform
 resource "scaleway_instance_snapshot" "main" {
-    name       = "some-snapshot-name"
-    volume_id  = "11111111-1111-1111-1111-111111111111"
+  name      = "some-snapshot-name"
+  volume_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
@@ -22,26 +22,26 @@ resource "scaleway_instance_snapshot" "main" {
 
 ```terraform
 resource "scaleway_instance_volume" "main" {
-    type       = "l_ssd"
-    size_in_gb = 10
+  type       = "l_ssd"
+  size_in_gb = 10
 }
 
 resource "scaleway_instance_server" "main" {
-    image    = "ubuntu_jammy"
-    type     = "DEV1-S"
-    root_volume {
-        size_in_gb = 10
-        volume_type = "l_ssd"
-    }
-    additional_volume_ids = [
-        scaleway_instance_volume.main.id
-    ]
+  image = "ubuntu_jammy"
+  type  = "DEV1-S"
+  root_volume {
+    size_in_gb  = 10
+    volume_type = "l_ssd"
+  }
+  additional_volume_ids = [
+    scaleway_instance_volume.main.id
+  ]
 }
 
 resource "scaleway_instance_snapshot" "main" {
-    volume_id = scaleway_instance_volume.main.id
-    type = "unified"
-    depends_on = [scaleway_instance_server.main]
+  volume_id  = scaleway_instance_volume.main.id
+  type       = "unified"
+  depends_on = [scaleway_instance_server.main]
 }
 ```
 
@@ -54,15 +54,15 @@ resource "scaleway_object_bucket" "bucket" {
 
 resource "scaleway_object" "qcow" {
   bucket = scaleway_object_bucket.bucket.name
-  key = "server.qcow2"
-  file = "myqcow.qcow2"
+  key    = "server.qcow2"
+  file   = "myqcow.qcow2"
 }
 
 resource "scaleway_instance_snapshot" "snapshot" {
   type = "unified"
   import {
     bucket = scaleway_object.qcow.bucket
-    key = scaleway_object.qcow.key
+    key    = scaleway_object.qcow.key
   }
 }
 ```

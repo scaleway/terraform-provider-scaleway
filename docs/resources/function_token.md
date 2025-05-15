@@ -26,7 +26,7 @@ resource scaleway_function main {
 // Namespace Token
 resource scaleway_function_token namespace {
   namespace_id = scaleway_function_namespace.main.id
-  expires_at = "2022-10-18T11:35:15+02:00"
+  expires_at   = "2022-10-18T11:35:15+02:00"
 }
 
 // Function Token

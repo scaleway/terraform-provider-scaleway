@@ -15,7 +15,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ```terraform
 resource "scaleway_lb_ip" "ip" {
-    reverse = "my-reverse.com"
+  reverse = "my-reverse.com"
 }
 ```
 
@@ -23,7 +23,7 @@ resource "scaleway_lb_ip" "ip" {
 
 ```terraform
 resource "scaleway_lb_ip" "ipv6" {
-    is_ipv6 = true
+  is_ipv6 = true
 }
 ```
 

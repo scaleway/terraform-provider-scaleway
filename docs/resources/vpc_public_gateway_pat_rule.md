@@ -12,7 +12,7 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 ```terraform
 resource "scaleway_instance_security_group" "sg01" {
-  inbound_default_policy = "drop"
+  inbound_default_policy  = "drop"
   outbound_default_policy = "accept"
 
   inbound_rule {

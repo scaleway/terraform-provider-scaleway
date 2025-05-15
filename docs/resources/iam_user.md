@@ -30,7 +30,7 @@ locals {
 
 resource scaleway_iam_user user {
   for_each = local.users
-  email = each.key
+  email    = each.key
 }
 ```
 

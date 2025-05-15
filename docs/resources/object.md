@@ -18,8 +18,8 @@ resource "scaleway_object_bucket" "some_bucket" {
 
 resource scaleway_object "some_file" {
   bucket = scaleway_object_bucket.some_bucket.id
-  key = "object_path"
-  
+  key    = "object_path"
+
   file = "myfile"
   hash = filemd5("myfile")
 }

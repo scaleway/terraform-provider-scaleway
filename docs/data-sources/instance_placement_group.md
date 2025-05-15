@@ -12,7 +12,7 @@ Gets information about a Security Group.
 ```hcl
 # Get info by placement group name
 data "scaleway_instance_placement_group" "my_key" {
-  name  = "my-placement-group-name"
+  name = "my-placement-group-name"
 }
 
 # Get info by placement group id

@@ -21,13 +21,13 @@ For more step-by-step instructions on how to setup the networks on the external 
 
 ```terraform
 resource "scaleway_iot_network" "main" {
-	name   = "main"
-	hub_id = scaleway_iot_hub.main.id
-	type   = "sigfox"
+  name   = "main"
+  hub_id = scaleway_iot_hub.main.id
+  type   = "sigfox"
 }
 resource "scaleway_iot_hub" "main" {
-	name         = "main"
-	product_plan = "plan_shared"
+  name         = "main"
+  product_plan = "plan_shared"
 }
 ```
 

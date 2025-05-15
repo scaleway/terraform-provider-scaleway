@@ -12,7 +12,7 @@ Gets information about multiple Flexible IPs.
 ```hcl
 # Find ips that share the same tags
 data "scaleway_flexible_ips" "fips_by_tags" {
-  tags = [ "a tag" ]
+  tags = ["a tag"]
 }
 
 # Find ips that share the same Server ID
@@ -21,19 +21,19 @@ data "scaleway_baremetal_offer" "my_offer" {
 }
 
 resource "scaleway_baremetal_server" "base" {
-  name  = "MyServer"
-  offer = data.scaleway_baremetal_offer.my_offer.offer_id
-  install_config_afterward  = true
+  name                     = "MyServer"
+  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
+  install_config_afterward = true
 }
 
 resource "scaleway_flexible_ip" "first" {
   server_id = scaleway_baremetal_server.base.id
-  tags = [ "foo", "first" ]
+  tags      = ["foo", "first"]
 }
 
 resource "scaleway_flexible_ip" "second" {
   server_id = scaleway_baremetal_server.base.id
-  tags = [ "foo", "second" ]
+  tags      = ["foo", "second"]
 }
 
 data "scaleway_flexible_ips" "fips_by_server_id" {

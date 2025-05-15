@@ -20,7 +20,7 @@ The following commands allow you to:
 ```hcl
 # Get info by SSH key name
 data "scaleway_account_ssh_key" "my_key" {
-  name  = "my-key-name"
+  name = "my-key-name"
 }
 
 # Get info by SSH key id

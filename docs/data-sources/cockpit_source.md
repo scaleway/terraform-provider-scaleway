@@ -17,7 +17,7 @@ The following example retrieves a Cockpit data source by its unique ID.
 
 ```terraform
 data "scaleway_cockpit_source" "example" {
-    id = "fr-par/11111111-1111-1111-1111-111111111111"
+  id = "fr-par/11111111-1111-1111-1111-111111111111"
 }
 ```
 
@@ -27,9 +27,9 @@ You can also retrieve a data source by specifying filtering criteria such as `na
 
 ```terraform
 data "scaleway_cockpit_source" "filtered" {
-    project_id = "11111111-1111-1111-1111-111111111111"
-    region     = "fr-par"
-    name       = "my-data-source"
+  project_id = "11111111-1111-1111-1111-111111111111"
+  region     = "fr-par"
+  name       = "my-data-source"
 }
 ```
 

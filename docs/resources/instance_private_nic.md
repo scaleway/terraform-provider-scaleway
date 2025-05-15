@@ -44,11 +44,11 @@ resource "scaleway_instance_private_nic" "pnic01" {
 
 ```terraform
 resource "scaleway_vpc" "vpc01" {
-  name   = "vpc_instance"
+  name = "vpc_instance"
 }
 
 resource "scaleway_vpc_private_network" "pn01" {
-  name   = "private_network_instance"
+  name = "private_network_instance"
   ipv4_subnet {
     subnet = "172.16.64.0/22"
   }
