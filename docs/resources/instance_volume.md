@@ -12,9 +12,9 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 ```terraform
 resource "scaleway_instance_volume" "server_volume" {
-    type       = "l_ssd"
-    name       = "some-volume-name"
-    size_in_gb = 20
+  type       = "l_ssd"
+  name       = "some-volume-name"
+  size_in_gb = 20
 }
 ```
 

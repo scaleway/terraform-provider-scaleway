@@ -12,7 +12,7 @@ Gets information about an instance server.
 ```hcl
 # Get info by server name
 data "scaleway_instance_server" "my_key" {
-  name  = "my-server-name"
+  name = "my-server-name"
 }
 
 # Get info by server id

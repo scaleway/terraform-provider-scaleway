@@ -27,7 +27,7 @@ resource "scaleway_lb_certificate" "cert01" {
   }
   # Make sure the new certificate is created before the old one can be replaced
   lifecycle {
-      create_before_destroy = true
+    create_before_destroy = true
   }
 }
 ```

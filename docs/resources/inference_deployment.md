@@ -14,8 +14,8 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 ```terraform
 resource "scaleway_inference_deployment" "deployment" {
-  name = "tf-inference-deployment"
-  node_type = "L4"
+  name       = "tf-inference-deployment"
+  node_type  = "L4"
   model_name = "meta/llama-3.1-8b-instruct:fp8"
   public_endpoint {
     is_enabled = true

@@ -17,7 +17,7 @@ data "scaleway_iot_device" "my_device" {
 
 # Get info by name and hub_id
 data "scaleway_iot_device" "my_device" {
-  name = "foobar"
+  name   = "foobar"
   hub_id = "11111111-1111-1111-1111-111111111111"
 }
 

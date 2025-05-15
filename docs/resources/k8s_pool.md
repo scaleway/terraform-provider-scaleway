@@ -144,12 +144,12 @@ resource "scaleway_k8s_pool" "pool" {
 }
 
 resource "scaleway_k8s_cluster" "cluster" {
-  name     = "placement_group"
-  cni      = "kilo"
-  version  = "%s"
-  tags     = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
-  region   = "fr-par"
-  type     = "multicloud"
+  name    = "placement_group"
+  cni     = "kilo"
+  version = "%s"
+  tags    = ["terraform-test", "scaleway_k8s_cluster", "placement_group"]
+  region  = "fr-par"
+  type    = "multicloud"
 }
 ```
 
@@ -181,9 +181,9 @@ If you want to have a new pool created when a variable changes, you can use a na
 
 ```terraform
 resource "scaleway_k8s_pool" "kubernetes_cluster_workers_1" {
-  cluster_id    = scaleway_k8s_cluster.kubernetes_cluster.id
-  name          = "${var.kubernetes_cluster_id}_${var.node_type}_1"
-  node_type     = "${var.node_type}"
+  cluster_id = scaleway_k8s_cluster.kubernetes_cluster.id
+  name       = "${var.kubernetes_cluster_id}_${var.node_type}_1"
+  node_type  = "${var.node_type}"
 
   # use Scaleway built-in cluster autoscaler
   autoscaling         = true

@@ -168,7 +168,7 @@ resource "scaleway_cockpit_source" "traces" {
 }
 
 resource "scaleway_cockpit_alert_manager" "alert_manager" {
-  project_id = scaleway_account_project.project.id
+  project_id            = scaleway_account_project.project.id
   enable_managed_alerts = true
 }
 
@@ -180,11 +180,11 @@ resource "scaleway_cockpit_grafana_user" "main" {
 
 output "endpoints" {
   value = {
-    metrics        = scaleway_cockpit_source.metrics.url
-    logs           = scaleway_cockpit_source.logs.url
-    traces         = scaleway_cockpit_source.traces.url
-    alert_manager  = scaleway_cockpit_alert_manager.alert_manager.alert_manager_url
-    grafana        = scaleway_cockpit_grafana_user.main.grafana_url
+    metrics       = scaleway_cockpit_source.metrics.url
+    logs          = scaleway_cockpit_source.logs.url
+    traces        = scaleway_cockpit_source.traces.url
+    alert_manager = scaleway_cockpit_alert_manager.alert_manager.alert_manager_url
+    grafana       = scaleway_cockpit_grafana_user.main.grafana_url
   }
 }
 ```

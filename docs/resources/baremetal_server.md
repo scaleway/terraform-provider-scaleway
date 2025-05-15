@@ -13,7 +13,7 @@ Creates and manages Scaleway Compute Baremetal servers. For more information, se
 
 ```terraform
 data "scaleway_iam_ssh_key" "my_ssh_key" {
-  name = "main"
+  name       = "main"
   public_key = "ssh XXXXXXXXXXX"
 }
 
@@ -23,7 +23,7 @@ data "scaleway_baremetal_offer" "my_offer" {
 }
 
 resource "scaleway_baremetal_server" "my_server" {
-  zone		  = "fr-par-2"
+  zone        = "fr-par-2"
   offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
@@ -34,7 +34,7 @@ resource "scaleway_baremetal_server" "my_server" {
 
 ```terraform
 data "scaleway_iam_ssh_key" "my_ssh_key" {
-  name = "main"
+  name       = "main"
   public_key = "ssh XXXXXXXXXXX"
 }
 
@@ -79,7 +79,7 @@ resource "scaleway_baremetal_server" "base" {
 
 ```terraform
 data "scaleway_iam_ssh_key" "my_ssh_key" {
-  name = "main"
+  name       = "main"
   public_key = "ssh XXXXXXXXXXX"
 }
 
@@ -123,11 +123,11 @@ resource "scaleway_baremetal_server" "my_server" {
 
 ```terraform
 resource "scaleway_vpc" "vpc01" {
-  name   = "vpc_baremetal"
+  name = "vpc_baremetal"
 }
 
 resource "scaleway_vpc_private_network" "pn01" {
-  name   = "private_network_baremetal"
+  name = "private_network_baremetal"
   ipv4_subnet {
     subnet = "172.16.64.0/22"
   }
@@ -142,13 +142,13 @@ resource "scaleway_ipam_ip" "ip01" {
 }
 
 data "scaleway_iam_ssh_key" "my_ssh_key" {
-  name = "main"
+  name       = "main"
   public_key = "ssh XXXXXXXXXXX"
 }
 
 data "scaleway_baremetal_os" "my_os" {
-  zone = "fr-par-1"
-  name = "Ubuntu"
+  zone    = "fr-par-1"
+  name    = "Ubuntu"
   version = "22.04 LTS (Jammy Jellyfish)"
 }
 
@@ -172,7 +172,7 @@ resource "scaleway_baremetal_server" "my_server" {
     id = data.scaleway_baremetal_option.private_network.option_id
   }
   private_network {
-    id = scaleway_vpc_private_network.pn01.id
+    id          = scaleway_vpc_private_network.pn01.id
     ipam_ip_ids = [scaleway_ipam_ip.ip01.id]
   }
 }
@@ -187,7 +187,7 @@ data "scaleway_baremetal_offer" "my_offer" {
 }
 
 resource "scaleway_baremetal_server" "my_server" {
-  zone	                   = "fr-par-2"
+  zone                     = "fr-par-2"
   offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
   install_config_afterward = true
 }
@@ -197,7 +197,7 @@ resource "scaleway_baremetal_server" "my_server" {
 
 ```terraform
 variable "configCustomPartitioning" {
-  default ="{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"boot\",\"number\":2,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"root\",\"number\":3,\"size\":1018839433216,\"useAllAvailableSpace\":false}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"boot\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"data\",\"number\":2,\"size\":1018839433216,\"useAllAvailableSpace\":false}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/nvme0n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/nvme0n1p3\",\"format\":\"ext4\",\"mountpoint\":\"/\"},{\"device\":\"/dev/nvme1n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/data\"}],\"raids\":[]}"
+  default = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"boot\",\"number\":2,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"root\",\"number\":3,\"size\":1018839433216,\"useAllAvailableSpace\":false}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"boot\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"data\",\"number\":2,\"size\":1018839433216,\"useAllAvailableSpace\":false}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/nvme0n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/nvme0n1p3\",\"format\":\"ext4\",\"mountpoint\":\"/\"},{\"device\":\"/dev/nvme1n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/data\"}],\"raids\":[]}"
 }
 
 data "scaleway_baremetal_os" "my_os" {
@@ -207,26 +207,26 @@ data "scaleway_baremetal_os" "my_os" {
 }
 
 resource "scaleway_iam_ssh_key" "my_ssh_key" {
-  name 	   = "my_ssh_key"
+  name       = "my_ssh_key"
   public_key = "ssh XXXXXXXXXXX"
 }
 
 data "scaleway_baremetal_offer" "my_offer" {
-  zone = "fr-par-1"
-  name = "EM-B220E-NVME"
+  zone                = "fr-par-1"
+  name                = "EM-B220E-NVME"
   subscription_period = "hourly"
 }
 
 resource "scaleway_baremetal_server" "my_server" {
-  name        = "my_super_server"
-  zone        = "fr-par-1"
-  description = "test a description"
-  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-  os    = data.scaleway_baremetal_os.my_os.os_id
+  name         = "my_super_server"
+  zone         = "fr-par-1"
+  description  = "test a description"
+  offer        = data.scaleway_baremetal_offer.my_offer.offer_id
+  os           = data.scaleway_baremetal_os.my_os.os_id
   partitioning = var.configCustomPartitioning
 
-  tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
-  ssh_key_ids = [ scaleway_iam_ssh_key.my_ssh_key.id ]
+  tags        = ["terraform-test", "scaleway_baremetal_server", "minimal"]
+  ssh_key_ids = [scaleway_iam_ssh_key.my_ssh_key.id]
 }
 
 ```
@@ -240,15 +240,15 @@ You cannot directly modify the subscription_period of an existing scaleway_barem
 
 ```terraform
 data "scaleway_baremetal_offer" "my_offer" {
-  zone = "fr-par-1"
-  name = "EM-B220E-NVME"
+  zone                = "fr-par-1"
+  name                = "EM-B220E-NVME"
   subscription_period = "hourly"
 }
 
 resource "scaleway_baremetal_server" "my_server" {
-  name = "UpdateSubscriptionPeriod"
-  offer = data.scaleway_baremetal_offer.my_offer.offer_id
-  zone = "%s"
+  name                     = "UpdateSubscriptionPeriod"
+  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
+  zone                     = "%s"
   install_config_afterward = true
 }
 ```
@@ -257,15 +257,15 @@ resource "scaleway_baremetal_server" "my_server" {
 
 ```terraform
 data "scaleway_baremetal_offer" "my_offer" {
-  zone = "fr-par-1"
-  name = "EM-B220E-NVME"
+  zone                = "fr-par-1"
+  name                = "EM-B220E-NVME"
   subscription_period = "monthly"
 }
 
 resource "scaleway_baremetal_server" "my_server" {
-  name = "UpdateSubscriptionPeriod"
-  offer = data.scaleway_baremetal_offer.my_offer.offer_id
-  zone = "fr-par-1"
+  name                     = "UpdateSubscriptionPeriod"
+  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
+  zone                     = "fr-par-1"
   install_config_afterward = true
 }
 ```

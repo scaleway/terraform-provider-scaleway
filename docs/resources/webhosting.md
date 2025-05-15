@@ -12,7 +12,7 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 ```terraform
 data "scaleway_webhosting_offer" "by_name" {
-  name = "lite"
+  name          = "lite"
   control_panel = "Cpanel"
 }
 

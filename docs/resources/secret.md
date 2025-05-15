@@ -33,9 +33,9 @@ In the example below, your secret's lifetime is of 24 hours, your secret version
 resource "scaleway_secret" "ephemeral" {
   name = "foo"
   ephemeral_policy {
-    ttl = "24h"
+    ttl                   = "24h"
     expires_once_accessed = true
-    action = "disable"
+    action                = "disable"
   }
 }
 ```

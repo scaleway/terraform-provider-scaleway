@@ -81,7 +81,7 @@ resource "scaleway_domain_record" "geo_ip" {
       countries  = ["FR"]
       data       = "1.2.3.5"
     }
-    
+
     matches {
       continents = ["NA"]
       data       = "4.3.2.1"

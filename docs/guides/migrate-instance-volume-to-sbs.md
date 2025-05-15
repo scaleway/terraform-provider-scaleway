@@ -44,16 +44,16 @@ If your infrastructure includes servers and explicit volumes.
 ```terraform
 resource scaleway_instance_volume "root_volume" {
   size_in_gb = 20
-  type = "b_ssd"
+  type       = "b_ssd"
 }
 
 resource scaleway_instance_volume "volume" {
   size_in_gb = 20
-  type = "b_ssd"
+  type       = "b_ssd"
 }
 
 resource scaleway_instance_server "server" {
-  type  = "PLAY2-PICO"
+  type = "PLAY2-PICO"
   root_volume {
     volume_id = scaleway_instance_volume.root_volume.id
   }
@@ -69,32 +69,32 @@ In this snippet, the `migrate_to_sbs` field will prevent the old volume state fr
 
 ```terraform
 resource scaleway_instance_volume "root_volume" {
-  size_in_gb = 20
-  type = "b_ssd"
+  size_in_gb     = 20
+  type           = "b_ssd"
   migrate_to_sbs = true # Mark migration to avoid failure
 }
 
 resource scaleway_block_volume "root_volume" {
-  size_in_gb = 20
-  iops = 5000 # b_ssd is a 5000 iops volume
+  size_in_gb         = 20
+  iops               = 5000                                    # b_ssd is a 5000 iops volume
   instance_volume_id = scaleway_instance_volume.root_volume.id # block resource will handle migration
 }
 
 resource scaleway_instance_volume "volume" {
-  size_in_gb = 20
-  type = "b_ssd"
+  size_in_gb     = 20
+  type           = "b_ssd"
   migrate_to_sbs = true # Mark migration to avoid failure
 }
 
 resource scaleway_block_volume "volume" {
-  size_in_gb = 20
-  iops = 5000 # b_ssd is a 5000 iops volume
+  size_in_gb         = 20
+  iops               = 5000                               # b_ssd is a 5000 iops volume
   instance_volume_id = scaleway_instance_volume.volume.id # block resource will handle migration
 }
 
 
 resource scaleway_instance_server "server" {
-  type  = "PLAY2-PICO"
+  type = "PLAY2-PICO"
   root_volume {
     volume_id = scaleway_block_volume.root_volume.id # Start using your new resource
   }
@@ -111,16 +111,16 @@ Terraform's scaleway_instance_volume resource cannot delete a volume that has be
 ```terraform
 resource scaleway_block_volume "root_volume" {
   size_in_gb = 20
-  iops = 5000
+  iops       = 5000
 }
 
 resource scaleway_block_volume "volume" {
   size_in_gb = 20
-  iops = 5000
+  iops       = 5000
 }
 
 resource scaleway_instance_server "server" {
-  type  = "PLAY2-PICO"
+  type = "PLAY2-PICO"
   root_volume {
     volume_id = scaleway_block_volume.root_volume.id
   }

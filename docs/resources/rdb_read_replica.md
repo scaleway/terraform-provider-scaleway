@@ -74,7 +74,7 @@ resource "scaleway_rdb_read_replica" "replica" {
   instance_id = scaleway_rdb_instance.instance.id
   private_network {
     private_network_id = scaleway_vpc_private_network.pn.id
-    enable_ipam = true
+    enable_ipam        = true
   }
 }
 ```

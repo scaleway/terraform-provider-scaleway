@@ -25,7 +25,7 @@ data "scaleway_rdb_instance" "my_instance" {
 # Get other attributes
 output "load_balancer_ip_addr" {
   description = "IP address of load balancer"
-  value = data.scaleway_rdb_instance.my_instance.load_balancer.0.ip
+  value       = data.scaleway_rdb_instance.my_instance.load_balancer.0.ip
 }
 ```
 

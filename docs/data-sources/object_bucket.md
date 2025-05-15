@@ -18,10 +18,10 @@ The following commands allow you to:
 
 ```hcl
 resource "scaleway_object_bucket" "main" {
-    name = "bucket.test.com"
-    tags = {
-        foo = "bar"
-    }
+  name = "bucket.test.com"
+  tags = {
+    foo = "bar"
+  }
 }
 
 data "scaleway_object_bucket" "selected" {
@@ -33,7 +33,7 @@ data "scaleway_object_bucket" "selected" {
 
 ```hcl
 data "scaleway_object_bucket" "selected" {
-  name = "bucket.test.com"
+  name       = "bucket.test.com"
   project_id = "11111111-1111-1111-1111-111111111111"
 }
 ```

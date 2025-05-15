@@ -38,8 +38,8 @@ Create a local containing your exceptions (`locals.trusted`) and use the `for_ea
 
 ```terraform
 resource "scaleway_instance_security_group" "main" {
-  description = "test"
-  name        = "terraform test"
+  description             = "test"
+  name                    = "terraform test"
   inbound_default_policy  = "drop"
   outbound_default_policy = "accept"
 }
@@ -53,7 +53,7 @@ locals {
 }
 
 resource "scaleway_instance_security_group_rules" "main" {
-  security_group_id       = scaleway_instance_security_group.main.id
+  security_group_id = scaleway_instance_security_group.main.id
 
   dynamic "inbound_rule" {
     for_each = local.trusted
