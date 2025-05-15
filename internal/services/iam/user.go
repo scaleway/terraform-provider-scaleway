@@ -230,8 +230,8 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	if user.Type == "Guest" {
-		// Users of type 'Guest' only support the update of tags.
+	if user.Type == "guest" {
+		// Users of type 'guest' only support the update of tags.
 		if d.HasChanges("tags") {
 			_, err = api.UpdateUser(&iam.UpdateUserRequest{
 				UserID: user.ID,
@@ -242,11 +242,26 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			}
 		}
 	} else {
-		if d.HasChanges("tags", "email", "first_name", "last_name", "phone_number", "locale") {
+		/* The IAM API supports the update of the following fields for Users of type 'member':
+		 * - tags
+		 * - email
+		 * - first_name
+		 * - last_name
+		 * - phone_number
+		 * - locale
+		 * On the other hand, it doesn't support the update of the 'username' field for this
+		 * type of user.
+		 *
+		 * However, the Schema of this Terraform resource is defined so that 'email' is
+		 * required and it's the ForceNew field.
+		 * This means that providing an email of an existing user causes an update, while
+		 * providing a new email causes the creation of a new user. For this reason, even
+		 * though the API supports it, the email is considered an updatable field here.
+		 */
+		if d.HasChanges("tags", "first_name", "last_name", "phone_number", "locale") {
 			_, err = api.UpdateUser(&iam.UpdateUserRequest{
 				UserID:      user.ID,
 				Tags:        types.ExpandUpdatedStringsPtr(d.Get("tags")),
-				Email:       scw.StringPtr(d.Get("email").(string)),
 				FirstName:   scw.StringPtr(d.Get("first_name").(string)),
 				LastName:    scw.StringPtr(d.Get("last_name").(string)),
 				PhoneNumber: scw.StringPtr(d.Get("phone_number").(string)),
