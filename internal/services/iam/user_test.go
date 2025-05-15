@@ -107,11 +107,12 @@ func TestAccUser_Member(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "mfa", "false"),
 				),
 			},
-			// Add tag, update last name, phone number and locale
+			// Add tag and update username, last name, phone number and locale
 			{
 				Config: `
 					resource "scaleway_iam_user" "member_user" {
 						email = "foo@scaleway.com"
+						username = "fuooo"
 						last_name = "Baz"
 						phone_number = "+33112345678"
 						locale = "fr_FR"
@@ -122,11 +123,10 @@ func TestAccUser_Member(t *testing.T) {
 					testAccCheckIamUserExists(tt, "scaleway_iam_user.member_user"),
 					acctest.CheckResourceAttrUUID("scaleway_iam_user.member_user", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "email", "foo@scaleway.com"),
-					// Let's check that the username is not removed when not defined in the configuration.
-					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "username", "foo"),
 					// Let's check that a field is set to empty when not defined in the configuration.
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "first_name", ""),
 					// Let's update some fields and test if they actually get updated.
+					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "username", "fuooo"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "last_name", "Baz"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "phone_number", "+33112345678"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "locale", "fr_FR"),

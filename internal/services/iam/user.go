@@ -242,21 +242,12 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			}
 		}
 	} else {
-		/* The IAM API supports the update of the following fields for Users of type 'member':
-		 * - tags
-		 * - email
-		 * - first_name
-		 * - last_name
-		 * - phone_number
-		 * - locale
-		 * On the other hand, it doesn't support the update of the 'username' field for this
-		 * type of user.
-		 *
-		 * However, the Schema of this Terraform resource is defined so that 'email' is
-		 * required and it's the ForceNew field.
-		 * This means that providing an email of an existing user causes an update, while
-		 * providing a new email causes the creation of a new user. For this reason, even
-		 * though the API supports it, the email is considered an updatable field here.
+		/*
+		 * The Schema of this Terraform resource is defined so that 'email' is required and
+		 * it's the "ForceNew" field. This means that providing the email of an existing user
+		 * causes an update, while providing a new email causes the creation of a new user.
+		 * For this reason, even though the IAM API supports it, the email is not considered
+		 * an updatable field here.
 		 */
 		if d.HasChanges("tags", "first_name", "last_name", "phone_number", "locale") {
 			_, err = api.UpdateUser(&iam.UpdateUserRequest{
@@ -266,6 +257,16 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 				LastName:    scw.StringPtr(d.Get("last_name").(string)),
 				PhoneNumber: scw.StringPtr(d.Get("phone_number").(string)),
 				Locale:      scw.StringPtr(d.Get("locale").(string)),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+		// The update of the 'username' field is made through a different endpoint and payload.
+		if d.HasChange("username") {
+			_, err = api.UpdateUserUsername(&iam.UpdateUserUsernameRequest{
+				UserID:   user.ID,
+				Username: d.Get("username").(string),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
