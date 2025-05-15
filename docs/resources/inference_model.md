@@ -53,7 +53,7 @@ resource "scaleway_inference_deployment" "my_deployment" {
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The unique identifier of the custom model.
+- `id` - The unique identifier of the model.
 - `tags` - Tags associated with the model.
 - `status` - The current status of the model (e.g., ready, error, etc.).
 - `description` - A textual description of the model (if available).

@@ -13,10 +13,14 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 ### Basic
 
 ```terraform
+data "scaleway_inference_model" "my_model" {
+  name = "meta/llama-3.1-8b-instruct:fp8"
+}
+
 resource "scaleway_inference_deployment" "deployment" {
   name = "tf-inference-deployment"
   node_type = "L4"
-  model_id = "d33fb5fd-75ca-4dfb-8952-8af8b8b28be5"
+  model_id = data.scaleway_inference_model.my_model.id
   public_endpoint {
     is_enabled = true
   }
