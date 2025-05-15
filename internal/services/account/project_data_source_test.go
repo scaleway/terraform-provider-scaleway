@@ -8,7 +8,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-const dummyOrgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+const dummyOrgID = "AB7BD9BF-E1BD-41E8-9F1D-F16A2E3F3925"
 
 func TestAccDataSourceProject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -36,7 +36,7 @@ func TestAccDataSourceProject_Basic(t *testing.T) {
 						name = scaleway_account_project.project.name
 						organization_id = "%s"
 					}
-					
+
 					data scaleway_account_project "by_id" {
 						project_id = scaleway_account_project.project.id
 					}`, orgID),
