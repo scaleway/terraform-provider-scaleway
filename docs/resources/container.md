@@ -188,7 +188,7 @@ resource scaleway_container main {
       path = "/ping"
     }
     failure_threshold = 40
-    interval          = "3s"
+    interval          = "5s"
   }
 }
 ```
