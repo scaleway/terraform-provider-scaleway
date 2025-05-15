@@ -40,6 +40,7 @@ func DataSourceModelRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	modelID, ok := d.GetOk("model_id")
 	pageSize := uint32(1000)
+
 	if !ok {
 		modelName := d.Get("name").(string)
 
