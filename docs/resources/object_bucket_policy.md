@@ -24,10 +24,10 @@ data "scaleway_iam_user" "user" {
   email = "user@scaleway.com"
 }
 resource "scaleway_iam_policy" "policy" {
-  name = "object-storage-policy"
+  name    = "object-storage-policy"
   user_id = data.scaleway_iam_user.user.id
   rule {
-    project_ids = [data.scaleway_account_project.default.id]
+    project_ids          = [data.scaleway_account_project.default.id]
     permission_set_names = ["ObjectStorageFullAccess"]
   }
 }
@@ -39,14 +39,14 @@ resource "scaleway_object_bucket" "bucket" {
 resource "scaleway_object_bucket_policy" "policy" {
   bucket = scaleway_object_bucket.bucket.name
   policy = jsonencode({
-    Version   = "2023-04-17",
+    Version = "2023-04-17",
     Id      = "MyBucketPolicy",
     Statement = [
       {
-        Effect = "Allow"
-        Action = ["s3:*"]
+        Effect    = "Allow"
+        Action    = ["s3:*"]
         Principal = { SCW = "user_id:${data.scaleway_iam_user.user.id}" }
-        Resource  = [
+        Resource = [
           scaleway_object_bucket.bucket.name,
           "${scaleway_object_bucket.bucket.name}/*",
         ]
@@ -71,10 +71,10 @@ resource "scaleway_iam_application" "reading-app" {
   name = "reading-app"
 }
 resource "scaleway_iam_policy" "policy" {
-  name = "object-storage-policy"
+  name           = "object-storage-policy"
   application_id = scaleway_iam_application.reading-app.id
   rule {
-    project_ids = [data.scaleway_account_project.default.id]
+    project_ids          = [data.scaleway_account_project.default.id]
     permission_set_names = ["ObjectStorageBucketsRead"]
   }
 }
@@ -123,12 +123,12 @@ resource "scaleway_iam_api_key" "reading-api-key" {
 provider "scaleway" {
   access_key = scaleway_iam_api_key.reading-api-key.access_key
   secret_key = scaleway_iam_api_key.reading-api-key.secret_key
-  alias = "reading-profile"
+  alias      = "reading-profile"
 }
 
 data scaleway_object_bucket bucket {
-  provider = scaleway.reading-profile
-  name = "some-unique-name"
+  provider   = scaleway.reading-profile
+  name       = "some-unique-name"
   depends_on = [scaleway_iam_api_key.reading-api-key]
 }
 ```
@@ -142,9 +142,9 @@ provider "aws" {
   shared_credentials_files = ["/home/user/.aws/credentials"]
   profile                  = "aws-profile"
 
-  skip_region_validation = true
+  skip_region_validation      = true
   skip_credentials_validation = true
-  skip_requesting_account_id = true
+  skip_requesting_account_id  = true
 }
 
 # Scaleway project ID
@@ -196,7 +196,7 @@ resource "scaleway_object_bucket" "bucket" {
 resource "scaleway_object_bucket_policy" "policy" {
   bucket = scaleway_object_bucket.bucket.name
   policy = jsonencode({
-    Version   = "2012-10-17",
+    Version = "2012-10-17",
     Statement = [
       {
         Effect = "Allow"
@@ -205,7 +205,7 @@ resource "scaleway_object_bucket_policy" "policy" {
           "s3:GetObjectTagging"
         ]
         Principal = { SCW = "project_id:${data.scaleway_account_project.default.id}" }
-        Resource  = [
+        Resource = [
           scaleway_object_bucket.bucket.name,
           "${scaleway_object_bucket.bucket.name}/*",
         ]

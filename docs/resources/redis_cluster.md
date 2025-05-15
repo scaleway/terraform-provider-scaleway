@@ -62,7 +62,7 @@ resource "scaleway_redis_cluster" "main" {
   password     = "thiZ_is_v&ry_s3cret"
   cluster_size = 1
   private_network {
-    id          = "${scaleway_vpc_private_network.pn.id}"
+    id = "${scaleway_vpc_private_network.pn.id}"
     service_ips = [
       "10.12.1.1/20",
     ]
@@ -167,7 +167,7 @@ The `private_network` block supports :
   Your `service_ips` must be listed as follows:
 
 ```terraform
-  service_ips = [
+service_ips = [
   "10.12.1.10/20",
   "10.12.1.11/20",
   "10.12.1.12/20",

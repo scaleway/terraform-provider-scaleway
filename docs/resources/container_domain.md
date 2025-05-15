@@ -20,7 +20,7 @@ resource scaleway_container app {}
 
 resource scaleway_container_domain "app" {
   container_id = scaleway_container.app.id
-  hostname = "container.domain.tld"
+  hostname     = "container.domain.tld"
 }
 ```
 
@@ -28,24 +28,24 @@ resource scaleway_container_domain "app" {
 
 ```terraform
 resource scaleway_container_namespace main {
-    name = "my-ns-test"
-    description = "test container"
+  name        = "my-ns-test"
+  description = "test container"
 }
 
 resource scaleway_container app {
-    name = "app"
-    namespace_id = scaleway_container_namespace.main.id
-    registry_image = "${scaleway_container_namespace.main.registry_endpoint}/nginx:alpine"
-    port = 80
-    cpu_limit = 140
-    memory_limit = 256
-    min_scale = 1
-    max_scale = 1
-    timeout = 600
-    max_concurrency = 80
-    privacy = "public"
-    protocol = "http1"
-    deploy = true
+  name            = "app"
+  namespace_id    = scaleway_container_namespace.main.id
+  registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/nginx:alpine"
+  port            = 80
+  cpu_limit       = 140
+  memory_limit    = 256
+  min_scale       = 1
+  max_scale       = 1
+  timeout         = 600
+  max_concurrency = 80
+  privacy         = "public"
+  protocol        = "http1"
+  deploy          = true
 }
 
 resource scaleway_domain_record "app" {
@@ -58,7 +58,7 @@ resource scaleway_domain_record "app" {
 
 resource scaleway_container_domain "app" {
   container_id = scaleway_container.app.id
-  hostname = "${scaleway_domain_record.app.name}.${scaleway_domain_record.app.dns_zone}"
+  hostname     = "${scaleway_domain_record.app.name}.${scaleway_domain_record.app.dns_zone}"
 }
 ```
 

@@ -33,7 +33,7 @@ provider "scaleway" {
 
 resource scaleway_account_project "project" {
   provider = scaleway.tmp
-  name = "my_project"
+  name     = "my_project"
 }
 
 provider "scaleway" {

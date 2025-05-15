@@ -14,7 +14,7 @@ Gets information about multiple instance servers.
 ```hcl
 # Find servers by tag
 data "scaleway_instance_servers" "my_key" {
-  tags  = ["tag"]
+  tags = ["tag"]
 }
 
 # Find servers by name and zone

@@ -12,7 +12,7 @@ Gets information about a Kubernetes Cluster.
 ```hcl
 # Get info by cluster name
 data "scaleway_k8s_cluster" "my_key" {
-  name  = "my-cluster-name"
+  name = "my-cluster-name"
 }
 
 # Get info by cluster id

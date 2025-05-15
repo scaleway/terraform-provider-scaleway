@@ -39,13 +39,13 @@ resource "scaleway_edge_services_tls_stage" "main" {
 }
 
 resource "scaleway_edge_services_cache_stage" "main" {
-  pipeline_id      = scaleway_edge_services_pipeline.main.id
-  route_stage_id   = scaleway_edge_services_route_stage.main.id
+  pipeline_id    = scaleway_edge_services_pipeline.main.id
+  route_stage_id = scaleway_edge_services_route_stage.main.id
 }
 
 resource "scaleway_edge_services_route_stage" "main" {
-  pipeline_id   = scaleway_edge_services_pipeline.main.id
-  waf_stage_id  = scaleway_edge_services_waf_stage.main.id
+  pipeline_id  = scaleway_edge_services_pipeline.main.id
+  waf_stage_id = scaleway_edge_services_waf_stage.main.id
 
   rule {
     backend_stage_id = scaleway_edge_services_backend_stage.main.id

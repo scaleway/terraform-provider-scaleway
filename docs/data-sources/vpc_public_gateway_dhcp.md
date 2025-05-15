@@ -19,7 +19,7 @@ resource "scaleway_vpc_public_gateway_dhcp" "main" {
 }
 
 data "scaleway_vpc_public_gateway_dhcp" "dhcp_by_id" {
-    dhcp_id = "${scaleway_vpc_public_gateway_dhcp.main.id}"
+  dhcp_id = "${scaleway_vpc_public_gateway_dhcp.main.id}"
 }
 ```
 

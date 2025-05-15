@@ -13,47 +13,47 @@ This data source simplifies the process of generating valid partitioning configu
 
 ```hcl
 data "scaleway_easy_partitioning" "default" {
-  offer_id          = "11111111-1111-1111-1111-111111111111"
-  os_id             = "22222222-2222-2222-2222-222222222222"
-  swap              = true
-  extra_partition   = true
-  ext_4_mountpoint  = "/data"
+  offer_id         = "11111111-1111-1111-1111-111111111111"
+  os_id            = "22222222-2222-2222-2222-222222222222"
+  swap             = true
+  extra_partition  = true
+  ext_4_mountpoint = "/data"
 }
 ```
 
 ```hcl
 data "scaleway_baremetal_offer" "my_offer" {
-    zone = "fr-par-1"
-    name = "EM-B220E-NVME"
+  zone = "fr-par-1"
+  name = "EM-B220E-NVME"
 }
 
 data "scaleway_baremetal_os" "my_os" {
-    zone    = "fr-par-1"
-    name    = "Ubuntu"
-    version = "22.04 LTS (Jammy Jellyfish)"
+  zone    = "fr-par-1"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
 }
 
 resource "scaleway_iam_ssh_key" "main" {
-    name       = "my-ssh-key"
-    public_key = "my-ssh-key-public"
+  name       = "my-ssh-key"
+  public_key = "my-ssh-key-public"
 }
 
 data "scaleway_baremetal_easy_partitioning" "test" {
-    offer_id          = data.scaleway_baremetal_offer.my_offer.offer_id
-    os_id             = data.scaleway_baremetal_os.my_os.os_id
-    swap              = false
-    ext_4_mountpoint  = "/hello"
+  offer_id         = data.scaleway_baremetal_offer.my_offer.offer_id
+  os_id            = data.scaleway_baremetal_os.my_os.os_id
+  swap             = false
+  ext_4_mountpoint = "/hello"
 }
 
 resource "scaleway_baremetal_server" "base" {
-    name         = "my-baremetal-server"
-    zone         = "fr-par-1"
-    description  = "test a description"
-    offer        = data.scaleway_baremetal_offer.my_offer.offer_id
-    os           = data.scaleway_baremetal_os.my_os.os_id
-    partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
-    tags         = ["terraform-test", "scaleway_baremetal_server", "minimal", "edited"]
-    ssh_key_ids  = [scaleway_iam_ssh_key.main.id]
+  name         = "my-baremetal-server"
+  zone         = "fr-par-1"
+  description  = "test a description"
+  offer        = data.scaleway_baremetal_offer.my_offer.offer_id
+  os           = data.scaleway_baremetal_os.my_os.os_id
+  partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+  tags         = ["terraform-test", "scaleway_baremetal_server", "minimal", "edited"]
+  ssh_key_ids  = [scaleway_iam_ssh_key.main.id]
 }
 ```
 

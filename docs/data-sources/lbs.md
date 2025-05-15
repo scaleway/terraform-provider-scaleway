@@ -25,7 +25,7 @@ data "scaleway_lbs" "my_key" {
 
 # Find LBs that share the same tags
 data "scaleway_lbs" "lbs_by_tags" {
-  tags = [ "a tag" ]
+  tags = ["a tag"]
 }
 ```
 

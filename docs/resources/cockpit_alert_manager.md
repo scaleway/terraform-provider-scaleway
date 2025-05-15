@@ -27,16 +27,16 @@ resource "scaleway_account_project" "project" {
 }
 
 resource "scaleway_cockpit_alert_manager" "alert_manager" {
-  project_id = scaleway_account_project.project.id
-  enable_managed_alerts     = true
+  project_id            = scaleway_account_project.project.id
+  enable_managed_alerts = true
 
   contact_points {
-      email = "alert1@example.com"
-    }
+    email = "alert1@example.com"
+  }
 
   contact_points {
-      email = "alert2@example.com"
-    }
+    email = "alert2@example.com"
+  }
 }
 ```
 

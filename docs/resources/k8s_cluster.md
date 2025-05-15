@@ -15,10 +15,10 @@ Creates and manages Scaleway Kubernetes clusters. For more information, see the 
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
-  name    = "tf-cluster"
-  version = "1.29.1"
-  cni     = "cilium"
-  private_network_id = scaleway_vpc_private_network.pn.id
+  name                        = "tf-cluster"
+  version                     = "1.29.1"
+  cni                         = "cilium"
+  private_network_id          = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
 }
 
@@ -34,19 +34,19 @@ resource "scaleway_k8s_pool" "pool" {
 
 ```terraform
 resource "scaleway_k8s_cluster" "cluster" {
-  name = "tf-cluster"
-  type = "multicloud"
-  version = "1.29.1"
-  cni     = "kilo"
+  name                        = "tf-cluster"
+  type                        = "multicloud"
+  version                     = "1.29.1"
+  cni                         = "kilo"
   delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
-  name = "tf-pool"
-  node_type = "external"
-  size = 0
-  min_size = 0
+  name       = "tf-pool"
+  node_type  = "external"
+  size       = 0
+  min_size   = 0
 }
 ```
 
@@ -58,12 +58,12 @@ For a detailed example of how to add or run Elastic Metal servers instead of Ins
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
-  name             = "tf-cluster"
-  description      = "cluster made in terraform"
-  version          = "1.29.1"
-  cni              = "calico"
-  tags             = ["terraform"]
-  private_network_id = scaleway_vpc_private_network.pn.id
+  name                        = "tf-cluster"
+  description                 = "cluster made in terraform"
+  version                     = "1.29.1"
+  cni                         = "calico"
+  tags                        = ["terraform"]
+  private_network_id          = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
 
   autoscaler_config {
@@ -95,10 +95,10 @@ resource "scaleway_k8s_pool" "pool" {
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
-  name    = "tf-cluster"
-  version = "1.29.1"
-  cni     = "cilium"
-  private_network_id = scaleway_vpc_private_network.pn.id
+  name                        = "tf-cluster"
+  version                     = "1.29.1"
+  cni                         = "cilium"
+  private_network_id          = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
 }
 
@@ -136,11 +136,11 @@ It leads the `kubernetes` provider to start creating its objects, but the DNS en
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
-  name    = "tf-cluster"
-  version = "1.29.1"
-  cni     = "cilium"
+  name                        = "tf-cluster"
+  version                     = "1.29.1"
+  cni                         = "cilium"
   delete_additional_resources = false
-  private_network_id = scaleway_vpc_private_network.pn.id
+  private_network_id          = scaleway_vpc_private_network.pn.id
 }
 
 resource "scaleway_k8s_pool" "pool" {
@@ -161,10 +161,10 @@ resource "null_resource" "kubeconfig" {
 
 provider "helm" {
   kubernetes {
-    host = null_resource.kubeconfig.triggers.host
+    host  = null_resource.kubeconfig.triggers.host
     token = null_resource.kubeconfig.triggers.token
     cluster_ca_certificate = base64decode(
-    null_resource.kubeconfig.triggers.cluster_ca_certificate
+      null_resource.kubeconfig.triggers.cluster_ca_certificate
     )
   }
 }
@@ -179,32 +179,32 @@ resource "helm_release" "nginx_ingress" {
   namespace = "kube-system"
 
   repository = "https://kubernetes.github.io/ingress-nginx"
-  chart = "ingress-nginx"
+  chart      = "ingress-nginx"
 
   set {
-    name = "controller.service.loadBalancerIP"
+    name  = "controller.service.loadBalancerIP"
     value = scaleway_lb_ip.nginx_ip.ip_address
   }
 
   // enable proxy protocol to get client ip addr instead of loadbalancer one
   set {
-    name = "controller.config.use-proxy-protocol"
+    name  = "controller.config.use-proxy-protocol"
     value = "true"
   }
   set {
-    name = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-proxy-protocol-v2"
+    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-proxy-protocol-v2"
     value = "true"
   }
 
   // indicates in which zone to create the loadbalancer
   set {
-    name = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-zone"
+    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-zone"
     value = scaleway_lb_ip.nginx_ip.zone
   }
 
   // enable to avoid node forwarding
   set {
-    name = "controller.service.externalTrafficPolicy"
+    name  = "controller.service.externalTrafficPolicy"
     value = "Local"
   }
 

@@ -13,7 +13,7 @@ provider. Il will allow you to provision and manage NATS Jetstream resources.
 terraform {
   required_providers {
     scaleway = {
-      source  = "scaleway/scaleway"
+      source = "scaleway/scaleway"
     }
     jetstream = {
       source  = "nats-io/jetstream"
@@ -29,7 +29,7 @@ resource "scaleway_mnq_nats_credentials" "creds" {
 }
 
 provider "jetstream" {
-  servers = scaleway_mnq_nats_account.account.endpoint
+  servers         = scaleway_mnq_nats_account.account.endpoint
   credential_data = scaleway_mnq_nats_credentials.creds.file
 }
 

@@ -68,13 +68,13 @@ resource "scaleway_instance_ip" "public_ip_backup" {
 resource "scaleway_block_volume" "data" {
   project_id = var.project_id
   size_in_gb = 30
-  iops = 5000
+  iops       = 5000
 }
 
 resource "scaleway_block_volume" "data_backup" {
   project_id = var.project_id
   size_in_gb = 10
-  iops = 5000
+  iops       = 5000
 }
 
 resource "scaleway_instance_security_group" "www" {
