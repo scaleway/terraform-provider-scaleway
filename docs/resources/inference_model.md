@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_inference_model"
 
 # Resource: scaleway_inference_model
 
-The scaleway_inference_model resource allows you to upload and manage custom inference models in the Scaleway Inference ecosystem. Once registered, a custom model can be used in any scaleway_inference_deployment resource.
+The scaleway_inference_model resource allows you to upload and manage custom inference models in the Scaleway Inference ecosystem. Once registered, a model can be used in any scaleway_inference_deployment resource.
 
 ## Example Usage
 
@@ -43,7 +43,7 @@ resource "scaleway_inference_deployment" "my_deployment" {
 
 ## Argument Reference
 
-- `name` - (Required) The name of the custom model. This must be unique within the project.
+- `name` - (Required) The name of the model. This must be unique within the project.
 - `url` - (Required) The HTTPS source URL from which the model will be downloaded. This is typically a Hugging Face repository URL (e.g., https://huggingface.co/agentica-org/DeepCoder-14B-Preview). The URL must be publicly accessible or require valid credentials via `secret`
 - `secret` - (Optional, Sensitive) Authentication token used to pull the model from a private or gated URL (e.g., a Hugging Face access token with read permission).
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
@@ -69,7 +69,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Custom models can be imported using, `{region}/{id}`, as shown below:
+Models can be imported using, `{region}/{id}`, as shown below:
 
 ```bash
 terraform import scaleway_inference_model.my_model fr-par/11111111-1111-1111-1111-111111111111
