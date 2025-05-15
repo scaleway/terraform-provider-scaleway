@@ -2,7 +2,8 @@ package inference
 
 import (
 	"context"
-	"fmt"
+	"errors"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
@@ -41,6 +42,7 @@ func DataSourceModelRead(ctx context.Context, d *schema.ResourceData, m interfac
 	pageSize := uint32(1000)
 	if !ok {
 		modelName := d.Get("name").(string)
+
 		modelList, err := api.ListModels(&inference.ListModelsRequest{
 			Region:    region,
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
@@ -63,8 +65,10 @@ func DataSourceModelRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 		modelID = foundModel.ID
 	}
+
 	regionalID := datasource.NewRegionalID(modelID, region)
 	d.SetId(regionalID)
+
 	err = d.Set("model_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -76,7 +80,7 @@ func DataSourceModelRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	if d.Id() == "" {
-		return diag.FromErr(fmt.Errorf("model_id is empty"))
+		return diag.FromErr(errors.New("model_id is empty"))
 	}
 
 	return nil

@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	modelID  = "ca90eec6-c8b2-4814-8b00-8bb3bc803879"
-	nodeType = "L4"
+	modelNameMeta = "meta/llama-3.1-8b-instruct:bf16"
+	nodeType      = "L4"
 )
 
 func TestAccDeployment_Basic(t *testing.T) {
@@ -28,16 +28,21 @@ func TestAccDeployment_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					data "scaleway_inference_model" "my-model" {
+						name = "%s"
+					}
+			
 					resource "scaleway_inference_deployment" "main" {
 						name = "test-inference-deployment-basic"
 						node_type = "%s"
-						model_id = "%s"
+						model_id = data.scaleway_inference_model.my-model.id
   						public_endpoint {
     						is_enabled = true
  		 				}
 						accept_eula = true
 					}
-				`, nodeType, modelID),
+					
+				`, modelNameMeta, nodeType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic"),
@@ -58,19 +63,24 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					data "scaleway_inference_model" "my-model" {
+						name = "%s"
+					}
+
 					resource "scaleway_vpc_private_network" "pn01" {
 						name = "private-network-test-inference"
 					}
+
 					resource "scaleway_inference_deployment" "main" {
 						name = "test-inference-deployment-endpoint-private"
 						node_type = "%s"
-						model_id = "%s"
+						model_id = data.scaleway_inference_model.my-model.id
 						private_endpoint {
 							private_network_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
 						accept_eula = true
 					}
-				`, nodeType, modelID),
+				`, modelNameMeta, nodeType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-endpoint-private"),
@@ -80,13 +90,18 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+					data "scaleway_inference_model" "my-model" {
+						name = "%s"
+					}
+
 					resource "scaleway_vpc_private_network" "pn01" {
 						name = "private-network-test-inference-public"
 					}
+
 					resource "scaleway_inference_deployment" "main" {
 						name = "test-inference-deployment-basic-endpoints-private-public"
 						node_type = "%s"
-						model_id = "%s"
+						model_id = data.scaleway_inference_model.my-model.id
 						private_endpoint {
 							private_network_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
@@ -95,7 +110,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						}
 						accept_eula = true
 					}
-				`, nodeType, modelID),
+				`, modelNameMeta, nodeType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic-endpoints-private-public"),
