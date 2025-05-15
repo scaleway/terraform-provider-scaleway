@@ -12,8 +12,9 @@ Creates and manages Scaleway Compute Baremetal servers. For more information, se
 ### Basic
 
 ```terraform
-data "scaleway_iam_ssh_key" "main" {
+data "scaleway_iam_ssh_key" "my_ssh_key" {
   name = "main"
+  public_key = "ssh XXXXXXXXXXX"
 }
 
 data "scaleway_baremetal_offer" "my_offer" {
@@ -21,19 +22,20 @@ data "scaleway_baremetal_offer" "my_offer" {
   name = "EM-I220E-NVME"
 }
 
-resource "scaleway_baremetal_server" "base" {
+resource "scaleway_baremetal_server" "my_server" {
   zone		  = "fr-par-2"
   offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
-  ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 }
 ```
 
 ### With option
 
 ```terraform
-data "scaleway_iam_ssh_key" "main" {
+data "scaleway_iam_ssh_key" "my_ssh_key" {
   name = "main"
+  public_key = "ssh XXXXXXXXXXX"
 }
 
 data "scaleway_baremetal_os" "my_os" {
@@ -61,7 +63,7 @@ resource "scaleway_baremetal_server" "base" {
   zone        = "fr-par-2"
   offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os          = data.scaleway_baremetal_os.my_os.os_id
-  ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 
   options {
     id = data.scaleway_baremetal_option.private_network.option_id
@@ -76,8 +78,9 @@ resource "scaleway_baremetal_server" "base" {
 ### With private network
 
 ```terraform
-data "scaleway_iam_ssh_key" "main" {
+data "scaleway_iam_ssh_key" "my_ssh_key" {
   name = "main"
+  public_key = "ssh XXXXXXXXXXX"
 }
 
 data "scaleway_baremetal_os" "my_os" {
@@ -101,11 +104,11 @@ resource "scaleway_vpc_private_network" "pn" {
   name   = "baremetal_private_network"
 }
 
-resource "scaleway_baremetal_server" "base" {
+resource "scaleway_baremetal_server" "my_server" {
   zone        = "fr-par-2"
   offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os          = data.scaleway_baremetal_os.my_os.os_id
-  ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 
   options {
     id = data.scaleway_baremetal_option.private_network.option_id
@@ -138,8 +141,9 @@ resource "scaleway_ipam_ip" "ip01" {
   }
 }
 
-data "scaleway_iam_ssh_key" "my_key" {
+data "scaleway_iam_ssh_key" "my_ssh_key" {
   name = "main"
+  public_key = "ssh XXXXXXXXXXX"
 }
 
 data "scaleway_baremetal_os" "my_os" {
@@ -158,11 +162,11 @@ data "scaleway_baremetal_option" "private_network" {
   name = "Private Network"
 }
 
-resource "scaleway_baremetal_server" "base" {
+resource "scaleway_baremetal_server" "my_server" {
   zone        = "fr-par-2"
   offer       = data.scaleway_baremetal_offer.my_offer.offer_id
   os          = data.scaleway_baremetal_os.my_os.os_id
-  ssh_key_ids = [data.scaleway_account_ssh_key.my_key.id]
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 
   options {
     id = data.scaleway_baremetal_option.private_network.option_id
@@ -182,7 +186,7 @@ data "scaleway_baremetal_offer" "my_offer" {
   name = "EM-B112X-SSD"
 }
 
-resource "scaleway_baremetal_server" "base" {
+resource "scaleway_baremetal_server" "my_server" {
   zone	                   = "fr-par-2"
   offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
   install_config_afterward = true
@@ -193,7 +197,7 @@ resource "scaleway_baremetal_server" "base" {
 
 ```terraform
 variable "configCustomPartitioning" {
-  default = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912},{\"label\":\"swap\",\"number\":2,\"size\":4294967296},{\"label\":\"boot\",\"number\":3,\"size\":1073741824},{\"label\":\"root\",\"number\":4,\"size\":1017827045376}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"swap\",\"number\":1,\"size\":4294967296},{\"label\":\"boot\",\"number\":2,\"size\":1073741824},{\"label\":\"root\",\"number\":3,\"size\":1017827045376}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/md0\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/md1\",\"format\":\"ext4\",\"mountpoint\":\"/\"}],\"raids\":[{\"devices\":[\"/dev/nvme0n1p3\",\"/dev/nvme1n1p2\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md0\"},{\"devices\":[\"/dev/nvme0n1p4\",\"/dev/nvme1n1p3\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md1\"}],\"zfs\":{\"pools\":[]}}"
+  default ="{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"boot\",\"number\":2,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"root\",\"number\":3,\"size\":1018839433216,\"useAllAvailableSpace\":false}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"boot\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"data\",\"number\":2,\"size\":1018839433216,\"useAllAvailableSpace\":false}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/nvme0n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/nvme0n1p3\",\"format\":\"ext4\",\"mountpoint\":\"/\"},{\"device\":\"/dev/nvme1n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/data\"}],\"raids\":[]}"
 }
 
 data "scaleway_baremetal_os" "my_os" {
@@ -202,8 +206,9 @@ data "scaleway_baremetal_os" "my_os" {
   version = "22.04 LTS (Jammy Jellyfish)"
 }
 
-resource "scaleway_iam_ssh_key" "main" {
-  name 	   = "main"
+resource "scaleway_iam_ssh_key" "my_ssh_key" {
+  name 	   = "my_ssh_key"
+  public_key = "ssh XXXXXXXXXXX"
 }
 
 data "scaleway_baremetal_offer" "my_offer" {
@@ -212,8 +217,8 @@ data "scaleway_baremetal_offer" "my_offer" {
   subscription_period = "hourly"
 }
 
-resource "scaleway_baremetal_server" "base" {
-  name        = "%s"
+resource "scaleway_baremetal_server" "my_server" {
+  name        = "my_super_server"
   zone        = "fr-par-1"
   description = "test a description"
   offer       = data.scaleway_baremetal_offer.my_offer.offer_id
@@ -221,7 +226,7 @@ resource "scaleway_baremetal_server" "base" {
   partitioning = var.configCustomPartitioning
 
   tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
-  ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
+  ssh_key_ids = [ scaleway_iam_ssh_key.my_ssh_key.id ]
 }
 
 ```
@@ -240,7 +245,7 @@ data "scaleway_baremetal_offer" "my_offer" {
   subscription_period = "hourly"
 }
 
-resource "scaleway_baremetal_server" "server01" {
+resource "scaleway_baremetal_server" "my_server" {
   name = "UpdateSubscriptionPeriod"
   offer = data.scaleway_baremetal_offer.my_offer.offer_id
   zone = "%s"
@@ -257,7 +262,7 @@ data "scaleway_baremetal_offer" "my_offer" {
   subscription_period = "monthly"
 }
 
-resource "scaleway_baremetal_server" "server01" {
+resource "scaleway_baremetal_server" "my_server" {
   name = "UpdateSubscriptionPeriod"
   offer = data.scaleway_baremetal_offer.my_offer.offer_id
   zone = "fr-par-1"
