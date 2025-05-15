@@ -16,10 +16,10 @@ Refer to the Containers triggers [documentation](https://www.scaleway.com/en/doc
 ```terraform
 resource scaleway_container_trigger main {
   container_id = scaleway_container.main.id
-  name = "my-trigger"
+  name         = "my-trigger"
   sqs {
     project_id = scaleway_mnq_sqs.main.project_id
-    queue = "MyQueue"
+    queue      = "MyQueue"
     # If region is different
     region = scaleway_mnq_sqs.main.region
   }
@@ -31,10 +31,10 @@ resource scaleway_container_trigger main {
 ```terraform
 resource scaleway_container_trigger main {
   container_id = scaleway_container.main.id
-  name = "my-trigger"
+  name         = "my-trigger"
   nats {
     account_id = scaleway_mnq_nats_account.main.id
-    subject = "MySubject"
+    subject    = "MySubject"
     # If region is different
     region = scaleway_mnq_nats_account.main.region
   }

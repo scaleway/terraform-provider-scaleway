@@ -44,8 +44,8 @@ resource "scaleway_domain_record" "tf_AAAA" {
 resource "scaleway_ipam_ip_reverse_dns" "base" {
   ipam_ip_id = data.scaleway_ipam_ip.ipam01.id
 
-  hostname   = "example.com"
-  address    = cidrhost(data.scaleway_ipam_ip.ipam01.address_cidr, 42)
+  hostname = "example.com"
+  address  = cidrhost(data.scaleway_ipam_ip.ipam01.address_cidr, 42)
 }
 ```
 

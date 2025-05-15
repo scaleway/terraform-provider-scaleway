@@ -23,14 +23,14 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
 
 ```hcl
 provider "scaleway" {
-	zone = "fr-par-1"
+  zone = "fr-par-1"
 }
 ```
 
 ```hcl
 variable "machine_count" {
   description = "Number of virtual machines in private network"
-  default = 3
+  default     = 3
 }
 
 # SCALEWAY VPC PRIVATE NETWORK
@@ -41,8 +41,8 @@ resource scaleway_vpc_private_network "pn" {
 
 # SCALEWAY VPC VIRTUAL MACHINES
 resource scaleway_instance_server "servers" {
-  count	= var.machine_count
-  name 	= "machine${count.index}"
+  count = var.machine_count
+  name  = "machine${count.index}"
   image = "ubuntu_focal"
   type  = "DEV1-S"
 }
@@ -82,9 +82,9 @@ Example:
 
 ```hcl
 resource scaleway_vpc_public_gateway "pgw" {
-  type = "VPC-GW-S"
+  type            = "VPC-GW-S"
   bastion_enabled = true
-  ip_id = scaleway_vpc_public_gateway_ip.pgw_ip.id
+  ip_id           = scaleway_vpc_public_gateway_ip.pgw_ip.id
 }
 ```
 
@@ -102,7 +102,7 @@ Please check our API [documentation](https://www.scaleway.com/en/developers/api/
 
 ```hcl
 resource scaleway_vpc_public_gateway_dhcp "dhcp" {
-  subnet = "192.168.1.0/24"
+  subnet         = "192.168.1.0/24"
   dns_local_name = scaleway_vpc_private_network.pn.name
 }
 ```
@@ -114,10 +114,10 @@ Do not set the `address` attribute.
 
 ```hcl
 resource scaleway_vpc_gateway_network "gn" {
-  gateway_id          = scaleway_vpc_public_gateway.pgw.id
-  private_network_id  = scaleway_vpc_private_network.pn.id
-  dhcp_id             = scaleway_vpc_public_gateway_dhcp.dhcp.id
-  enable_dhcp         = true
+  gateway_id         = scaleway_vpc_public_gateway.pgw.id
+  private_network_id = scaleway_vpc_private_network.pn.id
+  dhcp_id            = scaleway_vpc_public_gateway_dhcp.dhcp.id
+  enable_dhcp        = true
 }
 ```
 

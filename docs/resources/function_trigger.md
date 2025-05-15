@@ -16,10 +16,10 @@ Refer to the Functions triggers [documentation](https://www.scaleway.com/en/docs
 ```terraform
 resource scaleway_function_trigger main {
   function_id = scaleway_function.main.id
-  name = "my-trigger"
+  name        = "my-trigger"
   sqs {
     project_id = scaleway_mnq_sqs.main.project_id
-    queue = "MyQueue"
+    queue      = "MyQueue"
     # If region is different
     region = scaleway_mnq_sqs.main.region
   }
@@ -31,10 +31,10 @@ resource scaleway_function_trigger main {
 ```terraform
 resource scaleway_function_trigger main {
   function_id = scaleway_function.main.id
-  name = "my-trigger"
+  name        = "my-trigger"
   nats {
     account_id = scaleway_mnq_nats_account.main.id
-    subject = "MySubject"
+    subject    = "MySubject"
     # If region is different
     region = scaleway_mnq_nats_account.main.region
   }

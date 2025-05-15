@@ -14,8 +14,8 @@ For more information, see [the main documentation](https://www.scaleway.com/en/d
 
 ```terraform
 resource "scaleway_vpc" "vpc01" {
-    name = "my-vpc"
-    tags = ["demo", "terraform"]
+  name = "my-vpc"
+  tags = ["demo", "terraform"]
 }
 ```
 

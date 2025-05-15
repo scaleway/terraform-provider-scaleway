@@ -22,8 +22,8 @@ resource "scaleway_account_project" "project" {
 
 resource "scaleway_cockpit_grafana_user" "main" {
   project_id = scaleway_account_project.project.id
-  login = "my-awesome-user"
-  role = "editor"
+  login      = "my-awesome-user"
+  role       = "editor"
 }
 ```
 

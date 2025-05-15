@@ -20,26 +20,26 @@ resource scaleway_lb_ip main {
 }
 
 resource scaleway_lb main {
-    ip_id = scaleway_lb_ip.main.id
-    name = "data-test-lb-cert"
-    type = "LB-S"
+  ip_id = scaleway_lb_ip.main.id
+  name  = "data-test-lb-cert"
+  type  = "LB-S"
 }
 
 resource scaleway_lb_certificate main {
-    lb_id = scaleway_lb.main.id
-    name = "data-test-lb-cert"
-    letsencrypt {
-        common_name = "${replace(scaleway_lb.main.ip_address, ".", "-")}.lb.${scaleway_lb.main.region}.scw.cloud"
-    }
+  lb_id = scaleway_lb.main.id
+  name  = "data-test-lb-cert"
+  letsencrypt {
+    common_name = "${replace(scaleway_lb.main.ip_address, ".", "-")}.lb.${scaleway_lb.main.region}.scw.cloud"
+  }
 }
 
 data "scaleway_lb_certificate" "byID" {
-    certificate_id = "${scaleway_lb_certificate.main.id}"
+  certificate_id = "${scaleway_lb_certificate.main.id}"
 }
 
 data "scaleway_lb_certificate" "byName" {
-    name = "${scaleway_lb_certificate.main.name}"
-    lb_id = "${scaleway_lb.main.id}"
+  name  = "${scaleway_lb_certificate.main.name}"
+  lb_id = "${scaleway_lb.main.id}"
 }
 ```
 

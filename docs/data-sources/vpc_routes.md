@@ -21,7 +21,7 @@ resource scaleway_vpc_private_network pn01 {
 }
 
 resource scaleway_vpc_private_network pn02 {
-  name = "tf-pn_route-2"
+  name   = "tf-pn_route-2"
   vpc_id = scaleway_vpc.vpc01.id
 }
 

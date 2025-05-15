@@ -11,7 +11,7 @@ Gets information about an RDB backup.
 
 ```hcl
 data scaleway_rdb_database_backup find_by_name {
-  name        = "mybackup"
+  name = "mybackup"
 }
 
 data scaleway_rdb_database_backup find_by_name_and_instance {

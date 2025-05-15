@@ -16,7 +16,7 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 ```terraform
 resource "scaleway_vpc_public_gateway_dhcp" "main" {
-    subnet = "192.168.1.0/24"
+  subnet = "192.168.1.0/24"
 }
 ```
 

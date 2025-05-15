@@ -24,12 +24,12 @@ resource "scaleway_rdb_instance" "main" {
 }
 
 resource "scaleway_rdb_database" "main" {
-  instance_id    = scaleway_rdb_instance.main.id
-  name           = "database"
+  instance_id = scaleway_rdb_instance.main.id
+  name        = "database"
 }
 
 resource scaleway_rdb_database_backup "main" {
-  instance_id = scaleway_rdb_instance.main.id
+  instance_id   = scaleway_rdb_instance.main.id
   database_name = scaleway_rdb_database.main.name
 }
 ```
@@ -38,9 +38,9 @@ resource scaleway_rdb_database_backup "main" {
 
 ```terraform
 resource scaleway_rdb_database_backup "main" {
-  instance_id = data.scaleway_rdb_instance.main.id
+  instance_id   = data.scaleway_rdb_instance.main.id
   database_name = data.scaleway_rdb_database.main.name
-  expires_at = "2022-06-16T07:48:44Z"
+  expires_at    = "2022-06-16T07:48:44Z"
 }
 ```
 

@@ -100,10 +100,10 @@ Before updating your configuration, you must trigger the move to IPAM-mode on th
 
 ```hcl
 resource "scaleway_vpc_public_gateway" "main" {
-  name          = "foobar"
-  type          = "VPC-GW-S"
-  ip_id         = scaleway_vpc_public_gateway_ip.main.id
-  move_to_ipam  = true
+  name         = "foobar"
+  type         = "VPC-GW-S"
+  ip_id        = scaleway_vpc_public_gateway_ip.main.id
+  move_to_ipam = true
 }
 ```
 

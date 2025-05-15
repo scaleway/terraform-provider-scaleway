@@ -28,7 +28,7 @@ resource "scaleway_edge_services_cache_stage" "main" {
   purge {
     pipeline_id = scaleway_edge_services_pipeline.main.id
     all         = true
-  } 
+  }
 }
 ```
 

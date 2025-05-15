@@ -18,11 +18,11 @@ Creates and manages Scaleway IoT Routes. For more information, see the following
 
 ```terraform
 resource "scaleway_iot_route" "main" {
-	name   = "default"
-	hub_id = scaleway_iot_hub.main.id
-	topic  = "#"
-	database {
-		query  = <<-EOT
+  name   = "default"
+  hub_id = scaleway_iot_hub.main.id
+  topic  = "#"
+  database {
+    query    = <<-EOT
 			INSERT INTO measurements(
 				push_time,
 				report_time,
@@ -37,25 +37,25 @@ resource "scaleway_iot_route" "main" {
 				($PAYLOAD::jsonb->'humidity'):decimal:
 			);
 			EOT
-		host   = scaleway_rdb_instance.iot.endpoint_ip
-		port   = scaleway_rdb_instance.iot.endpoint_port
-		dbname = "rdb"
-		username = scaleway_rdb_instance.iot.user_name
-		password = scaleway_rdb_instance.iot.password
-	}
+    host     = scaleway_rdb_instance.iot.endpoint_ip
+    port     = scaleway_rdb_instance.iot.endpoint_port
+    dbname   = "rdb"
+    username = scaleway_rdb_instance.iot.user_name
+    password = scaleway_rdb_instance.iot.password
+  }
 }
 
 resource "scaleway_iot_hub" "main" {
-	name         = "main"
-	product_plan = "plan_shared"
+  name         = "main"
+  product_plan = "plan_shared"
 }
 
 resource "scaleway_rdb_instance" "iot" {
-	name           = "iot"
-	node_type      = "db-dev-s"
-	engine         = "PostgreSQL-12"
-	user_name      = "root"
-	password       = "T3stP4ssw0rdD0N0tUs3!"
+  name      = "iot"
+  node_type = "db-dev-s"
+  engine    = "PostgreSQL-12"
+  user_name = "root"
+  password  = "T3stP4ssw0rdD0N0tUs3!"
 }
 ```
 
@@ -63,25 +63,25 @@ resource "scaleway_rdb_instance" "iot" {
 
 ```terraform
 resource "scaleway_iot_route" "main" {
-	name   = "main"
-	hub_id = scaleway_iot_hub.main.id
-	topic  = "#"
-	s3 {
-		bucket_region = scaleway_object_bucket.main.region
-		bucket_name   = scaleway_object_bucket.main.name
-		object_prefix = "foo"
-		strategy      = "per_topic"
-	}
+  name   = "main"
+  hub_id = scaleway_iot_hub.main.id
+  topic  = "#"
+  s3 {
+    bucket_region = scaleway_object_bucket.main.region
+    bucket_name   = scaleway_object_bucket.main.name
+    object_prefix = "foo"
+    strategy      = "per_topic"
+  }
 }
 
 resource "scaleway_iot_hub" "main" {
-	name         = "main"
-	product_plan = "plan_shared"
+  name         = "main"
+  product_plan = "plan_shared"
 }
 
 resource "scaleway_object_bucket" "main" {
-	region = "fr-par"
-	name = "my_awesome-bucket"
+  region = "fr-par"
+  name   = "my_awesome-bucket"
 }
 ```
 
@@ -89,21 +89,21 @@ resource "scaleway_object_bucket" "main" {
 
 ```terraform
 resource "scaleway_iot_route" "main" {
-	name   = "main"
-	hub_id = scaleway_iot_hub.main.id
-	topic  = "#"
-	rest {
-		verb = "get"
-		uri  = "http://scaleway.com"
-		headers = {
-			X-awesome-header = "my-awesome-value"
-		}
-	}
+  name   = "main"
+  hub_id = scaleway_iot_hub.main.id
+  topic  = "#"
+  rest {
+    verb = "get"
+    uri  = "http://scaleway.com"
+    headers = {
+      X-awesome-header = "my-awesome-value"
+    }
+  }
 }
 
 resource "scaleway_iot_hub" "main" {
-	name         = "main"
-	product_plan = "plan_shared"
+  name         = "main"
+  product_plan = "plan_shared"
 }
 ```
 

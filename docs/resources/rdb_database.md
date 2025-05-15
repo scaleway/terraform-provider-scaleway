@@ -24,8 +24,8 @@ resource "scaleway_rdb_instance" "main" {
 }
 
 resource "scaleway_rdb_database" "main" {
-  instance_id    = scaleway_rdb_instance.main.id
-  name           = "my-new-database"
+  instance_id = scaleway_rdb_instance.main.id
+  name        = "my-new-database"
 }
 ```
 

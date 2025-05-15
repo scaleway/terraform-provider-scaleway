@@ -17,7 +17,7 @@ resource "scaleway_flexible_ip" "main" {}
 
 resource "scaleway_flexible_ip_mac_address" "main" {
   flexible_ip_id = scaleway_flexible_ip.main.id
-  type = "kvm"
+  type           = "kvm"
 }
 ```
 
@@ -29,9 +29,9 @@ data "scaleway_baremetal_offer" "my_offer" {
 }
 
 resource "scaleway_baremetal_server" "base" {
-  name 			             = "TestAccScalewayBaremetalServer_WithoutInstallConfig"
-  offer     				 = data.scaleway_baremetal_offer.my_offer.offer_id
-  install_config_afterward   = true
+  name                     = "TestAccScalewayBaremetalServer_WithoutInstallConfig"
+  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
+  install_config_afterward = true
 }
 
 resource "scaleway_flexible_ip" "ip01" {
@@ -48,7 +48,7 @@ resource "scaleway_flexible_ip" "ip03" {
 
 resource "scaleway_flexible_ip_mac_address" "main" {
   flexible_ip_id = scaleway_flexible_ip.ip01.id
-  type = "kvm"
+  type           = "kvm"
   flexible_ip_ids_to_duplicate = [
     scaleway_flexible_ip.ip02.id,
     scaleway_flexible_ip.ip03.id

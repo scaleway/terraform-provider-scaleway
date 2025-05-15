@@ -51,7 +51,7 @@ resource "scaleway_iam_group" "group" {
 resource "scaleway_iam_group_membership" "members" {
   for_each = data.scaleway_iam_user.users
   group_id = scaleway_iam_group.group.id
-  user_id = each.value.id
+  user_id  = each.value.id
 }
 ```
 

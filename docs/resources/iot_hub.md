@@ -15,8 +15,8 @@ Creates and manages Scaleway IoT Hub Instances. For more information, see the [A
 
 ```terraform
 resource "scaleway_iot_hub" "main" {
-    name = "test-iot"
-    product_plan = "plan_shared"
+  name         = "test-iot"
+  product_plan = "plan_shared"
 }
 ```
 

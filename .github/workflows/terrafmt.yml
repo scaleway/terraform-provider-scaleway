@@ -1,0 +1,17 @@
+name: Run terrafmt
+on:
+  pull_request:
+  push:
+  merge_group:
+
+jobs:
+  terrafmt:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.24.0
+      - name: Run terrafmt on documentation
+        run: go tool terrafmt fmt --verbose --check ./docs

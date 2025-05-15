@@ -17,21 +17,21 @@ Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-s
 
 ```terraform
 resource "scaleway_object_bucket" "main" {
-    name = "MyBucket"
-    acl  = "public-read"
+  name = "MyBucket"
+  acl  = "public-read"
 
-    object_lock_enabled = true
+  object_lock_enabled = true
 }
 
 resource "scaleway_object_bucket_lock_configuration" "main" {
-    bucket = scaleway_object_bucket.main.name
+  bucket = scaleway_object_bucket.main.name
 
-    rule {
-        default_retention {
-            mode = "GOVERNANCE"
-            days = 1
-        }
+  rule {
+    default_retention {
+      mode = "GOVERNANCE"
+      days = 1
     }
+  }
 }
 ```
 

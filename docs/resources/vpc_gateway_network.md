@@ -33,9 +33,9 @@ resource scaleway_vpc_public_gateway pg01 {
 }
 
 resource scaleway_vpc_gateway_network main {
-  gateway_id = scaleway_vpc_public_gateway.pg01.id
+  gateway_id         = scaleway_vpc_public_gateway.pg01.id
   private_network_id = scaleway_vpc_private_network.pn01.id
-  enable_masquerade = true
+  enable_masquerade  = true
   ipam_config {
     push_default_route = true
   }
@@ -70,12 +70,12 @@ resource scaleway_vpc_public_gateway pg01 {
 }
 
 resource scaleway_vpc_gateway_network main {
-  gateway_id = scaleway_vpc_public_gateway.pg01.id
+  gateway_id         = scaleway_vpc_public_gateway.pg01.id
   private_network_id = scaleway_vpc_private_network.pn01.id
-  enable_masquerade = true
+  enable_masquerade  = true
   ipam_config {
     push_default_route = true
-    ipam_ip_id = scaleway_ipam_ip.ip01.id
+    ipam_ip_id         = scaleway_ipam_ip.ip01.id
   }
 }
 ```

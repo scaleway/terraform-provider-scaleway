@@ -23,7 +23,7 @@ resource "scaleway_tem_domain" "main" {
 
 ```terraform
 variable "domain_name" {
-  type    = string
+  type = string
 }
 
 resource "scaleway_tem_domain" "main" {
@@ -62,7 +62,7 @@ resource "scaleway_domain_record" "dmarc" {
 
 ```terraform
 variable "domain_name" {
-  type    = string
+  type = string
 }
 
 resource "scaleway_tem_domain" "main" {
@@ -78,11 +78,11 @@ resource "scaleway_tem_domain" "main" {
 ```terraform
 
 variable "domain_name" {
-  type    = string
+  type = string
 }
 
 data "scaleway_tem_domain" "my_domain" {
-  name       = var.domain_name
+  name = var.domain_name
 }
 
 resource "gitlab_project_variable" "smtp_host" {
