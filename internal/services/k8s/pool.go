@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -192,6 +193,11 @@ func ResourcePool() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the node",
+						},
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -213,6 +219,25 @@ func ResourcePool() *schema.Resource {
 							Computed:    true,
 							Description: "The public IPv6 address of the node",
 							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
+						},
+						"private_ips": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of private IPv4 and IPv6 addresses associated with the node",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The ID of the IP address resource",
+									},
+									"address": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The private IP address",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -389,7 +414,6 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("container_runtime", pool.ContainerRuntime)
 	_ = d.Set("created_at", pool.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", pool.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("nodes", nodes)
 	_ = d.Set("status", pool.Status)
 	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
 	_ = d.Set("region", region)
@@ -401,7 +425,59 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interfac
 		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())
 	}
 
-	return nil
+	// Get nodes' private IPs
+	diags := diag.Diagnostics{}
+
+	projectID, err := getClusterProjectID(ctx, k8sAPI, pool)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unable to get nodes private IPs",
+			Detail:   err.Error(),
+		})
+	} else {
+		for i, nodeMap := range nodes {
+			nodeNameInterface, ok := nodeMap["name"]
+			if !ok {
+				continue
+			}
+
+			nodeName, ok := nodeNameInterface.(string)
+			if !ok {
+				continue
+			}
+
+			opts := &ipam.GetResourcePrivateIPsOptions{
+				ResourceName: &nodeName,
+				ProjectID:    &projectID,
+			}
+
+			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+			if err != nil {
+				if httperrors.Is403(err) {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Unauthorized to read nodes' private IPs, please check your IAM permissions",
+						Detail:   err.Error(),
+					})
+
+					break
+				} else {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Unable to get nodes private IPs from IPAM API",
+						Detail:   err.Error(),
+					})
+				}
+			}
+
+			nodes[i]["private_ips"] = privateIPs
+		}
+	}
+
+	_ = d.Set("nodes", nodes)
+
+	return diags
 }
 
 func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
