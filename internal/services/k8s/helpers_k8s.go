@@ -86,6 +86,7 @@ func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
 
 	for _, node := range res.Nodes {
 		n := make(map[string]interface{})
+		n["id"] = node.ID
 		n["name"] = node.Name
 		n["status"] = node.Status.String()
 
@@ -116,4 +117,20 @@ func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[strin
 	}
 
 	return convertNodes(nodes), nil
+}
+
+func getClusterProjectID(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) (string, error) {
+	cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
+		Region:    pool.Region,
+		ClusterID: pool.ClusterID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return "", fmt.Errorf("get pool project ID: error getting cluster %s", pool.ClusterID)
+	}
+
+	if cluster.ProjectID == "" {
+		return "", fmt.Errorf("no project ID found for cluster %s", pool.ClusterID)
+	}
+
+	return cluster.ProjectID, nil
 }
