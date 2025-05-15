@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_inference_model"
 
 # Resource: scaleway_inference_model
 
-The scaleway_inference_model resource allows you to upload and manage custom inference models in the Scaleway Inference ecosystem. Once registered, a model can be used in any scaleway_inference_deployment resource.
+The scaleway_inference_model resource allows you to upload and manage inference models in the Scaleway Inference ecosystem. Once registered, a model can be used in any scaleway_inference_deployment resource.
 
 ## Example Usage
 
