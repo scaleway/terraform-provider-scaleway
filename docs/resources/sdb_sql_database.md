@@ -15,7 +15,7 @@ Refer to the Serverless SQL Databases [documentation](https://www.scaleway.com/e
 
 ```hcl
 resource scaleway_sdb_sql_database "database" {
-  name = "my-database"
+  name    = "my-database"
   min_cpu = 0
   max_cpu = 8
 }
@@ -37,11 +37,11 @@ resource scaleway_iam_application "app" {
 }
 
 resource scaleway_iam_policy "db_access" {
-  name = "my policy"
-  description = "gives app access to serverless database in project"
+  name           = "my policy"
+  description    = "gives app access to serverless database in project"
   application_id = scaleway_iam_application.app.id
   rule {
-    project_ids = [data.scaleway_account_project.default.id]
+    project_ids          = [data.scaleway_account_project.default.id]
     permission_set_names = ["ServerlessSQLDatabaseReadWrite"]
   }
 }
@@ -51,7 +51,7 @@ resource scaleway_iam_api_key "api_key" {
 }
 
 resource scaleway_sdb_sql_database "database" {
-  name = "my-database"
+  name    = "my-database"
   min_cpu = 0
   max_cpu = 8
 }

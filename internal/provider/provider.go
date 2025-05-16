@@ -167,6 +167,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_ssh_key":                         iam.ResourceSSKKey(),
 				"scaleway_iam_user":                            iam.ResourceUser(),
 				"scaleway_inference_deployment":                inference.ResourceDeployment(),
+				"scaleway_inference_model":                     inference.ResourceModel(),
 				"scaleway_instance_image":                      instance.ResourceImage(),
 				"scaleway_instance_ip":                         instance.ResourceIP(),
 				"scaleway_instance_ip_reverse_dns":             instance.ResourceIPReverseDNS(),
@@ -245,6 +246,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 
 			DataSourcesMap: map[string]*schema.Resource{
 				"scaleway_account_project":                     account.DataSourceProject(),
+				"scaleway_account_projects":                    account.DataSourceProjects(),
 				"scaleway_account_ssh_key":                     iam.DataSourceSSHKey(),
 				"scaleway_availability_zones":                  az.DataSourceAvailabilityZones(),
 				"scaleway_baremetal_offer":                     baremetal.DataSourceOffer(),
@@ -273,6 +275,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_iam_ssh_key":                         iam.DataSourceSSHKey(),
 				"scaleway_iam_user":                            iam.DataSourceUser(),
 				"scaleway_iam_api_key":                         iam.DataSourceAPIKey(),
+				"scaleway_inference_model":                     inference.DataSourceModel(),
 				"scaleway_instance_image":                      instance.DataSourceImage(),
 				"scaleway_instance_ip":                         instance.DataSourceIP(),
 				"scaleway_instance_placement_group":            instance.DataSourcePlacementGroup(),

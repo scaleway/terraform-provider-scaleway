@@ -23,7 +23,7 @@ If you have already one database running you can step over to [Configuring your 
 terraform {
   required_providers {
     scaleway = {
-      source = "scaleway/scaleway"
+      source  = "scaleway/scaleway"
       version = "~> 2.2.8"
     }
   }
@@ -43,14 +43,14 @@ resource "scaleway_rdb_database" "database" {
 }
 
 resource scaleway_rdb_instance main {
-    name = "your-backend-db"
-    node_type = "db-dev-s"
-    engine = "PostgreSQL-11"
-    is_ha_cluster = false
-    disable_backup = true
-    user_name = "my_initial_user"
-    password = "thiZ_is_v&ry_s3cret"
-    tags = [ "terraform-backend1" ]
+  name           = "your-backend-db"
+  node_type      = "db-dev-s"
+  engine         = "PostgreSQL-11"
+  is_ha_cluster  = false
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+  tags           = ["terraform-backend1"]
 }
 ```
 
@@ -174,6 +174,6 @@ This is useful when working on the same infrastructure or the same team.
 
 ```hcl
 data "scaleway_rdb_instance" "mybackend" {
-    name = "your-database-name"
+  name = "your-database-name"
 }
 ```

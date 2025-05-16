@@ -25,7 +25,7 @@ data "scaleway_mongodb_instance" "my_instance" {
 # Get other attributes
 output "mongodb_version" {
   description = "Version of the MongoDB instance"
-  value = data.scaleway_mongodb_instance.my_instance.version
+  value       = data.scaleway_mongodb_instance.my_instance.version
 }
 ```
 

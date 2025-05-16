@@ -21,6 +21,10 @@ jobs:
       uses: hashicorp/setup-terraform@v3
     - name: Build binaries
       run: make build
+    - name: Verify go.mod is tidy
+      run: |
+        go mod tidy
+        git diff --exit-code
     - name: Run unit tests
       run: make test
     - name: Check with go vet

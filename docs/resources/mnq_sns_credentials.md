@@ -18,10 +18,10 @@ resource "scaleway_mnq_sns" "main" {}
 
 resource scaleway_mnq_sns_credentials main {
   project_id = scaleway_mnq_sns.main.project_id
-  name = "sns-credentials"
+  name       = "sns-credentials"
 
   permissions {
-    can_manage = false
+    can_manage  = false
     can_receive = true
     can_publish = false
   }
@@ -34,7 +34,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The unique name of the SNS credentials.
 
-- `permissions` - (Optional). List of permissions associated with these credentials. Only one of the following permissions may be set:
+- `permissions` - (Optional). List of permissions associated with these credentials.
     - `can_publish` - (Optional). Defines whether the user can publish messages to the service.
     - `can_receive` - (Optional). Defines whether the user can receive messages from the service.
     - `can_manage` - (Optional). Defines whether the user can manage the associated resource(s).

@@ -3,7 +3,6 @@ package container
 import (
 	"context"
 	"errors"
-	"fmt"
 	"slices"
 	"strings"
 	"time"
@@ -317,30 +316,6 @@ func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
 	return secrets
 }
 
-func convertToMapStringInterface(raw interface{}) map[string]interface{} {
-	out := make(map[string]interface{})
-	if raw == nil {
-		return out
-	}
-
-	m, ok := raw.(map[interface{}]interface{})
-	if ok {
-		for k, v := range m {
-			stringKey := fmt.Sprintf("%v", k)
-			out[stringKey] = v
-		}
-
-		return out
-	}
-
-	m2, ok := raw.(map[string]interface{})
-	if ok {
-		return m2
-	}
-
-	return out
-}
-
 func isContainerDNSResolveError(err error) bool {
 	responseError := &scw.ResponseError{}
 
@@ -373,7 +348,7 @@ func retryCreateContainerDomain(ctx context.Context, containerAPI *container.API
 	}
 }
 
-func FilterSecretEnvsToPatch(oldEnv []*container.Secret, newEnv []*container.Secret) []*container.Secret {
+func filterSecretEnvsToPatch(oldEnv []*container.Secret, newEnv []*container.Secret) []*container.Secret {
 	toPatch := []*container.Secret{}
 	// create and update - ignore hashed values
 	for _, env := range newEnv {

@@ -44,11 +44,11 @@ resource "scaleway_instance_private_nic" "pnic01" {
 
 ```terraform
 resource "scaleway_vpc" "vpc01" {
-  name   = "vpc_instance"
+  name = "vpc_instance"
 }
 
 resource "scaleway_vpc_private_network" "pn01" {
-  name   = "private_network_instance"
+  name = "private_network_instance"
   ipv4_subnet {
     subnet = "172.16.64.0/22"
   }
@@ -93,6 +93,9 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Instance private NICs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `mac_address` - The MAC address of the private NIC.
+- `private_ips` - The list of private IPv4 and IPv6 addresses associated with the resource.
+    - `id` - The ID of the IP address resource.
+    - `address` - The private IP address.
 
 ## Import
 

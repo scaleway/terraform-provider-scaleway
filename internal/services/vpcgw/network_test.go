@@ -64,6 +64,8 @@ func TestAccVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "ipam_config.0.push_default_route", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "private_ip.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "private_ip.0.address"),
 				),
 			},
 			{

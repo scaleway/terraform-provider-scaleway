@@ -11,8 +11,8 @@ Gets information about a webhosting offer.
 
 ```hcl
 # Get info by offer name
-data "scaleway_webhosting_offer" "by_name" { 
-  name = "performance"
+data "scaleway_webhosting_offer" "by_name" {
+  name          = "performance"
   control_panel = "Cpanel"
 }
 

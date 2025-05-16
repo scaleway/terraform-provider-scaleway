@@ -6,10 +6,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1beta1"
+	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 	inferencetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference/testfuncs"
+)
+
+const (
+	modelNameMeta = "meta/llama-3.1-8b-instruct:bf16"
+	nodeType      = "L4"
 )
 
 func TestAccDeployment_Basic(t *testing.T) {
@@ -22,17 +27,22 @@ func TestAccDeployment_Basic(t *testing.T) {
 		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
+					data "scaleway_inference_model" "my-model" {
+						name = "%s"
+					}
+			
 					resource "scaleway_inference_deployment" "main" {
 						name = "test-inference-deployment-basic"
-						node_type = "L4"
-						model_name = "meta/llama-3.1-8b-instruct:fp8"
+						node_type = "%s"
+						model_id = data.scaleway_inference_model.my-model.id
   						public_endpoint {
     						is_enabled = true
  		 				}
 						accept_eula = true
 					}
-				`,
+					
+				`, modelNameMeta, nodeType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic"),
@@ -52,20 +62,25 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 		CheckDestroy:      inferencetestfuncs.IsDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
+					data "scaleway_inference_model" "my-model" {
+						name = "%s"
+					}
+
 					resource "scaleway_vpc_private_network" "pn01" {
 						name = "private-network-test-inference"
 					}
+
 					resource "scaleway_inference_deployment" "main" {
 						name = "test-inference-deployment-endpoint-private"
-						node_type = "L4"
-						model_name = "meta/llama-3.1-8b-instruct:fp8"
+						node_type = "%s"
+						model_id = data.scaleway_inference_model.my-model.id
 						private_endpoint {
 							private_network_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
 						accept_eula = true
 					}
-				`,
+				`, modelNameMeta, nodeType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-endpoint-private"),
@@ -74,14 +89,19 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
+					data "scaleway_inference_model" "my-model" {
+						name = "%s"
+					}
+
 					resource "scaleway_vpc_private_network" "pn01" {
 						name = "private-network-test-inference-public"
 					}
+
 					resource "scaleway_inference_deployment" "main" {
 						name = "test-inference-deployment-basic-endpoints-private-public"
-						node_type = "L4"
-						model_name = "meta/llama-3.1-8b-instruct:fp8"
+						node_type = "%s"
+						model_id = data.scaleway_inference_model.my-model.id
 						private_endpoint {
 							private_network_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
@@ -90,7 +110,7 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 						}
 						accept_eula = true
 					}
-				`,
+				`, modelNameMeta, nodeType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDeploymentExists(tt, "scaleway_inference_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic-endpoints-private-public"),

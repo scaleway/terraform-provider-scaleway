@@ -33,9 +33,9 @@ resource scaleway_vpc_public_gateway pg01 {
 }
 
 resource scaleway_vpc_gateway_network main {
-  gateway_id = scaleway_vpc_public_gateway.pg01.id
+  gateway_id         = scaleway_vpc_public_gateway.pg01.id
   private_network_id = scaleway_vpc_private_network.pn01.id
-  enable_masquerade = true
+  enable_masquerade  = true
   ipam_config {
     push_default_route = true
   }
@@ -70,12 +70,12 @@ resource scaleway_vpc_public_gateway pg01 {
 }
 
 resource scaleway_vpc_gateway_network main {
-  gateway_id = scaleway_vpc_public_gateway.pg01.id
+  gateway_id         = scaleway_vpc_public_gateway.pg01.id
   private_network_id = scaleway_vpc_private_network.pn01.id
-  enable_masquerade = true
+  enable_masquerade  = true
   ipam_config {
     push_default_route = true
-    ipam_ip_id = scaleway_ipam_ip.ip01.id
+    ipam_ip_id         = scaleway_ipam_ip.ip01.id
   }
 }
 ```
@@ -113,6 +113,9 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the GatewayNetwork.
 - `updated_at` - The date and time of the last update of the GatewayNetwork.
 - `status` - The status of the Public Gateway's connection to the Private Network.
+- `private_ip` - The private IPv4 address associated with the resource.
+    - `id` - The ID of the IPv4 address resource.
+    - `address` - The private IPv4 address.
 
 ## Import
 

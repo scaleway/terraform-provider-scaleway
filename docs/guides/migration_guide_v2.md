@@ -22,7 +22,7 @@ Update to latest `1.X` version:
 terraform {
   required_providers {
     scaleway = {
-      source = "scaleway/scaleway"
+      source  = "scaleway/scaleway"
       version = "~> 1.17"
     }
   }
@@ -39,7 +39,7 @@ Update to latest 2.X version:
 terraform {
   required_providers {
     scaleway = {
-      source = "scaleway/scaleway"
+      source  = "scaleway/scaleway"
       version = "~> 2.0"
     }
   }
@@ -109,7 +109,7 @@ For instance, let's suppose that you have resource in `fr-par-1` such as:
 
 ```hcl-terraform
 provider "scaleway" {
-    zone= "fr-par-1"
+  zone = "fr-par-1"
 }
 
 resource scaleway_server main {
@@ -146,7 +146,7 @@ Once this is done, refactor your terraform code to:
 
 ```hcl-terraform
 provider "scaleway" {
-    zone= "fr-par-1"
+  zone = "fr-par-1"
 }
 
 resource scaleway_instance_server main {
@@ -185,11 +185,11 @@ v1.X:
 
 ```hcl
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-S"
+  type  = "DEV1-S"
   image = "ubuntu_jammy"
 
   user_data {
-    key = "foo"
+    key   = "foo"
     value = "bar"
   }
 
@@ -201,11 +201,11 @@ v2.X:
 
 ```hcl
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-S"
+  type  = "DEV1-S"
   image = "ubuntu_jammy"
 
   user_data = {
-    foo = "bar"
+    foo        = "bar"
     cloud-init = file("cloud-init.yml")
   }
 }
@@ -231,16 +231,16 @@ resource "scaleway_instance_volume" "data" {
 }
 
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-L"
+  type  = "DEV1-L"
   image = "ubuntu_jammy"
 
-  tags = [ "hello", "public" ]
+  tags = ["hello", "public"]
 
   root_volume {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ scaleway_instance_volume.data.id ]
+  additional_volume_ids = [scaleway_instance_volume.data.id]
 }
 ```
 

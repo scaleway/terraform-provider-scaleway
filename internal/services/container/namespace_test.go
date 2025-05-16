@@ -67,7 +67,7 @@ func TestAccNamespace_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "test-cr-ns-01"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.test", "test"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 
 					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 				),
@@ -90,7 +90,7 @@ func TestAccNamespace_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "test-cr-ns-01"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.test", "test"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "tags.1", "tag2"),
@@ -127,7 +127,7 @@ func TestAccNamespace_Basic(t *testing.T) {
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "tf-env-test"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.test", "test"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "tags.#", "0"),
 					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 				),
@@ -148,7 +148,7 @@ func TestAccNamespace_Basic(t *testing.T) {
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "tf-env-test"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.foo", "bar"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.foo_secret", "bar_secret"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.foo_secret", "bar_secret"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "tags.#", "0"),
 					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 				),
@@ -189,24 +189,14 @@ func TestAccNamespace_SecretManagement(t *testing.T) {
 						name = "test-secret-ns"
 						secret_environment_variables = {
 							"SECRET_1" = "value1"
+							"SECRET_2" = "value2"
 						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1", "value1"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_container_namespace main {
-						name = "test-secret-ns"
-						secret_environment_variables = {}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckNoResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1", "value1"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2", "value2"),
 				),
 			},
 			{
@@ -215,14 +205,14 @@ func TestAccNamespace_SecretManagement(t *testing.T) {
 						name = "test-secret-ns"
 						secret_environment_variables = {
 							"SECRET_1" = "value1"
-							"SECRET_2" = "value2"
+							"SECRET_2" = "updated_value2"
 						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1", "value1"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2", "value2"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1", "value1"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2", "updated_value2"),
 				),
 			},
 			{
@@ -230,29 +220,16 @@ func TestAccNamespace_SecretManagement(t *testing.T) {
 					resource scaleway_container_namespace main {
 						name = "test-secret-ns"
 						secret_environment_variables = {
-							"SECRET_2" = "value2"
+							"SECRET_KEY_1" = "value1"
+							"SECRET_2" = "updated_value2"
 						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.SECRET_KEY_1", "value1"),
 					resource.TestCheckNoResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_1"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2", "value2"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_container_namespace main {
-						name = "test-secret-ns"
-						secret_environment_variables = {
-							"SECRET_3" = "value3"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckNoResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.SECRET_3", "value3"),
+					passwordMatchHash("scaleway_container_namespace.main", "secret_environment_variables.SECRET_2", "updated_value2"),
 				),
 			},
 		},

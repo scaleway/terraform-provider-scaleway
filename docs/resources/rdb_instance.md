@@ -14,13 +14,13 @@ For more information, see refer to the [API documentation](https://www.scaleway.
 
 ```terraform
 resource "scaleway_rdb_instance" "main" {
-  name           = "test-rdb"
-  node_type      = "DB-DEV-S"
-  engine         = "PostgreSQL-15"
-  is_ha_cluster  = true
-  disable_backup = true
-  user_name      = "my_initial_user"
-  password       = "thiZ_is_v&ry_s3cret"
+  name               = "test-rdb"
+  node_type          = "DB-DEV-S"
+  engine             = "PostgreSQL-15"
+  is_ha_cluster      = true
+  disable_backup     = true
+  user_name          = "my_initial_user"
+  password           = "thiZ_is_v&ry_s3cret"
   encryption_at_rest = true
 }
 ```
@@ -51,7 +51,7 @@ resource "scaleway_rdb_instance" "main" {
   engine         = "MySQL-8"
   user_name      = "my_initial_user"
   password       = "thiZ_is_v&ry_s3cret"
-  init_settings  = {
+  init_settings = {
     "lower_case_table_names" = 1
   }
   settings = {
@@ -91,11 +91,11 @@ resource "scaleway_vpc_private_network" "pn" {
 }
 
 resource "scaleway_rdb_instance" "main" {
-  node_type         = "db-dev-s"
-  engine            = "PostgreSQL-15"
+  node_type = "db-dev-s"
+  engine    = "PostgreSQL-15"
   private_network {
     pn_id  = scaleway_vpc_private_network.pn.id
-    ip_net = "172.16.20.4/22"   # IP address within a given IP network
+    ip_net = "172.16.20.4/22" # IP address within a given IP network
     # enable_ipam = false
   }
 }
@@ -107,10 +107,10 @@ resource "scaleway_rdb_instance" "main" {
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_rdb_instance" "main" {
-  node_type      = "DB-DEV-S"
-  engine         = "PostgreSQL-15"
+  node_type = "DB-DEV-S"
+  engine    = "PostgreSQL-15"
   private_network {
-    pn_id = scaleway_vpc_private_network.pn.id
+    pn_id       = scaleway_vpc_private_network.pn.id
     enable_ipam = true
   }
   load_balancer {}
@@ -121,8 +121,8 @@ resource "scaleway_rdb_instance" "main" {
 
 ```terraform
 resource "scaleway_rdb_instance" "main" {
-  node_type         = "db-dev-s"
-  engine            = "PostgreSQL-15"
+  node_type = "db-dev-s"
+  engine    = "PostgreSQL-15"
 }
 ```
 
@@ -143,7 +143,7 @@ interruption.
 
 ~> **Important** Updates to `engine` will recreate the Database Instance.
 
-- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd`, `lssd`, `sbs_5k` or `sbs_15k`).
+- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 
 - `volume_size_in_gb` - (Optional) Volume size (in GB). Cannot be used when `volume_type` is set to `lssd`.
 
@@ -238,6 +238,9 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
     - `port` - Port in the Private Network.
     - `name` - Name of the endpoint.
     - `hostname` - Hostname of the endpoint.
+- `private_ip` - The private IPv4 address associated with the resource.
+    - `id` - The ID of the IPv4 address resource.
+    - `address` - The private IPv4 address.
 - `certificate` - Certificate of the Database Instance.
 - `organization_id` - The organization ID the Database Instance is associated with.
 

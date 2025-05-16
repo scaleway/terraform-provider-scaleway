@@ -10,9 +10,7 @@ As of September 2024, Cockpit has introduced [regionalization](https://www.scale
 If you have created customized dashboards with data for your Scaleway resources before April 2024, you will need to update your queries in Grafana, with the new regionalized [data sources](../resources/cockpit_source.md).
 
 -> **Note:**
-Cockpit plans scheduled for deprecation on January 1st 2025.
-The retention period previously set for your logs and metrics will remain the same after that date.
-You will be able to edit the retention period for your metrics, logs, and traces for free during Beta.
+From January 1st 2025, Cockpit plans have been deprecated. You can now edit the retention period for all your datasources (metrics, logs, and traces) separately. Refer to our product documentation for more information on [possible retention values](https://www.scaleway.com/en/docs/cockpit/concepts/#retention) and [pricing](https://www.scaleway.com/en/docs/cockpit/faq/#how-am-i-billed-for-increasing-data-retention-period).
 
 Please note that even if you provide the grafana_url, it will only be active if a [Grafana user](../resources/cockpit_grafana_user.md) is created first. Make sure to create a Grafana user in your Cockpit instance to enable full access to Grafana.
 
@@ -53,9 +51,9 @@ resource "scaleway_cockpit" "main" {
 // Use the Grafana Terraform provider to create a Grafana user and a Grafana folder in the default Project's Cockpit
 
 resource "scaleway_cockpit_grafana_user" "main" {
-    project_id = scaleway_cockpit.main.project_id
-    login      = "example"
-    role       = "editor"
+  project_id = scaleway_cockpit.main.project_id
+  login      = "example"
+  role       = "editor"
 }
 
 resource "scaleway_cockpit" "main" {}

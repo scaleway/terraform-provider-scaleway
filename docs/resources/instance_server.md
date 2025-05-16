@@ -17,7 +17,7 @@ Please check our [FAQ - Instances](https://www.scaleway.com/en/docs/faq/instance
 resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-S"
+  type  = "DEV1-S"
   image = "ubuntu_jammy"
   ip_id = scaleway_instance_ip.public_ip.id
 }
@@ -28,20 +28,20 @@ resource "scaleway_instance_server" "web" {
 ```terraform
 resource "scaleway_block_volume" "data" {
   size_in_gb = 100
-  iops = 5000
+  iops       = 5000
 }
 
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-S"
+  type  = "DEV1-S"
   image = "ubuntu_jammy"
 
-  tags = [ "hello", "public" ]
+  tags = ["hello", "public"]
 
   root_volume {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ scaleway_block_volume.data.id ]
+  additional_volume_ids = [scaleway_block_volume.data.id]
 }
 ```
 
@@ -51,10 +51,10 @@ resource "scaleway_instance_server" "web" {
 resource "scaleway_instance_ip" "ip" {}
 
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-S"
+  type  = "DEV1-S"
   image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
-  tags = [ "hello", "public" ]
+  tags = ["hello", "public"]
 
   ip_id = scaleway_instance_ip.ip.id
 }
@@ -64,36 +64,36 @@ resource "scaleway_instance_server" "web" {
 
 ```terraform
 resource "scaleway_instance_security_group" "www" {
-  inbound_default_policy = "drop"
+  inbound_default_policy  = "drop"
   outbound_default_policy = "accept"
 
   inbound_rule {
     action = "accept"
-    port = "22"
-    ip = "212.47.225.64"
+    port   = "22"
+    ip     = "212.47.225.64"
   }
 
   inbound_rule {
     action = "accept"
-    port = "80"
+    port   = "80"
   }
 
   inbound_rule {
     action = "accept"
-    port = "443"
+    port   = "443"
   }
 
   outbound_rule {
-    action = "drop"
+    action   = "drop"
     ip_range = "10.20.0.0/24"
   }
 }
 
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-S"
+  type  = "DEV1-S"
   image = "ubuntu_jammy"
 
-  security_group_id= scaleway_instance_security_group.www.id
+  security_group_id = scaleway_instance_security_group.www.id
 }
 ```
 
@@ -115,7 +115,7 @@ resource "scaleway_instance_server" "web" {
 
 ```terraform
 resource scaleway_vpc_private_network pn01 {
-    name = "private_network_instance"
+  name = "private_network_instance"
 }
 
 resource "scaleway_instance_server" "base" {
@@ -134,7 +134,7 @@ resource "scaleway_instance_server" "base" {
 
 ```terraform
 resource "scaleway_instance_server" "image" {
-  type = "PRO2-XXS"
+  type  = "PRO2-XXS"
   image = "ubuntu_jammy"
   root_volume {
     size_in_gb = 100
@@ -151,13 +151,13 @@ data "scaleway_block_snapshot" "snapshot" {
 
 resource "scaleway_block_volume" "from_snapshot" {
   snapshot_id = data.scaleway_block_snapshot.snapshot.id
-  iops = 5000
+  iops        = 5000
 }
 
 resource "scaleway_instance_server" "from_snapshot" {
   type = "PRO2-XXS"
   root_volume {
-    volume_id = scaleway_block_volume.from_snapshot.id
+    volume_id   = scaleway_block_volume.from_snapshot.id
     volume_type = "sbs_volume"
   }
 }
@@ -167,12 +167,12 @@ resource "scaleway_instance_server" "from_snapshot" {
 
 ```terraform
 resource "scaleway_instance_server" "server" {
-  type = "PLAY2-MICRO"
+  type  = "PLAY2-MICRO"
   image = "ubuntu_jammy"
   root_volume {
     volume_type = "sbs_volume"
-    sbs_iops = 15000
-    size_in_gb = 50
+    sbs_iops    = 15000
+    size_in_gb  = 50
   }
 }
 ```
@@ -249,6 +249,10 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `private_network` - (Optional) The private network associated with the server.
    Use the `pn_id` key to attach a [private_network](https://www.scaleway.com/en/developers/api/instance/#path-private-nics-list-all-private-nics) on your instance.
+
+- `private_ips` - The list of private IPv4 and IPv6 addresses associated with the resource.
+    - `id` - The ID of the IP address resource.
+    - `address` - The private IP address.
 
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 

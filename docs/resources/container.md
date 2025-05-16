@@ -15,32 +15,32 @@ For more information on the limitations of Serverless Containers, refer to the [
 
 ```terraform
 resource scaleway_container_namespace main {
-    name = "my-ns-test"
-    description = "test container"
+  name        = "my-ns-test"
+  description = "test container"
 }
 
 resource scaleway_container main {
-    name = "my-container-02"
-    description = "environment variables test"
-    namespace_id = scaleway_container_namespace.main.id
-    registry_image = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
-    port = 9997
-    cpu_limit = 140
-    memory_limit = 256
-    min_scale = 3
-    max_scale = 5
-    timeout = 600
-    max_concurrency = 80
-    privacy = "private"
-    protocol = "http1"
-    deploy = true
+  name            = "my-container-02"
+  description     = "environment variables test"
+  namespace_id    = scaleway_container_namespace.main.id
+  registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
+  port            = 9997
+  cpu_limit       = 140
+  memory_limit    = 256
+  min_scale       = 3
+  max_scale       = 5
+  timeout         = 600
+  max_concurrency = 80
+  privacy         = "private"
+  protocol        = "http1"
+  deploy          = true
 
-    environment_variables = {
-        "foo" = "var"
-    }
-    secret_environment_variables = {
-      "key" = "secret"
-    }
+  environment_variables = {
+    "foo" = "var"
+  }
+  secret_environment_variables = {
+    "key" = "secret"
+  }
 }
 ```
 
@@ -180,16 +180,16 @@ Example:
 
 ```terraform
 resource scaleway_container main {
-    name = "my-container-02"
-    namespace_id = scaleway_container_namespace.main.id
+  name         = "my-container-02"
+  namespace_id = scaleway_container_namespace.main.id
 
-    health_check {
-        http {
-            path = "/ping"
-        }
-        failure_threshold = 40
-        interval = "3s"
+  health_check {
+    http {
+      path = "/ping"
     }
+    failure_threshold = 40
+    interval          = "5s"
+  }
 }
 ```
 
@@ -207,12 +207,12 @@ Example:
 
 ```terraform
 resource scaleway_container main {
-    name = "my-container-02"
-    namespace_id = scaleway_container_namespace.main.id
+  name         = "my-container-02"
+  namespace_id = scaleway_container_namespace.main.id
 
-    scaling_option {
-      concurrent_requests_threshold = 15
-    }
+  scaling_option {
+    concurrent_requests_threshold = 15
+  }
 }
 ```
 

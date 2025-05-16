@@ -15,7 +15,7 @@ The following command allows you to retrieve a bucket policy by its bucket.
 
 ```hcl
 data "scaleway_object_bucket_policy" "main" {
-    bucket = "bucket.test.com"
+  bucket = "bucket.test.com"
 }
 ```
 

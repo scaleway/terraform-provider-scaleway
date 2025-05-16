@@ -7,10 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -19,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -193,6 +196,25 @@ func ResourceCluster() *schema.Resource {
 					},
 				},
 			},
+			"private_ips": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of private IPv4 addresses associated with the resource",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv4 address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IPv4 address",
+						},
+					},
+				},
+			},
 			"certificate": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -344,11 +366,56 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	// set endpoints
+	allPrivateIPs := []map[string]interface{}(nil)
+	diags := diag.Diagnostics{}
+
 	pnI, pnExists := flattenPrivateNetwork(cluster.Endpoints)
 	if pnExists {
 		_ = d.Set("private_network", pnI)
+
+		privateNetworkIDs := []string(nil)
+
+		for _, endpoint := range cluster.Endpoints {
+			if endpoint.PrivateNetwork != nil {
+				privateNetworkIDs = append(privateNetworkIDs, endpoint.PrivateNetwork.ID)
+			}
+		}
+
+		resourceType := ipamAPI.ResourceTypeRedisCluster
+
+		region, err := zone.Region()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for _, privateNetworkID := range privateNetworkIDs {
+			opts := &ipam.GetResourcePrivateIPsOptions{
+				ResourceType:     &resourceType,
+				PrivateNetworkID: &privateNetworkID,
+				ResourceID:       &cluster.ID,
+			}
+
+			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+			if err != nil {
+				if !httperrors.Is403(err) {
+					return diag.FromErr(err)
+				}
+
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       err.Error(),
+					Detail:        "Got 403 while reading private IP from IPAM API, please check your IAM permissions",
+					AttributePath: cty.GetAttrPath("private_ips"),
+				})
+			}
+
+			if privateIPs != nil {
+				allPrivateIPs = append(allPrivateIPs, privateIPs...)
+			}
+		}
 	}
 
+	_ = d.Set("private_ips", allPrivateIPs)
 	_ = d.Set("public_network", flattenPublicNetwork(cluster.Endpoints))
 
 	if cluster.TLSEnabled {
@@ -370,7 +437,7 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 		_ = d.Set("certificate", "")
 	}
 
-	return nil
+	return diags
 }
 
 func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

@@ -397,7 +397,7 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 
 	if d.HasChanges("secret_environment_variables") {
 		oldEnv, newEnv := d.GetChange("secret_environment_variables")
-		req.SecretEnvironmentVariables = FilterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
+		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
 	}
 
 	if d.HasChanges("min_scale") {

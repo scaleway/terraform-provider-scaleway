@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	sdkValidation "github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -21,6 +22,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -217,12 +219,17 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:             schema.TypeString,
-							Description:      "The private network ID",
+							Description:      "The ID of the private network to associate with the server",
 							Required:         true,
 							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 							StateFunc: func(i interface{}) string {
 								return locality.ExpandID(i.(string))
 							},
+						},
+						"mapping_id": {
+							Type:        schema.TypeString,
+							Description: "The ID of the Server-to-Private Network mapping",
+							Computed:    true,
 						},
 						"ipam_ip_ids": {
 							Type:     schema.TypeList,
@@ -262,6 +269,25 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The partitioning schema in json format",
+			},
+			"private_ips": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IP address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IP address",
+						},
+					},
+				},
 			},
 		},
 		CustomizeDiff: customdiff.Sequence(
@@ -503,7 +529,43 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	_ = d.Set("private_network", flattenPrivateNetworks(pnRegion, listPrivateNetworks.ServerPrivateNetworks))
 
-	return nil
+	privateNetworkIDs := make([]string, 0, listPrivateNetworks.TotalCount)
+	for _, pn := range listPrivateNetworks.ServerPrivateNetworks {
+		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
+	}
+
+	allPrivateIPs := make([]map[string]interface{}, 0, listPrivateNetworks.TotalCount)
+	diags := diag.Diagnostics{}
+
+	for _, privateNetworkID := range privateNetworkIDs {
+		resourceType := ipamAPI.ResourceTypeBaremetalPrivateNic
+		opts := &ipam.GetResourcePrivateIPsOptions{
+			ResourceType:     &resourceType,
+			PrivateNetworkID: &privateNetworkID,
+		}
+
+		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, pnRegion, opts)
+		if err != nil {
+			if !httperrors.Is403(err) {
+				return diag.FromErr(err)
+			}
+
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       err.Error(),
+				Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
+		}
+
+		if privateIPs != nil {
+			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		}
+	}
+
+	_ = d.Set("private_ips", allPrivateIPs)
+
+	return diags
 }
 
 //gocyclo:ignore
