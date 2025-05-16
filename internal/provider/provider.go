@@ -246,6 +246,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 
 			DataSourcesMap: map[string]*schema.Resource{
 				"scaleway_account_project":                     account.DataSourceProject(),
+				"scaleway_account_projects":                    account.DataSourceProjects(),
 				"scaleway_account_ssh_key":                     iam.DataSourceSSHKey(),
 				"scaleway_availability_zones":                  az.DataSourceAvailabilityZones(),
 				"scaleway_baremetal_offer":                     baremetal.DataSourceOffer(),
