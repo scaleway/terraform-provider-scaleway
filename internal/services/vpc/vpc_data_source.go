@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -47,6 +48,11 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	var vpcID interface{}
 
 	var ok bool
@@ -55,7 +61,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{
 		request := &vpc.ListVPCsRequest{
 			IsDefault: types.ExpandBoolPtr(d.Get("is_default").(bool)),
 			Region:    region,
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(projectID),
 		}
 
 		res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))
@@ -71,7 +77,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{
 			request := &vpc.ListVPCsRequest{
 				Name:           types.ExpandStringPtr(vpcName),
 				Region:         region,
-				ProjectID:      types.ExpandStringPtr(d.Get("project_id")),
+				ProjectID:      types.ExpandStringPtr(projectID),
 				OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 			}
 

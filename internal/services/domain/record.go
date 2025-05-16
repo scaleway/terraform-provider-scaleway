@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -536,9 +537,14 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
 		DNSZone:   d.Get("dns_zone").(string),
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 	})
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {

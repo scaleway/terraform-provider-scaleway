@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -132,10 +133,15 @@ func DataSourceFlexibleIPsRead(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := fipAPI.ListFlexibleIPs(&flexibleip.ListFlexibleIPsRequest{
 		Zone:      zone,
 		ServerIDs: locality.ExpandIDs(d.Get("server_ids")),
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(projectID),
 		Tags:      types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {

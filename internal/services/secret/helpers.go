@@ -33,25 +33,6 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.R
 	return api, region, nil
 }
 
-// newAPIWithRegionAndDefault returns a new Secret API and the region for a Create request
-func newAPIWithRegionOptionalProjectIDAndDefault(d *schema.ResourceData, m interface{}, defaultRegion scw.Region) (*secret.API, scw.Region, *string, error) {
-	api := secret.NewAPI(meta.ExtractScwClient(m))
-
-	region, err := meta.ExtractRegionWithDefault(d, m, defaultRegion)
-	if err != nil {
-		return nil, "", nil, err
-	}
-
-	var projectIDPtr *string
-
-	projectID, _, err := meta.ExtractProjectID(d, m)
-	if err == nil {
-		projectIDPtr = &projectID
-	}
-
-	return api, region, projectIDPtr, nil
-}
-
 // newAPIWithRegionAndProjectID returns a new Secret API, with region and projectID
 func newAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, *string, error) {
 	api := secret.NewAPI(meta.ExtractScwClient(m))

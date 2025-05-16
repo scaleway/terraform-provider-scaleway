@@ -196,10 +196,15 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &vpc.CreatePrivateNetworkRequest{
 		Name:      types.ExpandOrGenerateString(d.Get("name"), "pn"),
 		Tags:      types.ExpandStrings(d.Get("tags")),
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 		Region:    region,
 	}
 

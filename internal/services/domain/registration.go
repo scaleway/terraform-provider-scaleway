@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -413,7 +414,10 @@ func contactSchema() map[string]*schema.Schema {
 func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 
-	projectID := d.Get("project_id").(string)
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	domainNames := make([]string, 0)
 	for _, v := range d.Get("domain_names").([]interface{}) {
@@ -425,7 +429,7 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m i
 	buyDomainsRequest := &domain.RegistrarAPIBuyDomainsRequest{
 		Domains:         domainNames,
 		DurationInYears: durationInYears,
-		ProjectID:       projectID,
+		ProjectID:       projectId,
 	}
 
 	ownerContactID := d.Get("owner_contact_id").(string)
@@ -474,7 +478,7 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m i
 		}
 	}
 
-	d.SetId(projectID + "/" + resp.TaskID)
+	d.SetId(projectId + "/" + resp.TaskID)
 
 	return resourceRegistrationsRead(ctx, d, m)
 }

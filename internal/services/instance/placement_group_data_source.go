@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -40,10 +41,15 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 
 	placementGroupID, placementGroupIDExists := d.GetOk("placement_group_id")
 	if !placementGroupIDExists {
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		res, err := api.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(d.Get("name")),
-			Project: types.ExpandStringPtr(d.Get("project_id")),
+			Project: types.ExpandStringPtr(projectID),
 		})
 		if err != nil {
 			return diag.FromErr(err)

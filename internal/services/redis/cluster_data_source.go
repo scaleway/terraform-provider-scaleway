@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -41,6 +42,11 @@ func DataSourceClusterRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	clusterID, ok := d.GetOk("cluster_id")
 	if !ok {
 		clusterName := d.Get("name").(string)
@@ -48,7 +54,7 @@ func DataSourceClusterRead(ctx context.Context, d *schema.ResourceData, m interf
 		res, err := api.ListClusters(&redis.ListClustersRequest{
 			Zone:      zone,
 			Name:      types.ExpandStringPtr(clusterName),
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(projectID),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

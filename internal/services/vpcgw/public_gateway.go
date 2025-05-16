@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -140,11 +141,16 @@ func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &vpcgw.CreateGatewayRequest{
 		Name:          types.ExpandOrGenerateString(d.Get("name"), "pn"),
 		Type:          d.Get("type").(string),
 		Tags:          types.ExpandStrings(d.Get("tags")),
-		ProjectID:     d.Get("project_id").(string),
+		ProjectID:     projectID,
 		EnableBastion: d.Get("bastion_enabled").(bool),
 		Zone:          zone,
 		EnableSMTP:    d.Get("enable_smtp").(bool),

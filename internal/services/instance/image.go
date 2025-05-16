@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -183,12 +184,17 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &instanceSDK.CreateImageRequest{
 		Zone:       zone,
 		Name:       types.ExpandOrGenerateString(d.Get("name"), "image"),
 		RootVolume: zonal.ExpandID(d.Get("root_volume_id").(string)).ID,
 		Arch:       instanceSDK.Arch(d.Get("architecture").(string)),
-		Project:    types.ExpandStringPtr(d.Get("project_id")),
+		Project:    types.ExpandStringPtr(projectID),
 		Public:     types.ExpandBoolPtr(d.Get("public")),
 	}
 

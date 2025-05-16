@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -41,11 +42,16 @@ func DataSourceFunctionRead(ctx context.Context, d *schema.ResourceData, m inter
 	if !ok {
 		functionName := d.Get("name").(string)
 
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		res, err := api.ListFunctions(&function.ListFunctionsRequest{
 			Region:      region,
 			NamespaceID: locality.ExpandID(d.Get("namespace_id").(string)),
 			Name:        types.ExpandStringPtr(functionName),
-			ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
+			ProjectID:   types.ExpandStringPtr(projectID),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -38,13 +39,18 @@ func DataSourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	hubID, ok := d.GetOk("hub_id")
 	if !ok {
 		hubName := d.Get("name").(string)
 
 		res, err := api.ListHubs(&iot.ListHubsRequest{
 			Region:    region,
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(projectID),
 			Name:      types.ExpandStringPtr(hubName),
 		}, scw.WithContext(ctx))
 		if err != nil {

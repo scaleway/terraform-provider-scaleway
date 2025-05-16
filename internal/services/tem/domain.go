@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -195,9 +196,14 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	domain, err := api.CreateDomain(&tem.CreateDomainRequest{
 		Region:     region,
-		ProjectID:  d.Get("project_id").(string),
+		ProjectID:  projectID,
 		DomainName: d.Get("name").(string),
 		AcceptTos:  types.ExpandBoolPtr(d.Get("accept_tos").(bool)),
 		Autoconfig: d.Get("autoconfig").(bool),

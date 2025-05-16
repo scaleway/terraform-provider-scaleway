@@ -9,6 +9,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -39,15 +40,20 @@ func ResourcePlan() *schema.Resource {
 func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	plan, err := api.SelectPlan(&edgeservices.SelectPlanRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 		PlanName:  edgeservices.PlanName(d.Get("name").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", d.Get("project_id").(string), plan.PlanName.String()))
+	d.SetId(fmt.Sprintf("%s/%s", projectId, plan.PlanName.String()))
 
 	return nil
 }
@@ -55,8 +61,13 @@ func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m interface
 func ResourcePlanRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	plan, err := api.GetCurrentPlan(&edgeservices.GetCurrentPlanRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
@@ -77,8 +88,13 @@ func ResourcePlanUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	api := NewEdgeServicesAPI(m)
 
 	if d.HasChange("name") {
-		_, err := api.SelectPlan(&edgeservices.SelectPlanRequest{
-			ProjectID: d.Get("project_id").(string),
+		projectId, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = api.SelectPlan(&edgeservices.SelectPlanRequest{
+			ProjectID: projectId,
 			PlanName:  edgeservices.PlanName(d.Get("name").(string)),
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -92,8 +108,13 @@ func ResourcePlanUpdate(ctx context.Context, d *schema.ResourceData, m interface
 func ResourcePlanDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := api.DeleteCurrentPlan(&edgeservices.DeleteCurrentPlanRequest{
-		ProjectID: d.Get("project_id").(string),
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = api.DeleteCurrentPlan(&edgeservices.DeleteCurrentPlanRequest{
+		ProjectID: projectId,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)

@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -66,9 +67,14 @@ func ResourceDatabaseCreate(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	database, err := api.CreateDatabase(&sdbSDK.CreateDatabaseRequest{
 		Region:       region,
-		ProjectID:    d.Get("project_id").(string),
+		ProjectID:    projectId,
 		Name:         d.Get("name").(string),
 		CPUMin:       uint32(d.Get("min_cpu").(int)),
 		CPUMax:       uint32(d.Get("max_cpu").(int)),

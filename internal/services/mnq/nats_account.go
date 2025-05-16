@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -47,9 +48,14 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	account, err := api.CreateNatsAccount(&mnq.NatsAPICreateNatsAccountRequest{
 		Region:    region,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "nats-account"),
 	}, scw.WithContext(ctx))
 	if err != nil {

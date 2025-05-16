@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -149,10 +150,15 @@ func ResourceModelCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		modelSource.Secret = types.ExpandStringPtr(secret)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	reqCreateModel := &inference.CreateModelRequest{
 		Region:    region,
 		Name:      d.Get("name").(string),
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 		Source:    modelSource,
 	}
 

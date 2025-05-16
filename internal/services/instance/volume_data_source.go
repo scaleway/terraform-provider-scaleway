@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -44,10 +45,15 @@ func DataSourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m
 	if !ok { // Get volumes by zone and name.
 		volumeName := d.Get("name").(string)
 
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		res, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(volumeName),
-			Project: types.ExpandStringPtr(d.Get("project_id")),
+			Project: types.ExpandStringPtr(projectID),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

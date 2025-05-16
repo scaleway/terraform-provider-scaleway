@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -144,9 +145,14 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &ipam.ListIPsRequest{
 		Region:           region,
-		ProjectID:        types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID:        types.ExpandStringPtr(projectID),
 		Zonal:            types.ExpandStringPtr(d.Get("zonal")),
 		PrivateNetworkID: types.ExpandStringPtr(d.Get("private_network_id")),
 		ResourceID:       types.ExpandStringPtr(expandLastID(d.Get("resource.0.id"))),

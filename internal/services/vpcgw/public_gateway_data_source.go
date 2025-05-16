@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -48,11 +49,16 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 	if !ok {
 		gwName := d.Get("name").(string)
 
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		res, err := api.ListGateways(
 			&vpcgw.ListGatewaysRequest{
 				Name:          types.ExpandStringPtr(gwName),
 				Zone:          zone,
-				ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
+				ProjectID:     types.ExpandStringPtr(projectID),
 				IncludeLegacy: scw.BoolPtr(true),
 			}, scw.WithContext(ctx))
 		if err != nil {

@@ -19,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -407,9 +408,14 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 		d.SetId(regional.NewIDString(region, res.ID))
 		id = res.ID
 	} else {
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		createReq := &rdb.CreateInstanceRequest{
 			Region:        region,
-			ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
+			ProjectID:     types.ExpandStringPtr(projectID),
 			Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 			NodeType:      d.Get("node_type").(string),
 			Engine:        d.Get("engine").(string),

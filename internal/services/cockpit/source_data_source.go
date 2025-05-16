@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -113,15 +114,20 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
-func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
+func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := cockpitAPIWithRegion(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 	}
 
 	if v, ok := d.GetOk("type"); ok {

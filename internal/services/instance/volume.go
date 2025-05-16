@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -96,11 +97,16 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createVolumeRequest := &instanceSDK.CreateVolumeRequest{
 		Zone:       zone,
 		Name:       types.ExpandOrGenerateString(d.Get("name"), "vol"),
 		VolumeType: instanceSDK.VolumeVolumeType(d.Get("type").(string)),
-		Project:    types.ExpandStringPtr(d.Get("project_id")),
+		Project:    types.ExpandStringPtr(projectID),
 	}
 	tags := types.ExpandStrings(d.Get("tags"))
 

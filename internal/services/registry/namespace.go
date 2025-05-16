@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -65,9 +66,14 @@ func ResourceNamespaceCreate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	ns, err := api.CreateNamespace(&registry.CreateNamespaceRequest{
 		Region:      region,
-		ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID:   types.ExpandStringPtr(projectId),
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		IsPublic:    d.Get("is_public").(bool),

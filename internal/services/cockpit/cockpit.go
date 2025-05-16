@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -94,12 +95,9 @@ func ResourceCockpit() *schema.Resource {
 }
 
 func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		_, err := getDefaultProjectID(ctx, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(projectID)
@@ -120,12 +118,9 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		projectID, err = getDefaultProjectID(ctx, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	diags = append(diags, diag.Diagnostic{
