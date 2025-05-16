@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -84,9 +85,14 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	credentials, err := api.CreateSqsCredentials(&mnq.SqsAPICreateSqsCredentialsRequest{
 		Region:    region,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "sqs-credentials"),
 		Permissions: &mnq.SqsPermissions{
 			CanPublish: types.ExpandBoolPtr(d.Get("permissions.0.can_publish")),

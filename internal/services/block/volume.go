@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -101,10 +102,14 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m in
 			return diag.FromErr(err)
 		}
 	} else {
+		projectId, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		req := &block.CreateVolumeRequest{
 			Zone:      zone,
 			Name:      types.ExpandOrGenerateString(d.Get("name").(string), "volume"),
-			ProjectID: d.Get("project_id").(string),
+			ProjectID: projectId,
 			Tags:      types.ExpandStrings(d.Get("tags")),
 			PerfIops:  types.ExpandUint32Ptr(d.Get("iops")),
 		}

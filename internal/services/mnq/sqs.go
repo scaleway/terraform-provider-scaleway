@@ -8,6 +8,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -38,9 +39,14 @@ func ResourceMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	sqs, err := api.ActivateSqs(&mnq.SqsAPIActivateSqsRequest{
 		Region:    region,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

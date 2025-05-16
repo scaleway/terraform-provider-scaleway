@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -149,6 +150,11 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &jobs.CreateJobDefinitionRequest{
 		Region:               region,
 		Name:                 types.ExpandOrGenerateString(d.Get("name").(string), "job"),
@@ -156,7 +162,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		MemoryLimit:          uint32(d.Get("memory_limit").(int)),
 		ImageURI:             d.Get("image_uri").(string),
 		Command:              d.Get("command").(string),
-		ProjectID:            d.Get("project_id").(string),
+		ProjectID:            projectId,
 		EnvironmentVariables: types.ExpandMapStringString(d.Get("env")),
 		Description:          d.Get("description").(string),
 		CronSchedule:         expandJobDefinitionCron(d.Get("cron")).ToCreateRequest(),

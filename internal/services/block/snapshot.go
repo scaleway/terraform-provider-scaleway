@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -66,9 +67,14 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	snapshot, err := api.CreateSnapshot(&block.CreateSnapshotRequest{
 		Zone:      zone,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "snapshot"),
 		VolumeID:  locality.ExpandID(d.Get("volume_id")),
 		Tags:      types.ExpandStrings(d.Get("tags")),

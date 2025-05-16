@@ -10,6 +10,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -90,8 +91,13 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 	subdomainName := strings.ToLower(d.Get("subdomain").(string))
 	zoneName := fmt.Sprintf("%s.%s", subdomainName, domainName)
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(projectId),
 		DNSZones:  []string{zoneName},
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -109,7 +115,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 	var dnsZone *domain.DNSZone
 
 	dnsZone, err = domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectId,
 		Domain:    domainName,
 		Subdomain: subdomainName,
 	}, scw.WithContext(ctx))

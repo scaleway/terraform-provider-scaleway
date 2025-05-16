@@ -168,10 +168,15 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createReq := &applesilicon.CreateServerRequest{
 		Name:           types.ExpandOrGenerateString(d.Get("name"), "m1"),
 		Type:           d.Get("type").(string),
-		ProjectID:      d.Get("project_id").(string),
+		ProjectID:      projectId,
 		EnableVpc:      d.Get("enable_vpc").(bool),
 		CommitmentType: applesilicon.CommitmentType(d.Get("commitment").(string)),
 	}
