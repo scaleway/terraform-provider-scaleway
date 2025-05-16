@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -80,11 +81,16 @@ func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := vpcAPI.ListVPCs(&vpc.ListVPCsRequest{
 		Region:    region,
 		Tags:      types.ExpandStrings(d.Get("tags")),
 		Name:      types.ExpandStringPtr(d.Get("name")),
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(projectID),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
