@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -137,6 +138,11 @@ func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	subnet, err := types.ExpandIPNet(d.Get("subnet").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -144,7 +150,7 @@ func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceD
 
 	req := &vpcgw.CreateDHCPRequest{
 		Zone:      zone,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 		Subnet:    subnet,
 	}
 

@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -341,9 +342,14 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m int
 		})
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &k8s.CreateClusterRequest{
 		Region:            region,
-		ProjectID:         types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID:         types.ExpandStringPtr(projectID),
 		Name:              types.ExpandOrGenerateString(d.Get("name"), "cluster"),
 		Type:              clusterType.(string),
 		Description:       description.(string),

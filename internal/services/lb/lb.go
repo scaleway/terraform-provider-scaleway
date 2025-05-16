@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -234,11 +235,16 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
 		Zone:                  zone,
 		IPIDs:                 types.ExpandSliceIDs(d.Get("ip_ids")),
 		IPID:                  types.ExpandStringPtr(locality.ExpandID(d.Get("ip_id"))),
-		ProjectID:             types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID:             types.ExpandStringPtr(projectID),
 		Name:                  types.ExpandOrGenerateString(d.Get("name"), "lb"),
 		Description:           d.Get("description").(string),
 		Type:                  d.Get("type").(string),

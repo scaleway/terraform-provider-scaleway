@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -73,11 +74,16 @@ func DataSourceConsumptions() *schema.Resource {
 func DataSourceBillingConsumptionsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := billingAPI(m)
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := api.ListConsumptions(&billing.ListConsumptionsRequest{
 		CategoryName:   types.ExpandStringPtr(d.Get("category_name")),
 		BillingPeriod:  types.ExpandStringPtr(d.Get("billing_period")),
 		OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
-		ProjectID:      types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID:      types.ExpandStringPtr(projectID),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

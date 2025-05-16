@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -87,8 +88,13 @@ func ResourceCockpitSource() *schema.Resource {
 	}
 }
 
-func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
+func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := cockpitAPIWithRegion(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,7 +103,7 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 
 	res, err := api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
 		Region:        region,
-		ProjectID:     d.Get("project_id").(string),
+		ProjectID:     projectID,
 		Name:          d.Get("name").(string),
 		Type:          cockpit.DataSourceType(d.Get("type").(string)),
 		RetentionDays: &retentionDays,
@@ -108,11 +114,11 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
-	return ResourceCockpitSourceRead(ctx, d, meta)
+	return ResourceCockpitSourceRead(ctx, d, m)
 }
 
-func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
+func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,8 +157,8 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
+func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -182,8 +188,8 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
+func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

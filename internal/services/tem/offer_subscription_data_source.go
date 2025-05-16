@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -74,15 +75,9 @@ func DataSourceOfferSubscriptionRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	var projectID string
-
-	if _, ok := d.GetOk("project_id"); !ok {
-		projectID, err = getDefaultProjectID(ctx, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		projectID = d.Get("project_id").(string)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	offer, err := api.ListOfferSubscriptions(&tem.ListOfferSubscriptionsRequest{

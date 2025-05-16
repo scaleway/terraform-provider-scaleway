@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -152,9 +153,14 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 		}
 
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		req := &ipam.ListIPsRequest{
 			Region:           region,
-			ProjectID:        types.ExpandStringPtr(d.Get("project_id")),
+			ProjectID:        types.ExpandStringPtr(projectID),
 			Zonal:            types.ExpandStringPtr(d.Get("zonal")),
 			ResourceID:       types.ExpandStringPtr(expandLastID(d.Get("resource.0.id"))),
 			ResourceType:     ipam.ResourceType(d.Get("resource.0.type").(string)),

@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -87,9 +88,14 @@ func resourceLbIPCreate(ctx context.Context, d *schema.ResourceData, m interface
 		zone = scw.Zone(zoneAttribute.(string))
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createReq := &lbSDK.ZonedAPICreateIPRequest{
 		Zone:      zone,
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(projectID),
 		Reverse:   types.ExpandStringPtr(d.Get("reverse")),
 		IsIPv6:    d.Get("is_ipv6").(bool),
 		Tags:      types.ExpandStrings(d.Get("tags")),

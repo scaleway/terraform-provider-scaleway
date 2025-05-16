@@ -9,6 +9,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -42,12 +43,19 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	recordID, ok := d.GetOk("record_id")
 	if !ok { // Get Record by dns_zone, name, type and data.
-		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req := &domain.ListDNSZoneRecordsRequest{
 			DNSZone:   d.Get("dns_zone").(string),
 			Name:      d.Get("name").(string),
 			Type:      domain.RecordType(d.Get("type").(string)),
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-		}, scw.WithContext(ctx), scw.WithAllPages())
+			ProjectID: types.ExpandStringPtr(projectID),
+		}
+
+		res, err := domainAPI.ListDNSZoneRecords(req, scw.WithContext(ctx), scw.WithAllPages())
 		if err != nil {
 			return diag.FromErr(err)
 		}

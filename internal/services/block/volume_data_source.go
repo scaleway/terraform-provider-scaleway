@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -39,10 +40,15 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m in
 
 	volumeID, volumeIDExists := d.GetOk("volume_id")
 	if !volumeIDExists {
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		res, err := api.ListVolumes(&block.ListVolumesRequest{
 			Zone:      zone,
 			Name:      types.ExpandStringPtr(d.Get("name")),
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(projectID),
 		})
 		if err != nil {
 			return diag.FromErr(err)

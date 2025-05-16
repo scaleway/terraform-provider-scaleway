@@ -91,13 +91,13 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 	subdomainName := strings.ToLower(d.Get("subdomain").(string))
 	zoneName := fmt.Sprintf("%s.%s", subdomainName, domainName)
 
-	projectId, _, err := meta.ExtractProjectID(d, m)
+	projectID, _, err := meta.ExtractProjectID(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: types.ExpandStringPtr(projectId),
+		ProjectID: types.ExpandStringPtr(projectID),
 		DNSZones:  []string{zoneName},
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -115,7 +115,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 	var dnsZone *domain.DNSZone
 
 	dnsZone, err = domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
-		ProjectID: projectId,
+		ProjectID: projectID,
 		Domain:    domainName,
 		Subdomain: subdomainName,
 	}, scw.WithContext(ctx))

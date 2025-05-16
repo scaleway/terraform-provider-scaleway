@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -52,13 +53,21 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	if !ok {
 		pnName := d.Get("name").(string)
 
-		res, err := vpcAPI.ListPrivateNetworks(
-			&vpc.ListPrivateNetworksRequest{
-				Name:      types.ExpandStringPtr(pnName),
-				Region:    region,
-				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-				VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
-			}, scw.WithContext(ctx))
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req := &vpc.ListPrivateNetworksRequest{
+			Region:    region,
+			ProjectID: types.ExpandStringPtr(projectID),
+		}
+
+		if vpcID, ok := d.GetOk("vpc_id"); ok {
+			req.VpcID = types.ExpandStringPtr(locality.ExpandID(vpcID))
+		}
+
+		res, err := vpcAPI.ListPrivateNetworks(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

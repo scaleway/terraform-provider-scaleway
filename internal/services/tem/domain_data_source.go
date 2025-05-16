@@ -9,6 +9,7 @@ import (
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -44,10 +45,15 @@ func DataSourceDomainRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	domainID, ok := d.GetOk("domain_id")
 	if !ok {
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		res, err := api.ListDomains(&tem.ListDomainsRequest{
 			Region:    region,
 			Name:      types.ExpandStringPtr(d.Get("name")),
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			ProjectID: types.ExpandStringPtr(projectID),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
