@@ -106,6 +106,7 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req := &block.CreateVolumeRequest{
 			Zone:      zone,
 			Name:      types.ExpandOrGenerateString(d.Get("name").(string), "volume"),

@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -82,11 +83,16 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := vpcAPI.CreateVPC(&vpc.CreateVPCRequest{
 		Name:          types.ExpandOrGenerateString(d.Get("name"), "vpc"),
 		Tags:          types.ExpandStrings(d.Get("tags")),
 		EnableRouting: d.Get("enable_routing").(bool),
-		ProjectID:     d.Get("project_id").(string),
+		ProjectID:     projectID,
 		Region:        region,
 	}, scw.WithContext(ctx))
 	if err != nil {

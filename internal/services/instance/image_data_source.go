@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -105,11 +106,16 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 
 	imageID, ok := d.GetOk("image_id")
 	if !ok { // Get instance by name, zone, and arch.
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		res, err := instanceAPI.ListImages(&instance.ListImagesRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(d.Get("name")),
 			Arch:    types.ExpandStringPtr(d.Get("architecture")),
-			Project: types.ExpandStringPtr(d.Get("project_id")),
+			Project: types.ExpandStringPtr(projectID),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

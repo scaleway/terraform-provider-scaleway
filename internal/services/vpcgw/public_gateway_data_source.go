@@ -53,6 +53,7 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		res, err := api.ListGateways(
 			&vpcgw.ListGatewaysRequest{
 				Name:          types.ExpandStringPtr(gwName),
