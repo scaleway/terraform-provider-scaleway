@@ -395,6 +395,11 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	////
 	// Create the server
 	////
@@ -406,7 +411,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	req := &instanceSDK.CreateServerRequest{
 		Zone:              zone,
 		Name:              types.ExpandOrGenerateString(d.Get("name"), "srv"),
-		Project:           types.ExpandStringPtr(d.Get("project_id")),
+		Project:           types.ExpandStringPtr(projectID),
 		CommercialType:    commercialType,
 		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),

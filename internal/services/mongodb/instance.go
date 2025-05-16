@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -241,8 +242,13 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			return diag.FromErr(err)
 		}
 	} else {
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		createReq := &mongodb.CreateInstanceRequest{
-			ProjectID:  d.Get("project_id").(string),
+			ProjectID:  projectID,
 			Name:       types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
 			Version:    d.Get("version").(string),
 			NodeType:   d.Get("node_type").(string),

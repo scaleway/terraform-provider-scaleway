@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -103,7 +104,7 @@ func ResourceServer() *schema.Resource {
 				Optional: true,
 				Description: `Array of SSH key IDs allowed to SSH to the server
 
-**NOTE** : If you are attempting to update your SSH key IDs, it will induce the reinstall of your server. 
+**NOTE** : If you are attempting to update your SSH key IDs, it will induce the reinstall of your server.
 If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument to true.`,
 			},
 			"user": {
@@ -349,10 +350,15 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		offerID = zonal.NewID(zone, o.ID)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &baremetal.CreateServerRequest{
 		Zone:        zone,
 		Name:        types.ExpandOrGenerateString(d.Get("name"), "bm"),
-		ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID:   types.ExpandStringPtr(projectID),
 		Description: d.Get("description").(string),
 		OfferID:     offerID.ID,
 		Tags:        types.ExpandStrings(d.Get("tags")),

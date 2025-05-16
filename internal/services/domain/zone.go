@@ -137,8 +137,13 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	var zone *domain.DNSZone
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		ProjectID: types.ExpandStringPtr(projectID),
 		DNSZones:  []string{d.Id()},
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -177,9 +182,14 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m inter
 func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if d.HasChangesExcept("subdomain") {
 		_, err := domainAPI.UpdateDNSZone(&domain.UpdateDNSZoneRequest{
-			ProjectID:  d.Get("project_id").(string),
+			ProjectID:  projectID,
 			DNSZone:    d.Id(),
 			NewDNSZone: scw.StringPtr(d.Get("subdomain").(string)),
 		}, scw.WithContext(ctx))
@@ -194,7 +204,12 @@ func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m interface
 func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
-	_, err := waitForDNSZone(ctx, domainAPI, d.Id(), d.Timeout(schema.TimeoutDelete))
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForDNSZone(ctx, domainAPI, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
@@ -204,7 +219,7 @@ func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))
 
