@@ -397,6 +397,11 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &lbSDK.ZonedAPIUpdateLBRequest{
 		Zone:                  zone,
 		LBID:                  ID,
@@ -497,7 +502,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 		if assignFlexibleIPv6 {
 			createReq := &lbSDK.ZonedAPICreateIPRequest{
 				Zone:      zone,
-				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+				ProjectID: types.ExpandStringPtr(projectID),
 				IsIPv6:    true,
 			}
 

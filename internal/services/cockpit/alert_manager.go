@@ -122,13 +122,16 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	return ResourceCockpitAlertManagerRead(ctx, d, m)
 }
 
-func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
+func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := cockpitAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 		Region:    region,
@@ -166,13 +169,16 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
+func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := cockpitAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.HasChange("enable_managed_alerts") {
 		enable := d.Get("enable_managed_alerts").(bool)
@@ -243,16 +249,19 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return ResourceCockpitAlertManagerRead(ctx, d, meta)
+	return ResourceCockpitAlertManagerRead(ctx, d, m)
 }
 
-func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
+func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := cockpitAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,

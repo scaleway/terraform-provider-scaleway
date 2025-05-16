@@ -10,6 +10,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"golang.org/x/crypto/ssh"
@@ -87,10 +88,15 @@ func ResourceSSKKey() *schema.Resource {
 func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := api.CreateSSHKey(&iam.CreateSSHKeyRequest{
 		Name:      d.Get("name").(string),
 		PublicKey: strings.Trim(d.Get("public_key").(string), "\n"),
-		ProjectID: (d.Get("project_id")).(string),
+		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

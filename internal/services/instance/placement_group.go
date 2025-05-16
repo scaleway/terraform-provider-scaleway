@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -74,10 +75,15 @@ func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := instanceAPI.CreatePlacementGroup(&instanceSDK.CreatePlacementGroupRequest{
 		Zone:       zone,
 		Name:       types.ExpandOrGenerateString(d.Get("name"), "pg"),
-		Project:    types.ExpandStringPtr(d.Get("project_id")),
+		Project:    types.ExpandStringPtr(projectID),
 		PolicyMode: instanceSDK.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType: instanceSDK.PlacementGroupPolicyType(d.Get("policy_type").(string)),
 		Tags:       types.ExpandStrings(d.Get("tags")),

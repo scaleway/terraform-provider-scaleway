@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -45,10 +46,15 @@ func DataSourceInstanceSecurityGroupRead(ctx context.Context, d *schema.Resource
 	if !ok {
 		sgName := d.Get("name").(string)
 
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		res, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(sgName),
-			Project: types.ExpandStringPtr(d.Get("project_id")),
+			Project: types.ExpandStringPtr(projectID),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
