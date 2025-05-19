@@ -33,12 +33,12 @@ func TestAccUser_Guest(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.1", "tests"),
-					// The username is the same as the email for Guest users.
+					// The username is the same as the email for guests.
 					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "username", "foo@scaleway.com"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "type", "guest"),
 				),
 			},
-			// Update tags
+			// Update tags.
 			{
 				Config: `
 					resource "scaleway_iam_user" "guest_user" {
@@ -55,7 +55,7 @@ func TestAccUser_Guest(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "type", "guest"),
 				),
 			},
-			// Remove tags
+			// Remove tags.
 			{
 				Config: `
 					resource "scaleway_iam_user" "guest_user" {
@@ -107,12 +107,12 @@ func TestAccUser_Member(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "mfa", "false"),
 				),
 			},
-			// Add tag and update username, last name, phone number and locale
+			// Add tag and update email, username, last name, phone number and locale.
 			{
 				Config: `
 					resource "scaleway_iam_user" "member_user" {
-						email = "foo@scaleway.com"
-						username = "fuooo"
+						email = "foobar@scaleway.com"
+						username = "foobar"
 						last_name = "Baz"
 						phone_number = "+33112345678"
 						locale = "fr_FR"
@@ -122,11 +122,11 @@ func TestAccUser_Member(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamUserExists(tt, "scaleway_iam_user.member_user"),
 					acctest.CheckResourceAttrUUID("scaleway_iam_user.member_user", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "email", "foo@scaleway.com"),
 					// Let's check that a field is set to empty when not defined in the configuration.
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "first_name", ""),
 					// Let's update some fields and test if they actually get updated.
-					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "username", "fuooo"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "email", "foobar@scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "username", "foobar"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "last_name", "Baz"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "phone_number", "+33112345678"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "locale", "fr_FR"),
