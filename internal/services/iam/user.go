@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,8 +29,7 @@ func ResourceUser() *schema.Resource {
 			"email": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
-				Description: "The description of the iam user",
+				Description: "The email of the user, which is not editable for guests",
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -131,7 +131,7 @@ func ResourceUser() *schema.Resource {
 
 func createUserRequestBody(d *schema.ResourceData, isMember bool) *iam.CreateUserRequest {
 	if isMember {
-		// Create and return a Member user.
+		// Create and return a member.
 		return &iam.CreateUserRequest{
 			OrganizationID: d.Get("organization_id").(string),
 			Tags:           types.ExpandStrings(d.Get("tags")),
@@ -148,7 +148,7 @@ func createUserRequestBody(d *schema.ResourceData, isMember bool) *iam.CreateUse
 			},
 		}
 	} else {
-		// Create and return a Guest user.
+		// Create and return a guest.
 		return &iam.CreateUserRequest{
 			OrganizationID: d.Get("organization_id").(string),
 			Email:          scw.StringPtr(d.Get("email").(string)),
@@ -164,10 +164,10 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interf
 	var err error
 
 	if d.Get("username").(string) != "" {
-		// 'Member' user
+		// Create a member.
 		user, err = api.CreateUser(createUserRequestBody(d, true), scw.WithContext(ctx))
 	} else {
-		// 'Guest' user
+		// Create a guest.
 		user, err = api.CreateUser(createUserRequestBody(d, false), scw.WithContext(ctx))
 	}
 
@@ -231,7 +231,7 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	if user.Type == "guest" {
-		// Users of type 'guest' only support the update of tags.
+		// Users of type "guest" only support the update of tags. The update of the email is not supported.
 		if d.HasChanges("tags") {
 			_, err = api.UpdateUser(&iam.UpdateUserRequest{
 				UserID: user.ID,
@@ -241,18 +241,15 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 				return diag.FromErr(err)
 			}
 		}
+		if d.HasChange("email") {
+			return diag.FromErr(fmt.Errorf("the email of a guest user cannot be updated, you need to create a new user"))
+		}
 	} else {
-		/*
-		 * The Schema of this Terraform resource is defined so that 'email' is required and
-		 * it's the "ForceNew" field. This means that providing the email of an existing user
-		 * causes an update, while providing a new email causes the creation of a new user.
-		 * For this reason, even though the IAM API supports it, the email is not considered
-		 * an updatable field here.
-		 */
-		if d.HasChanges("tags", "first_name", "last_name", "phone_number", "locale") {
+		if d.HasChanges("tags", "email", "first_name", "last_name", "phone_number", "locale") {
 			_, err = api.UpdateUser(&iam.UpdateUserRequest{
 				UserID:      user.ID,
 				Tags:        types.ExpandUpdatedStringsPtr(d.Get("tags")),
+				Email:       scw.StringPtr(d.Get("email").(string)),
 				FirstName:   scw.StringPtr(d.Get("first_name").(string)),
 				LastName:    scw.StringPtr(d.Get("last_name").(string)),
 				PhoneNumber: scw.StringPtr(d.Get("phone_number").(string)),
