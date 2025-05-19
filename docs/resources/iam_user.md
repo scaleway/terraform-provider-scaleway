@@ -14,7 +14,7 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 ```terraform
 resource "scaleway_iam_user" "guest" {
-  email = "test@test.com"
+  email = "foo@test.com"
   tags  = ["test-tag"]
 }
 ```
@@ -23,13 +23,15 @@ resource "scaleway_iam_user" "guest" {
 
 ```terraform
 resource "scaleway_iam_user" "member" {
-  email    = "test@test.com"
-  tags     = ["test-tag"]
-  username = "test"
+  email      = "foo@test.com"
+  tags       = ["test-tag"]
+  username   = "foo"
+  first_name = "Foo"
+  last_name  = "Bar"
 }
 ```
 
-When username is set, the user is created as a [Member](https://www.scaleway.com/en/docs/iam/concepts/#member). Otherwise, it is created as a [Guest](https://www.scaleway.com/en/docs/iam/concepts/#guest).
+When `username` is set, the user is created as a [Member](https://www.scaleway.com/en/docs/iam/concepts/#member). Otherwise, it is created as a [Guest](https://www.scaleway.com/en/docs/iam/concepts/#guest).
 
 ### Multiple users
 
@@ -49,17 +51,17 @@ resource "scaleway_iam_user" "user" {
 
 ## Argument Reference
 
-- `email` - (Required) The email of the IAM user.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the user is associated with.
+
+- `email` - (Required) The email of the IAM user. For Guest users, this argument is not editable.
 
 - `tags` - (Optional) The tags associated with the user.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the user is associated with.
-
 - `username` - (Optional) The username of the IAM user. When it is set, the user is created as a Member. When it is not set, the user is created as a Guest and the username is set as equal to the email.
 
-- `password` - The password for first access. It gets ignored if the user is a Guest.
+- `password` - The password for first access.
 
-- `send_password_email` - Whether or not to send an email containing the member's password.
+- `send_password_email` - Whether or not to send an email containing the password for first access.
 
 - `send_welcome_email` - Whether or not to send a welcome email that includes onboarding information.
 
@@ -69,7 +71,9 @@ resource "scaleway_iam_user" "user" {
 
 - `phone_number` - The user's phone number.
 
-- `locale` - The user's locale (e.g. en_US).
+- `locale` - The user's locale (e.g., en_US).
+
+Important: When creating a Guest user, all arguments are ignored, except for `organization_id`, `email` and `tags`.
 
 ## Attributes Reference
 
