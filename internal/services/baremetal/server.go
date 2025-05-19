@@ -273,6 +273,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			"private_ips": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -534,6 +535,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
 	}
 
+	// Read private IPs if possible
 	allPrivateIPs := make([]map[string]interface{}, 0, listPrivateNetworks.TotalCount)
 	diags := diag.Diagnostics{}
 
@@ -542,24 +544,28 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 		opts := &ipam.GetResourcePrivateIPsOptions{
 			ResourceType:     &resourceType,
 			PrivateNetworkID: &privateNetworkID,
+			ProjectID:        &server.ProjectID,
 		}
 
 		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, pnRegion, opts)
-		if err != nil {
-			if !httperrors.Is403(err) {
-				return diag.FromErr(err)
-			}
 
-			diags = append(diags, diag.Diagnostic{
+		switch {
+		case err == nil:
+			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		case httperrors.Is403(err):
+			return append(diags, diag.Diagnostic{
 				Severity:      diag.Warning,
-				Summary:       err.Error(),
-				Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
+				Summary:       "Unauthorized to read server's private IPs, please check your IAM permissions",
+				Detail:        err.Error(),
 				AttributePath: cty.GetAttrPath("private_ips"),
 			})
-		}
-
-		if privateIPs != nil {
-			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		default:
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("Unable to get private IPs for server %s (pn_id: %s)", server.ID, privateNetworkID),
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
 		}
 	}
 

@@ -536,3 +536,19 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 		Boot:               rootVolumeIsBootVolume,
 	}
 }
+
+func getServerProjectID(ctx context.Context, api *instance.API, zone scw.Zone, serverID string) (string, error) {
+	server, err := api.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: serverID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return "", fmt.Errorf("get private NIC's project ID: error getting server %s", serverID)
+	}
+
+	if server.Server.Project == "" {
+		return "", fmt.Errorf("no project ID found for server %s", serverID)
+	}
+
+	return server.Server.Project, nil
+}
