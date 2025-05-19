@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -108,12 +109,17 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	projectId, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createReq := &container.CreateNamespaceRequest{
 		Description:                types.ExpandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandContainerSecrets(d.Get("secret_environment_variables")),
 		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "ns"),
-		ProjectID:                  d.Get("project_id").(string),
+		ProjectID:                  projectId,
 		Region:                     region,
 	}
 

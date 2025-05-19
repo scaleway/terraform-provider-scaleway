@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccDataSourceNamespace_Basic(t *testing.T) {
-	tt := acctest.NewTestTools(t)
+	tt := acctest.NewTestToolsWithoutDefaultProjectID(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -21,11 +21,11 @@ func TestAccDataSourceNamespace_Basic(t *testing.T) {
 					resource "scaleway_container_namespace" "main" {
 						name = "test-cr-data"
 					}
-					
+
 					data "scaleway_container_namespace" "by_name" {
 						name = scaleway_container_namespace.main.name
 					}
-					
+
 					data "scaleway_container_namespace" "by_id" {
 						namespace_id = scaleway_container_namespace.main.id
 					}

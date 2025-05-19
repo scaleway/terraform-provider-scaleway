@@ -35,14 +35,14 @@ func TestAccTrigger_SQS(t *testing.T) {
 
 					resource "scaleway_mnq_sqs_credentials" "main" {
 						project_id = scaleway_mnq_sqs.main.project_id
-					
+
 						permissions {
 							can_publish = true
 							can_receive = true
 							can_manage  = true
 						}
 					}
-					
+
 					resource "scaleway_mnq_sqs_queue" "queue" {
 						project_id = scaleway_mnq_sqs.main.project_id
 						name = "TestQueue"

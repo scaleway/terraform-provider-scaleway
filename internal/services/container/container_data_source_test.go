@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccDataSourceContainer_Basic(t *testing.T) {
-	tt := acctest.NewTestTools(t)
+	tt := acctest.NewTestToolsWithoutDefaultProjectID(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -30,7 +30,7 @@ func TestAccDataSourceContainer_Basic(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						name = scaleway_container.main.name
 					}
-					
+
 					data "scaleway_container" "by_id" {
 						namespace_id = scaleway_container_namespace.main.id
 						container_id = scaleway_container.main.id
@@ -51,7 +51,7 @@ func TestAccDataSourceContainer_Basic(t *testing.T) {
 }
 
 func TestAccDataSourceContainer_HealthCheck(t *testing.T) {
-	tt := acctest.NewTestTools(t)
+	tt := acctest.NewTestToolsWithoutDefaultProjectID(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{

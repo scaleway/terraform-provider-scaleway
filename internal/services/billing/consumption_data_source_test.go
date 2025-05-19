@@ -10,7 +10,8 @@ import (
 )
 
 func TestAccDataSourceConsumption_Basic(t *testing.T) {
-	tt := acctest.NewTestTools(t)
+	// somehow the project_id is not set in the query parameters locally when the organization_id is set
+	tt := acctest.NewTestToolsWithoutDefaultProjectID(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{

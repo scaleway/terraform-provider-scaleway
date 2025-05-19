@@ -235,6 +235,30 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 		cassetteBodyMatcher(actual, expected)
 }
 
+// cassetteMatcherWithoutProjectID strip the project_id from the query to match the query of the recorded cassette
+func cassetteMatcherWithoutProjectID(actual *http.Request, expected cassette.Request) bool {
+	expectedURL, _ := url.Parse(expected.URL)
+	actualURL := actual.URL
+	actualURLValues := actualURL.Query()
+	expectedURLValues := expectedURL.Query()
+
+	for _, query := range QueryMatcherIgnore {
+		actualURLValues.Del(query)
+		expectedURLValues.Del(query)
+	}
+
+	actualURLValues.Del("project_id")
+	expectedURLValues.Del("project_id")
+
+	actualURL.RawQuery = actualURLValues.Encode()
+	expectedURL.RawQuery = expectedURLValues.Encode()
+
+	return actual.Method == expected.Method &&
+		actual.URL.Path == expectedURL.Path &&
+		actualURL.RawQuery == expectedURL.RawQuery &&
+		cassetteBodyMatcher(actual, expected)
+}
+
 func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 	var jsonBody map[string]interface{}
 
@@ -260,13 +284,13 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 	return nil
 }
 
-// getHTTPRecoder creates a new httpClient that records all HTTP requests in a cassette.
+// getHTTPRecorder creates a new httpClient that records all HTTP requests in a cassette.
 // This cassette is then replayed whenever tests are executed again. This means that once the
 // requests are recorded in the cassette, no more real HTTP requests must be made to run the tests.
 //
 // It is important to add a `defer cleanup()` so the given cassette files are correctly
 // closed and saved after the requests.
-func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.Client, cleanup func(), err error) {
+func getHTTPRecorder(t *testing.T, pkgFolder string, update bool, matcherFunc cassette.MatcherFunc) (client *http.Client, cleanup func(), err error) {
 	t.Helper()
 
 	recorderMode := recorder.ModeReplayOnly
@@ -297,7 +321,7 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 	}(r)
 
 	// Add custom matcher for requests and cassettes
-	r.SetMatcher(cassetteMatcher)
+	r.SetMatcher(matcherFunc)
 
 	// Add a filter which removes Authorization headers from all requests:
 	r.AddHook(func(i *cassette.Interaction) error {

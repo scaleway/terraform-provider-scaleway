@@ -34,7 +34,7 @@ func NewTestTools(t *testing.T) *TestTools {
 	}
 
 	// Create a http client with recording capabilities
-	httpClient, cleanup, err := getHTTPRecoder(t, folder, *UpdateCassettes)
+	httpClient, cleanup, err := getHTTPRecorder(t, folder, *UpdateCassettes, cassetteMatcher)
 	require.NoError(t, err)
 
 	// Create meta that will be passed in the provider config
@@ -42,6 +42,49 @@ func NewTestTools(t *testing.T) *TestTools {
 		ProviderSchema:   nil,
 		TerraformVersion: "terraform-tests",
 		HTTPClient:       httpClient,
+		ForceProjectID:   "00000000-0000-0000-0000-000000000000",
+	})
+	require.NoError(t, err)
+
+	if !*UpdateCassettes {
+		tmp := 0 * time.Second
+		transport.DefaultWaitRetryInterval = &tmp
+	}
+
+	return &TestTools{
+		T:    t,
+		Meta: m,
+		ProviderFactories: map[string]func() (*schema.Provider, error){
+			"scaleway": func() (*schema.Provider, error) {
+				return provider.Provider(&provider.Config{Meta: m})(), nil
+			},
+		},
+		Cleanup: cleanup,
+	}
+}
+
+/*
+Tested resources that depends on a projectID in the query parameters should use this function
+Otherwise, tests will fail because the projectID will not match the ones in the recorded cassette queries
+*/
+func NewTestToolsWithoutDefaultProjectID(t *testing.T) *TestTools {
+	t.Helper()
+
+	ctx := t.Context()
+
+	folder, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("cannot detect working directory for testing")
+	}
+
+	httpClient, cleanup, err := getHTTPRecorder(t, folder, *UpdateCassettes, cassetteMatcherWithoutProjectID)
+	require.NoError(t, err)
+
+	m, err := meta.NewMeta(ctx, &meta.Config{
+		ProviderSchema:   nil,
+		TerraformVersion: "terraform-tests",
+		HTTPClient:       httpClient,
+		ForceProjectID:   "00000000-0000-0000-0000-000000000000",
 	})
 	require.NoError(t, err)
 

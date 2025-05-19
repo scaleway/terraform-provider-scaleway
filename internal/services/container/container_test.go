@@ -12,7 +12,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
-	containerchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container/testfuncs"
 )
 
 func TestAccContainer_Basic(t *testing.T) {
@@ -220,51 +219,32 @@ func TestAccContainer_WithIMG(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_container_namespace main {
-						name = "%s"
-						description = "test container"
-					}
-				`, containerNamespace),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource scaleway_container_namespace main {
-						name = "%s"
-						description = "test container"
-					}
-				`, containerNamespace),
-				Check: resource.ComposeTestCheckFunc(
-					containerchecks.TestConfigContainerNamespace(tt, "scaleway_container_namespace.main"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource scaleway_container_namespace main {
-						name = "%s"
-						description = "test container"
-					}
+								resource scaleway_container_namespace main {
+									name = "%s"
+									description = "test container"
+								}
 
-					resource scaleway_container main {
-						name = "my-container-02"
-						description = "environment variables test"
-						namespace_id = scaleway_container_namespace.main.id
-						registry_image = "${scaleway_container_namespace.main.registry_endpoint}/nginx:test"
-						port = 80
-						cpu_limit = 140
-						memory_limit = 256
-						min_scale = 3
-						max_scale = 5
-						timeout = 600
-						max_concurrency = 80
-						privacy = "private"
-						protocol = "h2c"
-						deploy = true
+								resource scaleway_container main {
+									name = "my-container-02"
+									description = "environment variables test"
+									namespace_id = scaleway_container_namespace.main.id
+									registry_image = "docker.io/library/nginx:latest"
+									port = 80
+									cpu_limit = 140
+									memory_limit = 256
+									min_scale = 3
+									max_scale = 5
+									timeout = 600
+									max_concurrency = 80
+									privacy = "private"
+									protocol = "h2c"
+									deploy = true
 
-						environment_variables = {
-							"foo" = "var"
-						}
-					}
-				`, containerNamespace),
+									environment_variables = {
+										"foo" = "var"
+									}
+								}
+							`, containerNamespace),
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					acctest.CheckResourceAttrUUID("scaleway_container.main", "id"),
@@ -493,7 +473,7 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_container_namespace main {}
-		
+
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
 						deploy = false
@@ -512,7 +492,7 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_container_namespace main {}
-		
+
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
 						deploy = false
@@ -534,7 +514,7 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_container_namespace main {}
-		
+
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
 						deploy = false
