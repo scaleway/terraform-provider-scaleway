@@ -226,15 +226,19 @@ func updateSizeRoot(originalDisks []*baremetal.SchemaDisk, hasExtraPartition boo
 func removeSwap(originalDisks []*baremetal.SchemaDisk) {
 	for _, disk := range originalDisks {
 		newPartitions := make([]*baremetal.SchemaPartition, 0, len(disk.Partitions))
+
 		for _, partition := range disk.Partitions {
 			if partition.Label == "swap" {
 				continue
 			}
+
 			if partition.Label != "uefi" {
 				partition.Number--
 			}
+
 			newPartitions = append(newPartitions, partition)
 		}
+
 		disk.Partitions = newPartitions
 	}
 }
