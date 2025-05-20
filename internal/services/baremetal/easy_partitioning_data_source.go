@@ -107,9 +107,10 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	hasSwap := d.Get("hasSwap").(bool)
+	hasSwap := d.Get("swap").(bool)
 	if !hasSwap {
 		removeSwap(defaultPartitioningSchema.Disks)
+		updateRaidRemoveSwap(defaultPartitioningSchema)
 	}
 
 	mountpoint := d.Get("ext_4_mountpoint").(string)
@@ -117,7 +118,7 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 
 	if hasExtraPartition {
 		addExtraExt4Partition(mountpoint, defaultPartitioningSchema)
-		updateRaid(defaultPartitioningSchema)
+		updateRaidNewPartition(defaultPartitioningSchema)
 	}
 
 	if !hasSwap || hasExtraPartition {
@@ -148,7 +149,29 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func updateRaid(partitionSchema *baremetal.Schema) {
+func updateRaidRemoveSwap(partitionSchema *baremetal.Schema) {
+	raidSchema := []*baremetal.SchemaRAID{
+		{
+			Name:  "/dev/md0",
+			Level: "raid_level_1",
+			Devices: []string{
+				"/dev/nvme0n1p2",
+				"/dev/nvme1n1p1",
+			},
+		},
+		{
+			Name:  "/dev/md1",
+			Level: "raid_level_1",
+			Devices: []string{
+				"/dev/nvme0n1p3",
+				"/dev/nvme1n1p2",
+			},
+		},
+	}
+	partitionSchema.Raids = raidSchema
+}
+
+func updateRaidNewPartition(partitionSchema *baremetal.Schema) {
 	lenDisk0Partition := len(partitionSchema.Disks[0].Partitions)
 	lenDisk1Partition := len(partitionSchema.Disks[1].Partitions)
 	raid := &baremetal.SchemaRAID{
@@ -202,16 +225,16 @@ func updateSizeRoot(originalDisks []*baremetal.SchemaDisk, hasExtraPartition boo
 
 func removeSwap(originalDisks []*baremetal.SchemaDisk) {
 	for _, disk := range originalDisks {
-		for i, partition := range disk.Partitions {
+		newPartitions := make([]*baremetal.SchemaPartition, 0, len(disk.Partitions))
+		for _, partition := range disk.Partitions {
 			if partition.Label == "swap" {
-				disk.Partitions = append(disk.Partitions[:i], disk.Partitions[i+1:]...)
-
-				break
+				continue
 			}
-
 			if partition.Label != "uefi" {
 				partition.Number--
 			}
+			newPartitions = append(newPartitions, partition)
 		}
+		disk.Partitions = newPartitions
 	}
 }
