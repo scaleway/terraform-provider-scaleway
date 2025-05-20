@@ -19,7 +19,7 @@ const (
 	offerNameEasyPartitioning            = "EM-B220E-NVME"
 	incompatibleOfferName                = "EM-L110X-SATA"
 	AlternativeOfferNameEasyPartitioning = "EM-B420E-NVME"
-	mountpoint                           = "/hello"
+	mountpoint                           = "/data"
 )
 
 func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
