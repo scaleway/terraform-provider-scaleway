@@ -373,6 +373,51 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 	})
 }
 
+func TestAccMongoDBInstance_WithPublicNetwork(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+
+				resource "scaleway_vpc_private_network" "pn01" {
+  					name   = "my_private_network"
+  					region = "fr-par"
+				}
+
+				resource "scaleway_mongodb_instance" "main" {
+				  name              = "test-mongodb-public-network"
+				  version           = "7.0.12"
+				  node_type         = "MGDB-PLAY2-NANO"
+				  node_number       = 1
+				  user_name         = "my_initial_user"
+				  password          = "thiZ_is_v&ry_s3cret"
+				  volume_size_in_gb = 5
+
+				  private_network {
+				    pn_id = scaleway_vpc_private_network.pn01.id
+				  }
+
+				  public_network {}
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "public_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "public_network.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "public_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "public_network.0.dns_record"),
+				),
+			},
+		},
+	})
+}
+
 func capturePrivateNetworkID(previousID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources["scaleway_mongodb_instance.main"]

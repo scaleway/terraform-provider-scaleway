@@ -288,6 +288,15 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			}
 		}
 
+		if pubList, ok := d.GetOk("public_network"); ok {
+			items := pubList.([]interface{})
+			if len(items) > 0 {
+				eps = append(eps, &mongodb.EndpointSpec{
+					Public: &mongodb.EndpointSpecPublicDetails{},
+				})
+			}
+		}
+
 		if len(eps) == 0 {
 			eps = append(eps, &mongodb.EndpointSpec{
 				Public: &mongodb.EndpointSpecPublicDetails{},
