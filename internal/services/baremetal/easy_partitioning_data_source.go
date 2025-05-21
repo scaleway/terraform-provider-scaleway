@@ -19,6 +19,19 @@ import (
 const (
 	partitionSize     = 20000000000
 	defaultMountpoint = "/data"
+	md0               = "/dev/md0"
+	md1               = "/dev/md1"
+	md2               = "/dev/md2"
+	ext4              = "ext4"
+	raidLevel1        = "raid_level_1"
+	nvme0p2           = "/dev/nvme0n1p2"
+	nvme0p3           = "/dev/nvme0n1p3"
+	nvme1p1           = "/dev/nvme1n1p1"
+	nvme1p2           = "/dev/nvme1n1p2"
+	uefi              = "uefi"
+	swap              = "swap"
+	root              = "root"
+	boot              = "boot"
 )
 
 func DataEasyPartitioning() *schema.Resource {
@@ -152,19 +165,19 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 func updateRaidRemoveSwap(partitionSchema *baremetal.Schema) {
 	raidSchema := []*baremetal.SchemaRAID{
 		{
-			Name:  "/dev/md0",
-			Level: "raid_level_1",
+			Name:  md0,
+			Level: raidLevel1,
 			Devices: []string{
-				"/dev/nvme0n1p2",
-				"/dev/nvme1n1p1",
+				nvme0p2,
+				nvme1p1,
 			},
 		},
 		{
-			Name:  "/dev/md1",
-			Level: "raid_level_1",
+			Name:  md1,
+			Level: raidLevel1,
 			Devices: []string{
-				"/dev/nvme0n1p3",
-				"/dev/nvme1n1p2",
+				nvme0p3,
+				nvme1p2,
 			},
 		},
 	}
@@ -175,8 +188,8 @@ func updateRaidNewPartition(partitionSchema *baremetal.Schema) {
 	lenDisk0Partition := len(partitionSchema.Disks[0].Partitions)
 	lenDisk1Partition := len(partitionSchema.Disks[1].Partitions)
 	raid := &baremetal.SchemaRAID{
-		Name:  "/dev/md2",
-		Level: "raid_level_1",
+		Name:  md2,
+		Level: raidLevel1,
 		Devices: []string{
 			fmt.Sprintf("%sp%d", partitionSchema.Disks[0].Device, lenDisk0Partition),
 			fmt.Sprintf("%sp%d", partitionSchema.Disks[1].Device, lenDisk1Partition),
@@ -200,8 +213,8 @@ func addExtraExt4Partition(mountpoint string, defaultPartitionSchema *baremetal.
 	}
 
 	filesystem := &baremetal.SchemaFilesystem{
-		Device:     "/dev/md2",
-		Format:     "ext4",
+		Device:     md2,
+		Format:     ext4,
 		Mountpoint: mountpoint,
 	}
 	defaultPartitionSchema.Filesystems = append(defaultPartitionSchema.Filesystems, filesystem)
@@ -210,13 +223,13 @@ func addExtraExt4Partition(mountpoint string, defaultPartitionSchema *baremetal.
 func updateSizeRoot(originalDisks []*baremetal.SchemaDisk, hasExtraPartition bool) {
 	for _, disk := range originalDisks {
 		for _, partition := range disk.Partitions {
-			if partition.Label == "root" {
+			if partition.Label == root {
+				partition.Size = 0
+				partition.UseAllAvailableSpace = true
+
 				if hasExtraPartition {
 					partition.Size = partitionSize
 					partition.UseAllAvailableSpace = false
-				} else {
-					partition.Size = 0
-					partition.UseAllAvailableSpace = true
 				}
 			}
 		}
@@ -228,11 +241,11 @@ func removeSwap(originalDisks []*baremetal.SchemaDisk) {
 		newPartitions := make([]*baremetal.SchemaPartition, 0, len(disk.Partitions))
 
 		for _, partition := range disk.Partitions {
-			if partition.Label == "swap" {
+			if partition.Label == swap {
 				continue
 			}
 
-			if partition.Label != "uefi" {
+			if partition.Label != uefi {
 				partition.Number--
 			}
 
