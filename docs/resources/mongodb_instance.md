@@ -104,6 +104,8 @@ The following arguments are supported:
 - `private_network` - (Optional) Private Network endpoints of the Database Instance.
     - `pn_id` - (Required) The ID of the Private Network.
 - `public_network` - (Optional) Public network endpoint configuration (no arguments).
+~> **Important** If neither private_network nor public_network is specified, a public network endpoint is created by default.
+
 
 ## Attributes Reference
 
