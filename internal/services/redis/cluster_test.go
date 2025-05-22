@@ -756,7 +756,7 @@ func isClusterDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = redisAPI.GetCluster(&redisSDK.GetClusterRequest{
+			_, err = redisAPI.WaitForCluster(&redisSDK.WaitForClusterRequest{
 				ClusterID: ID,
 				Zone:      zone,
 			})
