@@ -355,6 +355,7 @@ func ResourceServer() *schema.Resource {
 			"private_ips": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "List of private IPv4 addresses associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -781,63 +782,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 	_ = d.Set("user_data", userData)
 
 	////
-	// Read server private networks
-	////
-	ph, err := newPrivateNICHandler(api.API, id, zone)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// set private networks
-	err = ph.set(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	privateNICIDs := []string(nil)
-	for _, nic := range ph.privateNICsMap {
-		privateNICIDs = append(privateNICIDs, nic.ID)
-	}
-
-	allPrivateIPs := []map[string]interface{}(nil)
-	diags := diag.Diagnostics{}
-	resourceType := ipamAPI.ResourceTypeInstancePrivateNic
-
-	region, err := zone.Region()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	for _, nicID := range privateNICIDs {
-		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceType: &resourceType,
-			ResourceID:   &nicID,
-		}
-
-		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-		if err != nil {
-			if !httperrors.Is403(err) {
-				return diag.FromErr(err)
-			}
-
-			diags = append(diags, diag.Diagnostic{
-				Severity:      diag.Warning,
-				Summary:       err.Error(),
-				Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
-				AttributePath: cty.GetAttrPath("private_ips"),
-			})
-		}
-
-		if privateIPs != nil {
-			allPrivateIPs = append(allPrivateIPs, privateIPs...)
-		}
-	}
-
-	_ = d.Set("private_ips", allPrivateIPs)
-
-	////
 	// Display warning if server will soon reach End of Service
 	////
+	diags := diag.Diagnostics{}
+
 	if server.EndOfService {
 		compatibleTypes, err := api.GetServerCompatibleTypes(&instanceSDK.GetServerCompatibleTypesRequest{
 			Zone:     zone,
@@ -867,6 +815,69 @@ You can check the full list of compatible server types:
 			AttributePath: cty.GetAttrPath("type"),
 		})
 	}
+
+	////
+	// Read server private networks
+	////
+	ph, err := newPrivateNICHandler(api.API, id, zone)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// set private networks
+	err = ph.set(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	privateNICIDs := []string(nil)
+	for _, nic := range ph.privateNICsMap {
+		privateNICIDs = append(privateNICIDs, nic.ID)
+	}
+
+	// Read server's private IPs if possible
+	allPrivateIPs := []map[string]interface{}(nil)
+	resourceType := ipamAPI.ResourceTypeInstancePrivateNic
+
+	region, err := zone.Region()
+	if err != nil {
+		return append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unable to get server's private IPs",
+			Detail:   err.Error(),
+		})
+	}
+
+	for _, nicID := range privateNICIDs {
+		opts := &ipam.GetResourcePrivateIPsOptions{
+			ResourceType: &resourceType,
+			ResourceID:   &nicID,
+			ProjectID:    &server.Project,
+		}
+
+		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+
+		switch {
+		case err == nil:
+			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		case httperrors.Is403(err):
+			return append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       "Unauthorized to read server's private IPs, please check your IAM permissions",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
+		default:
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("Unable to get private IPs for server %s (pnic_id: %s)", server.ID, nicID),
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
+		}
+	}
+
+	_ = d.Set("private_ips", allPrivateIPs)
 
 	return diags
 }
