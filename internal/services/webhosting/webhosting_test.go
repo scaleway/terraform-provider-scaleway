@@ -98,7 +98,7 @@ func testAccCheckWebhostingDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			res, err := api.GetHosting(&webhostingSDK.HostingAPIGetHostingRequest{
+			res, err := api.WaitForHosting(&webhostingSDK.WaitForHostingRequest{
 				HostingID: id,
 				Region:    region,
 			})
