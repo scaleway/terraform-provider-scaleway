@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -41,10 +42,11 @@ func ResourceSnapshot() *schema.Resource {
 			},
 			"volume_id": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				Description:      "ID of the volume from which creates a snapshot",
 				DiffSuppressFunc: dsf.Locality,
+				ConflictsWith:    []string{"import"},
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -53,6 +55,34 @@ func ResourceSnapshot() *schema.Resource {
 				},
 				Optional:    true,
 				Description: "The tags associated with the snapshot",
+			},
+			"import": {
+				Type:     schema.TypeList,
+				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bucket": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ForceNew:         true,
+							Description:      "Bucket containing qcow",
+							DiffSuppressFunc: dsf.Locality,
+							StateFunc: func(i interface{}) string {
+								return regional.ExpandID(i.(string)).ID
+							},
+						},
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "Key of the qcow file in the specified bucket",
+						},
+					},
+				},
+				Optional:      true,
+				Description:   "Import snapshot from a qcow",
+				ConflictsWith: []string{"volume_id"},
 			},
 			"zone":       zonal.Schema(),
 			"project_id": account.ProjectIDSchema(),
@@ -66,15 +96,33 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	snapshot, err := api.CreateSnapshot(&block.CreateSnapshotRequest{
-		Zone:      zone,
-		ProjectID: d.Get("project_id").(string),
-		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "snapshot"),
-		VolumeID:  locality.ExpandID(d.Get("volume_id")),
-		Tags:      types.ExpandStrings(d.Get("tags")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	var snapshot *block.Snapshot
+
+	if _, isImported := d.GetOk("import"); !isImported {
+		snapshot, err = api.CreateSnapshot(&block.CreateSnapshotRequest{
+			Zone:      zone,
+			ProjectID: d.Get("project_id").(string),
+			Name:      types.ExpandOrGenerateString(d.Get("name").(string), "snapshot"),
+			VolumeID:  locality.ExpandID(d.Get("volume_id")),
+			Tags:      types.ExpandStrings(d.Get("tags")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		req := &block.ImportSnapshotFromObjectStorageRequest{
+			Zone:      zone,
+			ProjectID: d.Get("project_id").(string),
+			Name:      types.ExpandOrGenerateString(d.Get("name"), "snapshot"),
+			Bucket:    regional.ExpandID(d.Get("import.0.bucket")).ID,
+			Key:       d.Get("import.0.key").(string),
+			Tags:      types.ExpandStrings(d.Get("tags")),
+		}
+
+		snapshot, err = api.ImportSnapshotFromObjectStorage(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId(zonal.NewIDString(zone, snapshot.ID))
