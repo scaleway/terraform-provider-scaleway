@@ -23,7 +23,7 @@ func TestAccDataSourceVersion_Basic(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_k8s_version" "by_name" {
-						name = "1.26.2"
+						name = "1.32.2"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -36,12 +36,13 @@ func TestAccDataSourceVersion_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.3", "none"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_container_runtimes.#", "1"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_container_runtimes.0", "containerd"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.#", "5"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.#", "6"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.0", "HPAScaleToZero"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.1", "GRPCContainerProbe"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.2", "ReadWriteOncePod"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.3", "ValidatingAdmissionPolicy"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.4", "CSINodeExpandSecret"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.1", "InPlacePodVerticalScaling"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.2", "SidecarContainers"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.3", "DRAAdminAccess"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.4", "DRAResourceClaimDeviceStatus"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.5", "DynamicResourceAllocation"),
 				),
 			},
 		},
