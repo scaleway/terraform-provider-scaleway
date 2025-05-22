@@ -13,7 +13,7 @@ func DataSourceZone() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceZone().Schema)
 
-	datasource.AddOptionalFieldsToSchema(dsSchema, "domain", "subdomain")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "domain", "subdomain", "project_id")
 
 	return &schema.Resource{
 		ReadContext: DataSourceZoneRead,
