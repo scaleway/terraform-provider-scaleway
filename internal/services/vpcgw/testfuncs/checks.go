@@ -58,7 +58,7 @@ func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = vpcgwAPI.GetGateway(&v2.GetGatewayRequest{
+			_, err = vpcgwAPI.WaitForGateway(&v2.WaitForGatewayRequest{
 				GatewayID: ID,
 				Zone:      zone,
 			})
