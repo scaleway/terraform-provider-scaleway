@@ -20,7 +20,7 @@ func TestAccDataSourceNamespace_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_registry_namespace" "reg00" {
 						region = "pl-waw"
-						name = "registry-namespace-basic"
+						name = "test-cr-data"
 					}
 					
 					data "scaleway_registry_namespace" "regData01" {
