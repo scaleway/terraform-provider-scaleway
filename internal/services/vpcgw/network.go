@@ -128,6 +128,7 @@ func ResourceNetwork() *schema.Resource {
 			"private_ip": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "The private IPv4 address associated with the resource.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -240,12 +241,7 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 			}
 
 			if gatewayNetwork.PrivateNetworkID != "" {
-				privateIPs, diags := getPrivateIPsV1(ctx, gatewayV1, m)
-				if diags != nil && len(diags) > 0 && diags[0].Severity == diag.Error {
-					return diags
-				}
-
-				_ = d.Set("private_ip", privateIPs)
+				diags = setPrivateIPsV1(ctx, d, apiV1, gatewayV1, m)
 			}
 
 			return readVPCGWNetworkResourceDataV1(d, gatewayV1, diags)
@@ -259,12 +255,7 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if gatewayNetwork.PrivateNetworkID != "" {
-		privateIPs, diags := getPrivateIPsV2(ctx, gatewayNetwork, m)
-		if diags != nil && len(diags) > 0 && diags[0].Severity == diag.Error {
-			return diags
-		}
-
-		_ = d.Set("private_ip", privateIPs)
+		diags = setPrivateIPsV2(ctx, d, api, gatewayNetwork, m)
 	}
 
 	return readVPCGWNetworkResourceDataV2(d, gatewayNetwork, diags)
