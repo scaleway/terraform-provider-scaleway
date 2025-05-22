@@ -245,6 +245,8 @@ func TestAccServer_RootVolume_Boot(t *testing.T) {
 }
 
 func TestAccServer_RootVolume_ID(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -545,6 +547,8 @@ EOF
 }
 
 func TestAccServer_AdditionalVolumes(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -621,6 +625,8 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 }
 
 func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -1009,6 +1015,8 @@ func TestAccServer_AlterTags(t *testing.T) {
 }
 
 func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -1041,6 +1049,8 @@ func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
 }
 
 func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -1714,21 +1724,21 @@ func TestAccServer_BlockExternal(t *testing.T) {
 						size_in_gb = 10
 					}
 
-					resource "scaleway_instance_volume" "volume" {
-						type = "b_ssd"
-						size_in_gb = 10
+					resource "scaleway_block_volume" "bigger-volume" {
+						iops = 15000
+						size_in_gb = 15
 					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
 						type  = "PLAY2-PICO"
-						additional_volume_ids = [scaleway_block_volume.volume.id, scaleway_instance_volume.volume.id]
+						additional_volume_ids = [scaleway_block_volume.volume.id, scaleway_block_volume.bigger-volume.id]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "2"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.1", "scaleway_instance_volume.volume", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.1", "scaleway_block_volume.bigger-volume", "id"),
 				),
 			},
 		},
