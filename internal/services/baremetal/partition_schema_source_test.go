@@ -22,12 +22,12 @@ const (
 	mountpoint                           = "/data"
 )
 
-func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
+func TestAccPartitionSchemaDataSource_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	sshKeyName := "TestAccEasyPartitioningDataSource_Basic"
-	serverName := "TestAccEasyPartitioningDataSource_Basic"
+	sshKeyName := "TestAccPartitionSchemaDataSource_Basic"
+	serverName := "TestAccPartitionSchemaDataSource_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -90,12 +90,12 @@ func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccEasyPartitioningDataSource_WithoutExtraPart(t *testing.T) {
+func TestAccPartitionSchemaDataSource_WithoutExtraPart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	sshKeyName := "TestAccEasyPartitioningDataSource_WithoutExtraPart"
-	serverName := "TestAccEasyPartitioningDataSource_WithoutExtraPart"
+	sshKeyName := "TestAccPartitionSchemaDataSource_WithoutExtraPart"
+	serverName := "TestAccPartitionSchemaDataSource_WithoutExtraPart"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -157,12 +157,12 @@ func TestAccEasyPartitioningDataSource_WithoutExtraPart(t *testing.T) {
 	})
 }
 
-func TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart(t *testing.T) {
+func TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	sshKeyName := "TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart"
-	serverName := "TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart"
+	sshKeyName := "TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart"
+	serverName := "TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -224,12 +224,12 @@ func TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 	})
 }
 
-func TestAccEasyPartitioningDataSource_WithAlternateOffer(t *testing.T) {
+func TestAccPartitionSchemaDataSource_WithAlternateOffer(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccEasyPartitioningDataSource_WithAlternateOffer"
-	name := "TestAccEasyPartitioningDataSource_WithAlternateOffer"
+	SSHKeyName := "TestAccPartitionSchemaDataSource_WithAlternateOffer"
+	name := "TestAccPartitionSchemaDataSource_WithAlternateOffer"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -293,12 +293,12 @@ func TestAccEasyPartitioningDataSource_WithAlternateOffer(t *testing.T) {
 	})
 }
 
-func TestAccEasyPartitioningDataSource_IncompatibleOS(t *testing.T) {
+func TestAccPartitionSchemaDataSource_IncompatibleOS(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccEasyPartitioningDataSource_IncompatibleOS"
-	name := "TestAccEasyPartitioningDataSource_IncompatibleOS"
+	SSHKeyName := "TestAccPartitionSchemaDataSource_IncompatibleOS"
+	name := "TestAccPartitionSchemaDataSource_IncompatibleOS"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -355,12 +355,12 @@ func TestAccEasyPartitioningDataSource_IncompatibleOS(t *testing.T) {
 	})
 }
 
-func TestAccEasyPartitioningDataSource_IncompatibleOffer(t *testing.T) {
+func TestAccPartitionSchemaDataSource_IncompatibleOffer(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccEasyPartitioningDataSource_IncompatibleOffer"
-	name := "TestAccEasyPartitioningDataSource_IncompatibleOffer"
+	SSHKeyName := "TestAccPartitionSchemaDataSource_IncompatibleOffer"
+	name := "TestAccPartitionSchemaDataSource_IncompatibleOffer"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
