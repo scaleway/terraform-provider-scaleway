@@ -53,7 +53,7 @@ func IsModelDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			model, err := inferenceAPI.GetModel(&inferenceSDK.GetModelRequest{
+			model, err := inferenceAPI.WaitForModel(&inferenceSDK.WaitForModelRequest{
 				Region:  region,
 				ModelID: id,
 			})
