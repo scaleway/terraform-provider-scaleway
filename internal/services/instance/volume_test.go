@@ -79,6 +79,8 @@ func TestAccVolume_DifferentNameGenerated(t *testing.T) {
 }
 
 func TestAccVolume_ResizeBlock(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_volume\" is depracated for block volumes")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -144,6 +146,8 @@ func TestAccVolume_ResizeNotBlock(t *testing.T) {
 }
 
 func TestAccVolume_CannotResizeBlockDown(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_volume\" is depracated for block volumes")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
