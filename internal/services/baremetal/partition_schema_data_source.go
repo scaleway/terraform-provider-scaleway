@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -31,12 +32,11 @@ const (
 	uefi              = "uefi"
 	swap              = "swap"
 	root              = "root"
-	boot              = "boot"
 )
 
-func DataEasyPartitioning() *schema.Resource {
+func DataPartitionSchema() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataEasyPartitioningRead,
+		ReadContext: dataPartitionSchemaRead,
 		Schema: map[string]*schema.Schema{
 			"offer_id": {
 				Type:        schema.TypeString,
@@ -63,10 +63,11 @@ func DataEasyPartitioning() *schema.Resource {
 				Description: "set extra ext_4 partition",
 			},
 			"ext_4_mountpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     defaultMountpoint,
-				Description: "Mount point must be an absolute path with alphanumeric characters and underscores",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      defaultMountpoint,
+				ValidateFunc: validation.StringInSlice([]string{"/data", "/home"}, false),
+				Description:  "Mount point must be an absolute path",
 			},
 			"json_partition": {
 				Type:        schema.TypeString,
@@ -77,7 +78,7 @@ func DataEasyPartitioning() *schema.Resource {
 	}
 }
 
-func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataPartitionSchemaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, fallBackZone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
