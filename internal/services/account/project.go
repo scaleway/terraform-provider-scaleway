@@ -17,8 +17,6 @@ func ResourceProject() *schema.Resource {
 	return &schema.Resource{
 		EnableLegacyTypeSystemApplyErrors: true,
 		EnableLegacyTypeSystemPlanErrors:  true,
-		EnableLegacyTypeSystemApplyErrors: true,
-		EnableLegacyTypeSystemPlanErrors:  true,
 		CreateContext:                     resourceAccountProjectCreate,
 		ReadContext:                       resourceAccountProjectRead,
 		UpdateContext:                     resourceAccountProjectUpdate,
