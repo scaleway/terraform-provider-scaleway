@@ -123,7 +123,7 @@ func isBackupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = rdbAPI.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
+			_, err = rdbAPI.WaitForDatabaseBackup(&rdbSDK.WaitForDatabaseBackupRequest{
 				DatabaseBackupID: ID,
 				Region:           region,
 			})
