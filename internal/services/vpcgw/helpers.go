@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -304,14 +305,29 @@ func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.G
 	return nil
 }
 
-func getPrivateIPsV1(ctx context.Context, gn *vpcgw.GatewayNetwork, m interface{}) (interface{}, diag.Diagnostics) {
-	var privateIPs []map[string]interface{}
-
+func setPrivateIPsV1(ctx context.Context, d *schema.ResourceData, api *vpcgw.API, gn *vpcgw.GatewayNetwork, m interface{}) diag.Diagnostics {
 	resourceID := gn.ID
 
 	region, err := gn.Zone.Region()
 	if err != nil {
-		return nil, diag.FromErr(err)
+		return diag.Diagnostics{
+			{
+				Severity: diag.Warning,
+				Summary:  "Unable to get gateway network's private IP",
+				Detail:   err.Error(),
+			},
+		}
+	}
+
+	projectID, err := getGatewayProjectIDV1(ctx, api, gn.Zone, gn.GatewayID)
+	if err != nil {
+		return diag.Diagnostics{
+			{
+				Severity: diag.Warning,
+				Summary:  "Unable to get gateway network's private IP",
+				Detail:   err.Error(),
+			},
+		}
 	}
 
 	resourceType := ipamAPI.ResourceTypeVpcGatewayNetwork
@@ -319,33 +335,60 @@ func getPrivateIPsV1(ctx context.Context, gn *vpcgw.GatewayNetwork, m interface{
 		ResourceID:       &resourceID,
 		ResourceType:     &resourceType,
 		PrivateNetworkID: &gn.PrivateNetworkID,
+		ProjectID:        &projectID,
 	}
 
-	privateIPs, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-	if err != nil {
-		if !httperrors.Is403(err) {
-			return nil, diag.FromErr(err)
+	privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+
+	switch {
+	case err == nil:
+		_ = d.Set("private_ip", privateIPs)
+	case httperrors.Is403(err):
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       "Unauthorized to read gateway networks' private IPs, please check your IAM permissions",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ip"),
+			},
 		}
-
-		return nil, diag.Diagnostics{diag.Diagnostic{
-			Severity:      diag.Warning,
-			Summary:       err.Error(),
-			Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
-			AttributePath: cty.GetAttrPath("private_ips"),
-		}}
+	default:
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("Unable to get private IP for gateway network %s (gateway_id: %s)", gn.ID, gn.GatewayID),
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ip"),
+			},
+		}
 	}
 
-	return privateIPs, nil
+	return nil
 }
 
-func getPrivateIPsV2(ctx context.Context, gn *v2.GatewayNetwork, m interface{}) (interface{}, diag.Diagnostics) {
-	var privateIPs []map[string]interface{}
-
+func setPrivateIPsV2(ctx context.Context, d *schema.ResourceData, api *v2.API, gn *v2.GatewayNetwork, m interface{}) diag.Diagnostics {
 	resourceID := gn.ID
 
 	region, err := gn.Zone.Region()
 	if err != nil {
-		return nil, diag.FromErr(err)
+		return diag.Diagnostics{
+			{
+				Severity: diag.Warning,
+				Summary:  "Unable to get gateway network's private IPs",
+				Detail:   err.Error(),
+			},
+		}
+	}
+
+	projectID, err := getGatewayProjectIDV2(ctx, api, gn.Zone, gn.GatewayID)
+	if err != nil {
+		return diag.Diagnostics{
+			{
+				Severity: diag.Warning,
+				Summary:  "Unable to get gateway network's private IPs",
+				Detail:   err.Error(),
+			},
+		}
 	}
 
 	resourceType := ipamAPI.ResourceTypeVpcGatewayNetwork
@@ -353,23 +396,67 @@ func getPrivateIPsV2(ctx context.Context, gn *v2.GatewayNetwork, m interface{}) 
 		ResourceID:       &resourceID,
 		ResourceType:     &resourceType,
 		PrivateNetworkID: &gn.PrivateNetworkID,
+		ProjectID:        &projectID,
 	}
 
-	privateIPs, err = ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-	if err != nil {
-		if !httperrors.Is403(err) {
-			return nil, diag.FromErr(err)
+	privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+
+	switch {
+	case err == nil:
+		_ = d.Set("private_ip", privateIPs)
+	case httperrors.Is403(err):
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       "Unauthorized to read gateway networks' private IPs, please check your IAM permissions",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ip"),
+			},
 		}
-
-		return nil, diag.Diagnostics{diag.Diagnostic{
-			Severity:      diag.Warning,
-			Summary:       err.Error(),
-			Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
-			AttributePath: cty.GetAttrPath("private_ips"),
-		}}
+	default:
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("Unable to get private IP for gateway network %s (gateway_id: %s)", gn.ID, gn.GatewayID),
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ip"),
+			},
+		}
 	}
 
-	return privateIPs, nil
+	return nil
+}
+
+func getGatewayProjectIDV1(ctx context.Context, api *vpcgw.API, zone scw.Zone, gatewayID string) (string, error) {
+	gateway, err := api.GetGateway(&vpcgw.GetGatewayRequest{
+		Zone:      zone,
+		GatewayID: gatewayID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return "", fmt.Errorf("get gateway network project ID: error getting gateway %s", gatewayID)
+	}
+
+	if gateway.ProjectID == "" {
+		return "", fmt.Errorf("no project ID found for gateway %s", gatewayID)
+	}
+
+	return gateway.ProjectID, nil
+}
+
+func getGatewayProjectIDV2(ctx context.Context, api *v2.API, zone scw.Zone, gatewayID string) (string, error) {
+	gateway, err := api.GetGateway(&v2.GetGatewayRequest{
+		Zone:      zone,
+		GatewayID: gatewayID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return "", fmt.Errorf("get gateway network project ID: error getting gateway %s", gatewayID)
+	}
+
+	if gateway.ProjectID == "" {
+		return "", fmt.Errorf("no project ID found for gateway %s", gatewayID)
+	}
+
+	return gateway.ProjectID, nil
 }
 
 // updateGatewayV1 performs the update of the public gateway using the v1 API

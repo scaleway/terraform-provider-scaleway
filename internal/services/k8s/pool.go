@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -223,6 +224,7 @@ func ResourcePool() *schema.Resource {
 						"private_ips": {
 							Type:        schema.TypeList,
 							Computed:    true,
+							Optional:    true,
 							Description: "List of private IPv4 and IPv6 addresses associated with the node",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -425,14 +427,14 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interfac
 		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())
 	}
 
-	// Get nodes' private IPs
+	// Get nodes' private IPs (if possible)
 	diags := diag.Diagnostics{}
 
 	projectID, err := getClusterProjectID(ctx, k8sAPI, pool)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
-			Summary:  "Unable to get nodes private IPs",
+			Summary:  "Unable to get node's private IPs",
 			Detail:   err.Error(),
 		})
 	} else {
@@ -447,31 +449,36 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interfac
 				continue
 			}
 
+			authorized := true
 			opts := &ipam.GetResourcePrivateIPsOptions{
 				ResourceName: &nodeName,
 				ProjectID:    &projectID,
 			}
 
 			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-			if err != nil {
-				if httperrors.Is403(err) {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Unauthorized to read nodes' private IPs, please check your IAM permissions",
-						Detail:   err.Error(),
-					})
 
-					break
-				} else {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Unable to get nodes private IPs from IPAM API",
-						Detail:   err.Error(),
-					})
-				}
+			switch {
+			case err == nil:
+				nodes[i]["private_ips"] = privateIPs
+			case httperrors.Is403(err):
+				authorized = false
+
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Unauthorized to read nodes' private IPs, please check your IAM permissions",
+					Detail:   err.Error(),
+				})
+			default:
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  fmt.Sprintf("Unable to get private IPs for node %q", nodeName),
+					Detail:   err.Error(),
+				})
 			}
 
-			nodes[i]["private_ips"] = privateIPs
+			if !authorized {
+				break
+			}
 		}
 	}
 

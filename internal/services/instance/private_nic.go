@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -74,6 +75,7 @@ func ResourcePrivateNIC() *schema.Resource {
 			"private_ips": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -185,34 +187,55 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 		_ = d.Set("tags", privateNIC.Tags)
 	}
 
+	// Get private NIC's private IPs if possible
+	diags := diag.Diagnostics{}
+
 	region, err := zone.Region()
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unable to get private NIC's private IPs",
+			Detail:   err.Error(),
+		})
 	}
 
-	diags := diag.Diagnostics{}
+	projectID, err := getServerProjectID(ctx, instanceAPI, zone, privateNIC.ServerID)
+	if err != nil {
+		return append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unable to get private NIC's private IPs",
+			Detail:   err.Error(),
+		})
+	}
+
 	resourceType := ipamAPI.ResourceTypeInstancePrivateNic
 	opts := &ipam.GetResourcePrivateIPsOptions{
 		ResourceID:       &privateNIC.ID,
 		ResourceType:     &resourceType,
 		PrivateNetworkID: &privateNIC.PrivateNetworkID,
+		ProjectID:        &projectID,
 	}
 
 	privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-	if err != nil {
-		if !httperrors.Is403(err) {
-			return diag.FromErr(err)
-		}
 
+	switch {
+	case err == nil:
+		_ = d.Set("private_ips", privateIPs)
+	case httperrors.Is403(err):
 		diags = append(diags, diag.Diagnostic{
 			Severity:      diag.Warning,
-			Summary:       err.Error(),
-			Detail:        "Got 403 while reading private IPs from IPAM API, please check your IAM permissions",
+			Summary:       "Unauthorized to read private NIC's private IPs, please check your IAM permissions",
+			Detail:        err.Error(),
+			AttributePath: cty.GetAttrPath("private_ips"),
+		})
+	default:
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       fmt.Sprintf("Unable to get private IPs for pnic %s (server_id: %s)", privateNIC.ID, privateNIC.ServerID),
+			Detail:        err.Error(),
 			AttributePath: cty.GetAttrPath("private_ips"),
 		})
 	}
-
-	_ = d.Set("private_ips", privateIPs)
 
 	return diags
 }

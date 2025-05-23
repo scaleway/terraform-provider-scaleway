@@ -328,6 +328,7 @@ func ResourceInstance() *schema.Resource {
 			"private_ip": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "The private IPv4 address associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -662,45 +663,59 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set("logs_policy", flattenInstanceLogsPolicy(res.LogsPolicy))
 
 	// set endpoints
-	privateIPs := make([]map[string]interface{}, 0, 1)
 	diags := diag.Diagnostics{}
+	privateIPs := []map[string]interface{}(nil)
+	authorized := true
 
 	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
 		_ = d.Set("private_network", pnI)
 
+		// Read private IP if possible
 		for _, endpoint := range res.Endpoints {
-			if endpoint.PrivateNetwork == nil {
+			if endpoint.PrivateNetwork == nil || endpoint.PrivateNetwork.ProvisioningMode != rdb.EndpointPrivateNetworkDetailsProvisioningModeIpam {
 				continue
 			}
 
-			if endpoint.PrivateNetwork.ProvisioningMode == rdb.EndpointPrivateNetworkDetailsProvisioningModeIpam {
-				resourceType := ipamAPI.ResourceTypeRdbInstance
-				opts := &ipam.GetResourcePrivateIPsOptions{
-					ResourceID:       &res.ID,
-					ResourceType:     &resourceType,
-					PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
-				}
+			resourceType := ipamAPI.ResourceTypeRdbInstance
+			opts := &ipam.GetResourcePrivateIPsOptions{
+				ResourceID:       &res.ID,
+				ResourceType:     &resourceType,
+				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
+				ProjectID:        &res.ProjectID,
+			}
 
-				endpointPrivateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-				if err != nil {
-					if !httperrors.Is403(err) {
-						return diag.FromErr(err)
-					}
+			endpointPrivateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
 
-					diags = append(diags, diag.Diagnostic{
-						Severity:      diag.Warning,
-						Summary:       err.Error(),
-						Detail:        "Got 403 while reading private IP from IPAM API, please check your IAM permissions",
-						AttributePath: cty.GetAttrPath("private_ip"),
-					})
-				}
-
+			switch {
+			case err == nil:
 				privateIPs = append(privateIPs, endpointPrivateIPs...)
+			case httperrors.Is403(err):
+				authorized = false
+
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Unauthorized to read RDB Instance's private IP, please check your IAM permissions",
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("private_ip"),
+				})
+			default:
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       fmt.Sprintf("Unable to get private IP for instance %q", res.Name),
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("private_ip"),
+				})
+			}
+
+			if !authorized {
+				break
 			}
 		}
 	}
 
-	_ = d.Set("private_ip", privateIPs)
+	if authorized {
+		_ = d.Set("private_ip", privateIPs)
+	}
 
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)

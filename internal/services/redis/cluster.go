@@ -199,6 +199,7 @@ func ResourceCluster() *schema.Resource {
 			"private_ips": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "List of private IPv4 addresses associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -368,54 +369,72 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 	// set endpoints
 	allPrivateIPs := []map[string]interface{}(nil)
 	diags := diag.Diagnostics{}
+	authorized := true
 
 	pnI, pnExists := flattenPrivateNetwork(cluster.Endpoints)
 	if pnExists {
 		_ = d.Set("private_network", pnI)
 
-		privateNetworkIDs := []string(nil)
-
-		for _, endpoint := range cluster.Endpoints {
-			if endpoint.PrivateNetwork != nil {
-				privateNetworkIDs = append(privateNetworkIDs, endpoint.PrivateNetwork.ID)
-			}
-		}
-
-		resourceType := ipamAPI.ResourceTypeRedisCluster
-
+		// Read private IPs if possible
 		region, err := zone.Region()
 		if err != nil {
-			return diag.FromErr(err)
-		}
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Unable to get cluster's private IPs",
+				Detail:   err.Error(),
+			})
+		} else {
+			resourceType := ipamAPI.ResourceTypeRedisCluster
+			privateNetworkIDs := []string(nil)
 
-		for _, privateNetworkID := range privateNetworkIDs {
-			opts := &ipam.GetResourcePrivateIPsOptions{
-				ResourceType:     &resourceType,
-				PrivateNetworkID: &privateNetworkID,
-				ResourceID:       &cluster.ID,
+			for _, endpoint := range cluster.Endpoints {
+				if endpoint.PrivateNetwork != nil {
+					privateNetworkIDs = append(privateNetworkIDs, endpoint.PrivateNetwork.ID)
+				}
 			}
 
-			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-			if err != nil {
-				if !httperrors.Is403(err) {
-					return diag.FromErr(err)
+			for _, privateNetworkID := range privateNetworkIDs {
+				opts := &ipam.GetResourcePrivateIPsOptions{
+					ResourceType:     &resourceType,
+					PrivateNetworkID: &privateNetworkID,
+					ResourceID:       &cluster.ID,
+					ProjectID:        &cluster.ProjectID,
 				}
 
-				diags = append(diags, diag.Diagnostic{
-					Severity:      diag.Warning,
-					Summary:       err.Error(),
-					Detail:        "Got 403 while reading private IP from IPAM API, please check your IAM permissions",
-					AttributePath: cty.GetAttrPath("private_ips"),
-				})
-			}
+				privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
 
-			if privateIPs != nil {
-				allPrivateIPs = append(allPrivateIPs, privateIPs...)
+				switch {
+				case err == nil:
+					allPrivateIPs = append(allPrivateIPs, privateIPs...)
+				case httperrors.Is403(err):
+					authorized = false
+
+					diags = append(diags, diag.Diagnostic{
+						Severity:      diag.Warning,
+						Summary:       "Unauthorized to read cluster's private IPs, please check your IAM permissions",
+						Detail:        err.Error(),
+						AttributePath: cty.GetAttrPath("private_ips"),
+					})
+				default:
+					diags = append(diags, diag.Diagnostic{
+						Severity:      diag.Warning,
+						Summary:       fmt.Sprintf("Unable to get private IPs for cluster %q", cluster.Name),
+						Detail:        err.Error(),
+						AttributePath: cty.GetAttrPath("private_ips"),
+					})
+				}
+
+				if !authorized {
+					break
+				}
 			}
 		}
 	}
 
-	_ = d.Set("private_ips", allPrivateIPs)
+	if authorized {
+		_ = d.Set("private_ips", allPrivateIPs)
+	}
+
 	_ = d.Set("public_network", flattenPublicNetwork(cluster.Endpoints))
 
 	if cluster.TLSEnabled {
@@ -424,12 +443,12 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 			ClusterID: cluster.ID,
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("failed to fetch cluster certificate: %w", err))
+			return append(diags, diag.FromErr(fmt.Errorf("failed to fetch cluster certificate: %w", err))...)
 		}
 
 		certificateContent, err := io.ReadAll(certificate.Content)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("failed to read cluster certificate: %w", err))
+			return append(diags, diag.FromErr(fmt.Errorf("failed to read cluster certificate: %w", err))...)
 		}
 
 		_ = d.Set("certificate", string(certificateContent))
