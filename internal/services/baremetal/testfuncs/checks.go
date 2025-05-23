@@ -23,7 +23,7 @@ func CheckServerDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = baremetalAPI.GetServer(&baremetal2.GetServerRequest{
+			_, err = baremetalAPI.WaitForServer(&baremetal2.WaitForServerRequest{
 				ServerID: zonedID.ID,
 				Zone:     zonedID.Zone,
 			})
