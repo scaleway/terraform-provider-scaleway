@@ -23,7 +23,7 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+			_, err = rdbAPI.WaitForInstance(&rdbSDK.WaitForInstanceRequest{
 				InstanceID: ID,
 				Region:     region,
 			})
