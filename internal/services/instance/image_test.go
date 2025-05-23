@@ -15,6 +15,9 @@ import (
 )
 
 func TestAccImage_BlockVolume(t *testing.T) {
+	t.Skip("Resources \"scaleway_instance_volume\" and \"scaleway_instance_snapshot\" are depracated")
+	// TestAccImage_ExternalBlockVolume should suffice to test the same logic with scaleway_block_volumes
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -213,7 +216,7 @@ func TestAccImage_Server(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isImageDestroyed(tt),
-			isSnapshotDestroyed(tt),
+			blocktestfuncs.IsSnapshotDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -278,6 +281,9 @@ func TestAccImage_Server(t *testing.T) {
 }
 
 func TestAccImage_ServerWithBlockVolume(t *testing.T) {
+	t.Skip("Resources \"scaleway_instance_volume\" and \"scaleway_instance_snapshot\" are depracated")
+	// TestAccImage_ServerWithSBSVolume should suffice to test the same logic with block volumes
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
