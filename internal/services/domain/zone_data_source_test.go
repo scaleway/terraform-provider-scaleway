@@ -29,6 +29,7 @@ func TestAccDataSourceDomainZone_Basic(t *testing.T) {
 					data scaleway_domain_zone test {
 						domain    = scaleway_domain_zone.main.domain
 						subdomain = scaleway_domain_zone.main.subdomain
+						project_id = scaleway_domain_zone.main.project_id
 					}
 				`, acctest.TestDomain, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
@@ -36,6 +37,10 @@ func TestAccDataSourceDomainZone_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_domain_zone.test", "subdomain", testDNSZone),
 					resource.TestCheckResourceAttr("data.scaleway_domain_zone.test", "domain", acctest.TestDomain),
 					resource.TestCheckResourceAttr("data.scaleway_domain_zone.test", "status", "active"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_domain_zone.test", "project_id",
+						"scaleway_domain_zone.main", "project_id",
+					),
 				),
 			},
 		},
