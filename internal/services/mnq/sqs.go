@@ -13,9 +13,11 @@ import (
 
 func ResourceSQS() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceMNQSQSCreate,
-		ReadContext:   ResourceMNQSQSRead,
-		DeleteContext: ResourceMNQSQSDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceMNQSQSCreate,
+		ReadContext:                       ResourceMNQSQSRead,
+		DeleteContext:                     ResourceMNQSQSDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

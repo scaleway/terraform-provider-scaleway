@@ -21,10 +21,12 @@ import (
 
 func ResourceReadReplica() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceRdbReadReplicaCreate,
-		ReadContext:   ResourceRdbReadReplicaRead,
-		UpdateContext: ResourceRdbReadReplicaUpdate,
-		DeleteContext: ResourceRdbReadReplicaDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceRdbReadReplicaCreate,
+		ReadContext:                       ResourceRdbReadReplicaRead,
+		UpdateContext:                     ResourceRdbReadReplicaUpdate,
+		DeleteContext:                     ResourceRdbReadReplicaDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),

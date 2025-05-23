@@ -15,7 +15,9 @@ import (
 
 func DataSourceUser() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIamUserRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceIamUserRead,
 		Schema: map[string]*schema.Schema{
 			"user_id": {
 				Type:             schema.TypeString,

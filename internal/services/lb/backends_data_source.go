@@ -14,7 +14,9 @@ import (
 
 func DataSourceBackends() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceLbBackendsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceLbBackendsRead,
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
 				Type:        schema.TypeString,

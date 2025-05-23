@@ -17,10 +17,12 @@ import (
 
 func ResourceIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCPublicGatewayIPReverseDNSCreate,
-		ReadContext:   ResourceVPCPublicGatewayIPReverseDNSRead,
-		UpdateContext: ResourceVPCPublicGatewayIPReverseDNSUpdate,
-		DeleteContext: ResourceVPCPublicGatewayIPReverseDNSDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCPublicGatewayIPReverseDNSCreate,
+		ReadContext:                       ResourceVPCPublicGatewayIPReverseDNSRead,
+		UpdateContext:                     ResourceVPCPublicGatewayIPReverseDNSUpdate,
+		DeleteContext:                     ResourceVPCPublicGatewayIPReverseDNSDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

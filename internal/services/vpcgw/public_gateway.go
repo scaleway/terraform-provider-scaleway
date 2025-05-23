@@ -18,10 +18,12 @@ import (
 
 func ResourcePublicGateway() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCPublicGatewayCreate,
-		ReadContext:   ResourceVPCPublicGatewayRead,
-		UpdateContext: ResourceVPCPublicGatewayUpdate,
-		DeleteContext: ResourceVPCPublicGatewayDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCPublicGatewayCreate,
+		ReadContext:                       ResourceVPCPublicGatewayRead,
+		UpdateContext:                     ResourceVPCPublicGatewayUpdate,
+		DeleteContext:                     ResourceVPCPublicGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

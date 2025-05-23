@@ -14,10 +14,12 @@ import (
 
 func ResourceApplication() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIamApplicationCreate,
-		ReadContext:   resourceIamApplicationRead,
-		UpdateContext: resourceIamApplicationUpdate,
-		DeleteContext: resourceIamApplicationDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceIamApplicationCreate,
+		ReadContext:                       resourceIamApplicationRead,
+		UpdateContext:                     resourceIamApplicationUpdate,
+		DeleteContext:                     resourceIamApplicationDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

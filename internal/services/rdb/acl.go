@@ -23,10 +23,12 @@ import (
 
 func ResourceACL() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceACLCreate,
-		ReadContext:   ResourceRdbACLRead,
-		UpdateContext: ResourceACLUpdate,
-		DeleteContext: ResourceACLDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceACLCreate,
+		ReadContext:                       ResourceRdbACLRead,
+		UpdateContext:                     ResourceACLUpdate,
+		DeleteContext:                     ResourceACLDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

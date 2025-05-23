@@ -15,7 +15,9 @@ import (
 
 func DataSourceCockpitSource() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceCockpitSourceRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       dataSourceCockpitSourceRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,

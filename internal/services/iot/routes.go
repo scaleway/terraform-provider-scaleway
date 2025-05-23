@@ -19,9 +19,11 @@ import (
 
 func ResourceRoute() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIotRouteCreate,
-		ReadContext:   ResourceIotRouteRead,
-		DeleteContext: ResourceIotRouteDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceIotRouteCreate,
+		ReadContext:                       ResourceIotRouteRead,
+		DeleteContext:                     ResourceIotRouteDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

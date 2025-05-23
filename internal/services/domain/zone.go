@@ -16,10 +16,12 @@ import (
 
 func ResourceZone() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceDomainZoneCreate,
-		ReadContext:   resourceDomainZoneRead,
-		UpdateContext: resourceZoneUpdate,
-		DeleteContext: resourceZoneDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceDomainZoneCreate,
+		ReadContext:                       resourceDomainZoneRead,
+		UpdateContext:                     resourceZoneUpdate,
+		DeleteContext:                     resourceZoneDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultDomainZoneTimeout),
 		},

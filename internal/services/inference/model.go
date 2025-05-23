@@ -16,9 +16,11 @@ import (
 
 func ResourceModel() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceModelCreate,
-		ReadContext:   ResourceModelRead,
-		DeleteContext: ResourceModelDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceModelCreate,
+		ReadContext:                       ResourceModelRead,
+		DeleteContext:                     ResourceModelDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

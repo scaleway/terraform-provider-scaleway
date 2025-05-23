@@ -19,10 +19,12 @@ import (
 
 func ResourceBucketWebsiteConfiguration() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceBucketWebsiteConfigurationCreate,
-		ReadContext:   resourceBucketWebsiteConfigurationRead,
-		UpdateContext: resourceBucketWebsiteConfigurationUpdate,
-		DeleteContext: resourceBucketWebsiteConfigurationDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceBucketWebsiteConfigurationCreate,
+		ReadContext:                       resourceBucketWebsiteConfigurationRead,
+		UpdateContext:                     resourceBucketWebsiteConfigurationUpdate,
+		DeleteContext:                     resourceBucketWebsiteConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

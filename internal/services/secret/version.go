@@ -18,10 +18,12 @@ import (
 
 func ResourceVersion() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVersionCreate,
-		ReadContext:   ResourceVersionRead,
-		UpdateContext: ResourceVersionUpdate,
-		DeleteContext: ResourceVersionDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVersionCreate,
+		ReadContext:                       ResourceVersionRead,
+		UpdateContext:                     ResourceVersionUpdate,
+		DeleteContext:                     ResourceVersionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

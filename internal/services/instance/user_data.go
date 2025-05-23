@@ -18,10 +18,12 @@ import (
 
 func ResourceUserData() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstanceUserDataCreate,
-		ReadContext:   ResourceInstanceUserDataRead,
-		UpdateContext: ResourceInstanceUserDataUpdate,
-		DeleteContext: ResourceInstanceUserDataDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstanceUserDataCreate,
+		ReadContext:                       ResourceInstanceUserDataRead,
+		UpdateContext:                     ResourceInstanceUserDataUpdate,
+		DeleteContext:                     ResourceInstanceUserDataDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

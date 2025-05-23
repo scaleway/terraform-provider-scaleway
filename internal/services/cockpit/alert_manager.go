@@ -16,10 +16,12 @@ import (
 
 func ResourceCockpitAlertManager() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitAlertManagerCreate,
-		ReadContext:   ResourceCockpitAlertManagerRead,
-		UpdateContext: ResourceCockpitAlertManagerUpdate,
-		DeleteContext: ResourceCockpitAlertManagerDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceCockpitAlertManagerCreate,
+		ReadContext:                       ResourceCockpitAlertManagerRead,
+		UpdateContext:                     ResourceCockpitAlertManagerUpdate,
+		DeleteContext:                     ResourceCockpitAlertManagerDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

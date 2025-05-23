@@ -16,9 +16,11 @@ import (
 
 func ResourceBlockedList() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceBlockedListCreate,
-		ReadContext:   ResourceBlockedListRead,
-		DeleteContext: ResourceBlockedListDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceBlockedListCreate,
+		ReadContext:                       ResourceBlockedListRead,
+		DeleteContext:                     ResourceBlockedListDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

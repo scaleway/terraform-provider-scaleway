@@ -16,9 +16,11 @@ import (
 
 func ResourceNatsCredentials() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceMNQNatsCredentialsCreate,
-		ReadContext:   ResourceMNQNatsCredentialsRead,
-		DeleteContext: ResourceMNQNatsCredentialsDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceMNQNatsCredentialsCreate,
+		ReadContext:                       ResourceMNQNatsCredentialsRead,
+		DeleteContext:                     ResourceMNQNatsCredentialsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -18,10 +18,12 @@ import (
 
 func ResourceDeployment() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceDeploymentCreate,
-		ReadContext:   ResourceDeploymentRead,
-		UpdateContext: ResourceDeploymentUpdate,
-		DeleteContext: ResourceDeploymentDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceDeploymentCreate,
+		ReadContext:                       ResourceDeploymentRead,
+		UpdateContext:                     ResourceDeploymentUpdate,
+		DeleteContext:                     ResourceDeploymentDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

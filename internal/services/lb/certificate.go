@@ -16,11 +16,13 @@ import (
 
 func ResourceCertificate() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLbCertificateCreate,
-		ReadContext:   resourceLbCertificateRead,
-		UpdateContext: resourceLbCertificateUpdate,
-		DeleteContext: resourceLbCertificateDelete,
-		SchemaVersion: 1,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceLbCertificateCreate,
+		ReadContext:                       resourceLbCertificateRead,
+		UpdateContext:                     resourceLbCertificateUpdate,
+		DeleteContext:                     resourceLbCertificateDelete,
+		SchemaVersion:                     1,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Read:    schema.DefaultTimeout(defaultLbLbTimeout),

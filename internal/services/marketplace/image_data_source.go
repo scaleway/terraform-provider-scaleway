@@ -14,7 +14,9 @@ import (
 
 func DataSourceImage() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceMarketplaceImageRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceMarketplaceImageRead,
 		Schema: map[string]*schema.Schema{
 			"label": {
 				Type:        schema.TypeString,

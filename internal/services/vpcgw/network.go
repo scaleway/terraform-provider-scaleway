@@ -21,10 +21,12 @@ import (
 
 func ResourceNetwork() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCGatewayNetworkCreate,
-		ReadContext:   ResourceVPCGatewayNetworkRead,
-		UpdateContext: ResourceVPCGatewayNetworkUpdate,
-		DeleteContext: ResourceVPCGatewayNetworkDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCGatewayNetworkCreate,
+		ReadContext:                       ResourceVPCGatewayNetworkRead,
+		UpdateContext:                     ResourceVPCGatewayNetworkUpdate,
+		DeleteContext:                     ResourceVPCGatewayNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

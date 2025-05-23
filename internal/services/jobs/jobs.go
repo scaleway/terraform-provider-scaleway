@@ -21,10 +21,12 @@ import (
 
 func ResourceDefinition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceJobDefinitionCreate,
-		ReadContext:   ResourceJobDefinitionRead,
-		UpdateContext: ResourceJobDefinitionUpdate,
-		DeleteContext: ResourceJobDefinitionDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceJobDefinitionCreate,
+		ReadContext:                       ResourceJobDefinitionRead,
+		UpdateContext:                     ResourceJobDefinitionUpdate,
+		DeleteContext:                     ResourceJobDefinitionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

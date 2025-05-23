@@ -21,10 +21,12 @@ import (
 
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceUserCreate,
-		ReadContext:   ResourceUserRead,
-		UpdateContext: ResourceUserUpdate,
-		DeleteContext: ResourceUserDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceUserCreate,
+		ReadContext:                       ResourceUserRead,
+		UpdateContext:                     ResourceUserUpdate,
+		DeleteContext:                     ResourceUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

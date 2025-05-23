@@ -14,7 +14,9 @@ import (
 
 func DataSourceFrontends() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceLbFrontendsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceLbFrontendsRead,
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
 				Type:        schema.TypeString,

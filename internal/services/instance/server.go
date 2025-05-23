@@ -40,10 +40,12 @@ import (
 
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstanceServerCreate,
-		ReadContext:   ResourceInstanceServerRead,
-		UpdateContext: ResourceInstanceServerUpdate,
-		DeleteContext: ResourceInstanceServerDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstanceServerCreate,
+		ReadContext:                       ResourceInstanceServerRead,
+		UpdateContext:                     ResourceInstanceServerUpdate,
+		DeleteContext:                     ResourceInstanceServerDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

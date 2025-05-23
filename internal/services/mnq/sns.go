@@ -13,9 +13,11 @@ import (
 
 func ResourceSNS() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceMNQSNSCreate,
-		ReadContext:   ResourceMNQSNSRead,
-		DeleteContext: ResourceMNQSNSDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceMNQSNSCreate,
+		ReadContext:                       ResourceMNQSNSRead,
+		DeleteContext:                     ResourceMNQSNSDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

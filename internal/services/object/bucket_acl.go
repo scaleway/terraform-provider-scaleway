@@ -27,10 +27,12 @@ const (
 
 func ResourceBucketACL() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceBucketACLCreate,
-		ReadContext:   resourceBucketACLRead,
-		UpdateContext: resourceBucketACLUpdate,
-		DeleteContext: resourceBucketACLDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceBucketACLCreate,
+		ReadContext:                       resourceBucketACLRead,
+		UpdateContext:                     resourceBucketACLUpdate,
+		DeleteContext:                     resourceBucketACLDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

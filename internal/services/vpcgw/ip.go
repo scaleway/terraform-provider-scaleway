@@ -16,10 +16,12 @@ import (
 
 func ResourceIP() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIPCreate,
-		ReadContext:   ResourceIPRead,
-		UpdateContext: ResourceVPCPublicGatewayIPUpdate,
-		DeleteContext: ResourceVPCPublicGatewayIPDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceIPCreate,
+		ReadContext:                       ResourceIPRead,
+		UpdateContext:                     ResourceVPCPublicGatewayIPUpdate,
+		DeleteContext:                     ResourceVPCPublicGatewayIPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

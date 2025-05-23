@@ -18,10 +18,12 @@ import (
 
 func ResourceDHCP() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCPublicGatewayDHCPCreate,
-		ReadContext:   ResourceVPCPublicGatewayDHCPRead,
-		UpdateContext: ResourceVPCPublicGatewayDHCPUpdate,
-		DeleteContext: ResourceVPCPublicGatewayDHCPDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCPublicGatewayDHCPCreate,
+		ReadContext:                       ResourceVPCPublicGatewayDHCPRead,
+		UpdateContext:                     ResourceVPCPublicGatewayDHCPUpdate,
+		DeleteContext:                     ResourceVPCPublicGatewayDHCPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

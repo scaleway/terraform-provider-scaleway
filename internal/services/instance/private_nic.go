@@ -22,10 +22,12 @@ import (
 
 func ResourcePrivateNIC() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstancePrivateNICCreate,
-		ReadContext:   ResourceInstancePrivateNICRead,
-		UpdateContext: ResourceInstancePrivateNICUpdate,
-		DeleteContext: ResourceInstancePrivateNICDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstancePrivateNICCreate,
+		ReadContext:                       ResourceInstancePrivateNICRead,
+		UpdateContext:                     ResourceInstancePrivateNICUpdate,
+		DeleteContext:                     ResourceInstancePrivateNICDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

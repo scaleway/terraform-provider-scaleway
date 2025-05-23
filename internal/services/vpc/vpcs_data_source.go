@@ -14,7 +14,9 @@ import (
 
 func DataSourceVPCs() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceVPCsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceVPCsRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,

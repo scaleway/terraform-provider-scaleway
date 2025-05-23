@@ -15,7 +15,9 @@ import (
 
 func DataSourceOfferSubscription() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceOfferSubscriptionRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceOfferSubscriptionRead,
 		Schema: map[string]*schema.Schema{
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),

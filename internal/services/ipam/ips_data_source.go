@@ -16,7 +16,9 @@ import (
 
 func DataSourceIPs() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIPAMIPsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceIPAMIPsRead,
 		Schema: map[string]*schema.Schema{
 			"private_network_id": {
 				Type:        schema.TypeString,

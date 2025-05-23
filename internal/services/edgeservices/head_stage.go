@@ -12,10 +12,12 @@ import (
 
 func ResourceHeadStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceHeadStageCreate,
-		ReadContext:   ResourceHeadStageRead,
-		UpdateContext: ResourceHeadStageUpdate,
-		DeleteContext: ResourceHeadStageDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceHeadStageCreate,
+		ReadContext:                       ResourceHeadStageRead,
+		UpdateContext:                     ResourceHeadStageUpdate,
+		DeleteContext:                     ResourceHeadStageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

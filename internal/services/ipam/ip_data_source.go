@@ -20,7 +20,9 @@ import (
 
 func DataSourceIP() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIPAMIPRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceIPAMIPRead,
 		Schema: map[string]*schema.Schema{
 			// Input
 			"ipam_ip_id": {

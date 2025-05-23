@@ -15,10 +15,12 @@ import (
 
 func ResourceRoute() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLbRouteCreate,
-		ReadContext:   resourceLbRouteRead,
-		UpdateContext: resourceLbRouteUpdate,
-		DeleteContext: resourceLbRouteDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceLbRouteCreate,
+		ReadContext:                       resourceLbRouteRead,
+		UpdateContext:                     resourceLbRouteUpdate,
+		DeleteContext:                     resourceLbRouteDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -15,10 +15,12 @@ import (
 
 func ResourceACL() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCACLCreate,
-		ReadContext:   ResourceVPCACLRead,
-		UpdateContext: ResourceVPCACLUpdate,
-		DeleteContext: ResourceVPCACLDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCACLCreate,
+		ReadContext:                       ResourceVPCACLRead,
+		UpdateContext:                     ResourceVPCACLUpdate,
+		DeleteContext:                     ResourceVPCACLDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

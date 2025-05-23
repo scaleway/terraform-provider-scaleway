@@ -22,10 +22,12 @@ import (
 
 func ResourceSnapshot() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstanceSnapshotCreate,
-		ReadContext:   ResourceInstanceSnapshotRead,
-		UpdateContext: ResourceInstanceSnapshotUpdate,
-		DeleteContext: ResourceInstanceSnapshotDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstanceSnapshotCreate,
+		ReadContext:                       ResourceInstanceSnapshotRead,
+		UpdateContext:                     ResourceInstanceSnapshotUpdate,
+		DeleteContext:                     ResourceInstanceSnapshotDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

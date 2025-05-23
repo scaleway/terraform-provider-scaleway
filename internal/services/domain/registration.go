@@ -17,10 +17,12 @@ import (
 
 func ResourceRegistration() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceRegistrationCreate,
-		ReadContext:   resourceRegistrationsRead,
-		UpdateContext: resourceRegistrationUpdate,
-		DeleteContext: resourceRegistrationDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceRegistrationCreate,
+		ReadContext:                       resourceRegistrationsRead,
+		UpdateContext:                     resourceRegistrationUpdate,
+		DeleteContext:                     resourceRegistrationDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultDomainRegistrationTimeout),
 			Read:    schema.DefaultTimeout(defaultDomainRegistrationTimeout),

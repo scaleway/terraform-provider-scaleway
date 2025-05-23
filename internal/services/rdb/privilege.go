@@ -19,10 +19,12 @@ import (
 
 func ResourcePrivilege() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceRdbPrivilegeCreate,
-		ReadContext:   ResourceRdbPrivilegeRead,
-		DeleteContext: ResourceRdbPrivilegeDelete,
-		UpdateContext: ResourceRdbPrivilegeUpdate,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceRdbPrivilegeCreate,
+		ReadContext:                       ResourceRdbPrivilegeRead,
+		DeleteContext:                     ResourceRdbPrivilegeDelete,
+		UpdateContext:                     ResourceRdbPrivilegeUpdate,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

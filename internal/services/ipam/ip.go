@@ -22,10 +22,12 @@ import (
 
 func ResourceIP() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIPAMIPCreate,
-		ReadContext:   ResourceIPAMIPRead,
-		UpdateContext: ResourceIPAMIPUpdate,
-		DeleteContext: ResourceIPAMIPDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceIPAMIPCreate,
+		ReadContext:                       ResourceIPAMIPRead,
+		UpdateContext:                     ResourceIPAMIPUpdate,
+		DeleteContext:                     ResourceIPAMIPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

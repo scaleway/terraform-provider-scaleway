@@ -18,9 +18,11 @@ import (
 
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceContainerTokenCreate,
-		ReadContext:   ResourceContainerTokenRead,
-		DeleteContext: ResourceContainerTokenDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceContainerTokenCreate,
+		ReadContext:                       ResourceContainerTokenRead,
+		DeleteContext:                     ResourceContainerTokenDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -15,9 +15,11 @@ import (
 
 func ResourceGroupMembership() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIamGroupMembershipCreate,
-		ReadContext:   resourceIamGroupMembershipRead,
-		DeleteContext: resourceIamGroupMembershipDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceIamGroupMembershipCreate,
+		ReadContext:                       resourceIamGroupMembershipRead,
+		DeleteContext:                     resourceIamGroupMembershipDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

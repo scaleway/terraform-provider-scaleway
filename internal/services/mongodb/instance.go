@@ -22,10 +22,12 @@ import (
 
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstanceCreate,
-		ReadContext:   ResourceInstanceRead,
-		UpdateContext: ResourceInstanceUpdate,
-		DeleteContext: ResourceInstanceDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstanceCreate,
+		ReadContext:                       ResourceInstanceRead,
+		UpdateContext:                     ResourceInstanceUpdate,
+		DeleteContext:                     ResourceInstanceDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultMongodbInstanceTimeout),
 			Update:  schema.DefaultTimeout(defaultMongodbInstanceTimeout),

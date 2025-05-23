@@ -19,10 +19,12 @@ import (
 
 func ResourceHub() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIotHubCreate,
-		ReadContext:   ResourceIotHubRead,
-		UpdateContext: ResourceIotHubUpdate,
-		DeleteContext: ResourceIotHubDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceIotHubCreate,
+		ReadContext:                       ResourceIotHubRead,
+		UpdateContext:                     ResourceIotHubUpdate,
+		DeleteContext:                     ResourceIotHubDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

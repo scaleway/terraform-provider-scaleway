@@ -21,7 +21,9 @@ const (
 
 func DataEasyPartitioning() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataEasyPartitioningRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       dataEasyPartitioningRead,
 		Schema: map[string]*schema.Schema{
 			"offer_id": {
 				Type:        schema.TypeString,

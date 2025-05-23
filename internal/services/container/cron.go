@@ -18,10 +18,12 @@ import (
 
 func ResourceCron() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceContainerCronCreate,
-		ReadContext:   ResourceContainerCronRead,
-		UpdateContext: ResourceContainerCronUpdate,
-		DeleteContext: ResourceContainerCronDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceContainerCronCreate,
+		ReadContext:                       ResourceContainerCronRead,
+		UpdateContext:                     ResourceContainerCronUpdate,
+		DeleteContext:                     ResourceContainerCronDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

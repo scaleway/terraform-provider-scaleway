@@ -16,10 +16,12 @@ import (
 
 func ResourceWebhosting() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceWebhostingCreate,
-		ReadContext:   resourceWebhostingRead,
-		UpdateContext: resourceWebhostingUpdate,
-		DeleteContext: resourceHostingDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceWebhostingCreate,
+		ReadContext:                       resourceWebhostingRead,
+		UpdateContext:                     resourceWebhostingUpdate,
+		DeleteContext:                     resourceHostingDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

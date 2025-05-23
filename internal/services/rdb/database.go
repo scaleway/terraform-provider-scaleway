@@ -20,9 +20,11 @@ import (
 
 func ResourceDatabase() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceRdbDatabaseCreate,
-		ReadContext:   ResourceRdbDatabaseRead,
-		DeleteContext: ResourceRdbDatabaseDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceRdbDatabaseCreate,
+		ReadContext:                       ResourceRdbDatabaseRead,
+		DeleteContext:                     ResourceRdbDatabaseDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -19,10 +19,12 @@ import (
 
 func ResourceDHCPReservation() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCPublicGatewayDHCPCReservationCreate,
-		ReadContext:   ResourceVPCPublicGatewayDHCPReservationRead,
-		UpdateContext: ResourceVPCPublicGatewayDHCPReservationUpdate,
-		DeleteContext: ResourceVPCPublicGatewayDHCPReservationDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCPublicGatewayDHCPCReservationCreate,
+		ReadContext:                       ResourceVPCPublicGatewayDHCPReservationRead,
+		UpdateContext:                     ResourceVPCPublicGatewayDHCPReservationUpdate,
+		DeleteContext:                     ResourceVPCPublicGatewayDHCPReservationDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

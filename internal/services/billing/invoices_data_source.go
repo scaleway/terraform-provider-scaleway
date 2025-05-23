@@ -16,7 +16,9 @@ import (
 
 func DataSourceInvoices() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceBillingInvoicesRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceBillingInvoicesRead,
 		Schema: map[string]*schema.Schema{
 			"started_after": {
 				Type:        schema.TypeString,

@@ -21,10 +21,12 @@ import (
 
 func ResourceImage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstanceImageCreate,
-		ReadContext:   ResourceInstanceImageRead,
-		UpdateContext: ResourceInstanceImageUpdate,
-		DeleteContext: ResourceInstanceImageDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstanceImageCreate,
+		ReadContext:                       ResourceInstanceImageRead,
+		UpdateContext:                     ResourceInstanceImageUpdate,
+		DeleteContext:                     ResourceInstanceImageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

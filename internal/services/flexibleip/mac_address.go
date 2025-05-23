@@ -17,10 +17,12 @@ import (
 
 func ResourceMACAddress() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceFlexibleIPMACCreate,
-		ReadContext:   ResourceFlexibleIPMACRead,
-		UpdateContext: ResourceFlexibleIPMACUpdate,
-		DeleteContext: ResourceFlexibleIPMACDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceFlexibleIPMACCreate,
+		ReadContext:                       ResourceFlexibleIPMACRead,
+		UpdateContext:                     ResourceFlexibleIPMACUpdate,
+		DeleteContext:                     ResourceFlexibleIPMACDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

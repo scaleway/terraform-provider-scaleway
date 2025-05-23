@@ -21,10 +21,12 @@ import (
 
 func ResourceBucketPolicy() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceObjectBucketPolicyCreate,
-		ReadContext:   resourceObjectBucketPolicyRead,
-		UpdateContext: resourceObjectBucketPolicyCreate,
-		DeleteContext: resourceObjectBucketPolicyDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceObjectBucketPolicyCreate,
+		ReadContext:                       resourceObjectBucketPolicyRead,
+		UpdateContext:                     resourceObjectBucketPolicyCreate,
+		DeleteContext:                     resourceObjectBucketPolicyDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultObjectBucketTimeout),
 		},

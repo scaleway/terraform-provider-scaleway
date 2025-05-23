@@ -14,10 +14,12 @@ import (
 
 func ResourcePipeline() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourcePipelineCreate,
-		ReadContext:   ResourcePipelineRead,
-		UpdateContext: ResourcePipelineUpdate,
-		DeleteContext: ResourcePipelineDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourcePipelineCreate,
+		ReadContext:                       ResourcePipelineRead,
+		UpdateContext:                     ResourcePipelineUpdate,
+		DeleteContext:                     ResourcePipelineDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

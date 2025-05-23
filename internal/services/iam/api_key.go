@@ -16,10 +16,12 @@ import (
 
 func ResourceAPIKey() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIamAPIKeyCreate,
-		ReadContext:   resourceIamAPIKeyRead,
-		UpdateContext: resourceIamAPIKeyUpdate,
-		DeleteContext: resourceIamAPIKeyDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceIamAPIKeyCreate,
+		ReadContext:                       resourceIamAPIKeyRead,
+		UpdateContext:                     resourceIamAPIKeyUpdate,
+		DeleteContext:                     resourceIamAPIKeyDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

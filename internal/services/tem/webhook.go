@@ -16,10 +16,12 @@ import (
 
 func ResourceWebhook() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceWebhookCreate,
-		ReadContext:   ResourceWebhookRead,
-		UpdateContext: ResourceWebhookUpdate,
-		DeleteContext: ResourceWebhookDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceWebhookCreate,
+		ReadContext:                       ResourceWebhookRead,
+		UpdateContext:                     ResourceWebhookUpdate,
+		DeleteContext:                     ResourceWebhookDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

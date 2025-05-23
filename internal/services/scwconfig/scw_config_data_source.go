@@ -10,7 +10,9 @@ import (
 
 func DataSourceConfig() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceConfigRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       dataSourceConfigRead,
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,

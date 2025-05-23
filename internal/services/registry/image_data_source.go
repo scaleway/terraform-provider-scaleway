@@ -17,7 +17,9 @@ import (
 
 func DataSourceImage() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceRegistryImageRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceRegistryImageRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {

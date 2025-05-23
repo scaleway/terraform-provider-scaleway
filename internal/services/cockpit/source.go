@@ -17,10 +17,12 @@ import (
 
 func ResourceCockpitSource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitSourceCreate,
-		ReadContext:   ResourceCockpitSourceRead,
-		UpdateContext: ResourceCockpitSourceUpdate,
-		DeleteContext: ResourceCockpitSourceDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceCockpitSourceCreate,
+		ReadContext:                       ResourceCockpitSourceRead,
+		UpdateContext:                     ResourceCockpitSourceUpdate,
+		DeleteContext:                     ResourceCockpitSourceDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
 			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),

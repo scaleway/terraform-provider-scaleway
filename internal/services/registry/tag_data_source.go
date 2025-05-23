@@ -17,7 +17,9 @@ import (
 
 func DataSourceImageTag() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceImageTagRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceImageTagRead,
 
 		Schema: map[string]*schema.Schema{
 			"tag_id": {

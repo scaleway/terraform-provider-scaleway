@@ -12,6 +12,8 @@ import (
 
 func Resource{{ .Resource }}() *schema.Resource {
 	return &schema.Resource{
+EnableLegacyTypeSystemApplyErrors: true,
+    EnableLegacyTypeSystemPlanErrors:  true,
 		CreateContext: Resource{{ .Resource }}Create,
 		ReadContext:   Resource{{ .Resource }}Read,
 		UpdateContext: Resource{{ .Resource }}Update,

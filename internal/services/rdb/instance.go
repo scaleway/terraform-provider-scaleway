@@ -27,10 +27,12 @@ import (
 
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceRdbInstanceCreate,
-		ReadContext:   ResourceRdbInstanceRead,
-		UpdateContext: ResourceRdbInstanceUpdate,
-		DeleteContext: ResourceRdbInstanceDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceRdbInstanceCreate,
+		ReadContext:                       ResourceRdbInstanceRead,
+		UpdateContext:                     ResourceRdbInstanceUpdate,
+		DeleteContext:                     ResourceRdbInstanceDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),

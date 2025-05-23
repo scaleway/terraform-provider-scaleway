@@ -10,10 +10,12 @@ import (
 
 func ResourceSecurityGroupRules() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstanceSecurityGroupRulesCreate,
-		ReadContext:   ResourceInstanceSecurityGroupRulesRead,
-		UpdateContext: ResourceInstanceSecurityGroupRulesUpdate,
-		DeleteContext: ResourceInstanceSecurityGroupRulesDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstanceSecurityGroupRulesCreate,
+		ReadContext:                       ResourceInstanceSecurityGroupRulesRead,
+		UpdateContext:                     ResourceInstanceSecurityGroupRulesUpdate,
+		DeleteContext:                     ResourceInstanceSecurityGroupRulesDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

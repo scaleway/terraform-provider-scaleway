@@ -16,10 +16,12 @@ import (
 
 func ResourcePlacementGroup() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstancePlacementGroupCreate,
-		ReadContext:   ResourceInstancePlacementGroupRead,
-		UpdateContext: ResourceInstancePlacementGroupUpdate,
-		DeleteContext: ResourceInstancePlacementGroupDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstancePlacementGroupCreate,
+		ReadContext:                       ResourceInstancePlacementGroupRead,
+		UpdateContext:                     ResourceInstancePlacementGroupUpdate,
+		DeleteContext:                     ResourceInstancePlacementGroupDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

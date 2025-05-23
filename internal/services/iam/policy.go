@@ -16,10 +16,12 @@ import (
 
 func ResourcePolicy() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIamPolicyCreate,
-		ReadContext:   resourceIamPolicyRead,
-		UpdateContext: resourceIamPolicyUpdate,
-		DeleteContext: resourceIamPolicyDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceIamPolicyCreate,
+		ReadContext:                       resourceIamPolicyRead,
+		UpdateContext:                     resourceIamPolicyUpdate,
+		DeleteContext:                     resourceIamPolicyDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

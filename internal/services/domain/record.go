@@ -34,10 +34,12 @@ var changeKeys = []string{
 
 func ResourceRecord() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceRecordCreate,
-		ReadContext:   resourceDomainRecordRead,
-		UpdateContext: resourceDomainRecordUpdate,
-		DeleteContext: resourceDomainRecordDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceRecordCreate,
+		ReadContext:                       resourceDomainRecordRead,
+		UpdateContext:                     resourceDomainRecordUpdate,
+		DeleteContext:                     resourceDomainRecordDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultDomainRecordTimeout),
 			Read:    schema.DefaultTimeout(defaultDomainRecordTimeout),

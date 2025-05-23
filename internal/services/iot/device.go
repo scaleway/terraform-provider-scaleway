@@ -24,10 +24,12 @@ const (
 
 func ResourceDevice() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIotDeviceCreate,
-		ReadContext:   ResourceIotDeviceRead,
-		UpdateContext: ResourceIotDeviceUpdate,
-		DeleteContext: ResourceIotDeviceDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceIotDeviceCreate,
+		ReadContext:                       ResourceIotDeviceRead,
+		UpdateContext:                     ResourceIotDeviceUpdate,
+		DeleteContext:                     ResourceIotDeviceDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

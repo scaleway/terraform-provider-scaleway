@@ -11,6 +11,8 @@ import (
 
 func resourceMNQSQSQueueResourceV0() *schema.Resource {
 	return &schema.Resource{
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:          schema.TypeString,

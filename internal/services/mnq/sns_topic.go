@@ -16,10 +16,12 @@ import (
 
 func ResourceSNSTopic() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceMNQSNSTopicCreate,
-		ReadContext:   ResourceMNQSNSTopicRead,
-		UpdateContext: ResourceMNQSNSTopicUpdate,
-		DeleteContext: ResourceMNQSNSTopicDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceMNQSNSTopicCreate,
+		ReadContext:                       ResourceMNQSNSTopicRead,
+		UpdateContext:                     ResourceMNQSNSTopicUpdate,
+		DeleteContext:                     ResourceMNQSNSTopicDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

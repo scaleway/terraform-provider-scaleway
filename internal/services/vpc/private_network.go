@@ -20,10 +20,12 @@ import (
 
 func ResourcePrivateNetwork() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCPrivateNetworkCreate,
-		ReadContext:   ResourceVPCPrivateNetworkRead,
-		UpdateContext: ResourceVPCPrivateNetworkUpdate,
-		DeleteContext: ResourceVPCPrivateNetworkDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCPrivateNetworkCreate,
+		ReadContext:                       ResourceVPCPrivateNetworkRead,
+		UpdateContext:                     ResourceVPCPrivateNetworkUpdate,
+		DeleteContext:                     ResourceVPCPrivateNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

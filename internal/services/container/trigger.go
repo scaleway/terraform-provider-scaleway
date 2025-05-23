@@ -19,10 +19,12 @@ import (
 
 func ResourceTrigger() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceContainerTriggerCreate,
-		ReadContext:   ResourceContainerTriggerRead,
-		UpdateContext: ResourceContainerTriggerUpdate,
-		DeleteContext: ResourceContainerTriggerDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceContainerTriggerCreate,
+		ReadContext:                       ResourceContainerTriggerRead,
+		UpdateContext:                     ResourceContainerTriggerUpdate,
+		DeleteContext:                     ResourceContainerTriggerDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

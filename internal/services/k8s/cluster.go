@@ -25,10 +25,12 @@ import (
 
 func ResourceCluster() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceK8SClusterCreate,
-		ReadContext:   ResourceK8SClusterRead,
-		UpdateContext: ResourceK8SClusterUpdate,
-		DeleteContext: ResourceK8SClusterDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceK8SClusterCreate,
+		ReadContext:                       ResourceK8SClusterRead,
+		UpdateContext:                     ResourceK8SClusterUpdate,
+		DeleteContext:                     ResourceK8SClusterDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -899,6 +901,8 @@ func ResourceK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m int
 
 func autoscalerConfigSchema() *schema.Resource {
 	return &schema.Resource{
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 		Schema: map[string]*schema.Schema{
 			"disable_scale_down": {
 				Type:        schema.TypeBool,
@@ -968,6 +972,8 @@ func autoscalerConfigSchema() *schema.Resource {
 
 func openIDConnectConfigSchema() *schema.Resource {
 	return &schema.Resource{
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 		Schema: map[string]*schema.Schema{
 			"issuer_url": {
 				Type:        schema.TypeString,

@@ -28,10 +28,12 @@ import (
 
 func ResourceCluster() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceClusterCreate,
-		ReadContext:   ResourceClusterRead,
-		UpdateContext: ResourceClusterUpdate,
-		DeleteContext: ResourceClusterDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceClusterCreate,
+		ReadContext:                       ResourceClusterRead,
+		UpdateContext:                     ResourceClusterUpdate,
+		DeleteContext:                     ResourceClusterDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultRedisClusterTimeout),
 			Update:  schema.DefaultTimeout(defaultRedisClusterTimeout),

@@ -15,7 +15,9 @@ import (
 
 func DataSourceConsumptions() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceBillingConsumptionsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceBillingConsumptionsRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),

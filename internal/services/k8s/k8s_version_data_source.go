@@ -14,7 +14,9 @@ import (
 
 func DataSourceVersion() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceK8SVersionRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceK8SVersionRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,

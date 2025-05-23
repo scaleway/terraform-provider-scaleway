@@ -14,10 +14,12 @@ import (
 
 func ResourceWAFStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceWAFStageCreate,
-		ReadContext:   ResourceWAFStageRead,
-		UpdateContext: ResourceWAFStageUpdate,
-		DeleteContext: ResourceWAFStageDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceWAFStageCreate,
+		ReadContext:                       ResourceWAFStageRead,
+		UpdateContext:                     ResourceWAFStageUpdate,
+		DeleteContext:                     ResourceWAFStageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

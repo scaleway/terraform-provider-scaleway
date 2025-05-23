@@ -17,10 +17,12 @@ import (
 
 func ResourceSSKKey() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIamSSKKeyCreate,
-		ReadContext:   resourceIamSSHKeyRead,
-		UpdateContext: resourceIamSSKKeyUpdate,
-		DeleteContext: resourceIamSSKKeyDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceIamSSKKeyCreate,
+		ReadContext:                       resourceIamSSHKeyRead,
+		UpdateContext:                     resourceIamSSKKeyUpdate,
+		DeleteContext:                     resourceIamSSKKeyDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

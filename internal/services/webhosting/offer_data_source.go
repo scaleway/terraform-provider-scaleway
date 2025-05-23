@@ -16,7 +16,9 @@ import (
 
 func DataSourceOffer() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceOfferRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       dataSourceOfferRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:          schema.TypeString,

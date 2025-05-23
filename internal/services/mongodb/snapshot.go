@@ -17,10 +17,12 @@ import (
 
 func ResourceSnapshot() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceSnapshotCreate,
-		ReadContext:   ResourceSnapshotRead,
-		UpdateContext: ResourceSnapshotUpdate,
-		DeleteContext: ResourceSnapshotDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceSnapshotCreate,
+		ReadContext:                       ResourceSnapshotRead,
+		UpdateContext:                     ResourceSnapshotUpdate,
+		DeleteContext:                     ResourceSnapshotDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultMongodbSnapshotTimeout),
 			Update:  schema.DefaultTimeout(defaultMongodbSnapshotTimeout),

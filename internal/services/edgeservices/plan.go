@@ -15,10 +15,12 @@ import (
 
 func ResourcePlan() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourcePlanCreate,
-		ReadContext:   ResourcePlanRead,
-		UpdateContext: ResourcePlanUpdate,
-		DeleteContext: ResourcePlanDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourcePlanCreate,
+		ReadContext:                       ResourcePlanRead,
+		UpdateContext:                     ResourcePlanUpdate,
+		DeleteContext:                     ResourcePlanDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

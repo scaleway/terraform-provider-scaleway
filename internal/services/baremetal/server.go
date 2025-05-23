@@ -29,10 +29,12 @@ import (
 
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceServerCreate,
-		ReadContext:   ResourceServerRead,
-		UpdateContext: ResourceServerUpdate,
-		DeleteContext: ResourceServerDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceServerCreate,
+		ReadContext:                       ResourceServerRead,
+		UpdateContext:                     ResourceServerUpdate,
+		DeleteContext:                     ResourceServerDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -301,6 +303,8 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 
 func ResourceServerIP() *schema.Resource {
 	return &schema.Resource{
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,

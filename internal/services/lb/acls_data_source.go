@@ -14,7 +14,9 @@ import (
 
 func DataSourceACLs() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceLbACLsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceLbACLsRead,
 		Schema: map[string]*schema.Schema{
 			"frontend_id": {
 				Type:        schema.TypeString,

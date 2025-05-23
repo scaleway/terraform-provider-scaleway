@@ -16,7 +16,9 @@ import (
 
 func DataSourceServers() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceInstanceServersRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceInstanceServersRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,

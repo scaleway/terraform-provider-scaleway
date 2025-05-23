@@ -15,10 +15,12 @@ import (
 
 func ResourceSQSCredentials() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceMNQSQSCredentialsCreate,
-		ReadContext:   ResourceMNQSQSCredentialsRead,
-		UpdateContext: ResourceMNQSQSCredentialsUpdate,
-		DeleteContext: ResourceMNQSQSCredentialsDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceMNQSQSCredentialsCreate,
+		ReadContext:                       ResourceMNQSQSCredentialsRead,
+		UpdateContext:                     ResourceMNQSQSCredentialsUpdate,
+		DeleteContext:                     ResourceMNQSQSCredentialsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

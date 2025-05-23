@@ -16,10 +16,12 @@ import (
 
 func ResourceVPC() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCCreate,
-		ReadContext:   ResourceVPCRead,
-		UpdateContext: ResourceVPCUpdate,
-		DeleteContext: ResourceVPCDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCCreate,
+		ReadContext:                       ResourceVPCRead,
+		UpdateContext:                     ResourceVPCUpdate,
+		DeleteContext:                     ResourceVPCDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

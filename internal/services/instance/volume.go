@@ -22,10 +22,12 @@ import (
 
 func ResourceVolume() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstanceVolumeCreate,
-		ReadContext:   ResourceInstanceVolumeRead,
-		UpdateContext: ResourceInstanceVolumeUpdate,
-		DeleteContext: ResourceInstanceVolumeDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstanceVolumeCreate,
+		ReadContext:                       ResourceInstanceVolumeRead,
+		UpdateContext:                     ResourceInstanceVolumeUpdate,
+		DeleteContext:                     ResourceInstanceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

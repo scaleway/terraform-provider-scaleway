@@ -20,10 +20,12 @@ import (
 
 func ResourcePATRule() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCPublicGatewayPATRuleCreate,
-		ReadContext:   ResourceVPCPublicGatewayPATRuleRead,
-		UpdateContext: ResourceVPCPublicGatewayPATRuleUpdate,
-		DeleteContext: ResourceVPCPublicGatewayPATRuleDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceVPCPublicGatewayPATRuleCreate,
+		ReadContext:                       ResourceVPCPublicGatewayPATRuleRead,
+		UpdateContext:                     ResourceVPCPublicGatewayPATRuleUpdate,
+		DeleteContext:                     ResourceVPCPublicGatewayPATRuleDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

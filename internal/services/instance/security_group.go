@@ -20,10 +20,12 @@ import (
 
 func ResourceSecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceInstanceSecurityGroupCreate,
-		ReadContext:   ResourceInstanceSecurityGroupRead,
-		UpdateContext: ResourceInstanceSecurityGroupUpdate,
-		DeleteContext: ResourceInstanceSecurityGroupDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceInstanceSecurityGroupCreate,
+		ReadContext:                       ResourceInstanceSecurityGroupRead,
+		UpdateContext:                     ResourceInstanceSecurityGroupUpdate,
+		DeleteContext:                     ResourceInstanceSecurityGroupDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -381,6 +383,8 @@ func ResourceInstanceSecurityGroupDelete(ctx context.Context, d *schema.Resource
 // securityGroupRuleSchema returns schema for inbound/outbound rule in security group
 func securityGroupRuleSchema() *schema.Resource {
 	return &schema.Resource{
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 		Schema: map[string]*schema.Schema{
 			"action": {
 				Type:             schema.TypeString,

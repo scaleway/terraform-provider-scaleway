@@ -19,10 +19,12 @@ import (
 
 func ResourceNamespace() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceContainerNamespaceCreate,
-		ReadContext:   ResourceContainerNamespaceRead,
-		UpdateContext: ResourceContainerNamespaceUpdate,
-		DeleteContext: ResourceContainerNamespaceDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceContainerNamespaceCreate,
+		ReadContext:                       ResourceContainerNamespaceRead,
+		UpdateContext:                     ResourceContainerNamespaceUpdate,
+		DeleteContext:                     ResourceContainerNamespaceDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

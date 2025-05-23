@@ -17,9 +17,11 @@ import (
 
 func ResourceDomainValidation() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceDomainValidationCreate,
-		ReadContext:   ResourceDomainValidationRead,
-		DeleteContext: ResourceDomainValidationDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceDomainValidationCreate,
+		ReadContext:                       ResourceDomainValidationRead,
+		DeleteContext:                     ResourceDomainValidationDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -14,7 +14,9 @@ import (
 
 func DataSourceAvailabilityZones() *schema.Resource {
 	return &schema.Resource{
-		ReadWithoutTimeout: dataSourceAvailabilityZonesRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadWithoutTimeout:                dataSourceAvailabilityZonesRead,
 
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(20 * time.Minute),

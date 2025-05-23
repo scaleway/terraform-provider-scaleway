@@ -15,10 +15,12 @@ import (
 
 func ResourceTLSStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceTLSStageCreate,
-		ReadContext:   ResourceTLSStageRead,
-		UpdateContext: ResourceTLSStageUpdate,
-		DeleteContext: ResourceTLSStageDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceTLSStageCreate,
+		ReadContext:                       ResourceTLSStageRead,
+		UpdateContext:                     ResourceTLSStageUpdate,
+		DeleteContext:                     ResourceTLSStageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

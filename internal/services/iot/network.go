@@ -19,9 +19,11 @@ import (
 
 func ResourceNetwork() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIotNetworkCreate,
-		ReadContext:   ResourceIotNetworkRead,
-		DeleteContext: ResourceIotNetworkDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceIotNetworkCreate,
+		ReadContext:                       ResourceIotNetworkRead,
+		DeleteContext:                     ResourceIotNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -18,10 +18,12 @@ import (
 
 func ResourceIP() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLbIPCreate,
-		ReadContext:   resourceLbIPRead,
-		UpdateContext: resourceLbIPUpdate,
-		DeleteContext: resourceLbIPDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceLbIPCreate,
+		ReadContext:                       resourceLbIPRead,
+		UpdateContext:                     resourceLbIPUpdate,
+		DeleteContext:                     resourceLbIPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

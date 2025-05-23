@@ -22,10 +22,12 @@ const (
 
 func ResourceContainer() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceContainerCreate,
-		ReadContext:   ResourceContainerRead,
-		UpdateContext: ResourceContainerUpdate,
-		DeleteContext: ResourceContainerDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceContainerCreate,
+		ReadContext:                       ResourceContainerRead,
+		UpdateContext:                     ResourceContainerUpdate,
+		DeleteContext:                     ResourceContainerDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

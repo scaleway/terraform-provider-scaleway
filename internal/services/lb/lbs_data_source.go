@@ -14,7 +14,9 @@ import (
 
 func DataSourceLbs() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceLbsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceLbsRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,

@@ -14,10 +14,12 @@ import (
 
 func ResourceCacheStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCacheStageCreate,
-		ReadContext:   ResourceCacheStageRead,
-		UpdateContext: ResourceCacheStageUpdate,
-		DeleteContext: ResourceCacheStageDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceCacheStageCreate,
+		ReadContext:                       ResourceCacheStageRead,
+		UpdateContext:                     ResourceCacheStageUpdate,
+		DeleteContext:                     ResourceCacheStageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

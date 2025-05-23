@@ -18,10 +18,12 @@ import (
 
 func ResourceDatabaseBackup() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceRdbDatabaseBackupCreate,
-		ReadContext:   ResourceRdbDatabaseBackupRead,
-		UpdateContext: ResourceRdbDatabaseBackupUpdate,
-		DeleteContext: ResourceRdbDatabaseBackupDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceRdbDatabaseBackupCreate,
+		ReadContext:                       ResourceRdbDatabaseBackupRead,
+		UpdateContext:                     ResourceRdbDatabaseBackupUpdate,
+		DeleteContext:                     ResourceRdbDatabaseBackupDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

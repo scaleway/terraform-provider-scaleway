@@ -19,10 +19,12 @@ import (
 
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceAppleSiliconServerCreate,
-		ReadContext:   ResourceAppleSiliconServerRead,
-		UpdateContext: ResourceAppleSiliconServerUpdate,
-		DeleteContext: ResourceAppleSiliconServerDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceAppleSiliconServerCreate,
+		ReadContext:                       ResourceAppleSiliconServerRead,
+		UpdateContext:                     ResourceAppleSiliconServerUpdate,
+		DeleteContext:                     ResourceAppleSiliconServerDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
 			Default: schema.DefaultTimeout(defaultAppleSiliconServerTimeout),

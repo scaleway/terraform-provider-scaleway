@@ -19,10 +19,12 @@ import (
 
 func ResourceSQSQueue() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceMNQSQSQueueCreate,
-		ReadContext:   ResourceMNQSQSQueueRead,
-		UpdateContext: ResourceMNQSQSQueueUpdate,
-		DeleteContext: ResourceMNQSQSQueueDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceMNQSQSQueueCreate,
+		ReadContext:                       ResourceMNQSQSQueueRead,
+		UpdateContext:                     ResourceMNQSQSQueueUpdate,
+		DeleteContext:                     ResourceMNQSQSQueueDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

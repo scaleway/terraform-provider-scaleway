@@ -15,7 +15,9 @@ import (
 
 func DataSourceRoutes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceRoutesRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceRoutesRead,
 		Schema: map[string]*schema.Schema{
 			"vpc_id": {
 				Type:        schema.TypeString,

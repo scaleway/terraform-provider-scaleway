@@ -32,10 +32,12 @@ const (
 
 func ResourceLb() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLbCreate,
-		ReadContext:   resourceLbRead,
-		UpdateContext: resourceLbUpdate,
-		DeleteContext: resourceLbDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceLbCreate,
+		ReadContext:                       resourceLbRead,
+		UpdateContext:                     resourceLbUpdate,
+		DeleteContext:                     resourceLbDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

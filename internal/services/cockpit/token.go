@@ -16,9 +16,11 @@ import (
 
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitTokenCreate,
-		ReadContext:   ResourceCockpitTokenRead,
-		DeleteContext: ResourceCockpitTokenDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceCockpitTokenCreate,
+		ReadContext:                       ResourceCockpitTokenRead,
+		DeleteContext:                     ResourceCockpitTokenDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
 			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
@@ -72,6 +74,8 @@ func ResourceToken() *schema.Resource {
 
 func resourceCockpitTokenScopes() *schema.Resource {
 	return &schema.Resource{
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 		Schema: map[string]*schema.Schema{
 			"query_metrics": {
 				Type:        schema.TypeBool,

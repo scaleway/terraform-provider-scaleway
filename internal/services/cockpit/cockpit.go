@@ -12,10 +12,12 @@ import (
 
 func ResourceCockpit() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitCreate,
-		ReadContext:   ResourceCockpitRead,
-		UpdateContext: ResourceCockpitUpdate,
-		DeleteContext: ResourceCockpitDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceCockpitCreate,
+		ReadContext:                       ResourceCockpitRead,
+		UpdateContext:                     ResourceCockpitUpdate,
+		DeleteContext:                     ResourceCockpitDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

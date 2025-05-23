@@ -15,10 +15,12 @@ import (
 
 func ResourceGroup() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIamGroupCreate,
-		ReadContext:   resourceIamGroupRead,
-		UpdateContext: resourceIamGroupUpdate,
-		DeleteContext: resourceIamGroupDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceIamGroupCreate,
+		ReadContext:                       resourceIamGroupRead,
+		UpdateContext:                     resourceIamGroupUpdate,
+		DeleteContext:                     resourceIamGroupDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

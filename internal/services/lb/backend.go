@@ -21,10 +21,12 @@ import (
 
 func ResourceBackend() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLbBackendCreate,
-		ReadContext:   resourceLbBackendRead,
-		UpdateContext: resourceLbBackendUpdate,
-		DeleteContext: resourceLbBackendDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceLbBackendCreate,
+		ReadContext:                       resourceLbBackendRead,
+		UpdateContext:                     resourceLbBackendUpdate,
+		DeleteContext:                     resourceLbBackendDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

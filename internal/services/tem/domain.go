@@ -17,10 +17,12 @@ import (
 
 func ResourceDomain() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceDomainCreate,
-		ReadContext:   ResourceDomainRead,
-		UpdateContext: ResourceDomainUpdate,
-		DeleteContext: ResourceDomainDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceDomainCreate,
+		ReadContext:                       ResourceDomainRead,
+		UpdateContext:                     ResourceDomainUpdate,
+		DeleteContext:                     ResourceDomainDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

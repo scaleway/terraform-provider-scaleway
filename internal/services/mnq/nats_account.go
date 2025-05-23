@@ -15,10 +15,12 @@ import (
 
 func ResourceNatsAccount() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceMNQNatsAccountCreate,
-		ReadContext:   ResourceMNQNatsAccountRead,
-		UpdateContext: ResourceMNQNatsAccountUpdate,
-		DeleteContext: ResourceMNQNatsAccountDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceMNQNatsAccountCreate,
+		ReadContext:                       ResourceMNQNatsAccountRead,
+		UpdateContext:                     ResourceMNQNatsAccountUpdate,
+		DeleteContext:                     ResourceMNQNatsAccountDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

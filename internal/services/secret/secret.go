@@ -19,10 +19,12 @@ import (
 
 func ResourceSecret() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceSecretCreate,
-		ReadContext:   ResourceSecretRead,
-		UpdateContext: ResourceSecretUpdate,
-		DeleteContext: ResourceSecretDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceSecretCreate,
+		ReadContext:                       ResourceSecretRead,
+		UpdateContext:                     ResourceSecretUpdate,
+		DeleteContext:                     ResourceSecretDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

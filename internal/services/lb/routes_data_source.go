@@ -14,7 +14,9 @@ import (
 
 func DataSourceRoutes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceLbRoutesRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceLbRoutesRead,
 		Schema: map[string]*schema.Schema{
 			"frontend_id": {
 				Type:        schema.TypeString,

@@ -17,9 +17,11 @@ import (
 
 func ResourceCockpitGrafanaUser() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitGrafanaUserCreate,
-		ReadContext:   ResourceCockpitGrafanaUserRead,
-		DeleteContext: ResourceCockpitGrafanaUserDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceCockpitGrafanaUserCreate,
+		ReadContext:                       ResourceCockpitGrafanaUserRead,
+		DeleteContext:                     ResourceCockpitGrafanaUserDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
 			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),

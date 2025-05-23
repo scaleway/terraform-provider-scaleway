@@ -15,10 +15,12 @@ import (
 
 func ResourceBackendStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceBackendStageCreate,
-		ReadContext:   ResourceBackendStageRead,
-		UpdateContext: ResourceBackendStageUpdate,
-		DeleteContext: ResourceBackendStageDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceBackendStageCreate,
+		ReadContext:                       ResourceBackendStageRead,
+		UpdateContext:                     ResourceBackendStageUpdate,
+		DeleteContext:                     ResourceBackendStageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

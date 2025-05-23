@@ -22,10 +22,12 @@ import (
 
 func ResourceFunction() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceFunctionCreate,
-		ReadContext:   ResourceFunctionRead,
-		UpdateContext: ResourceFunctionUpdate,
-		DeleteContext: ResourceFunctionDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceFunctionCreate,
+		ReadContext:                       ResourceFunctionRead,
+		UpdateContext:                     ResourceFunctionUpdate,
+		DeleteContext:                     ResourceFunctionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

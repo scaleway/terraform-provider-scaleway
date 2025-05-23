@@ -19,10 +19,12 @@ import (
 
 func ResourceSnapshot() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceBlockSnapshotCreate,
-		ReadContext:   ResourceBlockSnapshotRead,
-		UpdateContext: ResourceBlockSnapshotUpdate,
-		DeleteContext: ResourceBlockSnapshotDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceBlockSnapshotCreate,
+		ReadContext:                       ResourceBlockSnapshotRead,
+		UpdateContext:                     ResourceBlockSnapshotUpdate,
+		DeleteContext:                     ResourceBlockSnapshotDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

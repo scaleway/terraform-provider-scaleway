@@ -15,7 +15,9 @@ import (
 
 func DataSourceFlexibleIPs() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceFlexibleIPsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceFlexibleIPsRead,
 		Schema: map[string]*schema.Schema{
 			"server_ids": {
 				Type: schema.TypeList,

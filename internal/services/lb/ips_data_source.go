@@ -15,7 +15,9 @@ import (
 
 func DataSourceIPs() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceLbIPsRead,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		ReadContext:                       DataSourceLbIPsRead,
 		Schema: map[string]*schema.Schema{
 			"ip_cidr_range": {
 				Type:         schema.TypeString,

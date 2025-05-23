@@ -17,10 +17,12 @@ var descParameterIgnoredForGuest = " (this parameter is ignored in case of guest
 
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIamUserCreate,
-		ReadContext:   resourceIamUserRead,
-		UpdateContext: resourceIamUserUpdate,
-		DeleteContext: resourceIamUserDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     resourceIamUserCreate,
+		ReadContext:                       resourceIamUserRead,
+		UpdateContext:                     resourceIamUserUpdate,
+		DeleteContext:                     resourceIamUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

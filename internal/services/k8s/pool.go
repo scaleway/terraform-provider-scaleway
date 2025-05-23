@@ -21,11 +21,13 @@ import (
 
 func ResourcePool() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceK8SPoolCreate,
-		ReadContext:   ResourceK8SPoolRead,
-		UpdateContext: ResourceK8SPoolUpdate,
-		DeleteContext: ResourceK8SPoolDelete,
-		CustomizeDiff: ResourceK8SPoolCustomDiff,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceK8SPoolCreate,
+		ReadContext:                       ResourceK8SPoolRead,
+		UpdateContext:                     ResourceK8SPoolUpdate,
+		DeleteContext:                     ResourceK8SPoolDelete,
+		CustomizeDiff:                     ResourceK8SPoolCustomDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

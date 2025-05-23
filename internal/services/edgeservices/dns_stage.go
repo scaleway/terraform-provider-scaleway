@@ -14,10 +14,12 @@ import (
 
 func ResourceDNSStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceDNSStageCreate,
-		ReadContext:   ResourceDNSStageRead,
-		UpdateContext: ResourceDNSStageUpdate,
-		DeleteContext: ResourceDNSStageDelete,
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		CreateContext:                     ResourceDNSStageCreate,
+		ReadContext:                       ResourceDNSStageRead,
+		UpdateContext:                     ResourceDNSStageUpdate,
+		DeleteContext:                     ResourceDNSStageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
