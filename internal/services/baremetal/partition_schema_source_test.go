@@ -19,15 +19,15 @@ const (
 	offerNameEasyPartitioning            = "EM-B220E-NVME"
 	incompatibleOfferName                = "EM-L110X-SATA"
 	AlternativeOfferNameEasyPartitioning = "EM-B420E-NVME"
-	mountpoint                           = "/hello"
+	mountpoint                           = "/data"
 )
 
-func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
+func TestAccPartitionSchemaDataSource_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	sshKeyName := "TestAccEasyPartitioningDataSource_Basic"
-	serverName := "TestAccEasyPartitioningDataSource_Basic"
+	sshKeyName := "TestAccPartitionSchemaDataSource_Basic"
+	serverName := "TestAccPartitionSchemaDataSource_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -54,7 +54,7 @@ func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
 						public_key = "%s"
 					}
 
-					data "scaleway_baremetal_easy_partitioning" "test" {
+					data "scaleway_baremetal_partition_schema" "test" {
 						offer_id          = data.scaleway_baremetal_offer.my_offer.offer_id
 						os_id             = data.scaleway_baremetal_os.my_os.os_id
 						swap              = true
@@ -67,7 +67,7 @@ func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
 						description  = "test a description"
 						offer        = data.scaleway_baremetal_offer.my_offer.offer_id
 						os           = data.scaleway_baremetal_os.my_os.os_id
-						partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+						partitioning = data.scaleway_baremetal_partition_schema.test.json_partition
 						tags         = ["terraform-test", "scaleway_baremetal_server", "minimal", "edited"]
 						ssh_key_ids  = [scaleway_iam_ssh_key.main.id]
 					}
@@ -83,19 +83,19 @@ func TestAccEasyPartitioningDataSource_Basic(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_easy_partitioning.test"),
+					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_partition_schema.test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccEasyPartitioningDataSource_WithoutExtraPart(t *testing.T) {
+func TestAccPartitionSchemaDataSource_WithoutExtraPart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	sshKeyName := "TestAccEasyPartitioningDataSource_WithoutExtraPart"
-	serverName := "TestAccEasyPartitioningDataSource_WithoutExtraPart"
+	sshKeyName := "TestAccPartitionSchemaDataSource_WithoutExtraPart"
+	serverName := "TestAccPartitionSchemaDataSource_WithoutExtraPart"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -122,7 +122,7 @@ func TestAccEasyPartitioningDataSource_WithoutExtraPart(t *testing.T) {
 						public_key = "%s"
 					}
 
-					data "scaleway_baremetal_easy_partitioning" "test" {
+					data "scaleway_baremetal_partition_schema" "test" {
 						offer_id          = data.scaleway_baremetal_offer.my_offer.offer_id
 						os_id             = data.scaleway_baremetal_os.my_os.os_id
 						swap              = true
@@ -135,7 +135,7 @@ func TestAccEasyPartitioningDataSource_WithoutExtraPart(t *testing.T) {
 						description  = "test a description"
 						offer        = data.scaleway_baremetal_offer.my_offer.offer_id
 						os           = data.scaleway_baremetal_os.my_os.os_id
-						partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+						partitioning = data.scaleway_baremetal_partition_schema.test.json_partition
 						tags         = ["terraform-test", "scaleway_baremetal_server", "minimal", "edited"]
 						ssh_key_ids  = [scaleway_iam_ssh_key.main.id]
 					}
@@ -150,19 +150,19 @@ func TestAccEasyPartitioningDataSource_WithoutExtraPart(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_easy_partitioning.test"),
+					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_partition_schema.test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart(t *testing.T) {
+func TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	sshKeyName := "TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart"
-	serverName := "TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart"
+	sshKeyName := "TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart"
+	serverName := "TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -189,7 +189,7 @@ func TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 						public_key = "%s"
 					}
 
-					data "scaleway_baremetal_easy_partitioning" "test" {
+					data "scaleway_baremetal_partition_schema" "test" {
 						offer_id          = data.scaleway_baremetal_offer.my_offer.offer_id
 						os_id             = data.scaleway_baremetal_os.my_os.os_id
 						swap              = false
@@ -202,7 +202,7 @@ func TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 						description  = "test a description"
 						offer        = data.scaleway_baremetal_offer.my_offer.offer_id
 						os           = data.scaleway_baremetal_os.my_os.os_id
-						partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+						partitioning = data.scaleway_baremetal_partition_schema.test.json_partition
 						tags         = ["terraform-test", "scaleway_baremetal_server", "minimal", "edited"]
 						ssh_key_ids  = [scaleway_iam_ssh_key.main.id]
 					}
@@ -217,19 +217,19 @@ func TestAccEasyPartitioningDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_easy_partitioning.test"),
+					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_partition_schema.test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccEasyPartitioningDataSource_WithAlternateOffer(t *testing.T) {
+func TestAccPartitionSchemaDataSource_WithAlternateOffer(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccEasyPartitioningDataSource_WithAlternateOffer"
-	name := "TestAccEasyPartitioningDataSource_WithAlternateOffer"
+	SSHKeyName := "TestAccPartitionSchemaDataSource_WithAlternateOffer"
+	name := "TestAccPartitionSchemaDataSource_WithAlternateOffer"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -257,7 +257,7 @@ func TestAccEasyPartitioningDataSource_WithAlternateOffer(t *testing.T) {
 						public_key = "%s"
 					}
 
-					data "scaleway_baremetal_easy_partitioning" "test" {
+					data "scaleway_baremetal_partition_schema" "test" {
 						offer_id = data.scaleway_baremetal_offer.my_offer.offer_id
 						os_id = data.scaleway_baremetal_os.my_os.os_id
 						swap = false
@@ -270,7 +270,7 @@ func TestAccEasyPartitioningDataSource_WithAlternateOffer(t *testing.T) {
 						description = "test a description"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
-						partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+						partitioning = data.scaleway_baremetal_partition_schema.test.json_partition
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
@@ -286,19 +286,19 @@ func TestAccEasyPartitioningDataSource_WithAlternateOffer(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_easy_partitioning.test"),
+					testAccCheckEasyPartitioning(tt, "scaleway_baremetal_server.base", "data.scaleway_baremetal_partition_schema.test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccEasyPartitioningDataSource_IncompatibleOS(t *testing.T) {
+func TestAccPartitionSchemaDataSource_IncompatibleOS(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccEasyPartitioningDataSource_IncompatibleOS"
-	name := "TestAccEasyPartitioningDataSource_IncompatibleOS"
+	SSHKeyName := "TestAccPartitionSchemaDataSource_IncompatibleOS"
+	name := "TestAccPartitionSchemaDataSource_IncompatibleOS"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -326,7 +326,7 @@ func TestAccEasyPartitioningDataSource_IncompatibleOS(t *testing.T) {
 						public_key = "%s"
 					}
 
-					data "scaleway_baremetal_easy_partitioning" "test" {
+					data "scaleway_baremetal_partition_schema" "test" {
 						offer_id = data.scaleway_baremetal_offer.my_offer.offer_id
 						os_id = data.scaleway_baremetal_os.my_os.os_id
 						swap = false
@@ -339,7 +339,7 @@ func TestAccEasyPartitioningDataSource_IncompatibleOS(t *testing.T) {
 						description = "test a description"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
-						partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+						partitioning = data.scaleway_baremetal_partition_schema.test.json_partition
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
@@ -355,12 +355,12 @@ func TestAccEasyPartitioningDataSource_IncompatibleOS(t *testing.T) {
 	})
 }
 
-func TestAccEasyPartitioningDataSource_IncompatibleOffer(t *testing.T) {
+func TestAccPartitionSchemaDataSource_IncompatibleOffer(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccEasyPartitioningDataSource_IncompatibleOffer"
-	name := "TestAccEasyPartitioningDataSource_IncompatibleOffer"
+	SSHKeyName := "TestAccPartitionSchemaDataSource_IncompatibleOffer"
+	name := "TestAccPartitionSchemaDataSource_IncompatibleOffer"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -388,7 +388,7 @@ func TestAccEasyPartitioningDataSource_IncompatibleOffer(t *testing.T) {
 						public_key = "%s"
 					}
 
-					data "scaleway_baremetal_easy_partitioning" "test" {
+					data "scaleway_baremetal_partition_schema" "test" {
 						offer_id = data.scaleway_baremetal_offer.my_offer.offer_id
 						os_id = data.scaleway_baremetal_os.my_os.os_id
 						swap = false
@@ -401,7 +401,7 @@ func TestAccEasyPartitioningDataSource_IncompatibleOffer(t *testing.T) {
 						description = "test a description"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
-						partitioning = data.scaleway_baremetal_easy_partitioning.test.json_partition
+						partitioning = data.scaleway_baremetal_partition_schema.test.json_partition
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]

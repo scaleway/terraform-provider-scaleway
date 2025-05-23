@@ -250,7 +250,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_ssh_key":                     iam.DataSourceSSHKey(),
 				"scaleway_availability_zones":                  az.DataSourceAvailabilityZones(),
 				"scaleway_baremetal_offer":                     baremetal.DataSourceOffer(),
-				"scaleway_baremetal_easy_partitioning":         baremetal.DataEasyPartitioning(),
+				"scaleway_baremetal_partition_schema":          baremetal.DataPartitionSchema(),
 				"scaleway_baremetal_option":                    baremetal.DataSourceOption(),
 				"scaleway_baremetal_os":                        baremetal.DataSourceOS(),
 				"scaleway_baremetal_server":                    baremetal.DataSourceServer(),

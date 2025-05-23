@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -16,12 +18,25 @@ import (
 )
 
 const (
-	partitionSize = 20000000000
+	partitionSize     = 20000000000
+	defaultMountpoint = "/data"
+	md0               = "/dev/md0"
+	md1               = "/dev/md1"
+	md2               = "/dev/md2"
+	ext4              = "ext4"
+	raidLevel1        = "raid_level_1"
+	nvme0p2           = "/dev/nvme0n1p2"
+	nvme0p3           = "/dev/nvme0n1p3"
+	nvme1p1           = "/dev/nvme1n1p1"
+	nvme1p2           = "/dev/nvme1n1p2"
+	uefi              = "uefi"
+	swap              = "swap"
+	root              = "root"
 )
 
-func DataEasyPartitioning() *schema.Resource {
+func DataPartitionSchema() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataEasyPartitioningRead,
+		ReadContext: dataPartitionSchemaRead,
 		Schema: map[string]*schema.Schema{
 			"offer_id": {
 				Type:        schema.TypeString,
@@ -48,10 +63,11 @@ func DataEasyPartitioning() *schema.Resource {
 				Description: "set extra ext_4 partition",
 			},
 			"ext_4_mountpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "/data",
-				Description: "Mount point must be an absolute path with alphanumeric characters and underscores",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      defaultMountpoint,
+				ValidateFunc: validation.StringInSlice([]string{"/data", "/home"}, false),
+				Description:  "Mount point must be an absolute path",
 			},
 			"json_partition": {
 				Type:        schema.TypeString,
@@ -62,7 +78,7 @@ func DataEasyPartitioning() *schema.Resource {
 	}
 }
 
-func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataPartitionSchemaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, fallBackZone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -105,30 +121,22 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	extraPart := d.Get("extra_partition").(bool)
-	swap := d.Get("swap").(bool)
-
-	if swap && !extraPart {
-		jsonSchema, err := json.Marshal(defaultPartitioningSchema)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		d.SetId(fmt.Sprintf("%s-%s", offerID, osID))
-		_ = d.Set("json_partition", string(jsonSchema))
-
-		return nil
+	hasSwap := d.Get("swap").(bool)
+	if !hasSwap {
+		removeSwap(defaultPartitioningSchema.Disks)
+		updateRaidRemoveSwap(defaultPartitioningSchema)
 	}
 
-	resizeRootPartition(defaultPartitioningSchema.Disks, swap, extraPart)
-	defaultPartitioningSchema.Disks = handleSwapPartitions(defaultPartitioningSchema.Disks, extraPart, swap)
-
 	mountpoint := d.Get("ext_4_mountpoint").(string)
-	addExtraExt4Partition(mountpoint, defaultPartitioningSchema, extraPart)
+	_, hasExtraPartition := d.GetOk("extra_partition")
 
-	if !extraPart && !swap {
-		defaultPartitioningSchema.Filesystems = defaultPartitioningSchema.Filesystems[:len(defaultPartitioningSchema.Filesystems)-1]
-		defaultPartitioningSchema.Raids = defaultPartitioningSchema.Raids[:len(defaultPartitioningSchema.Raids)-1]
+	if hasExtraPartition {
+		addExtraExt4Partition(mountpoint, defaultPartitioningSchema)
+		updateRaidNewPartition(defaultPartitioningSchema)
+	}
+
+	if !hasSwap || hasExtraPartition {
+		updateSizeRoot(defaultPartitioningSchema.Disks, hasExtraPartition)
 	}
 
 	err = api.ValidatePartitioningSchema(&baremetal.ValidatePartitioningSchemaRequest{
@@ -155,55 +163,49 @@ func dataEasyPartitioningRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func handleSwapPartitions(originalDisks []*baremetal.SchemaDisk, withExtraPartition bool, swap bool) []*baremetal.SchemaDisk {
-	if swap {
-		return originalDisks
+func updateRaidRemoveSwap(partitionSchema *baremetal.Schema) {
+	raidSchema := []*baremetal.SchemaRAID{
+		{
+			Name:  md0,
+			Level: raidLevel1,
+			Devices: []string{
+				nvme0p2,
+				nvme1p1,
+			},
+		},
+		{
+			Name:  md1,
+			Level: raidLevel1,
+			Devices: []string{
+				nvme0p3,
+				nvme1p2,
+			},
+		},
 	}
-
-	result := make([]*baremetal.SchemaDisk, 0)
-
-	for _, disk := range originalDisks {
-		i := 1
-		newPartitions := []*baremetal.SchemaPartition{}
-
-		for _, p := range disk.Partitions {
-			if p.Label == "swap" {
-				continue
-			}
-
-			if p.Label == "root" {
-				if !withExtraPartition {
-					p.Size = 0
-					p.UseAllAvailableSpace = true
-				} else {
-					p.Size = partitionSize
-				}
-			}
-
-			p.Number = uint32(i)
-			i++
-
-			newPartitions = append(newPartitions, p)
-		}
-
-		result = append(result, &baremetal.SchemaDisk{
-			Device:     disk.Device,
-			Partitions: newPartitions,
-		})
-	}
-
-	return result
+	partitionSchema.Raids = raidSchema
 }
 
-func addExtraExt4Partition(mountpoint string, defaultPartitionSchema *baremetal.Schema, extraPart bool) {
-	if !extraPart {
-		return
+func updateRaidNewPartition(partitionSchema *baremetal.Schema) {
+	lenDisk0Partition := len(partitionSchema.Disks[0].Partitions)
+	lenDisk1Partition := len(partitionSchema.Disks[1].Partitions)
+	raid := &baremetal.SchemaRAID{
+		Name:  md2,
+		Level: raidLevel1,
+		Devices: []string{
+			fmt.Sprintf("%sp%d", partitionSchema.Disks[0].Device, lenDisk0Partition),
+			fmt.Sprintf("%sp%d", partitionSchema.Disks[1].Device, lenDisk1Partition),
+		},
 	}
+	partitionSchema.Raids = append(partitionSchema.Raids, raid)
+}
+
+func addExtraExt4Partition(mountpoint string, defaultPartitionSchema *baremetal.Schema) {
+	label := strings.TrimPrefix(mountpoint, "/")
 
 	for _, disk := range defaultPartitionSchema.Disks {
 		partIndex := uint32(len(disk.Partitions)) + 1
 		data := &baremetal.SchemaPartition{
-			Label:                baremetal.SchemaPartitionLabel("data"),
+			Label:                baremetal.SchemaPartitionLabel(label),
 			Number:               partIndex,
 			Size:                 0,
 			UseAllAvailableSpace: true,
@@ -212,26 +214,45 @@ func addExtraExt4Partition(mountpoint string, defaultPartitionSchema *baremetal.
 	}
 
 	filesystem := &baremetal.SchemaFilesystem{
-		Device:     "/dev/md2",
-		Format:     "ext4",
+		Device:     md2,
+		Format:     ext4,
 		Mountpoint: mountpoint,
 	}
 	defaultPartitionSchema.Filesystems = append(defaultPartitionSchema.Filesystems, filesystem)
 }
 
-func resizeRootPartition(originalDisks []*baremetal.SchemaDisk, withSwap bool, withExtraPartition bool) {
+func updateSizeRoot(originalDisks []*baremetal.SchemaDisk, hasExtraPartition bool) {
 	for _, disk := range originalDisks {
 		for _, partition := range disk.Partitions {
-			if partition.Label == "root" {
-				if !withSwap && !withExtraPartition {
-					partition.Size = 0
-					partition.UseAllAvailableSpace = true
-				}
+			if partition.Label == root {
+				partition.Size = 0
+				partition.UseAllAvailableSpace = true
 
-				if withExtraPartition {
+				if hasExtraPartition {
 					partition.Size = partitionSize
+					partition.UseAllAvailableSpace = false
 				}
 			}
 		}
+	}
+}
+
+func removeSwap(originalDisks []*baremetal.SchemaDisk) {
+	for _, disk := range originalDisks {
+		newPartitions := make([]*baremetal.SchemaPartition, 0, len(disk.Partitions))
+
+		for _, partition := range disk.Partitions {
+			if partition.Label == swap {
+				continue
+			}
+
+			if partition.Label != uefi {
+				partition.Number--
+			}
+
+			newPartitions = append(newPartitions, partition)
+		}
+
+		disk.Partitions = newPartitions
 	}
 }
