@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-cty/cty"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -184,6 +185,17 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("created_at", snapshot.Snapshot.CreationDate.Format(time.RFC3339))
 	_ = d.Set("type", snapshot.Snapshot.VolumeType.String())
 	_ = d.Set("tags", snapshot.Snapshot.Tags)
+
+	if d.Get("type").(string) == "b_ssd" {
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       "Snapshot type `b_ssd` is deprecated",
+				Detail:        "If you want to migrate existing snapshots, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
+				AttributePath: cty.GetAttrPath("type"),
+			},
+		}
+	}
 
 	return nil
 }
