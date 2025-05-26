@@ -29,7 +29,6 @@ func TestAccDataSourceGroup_Basic(t *testing.T) {
 					
 					data "scaleway_iam_group" "find_by_name_basic" {
 					  name            = scaleway_iam_group.main_ds_basic.name
-					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -44,6 +43,7 @@ func TestAccDataSourceGroup_Basic(t *testing.T) {
 	})
 }
 
+// This test should be run using the provider test account
 func TestAccDataSourceGroup_UsersAndApplications(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -60,9 +60,12 @@ func TestAccDataSourceGroup_UsersAndApplications(t *testing.T) {
 					  name = "tf_tests_iam_group_ds_app"
 					}
 					
+					# hashicorp@scaleway.com
 					data "scaleway_iam_user" "user00" {
 					  user_id         = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
 					}
+
+					# developer-tools-team@scaleway.com
 					data "scaleway_iam_user" "user01" {
 					  user_id         = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
 					}
