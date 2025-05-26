@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -177,6 +178,17 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("server_id", res.Volume.Server.ID)
 	} else {
 		_ = d.Set("server_id", nil)
+	}
+
+	if d.Get("type").(string) == instanceSDK.VolumeVolumeTypeBSSD.String() {
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       "Volume type `b_ssd` is deprecated",
+				Detail:        "If you want to migrate existing volumes, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
+				AttributePath: cty.GetAttrPath("type"),
+			},
+		}
 	}
 
 	return nil
