@@ -434,7 +434,6 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 			if !authorized {
 				break
 			}
-
 		}
 	}
 
