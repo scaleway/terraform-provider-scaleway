@@ -3,11 +3,14 @@ package mongodb
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -16,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -152,6 +156,26 @@ func ResourceInstance() *schema.Resource {
 				},
 			},
 			// Computed
+			"private_ip": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Optional:    true,
+				Description: "The private IPv4 address associated with the resource",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv4 address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IPv4 address",
+						},
+					},
+				},
+			},
 			"public_network": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -362,10 +386,59 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		_ = d.Set("public_network", publicNetworkEndpoint)
 	}
 
+	diags := diag.Diagnostics{}
+	privateIPs := []map[string]interface{}(nil)
+	authorized := true
+
 	privateNetworkEndpoint, privateNetworkExists := flattenPrivateNetwork(instance.Endpoints)
 
 	if privateNetworkExists {
 		_ = d.Set("private_network", privateNetworkEndpoint)
+
+		for _, endpoint := range instance.Endpoints {
+			if endpoint.PrivateNetwork == nil {
+				continue
+			}
+
+			resourceType := ipamAPI.ResourceTypeMgdbInstance
+			opts := &ipam.GetResourcePrivateIPsOptions{
+				ResourceID:       &instance.ID,
+				ResourceType:     &resourceType,
+				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
+				ProjectID:        &instance.ProjectID,
+			}
+
+			endpointPrivateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+
+			switch {
+			case err == nil:
+				privateIPs = append(privateIPs, endpointPrivateIPs...)
+			case httperrors.Is403(err):
+				authorized = false
+
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Unauthorized to read MongoDB Instance's private IP, please check your IAM permissions",
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("private_ip"),
+				})
+			default:
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       fmt.Sprintf("Unable to get private IP for instance %q", instance.Name),
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("private_ip"),
+				})
+			}
+
+			if !authorized {
+				break
+			}
+		}
+	}
+
+	if authorized {
+		_ = d.Set("private_ip", privateIPs)
 	}
 
 	if len(instance.Settings) > 0 {
@@ -377,7 +450,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		_ = d.Set("settings", settingsMap)
 	}
 
-	return nil
+	return diags
 }
 
 func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

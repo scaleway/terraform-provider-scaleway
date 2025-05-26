@@ -119,6 +119,9 @@ In addition to all arguments above, the following attributes are exported:
     - `ips` - List of IP addresses for your endpoint.
     - `port` - TCP port of the endpoint.
     - `dns_records` - List of DNS records for your endpoint.
+- `private_ip` - The private IPv4 address associated with the instance.
+    - `id` - The ID of the IPv4 address resource.
+    - `address` - The private IPv4 address.
 - `public_network` - Private Network endpoints of the Database Instance.
     - `id` - The ID of the endpoint.
     - `port` - TCP port of the endpoint.

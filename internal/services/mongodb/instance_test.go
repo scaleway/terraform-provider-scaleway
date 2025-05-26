@@ -245,6 +245,8 @@ func TestAccMongoDBInstance_WithPrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_network.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_network.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_network.0.dns_records.0"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_ip.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_ip.0.address"),
 				),
 			},
 		},
@@ -309,6 +311,8 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_network.0.pn_id"),
 					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_network.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_ip.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_ip.0.address"),
 				),
 			},
 			{
@@ -341,6 +345,8 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_network.0.pn_id"),
 					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_network.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_ip.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "private_ip.0.address"),
 				),
 			},
 			{
