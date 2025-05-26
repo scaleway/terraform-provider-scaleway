@@ -72,7 +72,7 @@ resource "scaleway_instance_snapshot" "snapshot" {
 The following arguments are supported:
 
 - `volume_id` - (Optional) The ID of the volume to take a snapshot from.
-- `type` - (Optional) The snapshot's volume type.  The possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD) and `unified`.
+- `type` - (Optional) The snapshot's volume type.  The possible values are: `l_ssd` (Local SSD) and `unified`.
 Updates to this field will recreate a new resource.
 
 ~> **Important:** Snapshots of volumes with type `b_ssd` (Block SSD) are deprecated and cannot be managed using the `scaleway_instance_snapshot` resource anymore. Please use the `scaleway_block_snapshot` resource instead.
