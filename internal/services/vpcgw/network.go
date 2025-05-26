@@ -240,7 +240,7 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 				return diag.FromErr(err)
 			}
 
-			if gatewayNetwork.PrivateNetworkID != "" {
+			if gatewayNetwork != nil && gatewayNetwork.PrivateNetworkID != "" {
 				diags = setPrivateIPsV1(ctx, d, apiV1, gatewayV1, m)
 			}
 
