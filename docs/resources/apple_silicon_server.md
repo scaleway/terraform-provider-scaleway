@@ -49,6 +49,9 @@ In addition to all arguments above, the following attributes are exported:
 - `state` - The state of the server.
 - `ip` - IPv4 address of the server (IPv4 address).
 - `vnc_url` - URL of the VNC.
+- `private_ips` - The list of private IPv4 and IPv6 addresses associated with the server.
+    - `id` - The ID of the IP address resource.
+    - `address` - The private IP address.
 - `created_at` - The date and time of the creation of the Apple Silicon server.
 - `updated_at` - The date and time of the last update of the Apple Silicon server.
 - `deleted_at` - The minimal date and time on which you can delete this server due to Apple licence.
