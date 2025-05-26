@@ -326,17 +326,19 @@ func testAccCheckSecretDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = api.GetSecret(&secretSDK.GetSecretRequest{
+			s, err := api.GetSecret(&secretSDK.GetSecretRequest{
 				SecretID: id,
 				Region:   region,
 			})
 
-			if err == nil {
-				return fmt.Errorf("secret (%s) still exists", rs.Primary.ID)
-			}
-
 			if !httperrors.Is404(err) {
 				return err
+			}
+
+			if s != nil {
+				if s.DeletionRequestedAt == nil {
+					return fmt.Errorf("secret (%s) still exists", rs.Primary.ID)
+				}
 			}
 		}
 
