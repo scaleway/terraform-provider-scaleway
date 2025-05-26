@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-cty/cty"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -180,7 +180,7 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 		_ = d.Set("server_id", nil)
 	}
 
-	if d.Get("type").(string) == "b_ssd" {
+	if d.Get("type").(string) == instanceSDK.VolumeVolumeTypeBSSD.String() {
 		return diag.Diagnostics{
 			{
 				Severity:      diag.Warning,
