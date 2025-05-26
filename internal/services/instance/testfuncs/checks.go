@@ -52,7 +52,7 @@ func IsServerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = instanceAPI.GetServer(&instanceSDK.GetServerRequest{
+			_, err = instanceAPI.WaitForServer(&instanceSDK.WaitForServerRequest{
 				ServerID: ID,
 				Zone:     zone,
 			})
@@ -213,7 +213,7 @@ func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
+			_, err = instanceAPI.WaitForVolume(&instanceSDK.WaitForVolumeRequest{
 				Zone:     zone,
 				VolumeID: id,
 			})
