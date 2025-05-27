@@ -60,6 +60,9 @@ In addition to all arguments above, the following attributes are exported:
 - `private_endpoint` - Private endpoint's attributes.
     - `id` - (Optional) The id of the private endpoint.
     - `url` - (Optional) The URL of the endpoint.
+- `private_ip` - The private IPv4 address associated with the deployment.
+    - `id` - The ID of the IPv4 address resource.
+    - `address` - The private IPv4 address.
 - `public_endpoint` - (Optional) Public endpoint's attributes.
     - `id` - (Optional) The id of the public endpoint.
     - `url` - (Optional) The URL of the endpoint.
