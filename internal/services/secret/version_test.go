@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -208,18 +208,20 @@ func testAccCheckSecretVersionDestroy(tt *acctest.TestTools) resource.TestCheckF
 				return err
 			}
 
-			_, err = api.GetSecretVersion(&secretSDK.GetSecretVersionRequest{
+			secretVersion, err := api.GetSecretVersion(&secretSDK.GetSecretVersionRequest{
 				SecretID: id,
 				Region:   region,
 				Revision: revision,
 			})
 
-			if err == nil {
-				return fmt.Errorf("secret version (%s) still exists", rs.Primary.ID)
-			}
-
 			if !httperrors.Is404(err) {
 				return err
+			}
+
+			if secretVersion != nil {
+				if secretVersion.Status != secretSDK.SecretVersionStatusDeleted {
+					return fmt.Errorf("secret version (%s) still exists with status %s", rs.Primary.ID, secretVersion.Status)
+				}
 			}
 		}
 
