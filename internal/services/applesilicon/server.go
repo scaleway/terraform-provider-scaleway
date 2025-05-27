@@ -2,17 +2,21 @@ package applesilicon
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -111,6 +115,26 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "IPv4 address of the server",
 				Computed:    true,
+			},
+			"private_ips": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Optional:    true,
+				Description: "List of private IPv4 and IPv6 addresses associated with the server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IP address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IP address",
+						},
+					},
+				},
 			},
 			"vnc_url": {
 				Type:        schema.TypeString,
@@ -262,7 +286,56 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 
 	_ = d.Set("private_network", flattenPrivateNetworks(pnRegion, listPrivateNetworks.ServerPrivateNetworks))
 
-	return nil
+	privateNetworkIDs := make([]string, 0, listPrivateNetworks.TotalCount)
+	for _, pn := range listPrivateNetworks.ServerPrivateNetworks {
+		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
+	}
+
+	diags := diag.Diagnostics{}
+	allPrivateIPs := make([]map[string]interface{}, 0, listPrivateNetworks.TotalCount)
+	authorized := true
+
+	for _, privateNetworkID := range privateNetworkIDs {
+		resourceType := ipamAPI.ResourceTypeAppleSiliconPrivateNic
+		opts := &ipam.GetResourcePrivateIPsOptions{
+			ResourceType:     &resourceType,
+			PrivateNetworkID: &privateNetworkID,
+			ProjectID:        &res.ProjectID,
+		}
+
+		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, pnRegion, opts)
+
+		switch {
+		case err == nil:
+			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		case httperrors.Is403(err):
+			authorized = false
+
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       "Unauthorized to read server's private IPs, please check your IAM permissions",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
+		default:
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("Unable to get private IP for server %q", res.Name),
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
+		}
+
+		if !authorized {
+			break
+		}
+	}
+
+	if authorized {
+		_ = d.Set("private_ips", allPrivateIPs)
+	}
+
+	return diags
 }
 
 func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

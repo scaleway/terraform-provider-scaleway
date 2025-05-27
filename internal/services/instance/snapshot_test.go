@@ -14,6 +14,8 @@ import (
 )
 
 func TestAccSnapshot_BlockVolume(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_snapshot\" is depracated for block volumes")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -111,6 +113,8 @@ func TestAccSnapshot_Server(t *testing.T) {
 }
 
 func TestAccSnapshot_ServerWithBlockVolume(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_snapshot\" is depracated for block volumes")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -153,6 +157,8 @@ func TestAccSnapshot_ServerWithBlockVolume(t *testing.T) {
 }
 
 func TestAccSnapshot_RenameSnapshot(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_snapshot\" is depracated for block volumes")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -198,6 +204,9 @@ func TestAccSnapshot_RenameSnapshot(t *testing.T) {
 }
 
 func TestAccSnapshot_FromObject(t *testing.T) {
+	t.Skip("Resource \"scaleway_instance_snapshot\" is depracated")
+	// TestAccSnapshot_FromS3 tests the same logic on the scaleway_block_snapshot resource
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -217,7 +226,7 @@ func TestAccSnapshot_FromObject(t *testing.T) {
 						file   = "testfixture/empty.qcow2"
 					}
 
-					resource "scaleway_instance_snapshot" "snapshot" {
+					resource "scaleway_block_snapshot" "snapshot" {
 						name = "test-instance-snapshot-import-from-object"
 						type = "b_ssd"
 						import {
