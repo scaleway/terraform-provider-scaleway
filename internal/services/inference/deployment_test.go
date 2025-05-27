@@ -86,6 +86,8 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-endpoint-private"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "node_type", "L4"),
 					resource.TestCheckResourceAttrPair("scaleway_inference_deployment.main", "private_endpoint.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_inference_deployment.main", "private_ip.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_inference_deployment.main", "private_ip.0.address"),
 				),
 			},
 			{
@@ -116,6 +118,8 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "name", "test-inference-deployment-basic-endpoints-private-public"),
 					resource.TestCheckResourceAttr("scaleway_inference_deployment.main", "public_endpoint.0.is_enabled", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_inference_deployment.main", "private_endpoint.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_inference_deployment.main", "private_ip.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_inference_deployment.main", "private_ip.0.address"),
 				),
 			},
 		},

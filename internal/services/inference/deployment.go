@@ -2,17 +2,21 @@ package inference
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -111,7 +115,6 @@ func ResourceDeployment() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the deployment",
 			},
-
 			"private_endpoint": {
 				Type:         schema.TypeList,
 				Optional:     true,
@@ -144,7 +147,6 @@ func ResourceDeployment() *schema.Resource {
 					},
 				},
 			},
-
 			"public_endpoint": {
 				Type:         schema.TypeList,
 				Optional:     true,
@@ -173,6 +175,26 @@ func ResourceDeployment() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "The URL of the endpoint.",
 							Computed:    true,
+						},
+					},
+				},
+			},
+			"private_ip": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Optional:    true,
+				Description: "The private IPv4 address associated with the deployment",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv4 address resource",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IPv4 address",
 						},
 					},
 				},
@@ -317,8 +339,57 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
+	diags := diag.Diagnostics{}
+	privateIPs := []map[string]interface{}(nil)
+	authorized := true
+
 	if privateEndpoints != nil {
 		_ = d.Set("private_endpoint", privateEndpoints)
+
+		for _, endpoint := range deployment.Endpoints {
+			if endpoint.PrivateNetwork == nil {
+				continue
+			}
+
+			resourceType := ipamAPI.ResourceTypeLlmDeployment
+			opts := &ipam.GetResourcePrivateIPsOptions{
+				ResourceID:       &deployment.ID,
+				ResourceType:     &resourceType,
+				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
+				ProjectID:        &deployment.ProjectID,
+			}
+
+			endpointPrivateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+
+			switch {
+			case err == nil:
+				privateIPs = append(privateIPs, endpointPrivateIPs...)
+			case httperrors.Is403(err):
+				authorized = false
+
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Unauthorized to read deployment's private IP, please check your IAM permissions",
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("private_ip"),
+				})
+			default:
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       fmt.Sprintf("Unable to get private IP for deployment %q", deployment.Name),
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("private_ip"),
+				})
+			}
+
+			if !authorized {
+				break
+			}
+		}
+	}
+
+	if authorized {
+		_ = d.Set("private_ip", privateIPs)
 	}
 
 	if publicEndpoints != nil {
