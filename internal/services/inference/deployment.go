@@ -396,7 +396,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		_ = d.Set("public_endpoint", publicEndpoints)
 	}
 
-	return nil
+	return diags
 }
 
 func ResourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
