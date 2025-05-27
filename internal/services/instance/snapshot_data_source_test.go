@@ -10,6 +10,8 @@ import (
 )
 
 func TestAccDataSourceSnapshot_Basic(t *testing.T) {
+	t.Skip("Resources \"scaleway_instance_volume\" and \"scaleway_instance_snapshot\" are depracated")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

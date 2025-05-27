@@ -65,7 +65,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					resource "scaleway_object" "qcow-object" {
 					  bucket = scaleway_object_bucket.snapshot-bucket.name
 					  key    = "test-acc-block-snapshot.qcow2"
-					  file   = "testfixtures/small_image.qcow2"
+					  file   = "testfixture/small_image.qcow2"
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-snapshot" {
