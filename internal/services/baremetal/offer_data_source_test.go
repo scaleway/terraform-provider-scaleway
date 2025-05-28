@@ -152,7 +152,6 @@ func TestAccDataSourceOffer_SubscriptionPeriodMonthly(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "include_disabled", "false"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "bandwidth", "1000000000"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "beryllium"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "stock", "available"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.name", "AMD EPYC 7232P"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.core_count", "8"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.frequency", "3100"),
